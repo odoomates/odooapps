@@ -31,4 +31,5 @@
         'views/stock_picking.xml',
     ],
     'demo': [],
+    'images': ['static/description/banner.jpg'],
 }
