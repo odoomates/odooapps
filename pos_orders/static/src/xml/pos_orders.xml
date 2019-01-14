@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<template id="template" xml:space="preserve">
+    <t t-name="OrderListButton">
+        <span class="control-button pos_order_list_button">
+            <i class="fa fa-shopping-cart"></i>
+            View Orders
+        </span>
+    </t>
+
+    <t t-name="PosOrderScreenWidget">
+        <div class="pos_order_screen screen">
+            <div class="screen-content">
+                <section class="top-content">
+                    <span class='button back'>
+                        <i class='fa fa-angle-double-left'/>
+                        Back
+                    </span>
+                    <span class='searchbox'>
+                        <input placeholder='Search Order'/>
+                        <span class='search-clear'/>
+                    </span>
+                    <span class='searchbox'/>
+                </section>
+                <section class="full-content">
+                    <div class='window'>
+                        <section class='subwindow'>
+                            <div class='subwindow-container'>
+                                <div class='subwindow-container-fix touch-scrollable scrollable-y'>
+                                    <table class='order-list'>
+                                        <thead>
+                                            <tr>
+                                                <th>Order Reference</th>
+                                                <th>Partner Name</th>
+                                                <th>Date</th>
+                                                <th>Total Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class='order-list-contents'>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="PosOrderLine">
+        <tr class='order-line' t-att-data-id='order.id'>
+            <td><t t-esc='order.name' /></td>
+            <td><t t-esc='order.partner_id[1]'/></td>
+            <td><t t-esc='order.date_order' /></td>
+            <td><t t-esc='order.amount_total' /></td>
+        </tr>
+    </t>
+
+    <t t-extend='ClientLine'>
+        <t t-jquery='.client-line' t-operation='append'>
+            <td><button class="view_orders" t-att-data-id='partner.id'>
+                Orders <i class='fa fa-shopping-cart'></i>
+            </button></td>
+        </t>
+    </t>
+
+    <t t-extend='ClientListScreenWidget'>
+        <t t-jquery='.client-list thead tr' t-operation='append'>
+            <th></th>
+        </t>
+    </t>
+
+    <t t-name="OrderPopupWidget">
+        <div class="modal-dialog">
+            <div class="popup popup-selection pos_order_details">
+                <p class="title">Order Details</p>
+                <div class='selection scrollable-y touch-scrollable'>
+                    <t t-set="order" t-value="widget.order"/>
+                    <t t-if="order">
+                    <table style="width:100%;">
+                        <tr>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Order Ref:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.name" />
+                            </td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Order Date:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc='order.date_order' />
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Customer:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.partner"/>
+                            </td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Receipt Ref:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.pos_reference"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Session:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.session"/>
+                            </td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Total Amount:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.amount_total"/>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Status:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.state"/>
+                            </td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">Company:</td>
+                            <td style="text-align: left;padding: 0px 0px 0px 15px !important;">
+                                <t t-esc="order.company"/>
+                            </td>
+                        </tr>
+                    </table>
+                    <table style="width: 98%;border: 1px solid black;margin: 8px;">
+                        <thead style="border:1px solid black;">
+                            <tr>
+                                <th>Product</th>
+                                <th>Quantity</th>
+                                <th>Discount</th>
+                                <th>Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="order.order_lines" t-as="line" style="border:1px solid black;">
+                                <td ><t t-esc="line.product"/></td>
+                                <td><t t-esc="line.qty"/></td>
+                                <td><t t-esc="line.discount"/></td>
+                                <td><t t-esc="line.price"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    </t>
+                </div>
+                <div class="footer">
+                    <div class="button confirm">
+                        Copy Order
+                    </div>
+                    <div class="button cancel">
+                        Cancel
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</template>
+
+
+
+
+
