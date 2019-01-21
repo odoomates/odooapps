@@ -17,7 +17,7 @@
     ],
     'data': [
     ],
-    'images': ['static/description/banner.jpg'],
+    'images': ['static/description/banner.png'],
     'demo': [],
     'test': [],
     'installable': True,
