@@ -9,8 +9,6 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'price': 15.00,
-    'currency': 'EUR',
     'website': "",
     'depends': ['point_of_sale', 'pos_longpolling'],
     'data': [
@@ -20,7 +18,7 @@
     'qweb': [
         "static/src/xml/pos_orders.xml",
     ],
-    'license': 'OPL-1',
+    'license': 'LGPL-3',
     'installable': True,
     'auto_install': False,
     'application': False,
