@@ -13,6 +13,7 @@
     'support': 'odoomates@gmail.com',
     'website': '',
     'depends': ['account'],
+    'live_test_url': 'https://www.youtube.com/watch?v=Qu6R3yNKR60',
     'demo': [],
     'data': [
         'security/ir.model.access.csv',
