@@ -5,6 +5,7 @@
     'summary': """Previous Orders in POS Screen""",
     'description': """Orders in pos screen""",
     'category': 'Point of Sale',
+    'live_test_url': 'https://www.youtube.com/watch?v=JUp0BtWuEGg',
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
