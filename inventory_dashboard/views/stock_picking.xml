@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data>
+        <record id="stock_picking_type_kanban" model="ir.ui.view">
+            <field name="name">stock.picking.type.kanban</field>
+            <field name="model">stock.picking.type</field>
+            <field name="inherit_id" ref="stock.stock_picking_type_kanban"/>
+            <field name="arch" type="xml">
+                <field name="count_picking_ready" position="before">
+                    <field name="picking_late"/>
+                    <field name="picking_backorders"/>
+                    <field name="max_rate"/>
+                </field>
+                <xpath expr="//div" position="inside">
+                    <div class="row">
+                        <div class="col-xs-6 o_kanban_primary_left">
+                            <field name="picking_late" widget="gauge"
+                                   options="{'max_field': 'max_rate'}">
+                            </field>
+                        </div>
+                        <div class="col-xs-6 o_kanban_primary_right">
+                            <field name="picking_backorders" widget="gauge"
+                                   options="{'max_field': 'max_rate'}">
+                            </field>
+                        </div>
+                    </div>
+                </xpath>
+            </field>
+        </record>
+    </data>
+
+</odoo>
