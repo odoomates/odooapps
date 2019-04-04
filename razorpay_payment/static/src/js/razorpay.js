@@ -1,11 +1,11 @@
-odoo.define('payment_razorpay.razorpay', function(require) {
+odoo.define('razorpay_payment.razorpay', function(require) {
     "use strict";
 
     var ajax = require('web.ajax');
     var core = require('web.core');
     var _t = core._t;
     var qweb = core.qweb;
-    ajax.loadXML('/payment_razorpay/static/src/xml/payment_razorpay_templates.xml', qweb);
+    ajax.loadXML('/razorpay_payment/static/src/xml/payment_razorpay_templates.xml', qweb);
 
     require('web.dom_ready');
     if (!$('.o_payment_form').length) {
