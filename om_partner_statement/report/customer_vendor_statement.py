@@ -9,7 +9,7 @@ from odoo import api, fields, models
 class CustomerVendorStatement(models.AbstractModel):
     """Model of Customer Activity Statement"""
 
-    _name = 'report.customer_vendor_statement.statement'
+    _name = 'report.om_partner_statement.statement'
 
     def _format_date_to_partner_lang(self, str_date, partner_id):
         lang_code = self.env['res.partner'].browse(partner_id).lang

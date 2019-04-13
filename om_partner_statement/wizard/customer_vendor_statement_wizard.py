@@ -57,4 +57,4 @@ class CustomervendorStatementWizard(models.TransientModel):
         data = self.read(['date_start', 'date_end', 'report_type', 'show_aging_buckets', 'filter_partners_non_due'])[0]
         data.update({'partner_ids': self._context['active_ids']})
         data.update({'company_id': self.company_id.id})
-        return self.env.ref('customer_vendor_statement.action_print_customer_vendor_statement').report_action(self, data=data)
+        return self.env.ref('om_partner_statement.action_print_customer_vendor_statement').report_action(self, data=data)
