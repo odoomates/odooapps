@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_project_kanban_search_panel" model="ir.ui.view">
+            <field name="name">project.project</field>
+            <field name="model">project.project</field>
+            <field name="inherit_id" ref="project.view_project_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//templates">
+                     <searchpanel>
+                         <field name="company_id" groups="base.group_multi_company" icon="fa-building"/>
+                         <field name="user_id"/>
+                         <field name="partner_id"/>
+                     </searchpanel>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="view_task_kanban_search_panel" model="ir.ui.view">
+            <field name="name">project.task</field>
+            <field name="model">project.task</field>
+            <field name="inherit_id" ref="project.view_task_kanban"/>
+            <field name="arch" type="xml">
+                <xpath expr="//templates">
+                     <searchpanel>
+                         <field name="company_id" groups="base.group_multi_company" icon="fa-building"/>
+                         <field name="project_id"/>
+                         <field name="stage_id"/>
+                         <field name="user_id"/>
+                     </searchpanel>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
