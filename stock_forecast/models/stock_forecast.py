@@ -189,7 +189,7 @@ class ReportStockForecast(models.Model):
         orderby = 'date, id' if not orderby else orderby
         if 'cumulative_quantity' in fields and 'quantity' not in fields:
             fields.append('quantity')
-        res = super(ReportStockForecat, self).read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
+        res = super(ReportStockForecast, self).read_group(domain, fields, groupby, offset=offset, limit=limit, orderby=orderby, lazy=lazy)
         total_cumulative_quantity = 0
         cumulative_quantity_by_products = {}
         if 'cumulative_quantity' in fields:

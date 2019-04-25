@@ -2,7 +2,7 @@
 
 {
     'name': 'Inventory Forecast',
-    'version': '12.0.1.0.0',
+    'version': '12.0.1.0.1',
     'summary': 'Inventory Forecast Analysis',
     'author': 'Odoo Mates, Odoo SA',
     'company': 'Odoo Mates',
