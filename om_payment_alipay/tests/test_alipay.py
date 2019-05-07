@@ -9,7 +9,7 @@ import odoo
 from odoo.tools import mute_logger
 from odoo.addons.payment.models.payment_acquirer import ValidationError
 from odoo.addons.payment.tests.common import PaymentAcquirerCommon
-from odoo.addons.payment_alipay.controllers.main import AlipayController
+from odoo.addons.om_payment_alipay.controllers.main import AlipayController
 
 @odoo.tests.tagged('post_install', '-at_install', 'external', '-standard')
 class AlipayTest(PaymentAcquirerCommon):
@@ -98,7 +98,7 @@ class AlipayTest(PaymentAcquirerCommon):
             if form_input.get('name') in ['total_fee']:
                 self.assertEqual(form_input.get('value'), '14.07', 'alipay: wrong computed fees')  # total amount = amount + fees
 
-    @mute_logger('odoo.addons.payment_alipay.models.payment', 'ValidationError')
+    @mute_logger('odoo.addons.om_payment_alipay.models.payment', 'ValidationError')
     def test_20_alipay_form_management(self):
         self.alipay.alipay_payment_method = 'standard_checkout'
         self._test_20_alipay_form_management()
@@ -171,7 +171,7 @@ class AlipayTest(PaymentAcquirerCommon):
         self.assertEqual(tx.state, 'done', 'alipay: wrong state after receiving a valid pending notification')
         self.assertEqual(tx.acquirer_reference, '2017112321001003690200384552', 'alipay: wrong txn_id after receiving a valid pending notification')
 
-    @mute_logger('odoo.addons.payment_alipay.models.payment', 'ValidationError')
+    @mute_logger('odoo.addons.om_payment_alipay.models.payment', 'ValidationError')
     def test_30_alipay_bad_configuration(self):
         self.alipay.alipay_payment_method = 'express_checkout'
 
