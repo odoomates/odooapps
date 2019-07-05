@@ -26,8 +26,5 @@
     ],
     'qweb': [
         "static/src/xml/account_asset_template.xml",
-    ],
-    'installable': True,
-    'application': False,
-    'auto_install': False,
+    ], 
 }
