@@ -17,4 +17,7 @@
     ],
     "images": ['static/description/banner.gif'],
     'demo': ['data/account_budget_demo.xml'],
+    'installable': True,
+    'application': False,
+    'auto_install': False,
 }
