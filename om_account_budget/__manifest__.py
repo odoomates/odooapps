@@ -16,5 +16,5 @@
         'views/res_config_settings_views.xml',
     ],
     "images": ['static/description/banner.gif'],
-    'demo': ['data/account_budget_demo.xml'],   
+    'demo': ['data/account_budget_demo.xml'],
 }
