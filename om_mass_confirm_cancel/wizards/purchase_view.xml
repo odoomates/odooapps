@@ -1,0 +1,51 @@
+<odoo>
+    <data>
+
+        <record id="purchase_order_confirm_view" model="ir.ui.view">
+            <field name="name">purchase.order.confirm.form</field>
+            <field name="model">purchase.order.confirm</field>
+            <field name="arch" type="xml">
+                <form string="Confirm Purchase">
+                    <p class="oe_grey">
+                        Only Record's of the state RFQ and RFQ Sent will get Confirmed.
+                        Others will get skipped
+                    </p>
+                    <footer>
+                        <button string="Confirm" name="purchase_confirm" type="object" default_focus="1" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_purchase_confirm"
+            name="Confirm RFQ"
+            view_id="purchase_order_confirm_view"
+            res_model="purchase.order.confirm" binding_model="purchase.order"
+            view_mode="form" target="new"/>
+
+        <record id="purchase_order_cancel_view" model="ir.ui.view">
+            <field name="name">purchase.order.confirm.form</field>
+            <field name="model">purchase.order.confirm</field>
+            <field name="arch" type="xml">
+                <form string="Cancel Purchase">
+                    <p class="oe_grey">
+                        Are you sure you want to cancel the selected records?
+                    </p>
+                    <footer>
+                        <button string="Confirm" name="purchase_cancel" type="object" default_focus="1" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_purchase_cancel"
+            name="Cancel RFQ"
+            view_id="purchase_order_cancel_view"
+            res_model="purchase.order.confirm" binding_model="purchase.order"
+            view_mode="form" target="new"/>
+
+
+    </data>
+</odoo>

@@ -1,0 +1,50 @@
+<odoo>
+    <data>
+
+        <record id="sale_order_confirm_view" model="ir.ui.view">
+            <field name="name">sale.order.confirm.form</field>
+            <field name="model">sale.order.confirm</field>
+            <field name="arch" type="xml">
+                <form string="Confirm Sale">
+                    <p class="oe_grey">
+                        Only records of state Quotation and Quotation Sent will be Confirmed.
+                        Other will get skipped
+                    </p>
+                    <footer>
+                        <button string="Confirm" name="sale_confirm" type="object" default_focus="1" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_sale_confirm"
+            name="Confirm Quotation"
+            view_id="sale_order_confirm_view"
+            res_model="sale.order.confirm" binding_model="sale.order"
+            view_mode="form" target="new"/>
+
+        <record id="sale_order_cancel_view" model="ir.ui.view">
+            <field name="name">sale.order.confirm.form</field>
+            <field name="model">sale.order.confirm</field>
+            <field name="arch" type="xml">
+                <form string="Cancel Sale/Quotation">
+                    <p class="oe_grey">
+                        Are you sure you want to cancel the selected records?
+                    </p>
+                    <footer>
+                        <button string="Confirm" name="sale_cancel" type="object" default_focus="1" class="btn-primary"/>
+                        <button string="Cancel" class="btn-default" special="cancel"/>
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+        <act_window id="action_sale_cancel"
+            name="Cancel Sale/Quotation"
+            view_id="sale_order_cancel_view"
+            res_model="sale.order.confirm" binding_model="sale.order"
+            view_mode="form" target="new"/>
+
+    </data>
+</odoo>
