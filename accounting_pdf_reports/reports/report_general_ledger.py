@@ -105,7 +105,6 @@ class ReportGeneralLedger(models.AbstractModel):
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
                 account_res.append(res)
-        print("account_res", account_res)
         return account_res
 
     @api.model
@@ -125,7 +124,6 @@ class ReportGeneralLedger(models.AbstractModel):
 
         accounts = docs if self.model == 'account.account' else self.env['account.account'].search([])
         accounts_res = self.with_context(data['form'].get('used_context',{}))._get_account_move_entry(accounts, init_balance, sortby, display_account)
-        print("accounts_res", accounts_res)
         return {
             'doc_ids': docids,
             'doc_model': self.model,
