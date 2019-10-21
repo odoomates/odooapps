@@ -10,6 +10,7 @@
     'summary': 'Odoo 13 Assets Management',
     'category': 'Accounting',
     'sequence': 32,
+    'license': 'LGPL-3',
     'images': ['static/description/assets.gif'],
     'data': [
         'security/account_asset_security.xml',
