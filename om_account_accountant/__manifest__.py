@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Odoo13 Accounting',
+    'name': 'Odoo 13 Accounting',
     'version': '13.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo13 Community Edition',
