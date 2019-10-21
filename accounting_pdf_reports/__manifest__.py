@@ -8,6 +8,7 @@
     'summary': 'Accounting Reports For Odoo 13',
     'sequence': '10',
     'author': 'Odoo Mates, Odoo SA',
+    'license': 'LGPL-3',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
