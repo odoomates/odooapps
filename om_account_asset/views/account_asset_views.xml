@@ -175,7 +175,8 @@
                             <field name="value" widget="monetary" options="{'currency_field': 'currency_id'}" help="Gross value of asset"/>
                             <field name="salvage_value" widget="monetary" options="{'currency_field': 'currency_id'}" attrs="{'invisible': [('type','=','sale')]}"/>
                             <field name="value_residual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
-                            <field name="partner_id" string="Vendor" domain="[('supplier', '=', True)]"/>
+                            <field name="partner_id" string="Vendor" widget="res_partner_many2one"
+                                   context="{'res_partner_search_mode': 'supplier'}"/>
                             <field name="invoice_id" string="Invoice" options="{'no_create': True}"/>
                             <field name="analytic_tag_ids" groups="analytic.group_analytic_accounting" widget="many2many_tags"/>
                         </group>
