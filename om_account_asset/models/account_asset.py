@@ -354,18 +354,17 @@ class AccountAssetAsset(models.Model):
         # Fallback, as if we just clicked on the smartbutton
         return self.open_entries()
 
-    
     def set_to_draft(self):
         self.write({'state': 'draft'})
 
-
     @api.depends('value', 'salvage_value', 'depreciation_line_ids.move_check', 'depreciation_line_ids.amount')
     def _amount_residual(self):
-        total_amount = 0.0
-        for line in self.depreciation_line_ids:
-            if line.move_check:
-                total_amount += line.amount
-        self.value_residual = self.value - total_amount - self.salvage_value
+        for rec in self:
+            total_amount = 0.0
+            for line in rec.depreciation_line_ids:
+                if line.move_check:
+                    total_amount += line.amount
+            rec.value_residual = rec.value - total_amount - rec.salvage_value
 
     @api.onchange('company_id')
     def onchange_company_id(self):
