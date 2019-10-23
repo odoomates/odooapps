@@ -91,11 +91,10 @@ class ReportFinancial(models.AbstractModel):
                 if report_acc:
                     for account_id, val in comparison_res[report_id].get('account').items():
                         report_acc[account_id]['comp_bal'] = val['balance']
-
         for report in child_reports:
             vals = {
                 'name': report.name,
-                'balance': res[report.id]['balance'] * report.sign,
+                'balance': res[report.id]['balance'] * float(report.sign),
                 'type': 'report',
                 'level': bool(report.style_overwrite) and report.style_overwrite or report.level,
                 'account_type': report.type or False, #used to underline the financial report balances
@@ -105,13 +104,12 @@ class ReportFinancial(models.AbstractModel):
                 vals['credit'] = res[report.id]['credit']
 
             if data['enable_filter']:
-                vals['balance_cmp'] = res[report.id]['comp_bal'] * report.sign
+                vals['balance_cmp'] = res[report.id]['comp_bal'] * float(report.sign)
 
             lines.append(vals)
             if report.display_detail == 'no_detail':
                 #the rest of the loop is used to display the details of the financial report, so it's not needed here.
                 continue
-
             if res[report.id].get('account'):
                 sub_lines = []
                 for account_id, value in res[report.id]['account'].items():
@@ -122,7 +120,7 @@ class ReportFinancial(models.AbstractModel):
                     account = self.env['account.account'].browse(account_id)
                     vals = {
                         'name': account.code + ' ' + account.name,
-                        'balance': value['balance'] * report.sign or 0.0,
+                        'balance': value['balance'] * float(report.sign) or 0.0,
                         'type': 'account',
                         'level': report.display_detail == 'detail_with_hierarchy' and 4,
                         'account_type': account.internal_type,
@@ -135,12 +133,13 @@ class ReportFinancial(models.AbstractModel):
                     if not account.company_id.currency_id.is_zero(vals['balance']):
                         flag = True
                     if data['enable_filter']:
-                        vals['balance_cmp'] = value['comp_bal'] * report.sign
+                        vals['balance_cmp'] = value['comp_bal'] * float(report.sign)
                         if not account.company_id.currency_id.is_zero(vals['balance_cmp']):
                             flag = True
                     if flag:
                         sub_lines.append(vals)
                 lines += sorted(sub_lines, key=lambda sub_line: sub_line['name'])
+        print("lines", lines)
         return lines
 
     @api.model
