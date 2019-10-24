@@ -59,10 +59,10 @@ class AccountInvoiceLine(models.Model):
             if cat.method_number == 0 or cat.method_period == 0:
                 raise UserError(_('The number of depreciations or the period length of your asset category cannot be 0.'))
             months = cat.method_number * cat.method_period
-            if self.invoice_id.type in ['out_invoice', 'out_refund']:
+            if self.move_id.type in ['out_invoice', 'out_refund']:
                 self.asset_mrr = self.price_subtotal_signed / months
-            if self.invoice_id.date_invoice:
-                start_date = self.invoice_id.date_invoice.replace(day=1)
+            if self.move_id.date_invoice:
+                start_date = self.move_id.date_invoice.replace(day=1)
                 end_date = (start_date + relativedelta(months=months, days=-1))
                 self.asset_start_date = start_date
                 self.asset_end_date = end_date
@@ -72,14 +72,14 @@ class AccountInvoiceLine(models.Model):
         if self.asset_category_id:
             vals = {
                 'name': self.name,
-                'code': self.invoice_id.number or False,
+                'code': self.move_id.number or False,
                 'category_id': self.asset_category_id.id,
                 'value': self.price_subtotal_signed,
-                'partner_id': self.invoice_id.partner_id.id,
-                'company_id': self.invoice_id.company_id.id,
-                'currency_id': self.invoice_id.company_currency_id.id,
-                'date': self.invoice_id.date_invoice,
-                'invoice_id': self.invoice_id.id,
+                'partner_id': self.move_id.partner_id.id,
+                'company_id': self.move_id.company_id.id,
+                'currency_id': self.move_id.company_currency_id.id,
+                'date': self.move_id.date_invoice,
+                'invoice_id': self.move_id.id,
             }
             changed_vals = self.env['account.asset.asset'].onchange_category_id_values(vals['category_id'])
             vals.update(changed_vals['value'])
@@ -90,9 +90,9 @@ class AccountInvoiceLine(models.Model):
 
     @api.onchange('asset_category_id')
     def onchange_asset_category_id(self):
-        if self.invoice_id.type == 'out_invoice' and self.asset_category_id:
+        if self.move_id.type == 'out_invoice' and self.asset_category_id:
             self.account_id = self.asset_category_id.account_asset_id.id
-        elif self.invoice_id.type == 'in_invoice' and self.asset_category_id:
+        elif self.move_id.type == 'in_invoice' and self.asset_category_id:
             self.account_id = self.asset_category_id.account_asset_id.id
 
     @api.onchange('uom_id')
@@ -105,9 +105,9 @@ class AccountInvoiceLine(models.Model):
     def _onchange_product_id(self):
         vals = super(AccountInvoiceLine, self)._onchange_product_id()
         if self.product_id:
-            if self.invoice_id.type == 'out_invoice':
+            if self.move_id.type == 'out_invoice':
                 self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id
-            elif self.invoice_id.type == 'in_invoice':
+            elif self.move_id.type == 'in_invoice':
                 self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id
         return vals
 
