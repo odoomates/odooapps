@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--How To Define Tree and Form View In Odoo-->
+    <!-- https://www.youtube.com/watch?v=3JMEroi4DIk&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=4 -->
+
+    <!--tree view of the appointment model-->
+    <record id="appointment_tree" model="ir.ui.view">
+        <field name="name">hospital.appointment.tree</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <tree string="Appointments">
+                <field name="name"/>
+                <field name="patient_id"/>
+                <field name="patient_age" avg="Average Of Ages"/>
+                <field name="appointment_date"/>
+            </tree>
+        </field>
+     </record>
+
+    <!--form view of the appointment model-->
+    <record id="appointment_form" model="ir.ui.view">
+        <field name="name">hospital.appointment.form</field>
+        <field name="model">hospital.appointment</field>
+        <field name="arch" type="xml">
+            <form string="Appointments">
+                <header>
+                    <button name="delete_lines" type="object" string="Delete" class="oe_highlight"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
+                </header>
+                <sheet>
+                     <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="patient_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                            <field name="patient_age"/>
+                        </group>
+                        <group>
+                            <field name="appointment_date"/>
+                            <field name="appointment_datetime"/>
+                            <field name="partner_id"/>
+                            <field name="order_id"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="notes"/>
+                    </group>
+                    <notebook>
+                        <page string="Doctor Prescription">
+                           <field name="appointment_lines">
+                               <tree editable="bottom">
+                                   <field name="product_id"/>
+                                   <field name="product_qty"/>
+                                   <field name="appointment_id" invisible="1"/>
+                               </tree>
+                               <form>
+                                   <group>
+                                       <group>
+                                           <field name="product_id"/>
+                                       </group>
+                                       <group>
+                                           <field name="product_qty"/>
+                                       </group>
+                                   </group>
+                               </form>
+                           </field>
+                        </page>
+                        <page string="Pharmacy">
+                             <field name="pharmacy_note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids" widget="mail_followers"/>
+                    <field name="activity_ids" widget="mail_activity"/>
+                    <field name="message_ids" widget="mail_thread" options="{'post_refresh': 'recipients'}"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!--How to Create New Menu, Action and Views-->
+    <!-- https://www.youtube.com/watch?v=Tdg4YQowXyI&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=3  -->
+
+    <!--action of the appointment menu-->
+    <record id="action_appointment" model="ir.actions.act_window">
+        <field name="name">Appointments</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hospital.appointment</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+            Create your First Appointment !
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="hospital_appointment" name="Appointments" parent="hospital_root"
+              action="action_appointment" sequence="30"/>
+
+
+
+    <!--adding action to action button-->
+    <record id="action_patient_appointments" model="ir.actions.act_window">
+        <field name="name">Appointments</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">hospital.appointment</field>
+        <field name="domain">[('patient_id', '=', active_id)]</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="om_hospital.appointment_tree"/>
+        <field name="binding_model_id" ref="model_hospital_patient"/>
+    </record>
+
+</odoo>
+
