@@ -8,7 +8,7 @@ class CreateAppointment(models.TransientModel):
     _description = 'Create Appointment Wizard'
 
     patient_id = fields.Many2one('hospital.patient', string="Patient")
-    appoinr_date = fields.Date(string="Appointment Date")
+    appointment_date = fields.Date(string="Appointment Date")
 
     # Create Record From Code
     # https://www.youtube.com/watch?v=Jssb15ADeyg&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=40
