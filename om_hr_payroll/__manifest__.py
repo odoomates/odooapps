@@ -2,12 +2,12 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Odoo13 Payroll',
+    'name': 'Odoo 13 Payroll',
     'category': 'Human Resources',
     'version': '13.0.1.0.0',
     'sequence': 38,
     'author': 'Odoo Mates, Odoo SA',
-    'summary': 'Manage your employee payroll records',
+    'summary': 'Payroll For Odoo 13 Community Edition',
     'description': "",
     'depends': [
         'hr_contract',
