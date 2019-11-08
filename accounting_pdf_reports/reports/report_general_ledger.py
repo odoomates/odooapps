@@ -6,7 +6,7 @@ from odoo.exceptions import UserError
 
 
 class ReportGeneralLedger(models.AbstractModel):
-    _name = 'report.accounting_pdf_reports.report_generalledger'
+    _name = 'report.accounting_pdf_reports.report_general_ledger'
 
     def _get_account_move_entry(self, accounts, init_balance, sortby, display_account):
         """
