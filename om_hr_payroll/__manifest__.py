@@ -3,8 +3,8 @@
 
 {
     'name': 'Odoo13 Payroll',
-    'version': '13.0.1.0.0',
     'category': 'Human Resources',
+    'version': '13.0.1.0.0',
     'sequence': 38,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Manage your employee payroll records',
