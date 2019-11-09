@@ -32,6 +32,7 @@ var ServiceChargeButton = screens.ActionButtonWidget.extend({
         }
     },
     apply_service_charge: function(pc) {
+        var service_charge_tax_calculation = this.pos.config.service_charge_tax_calculation;
         var order    = this.pos.get_order();
         var service_amount_type = this.pos.config.service_charge_type;
         var lines    = order.get_orderlines();
@@ -59,7 +60,11 @@ var ServiceChargeButton = screens.ActionButtonWidget.extend({
             var service_charge = pc;
         }
         if (service_amount_type == 'percentage'){
-            var service_charge =  pc / 100.0 * order.get_total_with_tax();
+            if (service_charge_tax_calculation) {
+                var service_charge =  pc / 100.0 * order.get_total_with_tax();
+            } else {
+                var service_charge =  pc / 100.0 * order.get_total_without_tax();
+            }
         }
 
         if( service_charge > 0 ){
