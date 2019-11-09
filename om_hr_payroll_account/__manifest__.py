@@ -18,4 +18,5 @@ Generic Payroll system Integrated with Accounting.
     'data': ['views/hr_payroll_account_views.xml'],
     'demo': ['data/hr_payroll_account_demo.xml'],
     'test': ['../account/test/account_minimal_test.xml'],
+    'images': ['static/description/banner.png'],
 }
