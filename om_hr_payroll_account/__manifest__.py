@@ -1,10 +1,11 @@
 #-*- coding:utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
+
 {
-    'name': 'Odoo13 Payroll Accounting',
-    'version': '13.0.1.0.0',
+    'name': 'Odoo 13 Payroll Accounting',
     'category': 'Human Resources',
     'author': 'Odoo Mates, Odoo SA',
+    'version': '13.0.1.0.0',
     'description': """
 Generic Payroll system Integrated with Accounting.
 ==================================================
