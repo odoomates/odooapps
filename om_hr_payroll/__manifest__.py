@@ -30,5 +30,5 @@
         'views/report_payslip_templates.xml',
         'views/report_payslipdetails_templates.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.giff'],
 }
