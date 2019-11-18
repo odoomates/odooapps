@@ -3,10 +3,11 @@
 
 {
     'name': 'Odoo 13 Assets Management',
+    'version': '13.0.1.0.1',
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['account'],
     'description': """Manage assets owned by a company or a person. 
-    Keeps track of depreciations, and creates corresponding journal entries""",
+    Keeps track of depreciation's, and creates corresponding journal entries""",
     'summary': 'Odoo 13 Assets Management',
     'category': 'Accounting',
     'sequence': 32,

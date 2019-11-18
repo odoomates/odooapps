@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
+
 
 class AccountInvoice(models.Model):
     _inherit = 'account.move'
@@ -19,23 +19,18 @@ class AccountInvoice(models.Model):
                     break
         return result
 
-    
     def action_cancel(self):
         res = super(AccountInvoice, self).action_cancel()
         self.env['account.asset.asset'].sudo().search([('invoice_id', 'in', self.ids)]).write({'active': False})
         return res
 
-    
-    def action_move_create(self):
-        result = super(AccountInvoice, self).action_move_create()
+    def action_post(self):
+        result = super(AccountInvoice, self).action_post()
         for inv in self:
             context = dict(self.env.context)
-            # Within the context of an invoice,
-            # this default value is for the type of the invoice, not the type of the asset.
-            # This has to be cleaned from the context before creating the asset,
-            # otherwise it tries to create the asset with the type of the invoice.
             context.pop('default_type', None)
-            inv.invoice_line_ids.with_context(context).asset_create()
+            for mv_line in inv.invoice_line_ids:
+                mv_line.with_context(context).asset_create()
         return result
 
 
@@ -48,37 +43,37 @@ class AccountInvoiceLine(models.Model):
     asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
                              digits="Account", store=True)
 
-
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
-        self.asset_mrr = 0
-        self.asset_start_date = False
-        self.asset_end_date = False
-        cat = self.asset_category_id
-        if cat:
-            if cat.method_number == 0 or cat.method_period == 0:
-                raise UserError(_('The number of depreciations or the period length of your asset category cannot be 0.'))
-            months = cat.method_number * cat.method_period
-            if self.move_id.type in ['out_invoice', 'out_refund']:
-                self.asset_mrr = self.price_subtotal_signed / months
-            if self.move_id.date_invoice:
-                start_date = self.move_id.date_invoice.replace(day=1)
-                end_date = (start_date + relativedelta(months=months, days=-1))
-                self.asset_start_date = start_date
-                self.asset_end_date = end_date
-
+        for rec in self:
+            rec.asset_mrr = 0
+            rec.asset_start_date = False
+            rec.asset_end_date = False
+            cat = rec.asset_category_id
+            if cat:
+                if cat.method_number == 0 or cat.method_period == 0:
+                    raise UserError(_('The number of depreciations or the period length of '
+                                      'your asset category cannot be 0.'))
+                months = cat.method_number * cat.method_period
+                if rec.move_id.type in ['out_invoice', 'out_refund']:
+                    rec.asset_mrr = rec.price_subtotal / months
+                if rec.move_id.invoice_date:
+                    start_date = rec.move_id.invoice_date.replace(day=1)
+                    end_date = (start_date + relativedelta(months=months, days=-1))
+                    rec.asset_start_date = start_date
+                    rec.asset_end_date = end_date
 
     def asset_create(self):
         if self.asset_category_id:
             vals = {
                 'name': self.name,
-                'code': self.move_id.number or False,
+                'code': self.name or False,
                 'category_id': self.asset_category_id.id,
-                'value': self.price_subtotal_signed,
+                'value': self.price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
                 'company_id': self.move_id.company_id.id,
                 'currency_id': self.move_id.company_currency_id.id,
-                'date': self.move_id.date_invoice,
+                'date': self.move_id.invoice_date,
                 'invoice_id': self.move_id.id,
             }
             changed_vals = self.env['account.asset.asset'].onchange_category_id_values(vals['category_id'])
