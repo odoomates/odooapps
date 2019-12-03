@@ -47,7 +47,6 @@ class ReportGeneralLedger(models.AbstractModel):
                 LEFT JOIN account_move m ON (l.move_id=m.id)\
                 LEFT JOIN res_currency c ON (l.currency_id=c.id)\
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)\
-                LEFT JOIN account_move i ON (m.id =i.move_id)\
                 JOIN account_journal j ON (l.journal_id=j.id)\
                 WHERE l.account_id IN %s""" + filters + ' GROUP BY l.account_id')
             params = (tuple(accounts.ids),) + tuple(init_where_params)
