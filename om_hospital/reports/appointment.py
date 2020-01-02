@@ -7,8 +7,6 @@ class AppointmentReport(models.AbstractModel):
 
     @api.model
     def _get_report_values(self, docids, data=None):
-        # print("kkk", docids, data['form']['patient_id'])
-        # print("kkk", docids, data['form']['appointment_date'])
         if data['form']['patient_id']:
             appointments = self.env['hospital.appointment'].search([('patient_id', '=', data['form']['patient_id'][0])])
         else:

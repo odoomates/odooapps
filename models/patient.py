@@ -25,12 +25,6 @@ class SaleOrderInherit(models.Model):
     patient_name = fields.Char(string='Patient Name')
 
 
-class ResPartner(models.Model):
-    _inherit = 'res.partner'
-
-    company_type = fields.Selection(selection_add=[('om', 'Odoo Mates'), ('odoodev', 'Odoo Dev')])
-
-
 # How to Create New Models : https://www.youtube.com/watch?v=L6MxDR71_1k&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=2
 class HospitalPatient(models.Model):
     _name = 'hospital.patient'
@@ -133,13 +127,6 @@ class HospitalPatient(models.Model):
         result = super(HospitalPatient, self).create(vals)
         return result
 
-    xml_id = fields.Char('External ID', compute='_compute_xml_id',)
-
-    def _compute_xml_id(self):
-        res = self.get_external_id()
-        for rec in self:
-            rec.xml_id = res.get(rec.id)
-
     name = fields.Char(string="Contact Number")
     name_seq = fields.Char(string='Patient ID', required=True, copy=False, readonly=True,
                            index=True, default=lambda self: _('New'))
@@ -152,8 +139,7 @@ class HospitalPatient(models.Model):
         ('minor', 'Minor'),
     ], string="Age Group", compute='set_age_group', store=True)
     patient_name = fields.Char(string='Name', required=True,  track_visibility="always")
-    patient_age = fields.Integer('Age', track_visibility="always", group_operator=False)
-    patient_age2 = fields.Float(string="Age2")
+    patient_age = fields.Integer('Age', track_visibility="always")
     notes = fields.Text(string="Registration Note")
     image = fields.Binary(string="Image", attachment=True)
     appointment_count = fields.Integer(string='Appointment', compute='get_appointment_count')

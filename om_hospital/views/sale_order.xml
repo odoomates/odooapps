@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--inherit and add fields to sale order-->
+    <record id="sale_order_inherit" model="ir.ui.view">
+        <field name="name">sale.order.inherit</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="patient_name"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="sale.action_orders" model="ir.actions.act_window">
+        <field name="name">Appointment</field>
+    </record>
+
+    <!--First method suggested-->
+    <record id="sale.menu_sale_quotations" model="ir.ui.menu">
+        <field name="name">New Quotation</field>
+        <field name="sequence">100</field>
+    </record>
+
+    <!--second method-->
+    <menuitem id="sale.menu_sale_order"
+            name="New Orders"
+            action="sale.action_orders"
+            parent="sale.sale_order_menu"
+            sequence="2" groups="sales_team.group_sale_salesman"/>
+
+
+
+</odoo>
