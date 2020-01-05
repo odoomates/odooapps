@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 13 Assets Management',
-    'version': '13.0.1.0.1',
+    'version': '13.0.1.1.0',
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['account'],
     'description': """Manage assets owned by a company or a person. 

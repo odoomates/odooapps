@@ -3,11 +3,12 @@
 
 {
     'name': 'Odoo 13 Accounting',
-    'version': '13.0.1.0.0',
+    'version': '13.0.1.0.1',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo13 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
     'sequence': '8',
+    'website': 'https://www.youtube.com/channel/UCVKlUZP7HAhdQgs-9iTJklQ?sub_confirmation=1',
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
@@ -21,6 +22,6 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'images': ['static/description/banner.gif'],
+    'images': ['static/description/banner.png'],
     'qweb': [],
 }
