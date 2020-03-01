@@ -29,6 +29,7 @@
     'website': "",
     'depends': ['project'],
     'data': [
+        'security/ir.model.access.csv',
         'views/project_task_view.xml',
         'views/task_checklist_view.xml',
     ],
