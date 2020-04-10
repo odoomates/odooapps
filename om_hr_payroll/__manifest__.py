@@ -4,8 +4,8 @@
 {
     'name': 'Odoo 13 Payroll',
     'category': 'Human Resources',
-    'version': '13.0.1.0.0',
-    'sequence': 38,
+    'version': '13.0.2.0.0',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 13 Community Edition',
     'description': "",
@@ -31,4 +31,5 @@
         'views/report_payslipdetails_templates.xml',
     ],
     'images': ['static/description/banner.gif'],
+    'application': True,
 }
