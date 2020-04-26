@@ -8,6 +8,10 @@ class PosConfig(models.Model):
 
     enable_service_charge = fields.Boolean(string='Service Charges')
     service_charge_tax_calculation = fields.Boolean(string='Include taxes for calculation?',required=True,default=True)
+    tax_return_type = fields.Many2one('account.tax', string='Tax Return Type')
+    tax_return_product_id = fields.Many2one('product.product', string='Tax Return Product',
+                                         domain="[('available_in_pos', '=', True),"
+                                                "('sale_ok', '=', True), ('type', '=', 'service')]")
     service_charge_type = fields.Selection([('amount', 'Amount'),
                                             ('percentage', 'Percentage')],
                                            string='Type', default='amount')
