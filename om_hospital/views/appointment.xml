@@ -9,7 +9,7 @@
         <field name="name">hospital.appointment.tree</field>
         <field name="model">hospital.appointment</field>
         <field name="arch" type="xml">
-            <tree decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
+            <tree banner_route="/om_hospital/appointments" decoration-info="state == 'draft'" decoration-muted="state == 'cancel'"
                   decoration-success="state == 'done'" decoration-danger="state == 'confirm'">
                 <field name="name"/>
                 <field name="patient_id"/>
@@ -17,6 +17,33 @@
                 <field name="appointment_date"/>
                 <field name="state"/>
             </tree>
+        </field>
+    </record>
+
+    <record id="appointment_timeline" model="ir.ui.view">
+        <field name="model">hospital.appointment</field>
+        <field name="type">timeline</field>
+        <field name="arch" type="xml">
+            <timeline date_start="appointment_date"
+                      date_stop="appointment_date_end"
+                      default_group_by="doctor_id"
+                      event_open_popup="true"
+                      colors="#ec7063: state == 'draft'; #2ecb71: state == 'done';">
+                <field name="patient_id"/>
+                <field name="name"/>
+                <templates>
+                    <t t-name="timeline-item">
+                        <div class="o_project_timeline_item">
+                            <span name="display_name">
+                                <t t-esc="record.display_name"/>
+                            </span>
+                            <small name="planned_hours" class="text-muted ml4">
+                                <t t-esc="record.notes"/>
+                            </small>
+                        </div>
+                    </t>
+                </templates>
+            </timeline>
         </field>
     </record>
 
@@ -58,12 +85,14 @@
         <field name="name">hospital.appointment.form</field>
         <field name="model">hospital.appointment</field>
         <field name="arch" type="xml">
-            <form string="Appointments">
+            <form string="Appointments" banner_route="/om_hospital/appointments">
                 <header>
                     <button name="action_confirm" type="object" string="Confirm" class="oe_highlight" states="draft"/>
+                    <button name="action_notify" type="object" string="Notify" class="oe_highlight" states="draft"/>
                     <button name="action_done" type="object" string="Done" class="oe_highlight"
                             attrs="{'invisible': [('state','!=', 'confirm')]}"/>
                     <button name="delete_lines" type="object" string="Delete" class="oe_highlight"/>
+                    <button name="test_recordset" type="object" string="Record Set Operations" class="oe_highlight"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,confirm,done"/>
                 </header>
                 <sheet>
@@ -76,14 +105,17 @@
                         <group>
                             <field name="patient_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
                             <field name="doctor_id" options="{'no_create': True, 'no_create_edit': True, 'no_open': True}"/>
+                            <field name="doctor_ids" widget="many2many_tags"/>
                             <field name="patient_age"/>
                             <field name="amount"/>
                         </group>
                         <group>
-                            <field name="appointment_date" options='{"datepicker": {"daysOfWeekDisabled": [0, 5, 6]}}'/>
+                            <field name="appointment_date" options='{"datepicker": {"daysOfWeekDisabled": [0, 6]}}'/>
+                            <field name="appointment_date_end" />
                             <field name="appointment_datetime"/>
                             <field name="partner_id"/>
                             <field name="order_id"/>
+                            <field name="product_id"/>
                         </group>
                     </group>
                     <group>
@@ -93,6 +125,7 @@
                         <page string="Doctor Prescription">
                            <field name="appointment_lines">
                                <tree editable="bottom">
+                                   <field name="sequence" widget="handle"/>
                                    <field name="product_id"/>
                                    <field name="product_qty"/>
                                    <field name="appointment_id" invisible="1"/>
@@ -132,7 +165,7 @@
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">hospital.appointment</field>
         <field name="view_type">form</field>
-        <field name="view_mode">calendar,tree,form,pivot,graph</field>
+        <field name="view_mode">calendar,tree,form,pivot,graph,timeline</field>
         <field name="context">{}</field>
         <field name="help" type="html">
           <p class="o_view_nocontent_smiling_face">

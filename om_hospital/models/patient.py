@@ -19,10 +19,18 @@ class ResPartners(models.Model):
 
 # Inheriting the Sale Order Model and Adding New Field
 # https://www.youtube.com/watch?v=z1Tx7EGkPy0&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=9
+
 class SaleOrderInherit(models.Model):
     _inherit = 'sale.order'
 
+    @api.multi
+    def action_confirm(self):
+        print("odoo mates")
+        res = super(SaleOrderInherit, self).action_confirm()
+        return res
+
     patient_name = fields.Char(string='Patient Name')
+    is_patient = fields.Boolean(string='Is Patient')
 
 
 class ResPartner(models.Model):
@@ -38,11 +46,39 @@ class HospitalPatient(models.Model):
     _description = 'Patient Record'
     _rec_name = 'patient_name'
 
+
+
+    @api.model
+    def get_config_value(self, config_name):
+        print("gggggggggggggggggggggggggggggggggggggggg", config_name)
+        config_value = self.env['ir.config_parameter'].sudo().get_param(config_name)
+        print("base_url", config_value)
+        return config_value
+
+
+
+    def action_patients(self):
+        print("Odoo Mates..............")
+        return {
+            'name': _('Patients Server Action'),
+            'domain': [],
+            'view_type': 'form',
+            'res_model': 'hospital.patient',
+            'view_id': False,
+            'view_mode': 'tree,form',
+            'type': 'ir.actions.act_window',
+        }
+
+
     # Print PDF Report From Button Click in Form
     # https://www.youtube.com/watch?v=Dc8GDj7ygsI&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=67
     @api.multi
     def print_report(self):
         return self.env.ref('om_hospital.report_patient_card').report_action(self)
+
+    @api.multi
+    def print_report_excel(self):
+        return self.env.ref('om_hospital.report_patient_card_xlx').report_action(self)
 
     # Function which is executed using the Cron Job/ Scheduled Action
     # https://www.youtube.com/watch?v=_P_AVSNr6uU&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=52

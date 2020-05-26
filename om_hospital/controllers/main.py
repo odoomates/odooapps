@@ -3,6 +3,22 @@ from odoo.http import request
 from odoo.addons.website_sale.controllers.main import WebsiteSale
 
 
+class AppointmentController(http.Controller):
+
+    @http.route('/om_hospital/appointments', auth='user', type='json')
+    def appointment_banner(self):
+        return {
+            'html': """
+                    <div>
+                        <link>
+                        <center><h1><font color="red">Subscribe the channel.......!</font></h1></center>
+                        <center>
+                        <p><font color="blue"><a href="https://www.youtube.com/channel/UCVKlUZP7HAhdQgs-9iTJklQ/videos">
+                            Get Notified Regarding All The Odoo Updates!</a></p>
+                            </font></div></center> """
+                                }
+
+
 class WebsiteSaleInherit(WebsiteSale):
 
     @http.route([
@@ -19,6 +35,43 @@ class WebsiteSaleInherit(WebsiteSale):
 
 class Hospital(http.Controller):
 
+    @http.route('/patient_webform', type="http", auth="public", website=True)
+    def patient_webform(self, **kw):
+        print("Execution Here.........................")
+        doctor_rec = request.env['hospital.doctor'].sudo().search([])
+        print("doctor_rec...", doctor_rec)
+        return http.request.render('om_hospital.create_patient', {'patient_name': 'Odoo Mates Test 123',
+                                                                  'doctor_rec': doctor_rec})
+
+    @http.route('/create/webpatient', type="http", auth="public", website=True)
+    def create_webpatient(self, **kw):
+        print("Data Received.....", kw)
+        request.env['hospital.patient'].sudo().create(kw)
+        # doctor_val = {
+        #     'name': kw.get('patient_name')
+        # }
+        # request.env['hospital.doctor'].sudo().create(doctor_val)
+        return request.render("om_hospital.patient_thanks", {})
+
+
+
+
+
+
+
+    # @http.route('/patient_webform', website=True, auth='user')
+    # def patient_webform(self):
+    #     return request.render("om_hospital.patient_webform", {})
+    #
+    # # Check and insert values from the form on the model <model>
+    # @http.route(['/create_web_patient'], type='http', auth="public", website=True)
+    # def patient_contact_create(self, **kwargs):
+    #     print("ccccccccccccc")
+    #     request.env['hospital.patient'].sudo().create(kwargs)
+    #     return request.render("om_hospital.patient_thanks", {})
+
+
+
     # Sample Controller Created
     @http.route('/hospital/patient/', website=True, auth='user')
     def hospital_patient(self, **kw):
@@ -28,6 +81,7 @@ class Hospital(http.Controller):
             'patients': patients
         })
 
+    # Sample Controller Created
     @http.route('/update_patient', type='json', auth='user')
     def update_patient(self, **rec):
         if request.jsonrequest:

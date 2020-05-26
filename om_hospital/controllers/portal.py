@@ -21,3 +21,4 @@ class CustomerPortal(CustomerPortal):
             'appointments': appointments,
         })
         return request.render("om_hospital.portal_my_appointments", values)
+
