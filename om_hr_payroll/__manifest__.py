@@ -4,7 +4,7 @@
 {
     'name': 'Odoo 13 Payroll',
     'category': 'Human Resources',
-    'version': '13.0.2.0.0',
+    'version': '13.0.2.1.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 13 Community Edition',
