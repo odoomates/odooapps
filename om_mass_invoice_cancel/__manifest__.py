@@ -10,7 +10,7 @@
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'website': '',
+	'website': 'http://odoomates.tech',
     'license': 'LGPL-3',
     'depends': [
         'account', 'account_cancel'

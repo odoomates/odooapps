@@ -24,6 +24,7 @@
     'category': 'Extra Tools',
     'license': 'AGPL-3',
     'author': 'Odoo Mates',
+    'website': 'http://odoomates.tech',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',

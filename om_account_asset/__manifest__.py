@@ -8,6 +8,7 @@
     'description': """Manage assets owned by a company or a person. 
     Keeps track of depreciations, and creates corresponding journal entries""",
     'summary': 'Odoo 12 Assets Management',
+    'website': 'http://odoomates.tech',	
     'category': 'Accounting',
     'sequence': 32,
     'images': ['static/description/assets.gif'],

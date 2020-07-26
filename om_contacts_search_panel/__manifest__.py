@@ -26,6 +26,7 @@
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
+    'website': 'http://odoomates.tech',
     'support': 'odoomates@gmail.com',
     'depends': ['muk_web_searchpanel', 'base'],
     'data': ["views/view.xml"],

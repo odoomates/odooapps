@@ -9,7 +9,7 @@
     'sequence': '10',
     'description': 'Open any customer or vendor form and click on action--> Customer / Vendor Statement',
     "author": "Odoo Mates, Abdallah Mohamed",
-    'website': '',
+    'website': 'http://odoomates.tech',
     'support': 'odoomates@gmail.com',
     'depends': [
         'account',

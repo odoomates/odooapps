@@ -8,6 +8,7 @@
     'description': """Alipay Payment Acquirer""",
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['payment'],
+    'website': 'http://odoomates.tech',
     'data': [
         'views/alipay_views.xml',
         'views/payment_alipay_templates.xml',

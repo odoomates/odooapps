@@ -23,6 +23,7 @@
     'version': '12.0.1.0.0',
     'category': 'Extra Tools',
     'license': 'AGPL-3',
+    'website': 'http://odoomates.tech',
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',

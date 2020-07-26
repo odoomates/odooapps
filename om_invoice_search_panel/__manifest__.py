@@ -25,6 +25,7 @@
     'license': 'AGPL-3',
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
+    'website': 'http://odoomates.tech',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'depends': ['muk_web_searchpanel', 'account'],
