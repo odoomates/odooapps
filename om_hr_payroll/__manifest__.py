@@ -9,6 +9,7 @@
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 13 Community Edition',
     'description': "",
+    'website': 'http://odoomates.tech',
     'depends': [
         'hr_contract',
         'hr_holidays',

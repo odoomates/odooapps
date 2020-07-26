@@ -9,6 +9,7 @@
     'author': 'Odoo Mates, Odoo SA',
     'description': """Razorpay Payment Acquirer""",
     'depends': ['payment'],
+    'website': 'http://odoomates.tech',
     'live_test_url': 'https://www.youtube.com/watch?v=Zg0EzM-ogQU',
     'application': True,
     'data': [

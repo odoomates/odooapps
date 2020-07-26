@@ -11,6 +11,7 @@
     'summary': 'Odoo 13 Assets Management',
     'category': 'Accounting',
     'sequence': 32,
+    'website': 'http://odoomates.tech',
     'license': 'LGPL-3',
     'images': ['static/description/assets.gif'],
     'data': [

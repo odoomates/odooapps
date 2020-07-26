@@ -6,6 +6,7 @@
     'category': 'Human Resources',
     'author': 'Odoo Mates, Odoo SA',
     'version': '13.0.1.0.0',
+    'website': 'http://odoomates.tech',
     'description': """
 Generic Payroll system Integrated with Accounting.
 ==================================================
