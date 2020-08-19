@@ -6,6 +6,7 @@
     'summary': 'Inventory Forecast Analysis',
     'author': 'Odoo Mates, Odoo SA',
     'company': 'Odoo Mates',
+    'website': 'http://odoomates.tech',
     'maintainer': 'Odoo Mates',
     'category': 'Inventory',
     'depends': ['stock'],

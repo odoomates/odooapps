@@ -8,6 +8,7 @@
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo12 Community Edition',
     'sequence': '8',
     'author': 'Odoo Mates, Odoo SA',
+    'website': 'http://odoomates.tech',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'website': '',

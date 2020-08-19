@@ -24,11 +24,13 @@
     'description': """Evaluate task completion on the basis of checklists""",
     'category': 'Project',
     'author': 'Odoo Mates',
+    'website': 'http://odoomates.tech',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'website': "",
     'depends': ['project'],
     'data': [
+        'security/ir.model.access.csv',
         'views/project_task_view.xml',
         'views/task_checklist_view.xml',
     ],

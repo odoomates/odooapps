@@ -7,6 +7,7 @@
     'category': 'Accounting',
     'description': """Use budgets to compare actual with expected revenues and costs""",
     'summary': 'Odoo 12 Budget Management',
+    'website': 'http://odoomates.tech',
     'depends': ['account'],
     'data': [
         'security/ir.model.access.csv',

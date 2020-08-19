@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <!-- wizard action on res.partner -->
+        <act_window id="customer_vendor_statement_wizard_action"
+            name="Customer / Vendor Statement"
+            src_model="res.partner"
+            res_model="customer.vendor.statement.wizard"
+            view_type="form" view_mode="form"
+            key2="client_action_multi" target="new"
+            groups="account.group_account_user"/>
+
+        <!-- wizard view -->
+        <record id="customer_vendor_statement_wizard_view" model="ir.ui.view">
+            <field name="name">Customer vendor Statement Wizard</field>
+            <field name="model">customer.vendor.statement.wizard</field>
+            <field name="arch" type="xml">
+                <form name="Report Options">
+                    <group name="main_info">
+                        <field name="company_id" options="{'no_create': True}" invisible="1"/>
+                        <field name="report_type"/>
+                    </group>
+                    <group name="dates">
+                        <field name="date_start"/>
+                        <field name="date_end"/>
+                    </group>
+                    <group name="aging_report">
+                        <field name="show_aging_buckets" invisible="1"/>
+                    </group>
+                    <group name="multiple_partners">
+                        <field name="number_partner_ids" readonly="1" invisible="1"/>
+                        <field name="filter_partners_non_due" invisible="1"/>
+                    </group>
+                    <footer>
+                        <button name="button_export_pdf" string="Print" type="object" default_focus="1" class="oe_highlight"/>
+                        or
+                        <button string="Cancel" class="oe_link" special="cancel" />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    </data>
+</odoo>

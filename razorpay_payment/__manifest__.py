@@ -7,6 +7,7 @@
     'summary': 'Payment Acquirer: Razorpay Implementation',
     'version': '1.0',
     'author': 'Odoo Mates, Odoo SA',
+    'website': 'http://odoomates.tech',
     'description': """Razorpay Payment Acquirer""",
     'depends': ['payment'],
     'live_test_url': 'https://www.youtube.com/watch?v=Zg0EzM-ogQU',

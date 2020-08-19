@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.sale</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="10"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="Hospital" string="Hospital" data-key="om_hospital">
+                    <h2>Hospital Management</h2>
+                    <group>
+                        <div class="row mt16 o_settings_container">
+                            <div class="o_setting_left_pane">
+                                <label for="note" string="Default Note"/>
+                                <field name="note"/>
+                            </div>
+                        </div>
+                    </group>
+                    <group>
+                        <div class="row mt16 o_settings_container">
+                            <div class="o_setting_left_pane">
+                                <label for="module_crm" string="Hospital CRM"/>
+                                <field name="module_crm"/>
+                            </div>
+                        </div>
+                    </group>
+                    <group>
+                        <div class="row mt16 o_settings_container">
+                            <div class="o_setting_left_pane">
+                                <label for="product_ids" string="Medicines"/>
+                                <field name="product_ids" widget="many2many_tags"/>
+                            </div>
+                        </div>
+                    </group>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_hospital_config_settings" model="ir.actions.act_window">
+        <field name="name">Hospital Settings</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form"/>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'om_hospital'}</field>
+    </record>
+
+    <menuitem id="menu_hospital_configuration"
+        name="Configuration"
+        parent="hospital_root"
+        sequence="100"/>
+
+    <menuitem id="menu_hospital_settings"
+        name="Settings"
+        parent="menu_hospital_configuration"
+        sequence="10"
+        action="action_hospital_config_settings"/>
+
+</odoo>

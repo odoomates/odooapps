@@ -9,6 +9,7 @@
     'sequence': '10',
     'author': 'Odoo Mates, Odoo SA',
     'company': 'Odoo Mates',
+    'website': 'http://odoomates.tech',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'website': '',
