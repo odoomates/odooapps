@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="account.menu_finance" name="Accounting"/>
+
+    <record id="actions_account_fiscal_year" model="ir.actions.act_window">
+        <field name="name">Fiscal Years</field>
+        <field name="res_model">account.fiscal.year</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">
+                Click here to create a new fiscal year.
+            </p>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.accountant</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@data-key='account']" position="attributes">
+                <attribute name="data-string">Accounting</attribute>
+                <attribute name="string">Accounting</attribute>
+            </xpath>
+            <div id="fiscalyear" position="replace">
+                <div class="col-12 col-lg-6" id="fiscalyear" style="padding-left: 0; padding-right: 0;">
+                    <div class="col-12 col-lg-12 o_setting_box">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Fiscal Year</span>
+                            <div class="content-group">
+                                <div class="row mt16">
+                                    <label for="fiscalyear_last_month" string="Last Day"
+                                           class="col-lg-3 o_light_label"/>
+                                    <field name="fiscalyear_last_month" style="width: 100px; margin-right: 8px;"/>
+                                    <field name="fiscalyear_last_day" class="oe_inline"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-lg-12 o_setting_box">
+                        <div class="o_setting_left_pane">
+                            <field name="group_fiscal_year"/>
+                        </div>
+                        <div class="o_setting_right_pane">
+                            <label for="group_fiscal_year"/>
+                            <div class="text-muted">
+                                Define fiscal years of more or less than one year
+                            </div>
+                            <div class="mt16">
+                                <button name="%(om_account_accountant.actions_account_fiscal_year)d" icon="fa-arrow-right"
+                                        type="action" string="Fiscal Years" class="btn-link"
+                                        attrs="{'invisible': [('group_fiscal_year', '=', False)]}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+
+</odoo>
