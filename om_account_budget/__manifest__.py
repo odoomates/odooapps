@@ -7,7 +7,7 @@
     'category': 'Accounting',
     'description': """Use budgets to compare actual with expected revenues and costs""",
     'summary': 'Odoo 14 Budget Management',
-    'website': 'http://odoomates.tech',
+    'website': 'https://www.odoomates.tech',
     'depends': ['account'],
     'license': 'LGPL-3',
     'data': [

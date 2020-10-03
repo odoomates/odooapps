@@ -8,7 +8,7 @@
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo14 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
     'sequence': '8',
-    'website': 'http://odoomates.tech',
+    'website': 'https://www.odoomates.tech',
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
