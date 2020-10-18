@@ -2,7 +2,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
-    'name': 'Odoo 14 Payroll',
+    'name': 'Odoo 14 HR Payroll',
     'category': 'Human Resources',
     'version': '14.0.2.1.0',
     'sequence': 1,

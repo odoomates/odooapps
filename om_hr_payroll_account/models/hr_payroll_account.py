@@ -74,9 +74,9 @@ class HrPayslip(models.Model):
                     continue
                 debit_account_id = line.salary_rule_id.account_debit.id
                 credit_account_id = line.salary_rule_id.account_credit.id
-                if not debit_account_id or not credit_account_id:
-                    raise UserError(_('Missing Debit Or Credit Account in salary rule: "%s" !') % (
-                        line.salary_rule_id))
+                # if not debit_account_id or not credit_account_id:
+                #     raise UserError(_('Missing Debit Or Credit Account in salary rule: "%s" !') % (
+                #         line.salary_rule_id))
                 if debit_account_id:
                     debit_line = (0, 0, {
                         'name': line.name,
