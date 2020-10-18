@@ -4,7 +4,7 @@
 {
     'name': 'Odoo 14 HR Payroll',
     'category': 'Human Resources',
-    'version': '14.0.2.1.0',
+    'version': '14.0.2.2.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 14 Community Edition',
