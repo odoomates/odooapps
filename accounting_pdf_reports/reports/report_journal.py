@@ -7,6 +7,7 @@ from odoo.exceptions import UserError
 
 class ReportJournal(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_journal'
+    _description = 'Journal Audit Report'
 
     def lines(self, target_move, journal_ids, sort_selection, data):
         if isinstance(journal_ids, int):

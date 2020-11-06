@@ -5,7 +5,7 @@ from odoo import models
 
 class AccountTaxReport(models.TransientModel):
     _inherit = "account.common.report"
-    _name = 'account.tax.report'
+    _name = 'account.tax.report.wizard'
     _description = 'Tax Report'
 
     def _print_report(self, data):

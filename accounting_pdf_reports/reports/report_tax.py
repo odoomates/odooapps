@@ -6,6 +6,8 @@ from odoo.exceptions import UserError
 
 class ReportTax(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_tax'
+    _description = 'Tax Report'
+
 
     @api.model
     def _get_report_values(self, docids, data=None):
