@@ -10,7 +10,7 @@
     Keeps track of depreciation's, and creates corresponding journal entries""",
     'summary': 'Odoo 14 Assets Management',
     'category': 'Accounting',
-    'sequence': 32,
+    'sequence': 10,
     'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
     'images': ['static/description/assets.gif'],

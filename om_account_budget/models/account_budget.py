@@ -22,7 +22,7 @@ class AccountBudgetPost(models.Model):
         # Raise an error to prevent the account.budget.post to have not specified account_ids.
         # This check is done on create because require=True doesn't work on Many2many fields.
         if 'account_ids' in vals:
-            account_ids = self.resolve_2many_commands('account_ids', vals['account_ids'])
+            account_ids = self.new({'account_ids': vals['account_ids']}, origin=self).account_ids
         else:
             account_ids = self.account_ids
         if not account_ids:
