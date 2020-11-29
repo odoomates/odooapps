@@ -5,7 +5,7 @@
     'name': 'Razorpay Payment Acquirer',
     'category': 'Accounting',
     'summary': 'Payment Acquirer: Razorpay Implementation',
-    'version': '1.0',
+    'version': '13.0.1.1.0',
     'author': 'Odoo Mates, Odoo SA',
     'description': """Razorpay Payment Acquirer""",
     'depends': ['payment'],

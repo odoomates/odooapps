@@ -30,6 +30,7 @@ class PaymentAcquirer(models.Model):
             'contact': values.get('partner_phone'),
             'email': values.get('partner_email'),
             'order_id': values.get('reference'),
+            'currency': currency.id,
         })
         return values
 
