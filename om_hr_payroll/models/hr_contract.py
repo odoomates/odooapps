@@ -48,7 +48,7 @@ class HrContract(models.Model):
                 contract[code] = 0.0
 
 
-class HrContractAdvandageTemplate(models.Model):
+class HrContractAdvantageTemplate(models.Model):
     _name = 'hr.contract.advantage.template'
     _description = "Employee's Advantage on Contract"
 

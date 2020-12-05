@@ -1,5 +1,4 @@
-#-*- coding:utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# -*- coding:utf-8 -*-
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
@@ -68,6 +67,8 @@ class HrPayslip(models.Model):
                 'journal_id': slip.journal_id.id,
                 'date': date,
             }
+            if not any(line.salary_rule_id.account_debit and line.salary_rule_id.account_credit for line in slip.details_by_salary_rule_category):
+                raise UserError(_('Missing Debit Or Credit Account in Salary Rule'))
             for line in slip.details_by_salary_rule_category:
                 amount = currency.round(slip.credit_note and -line.total or line.total)
                 if currency.is_zero(amount):
@@ -150,6 +151,7 @@ class HrSalaryRule(models.Model):
     account_tax_id = fields.Many2one('account.tax', 'Tax')
     account_debit = fields.Many2one('account.account', 'Debit Account', domain=[('deprecated', '=', False)])
     account_credit = fields.Many2one('account.account', 'Credit Account', domain=[('deprecated', '=', False)])
+
 
 class HrContract(models.Model):
     _inherit = 'hr.contract'

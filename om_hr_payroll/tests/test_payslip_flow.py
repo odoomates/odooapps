@@ -76,4 +76,4 @@ class TestPayslipFlow(TestPayslipBase):
 
         # I print the contribution register report
         context = {'model': 'hr.contribution.register', 'active_ids': [self.ref('om_om_hr_payroll.hr_houserent_register')]}
-        test_reports.try_report_action(self.env.cr, self.env.uid, 'action_payslip_lines_contribution_register', context=context, our_module='hr_payroll')
+        test_reports.try_report_action(self.env.cr, self.env.uid, 'action_payslip_lines_contribution_register', context=context, our_module='om_hr_payroll')

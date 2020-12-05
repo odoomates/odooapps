@@ -1,31 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-         <report 
-            id="action_contribution_register" 
-            model="hr.contribution.register" 
-            string="PaySlip Lines By Conribution Register"
-            report_type="qweb-pdf"
-            name="om_hr_payroll.report_contributionregister"
-            file="om_hr_payroll.report_contributionregister"
-            menu="False"
-        />
-        <report 
-            id="action_report_payslip" 
-            model="hr.payslip" 
-            string="Payslip"
-            report_type="qweb-pdf"
-            name="om_hr_payroll.report_payslip"
-            file="om_hr_payroll.report_payslip"
-            print_report_name="'Payslip - %s' % (object.employee_id.name)"
-        />
 
-        <report
-            id="payslip_details_report"
-            model="hr.payslip"
-            string="PaySlip Details"
-            report_type="qweb-pdf"
-            name="om_hr_payroll.report_payslipdetails"
-            file="om_hr_payroll.report_payslipdetails"
-            print_report_name="'Payslip Details - %s' % (object.employee_id.name)"
-        />
+    <record id="action_contribution_register" model="ir.actions.report">
+        <field name="name">PaySlip Lines By Contribution Register</field>
+        <field name="model">hr.contribution.register</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_hr_payroll.report_contribution_register</field>
+        <field name="report_file">om_hr_payroll.report_contribution_register</field>
+    </record>
+
+    <record id="action_report_payslip" model="ir.actions.report">
+        <field name="name">PaySlip</field>
+        <field name="model">hr.payslip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_hr_payroll.report_payslip</field>
+        <field name="report_file">om_hr_payroll.report_payslip</field>
+        <field name="print_report_name">('Payslip - %s' % (object.employee_id.name))</field>
+    </record>
+
+    <record id="payslip_details_report" model="ir.actions.report">
+        <field name="name">PaySlip Details</field>
+        <field name="model">hr.payslip</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_hr_payroll.report_payslip_details</field>
+        <field name="report_file">om_hr_payroll.report_payslip_details</field>
+        <field name="print_report_name">('Payslip Details - %s' % (object.employee_id.name))</field>
+    </record>
+
 </odoo>
