@@ -4,9 +4,6 @@ from odoo.exceptions import ValidationError
 from odoo import api, fields, models, _
 
 
-from datetime import datetime
-
-
 class AccountFiscalYear(models.Model):
     _name = 'account.fiscal.year'
     _description = 'Fiscal Year'
