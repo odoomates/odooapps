@@ -13,7 +13,6 @@
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
     'support': 'odoomates@gmail.com',
-    'website': '',
     'depends': ['accounting_pdf_reports', 'om_account_asset',
                 'om_account_budget', 'om_account_bank_statement_import'],
     'demo': [],
