@@ -1,6 +1,4 @@
-#-*- coding:utf-8 -*-
-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# -*- coding:utf-8 -*-
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -10,7 +8,7 @@ from odoo.exceptions import UserError
 
 
 class ContributionRegisterReport(models.AbstractModel):
-    _name = 'report.om_om_hr_payroll.report_contributionregister'
+    _name = 'report.om_om_hr_payroll.report_contribution_register'
     _description = 'Payroll Contribution Register Report'
 
     def _get_payslip_lines(self, register_ids, date_from, date_to):

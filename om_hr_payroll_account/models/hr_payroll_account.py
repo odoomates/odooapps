@@ -1,9 +1,7 @@
-#-*- coding:utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
+# -*- coding:utf-8 -*-
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
-from odoo.tools import float_compare, float_is_zero
 
 
 class HrPayslipLine(models.Model):
@@ -23,6 +21,7 @@ class HrPayslipLine(models.Model):
             if register_partner_id or self.salary_rule_id.account_debit.internal_type in ('receivable', 'payable'):
                 return partner_id
         return False
+
 
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
@@ -67,6 +66,8 @@ class HrPayslip(models.Model):
                 'journal_id': slip.journal_id.id,
                 'date': date,
             }
+            if not any(line.salary_rule_id.account_debit and line.salary_rule_id.account_credit for line in slip.details_by_salary_rule_category):
+                raise UserError(_('Missing Debit Or Credit Account in Salary Rule'))
             for line in slip.details_by_salary_rule_category:
                 amount = currency.round(slip.credit_note and -line.total or line.total)
                 if currency.is_zero(amount):
@@ -148,12 +149,14 @@ class HrSalaryRule(models.Model):
     account_debit = fields.Many2one('account.account', 'Debit Account', domain=[('deprecated', '=', False)])
     account_credit = fields.Many2one('account.account', 'Credit Account', domain=[('deprecated', '=', False)])
 
+
 class HrContract(models.Model):
     _inherit = 'hr.contract'
     _description = 'Employee Contract'
 
     analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account')
     journal_id = fields.Many2one('account.journal', 'Salary Journal')
+
 
 class HrPayslipRun(models.Model):
     _inherit = 'hr.payslip.run'

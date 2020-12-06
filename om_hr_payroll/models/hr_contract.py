@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from odoo import api, fields, models
 
@@ -48,7 +47,7 @@ class HrContract(models.Model):
                 contract[code] = 0.0
 
 
-class HrContractAdvandageTemplate(models.Model):
+class HrContractAdvantageTemplate(models.Model):
     _name = 'hr.contract.advantage.template'
     _description = "Employee's Advantage on Contract"
 

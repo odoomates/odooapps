@@ -1,5 +1,4 @@
 # -*- coding:utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import babel
 from datetime import date, datetime, time
@@ -7,12 +6,13 @@ from dateutil.relativedelta import relativedelta
 from pytz import timezone
 
 from odoo import api, fields, models, tools, _
-from odoo.addons import decimal_precision as dp
 from odoo.exceptions import UserError, ValidationError
+
 
 class HrPayslip(models.Model):
     _name = 'hr.payslip'
     _description = 'Pay Slip'
+    _order = 'id desc'
 
     struct_id = fields.Many2one('hr.payroll.structure', string='Structure',
         readonly=True, states={'draft': [('readonly', False)]},
@@ -96,10 +96,10 @@ class HrPayslip(models.Model):
             copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + payslip.name})
             copied_payslip.compute_sheet()
             copied_payslip.action_payslip_done()
-        formview_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_form', False)
-        treeview_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_tree', False)
+        form_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_form', False)
+        tree_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_tree', False)
         return {
-            'name': ("Refund Payslip"),
+            'name': (_("Refund Payslip")),
             'view_mode': 'tree, form',
             'view_id': False,
             'view_type': 'form',
@@ -107,7 +107,7 @@ class HrPayslip(models.Model):
             'type': 'ir.actions.act_window',
             'target': 'current',
             'domain': "[('id', 'in', %s)]" % copied_payslip.ids,
-            'views': [(treeview_ref and treeview_ref.id or False, 'tree'), (formview_ref and formview_ref.id or False, 'form')],
+            'views': [(tree_view_ref and tree_view_ref.id or False, 'tree'), (form_view_ref and form_view_ref.id or False, 'form')],
             'context': {}
         }
 
@@ -553,9 +553,10 @@ class HrPayslipRun(models.Model):
 
     name = fields.Char(required=True, readonly=True, states={'draft': [('readonly', False)]})
     slip_ids = fields.One2many('hr.payslip', 'payslip_run_id', string='Payslips', readonly=True,
-        states={'draft': [('readonly', False)]})
+                               states={'draft': [('readonly', False)]})
     state = fields.Selection([
         ('draft', 'Draft'),
+        ('done', 'Done'),
         ('close', 'Close'),
     ], string='Status', index=True, readonly=True, copy=False, default='draft')
     date_start = fields.Date(string='Date From', required=True, readonly=True,
@@ -572,3 +573,14 @@ class HrPayslipRun(models.Model):
 
     def close_payslip_run(self):
         return self.write({'state': 'close'})
+
+    def done_payslip_run(self):
+        for line in self.slip_ids:
+            line.action_payslip_done()
+        return self.write({'state': 'done'})
+
+    def unlink(self):
+        for rec in self:
+            if rec.state == 'done':
+                raise ValidationError(_('You Cannot Delete Done Payslips Batches'))
+        return super(HrPayslipRun, self).unlink()

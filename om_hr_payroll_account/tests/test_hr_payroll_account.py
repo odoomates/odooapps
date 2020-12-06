@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import time
 
@@ -15,7 +14,7 @@ class TestHrPayrollAccount(common.TransactionCase):
 
     def _load(self, module, *args):
         tools.convert_file(
-            self.cr, 'hr_payroll_account',
+            self.cr, 'om_hr_payroll_account',
             get_module_resource(module, *args), {}, 'init', False, 'test', self.registry._assertion_report)
 
     def setUp(self):
