@@ -7,6 +7,7 @@
     'version': '14.0.2.0.0',
     'sequence': 1,
     'website': 'https://www.odoomates.tech',
+    'live_test_url': 'https://www.youtube.com/watch?v=0kaHMTtn7oY',
     'summary': 'Generic Payroll system Integrated with Accounting',
     'description': """Generic Payroll system Integrated with Accounting.""",
     'depends': [

@@ -3,10 +3,11 @@
 {
     'name': 'Odoo 14 HR Payroll',
     'category': 'Human Resources',
-    'version': '14.0.3.0.0',
+    'version': '14.0.3.1.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 14 Community Edition',
+    'live_test_url': 'https://www.youtube.com/watch?v=0kaHMTtn7oY',
     'description': "",
     'website': 'https://www.odoomates.tech',
     'depends': [
