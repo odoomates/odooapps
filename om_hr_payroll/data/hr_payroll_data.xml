@@ -57,6 +57,16 @@
             <field name="amount_python_compute">result = categories.BASIC + categories.ALW</field>
         </record>
 
+        <record id="hr_rule_unpaid" model="hr.salary.rule">
+            <field name="name">Unpaid Leave</field>
+            <field name="sequence" eval="100"/>
+            <field name="code">UNP</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result=-(contract.wage / worked_days.WORK100.number_of_days) * worked_days.Unpaid.number_of_days</field>
+        </record>
+
         <record id="hr_rule_net" model="hr.salary.rule">
             <field name="name">Net Salary</field>
             <field name="sequence" eval="200"/>
