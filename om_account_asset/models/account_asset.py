@@ -98,7 +98,7 @@ class AccountAssetAsset(models.Model):
         help="The amount of time between two depreciations, in months")
     method_end = fields.Date(string='Ending Date', readonly=True, states={'draft': [('readonly', False)]})
     method_progress_factor = fields.Float(string='Degressive Factor', readonly=True, default=0.3, states={'draft': [('readonly', False)]})
-    value_residual = fields.Float(compute='_amount_residual', method=True, digits=0, string='Residual Value')
+    value_residual = fields.Float(compute='_amount_residual', digits=0, string='Residual Value')
     method_time = fields.Selection([('number', 'Number of Entries'), ('end', 'Ending Date')], string='Time Method', required=True, readonly=True, default='number', states={'draft': [('readonly', False)]},
         help="Choose the method to use to compute the dates and number of entries.\n"
              "  * Number of Entries: Fix the number of entries and the time between 2 depreciations.\n"
@@ -482,8 +482,8 @@ class AccountAssetDepreciationLine(models.Model):
     depreciated_value = fields.Float(string='Cumulative Depreciation', required=True)
     depreciation_date = fields.Date('Depreciation Date', index=True)
     move_id = fields.Many2one('account.move', string='Depreciation Entry')
-    move_check = fields.Boolean(compute='_get_move_check', string='Linked', track_visibility='always', store=True)
-    move_posted_check = fields.Boolean(compute='_get_move_posted_check', string='Posted', track_visibility='always', store=True)
+    move_check = fields.Boolean(compute='_get_move_check', string='Linked', store=True)
+    move_posted_check = fields.Boolean(compute='_get_move_posted_check', string='Posted', store=True)
 
     
     @api.depends('move_id')

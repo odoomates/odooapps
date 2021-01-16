@@ -15,8 +15,7 @@ class AccountBudgetPost(models.Model):
     name = fields.Char('Name', required=True)
     account_ids = fields.Many2many('account.account', 'account_budget_rel', 'budget_id', 'account_id', 'Accounts',
         domain=[('deprecated', '=', False)])
-    company_id = fields.Many2one('res.company', 'Company', required=True,
-        default=lambda self: self.env['res.company']._company_default_get('account.budget.post'))
+    company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
 
     def _check_account_ids(self, vals):
         # Raise an error to prevent the account.budget.post to have not specified account_ids.
@@ -45,7 +44,7 @@ class CrossoveredBudget(models.Model):
     _inherit = ['mail.thread']
 
     name = fields.Char('Budget Name', required=True, states={'done': [('readonly', True)]})
-    user_id = fields.Many2one('res.users', 'Responsible', default=lambda self: self.env.user, oldname='creating_user_id')
+    user_id = fields.Many2one('res.users', 'Responsible', default=lambda self: self.env.user)
     date_from = fields.Date('Start Date', required=True, states={'done': [('readonly', True)]})
     date_to = fields.Date('End Date', required=True, states={'done': [('readonly', True)]})
     state = fields.Selection([
@@ -54,29 +53,23 @@ class CrossoveredBudget(models.Model):
         ('confirm', 'Confirmed'),
         ('validate', 'Validated'),
         ('done', 'Done')
-        ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, track_visibility='always')
+        ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, tracking=True)
     crossovered_budget_line = fields.One2many('crossovered.budget.lines', 'crossovered_budget_id', 'Budget Lines',
         states={'done': [('readonly', True)]}, copy=True)
-    company_id = fields.Many2one('res.company', 'Company', required=True,
-        default=lambda self: self.env['res.company']._company_default_get('account.budget.post'))
+    company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
 
-    
     def action_budget_confirm(self):
         self.write({'state': 'confirm'})
 
-    
     def action_budget_draft(self):
         self.write({'state': 'draft'})
 
-    
     def action_budget_validate(self):
         self.write({'state': 'validate'})
 
-    
     def action_budget_cancel(self):
         self.write({'state': 'cancel'})
 
-    
     def action_budget_done(self):
         self.write({'state': 'done'})
 

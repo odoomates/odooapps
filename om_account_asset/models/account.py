@@ -7,7 +7,8 @@ from odoo import api, fields, models
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    asset_depreciation_ids = fields.One2many('account.asset.depreciation.line', 'move_id', string='Assets Depreciation Lines', ondelete="restrict")
+    asset_depreciation_ids = fields.One2many('account.asset.depreciation.line', 'move_id',
+                                             string='Assets Depreciation Lines')
 
     def button_cancel(self):
         for move in self:
