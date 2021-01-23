@@ -3,11 +3,25 @@
 import base64
 
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 from odoo.addons.base.models.res_bank import sanitize_account_number
-
+import io
 import logging
+import tempfile
+import binascii
+from datetime import datetime
+
 _logger = logging.getLogger(__name__)
+
+try:
+    import csv
+except ImportError:
+    _logger.debug('Cannot `import csv`.')
+
+try:
+    import xlrd
+except ImportError:
+    _logger.debug('Cannot `import xlrd`.')
 
 
 class AccountBankStatementLine(models.Model):
@@ -25,48 +39,150 @@ class AccountBankStatementImport(models.TransientModel):
     _name = 'account.bank.statement.import'
     _description = 'Import Bank Statement'
 
-    attachment_ids = fields.Many2many('ir.attachment', string='Files', required=True, help='Get you bank statements in electronic format from your bank and select them here.')
+    attachment_ids = fields.Many2many('ir.attachment', string='Files', required=True,
+                                      help='Get you bank statements in electronic format from your bank and'
+                                           ' select them here.')
+
+    def get_partner(self, value):
+        partner = self.env['res.partner'].search([('name', '=', value)])
+        return partner.id if partner else False
+
+    def get_currency(self, value):
+        currency = self.env['res.currency'].search([('name', '=', value)])
+        return currency.id if currency else False
+
+    def create_statement(self, values):
+        statement = self.env['account.bank.statement'].create(values)
+        return statement
 
     def import_file(self):
-        """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
-        self.ensure_one()
-        statement_line_ids_all = []
-        notifications_all = []
-        # Let the appropriate implementation module parse the file and return the required data
-        # The active_id is passed in context in case an implementation module requires information about the wizard state (see QIF)
         for data_file in self.attachment_ids:
-            currency_code, account_number, stmts_vals = self.with_context(active_id=self.ids[0])._parse_file(base64.b64decode(data_file.datas))
-            # Check raw data
-            self._check_parsed_data(stmts_vals, account_number)
-            # Try to find the currency and journal in odoo
-            currency, journal = self._find_additional_data(currency_code, account_number)
-            # If no journal found, ask the user about creating one
-            if not journal:
-                # The active_id is passed in context so the wizard can call import_file again once the journal is created
-                return self.with_context(active_id=self.ids[0])._journal_creation_wizard(currency, account_number)
-            if not journal.default_debit_account_id or not journal.default_credit_account_id:
-                raise UserError(_('You have to set a Default Debit Account and a Default Credit Account for the journal: %s') % (journal.name,))
-            # Prepare statement data to be used for bank statements creation
-            stmts_vals = self._complete_stmts_vals(stmts_vals, journal, account_number)
-            # Create the bank statements
-            statement_line_ids, notifications = self._create_bank_statements(stmts_vals)
-            statement_line_ids_all.extend(statement_line_ids)
-            notifications_all.extend(notifications)
-            # Now that the import worked out, set it as the bank_statements_source of the journal
-            if journal.bank_statements_source != 'file_import':
-                # Use sudo() because only 'account.group_account_manager'
-                # has write access on 'account.journal', but 'account.group_account_user'
-                # must be able to import bank statement files
-                journal.sudo().bank_statements_source = 'file_import'
-        # Finally dispatch to reconciliation interface
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'bank_statement_reconciliation_view',
-            'context': {'statement_line_ids': statement_line_ids_all,
-                        'company_ids': self.env.user.company_ids.ids,
-                        'notifications': notifications_all,
-            },
-        }
+            file_name = data_file.name.lower()
+            if file_name.strip().endswith('.csv') or file_name.strip().endswith('.xlsx'):
+                statement = False
+                if file_name.strip().endswith('.csv'):
+                    keys = ['date', 'payment_ref', 'partner_id', 'amount', 'currency_id']
+                    try:
+                        csv_data = base64.b64decode(data_file.datas)
+                        data_file = io.StringIO(csv_data.decode("utf-8"))
+                        data_file.seek(0)
+                        file_reader = []
+                        values = {}
+                        csv_reader = csv.reader(data_file, delimiter=',')
+                        file_reader.extend(csv_reader)
+                    except:
+                        raise UserError(_("Invalid file!"))
+                    vals_list = []
+                    date = False
+                    for i in range(len(file_reader)):
+                        field = list(map(str, file_reader[i]))
+                        values = dict(zip(keys, field))
+                        if values:
+                            if i == 0:
+                                continue
+                            else:
+                                if not date:
+                                    date = field[0]
+                                values.update({
+                                    'date': field[0],
+                                    'payment_ref': field[1],
+                                    'partner_id': self.get_partner(field[2]),
+                                    'amount': field[3],
+                                    'currency_id':  self.get_currency(field[4])
+                                })
+                                vals_list.append((0, 0, values))
+                    statement_vals = {
+                        'name': 'Statement Of ' + str(datetime.today().date()),
+                        'journal_id': self.env.context.get('active_id'),
+                        'line_ids': vals_list
+                    }
+                    if len(vals_list) != 0:
+                        statement = self.create_statement(statement_vals)
+                elif file_name.strip().endswith('.xlsx'):
+                    try:
+                        fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+                        fp.write(binascii.a2b_base64(data_file.datas))
+                        fp.seek(0)
+                        values = {}
+                        workbook = xlrd.open_workbook(fp.name)
+                        sheet = workbook.sheet_by_index(0)
+                    except:
+                        raise UserError(_("Invalid file!"))
+                    vals_list = []
+                    for row_no in range(sheet.nrows):
+                        val = {}
+                        if row_no <= 0:
+                            fields = map(lambda row: row.value.encode('utf-8'), sheet.row(row_no))
+                        else:
+                            line = list(map(
+                                lambda row: isinstance(row.value, bytes) and row.value.encode('utf-8') or str(
+                                    row.value), sheet.row(row_no)))
+                            values.update({
+                                'date': line[0],
+                                'payment_ref': line[1],
+                                'partner_id': self.get_partner(line[2]),
+                                'amount': line[3],
+                                'currency_id': self.get_currency(line[4])
+                            })
+                            vals_list.append((0, 0, values))
+                    statement_vals = {
+                        'name': 'Statement Of ' + str(datetime.today().date()),
+                        'journal_id': self.env.context.get('active_id'),
+                        'line_ids': vals_list
+                    }
+                    if len(vals_list) != 0:
+                        statement = self.create_statement(statement_vals)
+                if statement:
+                    return {
+                        'type': 'ir.actions.act_window',
+                        'res_model': 'account.bank.statement',
+                        'view_mode': 'form',
+                        'res_id': statement.id,
+                        'views': [(False, 'form')],
+                    }
+            else:
+                raise ValidationError(_("Unsupported File Type"))
+
+    # def import_file(self):
+    #     """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
+    #     self.ensure_one()
+    #     statement_line_ids_all = []
+    #     notifications_all = []
+    #     # Let the appropriate implementation module parse the file and return the required data
+    #     # The active_id is passed in context in case an implementation module requires information about the wizard state (see QIF)
+    #     for data_file in self.attachment_ids:
+    #         currency_code, account_number, stmts_vals = self.with_context(active_id=self.ids[0])._parse_file(base64.b64decode(data_file.datas))
+    #         # Check raw data
+    #         self._check_parsed_data(stmts_vals, account_number)
+    #         # Try to find the currency and journal in odoo
+    #         currency, journal = self._find_additional_data(currency_code, account_number)
+    #         # If no journal found, ask the user about creating one
+    #         if not journal:
+    #             # The active_id is passed in context so the wizard can call import_file again once the journal is created
+    #             return self.with_context(active_id=self.ids[0])._journal_creation_wizard(currency, account_number)
+    #         if not journal.default_debit_account_id or not journal.default_credit_account_id:
+    #             raise UserError(_('You have to set a Default Debit Account and a Default Credit Account for the journal: %s') % (journal.name,))
+    #         # Prepare statement data to be used for bank statements creation
+    #         stmts_vals = self._complete_stmts_vals(stmts_vals, journal, account_number)
+    #         # Create the bank statements
+    #         statement_line_ids, notifications = self._create_bank_statements(stmts_vals)
+    #         statement_line_ids_all.extend(statement_line_ids)
+    #         notifications_all.extend(notifications)
+    #         # Now that the import worked out, set it as the bank_statements_source of the journal
+    #         if journal.bank_statements_source != 'file_import':
+    #             # Use sudo() because only 'account.group_account_manager'
+    #             # has write access on 'account.journal', but 'account.group_account_user'
+    #             # must be able to import bank statement files
+    #             journal.sudo().bank_statements_source = 'file_import'
+    #     # Finally dispatch to reconciliation interface
+    #     return {
+    #         'type': 'ir.actions.client',
+    #         'tag': 'bank_statement_reconciliation_view',
+    #         'context': {'statement_line_ids': statement_line_ids_all,
+    #                     'company_ids': self.env.user.company_ids.ids,
+    #                     'notifications': notifications_all,
+    #         },
+    #     }
 
     def _journal_creation_wizard(self, currency, account_number):
         """ Calls a wizard that allows the user to carry on with journal creation """
@@ -86,29 +202,7 @@ class AccountBankStatementImport(models.TransientModel):
         }
 
     def _parse_file(self, data_file):
-        """ Each module adding a file support must extends this method. It processes the file if it can, returns super otherwise, resulting in a chain of responsability.
-            This method parses the given file and returns the data required by the bank statement import process, as specified below.
-            rtype: triplet (if a value can't be retrieved, use None)
-                - currency code: string (e.g: 'EUR')
-                    The ISO 4217 currency code, case insensitive
-                - account number: string (e.g: 'BE1234567890')
-                    The number of the bank account which the statement belongs to
-                - bank statements data: list of dict containing (optional items marked by o) :
-                    - 'name': string (e.g: '000000123')
-                    - 'date': date (e.g: 2013-06-26)
-                    -o 'balance_start': float (e.g: 8368.56)
-                    -o 'balance_end_real': float (e.g: 8888.88)
-                    - 'transactions': list of dict containing :
-                        - 'name': string (e.g: 'KBC-INVESTERINGSKREDIET 787-5562831-01')
-                        - 'date': date
-                        - 'amount': float
-                        - 'unique_import_id': string
-                        -o 'account_number': string
-                            Will be used to find/create the res.partner.bank in odoo
-                        -o 'note': string
-                        -o 'partner_name': string
-                        -o 'ref': string
-        """
+
         raise UserError(_('Could not make sense of the given file.\nDid you install the module to support this type of file ?'))
 
     def _check_parsed_data(self, stmts_vals, account_number):

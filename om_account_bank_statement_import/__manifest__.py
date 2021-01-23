@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 14 Account Bank Statement Import',
-    'version': '14.0.1.2.0',
+    'version': '14.0.2.2.0',
     'category': 'Accounting',
     'depends': ['account'],
     'website': 'https://www.odoomates.tech',
@@ -11,8 +11,7 @@
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
     'description': """Generic Wizard to Import Bank Statements In Odoo14 Community Edition.
-(This module does not include any type of import format.)
-OFX and QIF imports are available in Enterprise version.""",
+(This module does include any CSV and XLSX type import format.)""",
     'data': [
         'security/ir.model.access.csv',
         'account_bank_statement_import_view.xml',
