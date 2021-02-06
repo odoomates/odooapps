@@ -25,7 +25,7 @@
         'report/followup_report.xml',
     ],
     'demo': ['demo/demo.xml'],
-    'images': [],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': False,
 }
