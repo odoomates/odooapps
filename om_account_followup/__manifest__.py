@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Customer Payment FollowUp Management (Beta)',
+    'name': 'Customer Follow Up Management (Beta)',
     'version': '14.0.1.0.0',
     'category': 'Accounting',
-    'description': """Customer Payment FollowUp Management""",
-    'summary': """Customer Payment FollowUp Management""",
+    'description': """Customer FollowUp Management""",
+    'summary': """Customer FollowUp Management""",
     'author': 'Odoo Mates, Odoo S.A, OdooDev',
     'license': 'LGPL-3',
     'website': '',
