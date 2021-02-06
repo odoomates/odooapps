@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Customer Payment FollowUp Management',
+    'name': 'Customer Payment FollowUp Management (Beta)',
     'version': '14.0.1.0.0',
     'category': 'Accounting',
     'description': """Customer Payment FollowUp Management""",
