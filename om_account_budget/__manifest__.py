@@ -5,7 +5,7 @@
     'name': 'Odoo 14 Budget Management',
     'author': 'Odoo Mates, Odoo SA',
     'category': 'Accounting',
-    'version': '14.0.2.2.0',
+    'version': '14.0.2.3.0',
     'description': """Use budgets to compare actual with expected revenues and costs""",
     'summary': 'Odoo 14 Budget Management',
     'sequence': 10,
