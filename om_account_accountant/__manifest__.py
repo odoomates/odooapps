@@ -1,9 +1,9 @@
-# -*- coding: utf-8 -*-
+z# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
     'name': 'Odoo 13 Accounting',
-    'version': '13.0.3.3.0',
+    'version': '13.0.3.4.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo13 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
