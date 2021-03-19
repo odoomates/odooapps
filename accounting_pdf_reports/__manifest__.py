@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting PDF Reports',
-    'version': '14.0.3.3.0',
+    'version': '14.0.3.4.0',
     'category': 'Invoicing Management',
     'summary': 'Accounting Reports For Odoo 14',
     'sequence': '10',
@@ -37,6 +37,7 @@
         'reports/report_tax.xml',
         'reports/report_aged_partner.xml',
         'reports/report_journal_audit.xml',
+        'reports/report_journal_entries.xml',
     ],
     'installable': True,
     'application': False,
