@@ -111,6 +111,7 @@ class AccountBankStatementImport(models.TransientModel):
                     vals_list = []
                     for row_no in range(sheet.nrows):
                         val = {}
+                        values = {}
                         if row_no <= 0:
                             fields = map(lambda row: row.value.encode('utf-8'), sheet.row(row_no))
                         else:
