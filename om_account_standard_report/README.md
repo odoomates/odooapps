@@ -50,8 +50,10 @@ Contributors
 ------------
 * Florent de Labarre
 * Odoo Mates <odoomates@gmail.com>
+* Odoo Community Association (OCA)
 
 Maintainer
 ----------
 * Florent de Labarre
 * Odoo Mates <odoomates@gmail.com>
+* Odoo Community Association (OCA)

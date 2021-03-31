@@ -6,7 +6,7 @@ from odoo import models, _
 
 class StandardReportXlsx(models.AbstractModel):
     _name = 'report.om_account_standard_report.report_account_standard_excel'
-    _inherit = 'report.report_xlsx.abstract'
+    _inherit = 'report.om_account_standard_report.abstract'
     _description = 'Standard Report Excel'
 
     def generate_xlsx_report(self, workbook, data, wizard):
