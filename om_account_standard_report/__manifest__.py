@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Standard Accounting Report - V14 ',
+    'name': 'Odoo 14 Standard Accounting Report',
     'version': '14.0.1.0.0',
     'category': 'Accounting',
     'author': 'Florent de Labarre, Odoo Mates, Odoo Community Association (OCA)',
