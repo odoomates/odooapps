@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <record id="account_report_standard_template_form_view" model="ir.ui.view">
+        <field name="name">Standard Ledger Template</field>
+        <field name="model">account.report.template</field>
+        <field name="type">form</field>
+        <field name="arch" type="xml">
+            <form string="Standard Ledger Template">
+                <h1><field name="name"/></h1>
+                <group col="4">
+                    <field name="ledger_type" widget="radio"/>
+                    <field name="summary"/>
+                </group>
+                <group col="4">
+                    <field name="target_move"/>
+                    <field name="reconciled" attrs="{'readonly': [('ledger_type', 'not in', ('partner', 'aged',))]}"/>
+                    <field name="compact_account" attrs="{'readonly': [('ledger_type', '!=', 'general')]}"/>
+                    <field name="result_selection" attrs="{'invisible': [('ledger_type', 'not in', ('partner', 'aged',))]}"/>
+                </group>
+                <group col="2">
+                    <group>
+                        <field name="date_from"/>
+                    </group>
+                    <group>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="journal_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+                <group col="3">
+                    <field name="partner_select_ids" widget="many2many_tags" options="{'no_create': True}"
+                           attrs="{'invisible': [('ledger_type', 'not in', ('partner', 'aged',))]}"/>
+                </group>
+                <group col="4">
+                    <field name="account_in_ex_clude_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="account_method" attrs="{'invisible':[('account_in_ex_clude_ids', '=', [])]}"/>
+                </group>
+                <group col="3">
+                    <field name="account_group_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+                <group col="3">
+                    <field name="analytic_account_ids" widget="many2many_tags" options="{'no_create': True}"
+                           attrs="{'invisible': [('ledger_type', '!=', 'analytic')]}"/>
+                </group>
+                <group col="4">
+                    <field name="init_balance_history"/>
+                    <field name="company_currency_id"/>
+                    <field name="company_id"/>
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_report_standard_template_tree_view" model="ir.ui.view">
+        <field name="name">Standard Ledger Template</field>
+        <field name="model">account.report.template</field>
+        <field name="type">tree</field>
+        <field name="arch" type="xml">
+            <tree string="Standard Ledger Template">
+                <field name="name"/>
+                <field name="ledger_type"/>
+                <field name="summary"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="action_account_standard_report_template" model="ir.actions.act_window">
+        <field name="name">Standard Report Templates</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">account.report.template</field>
+        <field name="view_mode">tree,form</field>
+        <field name="target">current</field>
+    </record>
+
+    <menuitem id="menu_standard_template"
+              name="Report Templates"
+              sequence="20"
+              parent="account.account_management_menu"
+              action="action_account_standard_report_template"
+              groups="account.group_account_user"/>
+
+</odoo>

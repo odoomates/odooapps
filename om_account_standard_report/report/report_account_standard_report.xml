@@ -1,0 +1,414 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_account_standard_report">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
+
+                    <div class="page" style="font-size:11px">
+                        <h2 t-field="o.report_id.name"/>
+                        <div class="row">
+                            <div class="col-xs-2">
+                                <strong>Company:</strong>
+                                <p t-field="o.company_id"/>
+                            </div>
+                            <div class="col-xs-2">
+                                <strong>Devise:</strong>
+                                <p t-field="o.company_currency_id"/>
+                            </div>
+                            <div class="col-xs-2">
+                                <t t-if="o.date_from">
+                                    <strong>Start Date :</strong>
+                                    <span t-field="o.date_from"/><br/></t>
+                                <t t-if="o.date_to">
+                                    <strong>End Date :</strong>
+                                    <span t-field="o.date_to"/></t>
+                            </div>
+                            <div class="col-xs-3">
+                                <strong>Target Moves:</strong>
+                                <p t-if="o.target_move == 'all'">All Entries</p>
+                                <p t-if="o.target_move == 'posted'">All Posted Entries</p>
+                            </div>
+                            <div class="col-xs-3">
+                                <strong t-if="o.reconciled == True">With Reconciled Entries</strong>
+                                <strong t-if="o.reconciled == False">Only UnReconciled Entries</strong>
+                            </div>
+                        </div>
+
+                        <t t-if="o.ledger_type == 'aged'">
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th class="col-xs-1">Total</th>
+                                        <th></th>
+                                        <th class="col-xs-1 text-right">Not Due</th>
+                                        <th class="col-xs-1 text-right">0-30</th>
+                                        <th class="col-xs-1 text-right">30-60</th>
+                                        <th class="col-xs-1 text-right">60-90</th>
+                                        <th class="col-xs-1 text-right">90-120</th>
+                                        <th class="col-xs-1 text-right">Older</th>
+                                        <th class="col-xs-1 text-right">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="white-space:nowrap">
+                                    <tr>
+                                        <td class="text-right" colspan="3">
+                                            <strong t-field="o.report_id.line_super_total_id.current"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.age_30_days"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.age_60_days"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.age_90_days"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.age_120_days"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.older"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.balance"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <t t-if="not o.summary">
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-xs-1">Date</th>
+                                            <th class="col-xs-1">JRNL</th>
+                                            <th class="col-xs-1">Account</th>
+                                            <th class="col-xs-1">Journal entries</th>
+                                            <!-- <th class="col-xs-3">Ref</th> -->
+                                            <th class="col-xs-1">Due Date</th>
+                                            <th class="col-xs-1 text-right">Not Due</th>
+                                            <th class="col-xs-1 text-right">0-30</th>
+                                            <th class="col-xs-1 text-right">30-60</th>
+                                            <th class="col-xs-1 text-right">60-90</th>
+                                            <th class="col-xs-1 text-right">90-120</th>
+                                            <th class="col-xs-1 text-right">Older</th>
+                                            <th class="col-xs-1 text-right">Total</th>
+                                            <th class="col-xs-1">Match.</th>
+                                        </tr>
+                                    </thead>
+                                    <t t-foreach="o.report_id.report_object_ids" t-as="object">
+                                        <tbody t-if="object.line_ids" style="border-bottom: 1px solid;margin-bottom:10px">
+                                            <tr style="border-bottom: 1px solid #ddd;">
+                                                <td colspan="12">
+                                                    <strong t-field="object.partner_id"/>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                            <tr t-foreach="object.line_ids" t-as="l">
+                                                <td style="white-space:nowrap">
+                                                    <strong t-if="l.view_type != 'total'" t-field="l.date"></strong>
+                                                    <strong t-if="l.view_type == 'total'">Total</strong>
+                                                </td>
+                                                <td>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.journal_id.code"></span>
+                                                </td>
+                                                <td>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.account_id.code"></span>
+                                                </td>
+                                                <td>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.move_id"></span>
+                                                </td>
+                                                <td>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.date_maturity"></span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.current and l.view_type == 'normal'">
+                                                        <span t-field="l.current"/>
+                                                    </div>
+                                                    <div t-if="l.current and l.view_type == 'total'">
+                                                        <strong t-field="l.current"/>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.age_30_days and l.view_type == 'normal'">
+                                                        <span t-field="l.age_30_days"/>
+                                                    </div>
+                                                    <div t-if="l.age_30_days and l.view_type == 'total'">
+                                                        <strong t-field="l.age_30_days"/>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.age_60_days and l.view_type == 'normal'">
+                                                        <span t-field="l.age_60_days"/>
+                                                    </div>
+                                                    <div t-if="l.age_60_days and l.view_type == 'total'">
+                                                        <strong t-field="l.age_60_days"/>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.age_90_days and l.view_type == 'normal'">
+                                                        <span t-field="l.age_90_days"/></div>
+                                                    <div t-if="l.age_90_days and l.view_type == 'total'">
+                                                        <strong t-field="l.age_90_days"/></div>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.age_120_days and l.view_type == 'normal'">
+                                                        <span t-field="l.age_120_days"/>
+                                                    </div>
+                                                    <div t-if="l.age_120_days and l.view_type == 'total'">
+                                                        <strong t-field="l.age_120_days"/>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.older and l.view_type == 'normal'">
+                                                        <span t-field="l.older"/>
+                                                    </div>
+                                                    <div t-if="l.older and l.view_type == 'total'">
+                                                        <strong t-field="l.older"/>
+                                                    </div>
+                                                </td>
+                                                <td class="text-right" style="border-left: 1px dotted #ddd;">
+                                                    <div t-if="l.view_type == 'normal'">
+                                                        <span t-field="l.balance"/>
+                                                    </div>
+                                                    <div t-if="l.view_type == 'total'">
+                                                        <strong t-field="l.balance"/>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span t-if="l.reconciled" t-field="l.full_reconcile_id"/>
+                                                    <span t-if="not l.reconciled and l.full_reconcile_id">*</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </t>
+                                </table>
+                            </t>
+                            <t t-if="o.summary">
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-xs-1">Partner</th>
+                                            <th class="col-xs-1 text-right">Not Due</th>
+                                            <th class="col-xs-1 text-right">0-30</th>
+                                            <th class="col-xs-1 text-right">30-60</th>
+                                            <th class="col-xs-1 text-right">60-90</th>
+                                            <th class="col-xs-1 text-right">90-120</th>
+                                            <th class="col-xs-1 text-right">Older</th>
+                                            <th class="col-xs-1 text-right">Total</th>
+                                        </tr>
+                                    </thead>
+                                    <t t-foreach="o.report_id.line_total_ids" t-as="l">
+                                        <tr style="border-bottom: 1px solid #ddd">
+                                            <td>
+                                                <span t-field="l.partner_id"></span>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-if="l.current" t-field="l.current"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-if="l.age_30_days" t-field="l.age_30_days"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-if="l.age_60_days" t-field="l.age_60_days"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-if="l.age_90_days" t-field="l.age_90_days"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-if="l.age_120_days" t-field="l.age_120_days"/>
+                                            </td>
+                                            <td class="text-right">
+                                                <span t-if="l.older" t-field="l.older"/>
+                                            </td>
+                                            <td class="text-right" style="border-left: 1px dotted #ddd;">
+                                                <span t-field="l.balance"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </t>
+                        </t>
+
+                        <t t-if="o.ledger_type != 'aged'">
+                            <table class="table table-condensed">
+                                <thead>
+                                    <tr>
+                                        <th class="col-xs-1">Total</th>
+                                        <th></th>
+                                        <th class="col-xs-1 text-right">Debit</th>
+                                        <th class="col-xs-1 text-right">Credit</th>
+                                        <th class="col-xs-1 text-right">Balance</th>
+                                    </tr>
+                                </thead>
+                                <tbody style="white-space:nowrap">
+                                    <tr>
+                                        <td class="text-right" colspan="3">
+                                            <strong t-field="o.report_id.line_super_total_id.debit"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.credit"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <strong t-field="o.report_id.line_super_total_id.balance"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <t t-if="o.summary">
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-xs-1" t-if="o.report_type == 'journal'">JRNL</th>
+                                            <th class="col-xs-1" t-if="o.report_type == 'account'">Account</th>
+                                            <th class="col-xs-1" t-if="o.report_type == 'partner'">Partner</th>
+                                            <th class="col-xs-1" t-if="o.report_type == 'analytic'">Analytic</th>
+                                            <th class="col-xs-1 text-right">Debit</th>
+                                            <th class="col-xs-1 text-right">Credit</th>
+                                            <th class="col-xs-1 text-right">Balance</th>
+                                        </tr>
+                                    </thead>
+                                    <t t-foreach="o.report_id.line_total_ids" t-as="l">
+                                        <tr style="border-bottom: 1px solid #ddd">
+                                            <td t-if="o.report_type == 'journal'">
+                                                <span t-field="l.journal_id"></span>
+                                            </td>
+                                            <td t-if="o.report_type == 'account'">
+                                                <span t-field="l.account_id"></span>
+                                            </td>
+                                            <td t-if="o.report_type == 'partner'">
+                                                <span t-field="l.partner_id"></span>
+                                            </td>
+                                            <td t-if="o.report_type == 'analytic'">
+                                                <span t-field="l.analytic_account_id"></span>
+                                            </td>
+                                            <td class="text-right">
+                                                <div t-if="l.debit">
+                                                    <span t-field="l.debit"/>
+                                                </div>
+                                            </td>
+                                            <td class="text-right">
+                                                <div t-if="l.credit">
+                                                    <span t-field="l.credit"/>
+                                                </div>
+                                            </td>
+                                            <td class="text-right" style="border-left: 1px dotted #ddd;">
+                                                <span t-field="l.balance"/>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </table>
+                            </t>
+                            <t t-if="not o.summary">
+                                <table class="table table-condensed">
+                                    <thead>
+                                        <tr>
+                                            <th class="col-xs-1">Date</th>
+                                            <th class="col-xs-1">JRNL</th>
+                                            <th class="col-xs-1">Account</th>
+                                            <th class="col-xs-1">Analytic</th>
+                                            <th class="col-xs-1">Journal entries</th>
+                                            <th class="col-xs-3">Ref</th>
+                                            <th class="col-xs-3">Partner</th>
+                                            <th class="col-xs-1">Due Date</th>
+                                            <th class="col-xs-1 text-right">Debit</th>
+                                            <th class="col-xs-1 text-right">Credit</th>
+                                            <th class="col-xs-1 text-right">Balance</th>
+                                            <th class="col-xs-1 text-right" groups="base.group_multi_currency">Ammount Currency</th>
+                                            <th class="col-xs-1">Match.</th>
+                                        </tr>
+                                    </thead>
+                                    <t t-foreach="o.report_id.report_object_ids" t-as="object">
+                                        <tbody t-if="object.line_ids" style="border-bottom: 1px solid;page-break-inside: avoid">
+                                            <tr style="border-bottom: 1px solid #ddd;">
+                                                <td colspan="12">
+                                                    <strong t-if="o.report_type == 'account'" t-field="object.account_id"/>
+                                                    <strong t-if="o.report_type == 'partner'" t-field="object.partner_id"/>
+                                                    <strong t-if="o.report_type == 'journal'" t-field="object.journal_id"/>
+                                                    <strong t-if="o.report_type == 'analytic'" t-field="object.analytic_account_id"/>
+                                                </td>
+                                                <td></td>
+                                            </tr>
+                                            <tr t-foreach="object.line_ids" t-as="l">
+                                                <td style="white-space:nowrap">
+                                                    <i t-if="l.view_type == 'init' and l.line_type == '1_init_line'" t-field="l.date"></i>
+                                                    <i t-if="l.view_type == 'init' and l.line_type == '0_init'">INIT</i>
+                                                    <strong t-if="l.view_type == 'total'">Total</strong>
+                                                    <span t-if="l.view_type == 'normal' and l.line_type == '2_line'" t-field="l.date"></span>
+                                                    <span t-if="l.view_type == 'normal' and l.line_type == '3_compact'">Compact</span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.journal_id.code"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.journal_id.code"></span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.account_id.code"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.account_id.code"></span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.analytic_account_id"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.analytic_account_id"></span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.move_id"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.move_id"></span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.move_line_id.ref"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.move_line_id.ref"></span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.partner_id"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.partner_id"></span>
+                                                </td>
+                                                <td>
+                                                    <i t-if="l.view_type == 'init'" t-field="l.date_maturity"></i>
+                                                    <span t-if="l.view_type == 'normal'" t-field="l.date_maturity"></span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.debit and l.view_type == 'normal'">
+                                                        <span t-field="l.debit"/></div>
+                                                    <div t-if="l.debit and l.view_type == 'init'">
+                                                        <i t-field="l.debit"/></div>
+                                                    <div t-if="l.debit and l.view_type == 'total'">
+                                                        <strong t-field="l.debit"/></div>
+                                                </td>
+                                                <td class="text-right">
+                                                    <div t-if="l.credit and l.view_type == 'normal'">
+                                                        <span t-field="l.credit"/></div>
+                                                    <div t-if="l.credit and l.view_type == 'init'">
+                                                        <i t-field="l.credit"/></div>
+                                                    <div t-if="l.credit and l.view_type == 'total'">
+                                                        <strong t-field="l.credit"/></div>
+                                                </td>
+                                                <td class="text-right" style="white-space:nowrap">
+                                                    <div t-if="l.view_type == 'normal'">
+                                                        <span t-field="l.cumul_balance"/></div>
+                                                    <div t-if="l.view_type == 'init'">
+                                                        <i t-field="l.cumul_balance"/></div>
+                                                    <div t-if="l.view_type == 'total'">
+                                                        <strong t-field="l.cumul_balance"/></div>
+                                                </td>
+                                                <td class="text-right" style="white-space:nowrap" groups="base.group_multi_currency">
+                                                    <div t-if="l.view_type == 'normal' and l.amount_currency">
+                                                        <span t-field="l.amount_currency"/>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <span t-if="l.reconciled" t-field="l.full_reconcile_id"/>
+                                                    <span t-if="not l.reconciled and l.full_reconcile_id">*</span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </t>
+                                </table>
+                            </t>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
