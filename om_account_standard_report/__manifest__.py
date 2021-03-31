@@ -23,7 +23,7 @@
     ],
     'demo': [],
     'external_dependencies': {"python": ["xlsxwriter", "xlrd"]},
-    'license': 'AGPL-3',
+    'license': 'LGPL-3',
     'support': '',
     'installable': True,
     'auto_install': False,
