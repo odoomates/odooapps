@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--Create a Wizard and Call it in Button Click Odoo-->
+    <!--  https://www.youtube.com/watch?v=K60oF3-vaxA&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=36  -->
+    <!--How To Call Wizard From Menu Item Odoo-->
+    <!--  https://www.youtube.com/watch?v=qpkVKy9JzEw&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=37 -->
+     <record id="create_appointment_form" model="ir.ui.view">
+         <field name="name">create.appointment.wizard</field>
+         <field name="model">create.appointment</field>
+         <field name="arch" type="xml">
+            <form string="Create Appointment">
+                <group>
+                    <field name="patient_id"/>
+                    <field name="appointment_date"/>
+                </group>
+                <footer>
+                    <button name="print_report" string="Print" type="object" class="btn-primary"/>
+                    <button name="create_appointment" string="Create" type="object" class="btn-primary"/>
+                    <button name="get_data" string="Get Data" type="object" class="btn-primary"/>
+                    <button name="delete_patient" string="Delete Patient" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+         </field>
+     </record>
+
+    <record id="create_appointment_wizard" model="ir.actions.act_window">
+        <field name="name">Create Appointment</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">create.appointment</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="create_appointment_form"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

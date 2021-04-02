@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!--How To Activate Settings From Code in Odoo-->
+    <!--  https://www.youtube.com/watch?v=mCwg-X3NfjQ&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=64 -->
+    <!--<data>-->
+        <!--<record model="res.config.settings" id="res_config_settings">-->
+            <!--<field name="group_product_variant" eval="1"/>-->
+        <!--</record>-->
+
+        <!--<function model="res.config.settings" name="execute">-->
+            <!--<value eval="[ref('res_config_settings')]"/>-->
+            <!--<value eval="{}"/>-->
+        <!--</function>-->
+    <!--</data>-->
+
+    <!--How To Create Data Files and Load Default Data In Odoo-->
+    <!--  https://www.youtube.com/watch?v=ZyABTIDll0U&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=30  -->
+    <data noupdate="1">
+        <!--creating patient record from code-->
+        <record id="patient_xyz" model="hospital.patient">
+            <field name="patient_name">Odoo Mates</field>
+            <field name="patient_age">25</field>
+            <field name="name">9876543210</field>
+            <field name="gender">fe_male</field>
+            <field name="notes">Your Odoo Mate</field>
+        </record>
+
+        <!--creating appointment from the code-->
+        <record id="appointment_xyz" model="hospital.appointment">
+            <field name="patient_id" ref="patient_xyz"/>
+            <field name="notes">Subscribe the channel</field>
+        </record>
+    </data>
+
+    <delete id="mrp.mrp_workcenter_rule" model="ir.rule"/>
+
+    <delete id="calendar.calendar_template_meeting_invitation" model="mail.template"/>
+
+
+</odoo>

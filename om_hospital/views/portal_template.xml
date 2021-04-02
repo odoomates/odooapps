@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_my_home" name="Portal My Home: appointment entries" inherit_id="portal.portal_my_home" priority="40">
+        <xpath expr="//div[hasclass('o_portal_docs')]" position="inside">
+            <t t-if="appointment_count" t-call="portal.portal_docs_entry">
+                <t t-set="title">Appointment</t>
+                <t t-set="url" t-value="'/my/appointments'"/>
+                <t t-set="count" t-value="appointment_count"/>
+            </t>
+        </xpath>
+    </template>
+
+     <template id="portal_my_appointments" name="My Appointments">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_table">
+                <thead>
+                    <tr t-attf-class="{{'thead-light' if not groupby == 'none' else ''}}">
+                        <th t-if="groupby == 'none'">Patient</th>
+                        <th class="text-center">Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="appointments" t-as="app">
+                        <tr>
+                            <td>
+                                <a t-attf-href="/my/task/#{app.id}?{{ keep_query() }}"><span t-field="app.name"/></a>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge badge-pill badge-info"/>
+                            </td>
+                            <td class="text-left">
+                                #<span t-esc="app.id"/>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+</odoo>
