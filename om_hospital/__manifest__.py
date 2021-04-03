@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 13 Development Tutorials',
-    'version': '13.0.1.0.0',
+    'version': '13.0.2.0.0',
     'category': 'Extra Tools',
     'summary': 'Odoo 13 Development Tutorials For Beginners',
     'sequence': '10',
@@ -21,7 +21,10 @@
         'security/ir.model.access.csv',
         'data/sequence.xml',
         'data/data.xml',
+        'data/slide_data_v12.xml',
+        'data/slide_data_v12_2.xml',
         'data/slide_data_v13.xml',
+        'data/slide_data_v14.xml',
         'data/cron.xml',
         'wizards/create_appointment.xml',
         'views/patient.xml',
