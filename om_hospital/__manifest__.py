@@ -41,7 +41,7 @@
         'reports/appointment.xml',
         'data/mail_template.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'application': True,
     'auto_install': False,

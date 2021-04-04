@@ -45,19 +45,12 @@ class HospitalPatient(models.Model):
     _description = 'Patient Record'
     _rec_name = 'patient_name'
 
-
-
     @api.model
     def get_config_value(self, config_name):
-        print("gggggggggggggggggggggggggggggggggggggggg", config_name)
         config_value = self.env['ir.config_parameter'].sudo().get_param(config_name)
-        print("base_url", config_value)
         return config_value
 
-
-
     def action_patients(self):
-        print("Odoo Mates..............")
         return {
             'name': _('Patients Server Action'),
             'domain': [],

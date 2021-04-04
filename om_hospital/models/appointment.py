@@ -18,9 +18,6 @@ class HospitalAppointment(models.Model):
             print(" Sorted partners...", partners.sorted(lambda o: o.write_date, reverse=True))
             print(" Filtered partners...", partners.filtered(lambda o: not o.customer))
 
-
-
-
     def action_notify(self):
         for rec in self:
             rec.doctor_id.user_id.notify_warning(message='Appointment is Confirmed')
