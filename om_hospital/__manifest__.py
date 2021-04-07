@@ -6,6 +6,8 @@
     'sequence': -100,
     'description': """Odoo 14 Development Tutorials""",
     'category': 'Productivity',
+    'author': 'Odoo Mates',
+    'maintainer': 'Odoo Mates',
     'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
     'depends': [
