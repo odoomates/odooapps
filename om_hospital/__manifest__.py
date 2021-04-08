@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Odoo 14 Development Tutorials',
-    'version': '1.0',
+    'version': '14.0.1.0.0',
     'summary': 'Odoo 14 Development Tutorials',
     'sequence': -100,
     'description': """Odoo 14 Development Tutorials""",
@@ -9,6 +9,7 @@
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'website': 'https://www.odoomates.tech',
+    'live_test_url': 'https://www.youtube.com/watch?v=I8FNdellz3Y&list=PLqRRLx0cl0homY1elJbSoWfeQbRKJ-oPO&index=2',
     'license': 'LGPL-3',
     'depends': [
         'sale',
