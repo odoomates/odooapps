@@ -12,6 +12,7 @@
         You can also set a default options for each report
     """,
     'author': 'Luis Rodrigo Mejia Mateus, Odoo Mates',
+    'live_test_url': 'https://www.youtube.com/watch?v=-34_UxtFMO0',
     'category': 'Productivity',
     'images': ['images/main_1.png',
                'images/main_screenshot.png'
