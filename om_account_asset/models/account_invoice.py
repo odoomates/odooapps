@@ -99,11 +99,12 @@ class AccountInvoiceLine(models.Model):
     @api.onchange('product_id')
     def _onchange_product_id(self):
         vals = super(AccountInvoiceLine, self)._onchange_product_id()
-        if self.product_id:
-            if self.move_id.move_type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id
-            elif self.move_id.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id
+        for rec in self:
+            if rec.product_id:
+                if rec.move_id.move_type == 'out_invoice':
+                    rec.asset_category_id = rec.product_id.product_tmpl_id.deferred_revenue_category_id
+                elif self.move_id.move_type == 'in_invoice':
+                    rec.asset_category_id = rec.product_id.product_tmpl_id.asset_category_id
         return vals
 
     def _set_additional_fields(self, invoice):
