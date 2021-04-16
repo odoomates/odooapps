@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting',
-    'version': '14.0.5.1.0',
+    'version': '14.0.5.2.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo14 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
@@ -17,7 +17,6 @@
                 'om_account_asset',
                 'om_account_budget',
                 'om_account_bank_statement_import',
-                'om_account_standard_report'
                 ],
     'demo': [],
     'data': [
