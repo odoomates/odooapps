@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Development Tutorials',
-    'version': '12.0.1.0.0',
+    'version': '12.0.2.0.0',
     'category': 'Extra Tools',
     'summary': 'Odoo Development Tutorials For Beginners',
     'sequence': '10',
@@ -9,7 +9,10 @@
     'maintainer': 'Odoo Mates',
     'website': 'http://odoomates.tech',
     'live_test_url': 'https://www.youtube.com/watch?v=BDepk0LhVuI&list=PLqRRLx0cl0hoJhjFWkFYowveq2Zn55dhM&index=1',
-    'depends': ['sale', 'mail', 'report_xlsx', 'web_timeline'],
+    'depends': [
+        'sale', 'mail', 'report_xlsx',
+        'web_timeline', 'website', 'point_of_sale'
+    ],
     'demo': [],
     'data': [
         'security/security.xml',
@@ -31,6 +34,7 @@
         'reports/appointment.xml',
         'data/mail_template.xml',
         'views/website_form.xml',
+        'views/pos_sale.xml',
     ],
     'images': ['static/description/banner.png'],
     'installable': True,
