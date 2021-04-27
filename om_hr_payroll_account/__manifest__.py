@@ -2,9 +2,9 @@
 
 {
     'name': 'Odoo 13 Payroll Accounting',
-    'category': 'Human Resources',
+    'category': 'Generic Modules/Human Resources',
     'author': 'Odoo Mates, Odoo SA',
-    'version': '13.0.2.0.0',
+    'version': '13.0.3.0.0',
     'sequence': 1,
     'website': 'https://odoomates.tech',
     'summary': 'Generic Payroll system Integrated with Accounting',
