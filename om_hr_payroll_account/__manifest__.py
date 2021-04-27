@@ -2,9 +2,9 @@
 
 {
     'name': 'Odoo 14 HR Payroll Accounting',
-    'category': 'Human Resources',
+    'category': 'Generic Modules/Human Resources',
     'author': 'Odoo Mates, Odoo SA',
-    'version': '14.0.2.0.0',
+    'version': '14.0.3.0.0',
     'sequence': 1,
     'website': 'https://www.odoomates.tech',
     'live_test_url': 'https://www.youtube.com/watch?v=0kaHMTtn7oY',
