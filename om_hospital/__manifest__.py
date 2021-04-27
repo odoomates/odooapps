@@ -1,7 +1,7 @@
 {
     'name': 'Odoo Development Tutorials',
-    'version': '12.0.2.0.0',
-    'category': 'Extra Tools',
+    'version': '12.0.3.0.0',
+    'category': 'Tutorials',
     'summary': 'Odoo Development Tutorials For Beginners',
     'sequence': '10',
     'license': 'AGPL-3',
