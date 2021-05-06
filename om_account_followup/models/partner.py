@@ -6,10 +6,15 @@ from lxml import etree
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import formatLang
+from datetime import datetime
+from datetime import timedelta
 
+import logging
+_logger = logging.getLogger(__name__)
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
+
 
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False,
                         submenu=False):
@@ -50,6 +55,28 @@ class ResPartner(models.Model):
             partner.latest_followup_date = latest_date
             partner.latest_followup_level_id = latest_level
             partner.latest_followup_level_id_without_lit = latest_level_without_lit
+
+    def do_partner_manual_action_dermanord(self, followup_line):
+        # partner_ids -> res.partner
+        # Check action: check if the action was not empty, if not add
+        action_text = ""
+        action_text = followup_line.manual_action_note or ''
+
+        # Check date: only change when it did not exist already
+        action_date = self.payment_next_action_date or \
+            fields.Date.today()
+
+        # Check responsible: if partner has not got a responsible already,
+        # take from follow-up
+        responsible_id = False
+        if self.payment_responsible_id:
+            responsible_id = self.payment_responsible_id.id
+        else:
+            p = followup_line.manual_action_responsible_id
+            responsible_id = p and p.id or False
+        self.write({'payment_next_action_date': action_date,
+                       'payment_next_action': action_text,
+                       'payment_responsible_id': responsible_id})
 
     def do_partner_manual_action(self, partner_ids):
         # partner_ids -> res.partner
@@ -376,6 +403,22 @@ class ResPartner(models.Model):
                 partners.add(aml.partner_id.id)
         return list(partners)
 
+    def _cron_do(self):
+        partner_earliest_due_date = fields.Datetime.from_string(self.payment_earliest_due_date)
+        followup = self.env ['followup.followup'].browse(1)
+        if self.payment_next_action_date == False:
+            self.payment_next_action_date = datetime.date(datetime.now())
+        past_line_date = datetime.date(datetime.now() - timedelta(days = 1))
+        for line in followup.followup_line:
+            line_date = datetime.date(partner_earliest_due_date + timedelta(days = line.delay))
+            if line.sequence > self.latest_followup_sequence and past_line_date < datetime.date(datetime.now()) and datetime.date(datetime.now()) <= line_date:
+                _logger.warning(f" VICTOR sequence:  {line.sequence}")
+                self.do_partner_manual_action_dermanord(line)
+                self.latest_followup_sequence = line.sequence
+                self.payment_next_action_date = datetime.date(datetime.now() + timedelta(days = line.delay))
+                break
+            past_line_date = line_date
+
     payment_responsible_id = fields.Many2one('res.users', ondelete='set null', string='Follow-up Responsible',
                                              tracking=True, copy=False,
                                              help="Optionally you can assign a user to this field, which will make "
@@ -397,6 +440,9 @@ class ResPartner(models.Model):
                                        help="Latest date that the follow-up level of the partner was changed")
     latest_followup_level_id = fields.Many2one('followup.line', compute='_get_latest',
                                                string="Latest Follow-up Level", help="The maximum follow-up level")
+
+    latest_followup_sequence = fields.Integer('Sequence', help="Gives the sequence order when displaying a list of follow-up lines.", default=0)
+
     latest_followup_level_id_without_lit = fields.Many2one('followup.line',
                                                            compute='_get_latest', store=True,
                                                            string="Latest Follow-up Level without litigation",
