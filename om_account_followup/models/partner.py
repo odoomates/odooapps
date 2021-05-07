@@ -74,6 +74,7 @@ class ResPartner(models.Model):
         else:
             p = followup_line.manual_action_responsible_id
             responsible_id = p and p.id or False
+        _logger.warning(f"action_date: {action_date}, action_text: {action_text}, responsible: {responsible_id}")
         self.write({'payment_next_action_date': action_date,
                        'payment_next_action': action_text,
                        'payment_responsible_id': responsible_id})
@@ -237,7 +238,7 @@ class ResPartner(models.Model):
         if vals.get("payment_responsible_id", False):
             for part in self:
                 if part.payment_responsible_id != \
-                        vals["payment_responsible_id"]:
+                        self.env['res.users'].browse(vals["payment_responsible_id"]):
                     # Find partner_id of user put as responsible
                     responsible_partner_id = self.env["res.users"].browse(
                         vals['payment_responsible_id']).partner_id.id
@@ -404,20 +405,29 @@ class ResPartner(models.Model):
         return list(partners)
 
     def _cron_do(self):
-        partner_earliest_due_date = fields.Datetime.from_string(self.payment_earliest_due_date)
-        followup = self.env ['followup.followup'].browse(1)
-        if self.payment_next_action_date == False:
-            self.payment_next_action_date = datetime.date(datetime.now())
-        past_line_date = datetime.date(datetime.now() - timedelta(days = 1))
-        for line in followup.followup_line:
-            line_date = datetime.date(partner_earliest_due_date + timedelta(days = line.delay))
-            if line.sequence > self.latest_followup_sequence and past_line_date < datetime.date(datetime.now()) and datetime.date(datetime.now()) <= line_date:
-                _logger.warning(f" VICTOR sequence:  {line.sequence}")
-                self.do_partner_manual_action_dermanord(line)
-                self.latest_followup_sequence = line.sequence
-                self.payment_next_action_date = datetime.date(datetime.now() + timedelta(days = line.delay))
-                break
-            past_line_date = line_date
+        partners = self.env['res.partner'].search([('payment_amount_due', '>', '0')])
+        _logger.warning(f"victor partners: {partners}")
+        for partner in partners:
+            _logger.warning("victor: entered _cron_do")
+            partner_earliest_due_date = fields.Datetime.from_string(partner.payment_earliest_due_date)
+            followup = partner.env ['followup.followup'].browse(1)
+            if partner.payment_next_action_date == False:
+                partner.payment_next_action_date = datetime.date(datetime.now())
+            past_line_date = datetime.date(datetime.now() - timedelta(days = 1))
+            _logger.warning(f"last sequence: {followup.followup_line[-1].sequence}")
+            for line in followup.followup_line:
+                line_date = datetime.date(partner_earliest_due_date + timedelta(days = line.delay))
+                if (line.sequence > partner.latest_followup_sequence and past_line_date < datetime.date(datetime.now()) and datetime.date(datetime.now()) <= line_date) or (followup.followup_line[-1].sequence == line.sequence): #and datetime.date(datetime.now()) >= partner.payment_earliest_due_date + timedelta(days = line.delay)):
+                    _logger.warning(f" VICTOR sequence:  {line.sequence}")
+                    partner.do_partner_manual_action_dermanord(line)
+                    partner.latest_followup_sequence = line.sequence
+                    if partner.payment_earliest_due_date + timedelta(days = line.delay) >= datetime.date(datetime.now()):
+                        partner.payment_next_action_date = partner.payment_earliest_due_date + timedelta(days = line.delay)
+                    else:
+                        partner.payment_next_action_date = datetime.date(datetime.now())
+                    break
+                past_line_date = line_date
+
 
     payment_responsible_id = fields.Many2one('res.users', ondelete='set null', string='Follow-up Responsible',
                                              tracking=True, copy=False,
