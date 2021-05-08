@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 13 Accounting PDF Reports',
-    'version': '13.0.1.2.3',
+    'version': '13.0.2.0.0',
     'category': 'Invoicing Management',
     'summary': 'Accounting Reports For Odoo 13',
     'sequence': '10',
