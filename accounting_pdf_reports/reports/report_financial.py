@@ -140,7 +140,6 @@ class ReportFinancial(models.AbstractModel):
                     if flag:
                         sub_lines.append(vals)
                 lines += sorted(sub_lines, key=lambda sub_line: sub_line['name'])
-        print("lines", lines)
         return lines
 
     @api.model

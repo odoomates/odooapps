@@ -63,7 +63,9 @@ class ReportTax(models.AbstractModel):
                     taxes[child.id] = {'tax': 0, 'net': 0, 'name': child.name, 'type': tax.type_tax_use}
             else:
                 taxes[tax.id] = {'tax': 0, 'net': 0, 'name': tax.name, 'type': tax.type_tax_use}
-        self.with_context(date_from=options['date_from'], date_to=options['date_to'], strict_range=True)._compute_from_amls(options, taxes)
+        self.with_context(date_from=options['date_from'], date_to=options['date_to'],
+                          state=options['target_move'],
+                          strict_range=True)._compute_from_amls(options, taxes)
         groups = dict((tp, []) for tp in ['sale', 'purchase'])
         for tax in taxes.values():
             if tax['tax']:
