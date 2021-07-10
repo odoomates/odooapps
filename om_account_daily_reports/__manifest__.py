@@ -8,7 +8,7 @@
     'summary': 'Cash Book, Day Book and Bank Book Report For Odoo 14',
     'description': 'Cash Book, Day Book and Bank Book Report For Odoo 14',
     'sequence': '10',
-    'author': 'Odoo Mates, Odoo SA',
+    'author': 'Odoo Mates',
     'license': 'LGPL-3',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
