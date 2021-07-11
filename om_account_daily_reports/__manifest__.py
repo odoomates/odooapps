@@ -31,6 +31,7 @@
     'installable': True,
     'application': False,
     'auto_install': False,
+    'live_test_url': 'https://www.youtube.com/watch?v=PEh-an8iCO0',
     'images': ['static/description/banner.gif'],
     'qweb': [],
 }
