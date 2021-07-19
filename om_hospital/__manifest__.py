@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Odoo 14 Development Tutorials',
-    'version': '14.0.2.0.0',
+    'version': '14.0.2.1.0',
     'summary': 'Odoo 14 Development Tutorials',
     'sequence': -100,
     'description': """Odoo 14 Development Tutorials""",
-    'category': 'Productivity',
+    'category': 'Tutorials',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'website': 'https://www.odoomates.tech',
