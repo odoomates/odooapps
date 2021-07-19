@@ -1,0 +1,34 @@
+<?xml version="1.0"?>
+<odoo>
+
+    <record id="view_search_appointment_form" model="ir.ui.view">
+        <field name="name">search.appointment.wizard.form</field>
+        <field name="model">search.appointment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Search Appointment">
+                <group>
+                    <field name="patient_id"/>
+                </group>
+                <footer>
+                    <button name="action_search_appointment_m1" type="object" string="Search Appointments (M1)"
+                            class="btn-primary"/>
+                    <button name="action_search_appointment_m2" type="object" string="Search Appointments (M2)"
+                            class="btn-primary"/>
+                    <button name="action_search_appointment_m3" type="object" string="Search Appointments (M3)"
+                            class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_search_appointment" model="ir.actions.act_window">
+        <field name="name">View Appointment</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">search.appointment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_search_appointment_form"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

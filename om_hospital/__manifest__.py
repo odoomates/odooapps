@@ -1,29 +1,40 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Odoo 14 Development Tutorials',
-    'version': '14.0.1.1.0',
+    'version': '14.0.2.0.0',
     'summary': 'Odoo 14 Development Tutorials',
     'sequence': -100,
     'description': """Odoo 14 Development Tutorials""",
-    'category': 'Tutorials',
+    'category': 'Productivity',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'website': 'https://www.odoomates.tech',
-    'live_test_url': 'https://www.youtube.com/watch?v=I8FNdellz3Y&list=PLqRRLx0cl0homY1elJbSoWfeQbRKJ-oPO&index=2',
     'license': 'LGPL-3',
     'depends': [
         'sale',
+        'mail',
         'website_slides',
-        'hr'
+        'hr',
+        'report_xlsx'
     ],
     'data': [
         'security/ir.model.access.csv',
+        'data/data.xml',
         'data/slide_data_v12.xml',
-        'data/slide_data_v12_2.xml',
+        # 'data/slide_data_v12_2.xml',
         'data/slide_data_v13.xml',
         'data/slide_data_v14.xml',
-        'views/patient.xml',
-        'views/sale.xml'
+        'wizard/create_appointment_view.xml',
+        'wizard/search_appointment_view.xml',
+        'views/patient_view.xml',
+        'views/doctor_view.xml',
+        'views/appointment_view.xml',
+        'views/kids_view.xml',
+        'views/patient_gender_view.xml',
+        'views/sale.xml',
+        'report/patient_details_template.xml',
+        'report/patient_card.xml',
+        'report/report.xml'
     ],
     'demo': [],
     'qweb': [],
