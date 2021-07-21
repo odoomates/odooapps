@@ -37,8 +37,6 @@ class AccountFiscalYear(models.Model):
             date_to = fy.date_to
             if date_to < date_from:
                 raise ValidationError(_('The ending date must not be prior to the starting date.'))
-
-
             domain = [
                 ('id', '!=', fy.id),
                 ('company_id', '=', fy.company_id.id),
@@ -47,6 +45,6 @@ class AccountFiscalYear(models.Model):
                 '&', ('date_from', '<=', fy.date_to), ('date_to', '>=', fy.date_to),
                 '&', ('date_from', '<=', fy.date_from), ('date_to', '>=', fy.date_to),
             ]
-
             if self.search_count(domain) > 0:
-                raise ValidationError(_('You can not have an overlap between two fiscal years, please correct the start and/or end dates of your fiscal years.'))
+                raise ValidationError(_('You can not have an overlap between two fiscal years, '
+                                        'please correct the start and/or end dates of your fiscal years.'))
