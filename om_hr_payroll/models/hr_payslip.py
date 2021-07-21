@@ -114,10 +114,10 @@ class HrPayslip(models.Model):
     def check_done(self):
         return True
 
-    # def unlink(self):
-    #     if any(self.filtered(lambda payslip: payslip.state not in ('draft', 'cancel'))):
-    #         raise UserError(_('You cannot delete a payslip which is not draft or cancelled!'))
-    #     return super(HrPayslip, self).unlink()
+    def unlink(self):
+        if any(self.filtered(lambda payslip: payslip.state not in ('draft', 'cancel'))):
+            raise UserError(_('You cannot delete a payslip which is not draft or cancelled!'))
+        return super(HrPayslip, self).unlink()
 
     # TODO move this function into hr_contract module, on hr.employee object
     @api.model

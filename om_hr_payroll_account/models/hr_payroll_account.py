@@ -139,10 +139,8 @@ class HrPayslip(models.Model):
                 })
                 line_ids.append(adjust_debit)
             move_dict['line_ids'] = line_ids
-            print("move_dict", move_dict)
             move = self.env['account.move'].create(move_dict)
             slip.write({'move_id': move.id, 'date': date})
-            # print("mmmmmmmmmmmm", mmmmmmmmmmmmmmmmm)
             move.post()
         return res
 
