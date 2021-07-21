@@ -2,40 +2,6 @@
 <odoo>
 
     <data noupdate="0">
-        <record id="contrib_register_employees" model="hr.contribution.register">
-            <field name="name">Employees</field>
-            <field name="partner_id" eval="False"/>
-        </record>
-
-        <record id="BASIC" model="hr.salary.rule.category">
-            <field name="name">Basic</field>
-            <field name="code">BASIC</field>
-        </record>
-
-        <record id="ALW" model="hr.salary.rule.category">
-            <field name="name">Allowance</field>
-            <field name="code">ALW</field>
-        </record>
-
-        <record id="GROSS" model="hr.salary.rule.category">
-            <field name="name">Gross</field>
-            <field name="code">GROSS</field>
-        </record>
-
-        <record id="DED" model="hr.salary.rule.category">
-            <field name="name">Deduction</field>
-            <field name="code">DED</field>
-        </record>
-
-        <record id="NET" model="hr.salary.rule.category">
-            <field name="name">Net</field>
-            <field name="code">NET</field>
-        </record>
-
-        <record id="COMP" model="hr.salary.rule.category">
-            <field name="name">Company Contribution</field>
-            <field name="code">COMP</field>
-        </record>
 
         <record id="hr_rule_basic" model="hr.salary.rule">
             <field name="name">Basic Salary</field>
@@ -57,14 +23,67 @@
             <field name="amount_python_compute">result = categories.BASIC + categories.ALW</field>
         </record>
 
-        <record id="hr_rule_unpaid" model="hr.salary.rule">
-            <field name="name">Unpaid Leave</field>
-            <field name="sequence" eval="100"/>
-            <field name="code">UNP</field>
-            <field name="category_id" ref="om_hr_payroll.DED"/>
+<!--        <record id="hr_rule_unpaid" model="hr.salary.rule">-->
+<!--            <field name="name">Unpaid Leave</field>-->
+<!--            <field name="sequence" eval="100"/>-->
+<!--            <field name="code">UNP</field>-->
+<!--            <field name="category_id" ref="om_hr_payroll.DED"/>-->
+<!--            <field name="condition_select">none</field>-->
+<!--            <field name="amount_select">code</field>-->
+<!--            <field name="amount_python_compute">result=-(contract.wage / worked_days.WORK100.number_of_days) *-->
+<!--                worked_days.Unpaid.number_of_days-->
+<!--            </field>-->
+<!--        </record>-->
+
+        <record id="hr_rule_hra" model="hr.salary.rule">
+            <field name="name">House Rent Allowance</field>
+            <field name="sequence" eval="3"/>
+            <field name="code">HRA</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
             <field name="condition_select">none</field>
             <field name="amount_select">code</field>
-            <field name="amount_python_compute">result=-(contract.wage / worked_days.WORK100.number_of_days) * worked_days.Unpaid.number_of_days</field>
+            <field name="amount_python_compute">result = contract.hra</field>
+            <field name="amount_percentage">30</field>
+        </record>
+
+        <record id="hr_rule_da" model="hr.salary.rule">
+            <field name="name">Dearness Allowance</field>
+            <field name="sequence" eval="5"/>
+            <field name="code">DA</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.da</field>
+        </record>
+
+        <record id="hr_rule_travel" model="hr.salary.rule">
+            <field name="name">Travel Allowance</field>
+            <field name="sequence" eval="7"/>
+            <field name="code">Travel</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.travel_allowance</field>
+        </record>
+
+        <record id="hr_rule_meal" model="hr.salary.rule">
+            <field name="name">Meal Allowance</field>
+            <field name="sequence" eval="9"/>
+            <field name="code">Meal</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.meal_allowance</field>
+        </record>
+
+        <record id="hr_rule_medical" model="hr.salary.rule">
+            <field name="name">Medical Allowance</field>
+            <field name="sequence" eval="11"/>
+            <field name="code">Medical</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = contract.medical_allowance</field>
         </record>
 
         <record id="hr_rule_net" model="hr.salary.rule">
@@ -77,7 +96,6 @@
             <field name="amount_python_compute">result = categories.BASIC + categories.ALW + categories.DED</field>
             <field name="register_id" ref="contrib_register_employees"/>
         </record>
-
 
         <!-- Salary Structure -->
 

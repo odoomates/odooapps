@@ -73,6 +73,7 @@ class HrPayslip(models.Model):
                 amount = currency.round(slip.credit_note and -line.total or line.total)
                 if currency.is_zero(amount):
                     continue
+
                 debit_account_id = line.salary_rule_id.account_debit.id
                 credit_account_id = line.salary_rule_id.account_credit.id
                 # if not debit_account_id or not credit_account_id:
@@ -138,8 +139,10 @@ class HrPayslip(models.Model):
                 })
                 line_ids.append(adjust_debit)
             move_dict['line_ids'] = line_ids
+            print("move_dict", move_dict)
             move = self.env['account.move'].create(move_dict)
             slip.write({'move_id': move.id, 'date': date})
+            # print("mmmmmmmmmmmm", mmmmmmmmmmmmmmmmm)
             move.post()
         return res
 
