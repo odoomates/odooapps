@@ -150,12 +150,13 @@ class CrossoveredBudgetLines(models.Model):
 
     def _compute_line_name(self):
         #just in case someone opens the budget line in form view
-        computed_name = self.crossovered_budget_id.name
-        if self.general_budget_id:
-            computed_name += ' - ' + self.general_budget_id.name
-        if self.analytic_account_id:
-            computed_name += ' - ' + self.analytic_account_id.name
-        self.name = computed_name
+        for line in self:
+            computed_name = line.crossovered_budget_id.name
+            if line.general_budget_id:
+                computed_name += ' - ' + line.general_budget_id.name
+            if line.analytic_account_id:
+                computed_name += ' - ' + line.analytic_account_id.name
+            line.name = computed_name
 
     def _compute_practical_amount(self):
         for line in self:
