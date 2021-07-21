@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
-from lxml import etree
-
 from odoo import api, fields, models, _
-# from odoo.osv.orm import setup_modifiers
 
 
 class AssetModify(models.TransientModel):
@@ -17,30 +14,10 @@ class AssetModify(models.TransientModel):
     method_end = fields.Date(string='Ending date')
     asset_method_time = fields.Char(compute='_get_asset_method_time', string='Asset Method Time', readonly=True)
 
-
     def _get_asset_method_time(self):
         if self.env.context.get('active_id'):
             asset = self.env['account.asset.asset'].browse(self.env.context.get('active_id'))
             self.asset_method_time = asset.method_time
-
-    # @api.model
-    # def fields_view_get(self, view_id=None, view_type='form', toolbar=False, submenu=False):
-    #     result = super(AssetModify, self).fields_view_get(view_id, view_type, toolbar=toolbar, submenu=submenu)
-    #     asset_id = self.env.context.get('active_id')
-    #     active_model = self.env.context.get('active_model')
-    #     if active_model == 'account.asset.asset' and asset_id:
-    #         asset = self.env['account.asset.asset'].browse(asset_id)
-    #         doc = etree.XML(result['arch'])
-    #         if asset.method_time == 'number' and doc.xpath("//field[@name='method_end']"):
-    #             node = doc.xpath("//field[@name='method_end']")[0]
-    #             node.set('invisible', '1')
-    #             setup_modifiers(node, result['fields']['method_end'])
-    #         elif asset.method_time == 'end' and doc.xpath("//field[@name='method_number']"):
-    #             node = doc.xpath("//field[@name='method_number']")[0]
-    #             node.set('invisible', '1')
-    #             setup_modifiers(node, result['fields']['method_number'])
-    #         result['arch'] = etree.tostring(doc, encoding='unicode')
-    #     return result
 
     @api.model
     def default_get(self, fields):
@@ -60,7 +37,6 @@ class AssetModify(models.TransientModel):
             res['asset_method_time'] = active_asset.method_time
         return res
 
-    
     def modify(self):
         """ Modifies the duration of asset for calculating depreciation
         and maintains the history of old values, in the chatter.

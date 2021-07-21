@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record model="ir.ui.view" id="action_account_asset_report_pivot">
+    <record id="action_account_asset_report_pivot" model="ir.ui.view">
         <field name="name">asset.asset.report.pivot</field>
         <field name="model">asset.asset.report</field>
         <field name="arch" type="xml">
@@ -13,7 +13,7 @@
         </field>
     </record>
 
-    <record model="ir.ui.view" id="action_account_asset_report_graph">
+    <record id="action_account_asset_report_graph" model="ir.ui.view">
         <field name="name">asset.asset.report.graph</field>
         <field name="model">asset.asset.report</field>
         <field name="arch" type="xml">
@@ -32,10 +32,13 @@
             <search string="Assets Analysis">
                 <field name="date"/>
                 <field name="depreciation_date"/>
-                <filter string="Draft" name="draft" domain="[('state','=','draft')]" help="Assets in draft state"/>
-                <filter string="Running" name="running" domain="[('state','=','open')]" help="Assets in running state"/>
+                <filter string="Draft" name="draft" domain="[('state','=','draft')]"
+                        help="Assets in draft state"/>
+                <filter string="Running" name="running" domain="[('state','=','open')]"
+                        help="Assets in running state"/>
                 <separator/>
-                <filter string="Posted" name="posted" domain="[('move_check','=',True)]" help="Posted depreciation lines" context="{'unposted_value_visible': 0}"/>
+                <filter string="Posted" name="posted" domain="[('move_check','=',True)]"
+                        help="Posted depreciation lines" context="{'unposted_value_visible': 0}"/>
                 <field name="asset_id"/>
                 <field name="asset_category_id"/>
                 <group expand="0" string="Extended Filters...">
@@ -44,8 +47,10 @@
                 </group>
                 <group expand="1" string="Group By">
                     <filter string="Asset" name="asset" context="{'group_by':'asset_id'}"/>
-                    <filter string="Asset Category" name="asset_category" context="{'group_by':'asset_category_id'}"/>
-                    <filter string="Company" name="company" context="{'group_by':'company_id'}" groups="base.group_multi_company"/>
+                    <filter string="Asset Category" name="asset_category"
+                            context="{'group_by':'asset_category_id'}"/>
+                    <filter string="Company" name="company" context="{'group_by':'company_id'}"
+                            groups="base.group_multi_company"/>
                     <separator/>
                     <filter string="Purchase Month" name="purchase_month" help="Date of asset purchase"
                         context="{'group_by':'date:month'}"/>
@@ -56,13 +61,13 @@
         </field>
     </record>
 
-    <record model="ir.actions.act_window" id="action_asset_asset_report">
+    <record id="action_asset_asset_report" model="ir.actions.act_window">
         <field name="name">Assets Analysis</field>
         <field name="res_model">asset.asset.report</field>
         <field name="view_mode">graph,pivot</field>
         <field name="search_view_id" ref="view_asset_asset_report_search"/>
         <field name="domain">[('asset_category_id.type', '=', 'purchase')]</field>
-        <field name="context">{}</field>  <!-- force empty -->
+        <field name="context">{}</field>
         <field name="help" type="html">
           <p class="o_view_nocontent_empty_folder">
             No content
@@ -73,9 +78,10 @@
         </field>
     </record>
     
-    <menuitem name="Assets"
+    <menuitem id="menu_action_asset_asset_report"
+              name="Assets"
               action="action_asset_asset_report"
-              id="menu_action_asset_asset_report"
               parent="account.account_reports_management_menu"
               sequence="21"/>
+
 </odoo>
