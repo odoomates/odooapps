@@ -86,9 +86,10 @@ class AccountBankStatementImport(models.TransientModel):
                                 values.update({
                                     'date': field[0],
                                     'payment_ref': field[1],
-                                    'partner_id': self.get_partner(field[2]),
-                                    'amount': field[3],
-                                    'currency_id':  self.get_currency(field[4])
+                                    'ref': field[2],
+                                    'partner_id': self.get_partner(field[3]),
+                                    'amount': field[4],
+                                    'currency_id':  self.get_currency(field[5])
                                 })
                                 vals_list.append((0, 0, values))
                     statement_vals = {
@@ -121,9 +122,10 @@ class AccountBankStatementImport(models.TransientModel):
                             values.update({
                                 'date': line[0],
                                 'payment_ref': line[1],
-                                'partner_id': self.get_partner(line[2]),
-                                'amount': line[3],
-                                'currency_id': self.get_currency(line[4])
+                                'ref': line[2],
+                                'partner_id': self.get_partner(line[3]),
+                                'amount': line[4],
+                                'currency_id': self.get_currency(line[5])
                             })
                             vals_list.append((0, 0, values))
                     statement_vals = {
