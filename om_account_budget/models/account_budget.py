@@ -32,7 +32,6 @@ class AccountBudgetPost(models.Model):
         self._check_account_ids(vals)
         return super(AccountBudgetPost, self).create(vals)
 
-    
     def write(self, vals):
         self._check_account_ids(vals)
         return super(AccountBudgetPost, self).write(vals)
@@ -106,10 +105,10 @@ class CrossoveredBudgetLines(models.Model):
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
         # overrides the default read_group in order to compute the computed fields manually for the group
-
+        fields_list = {'practical_amount', 'theoritical_amount', 'percentage'}
+        fields = {field.split(':', 1)[0] if field.split(':', 1)[0] in fields_list else field for field in fields}
         result = super(CrossoveredBudgetLines, self).read_group(domain, fields, groupby, offset=offset, limit=limit,
                                                                 orderby=orderby, lazy=lazy)
-        fields_list = ['practical_amount', 'theoritical_amount', 'percentage']
         if any(x in fields for x in fields_list):
             for group_line in result:
 
@@ -142,7 +141,6 @@ class CrossoveredBudgetLines(models.Model):
 
         return result
 
-    
     def _is_above_budget(self):
         for line in self:
             if line.theoritical_amount >= 0:
@@ -150,17 +148,15 @@ class CrossoveredBudgetLines(models.Model):
             else:
                 line.is_above_budget = line.practical_amount < line.theoritical_amount
 
-    
     def _compute_line_name(self):
-        for line in self:
-            computed_name = line.crossovered_budget_id.name
-            if line.general_budget_id:
-                computed_name += ' - ' + line.general_budget_id.name
-            if line.analytic_account_id:
-                computed_name += ' - ' + line.analytic_account_id.name
-            line.name = computed_name
-    
-    
+        #just in case someone opens the budget line in form view
+        computed_name = self.crossovered_budget_id.name
+        if self.general_budget_id:
+            computed_name += ' - ' + self.general_budget_id.name
+        if self.analytic_account_id:
+            computed_name += ' - ' + self.analytic_account_id.name
+        self.name = computed_name
+
     def _compute_practical_amount(self):
         for line in self:
             acc_ids = line.general_budget_id.account_ids.ids
@@ -195,7 +191,6 @@ class CrossoveredBudgetLines(models.Model):
             self.env.cr.execute(select, where_clause_params)
             line.practical_amount = self.env.cr.fetchone()[0] or 0.0
 
-    
     def _compute_theoritical_amount(self):
         # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
         today = fields.Date.today()
@@ -219,7 +214,6 @@ class CrossoveredBudgetLines(models.Model):
                     theo_amt = line.planned_amount
             line.theoritical_amount = theo_amt
 
-    
     def _compute_percentage(self):
         for line in self:
             if line.theoritical_amount != 0.00:
