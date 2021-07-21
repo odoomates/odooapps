@@ -9,7 +9,7 @@
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'website': 'https://www.odoomates.tech',
-    'license': 'LGPL-3',
+    'license': 'AGPL-3',
     'depends': [
         'sale',
         'mail',
