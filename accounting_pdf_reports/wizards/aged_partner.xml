@@ -10,7 +10,8 @@
                     <field name="date_from"/>
                     <field name="period_length"/>
                     <newline/>
-                    <field name="result_selection" widget="radio"/>
+                    <field name="result_selection" widget="radio"
+                           invisible="context.get('hide_result_selection')"/>
                     <field name="target_move" widget="radio"/>
                 </group>
                 <field name="journal_ids" required="0" invisible="1"/>
@@ -28,14 +29,51 @@
         <field name="type">ir.actions.act_window</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="account_aged_balance_view"/>
-        <field name="context">{}</field>
+        <field name="context"></field>
         <field name="target">new</field>
     </record>
 
+
     <menuitem id="menu_aged_trial_balance"
         name="Aged Partner Balance"
-        sequence="7"
+        sequence="10"
         action="action_account_aged_balance_view"
-        parent="accounting_pdf_reports.menu_finance_legal_statement"/>
+        parent="menu_finance_partner_reports"/>
+
+
+    <record id="action_account_aged_receivable" model="ir.actions.act_window">
+        <field name="name">Aged Receivable</field>
+        <field name="res_model">account.aged.trial.balance</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="account_aged_balance_view"/>
+        <field name="context">{'default_result_selection': 'customer',
+            'hide_result_selection': 1}</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_aged_receivable"
+        name="Aged Receivable"
+        sequence="20"
+        action="action_account_aged_receivable"
+        parent="menu_finance_partner_reports"/>
+
+
+    <record id="action_account_aged_payable" model="ir.actions.act_window">
+        <field name="name">Aged Payable</field>
+        <field name="res_model">account.aged.trial.balance</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="view_mode">tree,form</field>
+        <field name="view_id" ref="account_aged_balance_view"/>
+        <field name="context">{'default_result_selection': 'supplier',
+            'hide_result_selection': 1}</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_aged_payable"
+        name="Aged Payable"
+        sequence="30"
+        action="action_account_aged_payable"
+        parent="menu_finance_partner_reports"/>
 
 </odoo>
