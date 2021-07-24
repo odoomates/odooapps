@@ -3,7 +3,7 @@
 
 {
     'name': 'Cash Book, Day Book, Bank Book Financial Reports',
-    'version': '14.0.1.0.0',
+    'version': '14.0.2.0.0',
     'category': 'Invoicing Management',
     'summary': 'Cash Book, Day Book and Bank Book Report For Odoo 14',
     'description': 'Cash Book, Day Book and Bank Book Report For Odoo 14',
@@ -19,10 +19,10 @@
     'demo': [],
     'data': [
         'security/ir.model.access.csv',
+        'views/om_daily_reports.xml',
         'wizards/daybook.xml',
         'wizards/cashbook.xml',
         'wizards/bankbook.xml',
-        'views/om_daily_reports.xml',
         'reports/reports.xml',
         'reports/report_daybook.xml',
         'reports/report_cashbook.xml',
