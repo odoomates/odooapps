@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting',
-    'version': '14.0.6.4.0',
+    'version': '14.0.6.5.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo14 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
@@ -30,6 +30,6 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner_new.gif'],
     'qweb': [],
 }
