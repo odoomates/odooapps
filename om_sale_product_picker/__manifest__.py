@@ -19,6 +19,6 @@
     'data': [
         'views/sale_order.xml',
     ],
-    'images': [],
+    'images': ['static/description/banner.gif'],
     'application': False,
 }
