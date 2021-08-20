@@ -3,7 +3,7 @@
 {
     'name': 'Odoo 14 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '14.0.6.0.0',
+    'version': '14.0.7.0.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 14 Community Edition',
@@ -18,6 +18,7 @@
         'security/hr_payroll_security.xml',
         'security/ir.model.access.csv',
         'data/hr_payroll_sequence.xml',
+        'data/mail_template.xml',
         'data/hr_payroll_category.xml',
         'data/hr_payroll_data.xml',
         'wizard/hr_payroll_payslips_by_employees_views.xml',

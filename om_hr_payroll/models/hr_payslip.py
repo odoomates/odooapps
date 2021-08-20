@@ -4,7 +4,6 @@ import babel
 from datetime import date, datetime, time
 from dateutil.relativedelta import relativedelta
 from pytz import timezone
-
 from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -109,6 +108,35 @@ class HrPayslip(models.Model):
             'domain': "[('id', 'in', %s)]" % copied_payslip.ids,
             'views': [(tree_view_ref and tree_view_ref.id or False, 'tree'), (form_view_ref and form_view_ref.id or False, 'form')],
             'context': {}
+        }
+
+    def action_send_email(self):
+        self.ensure_one()
+        ir_model_data = self.env['ir.model.data']
+        try:
+            template_id = self.env.ref('om_hr_payroll.mail_template_payslip').id
+        except ValueError:
+            template_id = False
+        try:
+            compose_form_id = ir_model_data.get_object_reference('mail', 'email_compose_message_wizard_form')[1]
+        except ValueError:
+            compose_form_id = False
+        ctx = {
+            'default_model': 'hr.payslip',
+            'default_res_id': self.ids[0],
+            'default_use_template': bool(template_id),
+            'default_template_id': template_id,
+            'default_composition_mode': 'comment',
+        }
+        return {
+            'name': _('Compose Email'),
+            'type': 'ir.actions.act_window',
+            'view_mode': 'form',
+            'res_model': 'mail.compose.message',
+            'views': [(compose_form_id, 'form')],
+            'view_id': compose_form_id,
+            'target': 'new',
+            'context': ctx,
         }
 
     def check_done(self):

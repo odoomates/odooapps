@@ -72,7 +72,7 @@
             <field name="name">hr.payslip.tree</field>
             <field name="model">hr.payslip</field>
             <field name="arch" type="xml">
-                <tree decoration-info="state in ('confirm','hr_check','accont_check')"
+                <tree decoration-info="state in ('done')"
                       decoration-muted="state == 'cancel'" string="Payslips">
                     <field name="number"/>
                     <field name="employee_id"/>
@@ -144,7 +144,9 @@
                         <button string="Compute Sheet" name="compute_sheet" type="object" states="draft"
                                 class="oe_highlight"/>
                         <button string="Cancel Payslip" name="action_payslip_cancel" type="object"
-                                states="draft,hr_check,confirm,verify"/>
+                                states="draft,done,verify"/>
+                        <button string="Send E-Mail" name="action_send_email" type="object"
+                                class="oe_highlight" states="done,verify"/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
                     </header>
                     <sheet>
