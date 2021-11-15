@@ -31,7 +31,7 @@ class AccountFinancialReport(models.Model):
     parent_id = fields.Many2one('account.financial.report', 'Parent')
     children_ids = fields.One2many('account.financial.report', 'parent_id', 'Account Report')
     sequence = fields.Integer('Sequence')
-    level = fields.Integer(compute='_get_level', string='Level', store=True)
+    level = fields.Integer(compute='_get_level', string='Level', store=True, recursive=True)
     type = fields.Selection([
         ('sum', 'View'),
         ('accounts', 'Accounts'),
