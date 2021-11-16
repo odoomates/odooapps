@@ -105,6 +105,12 @@ class RecurringPayment(models.Model):
         if self.amount <= 0:
             raise ValidationError(_('Amount Must Be Non-Zero Positive Number'))
 
+    def unlink(self):
+        for rec in self:
+            if rec.state == 'done':
+                raise ValidationError(_('Cannot delete done records !'))
+        return super(RecurringPayment, self).unlink()
+
 
 class RecurringPaymentLine(models.Model):
     _name = 'recurring.payment.line'

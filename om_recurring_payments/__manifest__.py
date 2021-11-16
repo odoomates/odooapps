@@ -5,7 +5,7 @@
     'name': 'Odoo 15 Recurring Payment',
     'author': 'Odoo Mates',
     'category': 'Accounting',
-    'version': '15.0',
+    'version': '15.0.1.1.0',
     'description': """Use recurring payments to handle periodically repeated payments""",
     'summary': 'Odoo 15 Recurring Payment',
     'sequence': 11,
