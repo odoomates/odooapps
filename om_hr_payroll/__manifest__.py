@@ -12,6 +12,7 @@
     'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
     'depends': [
+        'mail',
         'hr_contract',
         'hr_holidays',
     ],

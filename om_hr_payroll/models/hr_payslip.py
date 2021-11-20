@@ -11,6 +11,7 @@ from odoo.exceptions import UserError, ValidationError
 class HrPayslip(models.Model):
     _name = 'hr.payslip'
     _description = 'Pay Slip'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _order = 'id desc'
 
     struct_id = fields.Many2one('hr.payroll.structure', string='Structure',
@@ -200,7 +201,7 @@ class HrPayslip(models.Model):
                 current_leave_struct = leaves.setdefault(holiday.holiday_status_id, {
                     'name': holiday.holiday_status_id.name or _('Global Leaves'),
                     'sequence': 5,
-                    'code': holiday.holiday_status_id.code or 'GLOBAL',
+                    'code': holiday.holiday_status_id.name or 'GLOBAL',
                     'number_of_days': 0.0,
                     'number_of_hours': 0.0,
                     'contract_id': contract.id,
