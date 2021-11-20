@@ -3,13 +3,14 @@
 {
     'name': 'Odoo 15 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '15.0.1.0.0',
+    'version': '2.0.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 15 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=0kaHMTtn7oY',
-    'description': "",
+    'description': "Odoo 15 Payroll, Payroll Odoo 15, Odoo Community Payroll",
     'website': 'https://www.odoomates.tech',
+    'license': 'LGPL-3',
     'depends': [
         'hr_contract',
         'hr_holidays',

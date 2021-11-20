@@ -118,7 +118,7 @@ class HrPayslip(models.Model):
         except ValueError:
             template_id = False
         try:
-            compose_form_id = ir_model_data.get_object_reference('mail', 'email_compose_message_wizard_form')[1]
+            compose_form_id = ir_model_data._xmlid_lookup('mail.email_compose_message_wizard_form')[2]
         except ValueError:
             compose_form_id = False
         ctx = {
@@ -200,7 +200,7 @@ class HrPayslip(models.Model):
                 current_leave_struct = leaves.setdefault(holiday.holiday_status_id, {
                     'name': holiday.holiday_status_id.name or _('Global Leaves'),
                     'sequence': 5,
-                    'code': holiday.holiday_status_id.name or 'GLOBAL',
+                    'code': holiday.holiday_status_id.code or 'GLOBAL',
                     'number_of_days': 0.0,
                     'number_of_hours': 0.0,
                     'contract_id': contract.id,
