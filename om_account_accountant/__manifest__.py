@@ -3,10 +3,12 @@
 
 {
     'name': 'Odoo 15 Accounting',
-    'version': '2.0.0',
+    'version': '2.1.0',
     'category': 'Accounting',
-    'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, Lock Dates, Fiscal Year For Odoo15 Community Edition',
-    'description': 'Odoo 15 Financial Reports, Asset Management and Account Budget For Odoo15 Community Edition',
+    'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
+               'Lock Dates, Fiscal Year For Odoo15 Community Edition',
+    'description': 'Odoo 15 Financial Reports, Asset Management and '
+                   'Account Budget For Odoo15 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
     'sequence': '1',
     'website': 'https://www.odoomates.tech',
@@ -28,6 +30,7 @@
         'views/account_type.xml',
         'views/account_group.xml',
         'views/account_tag.xml',
+        'views/res_partner.xml',
         'views/account_bank_statement.xml',
     ],
     'installable': True,
@@ -35,3 +38,4 @@
     'auto_install': False,
     'images': ['static/description/banner.gif'],
 }
+
