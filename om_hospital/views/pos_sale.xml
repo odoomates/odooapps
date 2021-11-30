@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="pos_sale_report_tree" model="ir.ui.view">
+        <field name="name">pos.sale.report.tree</field>
+        <field name="model">pos.sale.report</field>
+        <field name="arch" type="xml">
+            <tree string="POS Sale Report">
+                <field name="product_id"/>
+                <field name="partner_id"/>
+                <field name="quantity"/>
+                <field name="price_unit"/>
+                <field name="date"/>
+            </tree>
+        </field>
+     </record>
+
+    <record id="action_pos_sale_report" model="ir.actions.act_window">
+        <field name="name">POS Sale Report</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">pos.sale.report</field>
+        <field name="view_type">form</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+          <p class="o_view_nocontent_smiling_face">
+          </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_pos_sale"
+              action="action_pos_sale_report"
+              name="POS Sale Report"
+              sequence="1"/>
+
+</odoo>

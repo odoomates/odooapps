@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo12 Accounting',
-    'version': '12.0.3.1.0',
+    'version': '12.0.3.2.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo12 Community Edition',
     'sequence': '8',
