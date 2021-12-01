@@ -1,0 +1,18 @@
+<odoo>
+    <data>
+
+        <record id="invoice_form" model="ir.ui.view">
+            <field name="name">account.invoice.deliver_date</field>
+            <field name="model">account.invoice</field>
+            <field name="inherit_id" ref="account.invoice_form"/>
+            <field name="arch" type="xml">
+                <field name="date_invoice" position="after">
+                    <field name="l10n_sa_show_delivery_date" invisible="1"/>
+                    <field name="l10n_sa_delivery_date"
+                           attrs="{'invisible': [('l10n_sa_show_delivery_date', '=', False)], 'required': [('l10n_sa_show_delivery_date', '=', True)]}"/>
+                </field>
+            </field>
+        </record>
+
+    </data>
+</odoo>
