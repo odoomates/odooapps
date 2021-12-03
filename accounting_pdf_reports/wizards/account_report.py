@@ -42,7 +42,8 @@ class AccountingReport(models.TransientModel):
             if isinstance(data['form'][field], tuple):
                 data['form'][field] = data['form'][field][0]
         comparison_context = self._build_comparison_context(data)
-        res['data']['form']['comparison_context'] = comparison_context
+        if res['data'].get('form') and res['data']['form'].get('comparison_context'):
+            res['data']['form']['comparison_context'] = comparison_context
         return res
 
     def _print_report(self, data):
