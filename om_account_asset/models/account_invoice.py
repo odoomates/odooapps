@@ -34,7 +34,7 @@ class AccountInvoice(models.Model):
         return result
 
 
-class AccountInvoiceLine(models.Model):
+class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
     asset_category_id = fields.Many2one('account.asset.category', string='Asset Category')
@@ -92,13 +92,13 @@ class AccountInvoiceLine(models.Model):
 
     @api.onchange('product_uom_id')
     def _onchange_uom_id(self):
-        result = super(AccountInvoiceLine, self)._onchange_uom_id()
+        result = super(AccountMoveLine, self)._onchange_uom_id()
         self.onchange_asset_category_id()
         return result
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
-        vals = super(AccountInvoiceLine, self)._onchange_product_id()
+        vals = super(AccountMoveLine, self)._onchange_product_id()
         for rec in self:
             if rec.product_id:
                 if rec.move_id.move_type == 'out_invoice':
@@ -107,14 +107,5 @@ class AccountInvoiceLine(models.Model):
                     rec.asset_category_id = rec.product_id.product_tmpl_id.asset_category_id
         return vals
 
-    def _set_additional_fields(self, invoice):
-        if not self.asset_category_id:
-            if invoice.move_type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
-            elif invoice.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
-            self.onchange_asset_category_id()
-        super(AccountInvoiceLine, self)._set_additional_fields(invoice)
-
     def get_invoice_line_account(self, type, product, fpos, company):
-        return product.asset_category_id.account_asset_id or super(AccountInvoiceLine, self).get_invoice_line_account(type, product, fpos, company)
+        return product.asset_category_id.account_asset_id or super(AccountMoveLine, self).get_invoice_line_account(type, product, fpos, company)
