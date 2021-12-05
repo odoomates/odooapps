@@ -2,7 +2,7 @@
 
 {
     'name': 'KSA E-Invoicing | Zatca Invoicing',
-    'version': '1.0.0',
+    'version': '2.0.0',
     'author': 'Odoo Mates, Odoo SA',
     'category': 'Accounting/Localizations',
     'license': 'LGPL-3',
