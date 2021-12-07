@@ -20,10 +20,9 @@ class ChangeLockDate(models.TransientModel):
 
     company_id = fields.Many2one('res.company', string="Company",
                                  required=True, default=lambda self: self.env.user.company_id)
-    period_lock_date = fields.Date(string='Lock Date for Non-Advisers',
+    period_lock_date = fields.Date(string='Journal Entries Lock Date',
                                    default=lambda self: self.env.user.company_id.period_lock_date,
-                                   help='Only users with the Adviser role can edit accounts prior to and inclusive '
-                                        'of this date. Use it for period locking inside an open fiscal year.')
+                                   help='Prevent posting of journal entries in this period.')
     fiscalyear_lock_date = fields.Date(string='Lock Date for All Users',
                                        default=lambda self: self.env.user.company_id.fiscalyear_lock_date,
                                        help='No users, including Advisers, can edit accounts prior to and inclusive of '
