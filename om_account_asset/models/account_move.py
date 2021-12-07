@@ -43,14 +43,17 @@ class AccountMoveLine(models.Model):
     asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
                              digits="Account", store=True)
 
-    # @api.model
-    # def default_get(self, fields):
-    #     print("fields", fields)
-    #     res = super(AccountMoveLine, self).default_get(fields)
-    #     # if not self.asset_category_id and self.product_id.product_tmpl_id.asset_category_id:
-    #     #     self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
-    #     #     self.onchange_asset_category_id()
-    #     return res
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountMoveLine, self).default_get(fields)
+        if self.product_id and self.move_id.move_type == 'out_invoice' and \
+                self.product_id.product_tmpl_id.deferred_revenue_category_id:
+            self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
+        elif self.product_id and self.product_id.product_tmpl_id.asset_category_id and \
+                self.move_id.move_type == 'in_invoice':
+            self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
+        self.onchange_asset_category_id()
+        return res
 
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
@@ -111,19 +114,10 @@ class AccountMoveLine(models.Model):
         for rec in self:
             if rec.product_id:
                 if rec.move_id.move_type == 'out_invoice':
-                    rec.asset_category_id = rec.product_id.product_tmpl_id.deferred_revenue_category_id
+                    rec.asset_category_id = rec.product_id.product_tmpl_id.deferred_revenue_category_id.id
                 elif self.move_id.move_type == 'in_invoice':
-                    rec.asset_category_id = rec.product_id.product_tmpl_id.asset_category_id
+                    rec.asset_category_id = rec.product_id.product_tmpl_id.asset_category_id.id
         return vals
-
-    def _set_additional_fields(self, invoice):
-        if not self.asset_category_id:
-            if invoice.move_type == 'out_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
-            elif invoice.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
-            self.onchange_asset_category_id()
-        super(AccountMoveLine, self)._set_additional_fields(invoice)
 
     def get_invoice_line_account(self, type, product, fpos, company):
         return product.asset_category_id.account_asset_id or super(AccountMoveLine, self).get_invoice_line_account(type, product, fpos, company)
