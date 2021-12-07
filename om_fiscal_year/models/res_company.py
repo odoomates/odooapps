@@ -7,7 +7,7 @@ from odoo.exceptions import RedirectWarning, ValidationError
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    # RedirectWarning is removed to print the error of missing reconciliation view
+    # RedirectWarning is changed with validation error to remove error of missing reconciliation view
     def _validate_fiscalyear_lock(self, values):
         if values.get('fiscalyear_lock_date'):
             draft_entries = self.env['account.move'].search([

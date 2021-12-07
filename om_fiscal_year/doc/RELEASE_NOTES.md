@@ -1,4 +1,4 @@
-## Module <om_account_accountant>
+## Module <om_fiscal_year>
 
 #### 07.12.2021
 #### Version 15.0.2.0.0
