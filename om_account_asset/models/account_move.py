@@ -6,12 +6,12 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
-class AccountInvoice(models.Model):
+class AccountMove(models.Model):
     _inherit = 'account.move'
 
     @api.model
     def _refund_cleanup_lines(self, lines):
-        result = super(AccountInvoice, self)._refund_cleanup_lines(lines)
+        result = super(AccountMove, self)._refund_cleanup_lines(lines)
         for i, line in enumerate(lines):
             for name, field in line._fields.items():
                 if name == 'asset_category_id':
@@ -20,12 +20,12 @@ class AccountInvoice(models.Model):
         return result
 
     def action_cancel(self):
-        res = super(AccountInvoice, self).action_cancel()
+        res = super(AccountMove, self).action_cancel()
         self.env['account.asset.asset'].sudo().search([('invoice_id', 'in', self.ids)]).write({'active': False})
         return res
 
     def action_post(self):
-        result = super(AccountInvoice, self).action_post()
+        result = super(AccountMove, self).action_post()
         for inv in self:
             context = dict(self.env.context)
             context.pop('default_type', None)
@@ -34,7 +34,7 @@ class AccountInvoice(models.Model):
         return result
 
 
-class AccountInvoiceLine(models.Model):
+class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
     asset_category_id = fields.Many2one('account.asset.category', string='Asset Category')
@@ -42,6 +42,16 @@ class AccountInvoiceLine(models.Model):
     asset_end_date = fields.Date(string='Asset End Date', compute='_get_asset_date', readonly=True, store=True)
     asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
                              digits="Account", store=True)
+
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountMoveLine, self).default_get(fields)
+
+        if not self["asset_category_id"]:
+            self["asset_category_id"] = self.product_id.product_tmpl_id.asset_category_id.id
+            self.onchange_asset_category_id()
+
+        return res
 
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
@@ -92,13 +102,13 @@ class AccountInvoiceLine(models.Model):
 
     @api.onchange('product_uom_id')
     def _onchange_uom_id(self):
-        result = super(AccountInvoiceLine, self)._onchange_uom_id()
+        result = super(AccountMoveLine, self)._onchange_uom_id()
         self.onchange_asset_category_id()
         return result
 
     @api.onchange('product_id')
     def _onchange_product_id(self):
-        vals = super(AccountInvoiceLine, self)._onchange_product_id()
+        vals = super(AccountMoveLine, self)._onchange_product_id()
         for rec in self:
             if rec.product_id:
                 if rec.move_id.move_type == 'out_invoice':
@@ -114,7 +124,7 @@ class AccountInvoiceLine(models.Model):
             elif invoice.move_type == 'in_invoice':
                 self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
             self.onchange_asset_category_id()
-        super(AccountInvoiceLine, self)._set_additional_fields(invoice)
+        super(AccountMoveLine, self)._set_additional_fields(invoice)
 
     def get_invoice_line_account(self, type, product, fpos, company):
-        return product.asset_category_id.account_asset_id or super(AccountInvoiceLine, self).get_invoice_line_account(type, product, fpos, company)
+        return product.asset_category_id.account_asset_id or super(AccountMoveLine, self).get_invoice_line_account(type, product, fpos, company)
