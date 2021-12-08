@@ -6,12 +6,12 @@ from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
-class AccountInvoice(models.Model):
+class AccountMove(models.Model):
     _inherit = 'account.move'
 
     @api.model
     def _refund_cleanup_lines(self, lines):
-        result = super(AccountInvoice, self)._refund_cleanup_lines(lines)
+        result = super(AccountMove, self)._refund_cleanup_lines(lines)
         for i, line in enumerate(lines):
             for name, field in line._fields.items():
                 if name == 'asset_category_id':
@@ -20,12 +20,12 @@ class AccountInvoice(models.Model):
         return result
 
     def action_cancel(self):
-        res = super(AccountInvoice, self).action_cancel()
+        res = super(AccountMove, self).action_cancel()
         self.env['account.asset.asset'].sudo().search([('invoice_id', 'in', self.ids)]).write({'active': False})
         return res
 
     def action_post(self):
-        result = super(AccountInvoice, self).action_post()
+        result = super(AccountMove, self).action_post()
         for inv in self:
             context = dict(self.env.context)
             context.pop('default_type', None)
@@ -42,6 +42,18 @@ class AccountMoveLine(models.Model):
     asset_end_date = fields.Date(string='Asset End Date', compute='_get_asset_date', readonly=True, store=True)
     asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
                              digits="Account", store=True)
+
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountMoveLine, self).default_get(fields)
+        if self.product_id and self.move_id.move_type == 'out_invoice' and \
+                self.product_id.product_tmpl_id.deferred_revenue_category_id:
+            self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
+        elif self.product_id and self.product_id.product_tmpl_id.asset_category_id and \
+                self.move_id.move_type == 'in_invoice':
+            self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
+        self.onchange_asset_category_id()
+        return res
 
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
