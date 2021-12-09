@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 13 Assets Management',
-    'version': '13.0.1.2.0',
+    'version': '13.0.2.0.0',
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['account'],
     'description': """Manage assets owned by a company or a person. 
@@ -23,7 +23,6 @@
         'views/account_invoice_views.xml',
         'views/account_asset_templates.xml',
         'views/product_views.xml',
-        # 'views/res_config_settings_views.xml',
         'report/account_asset_report_views.xml',
         'data/account_asset_data.xml',
     ],

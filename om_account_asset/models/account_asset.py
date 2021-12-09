@@ -225,8 +225,8 @@ class AccountAssetAsset(models.Model):
                     depreciation_date = depreciation_date + relativedelta(day=31)
                     # ... or fiscalyear depending the number of period
                     if self.method_period == 12:
-                        depreciation_date = depreciation_date + relativedelta(month=self.company_id.fiscalyear_last_month)
-                        depreciation_date = depreciation_date + relativedelta(day=self.company_id.fiscalyear_last_day)
+                        depreciation_date = depreciation_date + relativedelta(month=int(self.company_id.fiscalyear_last_month))
+                        depreciation_date = depreciation_date + relativedelta(day=int(self.company_id.fiscalyear_last_day))
                         if depreciation_date < self.date:
                             depreciation_date = depreciation_date + relativedelta(years=1)
                 elif self.first_depreciation_manual_date and self.first_depreciation_manual_date != self.date:

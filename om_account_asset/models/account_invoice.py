@@ -43,6 +43,18 @@ class AccountInvoiceLine(models.Model):
     asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
                              digits="Account", store=True)
 
+    @api.model
+    def default_get(self, fields):
+        res = super(AccountInvoiceLine, self).default_get(fields)
+        if self.product_id and self.move_id.type == 'out_invoice' and \
+                self.product_id.product_tmpl_id.deferred_revenue_category_id:
+            self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
+        elif self.product_id and self.product_id.product_tmpl_id.asset_category_id and \
+                self.move_id.type == 'in_invoice':
+            self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
+        self.onchange_asset_category_id()
+        return res
+
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
         for rec in self:

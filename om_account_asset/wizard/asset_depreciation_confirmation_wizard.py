@@ -10,12 +10,10 @@ class AssetDepreciationConfirmationWizard(models.TransientModel):
 
     date = fields.Date('Account Date', required=True, help="Choose the period for which you want to automatically post the depreciation lines of running assets", default=fields.Date.context_today)
 
-    
     def asset_compute(self):
         self.ensure_one()
         context = self._context
         created_move_ids = self.env['account.asset.asset'].compute_generated_entries(self.date, asset_type=context.get('asset_type'))
-
         return {
             'name': _('Created Asset Moves') if context.get('asset_type') == 'purchase' else _('Created Revenue Moves'),
             'view_type': 'form',
