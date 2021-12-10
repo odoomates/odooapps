@@ -1,0 +1,29 @@
+<odoo>
+    <data>
+
+        <record id="action_sale_confirm" model="ir.actions.server">
+            <field name="name">Confirm Quotation</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                    for rec in records:
+                        rec.action_confirm()
+            </field>
+        </record>
+
+        <record id="action_sale_cancel" model="ir.actions.server">
+            <field name="name">Cancel Sale/Quotation</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="binding_model_id" ref="sale.model_sale_order"/>
+            <field name="state">code</field>
+            <field name="code">
+                if records:
+                    for rec in records:
+                        rec.action_cancel()
+            </field>
+        </record>
+
+    </data>
+</odoo>
