@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 13 Accounting',
-    'version': '13.0.4.0.0',
+    'version': '13.0.4.1.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo13 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
@@ -17,6 +17,7 @@
     'depends': ['accounting_pdf_reports', 'om_account_asset', 'om_account_budget'],
     'demo': [],
     'data': [
+        'security/group.xml',
         'wizard/change_lock_date.xml',
         'views/account_settings.xml',
         'views/menu.xml',
@@ -28,6 +29,7 @@
         'views/account_tag.xml',
         'views/fiscal_position_template.xml',
         'views/res_partner.xml',
+        'views/payment_method.xml',
     ],
     'installable': True,
     'application': True,
