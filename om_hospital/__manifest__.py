@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 {
     'name': 'Odoo 15 Development Tutorials',
-    'version': '1.0.0',
+    'version': '2.0.0',
     'summary': 'Odoo 15 Development Tutorials',
     'sequence': -100,
     'description': """Odoo 15 Development Tutorials""",
