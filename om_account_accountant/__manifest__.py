@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 15 Accounting',
-    'version': '3.0.0',
+    'version': '3.1.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year For Odoo15 Community Edition',
