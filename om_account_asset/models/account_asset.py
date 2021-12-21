@@ -648,8 +648,7 @@ class AccountAssetDepreciationLine(models.Model):
         created_moves |= move
 
         if post_move and created_moves:
-            self.post_lines_and_close_asset()
-            created_moves.post()
+            created_moves.action_post()
         return [x.id for x in created_moves]
 
     def post_lines_and_close_asset(self):
