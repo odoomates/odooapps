@@ -255,7 +255,6 @@ class AccountAssetAsset(models.Model):
             undone_dotation_number += 1
         return undone_dotation_number
 
-    
     def compute_depreciation_board(self):
         self.ensure_one()
 
@@ -280,14 +279,13 @@ class AccountAssetAsset(models.Model):
                     depreciation_date = depreciation_date + relativedelta(day=31)
                     # ... or fiscalyear depending the number of period
                     if self.method_period == 12:
-                        depreciation_date = depreciation_date + relativedelta(month=self.company_id.fiscalyear_last_month)
-                        depreciation_date = depreciation_date + relativedelta(day=self.company_id.fiscalyear_last_day)
+                        depreciation_date = depreciation_date + relativedelta(month=int(self.company_id.fiscalyear_last_month))
+                        depreciation_date = depreciation_date + relativedelta(day=int(self.company_id.fiscalyear_last_day))
                         if depreciation_date < self.date:
                             depreciation_date = depreciation_date + relativedelta(years=1)
                 elif self.first_depreciation_manual_date and self.first_depreciation_manual_date != self.date:
                     # depreciation_date set manually from the 'first_depreciation_manual_date' field
                     depreciation_date = self.first_depreciation_manual_date
-
             total_days = (depreciation_date.year % 4) and 365 or 366
             month_day = depreciation_date.day
             undone_dotation_number = self._compute_board_undone_dotation_nb(depreciation_date, total_days)
@@ -554,7 +552,7 @@ class AccountAssetDepreciationLine(models.Model):
             created_moves |= move
 
         if post_move and created_moves:
-            created_moves.filtered(lambda m: any(m.asset_depreciation_ids.mapped('asset_id.category_id.open_asset'))).post()
+            created_moves.filtered(lambda m: any(m.asset_depreciation_ids.mapped('asset_id.category_id.open_asset'))).action_post()
         return [x.id for x in created_moves]
 
     def _prepare_move(self, line):

@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 21.12.2021
+#### Version 15.0.4.0.0
+##### FIX
+- relative delta non integer error
+
 #### 17.12.2021
 #### Version 15.0.3.0.0
 ##### FIX
