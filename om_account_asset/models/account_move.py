@@ -46,13 +46,14 @@ class AccountMoveLine(models.Model):
     @api.model
     def default_get(self, fields):
         res = super(AccountMoveLine, self).default_get(fields)
-        if self.product_id and self.move_id.move_type == 'out_invoice' and \
-                self.product_id.product_tmpl_id.deferred_revenue_category_id:
-            self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
-        elif self.product_id and self.product_id.product_tmpl_id.asset_category_id and \
-                self.move_id.move_type == 'in_invoice':
-            self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
-        self.onchange_asset_category_id()
+        if self.env.context.get('create_bill'):
+            if self.product_id and self.move_id.move_type == 'out_invoice' and \
+                    self.product_id.product_tmpl_id.deferred_revenue_category_id:
+                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
+            elif self.product_id and self.product_id.product_tmpl_id.asset_category_id and \
+                    self.move_id.move_type == 'in_invoice':
+                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
+            self.onchange_asset_category_id()
         return res
 
     @api.depends('asset_category_id', 'move_id.invoice_date')
