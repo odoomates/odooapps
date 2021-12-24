@@ -2,12 +2,12 @@
 
 {
     'name': 'GCC - Arabic/English Invoice',
-    'version': '1.0.0',
+    'version': '2.0.0',
     'author': 'Odoo Mates, Odoo SA',
     'category': 'Accounting/Localizations',
     'description': """Arabic/English for GCC""",
     'license': 'LGPL-3',
-    'depends': ['account'],
+    'depends': ['account', 'sale_purchase_invoice_report_custom'],
     'data': [
         'views/report_invoice.xml',
     ],

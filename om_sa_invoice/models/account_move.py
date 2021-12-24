@@ -8,11 +8,19 @@ from odoo.exceptions import UserError
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    country_code = fields.Char(related='company_id.country_id.code', readonly=True)
-    l10n_sa_delivery_date = fields.Date(string='Delivery Date', default=fields.Date.context_today, copy=False)
+    country_code = fields.Char(related='company_id.country_id.code',
+                               readonly=True)
+    l10n_sa_delivery_date = fields.Date(string='Delivery Date',
+                                        default=fields.Date.context_today,
+                                        copy=False,
+                                        readonly=True,
+                                        states={'draft': [('readonly', False)]},
+                                        help="In case of multiple deliveries, you should take the date of the latest one. ")
     l10n_sa_show_delivery_date = fields.Boolean(compute='_compute_show_delivery_date')
-    l10n_sa_qr_code_str = fields.Char(string='Zatka QR Code', compute='_compute_qr_code_str')
-    l10n_sa_confirmation_datetime = fields.Datetime(string='Confirmation Date', readonly=True, copy=False)
+    l10n_sa_qr_code_str = fields.Char(string='Zatka QR Code',
+                                      compute='_compute_qr_code_str')
+    l10n_sa_confirmation_datetime = fields.Datetime(string='Confirmation Date',
+                                                    readonly=True, copy=False)
 
     @api.depends('country_code', 'type')
     def _compute_show_delivery_date(self):
