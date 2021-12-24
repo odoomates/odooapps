@@ -7,7 +7,7 @@
     'category': 'Accounting/Localizations',
     'description': """Arabic/English for GCC""",
     'license': 'LGPL-3',
-    'depends': ['account', 'sale_purchase_invoice_report_custom'],
+    'depends': ['account'],
     'data': [
         'views/report_invoice.xml',
     ],
