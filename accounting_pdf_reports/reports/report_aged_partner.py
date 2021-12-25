@@ -12,7 +12,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_agedpartnerbalance'
     _description = 'Aged Partner Balance Report'
 
-    def _get_partner_move_lines(self, account_type, date_from, target_move, period_length):
+    def _get_partner_move_lines(self, account_type, partner_ids,
+                                date_from, target_move, period_length):
         # This method can receive the context key 'include_nullified_amount' {Boolean}
         # Do an invoice and a payment and unreconcile. The amount will be nullified
         # By default, the partner wouldn't appear in this report.
@@ -73,14 +74,14 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 AND l.company_id IN %s
             ORDER BY UPPER(res_partner.name)'''
         cr.execute(query, arg_list)
-
         partners = cr.dictfetchall()
         # put a total of 0
         for i in range(7):
             total.append(0)
 
         # Build a string like (1,2,3) for easy use in SQL query
-        partner_ids = [partner['partner_id'] for partner in partners if partner['partner_id']]
+        if not partner_ids:
+            partner_ids = [partner['partner_id'] for partner in partners if partner['partner_id']]
         lines = dict((partner['partner_id'] or False, []) for partner in partners)
         if not partner_ids:
             return [], [], {}
@@ -232,8 +233,9 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             account_type = ['payable']
         else:
             account_type = ['payable', 'receivable']
-
-        movelines, total, dummy = self._get_partner_move_lines(account_type, date_from, target_move, data['form']['period_length'])
+        partner_ids = data['form']['partner_ids']
+        movelines, total, dummy = self._get_partner_move_lines(account_type, partner_ids,
+                                                               date_from, target_move, data['form']['period_length'])
         return {
             'doc_ids': self.ids,
             'doc_model': model,

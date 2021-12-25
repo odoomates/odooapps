@@ -6,15 +6,18 @@
         <field name="model">account.report.partner.ledger</field>
         <field name="inherit_id" ref="account.account_common_report_view"/>
         <field name="arch" type="xml">
-        <data>
-        <xpath expr="//field[@name='target_move']" position="after">
-                <field name="result_selection"/>
-                <field name="amount_currency" groups="base.group_multi_currency"/>
-                <newline/>
-                <field name="reconciled"/>
-                <newline/>
-            </xpath>
-        </data>
+            <data>
+                <xpath expr="//field[@name='journal_ids']" position="before">
+                    <field name="partner_ids" widget="many2many_tags"/>
+                </xpath>
+                <xpath expr="//field[@name='target_move']" position="after">
+                    <field name="result_selection"/>
+                    <field name="amount_currency" groups="base.group_multi_currency"/>
+                    <newline/>
+                    <field name="reconciled"/>
+                    <newline/>
+                </xpath>
+            </data>
         </field>
     </record>
 
