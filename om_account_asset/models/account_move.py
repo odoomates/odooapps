@@ -9,6 +9,17 @@ from odoo.exceptions import UserError
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
+    def button_draft(self):
+        res = super(AccountMove, self).button_draft()
+        for move in self:
+            if move.state == 'draft':
+                assets = self.env['account.asset.asset'].search(
+                    [('invoice_id', 'in', self.ids)])
+                if assets:
+                    assets.write({'active': False})
+                    assets.message_post(body=_("Vendor bill reset to draft."))
+        return res
+
     @api.model
     def _refund_cleanup_lines(self, lines):
         result = super(AccountMove, self)._refund_cleanup_lines(lines)
@@ -21,7 +32,11 @@ class AccountMove(models.Model):
 
     def action_cancel(self):
         res = super(AccountMove, self).action_cancel()
-        self.env['account.asset.asset'].sudo().search([('invoice_id', 'in', self.ids)]).write({'active': False})
+        assets = self.env['account.asset.asset'].sudo().search(
+            [('invoice_id', 'in', self.ids)])
+        if assets:
+            assets.write({'active': False})
+            assets.message_post(body=_("Vendor bill cancelled."))
         return res
 
     def action_post(self):
@@ -40,7 +55,7 @@ class AccountMoveLine(models.Model):
     asset_category_id = fields.Many2one('account.asset.category', string='Asset Category')
     asset_start_date = fields.Date(string='Asset Start Date', compute='_get_asset_date', readonly=True, store=True)
     asset_end_date = fields.Date(string='Asset End Date', compute='_get_asset_date', readonly=True, store=True)
-    asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
+    asset_mrr = fields.Monetary(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
                              digits="Account", store=True)
 
     @api.model
@@ -69,7 +84,13 @@ class AccountMoveLine(models.Model):
                                       'your asset category cannot be 0.'))
                 months = cat.method_number * cat.method_period
                 if rec.move_id.move_type in ['out_invoice', 'out_refund']:
-                    rec.asset_mrr = rec.price_subtotal / months
+                    price_subtotal = self.currency_id._convert(
+                        self.price_subtotal,
+                        self.company_currency_id,
+                        self.company_id,
+                        self.move_id.invoice_date or fields.Date.context_today(
+                            self))
+                    rec.asset_mrr = price_subtotal / months
                 if rec.move_id.invoice_date:
                     start_date = rec.move_id.invoice_date.replace(day=1)
                     end_date = (start_date + relativedelta(months=months, days=-1))
@@ -78,11 +99,16 @@ class AccountMoveLine(models.Model):
 
     def asset_create(self):
         if self.asset_category_id:
+            price_subtotal = self.currency_id._convert(self.price_subtotal,
+                                                       self.company_currency_id,
+                                                       self.company_id,
+                                                       self.move_id.invoice_date or fields.Date.context_today(
+                                                           self))
             vals = {
                 'name': self.name,
                 'code': self.name or False,
                 'category_id': self.asset_category_id.id,
-                'value': self.price_subtotal,
+                'value': price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
                 'company_id': self.move_id.company_id.id,
                 'currency_id': self.move_id.company_currency_id.id,
