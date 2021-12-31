@@ -126,6 +126,8 @@ class AccountMoveLine(models.Model):
             vals.update(changed_vals['value'])
             asset = self.env['account.asset.asset'].create(vals)
             if self.asset_category_id.open_asset:
+                if asset.date_first_depreciation == 'manual':
+                    asset.first_depreciation_manual_date = asset.date
                 asset.validate()
         return True
 

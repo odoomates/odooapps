@@ -1,6 +1,12 @@
 ## Module <om_account_asset>
 
 #### 31.12.2021
+#### Version 15.0.6.1.0
+##### FIX
+-validation error on resetting to draft for validated assets
+
+
+#### 31.12.2021
 #### Version 15.0.6.0.0
 ##### FIX
 -asset duplicate creation on reset to draft, float to monetory,
