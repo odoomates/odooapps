@@ -17,7 +17,8 @@ class AccountMove(models.Model):
                     [('invoice_id', 'in', self.ids)])
                 if assets:
                     assets.write({'active': False})
-                    assets.message_post(body=_("Vendor bill reset to draft."))
+                    for asset in assets:
+                        asset.message_post(body=_("Vendor bill reset to draft."))
         return res
 
     @api.model
@@ -36,7 +37,8 @@ class AccountMove(models.Model):
             [('invoice_id', 'in', self.ids)])
         if assets:
             assets.write({'active': False})
-            assets.message_post(body=_("Vendor bill cancelled."))
+            for asset in assets:
+                asset.message_post(body=_("Vendor bill cancelled."))
         return res
 
     def action_post(self):
