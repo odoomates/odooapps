@@ -3,11 +3,26 @@
 
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
+
+    asset_ids = fields.One2many('account.asset.asset', 'invoice_id',
+                                string="Assets")
+
+    def button_draft(self):
+        res = super(AccountMove, self).button_draft()
+        for move in self:
+            if any(asset_id.state != 'draft' for asset_id in move.asset_ids):
+                raise ValidationError(_(
+                    'You cannot reset to draft for an entry having a posted asset'))
+            if move.asset_ids:
+                move.asset_ids.sudo().write({'active': False})
+                for asset in move.asset_ids:
+                    asset.sudo().message_post(body=_("Vendor bill cancelled."))
+        return res
 
     @api.model
     def _refund_cleanup_lines(self, lines):
@@ -21,7 +36,12 @@ class AccountMove(models.Model):
 
     def action_cancel(self):
         res = super(AccountMove, self).action_cancel()
-        self.env['account.asset.asset'].sudo().search([('invoice_id', 'in', self.ids)]).write({'active': False})
+        assets = self.env['account.asset.asset'].sudo().search(
+            [('invoice_id', 'in', self.ids)])
+        if assets:
+            assets.sudo().write({'active': False})
+            for asset in assets:
+                asset.sudo().message_post(body=_("Vendor bill cancelled."))
         return res
 
     def action_post(self):
@@ -69,7 +89,14 @@ class AccountMoveLine(models.Model):
                                       'your asset category cannot be 0.'))
                 months = cat.method_number * cat.method_period
                 if rec.move_id.move_type in ['out_invoice', 'out_refund']:
-                    rec.asset_mrr = rec.price_subtotal / months
+                    price_subtotal = self.currency_id._convert(
+                        self.price_subtotal,
+                        self.company_currency_id,
+                        self.company_id,
+                        self.move_id.invoice_date or fields.Date.context_today(
+                            self))
+
+                    rec.asset_mrr = price_subtotal / months
                 if rec.move_id.invoice_date:
                     start_date = rec.move_id.invoice_date.replace(day=1)
                     end_date = (start_date + relativedelta(months=months, days=-1))
@@ -78,11 +105,17 @@ class AccountMoveLine(models.Model):
 
     def asset_create(self):
         if self.asset_category_id:
+            price_subtotal = self.currency_id._convert(
+                self.price_subtotal,
+                self.company_currency_id,
+                self.company_id,
+                self.move_id.invoice_date or fields.Date.context_today(
+                    self))
             vals = {
                 'name': self.name,
                 'code': self.name or False,
                 'category_id': self.asset_category_id.id,
-                'value': self.price_subtotal,
+                'value': price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
                 'company_id': self.move_id.company_id.id,
                 'currency_id': self.move_id.company_currency_id.id,

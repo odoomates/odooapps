@@ -1,5 +1,12 @@
 ## Module <om_account_asset>
 
+#### 31.12.2021
+#### Version 15.0.6.0.0
+##### FIX
+-asset duplicate creation on reset to draft, float to monetory,
+ multi currency update
+
+
 #### 24.12.2021
 #### Version 15.0.5.0.0
 ##### FIX
