@@ -18,12 +18,12 @@ class AccountMove(models.Model):
             if any(asset_id.state != 'draft' for asset_id in move.asset_ids):
                 raise ValidationError(_(
                     'You cannot reset to draft for an entry having a posted asset'))
-                assets = self.env['account.asset.asset'].sudo().search(
-                    [('invoice_id', 'in', self.ids)])
-                if assets:
-                    assets.sudo().write({'active': False})
-                    for asset in assets:
-                        asset.sudo().message_post(body=_("Vendor bill reset to draft."))
+            assets = self.env['account.asset.asset'].sudo().search(
+                [('invoice_id', 'in', self.ids)])
+            if assets:
+                assets.sudo().write({'active': False})
+                for asset in assets:
+                    asset.sudo().message_post(body=_("Vendor bill reset to draft."))
         return res
 
     @api.model
