@@ -3,22 +3,27 @@
 
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
+    asset_ids = fields.One2many('account.asset.asset', 'invoice_id',
+                                string="Assets")
+
     def button_draft(self):
         res = super(AccountMove, self).button_draft()
         for move in self:
-            if move.state == 'draft':
-                assets = self.env['account.asset.asset'].search(
+            if any(asset_id.state != 'draft' for asset_id in move.asset_ids):
+                raise ValidationError(_(
+                    'You cannot reset to draft for an entry having a posted asset'))
+                assets = self.env['account.asset.asset'].sudo().search(
                     [('invoice_id', 'in', self.ids)])
                 if assets:
-                    assets.write({'active': False})
+                    assets.sudo().write({'active': False})
                     for asset in assets:
-                        asset.message_post(body=_("Vendor bill reset to draft."))
+                        asset.sudo().message_post(body=_("Vendor bill reset to draft."))
         return res
 
     @api.model
@@ -36,9 +41,9 @@ class AccountMove(models.Model):
         assets = self.env['account.asset.asset'].sudo().search(
             [('invoice_id', 'in', self.ids)])
         if assets:
-            assets.write({'active': False})
+            assets.sudo().write({'active': False})
             for asset in assets:
-                asset.message_post(body=_("Vendor bill cancelled."))
+                asset.sudo().message_post(body=_("Vendor bill cancelled."))
         return res
 
     def action_post(self):
@@ -54,11 +59,17 @@ class AccountMove(models.Model):
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
-    asset_category_id = fields.Many2one('account.asset.category', string='Asset Category')
-    asset_start_date = fields.Date(string='Asset Start Date', compute='_get_asset_date', readonly=True, store=True)
-    asset_end_date = fields.Date(string='Asset End Date', compute='_get_asset_date', readonly=True, store=True)
-    asset_mrr = fields.Monetary(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
-                             digits="Account", store=True)
+    asset_category_id = fields.Many2one('account.asset.category',
+                                        string='Asset Category')
+    asset_start_date = fields.Date(string='Asset Start Date',
+                                   compute='_get_asset_date',
+                                   readonly=True, store=True)
+    asset_end_date = fields.Date(string='Asset End Date',
+                                 compute='_get_asset_date',
+                                 readonly=True, store=True)
+    asset_mrr = fields.Monetary(string='Monthly Recurring Revenue',
+                                compute='_get_asset_date', readonly=True,
+                                digits="Account", store=True)
 
     @api.model
     def default_get(self, fields):
@@ -121,6 +132,8 @@ class AccountMoveLine(models.Model):
             vals.update(changed_vals['value'])
             asset = self.env['account.asset.asset'].create(vals)
             if self.asset_category_id.open_asset:
+                if asset.date_first_depreciation == 'manual':
+                    asset.first_depreciation_manual_date = asset.date
                 asset.validate()
         return True
 

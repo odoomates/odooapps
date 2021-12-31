@@ -1,6 +1,11 @@
 ## Module <om_account_asset>
 
 #### 31.12.2021
+#### Version 14.0.7.2.0
+##### FIX
+- validation error on resetting to draft for validated assets
+
+#### 31.12.2021
 #### Version 14.0.7.1.0
 ##### FIX
 - singleton error
