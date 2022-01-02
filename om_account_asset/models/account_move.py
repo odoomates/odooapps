@@ -74,7 +74,7 @@ class AccountMoveLine(models.Model):
     @api.model
     def default_get(self, fields):
         res = super(AccountMoveLine, self).default_get(fields)
-        if self.env.context.get('create_bill'):
+        if self.env.context.get('create_bill') and not self.asset_category_id:
             if self.product_id and self.move_id.move_type == 'out_invoice' and \
                     self.product_id.product_tmpl_id.deferred_revenue_category_id:
                 self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
