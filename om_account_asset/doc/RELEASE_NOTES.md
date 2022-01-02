@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 02.01.2022
+#### Version 15.0.6.2.0
+##### FIX
+- assets
+
 #### 31.12.2021
 #### Version 15.0.6.1.0
 ##### FIX
