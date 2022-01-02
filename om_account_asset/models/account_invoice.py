@@ -46,7 +46,7 @@ class AccountInvoiceLine(models.Model):
     @api.model
     def default_get(self, fields):
         res = super(AccountInvoiceLine, self).default_get(fields)
-        if self.env.context.get('create_bill'):
+        if self.env.context.get('create_bill') and not self.asset_category_id:
             if self.product_id and self.move_id.type == 'out_invoice' and \
                     self.product_id.product_tmpl_id.deferred_revenue_category_id:
                 self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
@@ -69,7 +69,13 @@ class AccountInvoiceLine(models.Model):
                                       'your asset category cannot be 0.'))
                 months = cat.method_number * cat.method_period
                 if rec.move_id.type in ['out_invoice', 'out_refund']:
-                    rec.asset_mrr = rec.price_subtotal / months
+                    price_subtotal = self.currency_id._convert(
+                        self.price_subtotal,
+                        self.company_currency_id,
+                        self.company_id,
+                        self.move_id.invoice_date or fields.Date.context_today(
+                            self))
+                    rec.asset_mrr = price_subtotal / months
                 if rec.move_id.invoice_date:
                     start_date = rec.move_id.invoice_date.replace(day=1)
                     end_date = (start_date + relativedelta(months=months, days=-1))
@@ -78,11 +84,17 @@ class AccountInvoiceLine(models.Model):
 
     def asset_create(self):
         if self.asset_category_id:
+            price_subtotal = self.currency_id._convert(
+                self.price_subtotal,
+                self.company_currency_id,
+                self.company_id,
+                self.move_id.invoice_date or fields.Date.context_today(
+                    self))
             vals = {
                 'name': self.name,
                 'code': self.name or False,
                 'category_id': self.asset_category_id.id,
-                'value': self.price_subtotal,
+                'value': price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
                 'company_id': self.move_id.company_id.id,
                 'currency_id': self.move_id.company_currency_id.id,
