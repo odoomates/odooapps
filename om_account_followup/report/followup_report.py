@@ -16,7 +16,7 @@ class AccountFollowupStat(models.Model):
     date_move_last = fields.Date('Last move', readonly=True)
     date_followup = fields.Date('Latest followup', readonly=True)
     followup_id = fields.Many2one('followup.line', 'Follow Ups', readonly=True, ondelete="cascade")
-    balance = fields.Float('Balance', readonly=True)
+    balance = fields.Float('Balance Amount', readonly=True)
     debit = fields.Float('Debit', readonly=True)
     credit = fields.Float('Credit', readonly=True)
     company_id = fields.Many2one('res.company', 'Company', readonly=True)

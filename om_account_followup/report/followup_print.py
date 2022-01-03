@@ -8,6 +8,7 @@ from odoo import api, fields, models, _
 
 class ReportFollowup(models.AbstractModel):
     _name = 'report.om_account_followup.report_followup'
+    _description = 'Report Followup'
 
     @api.model
     def _get_report_values(self, docids, data=None):

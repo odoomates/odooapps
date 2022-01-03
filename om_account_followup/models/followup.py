@@ -4,6 +4,8 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
+import logging
+_logger = logging.getLogger(__name__)
 
 class FollowupFollowup(models.Model):
     _name = 'followup.followup'
@@ -23,6 +25,19 @@ class FollowupLine(models.Model):
     _description = 'Follow-up Criteria'
     _order = 'delay'
 
+    followup_id = fields.Many2one('followup.followup', 'Follow Ups', required=True, ondelete="cascade")
+
+    delay = fields.Integer('Due Days', help="The number of days after the due date of the "
+                                            "invoice to wait before sending the reminder. Could be negative if you want "
+                                            "to send a polite alert beforehand.", required=True)
+
+    def _compute_sequence(self):
+        delays = [line.delay for line in self.followup_id.followup_line]
+        delays.sort()
+        for line in self.followup_id.followup_line:
+            sequence = delays.index(line.delay)
+            line.sequence = sequence+1
+
     @api.model
     def default_get(self, default_fields):
         values = super(FollowupLine, self).default_get(default_fields)
@@ -31,11 +46,10 @@ class FollowupLine(models.Model):
         return values
 
     name = fields.Char('Follow-Up Action', required=True)
-    sequence = fields.Integer('Sequence', help="Gives the sequence order when displaying a list of follow-up lines.")
-    delay = fields.Integer('Due Days', help="The number of days after the due date of the "
-                                            "invoice to wait before sending the reminder. Could be negative if you want "
-                                            "to send a polite alert beforehand.", required=True)
-    followup_id = fields.Many2one('followup.followup', 'Follow Ups', required=True, ondelete="cascade")
+
+
+
+    sequence = fields.Integer('Sequence', compute='_compute_sequence', store = False ,help="Gives the sequence order when displaying a list of follow-up lines.")
     description = fields.Text('Printed Message', translate=True, default="""
         Dear %(partner_name)s,
 
@@ -52,7 +66,7 @@ Best Regards,
     send_letter = fields.Boolean('Send a Letter', default=True, help="When processing, it will print a letter")
     manual_action = fields.Boolean('Manual Action', default=False, help="When processing, it will set the manual "
                                                                         "action to be taken for that customer. ")
-    manual_action_note = fields.Text('Action To Do', placeholder="e.g. Give a phone call, check with others , ...")
+    manual_action_note = fields.Text('Action To Do')
     manual_action_responsible_id = fields.Many2one('res.users', 'Assign a Responsible', ondelete='set null')
     email_template_id = fields.Many2one('mail.template', 'Email Template',
                                         ondelete='set null')
