@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
 {
-    'name': 'Customer Follow Up Management (Beta)',
-    'version': '14.0.1.0.0',
+    'name': 'Customer Follow Up Management',
+    'version': '14.0.3.0.0',
     'category': 'Accounting',
     'description': """Customer FollowUp Management""",
     'summary': """Customer FollowUp Management""",
-    'author': 'Odoo Mates, Odoo S.A, OdooDev',
+    'author': 'Odoo Mates, Odoo S.A',
     'license': 'LGPL-3',
     'website': '',
     'depends': ['account', 'mail'],
     'data': [
-        'security/account_followup_security.xml',
+        'security/security.xml',
         'security/ir.model.access.csv',
         'data/data.xml',
         'wizard/followup_print_view.xml',

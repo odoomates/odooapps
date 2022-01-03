@@ -9,12 +9,9 @@ from odoo.tools.misc import formatLang
 from datetime import datetime
 from datetime import timedelta
 
-import logging
-_logger = logging.getLogger(__name__)
 
 class ResPartner(models.Model):
     _inherit = "res.partner"
-
 
     def fields_view_get(self, view_id=None, view_type='form', toolbar=False,
                         submenu=False):
@@ -74,10 +71,9 @@ class ResPartner(models.Model):
         else:
             p = followup_line.manual_action_responsible_id
             responsible_id = p and p.id or False
-        _logger.warning(f"action_date: {action_date}, action_text: {action_text}, responsible: {responsible_id}")
         self.write({'payment_next_action_date': action_date,
-                       'payment_next_action': action_text,
-                       'payment_responsible_id': responsible_id})
+                    'payment_next_action': action_text,
+                    'payment_responsible_id': responsible_id})
 
     def do_partner_manual_action(self, partner_ids):
         # partner_ids -> res.partner
@@ -404,32 +400,8 @@ class ResPartner(models.Model):
                 partners.add(aml.partner_id.id)
         return list(partners)
 
-    def _cron_do(self):
-        partners = self.env['res.partner'].search([('payment_amount_due', '>', '0')])
-        _logger.warning(f"victor partners: {partners}")
-        for partner in partners:
-            _logger.warning("victor: entered _cron_do")
-            partner_earliest_due_date = fields.Datetime.from_string(partner.payment_earliest_due_date)
-            followup = partner.env ['followup.followup'].browse(1)
-            if partner.payment_next_action_date == False:
-                partner.payment_next_action_date = datetime.date(datetime.now())
-            past_line_date = datetime.date(datetime.now() - timedelta(days = 1))
-            _logger.warning(f"last sequence: {followup.followup_line[-1].sequence}")
-            for line in followup.followup_line:
-                line_date = datetime.date(partner_earliest_due_date + timedelta(days = line.delay))
-                if (line.sequence > partner.latest_followup_sequence and past_line_date < datetime.date(datetime.now()) and datetime.date(datetime.now()) <= line_date) or (followup.followup_line[-1].sequence == line.sequence): #and datetime.date(datetime.now()) >= partner.payment_earliest_due_date + timedelta(days = line.delay)):
-                    _logger.warning(f" VICTOR sequence:  {line.sequence}")
-                    partner.do_partner_manual_action_dermanord(line)
-                    partner.latest_followup_sequence = line.sequence
-                    if partner.payment_earliest_due_date + timedelta(days = line.delay) >= datetime.date(datetime.now()):
-                        partner.payment_next_action_date = partner.payment_earliest_due_date + timedelta(days = line.delay)
-                    else:
-                        partner.payment_next_action_date = datetime.date(datetime.now())
-                    break
-                past_line_date = line_date
-
-
-    payment_responsible_id = fields.Many2one('res.users', ondelete='set null', string='Follow-up Responsible',
+    payment_responsible_id = fields.Many2one('res.users', ondelete='set null',
+                                             string='Follow-up Responsible',
                                              tracking=True, copy=False,
                                              help="Optionally you can assign a user to this field, which will make "
                                                   "him responsible for the action.", )

@@ -2,7 +2,6 @@
 
 import datetime
 import time
-
 from odoo import api, fields, models, _
 
 
@@ -201,11 +200,11 @@ class FollowupPrint(models.TransientModel):
         fup_id = 'followup_id' in context and context[
             'followup_id'] or data.followup_id.id
         date = 'date' in context and context['date'] or data.date
-
+        date = fields.Date.to_string(date)
         current_date = datetime.date(*time.strptime(date, '%Y-%m-%d')[:3])
         self._cr.execute(
             '''SELECT *
-            FROM om_account_followup_followup_line
+            FROM followup_line
             WHERE followup_id=%s
             ORDER BY delay''' % (fup_id,))
 
@@ -230,6 +229,7 @@ class FollowupPrint(models.TransientModel):
                 continue
             stat_line_id = partner_id * 10000 + company_id
             if date_maturity:
+                date_maturity = fields.Date.to_string(date_maturity)
                 if date_maturity <= fups[followup_line_id][0].strftime(
                         '%Y-%m-%d'):
                     if stat_line_id not in partner_list:

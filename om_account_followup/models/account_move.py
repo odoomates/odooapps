@@ -8,7 +8,7 @@ class AccountMoveLine(models.Model):
 
     followup_line_id = fields.Many2one('followup.line', 'Follow-up Level')
     followup_date = fields.Date('Latest Follow-up')
-    result = fields.Float(compute='_get_result', string="Balance")
+    result = fields.Float(compute='_get_result', string="Balance Amount")
 
     def _get_result(self):
         for aml in self:
