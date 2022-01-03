@@ -69,7 +69,7 @@ class AccountMoveLine(models.Model):
                                  readonly=True, store=True)
     asset_mrr = fields.Monetary(string='Monthly Recurring Revenue',
                                 compute='_get_asset_date', readonly=True,
-                                digits="Account", store=True)
+                                store=True)
 
     @api.model
     def default_get(self, fields):

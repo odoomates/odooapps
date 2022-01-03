@@ -103,7 +103,7 @@ class AccountAssetAsset(models.Model):
     code = fields.Char(string='Reference', size=32, readonly=True,
                        states={'draft': [('readonly', False)]})
     value = fields.Monetary(string='Gross Value', required=True, readonly=True,
-                         digits=0, states={'draft': [('readonly', False)]})
+                         states={'draft': [('readonly', False)]})
     currency_id = fields.Many2one('res.currency', string='Currency', required=True,
                                   readonly=True, states={'draft': [('readonly', False)]},
         default=lambda self: self.env.user.company_id.currency_id.id)
@@ -141,7 +141,7 @@ class AccountAssetAsset(models.Model):
     method_end = fields.Date(string='Ending Date', readonly=True, states={'draft': [('readonly', False)]})
     method_progress_factor = fields.Float(string='Degressive Factor',
                                           readonly=True, default=0.3, states={'draft': [('readonly', False)]})
-    value_residual = fields.Monetary(compute='_amount_residual', digits=0, string='Residual Value')
+    value_residual = fields.Monetary(compute='_amount_residual', string='Residual Value')
     method_time = fields.Selection([('number', 'Number of Entries'), ('end', 'Ending Date')],
                                    string='Time Method', required=True, readonly=True, default='number',
                                    states={'draft': [('readonly', False)]},
@@ -155,7 +155,7 @@ class AccountAssetAsset(models.Model):
     depreciation_line_ids = fields.One2many('account.asset.depreciation.line', 'asset_id',
                                             string='Depreciation Lines', readonly=True,
                                             states={'draft': [('readonly', False)], 'open': [('readonly', False)]})
-    salvage_value = fields.Monetary(string='Salvage Value', digits=0, readonly=True,
+    salvage_value = fields.Monetary(string='Salvage Value', readonly=True,
                                  states={'draft': [('readonly', False)]},
         help="It is the amount you plan to have that you cannot depreciate.")
     invoice_id = fields.Many2one('account.move', string='Invoice', states={'draft': [('readonly', False)]}, copy=False)
@@ -525,8 +525,8 @@ class AccountAssetDepreciationLine(models.Model):
     sequence = fields.Integer(required=True)
     asset_id = fields.Many2one('account.asset.asset', string='Asset', required=True, ondelete='cascade')
     parent_state = fields.Selection(related='asset_id.state', string='State of Asset')
-    amount = fields.Monetary(string='Current Depreciation', digits=0, required=True)
-    remaining_value = fields.Monetary(string='Next Period Depreciation', digits=0, required=True)
+    amount = fields.Monetary(string='Current Depreciation', required=True)
+    remaining_value = fields.Monetary(string='Next Period Depreciation', required=True)
     depreciated_value = fields.Monetary(string='Cumulative Depreciation', required=True)
     depreciation_date = fields.Date('Depreciation Date', index=True)
     move_id = fields.Many2one('account.move', string='Depreciation Entry')
