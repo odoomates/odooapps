@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 03.01.2022
+#### Version 15.0.6.3.0
+##### FIX
+- remove logger warning: digits
+
 #### 02.01.2022
 #### Version 15.0.6.2.0
 ##### FIX

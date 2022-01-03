@@ -61,7 +61,7 @@ class AccountMoveLine(models.Model):
     asset_start_date = fields.Date(string='Asset Start Date', compute='_get_asset_date', readonly=True, store=True)
     asset_end_date = fields.Date(string='Asset End Date', compute='_get_asset_date', readonly=True, store=True)
     asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
-                             digits="Account", store=True)
+                             store=True)
 
     @api.model
     def default_get(self, fields):
