@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 28.01.2022
+#### Version 15.0.6.4.0
+##### FIX
+- Fix Modify Depreciation wizard so final depreciation not deleted
+
 #### 03.01.2022
 #### Version 15.0.6.3.0
 ##### FIX
