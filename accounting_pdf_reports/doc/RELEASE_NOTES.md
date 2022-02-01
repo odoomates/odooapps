@@ -1,5 +1,10 @@
 ## Module <accounting_pdf_reports>
 
+#### 01.02.2022
+#### Version 15.0.6.1.0
+##### IMP
+- translation de
+
 #### 25.12.2021
 #### Version 15.0.6.0.0
 ##### IMP
