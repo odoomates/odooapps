@@ -1,4 +1,4 @@
-## Module <om_account_asset>
+## Module <accounting_pdf_reports>
 
 #### 01.02.2022
 #### Version 14.0.4.8.0
