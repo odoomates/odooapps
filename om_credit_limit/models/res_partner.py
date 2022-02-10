@@ -4,7 +4,7 @@ from odoo import models, fields, api, _
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
-    credit_limit = fields.Monetary(string='Internal Credit Limit', default=-1)
+    amount_credit_limit = fields.Monetary(string='Internal Credit Limit', default=-1)
     credit_limit_compute = fields.Monetary(
         string='Credit Limit', default=-1,
         compute='_compute_credit_limit_compute', inverse='_inverse_credit_limit_compute',
@@ -12,18 +12,18 @@ class ResPartner(models.Model):
     )
     show_credit_limit = fields.Boolean(compute='_compute_show_credit_limit')
 
-    @api.depends('credit_limit')
+    @api.depends('amount_credit_limit')
     @api.depends_context('company')
     def _compute_credit_limit_compute(self):
         for partner in self:
-            partner.credit_limit_compute = self.env.company.account_default_credit_limit if partner.credit_limit == -1 else partner.credit_limit
+            partner.credit_limit_compute = self.env.company.account_default_credit_limit if partner.amount_credit_limit == -1 else partner.amount_credit_limit
 
     @api.depends('credit_limit_compute')
     @api.depends_context('company')
     def _inverse_credit_limit_compute(self):
         for partner in self:
             is_default = partner.credit_limit_compute == self.env.company.account_default_credit_limit
-            partner.credit_limit = -1 if is_default else partner.credit_limit_compute
+            partner.amount_credit_limit = -1 if is_default else partner.credit_limit_compute
 
     @api.depends_context('company')
     def _compute_show_credit_limit(self):
@@ -31,4 +31,4 @@ class ResPartner(models.Model):
             partner.show_credit_limit = self.env.company.account_credit_limit
 
     def _commercial_fields(self):
-        return super(ResPartner, self)._commercial_fields() + ['credit_limit']
+        return super(ResPartner, self)._commercial_fields() + ['amount_credit_limit']
