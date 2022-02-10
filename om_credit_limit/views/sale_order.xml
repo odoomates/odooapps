@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.form</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <field name="show_partner_credit_warning" invisible="1"/>
+                <div class="alert alert-warning mb-0" role="alert" attrs="{'invisible': ['|', ('state', 'not in', ['draft', 'sent']), ('show_partner_credit_warning', '=', False)]}">
+                    This customer has reached his Credit Limit of : <b><field name="partner_credit_limit"/></b>.<br/>
+                    Total amount due : <b><field name="partner_credit"/></b>.
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
