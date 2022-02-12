@@ -4,19 +4,19 @@ from odoo import models, fields, api, _
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    def action_post(self):
-        if self.type == 'out_invoice' and self.partner_id and \
-                self.partner_id.amount_credit_limit != 0 and not self._context.get('skip_credit_check'):
-            amount_due = self.partner_id.credit - self.partner_id.debit + self.amount_total
-            if amount_due > self.partner_id.amount_credit_limit:
-                return {
-                    'name': _('Warning'),
-                    'type': 'ir.actions.act_window',
-                    'view_mode': 'form',
-                    'res_model': 'warning.warning',
-                    'target': 'new',
-                    'context': {},
-                }
-        return super(AccountMove, self).action_post()
+    partner_credit = fields.Monetary(related='partner_id.commercial_partner_id.credit', readonly=True)
+    partner_credit_limit = fields.Monetary(related='partner_id.credit_limit_compute', readonly=True)
+    show_partner_credit_warning = fields.Boolean(compute='_compute_show_partner_credit_warning')
+
+    @api.depends('partner_credit_limit', 'partner_credit',
+                 'company_id.account_default_credit_limit', 'company_id.account_credit_limit')
+    def _compute_show_partner_credit_warning(self):
+        for move in self:
+            account_credit_limit = move.company_id.account_credit_limit
+            company_limit = move.partner_credit_limit == -1 and move.company_id.account_default_credit_limit
+            partner_limit = move.partner_credit_limit > 0 and move.partner_credit_limit
+            move.show_partner_credit_warning = account_credit_limit and \
+                                               ((company_limit and move.partner_credit > company_limit) or \
+                                               (partner_limit and move.partner_credit > partner_limit))
 
 
