@@ -202,8 +202,14 @@ class HrSalaryRule(models.Model):
             try:
                 safe_eval(self.amount_python_compute, localdict, mode='exec', nocopy=True)
                 return float(localdict['result']), 'result_qty' in localdict and localdict['result_qty'] or 1.0, 'result_rate' in localdict and localdict['result_rate'] or 100.0
-            except:
-                raise UserError(_('Wrong python code defined for salary rule %s (%s).') % (self.name, self.code))
+            except Exception as ex:
+                raise UserError(_(
+                        """
+                        Wrong python code defined for salary rule %s (%s).
+                        Here is the error received:
+                        %s
+                        """
+                    ) % (self.name, self.code, repr(ex)))
 
     def _satisfy_condition(self, localdict):
         """
@@ -224,8 +230,14 @@ class HrSalaryRule(models.Model):
             try:
                 safe_eval(self.condition_python, localdict, mode='exec', nocopy=True)
                 return 'result' in localdict and localdict['result'] or False
-            except:
-                raise UserError(_('Wrong python condition defined for salary rule %s (%s).') % (self.name, self.code))
+            except Exception as ex:
+                raise UserError(_(
+                        """
+                        Wrong python condition defined for salary rule %s (%s).
+                        Here is the error received:
+                        %s
+                        """
+                    ) % (self.name, self.code, repr(ex)))
 
 
 class HrRuleInput(models.Model):

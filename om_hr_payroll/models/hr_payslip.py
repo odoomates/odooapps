@@ -175,6 +175,8 @@ class HrPayslip(models.Model):
             # if we don't give the contract, then the rules to apply should be for all current contracts of the employee
             contract_ids = payslip.contract_id.ids or \
                 self.get_contract(payslip.employee_id, payslip.date_from, payslip.date_to)
+            if not contract_ids:
+                raise ValidationError(_("No running contract found for the employee: %s or no contract in the given period" % payslip.employee_id.name))
             lines = [(0, 0, line) for line in self._get_payslip_lines(contract_ids, payslip.id)]
             payslip.write({'line_ids': lines, 'number': number})
         return True
@@ -201,7 +203,7 @@ class HrPayslip(models.Model):
                 current_leave_struct = leaves.setdefault(holiday.holiday_status_id, {
                     'name': holiday.holiday_status_id.name or _('Global Leaves'),
                     'sequence': 5,
-                    'code': holiday.holiday_status_id.name or 'GLOBAL',
+                    'code': holiday.holiday_status_id.code or 'GLOBAL',
                     'number_of_days': 0.0,
                     'number_of_hours': 0.0,
                     'contract_id': contract.id,

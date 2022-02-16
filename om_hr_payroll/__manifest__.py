@@ -3,7 +3,7 @@
 {
     'name': 'Odoo 15 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '2.1.0',
+    'version': '3.0.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 15 Community Edition',
@@ -34,6 +34,7 @@
         'views/report_contribution_register_templates.xml',
         'views/report_payslip_templates.xml',
         'views/report_payslip_details_templates.xml',
+        'views/hr_contract_history_views.xml',
         'data/mail_template.xml',
     ],
     'images': ['static/description/banner.png'],
