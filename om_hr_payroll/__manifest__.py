@@ -35,6 +35,7 @@
         'views/report_payslip_templates.xml',
         'views/report_payslip_details_templates.xml',
         'views/hr_contract_history_views.xml',
+        'views/hr_leave_type_view.xml',
         'data/mail_template.xml',
     ],
     'images': ['static/description/banner.png'],
