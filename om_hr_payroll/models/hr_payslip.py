@@ -51,7 +51,7 @@ class HrPayslip(models.Model):
         string='Payslip Worked Days', copy=True, readonly=True,
         states={'draft': [('readonly', False)]})
     input_line_ids = fields.One2many('hr.payslip.input', 'payslip_id', string='Payslip Inputs',
-        readonly=True, states={'draft': [('readonly', False)]})
+        readonly=True, copy=True, states={'draft': [('readonly', False)]})
     paid = fields.Boolean(string='Made Payment Order ? ', readonly=True, copy=False,
         states={'draft': [('readonly', False)]})
     note = fields.Text(string='Internal Note', readonly=True, states={'draft': [('readonly', False)]})
