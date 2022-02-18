@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 18.02.2022
+#### Version 15.0.6.4.1
+##### FIX
+- Fix asset singleton
+
 #### 28.01.2022
 #### Version 15.0.6.4.0
 ##### FIX
