@@ -55,8 +55,9 @@ class AssetModify(models.TransientModel):
             'method_end': self.method_end,
         }
         if asset_vals['method_number'] <= asset.entry_count:
-            raise UserError(_('The number of depreciations must be greater than the number of posted or draft entries '
-                              'to allow for complete depreciation of the asset.'))
+            raise UserError(_(
+                'The number of depreciations must be greater than the number of posted or draft entries '
+                'to allow for complete depreciation of the asset.'))
         asset.write(asset_vals)
         asset.compute_depreciation_board()
         tracked_fields = self.env['account.asset.asset'].fields_get(['method_number', 'method_period', 'method_end'])

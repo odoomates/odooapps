@@ -157,7 +157,7 @@ class AccountMoveLine(models.Model):
             if rec.product_id:
                 if rec.move_id.move_type == 'out_invoice':
                     rec.asset_category_id = rec.product_id.product_tmpl_id.deferred_revenue_category_id
-                elif self.move_id.move_type == 'in_invoice':
+                elif rec.move_id.move_type == 'in_invoice':
                     rec.asset_category_id = rec.product_id.product_tmpl_id.asset_category_id
         return vals
 
