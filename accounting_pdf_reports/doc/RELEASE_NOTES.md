@@ -1,5 +1,10 @@
 ## Module <accounting_pdf_reports>
 
+#### 25.02.2022
+#### Version 15.0.6.3.0
+##### IMP
+- remove deprecated warning of currency conversion
+
 #### 22.02.2022
 #### Version 15.0.6.2.0
 ##### FIX

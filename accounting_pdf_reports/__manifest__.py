@@ -1,9 +1,8 @@
 # -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 {
     'name': 'Odoo 15 Accounting Financial Reports',
-    'version': '15.0.6.2.0',
+    'version': '15.0.6.3.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 15, Accounting Financial Reports, Odoo 15 Financial Reports',
     'summary': 'Accounting Reports For Odoo 15',
