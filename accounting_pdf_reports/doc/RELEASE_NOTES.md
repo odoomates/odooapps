@@ -1,6 +1,12 @@
 ## Module <accounting_pdf_reports>
 
 #### 25.02.2022
+#### Version 15.0.6.4.0
+##### IMP
+- pre_init_hook to clean up m2m data's
+
+
+#### 25.02.2022
 #### Version 15.0.6.3.0
 ##### IMP
 - remove deprecated warning of currency conversion
