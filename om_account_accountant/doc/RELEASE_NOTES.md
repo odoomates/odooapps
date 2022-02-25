@@ -1,5 +1,9 @@
 ## Module <om_account_accountant>
 
+#### 25.02.2022
+#### Version 15.0.4.0.0
+##### IMP
+- credit limit
 
 #### 17.12.2021
 #### Version 15.0.3.1.0
