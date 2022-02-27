@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 15 Accounting Financial Reports',
-    'version': '15.0.7.0.0',
+    'version': '15.0.7.1.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 15, Accounting Financial Reports, '
                    'Odoo 15 Financial Reports',
@@ -20,6 +20,7 @@
         'security/ir.model.access.csv',
         'views/menu.xml',
         'views/financial_report.xml',
+        'views/settings.xml',
         'wizard/partner_ledger.xml',
         'wizard/general_ledger.xml',
         'wizard/trial_balance.xml',

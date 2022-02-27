@@ -1,5 +1,10 @@
 ## Module <om_account_accountant>
 
+#### 27.02.2022
+#### Version 15.0.4.1.0
+##### IMP
+- moved excel report download link to accounting_pdf_reports module
+
 #### 25.02.2022
 #### Version 15.0.4.0.0
 ##### IMP
