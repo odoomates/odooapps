@@ -1,5 +1,10 @@
 ## Module <accounting_pdf_reports>
 
+#### 27.02.2022
+#### Version 15.0.7.0.0
+##### IMP
+- refactoring code
+
 #### 25.02.2022
 #### Version 15.0.6.4.0
 ##### IMP

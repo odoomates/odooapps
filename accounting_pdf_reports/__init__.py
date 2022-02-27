@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from . import wizards
-from . import reports
+from . import wizard
+from . import models
+from . import report
 
 
 def _pre_init_clean_m2m_models(cr):
