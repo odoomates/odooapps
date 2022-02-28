@@ -34,7 +34,7 @@ class AccountAssetCategory(models.Model):
                                                            " to record a part of the asset as expense.")
     journal_id = fields.Many2one('account.journal', string='Journal', required=True)
     company_id = fields.Many2one('res.company', string='Company', required=True,
-                                 default=lambda self: self.env['res.company']._company_default_get('account.asset.category'))
+                                 default=lambda self: self.env.company)
     method = fields.Selection([('linear', 'Linear'), ('degressive', 'Degressive')],
                               string='Computation Method', required=True, default='linear',
         help="Choose the method to use to compute the amount of depreciation lines.\n"
@@ -109,7 +109,7 @@ class AccountAssetAsset(models.Model):
         default=lambda self: self.env.user.company_id.currency_id.id)
     company_id = fields.Many2one('res.company', string='Company', required=True,
                                  readonly=True, states={'draft': [('readonly', False)]},
-        default=lambda self: self.env['res.company']._company_default_get('account.asset.asset'))
+                                 default=lambda self: self.env.company)
     note = fields.Text()
     category_id = fields.Many2one('account.asset.category', string='Category',
                                   required=True, change_default=True,
