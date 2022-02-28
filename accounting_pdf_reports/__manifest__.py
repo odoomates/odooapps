@@ -5,7 +5,8 @@
     'name': 'Odoo 14 Accounting Financial Reports',
     'version': '14.0.5.0.0',
     'category': 'Invoicing Management',
-    'description': 'Accounting Reports For Odoo 14, Accounting Financial Reports, Odoo 14 Financial Reports',
+    'description': 'Accounting Reports For Odoo 14, Accounting Financial Reports,'
+                   ' Odoo 14 Financial Reports',
     'summary': 'Accounting Reports For Odoo 14',
     'sequence': '10',
     'author': 'Odoo Mates, Odoo SA',
@@ -20,8 +21,9 @@
     'data': [
         'security/ir.model.access.csv',
         'security/security.xml',
-        'views/account_pdf_reports.xml',
-        'views/account_reports_settings.xml',
+        'views/menu.xml',
+        'views/financial_report.xml',
+        'views/account_settings.xml',
         'wizard/partner_ledger.xml',
         'wizard/general_ledger.xml',
         'wizard/trial_balance.xml',
