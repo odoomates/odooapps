@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 28.02.2022
+#### Version 14.0.7.4.0
+##### IMP
+- remove deprecated method
+
 #### 18.01.2022
 #### Version 14.0.7.3.1
 ##### FIX
