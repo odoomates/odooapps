@@ -45,7 +45,7 @@ class CrossoveredBudget(models.Model):
     _inherit = ['mail.thread']
 
     name = fields.Char('Budget Name', required=True, states={'done': [('readonly', True)]})
-    user_id = fields.Many2one('res.users', 'Responsible', default=lambda self: self.env.user, oldname='creating_user_id')
+    user_id = fields.Many2one('res.users', 'Responsible', default=lambda self: self.env.user)
     date_from = fields.Date('Start Date', required=True, states={'done': [('readonly', True)]})
     date_to = fields.Date('End Date', required=True, states={'done': [('readonly', True)]})
     state = fields.Selection([

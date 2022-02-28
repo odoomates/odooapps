@@ -106,9 +106,6 @@ class ReportJournal(models.AbstractModel):
         res = {}
         for journal in data['form']['journal_ids']:
             res[journal] = self.with_context(data['form'].get('used_context', {})).lines(target_move, journal, sort_selection, data)
-        print("hhhh", self.env['account.journal'].browse(data['form']['journal_ids']))
-        print("hhhh", time)
-        print("res", res)
         return {
             'doc_ids': data['form']['journal_ids'],
             'doc_model': self.env['account.journal'],
