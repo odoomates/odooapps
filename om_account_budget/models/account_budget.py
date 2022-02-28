@@ -16,7 +16,7 @@ class AccountBudgetPost(models.Model):
     account_ids = fields.Many2many('account.account', 'account_budget_rel', 'budget_id', 'account_id', 'Accounts',
         domain=[('deprecated', '=', False)])
     company_id = fields.Many2one('res.company', 'Company', required=True,
-        default=lambda self: self.env['res.company']._company_default_get('account.budget.post'))
+                                 default=lambda self: self.env.company)
 
     def _check_account_ids(self, vals):
         # Raise an error to prevent the account.budget.post to have not specified account_ids.
@@ -58,25 +58,20 @@ class CrossoveredBudget(models.Model):
     crossovered_budget_line = fields.One2many('crossovered.budget.lines', 'crossovered_budget_id', 'Budget Lines',
         states={'done': [('readonly', True)]}, copy=True)
     company_id = fields.Many2one('res.company', 'Company', required=True,
-        default=lambda self: self.env['res.company']._company_default_get('account.budget.post'))
+                                 default=lambda self: self.env.company)
 
-    
     def action_budget_confirm(self):
         self.write({'state': 'confirm'})
 
-    
     def action_budget_draft(self):
         self.write({'state': 'draft'})
 
-    
     def action_budget_validate(self):
         self.write({'state': 'validate'})
 
-    
     def action_budget_cancel(self):
         self.write({'state': 'cancel'})
 
-    
     def action_budget_done(self):
         self.write({'state': 'done'})
 
@@ -149,7 +144,6 @@ class CrossoveredBudgetLines(models.Model):
 
         return result
 
-    
     def _is_above_budget(self):
         for line in self:
             if line.theoritical_amount >= 0:
@@ -157,7 +151,6 @@ class CrossoveredBudgetLines(models.Model):
             else:
                 line.is_above_budget = line.practical_amount < line.theoritical_amount
 
-    
     def _compute_line_name(self):
         #just in case someone opens the budget line in form view
         computed_name = self.crossovered_budget_id.name
@@ -167,7 +160,6 @@ class CrossoveredBudgetLines(models.Model):
             computed_name += ' - ' + self.analytic_account_id.name
         self.name = computed_name
 
-    
     def _compute_practical_amount(self):
         for line in self:
             acc_ids = line.general_budget_id.account_ids.ids
@@ -202,7 +194,6 @@ class CrossoveredBudgetLines(models.Model):
             self.env.cr.execute(select, where_clause_params)
             line.practical_amount = self.env.cr.fetchone()[0] or 0.0
 
-    
     def _compute_theoritical_amount(self):
         # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
         today = fields.Date.today()
@@ -226,7 +217,6 @@ class CrossoveredBudgetLines(models.Model):
                     theo_amt = line.planned_amount
             line.theoritical_amount = theo_amt
 
-    
     def _compute_percentage(self):
         for line in self:
             if line.theoritical_amount != 0.00:
@@ -240,7 +230,6 @@ class CrossoveredBudgetLines(models.Model):
             raise ValidationError(
                 _("You have to enter at least a budgetary position or analytic account on a budget line."))
 
-    
     def action_open_budget_entries(self):
         if self.analytic_account_id:
             # if there is an analytic account, then the analytic items are loaded
@@ -261,18 +250,16 @@ class CrossoveredBudgetLines(models.Model):
                                 ]
         return action
 
-
     @api.constrains('date_from', 'date_to')
     def _line_dates_between_budget_dates(self):
-    	for rec in self:
-	        budget_date_from = rec.crossovered_budget_id.date_from
-	        budget_date_to = rec.crossovered_budget_id.date_to
-	        if rec.date_from:
-	            date_from = rec.date_from
-	            if date_from < budget_date_from or date_from > budget_date_to:
-	                raise ValidationError(_('"Start Date" of the budget line should be included in the Period of the budget'))
-
-	        if rec.date_to:
-	            date_to = rec.date_to
-	            if date_to < budget_date_from or date_to > budget_date_to:
-	                raise ValidationError(_('"End Date" of the budget line should be included in the Period of the budget'))
+        for rec in self:
+            budget_date_from = rec.crossovered_budget_id.date_from
+            budget_date_to = rec.crossovered_budget_id.date_to
+            if rec.date_from:
+                date_from = rec.date_from
+                if date_from < budget_date_from or date_from > budget_date_to:
+                    raise ValidationError(_('"Start Date" of the budget line should be included in the Period of the budget'))
+            if rec.date_to:
+                date_to = rec.date_to
+                if date_to < budget_date_from or date_to > budget_date_to:
+                    raise ValidationError(_('"End Date" of the budget line should be included in the Period of the budget'))
