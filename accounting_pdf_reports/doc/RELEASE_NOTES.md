@@ -1,5 +1,10 @@
 ## Module <accounting_pdf_reports>
 
+#### 02.03.2022
+#### Version 13.0.4.0.0
+##### IMP
+- Menu re-arrangement
+
 #### 28.02.2022
 #### Version 13.0.3.0.0
 ##### IMP

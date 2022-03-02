@@ -25,8 +25,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         # 91 - 120 : 2018-11-09 - 2018-10-11
         # +120     : 2018-10-10
         periods = {}
-        start = datetime.strptime(date_from, "%Y-%m-%d")
-        date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+        start = datetime.strptime(str(date_from), "%Y-%m-%d")
+        date_from = datetime.strptime(str(date_from), "%Y-%m-%d").date()
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length)
             period_name = str((5-(i+1)) * period_length + 1) + '-' + str((5-i) * period_length)
