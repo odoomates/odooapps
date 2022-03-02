@@ -13,7 +13,6 @@ class AccountPartnerLedger(models.TransientModel):
                                           "currency differs from the company currency.")
     reconciled = fields.Boolean('Reconciled Entries')
 
-
     def _get_report_data(self, data):
         data = self.pre_print_report(data)
         data['form'].update({'reconciled': self.reconciled,
