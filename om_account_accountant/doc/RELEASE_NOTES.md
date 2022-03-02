@@ -1,5 +1,10 @@
 ## Module <om_account_accountant>
 
+#### 02.03.2022
+#### Version 15.0.4.2.0
+##### IMP
+- update index file
+
 #### 27.02.2022
 #### Version 15.0.4.1.0
 ##### IMP
