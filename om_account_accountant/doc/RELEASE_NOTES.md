@@ -3,7 +3,7 @@
 #### 03.03.2022
 #### Version 15.0.5.0.0
 ##### IMP
-- daily reports added to dependency
+- daily report and followup added to dependency
 
 #### 02.03.2022
 #### Version 15.0.4.2.0

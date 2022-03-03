@@ -25,6 +25,7 @@
         'om_account_bank_statement_import',
         'om_credit_limit',
         'om_account_daily_reports',
+        'om_account_followup',
     ],
     'demo': [],
     'data': [
