@@ -6,9 +6,12 @@
     'version': '5.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
-               'Lock Dates, Fiscal Year For Odoo15 Community Edition',
+               'Lock Dates, Fiscal Year For Odoo15 Community Edition, Accounting Dashboard, Financial Reports, '
+               'Customer Follow up Management, Bank Statement Import, Odoo Budget',
     'description': 'Odoo 15 Financial Reports, Asset Management and '
-                   'Account Budget For Odoo15 Community Edition',
+                   'Account Budget, Financial Reports, Recurring Payments, '
+                   'Customer Credit Limit, Bank Statement Import, Customer Follow Up Management,'
+                   'Account Lock Date, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
     'sequence': '1',
     'website': 'https://www.odoomates.tech',
