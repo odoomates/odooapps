@@ -1,5 +1,10 @@
 ## Module <om_account_accountant>
 
+#### 03.03.2022
+#### Version 15.0.5.0.0
+##### IMP
+- daily reports added to dependency
+
 #### 02.03.2022
 #### Version 15.0.4.2.0
 ##### IMP

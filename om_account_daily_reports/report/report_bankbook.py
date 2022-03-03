@@ -132,7 +132,6 @@ class ReportBankBook(models.AbstractModel):
             codes = [journal.code for journal in
                      self.env['account.journal'].search([('id', 'in', data['form']['journal_ids'])])]
         account_ids = data['form']['account_ids']
-        print (".....", account_ids)
         accounts = self.env['account.account'].search([('id', 'in', account_ids)])
         if not accounts:
             journals = self.env['account.journal'].search([('type', '=', 'bank')])

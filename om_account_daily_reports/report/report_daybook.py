@@ -13,7 +13,6 @@ class ReportDayBook(models.AbstractModel):
     def _get_account_move_entry(self, accounts, form_data, date):
         cr = self.env.cr
         MoveLine = self.env['account.move.line']
-        move_lines = {x: [] for x in accounts.ids}
         init_wheres = [""]
 
         init_tables, init_where_clause, init_where_params =MoveLine._query_get()
@@ -73,7 +72,6 @@ class ReportDayBook(models.AbstractModel):
         res['lines'] = data
         return res
 
-
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
@@ -107,7 +105,6 @@ class ReportDayBook(models.AbstractModel):
                     'balance': accounts_res['balance'],
                     'move_lines': accounts_res['lines']
                 })
-
         return {
             'doc_ids': docids,
             'doc_model': model,

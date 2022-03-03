@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 15 Accounting',
-    'version': '4.2.0',
+    'version': '5.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year For Odoo15 Community Edition',
@@ -23,7 +23,8 @@
         'om_fiscal_year',
         'om_recurring_payments',
         'om_account_bank_statement_import',
-        'om_credit_limit'
+        'om_credit_limit',
+        'om_account_daily_reports',
     ],
     'demo': [],
     'data': [
