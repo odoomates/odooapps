@@ -64,3 +64,5 @@ class AccountFinancialReport(models.Model):
         help="You can set up here the format you want this record to be displayed. "
              "If you leave the automatic formatting, it will be computed based on the "
              "financial reports hierarchy (auto-computed field 'level').")
+    children_ids = fields.One2many('account.financial.report', 'parent_id', string='Children')
+

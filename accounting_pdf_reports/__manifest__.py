@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 15 Accounting Financial Reports',
-    'version': '15.0.7.1.0',
+    'version': '15.0.7.3.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 15, Accounting Financial Reports, '
                    'Odoo 15 Financial Reports',
@@ -39,7 +39,7 @@
         'report/report_journal_audit.xml',
         'report/report_journal_entries.xml',
     ],
-    'pre_init_hook': '_pre_init_clean_m2m_models',
+    # 'pre_init_hook': '_pre_init_clean_m2m_models',
     'installable': True,
     'application': False,
     'auto_install': False,

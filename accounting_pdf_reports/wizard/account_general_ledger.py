@@ -22,7 +22,6 @@ class AccountReportGeneralLedger(models.TransientModel):
                                    'account_id', 'journal_id', 
                                    string='Journals', required=True)
 
-
     def _get_report_data(self, data):
         data = self.pre_print_report(data)
         data['form'].update(self.read(['initial_balance', 'sortby'])[0])

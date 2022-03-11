@@ -1,5 +1,15 @@
 ## Module <accounting_pdf_reports>
 
+#### 11.03.2022
+#### Version 15.0.7.3.0
+##### REV
+- dynamic report download link
+
+#### 28.02.2022
+#### Version 15.0.7.2.0
+##### REV
+- pre init hook removed due to reported errors
+
 #### 27.02.2022
 #### Version 15.0.7.1.0
 ##### IMP
