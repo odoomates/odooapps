@@ -1,6 +1,10 @@
 ## Module <om_account_accountant>
 
-#### 08.12.2021
+#### 11.03.2022
+#### Version 14.0.8.0.0
+##### IMP
+- credit limit, recurring payments, daily reports and follow up dependency
+
 #### Version 14.0.7.2.0
 ##### IMP
 - moving excel report download link to accounting_pdf_reports module

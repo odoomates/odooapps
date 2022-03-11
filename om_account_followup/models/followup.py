@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
@@ -8,7 +7,6 @@ from odoo.exceptions import ValidationError
 class FollowupFollowup(models.Model):
     _name = 'followup.followup'
     _description = 'Account Follow-up'
-    _rec_name = 'name'
 
     name = fields.Char(related='company_id.name', string="Name", readonly=True)
     followup_line = fields.One2many('followup.line', 'followup_id', 'Follow-up', copy=True)

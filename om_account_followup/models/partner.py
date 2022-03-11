@@ -6,8 +6,6 @@ from lxml import etree
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import formatLang
-from datetime import datetime
-from datetime import timedelta
 
 
 class ResPartner(models.Model):

@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting',
-    'version': '14.0.7.2.0',
+    'version': '14.0.8.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo14 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
@@ -17,7 +17,11 @@
         'accounting_pdf_reports',
         'om_account_asset',
         'om_account_budget',
-        'om_account_bank_statement_import'
+        'om_account_bank_statement_import',
+        'om_credit_limit',
+        'om_recurring_payments',
+        'om_account_followup',
+        'om_account_daily_reports',
         ],
     'demo': [],
     'data': [
@@ -40,6 +44,6 @@
     'installable': True,
     'application': True,
     'auto_install': False,
-    'images': ['static/description/banner_new.gif'],
+    'images': ['static/description/banner.gif'],
     'qweb': [],
 }
