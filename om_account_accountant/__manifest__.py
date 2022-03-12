@@ -5,7 +5,13 @@
     'name': 'Odoo 14 Accounting',
     'version': '14.0.8.0.0',
     'category': 'Accounting',
-    'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo14 Community Edition',
+    'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
+               'Lock Dates, Fiscal Year For Odoo14 Community Edition, Accounting Dashboard, Financial Reports, '
+               'Customer Follow up Management, Bank Statement Import, Odoo Budget',
+    'description': 'Odoo 14 Financial Reports, Asset Management and '
+                   'Account Budget, Financial Reports, Recurring Payments, '
+                   'Customer Credit Limit, Bank Statement Import, Customer Follow Up Management,'
+                   'Account Lock Date, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/watch?v=6gB-05E5kNg',
     'sequence': '1',
     'website': 'https://www.odoomates.tech',
