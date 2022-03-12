@@ -6,7 +6,7 @@
     'version': '14.0.8.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget For Odoo14 Community Edition',
-    'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
+    'live_test_url': 'https://www.youtube.com/watch?v=6gB-05E5kNg',
     'sequence': '1',
     'website': 'https://www.odoomates.tech',
     'author': 'Odoo Mates, Odoo SA',
