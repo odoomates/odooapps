@@ -36,11 +36,10 @@ class ReportGeneralLedger(models.AbstractModel):
 
         # Prepare initial sql query and Get the initial move lines
         if init_balance:
-            context = {
-                'date_from': self.env.context.get('date_from'),
-                'date_to': False,
-                'initial_bal': True,
-            }
+            context = dict(self.env.context)
+            context['date_from'] = self.env.context.get('date_from')
+            context['date_to'] = False
+            context['initial_bal'] = True
             if analytic_account_ids:
                 context['analytic_account_ids'] = analytic_account_ids
             if partner_ids:
@@ -79,11 +78,12 @@ class ReportGeneralLedger(models.AbstractModel):
             sql_sort = 'j.code, p.name, l.move_id'
 
         # Prepare sql query base on selected parameters from wizard
-        context = {}
+        context = dict(self.env.context)
         if analytic_account_ids:
             context['analytic_account_ids'] = analytic_account_ids
         if partner_ids:
             context['partner_ids'] = partner_ids
+        # tables, where_clause, where_params = MoveLine._query_get()
         tables, where_clause, where_params = MoveLine.with_context(context)._query_get()
         wheres = [""]
         if where_clause.strip():

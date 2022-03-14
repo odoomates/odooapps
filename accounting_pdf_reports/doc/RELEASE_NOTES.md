@@ -1,6 +1,11 @@
 ## Module <accounting_pdf_reports>
 
 #### 11.03.2022
+#### Version 15.0.7.4.0
+##### FIX
+- general ledger filter
+
+#### 11.03.2022
 #### Version 15.0.7.3.0
 ##### REV
 - dynamic report download link
