@@ -3,7 +3,7 @@
 {
     'name': 'Odoo 15 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '3.0.0',
+    'version': '15.0.4.0.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 15 Community Edition',

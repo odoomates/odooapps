@@ -87,8 +87,8 @@ class HrPayslip(models.Model):
         return self.write({'state': 'done'})
 
     def action_payslip_cancel(self):
-        if self.filtered(lambda slip: slip.state == 'done'):
-            raise UserError(_("Cannot cancel a payslip that is done."))
+        # if self.filtered(lambda slip: slip.state == 'done'):
+        #     raise UserError(_("Cannot cancel a payslip that is done."))
         return self.write({'state': 'cancel'})
 
     def refund_sheet(self):
@@ -367,7 +367,7 @@ class HrPayslip(models.Model):
                     #check if there is already a rule computed with that code
                     previous_amount = rule.code in localdict and localdict[rule.code] or 0.0
                     #set/overwrite the amount computed for this rule in the localdict
-                    tot_rule = amount * qty * rate / 100.0
+                    tot_rule = contract.company_id.currency_id.round(amount * qty * rate / 100.0)
                     localdict[rule.code] = tot_rule
                     rules_dict[rule.code] = rule
                     #sum the amount for its salary category
