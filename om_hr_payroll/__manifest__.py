@@ -3,7 +3,7 @@
 {
     'name': 'Odoo 14 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '14.0.7.1.0',
+    'version': '14.0.8.0.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 14 Community Edition',

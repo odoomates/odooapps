@@ -86,8 +86,8 @@ class HrPayslip(models.Model):
         return self.write({'state': 'done'})
 
     def action_payslip_cancel(self):
-        if self.filtered(lambda slip: slip.state == 'done'):
-            raise UserError(_("Cannot cancel a payslip that is done."))
+        # if self.filtered(lambda slip: slip.state == 'done'):
+        #     raise UserError(_("Cannot cancel a payslip that is done."))
         return self.write({'state': 'cancel'})
 
     def refund_sheet(self):
