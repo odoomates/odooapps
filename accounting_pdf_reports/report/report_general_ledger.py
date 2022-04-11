@@ -83,7 +83,6 @@ class ReportGeneralLedger(models.AbstractModel):
             context['analytic_account_ids'] = analytic_account_ids
         if partner_ids:
             context['partner_ids'] = partner_ids
-        # tables, where_clause, where_params = MoveLine._query_get()
         tables, where_clause, where_params = MoveLine.with_context(context)._query_get()
         wheres = [""]
         if where_clause.strip():

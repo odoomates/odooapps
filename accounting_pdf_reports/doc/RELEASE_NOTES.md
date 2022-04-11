@@ -1,5 +1,10 @@
 ## Module <accounting_pdf_reports>
 
+#### 11.04.2022
+#### Version 15.0.7.5.0
+##### IMP
+- tax report
+
 #### 11.03.2022
 #### Version 15.0.7.4.0
 ##### FIX
