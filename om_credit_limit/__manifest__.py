@@ -2,7 +2,7 @@
     'name': 'Odoo 15 Credit Limit',
     'author': 'Odoo Mates',
     'category': 'Accounting',
-    'version': '2.0.0',
+    'version': '2.1.0',
     'description': """Customer Credit Limit""",
     'summary': """Customer Credit Limit""",
     'sequence': 11,
