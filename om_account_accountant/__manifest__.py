@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 15 Accounting',
-    'version': '5.0.0',
+    'version': '5.1.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year For Odoo15 Community Edition, Accounting Dashboard, Financial Reports, '
@@ -12,7 +12,7 @@
                    'Account Budget, Financial Reports, Recurring Payments, '
                    'Customer Credit Limit, Bank Statement Import, Customer Follow Up Management,'
                    'Account Lock Date, Accounting Dashboard',
-    'live_test_url': 'https://www.youtube.com/watch?v=6gB-05E5kNg',
+    'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
     'sequence': '1',
     'website': 'https://www.odoomates.tech',
     'author': 'Odoo Mates, Odoo SA',
