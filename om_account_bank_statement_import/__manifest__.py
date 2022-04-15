@@ -16,7 +16,6 @@
         'security/ir.model.access.csv',
         'wizard/journal_creation.xml',
         'views/account_bank_statement_import_view.xml',
-        'views/account_bank_statement_import_templates.xml',
         # 'views/res_config_settings_views.xml',
     ],
     'demo': [
