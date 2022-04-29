@@ -91,14 +91,14 @@ class AccountInvoiceLine(models.Model):
                 self.move_id.invoice_date or fields.Date.context_today(
                     self))
             vals = {
-                'name': self.name,
-                'code': self.name or False,
+                'name': self.name or self.ref,
+                'code': self.name or self.ref or False,
                 'category_id': self.asset_category_id.id,
                 'value': price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
                 'company_id': self.move_id.company_id.id,
                 'currency_id': self.move_id.company_currency_id.id,
-                'date': self.move_id.invoice_date,
+                'date': self.move_id.invoice_date or self.move_id.date,
                 'invoice_id': self.move_id.id,
             }
             changed_vals = self.env['account.asset.asset'].onchange_category_id_values(vals['category_id'])
