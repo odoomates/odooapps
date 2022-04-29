@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 29.04.2022
+#### Version 15.0.6.7.0
+##### FIX
+- asset creation error from JE
+
 #### 15.04.2022
 #### Version 15.0.6.6.0
 ##### IMP

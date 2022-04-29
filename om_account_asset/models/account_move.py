@@ -119,7 +119,7 @@ class AccountMoveLine(models.Model):
                 'partner_id': self.move_id.partner_id.id,
                 'company_id': self.move_id.company_id.id,
                 'currency_id': self.move_id.company_currency_id.id,
-                'date': self.move_id.invoice_date,
+                'date': self.move_id.invoice_date or self.move_id.date,
                 'invoice_id': self.move_id.id,
             }
             changed_vals = self.env['account.asset.asset'].onchange_category_id_values(vals['category_id'])
