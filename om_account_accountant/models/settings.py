@@ -10,4 +10,3 @@ class ResConfigSettings(models.TransientModel):
                                             readonly=False, string="Use anglo-saxon accounting",
                                             help="Record the cost of a good as an expense when this good is invoiced "
                                                  "to a final customer.")
-

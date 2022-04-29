@@ -1,6 +1,11 @@
 ## Module <om_account_accountant>
 
 #### 15.04.2022
+#### Version 15.0.6.0.0
+##### IMP
+- arabic translation and payment state update
+
+#### 15.04.2022
 #### Version 15.0.5.1.0
 ##### IMP
 - turkish translation

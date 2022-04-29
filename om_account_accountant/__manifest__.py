@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 15 Accounting',
-    'version': '5.1.0',
+    'version': '6.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year For Odoo15 Community Edition, Accounting Dashboard, Financial Reports, '
@@ -44,6 +44,7 @@
         'views/account_bank_statement.xml',
         'views/payment_method.xml',
         'views/reconciliation.xml',
+        'views/account_journal.xml',
     ],
     'installable': True,
     'application': True,
