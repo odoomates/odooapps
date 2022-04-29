@@ -118,8 +118,8 @@ class AccountMoveLine(models.Model):
                                                        self.move_id.invoice_date or fields.Date.context_today(
                                                            self))
             vals = {
-                'name': self.name or self.ref,
-                'code': self.name or self.ref or False,
+                'name': self.name,
+                'code': self.name or False,
                 'category_id': self.asset_category_id.id,
                 'value': price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
