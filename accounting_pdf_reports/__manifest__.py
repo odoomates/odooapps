@@ -13,9 +13,9 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'website': 'https://www.youtube.com/watch?v=sLetAnqo9m8',
+    'website': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'depends': ['account'],
-    'live_test_url': 'https://www.youtube.com/watch?v=Qu6R3yNKR60',
+    'live_test_url': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'data': [
         'security/ir.model.access.csv',
         'views/menu.xml',
