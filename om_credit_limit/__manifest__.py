@@ -7,6 +7,7 @@
     'summary': """Customer Credit Limit, Credit Limit With Warning and Blocking, Customer Credit Limit With Warning and Blocking""",
     'sequence': 11,
     'website': 'https://www.odoomates.tech',
+    'live_test_url': 'https://www.youtube.com/watch?v=wNhWs29T5Zs',
     'depends': ['account', 'sale'],
     'license': 'LGPL-3',
     'data': [
