@@ -1,4 +1,5 @@
 from odoo import models, fields, api, _
+from odoo.exceptions import ValidationError
 
 
 class SaleOrder(models.Model):
@@ -7,6 +8,7 @@ class SaleOrder(models.Model):
     partner_credit = fields.Monetary(related='partner_id.commercial_partner_id.credit', readonly=True)
     partner_credit_limit = fields.Monetary(related='partner_id.credit_limit_compute', readonly=True)
     show_partner_credit_warning = fields.Boolean(compute='_compute_show_partner_credit_warning')
+    credit_limit_type = fields.Selection(related='company_id.credit_limit_type')
 
     @api.depends('partner_credit_limit', 'partner_credit',
                  'company_id.account_default_credit_limit', 'company_id.account_credit_limit')
@@ -18,5 +20,14 @@ class SaleOrder(models.Model):
             order.show_partner_credit_warning = account_credit_limit and \
                                                 ((company_limit and order.partner_credit > company_limit) or \
                                                 (partner_limit and order.partner_credit > partner_limit))
+
+    def action_confirm(self):
+        result = super(SaleOrder, self).action_confirm()
+        for so in self:
+            if so.show_partner_credit_warning and so.credit_limit_type == 'block' and \
+                    so.partner_credit > so.partner_credit_limit:
+                raise ValidationError(_("You cannot exceed credit limit !"))
+        return result
+
 
 

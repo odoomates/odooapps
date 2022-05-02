@@ -6,3 +6,4 @@ class ResCompany(models.Model):
 
     account_credit_limit = fields.Boolean()
     account_default_credit_limit = fields.Monetary()
+    credit_limit_type = fields.Selection([('warning', 'Warning'), ('block', 'Block')])
