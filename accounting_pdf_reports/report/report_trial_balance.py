@@ -33,7 +33,8 @@ class ReportTrialBalance(models.AbstractModel):
             wheres.append(where_clause.strip())
         filters = " AND ".join(wheres)
         # compute the balance, debit and credit for the provided accounts
-        request = ("SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, (SUM(debit) - SUM(credit)) AS balance" +\
+        request = ("SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, "
+                   "(SUM(debit) - SUM(credit)) AS balance" +\
                    " FROM " + tables + " WHERE account_id IN %s " + filters + " GROUP BY account_id")
         params = (tuple(accounts.ids),) + tuple(where_params)
         self.env.cr.execute(request, params)
@@ -67,12 +68,26 @@ class ReportTrialBalance(models.AbstractModel):
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         display_account = data['form'].get('display_account')
         accounts = docs if model == 'account.account' else self.env['account.account'].search([])
-        account_res = self.with_context(data['form'].get('used_context'))._get_accounts(accounts, display_account)
+        context = data['form'].get('used_context')
+        analytic_accounts = []
+        if data['form'].get('analytic_account_ids'):
+            analytic_account_ids = self.env['account.analytic.account'].browse(data['form'].get('analytic_account_ids'))
+            context['analytic_account_ids'] = analytic_account_ids
+            analytic_accounts = [account.name for account in analytic_account_ids]
+            print(analytic_accounts)
+        account_res = self.with_context(context)._get_accounts(accounts, display_account)
+        codes = []
+        if data['form'].get('journal_ids', False):
+            codes = [journal.code for journal in
+                     self.env['account.journal'].search(
+                         [('id', 'in', data['form']['journal_ids'])])]
         return {
             'doc_ids': self.ids,
             'doc_model': model,
             'data': data['form'],
             'docs': docs,
+            'print_journal': codes,
+            'analytic_accounts': analytic_accounts,
             'time': time,
             'Accounts': account_res,
         }
