@@ -15,6 +15,12 @@ your Odoo server and go to the Apps menu. Trigger the debug mode and update the
 list by clicking on the "Update Apps List" link. Now install the module by
 clicking on the install button.
 
+
+Common FAQ
+==========
+1. How to skip in payment status and directly move to paid status ?
+a) https://www.youtube.com/watch?v=eWxfy86Byog
+
 Upgrade
 ============
 
