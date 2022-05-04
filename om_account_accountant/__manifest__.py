@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting',
-    'version': '14.0.8.0.0',
+    'version': '14.0.8.1.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year For Odoo14 Community Edition, Accounting Dashboard, Financial Reports, '
