@@ -5,6 +5,7 @@
     'category': 'Generic Modules/Human Resources',
     'version': '13.0.5.0.0',
     'sequence': 1,
+    'license': 'LGPL-3',
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 13 Community Edition',
     'description': "",
