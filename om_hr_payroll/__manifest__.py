@@ -5,6 +5,7 @@
     'category': 'Generic Modules/Human Resources',
     'version': '14.0.8.0.0',
     'sequence': 1,
+    'license': 'LGPL-3',
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 14 Community Edition',
     'live_test_url': 'https://www.youtube.com/watch?v=0kaHMTtn7oY',
