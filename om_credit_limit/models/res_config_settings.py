@@ -10,6 +10,5 @@ class ResConfigSettings(models.TransientModel):
     account_default_credit_limit = fields.Monetary(
         string="Default Credit Limit", related="company_id.account_default_credit_limit", readonly=False,
         help="A limit of zero means no limit by default.")
-    credit_limit_type = fields.Selection([('warning', 'Warning'), ('block', 'Block')],
-                                         string="Credit Limit Type", related="company_id.credit_limit_type",
+    credit_limit_type = fields.Selection(string="Credit Limit Type", related="company_id.credit_limit_type",
                                          readonly=False)

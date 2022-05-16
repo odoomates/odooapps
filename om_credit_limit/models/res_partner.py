@@ -6,7 +6,7 @@ class ResPartner(models.Model):
 
     amount_credit_limit = fields.Monetary(string='Internal Credit Limit', default=-1)
     credit_limit_compute = fields.Monetary(
-        string='Credit Limit', default=-1,
+        string='Credit Limit ', default=-1,
         compute='_compute_credit_limit_compute', inverse='_inverse_credit_limit_compute',
         help='A limit of zero means no limit. A limit of -1 will use the default (company) limit.'
     )

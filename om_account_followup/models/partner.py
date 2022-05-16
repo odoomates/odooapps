@@ -360,15 +360,15 @@ class ResPartner(models.Model):
     unreconciled_aml_ids = fields.One2many('account.move.line', 'partner_id',
                                            domain=[('full_reconcile_id', '=', False),
                                                    ('account_id.user_type_id.type', '=', 'receivable')])
-    latest_followup_date = fields.Date(compute='_get_latest', string="Latest Follow-up Date",
+    latest_followup_date = fields.Date(compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
                                        help="Latest date that the follow-up level of the partner was changed")
-    latest_followup_level_id = fields.Many2one('followup.line', compute='_get_latest',
+    latest_followup_level_id = fields.Many2one('followup.line', compute='_get_latest', compute_sudo=True,
                                                string="Latest Follow-up Level", help="The maximum follow-up level")
 
     latest_followup_sequence = fields.Integer('Sequence', help="Gives the sequence order when displaying a list of follow-up lines.", default=0)
 
     latest_followup_level_id_without_lit = fields.Many2one('followup.line',
-                                                           compute='_get_latest', store=True,
+                                                           compute='_get_latest', store=True, compute_sudo=True,
                                                            string="Latest Follow-up Level without litigation",
                                                            help="The maximum follow-up level without taking into "
                                                                 "account the account move lines with litigation")
