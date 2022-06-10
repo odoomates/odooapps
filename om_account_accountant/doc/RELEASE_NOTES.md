@@ -1,6 +1,11 @@
 ## Module <om_account_accountant>
 
 #### 15.04.2022
+#### Version 15.0.6.1.0
+##### IMP
+- merged diff PR's and remove create option for payment method menu
+
+#### 15.04.2022
 #### Version 15.0.6.0.0
 ##### IMP
 - arabic translation and payment state update
