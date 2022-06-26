@@ -1,6 +1,11 @@
 ## Module <accounting_pdf_reports>
 
 #### 15.04.2022
+#### Version 15.0.8.1.0
+##### IMP
+- journal entry report total decimal
+
+#### 15.04.2022
 #### Version 15.0.8.0.0
 ##### IMP
 - report filter
