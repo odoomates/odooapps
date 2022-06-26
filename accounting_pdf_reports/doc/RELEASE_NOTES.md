@@ -1,5 +1,10 @@
 ## Module <accounting_pdf_reports>
 
+#### 26.06.2022
+#### Version 14.0.5.2.0
+##### IMP
+- journal entry report total decimal
+
 #### 11.03.2022
 #### Version 14.0.5.1.0
 ##### IMP
