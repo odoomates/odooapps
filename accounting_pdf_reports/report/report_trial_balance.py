@@ -74,7 +74,6 @@ class ReportTrialBalance(models.AbstractModel):
             analytic_account_ids = self.env['account.analytic.account'].browse(data['form'].get('analytic_account_ids'))
             context['analytic_account_ids'] = analytic_account_ids
             analytic_accounts = [account.name for account in analytic_account_ids]
-            print(analytic_accounts)
         account_res = self.with_context(context)._get_accounts(accounts, display_account)
         codes = []
         if data['form'].get('journal_ids', False):
