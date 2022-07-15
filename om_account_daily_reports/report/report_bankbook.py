@@ -73,7 +73,12 @@ class ReportBankBook(models.AbstractModel):
             journals = self.env['account.journal'].search([('type', '=', 'bank')])
             accounts = []
             for journal in journals:
-                accounts.append(journal.payment_credit_account_id.id)
+                for acc_out in journal.outbound_payment_method_line_ids:
+                    if acc_out.payment_account_id:
+                        accounts.append(acc_out.payment_account_id.id)
+                for acc_in in journal.inbound_payment_method_line_ids:
+                    if acc_in.payment_account_id:
+                        accounts.append(acc_in.payment_account_id.id)
             accounts = self.env['account.account'].search([('id', 'in', accounts)])
 
         sql = ('''SELECT l.id AS lid, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, 
@@ -137,7 +142,12 @@ class ReportBankBook(models.AbstractModel):
             journals = self.env['account.journal'].search([('type', '=', 'bank')])
             accounts = []
             for journal in journals:
-                accounts.append(journal.payment_credit_account_id.id)
+                for acc_out in journal.outbound_payment_method_line_ids:
+                    if acc_out.payment_account_id:
+                        accounts.append(acc_out.payment_account_id.id)
+                for acc_in in journal.inbound_payment_method_line_ids:
+                    if acc_in.payment_account_id:
+                        accounts.append(acc_in.payment_account_id.id)
             accounts = self.env['account.account'].search([('id', 'in', accounts)])
         record = self.with_context(data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, init_balance, sortby, display_account)
         return {
