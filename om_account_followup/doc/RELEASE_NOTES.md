@@ -1,5 +1,10 @@
 ## Module <om_account_followup>
 
+#### 16.07.2022
+#### Version 15.0.2.3.0
+##### IMP
+- Date Format on Report
+
 #### 14.07.2022
 #### Version 15.0.2.2.0
 ##### IMP

@@ -4,6 +4,7 @@ import time
 from collections import defaultdict
 from odoo.exceptions import ValidationError
 from odoo import api, fields, models, _
+from odoo.tools import format_date
 
 
 class ReportFollowup(models.AbstractModel):
@@ -55,8 +56,8 @@ class ReportFollowup(models.AbstractModel):
             line_data = {
                 'name': line.move_id.name,
                 'ref': line.ref,
-                'date': line.date,
-                'date_maturity': line.date_maturity,
+                'date': format_date(self.env, line.date),
+                'date_maturity': format_date(self.env, line.date_maturity),
                 'balance': balance,
                 'blocked': line.blocked,
                 'currency_id': currency,
