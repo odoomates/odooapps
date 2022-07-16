@@ -58,93 +58,97 @@ class AccountBankStatementImport(models.TransientModel):
     def import_file(self):
         for data_file in self.attachment_ids:
             file_name = data_file.name.lower()
-            if file_name.strip().endswith('.csv') or file_name.strip().endswith('.xlsx'):
-                statement = False
-                if file_name.strip().endswith('.csv'):
-                    keys = ['date', 'payment_ref', 'partner_id', 'amount', 'currency_id']
-                    try:
-                        csv_data = base64.b64decode(data_file.datas)
-                        data_file = io.StringIO(csv_data.decode("utf-8"))
-                        data_file.seek(0)
-                        file_reader = []
-                        values = {}
-                        csv_reader = csv.reader(data_file, delimiter=',')
-                        file_reader.extend(csv_reader)
-                    except:
-                        raise UserError(_("Invalid file!"))
-                    vals_list = []
-                    date = False
-                    for i in range(len(file_reader)):
-                        field = list(map(str, file_reader[i]))
-                        values = dict(zip(keys, field))
-                        if values:
-                            if i == 0:
-                                continue
+            try:
+                if file_name.strip().endswith('.csv') or file_name.strip().endswith('.xlsx'):
+                    statement = False
+                    if file_name.strip().endswith('.csv'):
+                        keys = ['date', 'payment_ref', 'partner_id', 'amount', 'currency_id']
+                        try:
+                            csv_data = base64.b64decode(data_file.datas)
+                            data_file = io.StringIO(csv_data.decode("utf-8"))
+                            data_file.seek(0)
+                            file_reader = []
+                            values = {}
+                            csv_reader = csv.reader(data_file, delimiter=',')
+                            file_reader.extend(csv_reader)
+                        except:
+                            raise UserError(_("Invalid file!"))
+                        vals_list = []
+                        date = False
+                        for i in range(len(file_reader)):
+                            field = list(map(str, file_reader[i]))
+                            values = dict(zip(keys, field))
+                            if values:
+                                if i == 0:
+                                    continue
+                                else:
+                                    if not date:
+                                        date = field[0]
+                                    values.update({
+                                        'date': field[0],
+                                        'payment_ref': field[1],
+                                        'ref': field[2],
+                                        'partner_id': self.get_partner(field[3]),
+                                        'amount': field[4],
+                                        'currency_id':  self.get_currency(field[5])
+                                    })
+                                    vals_list.append((0, 0, values))
+                        statement_vals = {
+                            'name': 'Statement Of ' + str(datetime.today().date()),
+                            'journal_id': self.env.context.get('active_id'),
+                            'line_ids': vals_list
+                        }
+                        if len(vals_list) != 0:
+                            statement = self.create_statement(statement_vals)
+                    elif file_name.strip().endswith('.xlsx'):
+                        try:
+                            fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
+                            fp.write(binascii.a2b_base64(data_file.datas))
+                            fp.seek(0)
+                            values = {}
+                            workbook = xlrd.open_workbook(fp.name)
+                            sheet = workbook.sheet_by_index(0)
+                        except:
+                            raise UserError(_("Invalid file!"))
+                        vals_list = []
+                        for row_no in range(sheet.nrows):
+                            val = {}
+                            values = {}
+                            if row_no <= 0:
+                                fields = map(lambda row: row.value.encode('utf-8'), sheet.row(row_no))
                             else:
-                                if not date:
-                                    date = field[0]
+                                line = list(map(
+                                    lambda row: isinstance(row.value, bytes) and row.value.encode('utf-8') or str(
+                                        row.value), sheet.row(row_no)))
                                 values.update({
-                                    'date': field[0],
-                                    'payment_ref': field[1],
-                                    'ref': field[2],
-                                    'partner_id': self.get_partner(field[3]),
-                                    'amount': field[4],
-                                    'currency_id':  self.get_currency(field[5])
+                                    'date': line[0],
+                                    'payment_ref': line[1],
+                                    'ref': line[2],
+                                    'partner_id': self.get_partner(line[3]),
+                                    'amount': line[4],
+                                    'currency_id': self.get_currency(line[5])
                                 })
                                 vals_list.append((0, 0, values))
-                    statement_vals = {
-                        'name': 'Statement Of ' + str(datetime.today().date()),
-                        'journal_id': self.env.context.get('active_id'),
-                        'line_ids': vals_list
-                    }
-                    if len(vals_list) != 0:
-                        statement = self.create_statement(statement_vals)
-                elif file_name.strip().endswith('.xlsx'):
-                    try:
-                        fp = tempfile.NamedTemporaryFile(delete=False, suffix=".xlsx")
-                        fp.write(binascii.a2b_base64(data_file.datas))
-                        fp.seek(0)
-                        values = {}
-                        workbook = xlrd.open_workbook(fp.name)
-                        sheet = workbook.sheet_by_index(0)
-                    except:
-                        raise UserError(_("Invalid file!"))
-                    vals_list = []
-                    for row_no in range(sheet.nrows):
-                        val = {}
-                        values = {}
-                        if row_no <= 0:
-                            fields = map(lambda row: row.value.encode('utf-8'), sheet.row(row_no))
-                        else:
-                            line = list(map(
-                                lambda row: isinstance(row.value, bytes) and row.value.encode('utf-8') or str(
-                                    row.value), sheet.row(row_no)))
-                            values.update({
-                                'date': line[0],
-                                'payment_ref': line[1],
-                                'ref': line[2],
-                                'partner_id': self.get_partner(line[3]),
-                                'amount': line[4],
-                                'currency_id': self.get_currency(line[5])
-                            })
-                            vals_list.append((0, 0, values))
-                    statement_vals = {
-                        'name': 'Statement Of ' + str(datetime.today().date()),
-                        'journal_id': self.env.context.get('active_id'),
-                        'line_ids': vals_list
-                    }
-                    if len(vals_list) != 0:
-                        statement = self.create_statement(statement_vals)
-                if statement:
-                    return {
-                        'type': 'ir.actions.act_window',
-                        'res_model': 'account.bank.statement',
-                        'view_mode': 'form',
-                        'res_id': statement.id,
-                        'views': [(False, 'form')],
-                    }
-            else:
-                raise ValidationError(_("Unsupported File Type"))
+                        statement_vals = {
+                            'name': 'Statement Of ' + str(datetime.today().date()),
+                            'journal_id': self.env.context.get('active_id'),
+                            'line_ids': vals_list
+                        }
+                        if len(vals_list) != 0:
+                            statement = self.create_statement(statement_vals)
+                    if statement:
+                        return {
+                            'type': 'ir.actions.act_window',
+                            'res_model': 'account.bank.statement',
+                            'view_mode': 'form',
+                            'res_id': statement.id,
+                            'views': [(False, 'form')],
+                        }
+                else:
+                    raise ValidationError(_("Unsupported File Type"))
+            except Exception as e:
+                raise ValidationError(_("Please upload in specified format ! \n"
+                                        "date, payment reference, reference, partner, amount, currency !"))
 
     # def import_file(self):
     #     """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
