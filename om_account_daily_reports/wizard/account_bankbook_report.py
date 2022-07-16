@@ -12,9 +12,18 @@ class AccountBankBookReport(models.TransientModel):
         journals = self.env['account.journal'].search([('type', '=', 'bank')])
         accounts = []
         for journal in journals:
-            accounts.append(journal.default_account_id.id)
-            accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
-            accounts.append(journal.company_id.account_journal_payment_debit_account_id.id)
+            if journal.default_account_id.id:
+                accounts.append(journal.default_account_id.id)
+            if journal.company_id.account_journal_payment_credit_account_id.id:
+                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
+            if journal.company_id.account_journal_payment_debit_account_id.id:
+                accounts.append(journal.company_id.account_journal_payment_debit_account_id.id)
+            for acc_out in journal.outbound_payment_method_line_ids:
+                if acc_out.payment_account_id:
+                    accounts.append(acc_out.payment_account_id.id)
+            for acc_in in journal.inbound_payment_method_line_ids:
+                if acc_in.payment_account_id:
+                    accounts.append(acc_in.payment_account_id.id)
         return accounts
 
     date_from = fields.Date(string='Start Date', default=date.today(), required=True)
