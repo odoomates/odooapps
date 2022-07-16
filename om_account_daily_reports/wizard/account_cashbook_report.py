@@ -10,7 +10,6 @@ class AccountCashBookReport(models.TransientModel):
 
     def _get_default_account_ids(self):
         journals = self.env['account.journal'].search([('type', '=', 'cash')])
-        print(journals)
         accounts = []
         for journal in journals:
             if journal.default_account_id.id:
@@ -25,8 +24,6 @@ class AccountCashBookReport(models.TransientModel):
             for acc_in in journal.inbound_payment_method_line_ids:
                 if acc_in.payment_account_id:
                     accounts.append(acc_in.payment_account_id.id)
-
-        print(accounts)
         return accounts
 
     date_from = fields.Date(string='Start Date', default=date.today(), required=True)
