@@ -26,8 +26,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         # 91 - 120 : 2018-11-09 - 2018-10-11
         # +120     : 2018-10-10
         periods = {}
-        start = datetime.strptime(date_from, "%Y-%m-%d")
-        date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+        start = datetime.strptime(str(date_from), "%Y-%m-%d")
+        date_from = datetime.strptime(str(date_from), "%Y-%m-%d").date()
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length)
             period_name = str((5-(i+1)) * period_length + 1) + '-' + str((5-i) * period_length)
@@ -99,24 +99,31 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                     AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
                 AND (l.date <= %s)
                 AND l.company_id IN %s'''
-        cr.execute(query, (tuple(move_state), tuple(account_type), date_from, tuple(partner_ids), date_from, tuple(company_ids)))
+        cr.execute(query, (tuple(move_state), tuple(account_type), date_from,
+                           tuple(partner_ids), date_from, tuple(company_ids)))
         aml_ids = cr.fetchall()
         aml_ids = aml_ids and [x[0] for x in aml_ids] or []
         for line in self.env['account.move.line'].browse(aml_ids):
             partner_id = line.partner_id.id or False
             if partner_id not in undue_amounts:
                 undue_amounts[partner_id] = 0.0
-            line_amount = line.company_id.currency_id._convert(line.balance, user_currency, company, date)
+            line_amount = line.company_id.currency_id._convert(line.balance,
+                                                               user_currency,
+                                                               company, date)
             if user_currency.is_zero(line_amount):
                 continue
             for partial_line in line.matched_debit_ids:
                 if partial_line.max_date <= date_from:
                     line_currency = partial_line.company_id.currency_id
-                    line_amount += line_currency._convert(partial_line.amount, user_currency, company, date)
+                    line_amount += line_currency._convert(partial_line.amount,
+                                                          user_currency,
+                                                          company, date)
             for partial_line in line.matched_credit_ids:
                 if partial_line.max_date <= date_from:
                     line_currency = partial_line.company_id.currency_id
-                    line_amount -= line_currency._convert(partial_line.amount, user_currency, company, date)
+                    line_amount -= line_currency._convert(partial_line.amount,
+                                                          user_currency,
+                                                          company, date)
             if not self.env.user.company_id.currency_id.is_zero(line_amount):
                 undue_amounts[partner_id] += line_amount
                 lines[partner_id].append({
@@ -167,12 +174,13 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 for partial_line in line.matched_debit_ids:
                     if partial_line.max_date <= date_from:
                         line_currency_id = partial_line.company_id.currency_id
-                        line_amount += line_currency_id._convert(partial_line.amount, user_currency, company, date)
+                        line_amount += line_currency_id._convert(
+                            partial_line.amount, user_currency, company, date)
                 for partial_line in line.matched_credit_ids:
                     if partial_line.max_date <= date_from:
                         line_currency_id = partial_line.company_id.currency_id
-                        line_amount -= line_currency_id._convert(partial_line.amount, user_currency, company, date)
-
+                        line_amount -= line_currency_id._convert(
+                            partial_line.amount, user_currency, company, date)
                 if not self.env.user.company_id.currency_id.is_zero(line_amount):
                     partners_amount[partner_id] += line_amount
                     lines[partner_id].append({
@@ -203,7 +211,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 # Adding counter
                 total[(i)] = total[(i)] + (during and during[0] or 0)
                 values[str(i)] = during and during[0] or 0.0
-                if not float_is_zero(values[str(i)], precision_rounding=self.env.user.company_id.currency_id.rounding):
+                if not float_is_zero(values[str(i)],
+                                     precision_rounding=self.env.user.company_id.currency_id.rounding):
                     at_least_one_amount = True
             values['total'] = sum([values['direction']] + [values[str(i)] for i in range(5)])
             ## Add for total
@@ -211,7 +220,9 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             values['partner_id'] = partner['partner_id']
             if partner['partner_id']:
                 browsed_partner = self.env['res.partner'].browse(partner['partner_id'])
-                values['name'] = browsed_partner.name and len(browsed_partner.name) >= 45 and browsed_partner.name[0:40] + '...' or browsed_partner.name
+                values['name'] = browsed_partner.name and len(
+                    browsed_partner.name) >= 45 and browsed_partner.name[
+                                                    0:40] + '...' or browsed_partner.name
                 values['trust'] = browsed_partner.trust
             else:
                 values['name'] = _('Unknown Partner')
@@ -240,8 +251,12 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         else:
             account_type = ['payable', 'receivable']
         partner_ids = data['form']['partner_ids']
-        movelines, total, dummy = self._get_partner_move_lines(account_type, partner_ids,
-                                                               date_from, target_move, data['form']['period_length'])
+        movelines, total, dummy = self._get_partner_move_lines(account_type,
+                                                               partner_ids,
+                                                               date_from,
+                                                               target_move,
+                                                               data['form'][
+                                                                   'period_length'])
         return {
             'doc_ids': self.ids,
             'doc_model': model,

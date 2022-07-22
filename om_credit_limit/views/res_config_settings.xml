@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='use_invoice_terms']" position="after">
+                <div class="col-xs-12 col-md-6 o_setting_box">
+                    <div class="o_setting_left_pane">
+                        <field name="account_credit_limit"/>
+                    </div>
+                    <div class="o_setting_right_pane">
+                        <label for="account_credit_limit"/>
+                        <span class="fa fa-lg fa-building-o" title="Values set here are company-specific." aria-label="Values set here are company-specific." role="img"/>
+                        <div class="text-muted">
+                            Trigger alerts when creating Invoices and Sales Orders for Partners with a Total Receivable amount exceeding a limit.
+                        </div>
+                        <div class="content-group mt-2" attrs="{'invisible': [('account_credit_limit', '=', False)]}">
+                            <div class="row">
+                                <label for="account_default_credit_limit" class="col-lg-4 o_light_label"/>
+                                <field name="account_default_credit_limit"/>
+                            </div>
+                        </div>
+                        <div class="content-group mt-2" attrs="{'invisible': [('account_credit_limit', '=', False)]}">
+                            <div class="row">
+                                <label for="credit_limit_type" class="col-lg-4 o_light_label"/>
+                                <field name="credit_limit_type" attrs="{'required': [('account_credit_limit', '=', True)]}"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

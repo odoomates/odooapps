@@ -5,8 +5,8 @@ from odoo import api, fields, models
 
 class AccountCommonAccountReport(models.TransientModel):
     _name = 'account.common.account.report'
-    _description = 'Account Common Account Report'
     _inherit = "account.common.report"
+    _description = 'Account Common Account Report'
 
     display_account = fields.Selection([('all', 'All'), 
                                         ('movement', 'With movements'),

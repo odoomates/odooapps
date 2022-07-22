@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_property_form" model="ir.ui.view">
+        <field name="name">view.res.partner</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='accounting_entries']" position="after">
+                <group string="Credit Limits"
+                       name="credit_limits"
+                       groups="account.group_account_invoice,account.group_account_readonly"
+                       attrs="{'invisible': [('show_credit_limit', '=', False)]}">
+                    <field name="show_credit_limit" invisible="1"/>
+                    <field name="amount_credit_limit" invisible="1"/>
+                    <field name="credit"/>
+                    <label for="credit_limit_compute" string="Credit Limit"  attrs="{'invisible': [('amount_credit_limit', '=', -1)]}"/>
+                    <div attrs="{'invisible': [('amount_credit_limit', '=', -1)]}">
+                        <field name="credit_limit_compute"/>
+                    </div>
+                    <label for="credit_limit_compute" string="Credit Limit" attrs="{'invisible': [('amount_credit_limit', '!=', -1)]}"/>
+                    <div style="font-style: italic" attrs="{'invisible': [('amount_credit_limit', '!=', -1)]}">
+                        <field name="credit_limit_compute"/>
+                        &amp;nbsp;<i class="fa fa-info-circle" role="img" title="This is the default (company) credit limit."></i>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

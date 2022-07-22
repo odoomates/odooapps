@@ -60,7 +60,11 @@ class ReportFinancial(models.AbstractModel):
                         res[report.id][field] += value.get(field)
             elif report.type == 'account_type':
                 # it's the sum the leaf accounts with such an account type
-                accounts = self.env['account.account'].search([('user_type_id', 'in', report.account_type_ids.ids)])
+
+                #todo
+                accounts = self.env['account.account'].search(
+                    [('user_type_id', 'in', report.account_type_ids.ids)])
+
                 res[report.id]['account'] = self._compute_account_balance(accounts)
                 for value in res[report.id]['account'].values():
                     for field in fields:
@@ -81,11 +85,14 @@ class ReportFinancial(models.AbstractModel):
 
     def get_account_lines(self, data):
         lines = []
-        account_report = self.env['account.financial.report'].search([('id', '=', data['account_report_id'][0])])
+        account_report = self.env['account.financial.report'].search(
+            [('id', '=', data['account_report_id'][0])])
         child_reports = account_report._get_children_by_order()
         res = self.with_context(data.get('used_context'))._compute_report_balance(child_reports)
         if data['enable_filter']:
-            comparison_res = self.with_context(data.get('comparison_context'))._compute_report_balance(child_reports)
+            comparison_res = self.with_context(
+                data.get('comparison_context'))._compute_report_balance(
+                child_reports)
             for report_id, value in comparison_res.items():
                 res[report_id]['comp_bal'] = value['balance']
                 report_acc = res[report_id].get('account')

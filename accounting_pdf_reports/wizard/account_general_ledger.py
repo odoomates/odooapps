@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from odoo import fields, models, _
+from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 
 
 class AccountReportGeneralLedger(models.TransientModel):
-    _inherit = "account.common.account.report"
     _name = "account.report.general.ledger"
+    _inherit = "account.common.account.report"
     _description = "General Ledger Report"
 
     initial_balance = fields.Boolean(string='Include Initial Balances',
@@ -22,10 +22,14 @@ class AccountReportGeneralLedger(models.TransientModel):
                                    'account_id', 'journal_id', 
                                    string='Journals', required=True)
 
-    def _print_report(self, data):
+    def _get_report_data(self, data):
         data = self.pre_print_report(data)
         data['form'].update(self.read(['initial_balance', 'sortby'])[0])
         if data['form'].get('initial_balance') and not data['form'].get('date_from'):
             raise UserError(_("You must define a Start Date"))
         records = self.env[data['model']].browse(data.get('ids', []))
+        return records, data
+
+    def _print_report(self, data):
+        records, data = self._get_report_data(data)
         return self.env.ref('accounting_pdf_reports.action_report_general_ledger').with_context(landscape=True).report_action(records, data=data)

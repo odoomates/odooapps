@@ -7,10 +7,13 @@
         <field name="inherit_id" ref="account.account_common_report_view"/>
         <field name="arch" type="xml">
             <data>
-            <field name="journal_ids" position="replace"/>
                 <xpath expr="//field[@name='target_move']" position="after">
                     <field name="display_account" widget="radio"/>
                     <newline/>
+                </xpath>
+                <xpath expr="//field[@name='journal_ids']" position="after">
+                    <field name="analytic_account_ids" widget="many2many_tags"
+                           options="{'no_open': True, 'no_create': True}"/>
                 </xpath>
             </data>
         </field>
@@ -28,10 +31,10 @@
     </record>
 
     <menuitem id="menu_general_balance_report"
-        name="Trial Balance"
-        sequence="20"
-        parent="menu_finance_audit_reports"
-        action="action_account_balance_menu"
-        groups="account.group_account_user,account.group_account_manager"/>
+              name="Trial Balance"
+              sequence="20"
+              parent="menu_finance_audit_reports"
+              action="action_account_balance_menu"
+              groups="account.group_account_user,account.group_account_manager"/>
 
 </odoo>
