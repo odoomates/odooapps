@@ -30,6 +30,7 @@
         'om_account_daily_reports',
         'om_account_followup',
     ],
+    'excludes': ['account_accountant'],
     'demo': [],
     'data': [
         'security/group.xml',

@@ -15,6 +15,7 @@
     'license': 'LGPL-3',
     'support': 'odoomates@gmail.com',
     'depends': ['account'],
+    'excludes': ['account_accountant'],
     'demo': [],
     'data': [
         'security/ir.model.access.csv',
