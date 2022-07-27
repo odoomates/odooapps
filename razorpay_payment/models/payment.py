@@ -25,7 +25,7 @@ class PaymentAcquirer(models.Model):
             raise ValidationError(_('Currency not supported by Razorpay'))
         values.update({
             'key': self.razorpay_key_id,
-            'amount': float_repr(float_round(values.get('amount'), 2) * 100, 0),
+            'amount': float_repr(float_round(values.get('amount'), 2)),
             'name': values.get('partner_name'),
             'contact': values.get('partner_phone'),
             'email': values.get('partner_email'),
