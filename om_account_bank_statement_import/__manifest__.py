@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 15 Account Bank Statement Import',
-    'version': '15.0.2.3.0',
+    'version': '15.0.2.4.0',
     'category': 'Accounting',
     'depends': ['account'],
     'website': 'https://www.odoomates.tech',
@@ -16,7 +16,6 @@
         'security/ir.model.access.csv',
         'wizard/journal_creation.xml',
         'views/account_bank_statement_import_view.xml',
-        # 'views/res_config_settings_views.xml',
     ],
     'demo': [
         'demo/partner_bank.xml',

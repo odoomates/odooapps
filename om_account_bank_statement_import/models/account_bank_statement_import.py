@@ -148,8 +148,8 @@ class AccountBankStatementImport(models.TransientModel):
                     raise ValidationError(_("Unsupported File Type"))
             except Exception as e:
                 raise ValidationError(_("Please upload in specified format ! \n"
-                                        "date, payment reference, reference, partner, amount, currency !"))
-
+                                        "date, payment reference, reference, partner, amount, currency ! \n"
+                                        "Date Format: %Y-%m-%d"))
     # def import_file(self):
     #     """ Process the file chosen in the wizard, create bank statement(s) and go to reconciliation. """
     #     self.ensure_one()
