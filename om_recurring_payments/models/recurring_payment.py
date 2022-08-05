@@ -140,6 +140,6 @@ class RecurringPaymentLine(models.Model):
         payment = self.env['account.payment'].create(vals)
         if payment:
             if self.recurring_payment_id.journal_state == 'posted':
-                payment.action_post()
+                payment.post()
             self.write({'state': 'done', 'payment_id': payment.id})
 
