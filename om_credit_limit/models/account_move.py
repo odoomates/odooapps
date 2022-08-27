@@ -26,8 +26,10 @@ class AccountMove(models.Model):
         result = super(AccountMove, self).action_post()
         for inv in self:
             if inv.show_partner_credit_warning and inv.credit_limit_type == 'block' and \
-                    inv.partner_credit + inv.amount_total > inv.partner_credit_limit:
-                raise ValidationError(_("You cannot exceed credit limit !"))
+                    inv.partner_credit > inv.partner_credit_limit:
+                raise ValidationError(_("You cannot exceed credit limit ! \n"
+                                        "Allowed Limit: %s ! \n"
+                                        "Computed Balance: %s !") %(inv.partner_credit_limit, inv.partner_credit))
         return result
 
 
