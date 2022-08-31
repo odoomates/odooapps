@@ -90,10 +90,10 @@ class AccountMoveLine(models.Model):
                 months = cat.method_number * cat.method_period
                 if rec.move_id.move_type in ['out_invoice', 'out_refund']:
                     price_subtotal = rec.currency_id._convert(
-                        self.price_subtotal,
-                        self.company_currency_id,
-                        self.company_id,
-                        self.move_id.invoice_date or fields.Date.context_today(
+                        rec.price_subtotal,
+                        rec.company_currency_id,
+                        rec.company_id,
+                        rec.move_id.invoice_date or fields.Date.context_today(
                             self))
 
                     rec.asset_mrr = price_subtotal / months
