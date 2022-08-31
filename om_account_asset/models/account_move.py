@@ -89,7 +89,7 @@ class AccountMoveLine(models.Model):
                                       'your asset category cannot be 0.'))
                 months = cat.method_number * cat.method_period
                 if rec.move_id.move_type in ['out_invoice', 'out_refund']:
-                    price_subtotal = self.currency_id._convert(
+                    price_subtotal = rec.currency_id._convert(
                         self.price_subtotal,
                         self.company_currency_id,
                         self.company_id,
