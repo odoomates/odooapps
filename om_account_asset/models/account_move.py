@@ -94,7 +94,7 @@ class AccountMoveLine(models.Model):
                         rec.company_currency_id,
                         rec.company_id,
                         rec.move_id.invoice_date or fields.Date.context_today(
-                            self))
+                            rec))
 
                     rec.asset_mrr = price_subtotal / months
                 if rec.move_id.invoice_date:
