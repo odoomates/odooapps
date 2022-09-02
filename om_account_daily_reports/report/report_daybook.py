@@ -80,9 +80,9 @@ class ReportDayBook(models.AbstractModel):
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         form_data = data['form']
 
-        date_from = datetime.strptime(form_data['date_from'],
+        date_from = datetime.strptime(str(form_data['date_from']),
                                        '%Y-%m-%d').date()
-        date_to = datetime.strptime(form_data['date_to'], '%Y-%m-%d').date()
+        date_to = datetime.strptime(str(form_data['date_to']), '%Y-%m-%d').date()
         codes = []
 
         if data['form'].get('journal_ids', False):
