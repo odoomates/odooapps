@@ -10,7 +10,7 @@ class AccountMove(models.Model):
     _inherit = 'account.move'
 
     asset_ids = fields.One2many('account.asset.asset', 'invoice_id',
-                                string="Assets")
+                                string="Assets", copy=False)
 
     def button_draft(self):
         res = super(AccountMove, self).button_draft()
@@ -49,7 +49,7 @@ class AccountMove(models.Model):
         for inv in self:
             context = dict(self.env.context)
             context.pop('default_type', None)
-            for mv_line in inv.invoice_line_ids:
+            for mv_line in inv.invoice_line_ids.filtered(lambda line: line.move_id.move_type in ('in_invoice','out_invoice')):
                 mv_line.with_context(context).asset_create()
         return result
 

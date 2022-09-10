@@ -1,5 +1,10 @@
 ## Module <om_account_asset>
 
+#### 06.09.2022
+#### Version 15.0.6.9.0
+##### FIX
+- prevent asset creation if Invoice/Bill is refund.
+
 #### 29.04.2022
 #### Version 15.0.6.7.0
 ##### FIX
