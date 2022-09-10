@@ -175,7 +175,7 @@ class FollowupPrint(models.TransientModel):
                 LEFT JOIN account_account AS a
                 ON (l.account_id=a.id)
                 WHERE (l.full_reconcile_id IS NULL)
-                AND a.account_type = 'receivable'
+                AND a.account_type = 'asset_receivable'
                 AND (l.partner_id is NOT NULL)
                 AND (l.debit > 0)
                 AND (l.company_id = %s)

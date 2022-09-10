@@ -80,16 +80,16 @@ class ReportPartnerLedger(models.AbstractModel):
             data['computed']['move_state'] = ['posted']
         result_selection = data['form'].get('result_selection', 'customer')
         if result_selection == 'supplier':
-            data['computed']['ACCOUNT_TYPE'] = ['payable']
+            data['computed']['ACCOUNT_TYPE'] = ['liability_payable']
         elif result_selection == 'customer':
-            data['computed']['ACCOUNT_TYPE'] = ['receivable']
+            data['computed']['ACCOUNT_TYPE'] = ['asset_receivable']
         else:
-            data['computed']['ACCOUNT_TYPE'] = ['payable', 'receivable']
+            data['computed']['ACCOUNT_TYPE'] = ['asset_receivable', 'liability_payable']
 
         self.env.cr.execute("""
             SELECT a.id
             FROM account_account a
-            WHERE a.internal_type IN %s
+            WHERE a.account_type IN %s
             AND NOT a.deprecated""", (tuple(data['computed']['ACCOUNT_TYPE']),))
         data['computed']['account_ids'] = [a for (a,) in self.env.cr.fetchall()]
         params = [tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]

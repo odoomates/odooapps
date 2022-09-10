@@ -6,7 +6,7 @@
     'version': '1.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
-               'Lock Dates, Fiscal Year For Odoo15 Community Edition, Accounting Dashboard, Financial Reports, '
+               'Lock Dates, Fiscal Year For Odoo 16 Community Edition, Accounting Dashboard, Financial Reports, '
                'Customer Follow up Management, Bank Statement Import, Odoo Budget',
     'description': 'Odoo 16 Financial Reports, Asset Management and '
                    'Account Budget, Financial Reports, Recurring Payments, '

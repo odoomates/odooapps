@@ -3,7 +3,7 @@
 
 {
     'name': 'Cash Book, Day Book, Bank Book Financial Reports',
-    'version': '1.0.0',
+    'version': '16.0.1.0.0',
     'category': 'Invoicing Management',
     'summary': 'Cash Book, Day Book and Bank Book Report For Odoo 16',
     'description': 'Cash Book, Day Book and Bank Book Report For Odoo 16',

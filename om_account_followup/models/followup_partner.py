@@ -42,7 +42,7 @@ class FollowupStatByPartner(models.Model):
                     account_move_line l
                     LEFT JOIN account_account a ON (l.account_id = a.id)
                 WHERE
-                    a.account_type = 'receivable' AND
+                    a.account_type = 'asset_receivable' AND
                     l.full_reconcile_id is NULL AND
                     l.partner_id IS NOT NULL
                     GROUP BY

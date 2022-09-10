@@ -228,7 +228,7 @@ class ResPartner(models.Model):
         company_id = self.env.user.company_id.id
         if not self.env['account.move.line'].search(
                 [('partner_id', '=', self.id),
-                 ('account_id.account_type', '=', 'receivable'),
+                 ('account_id.account_type', '=', 'asset_receivable'),
                  ('full_reconcile_id', '=', False),
                  ('company_id', '=', company_id),
                  '|', ('date_maturity', '=', False),
@@ -282,7 +282,7 @@ class ResPartner(models.Model):
                                     (SELECT (debit-credit) AS bal, partner_id
                                     FROM account_move_line l
                                     LEFT JOIN account_account a ON a.id = l.account_id
-                                    WHERE a.account_type = 'receivable'
+                                    WHERE a.account_type = 'asset_receivable'
                                     %s AND full_reconcile_id IS NULL
                                     AND l.company_id = %s) AS l
                                     RIGHT JOIN res_partner p
@@ -308,7 +308,7 @@ class ResPartner(models.Model):
         having_where_clause = having_where_clause % (having_values[0])
         query = """SELECT partner_id FROM account_move_line l
                 LEFT JOIN account_account a ON a.id = l.account_id
-                WHERE a.account_type = 'receivable' 
+                WHERE a.account_type = 'asset_receivable' 
                 AND l.company_id = %s 
                 AND l.full_reconcile_id IS NULL 
                 AND partner_id IS NOT NULL GROUP BY partner_id"""
@@ -353,7 +353,7 @@ class ResPartner(models.Model):
                                                 "e.g. to see if he keeps his promises.")
     unreconciled_aml_ids = fields.One2many('account.move.line', 'partner_id',
                                            domain=[('full_reconcile_id', '=', False),
-                                                   ('account_id.account_type', '=', 'receivable')])
+                                                   ('account_id.account_type', '=', 'asset_receivable')])
     latest_followup_date = fields.Date(compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
                                        help="Latest date that the follow-up level of the partner was changed")
     latest_followup_level_id = fields.Many2one('followup.line', compute='_get_latest', compute_sudo=True,
