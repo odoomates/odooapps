@@ -9,9 +9,9 @@
     'depends': ['point_of_sale'],
     'author': 'Odoo Mates, Sempai Space',
     'company': 'Odoo Mates, Sempai Space',
-    'maintainer': 'Odoo Mates',
-    'website': 'http://odoomates.tech',
-    'support': 'odoomates@gmail.com',
+    'maintainer': 'Odoo Mates, Sempai Space',
+    'website': 'http://odoomates.tech, https://www.sempai.space',
+    'support': 'odoomates@gmail.com, sempaispace@gmail.com',
     'data': [
         'views/pos.xml',
         'views/pos_templates.xml'
