@@ -2,7 +2,7 @@
 
 {
     'name': 'Pos Service Charge',
-    'version': '14.0.1.0.0',
+    'version': '15.0.1.0.0',
     'category': 'Point of Sale',
     'summary': 'Service Charges In POS',
     'description': """Service charges in pos""",
