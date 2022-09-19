@@ -56,11 +56,18 @@ odoo.define("pos_order_to_purchase_order.PosServiceChargeButton", function (requ
                     startingValue: this.env.pos.config.service_charge,
                 });
                 if (confirmed){
-                   var service_charge =  payload / 100.0 * order.get_total_with_tax();
-                   if (service_charge > 0){
-                       order.add_product(product, { price: service_charge });
+                   if ( this.env.pos.config.service_charge_tax_calculation) {
+                       var service_charge =  payload / 100.0 * order.get_total_with_tax();
+                       if (service_charge > 0){
+                           order.add_product(product, { price: service_charge });
+                      }
                    }
-
+                   else {
+                       var service_charge =  payload / 100.0 * order.get_total_without_tax();
+                       if (service_charge > 0){
+                           order.add_product(product, { price: service_charge });
+                       }
+                   }
                 }
             }
         }

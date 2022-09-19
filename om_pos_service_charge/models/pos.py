@@ -7,6 +7,7 @@ class PosConfig(models.Model):
     _inherit = 'pos.config'
 
     enable_service_charge = fields.Boolean(string='Service Charges')
+    service_charge_tax_calculation = fields.Boolean(string='Include taxes for calculation?',required=True,default=True)
     service_charge_type = fields.Selection([('amount', 'Amount'),
                                             ('percentage', 'Percentage')],
                                            string='Type', default='amount')
