@@ -20,8 +20,8 @@
 {
     'name': 'Employee Search Panel',
     'summary': 'Kanban Search Panel for Employees',
-    'version': '12.0.1.0.0',
-    'category': 'Extra Tools',
+    'version': '12.0.2.0.0',
+    'category': 'Generic Modules/Human Resources',
     'license': 'AGPL-3',
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
