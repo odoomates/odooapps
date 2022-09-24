@@ -48,7 +48,6 @@ class AccountBankBookReport(models.TransientModel):
             domain = {'account_ids': [('id', 'in', accounts)]}
             return {'domain': domain}
 
-
     def _build_comparison_context(self, data):
         result = {}
         result['journal_ids'] = 'journal_ids' in data['form'] and data['form'][
