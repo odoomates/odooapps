@@ -73,7 +73,6 @@ class ReportDayBook(models.AbstractModel):
         res['lines'] = data
         return res
 
-
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
@@ -81,10 +80,8 @@ class ReportDayBook(models.AbstractModel):
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         form_data = data['form']
-
-        date_from = datetime.strptime(form_data['date_from'],
-                                       '%Y-%m-%d').date()
-        date_to = datetime.strptime(form_data['date_to'], '%Y-%m-%d').date()
+        date_from = datetime.strptime(str(form_data['date_from']), '%Y-%m-%d').date()
+        date_to = datetime.strptime(str(form_data['date_to']), '%Y-%m-%d').date()
         codes = []
 
         if data['form'].get('journal_ids', False):
