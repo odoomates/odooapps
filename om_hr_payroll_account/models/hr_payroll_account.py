@@ -33,11 +33,12 @@ class HrPayslip(models.Model):
         states={'draft': [('readonly', False)]}, default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1))
     move_id = fields.Many2one('account.move', 'Accounting Entry', readonly=True, copy=False)
 
-    @api.model
-    def create(self, vals):
+    @api.model_create_multi
+    def create(self, vals_list):
         if 'journal_id' in self.env.context:
-            vals['journal_id'] = self.env.context.get('journal_id')
-        return super(HrPayslip, self).create(vals)
+            for vals in vals_list:
+                vals['journal_id'] = self.env.context.get('journal_id')
+        return super(HrPayslip, self).create(vals_list)
 
     @api.onchange('contract_id')
     def onchange_contract(self):
