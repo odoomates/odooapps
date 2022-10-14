@@ -37,9 +37,11 @@ class AccountFinancialReport(models.Model):
         ('account_type', 'Account Type'),
         ('account_report', 'Report Value'),
         ], 'Type', default='sum')
-    account_ids = fields.Many2many('account.account', 'account_account_financial_report', 'report_line_id', 'account_id', 'Accounts')
+    account_ids = fields.Many2many('account.account', 'account_account_financial_report',
+                                   'report_line_id', 'account_id', 'Accounts')
     account_report_id = fields.Many2one('account.financial.report', 'Report Value')
-    # account_type_ids = fields.Many2many('account.account.type', 'account_account_financial_report_type', 'report_id', 'account_type_id', 'Account Types')
+    account_type_ids = fields.Many2many('account.account.type', 'account_account_financial_report_type',
+                                        'report_id', 'account_type_id', 'Account Types')
     report_domain = fields.Char(string="Report Domain")
     sign = fields.Selection([('-1', 'Reverse balance sign'), ('1', 'Preserve balance sign')], 'Sign on Reports',
                             required=True, default='1',

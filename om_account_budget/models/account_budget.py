@@ -27,10 +27,11 @@ class AccountBudgetPost(models.Model):
         if not account_ids:
             raise ValidationError(_('The budget must have at least one account.'))
 
-    @api.model
-    def create(self, vals):
-        self._check_account_ids(vals)
-        return super(AccountBudgetPost, self).create(vals)
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            self._check_account_ids(vals)
+        return super(AccountBudgetPost, self).create(vals_list)
 
     def write(self, vals):
         self._check_account_ids(vals)
@@ -80,7 +81,7 @@ class CrossoveredBudgetLines(models.Model):
     name = fields.Char(compute='_compute_line_name')
     crossovered_budget_id = fields.Many2one('crossovered.budget', 'Budget', ondelete='cascade', index=True, required=True)
     analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account')
-    analytic_group_id = fields.Many2one('account.analytic.group', 'Analytic Group', related='analytic_account_id.group_id', readonly=True)
+    analytic_plan_id = fields.Many2one('account.analytic.group', 'Analytic Plan', related='analytic_account_id.plan_id', readonly=True)
     general_budget_id = fields.Many2one('account.budget.post', 'Budgetary Position')
     date_from = fields.Date('Start Date', required=True)
     date_to = fields.Date('End Date', required=True)

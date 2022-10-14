@@ -85,13 +85,14 @@ class RecurringPayment(models.Model):
         for line in line_ids:
             line.action_create_payment()
 
-    @api.model
-    def create(self, vals):
-        if 'company_id' in vals:
-            vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code(
-                'recurring.payment') or _('New')
-        else:
-            vals['name'] = self.env['ir.sequence'].next_by_code('recurring.payment') or _('New')
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if 'company_id' in vals:
+                vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code(
+                    'recurring.payment') or _('New')
+            else:
+                vals['name'] = self.env['ir.sequence'].next_by_code('recurring.payment') or _('New')
         return super(RecurringPayment, self).create(vals)
 
     @api.constrains('amount')

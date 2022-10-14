@@ -10,7 +10,7 @@
                'Customer Follow up Management, Bank Statement Import, Odoo Budget',
     'description': 'Odoo 16 Financial Reports, Asset Management and '
                    'Account Budget, Financial Reports, Recurring Payments, '
-                   'Customer Credit Limit, Bank Statement Import, Customer Follow Up Management,'
+                   'Bank Statement Import, Customer Follow Up Management,'
                    'Account Lock Date, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/watch?v=6gB-05E5kNg',
     'sequence': '1',
@@ -26,7 +26,6 @@
         'om_fiscal_year',
         'om_recurring_payments',
         'om_account_bank_statement_import',
-        'om_credit_limit',
         'om_account_daily_reports',
         'om_account_followup',
     ],

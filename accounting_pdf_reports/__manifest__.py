@@ -18,6 +18,7 @@
     'live_test_url': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'data': [
         'security/ir.model.access.csv',
+        'data/account_account_type.xml',
         'views/menu.xml',
         'views/ledger_menu.xml',
         'views/financial_report.xml',

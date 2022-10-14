@@ -8,28 +8,33 @@
             <field name="arch" type="xml">
                 <form string="Account Report">
                     <sheet>
-                        <group col="4">
-                            <field name="name"/>
-                            <field name="parent_id"/>
-                            <field name="sequence"/>
-                            <field name="type"/>
-                            <field name="sign"/>
-                            <field name="style_overwrite"/>
+                        <group>
+                            <group>
+                                <field name="name"/>
+                                <field name="parent_id"/>
+                                <field name="sequence"/>
+                            </group>
+                            <group>
+                                <field name="type"/>
+                                <field name="sign"/>
+                                <field name="style_overwrite"/>
+                            </group>
                         </group>
                         <notebook>
-                            <page string="Report" attrs="{'invisible': [('type','not in',['accounts','account_type', 'account_report'])]}">
+                            <page string="Report"
+                                  attrs="{'invisible': [('type','not in',['accounts','account_type', 'account_report'])]}">
                                 <group>
-                                    <field name="display_detail" attrs="{'invisible': [('type','not in',['accounts','account_type'])]}"/>
-                                    <field name="account_report_id" attrs="{'invisible': [('type', '!=', 'account_report')]}"/>
+                                    <field name="display_detail"
+                                           attrs="{'invisible': [('type','not in',['accounts','account_type'])]}"/>
+                                    <field name="account_report_id"
+                                           attrs="{'invisible': [('type', '!=', 'account_report')]}"/>
                                 </group>
                                 <field name="account_ids" attrs="{'invisible': [('type', '!=', 'accounts')]}"/>
-<!--                                <field name="account_type_ids" attrs="{'invisible': [('type', '!=', 'account_type')]}"/>-->
+                                <field name="account_type_ids" attrs="{'invisible': [('type', '!=', 'account_type')]}"/>
                             </page>
                             <page string="Childrens">
-                                <group>
-                                    <field name="children_ids" nolabel="1">
-                                    </field>
-                                </group>
+                                <field name="children_ids" nolabel="1">
+                                </field>
                             </page>
                         </notebook>
                     </sheet>
@@ -50,7 +55,7 @@
             </field>
         </record>
 
-         <record id="view_account_financial_report_search" model="ir.ui.view">
+        <record id="view_account_financial_report_search" model="ir.ui.view">
             <field name="name">account.financial.report.search</field>
             <field name="model">account.financial.report</field>
             <field name="arch" type="xml">
@@ -60,7 +65,8 @@
                     <field name="account_report_id"/>
                     <filter string="Reports" name="filter_parent_id" domain="[('parent_id','=', False)]"/>
                     <group expand="0" string="Group By">
-                        <filter name="parent_report" string="Parent Report" domain="" context="{'group_by':'parent_id'}"/>
+                        <filter name="parent_report" string="Parent Report" domain=""
+                                context="{'group_by':'parent_id'}"/>
                         <filter name="report_type" string="Report Type" domain="[]" context="{'group_by':'type'}"/>
                     </group>
                 </search>

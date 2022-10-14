@@ -26,10 +26,9 @@
                                        attrs="{'invisible': [('type','!=','sale')]}" style="font-weight: bold"
                                        class="o_light_label"/>
                             </div>
-<!--                            todo review domain-->
-<!--                            <field name="account_asset_id" nolabel="1"-->
-<!--                                   attrs="{'invisible': [('type','=', False)]}"-->
-<!--                                   domain="[('company_id', '=', company_id)]"/>-->
+                            <field name="account_asset_id" nolabel="1"
+                                   attrs="{'invisible': [('type','=', False)]}"
+                                   domain="[('company_id', '=', company_id)]"/>
                             <field name="account_asset_id" nolabel="1"
                                    attrs="{'invisible': [('type','=', False)]}"/>
                             <div>
@@ -39,9 +38,8 @@
                                        attrs="{'invisible': [('type','!=','sale')]}"
                                        style="font-weight: bold" class="o_light_label"/>
                             </div>
-<!--                            todo review domain-->
-<!--                             <field name="account_depreciation_id" nolabel="1"-->
-<!--                                   domain="[('company_id', '=', company_id)]"/>-->
+                             <field name="account_depreciation_id" nolabel="1"
+                                   domain="[('company_id', '=', company_id)]"/>
                             <field name="account_depreciation_id" nolabel="1"/>
                             <div>
                                 <label for="account_depreciation_expense_id"
@@ -52,16 +50,17 @@
                                        style="font-weight: bold" class="o_light_label"/>
                             </div>
 <!--                            todo review domain-->
-<!--                            <field name="account_depreciation_expense_id" nolabel="1"-->
-<!--                                   domain="[('company_id', '=', company_id)]"/>-->
+                            <field name="account_depreciation_expense_id" nolabel="1"
+                                   domain="[('company_id', '=', company_id)]"/>
                             <field name="account_depreciation_expense_id" nolabel="1"/>
 <!--                            todo review domain-->
-<!--                            <field name="account_analytic_id" domain="[('company_id', '=', company_id)]"-->
-<!--                                   groups="analytic.group_analytic_accounting"/>-->
+                            <field name="account_analytic_id" domain="[('company_id', '=', company_id)]"
+                                   groups="analytic.group_analytic_accounting"/>
                             <field name="account_analytic_id"
                                    groups="analytic.group_analytic_accounting"/>
-                            <field name="analytic_tag_ids"
-                                   groups="analytic.group_analytic_tags" widget="many2many_tags"/>
+                            <field name="analytic_distribution" widget="analytic_distribution"/>
+                            <!--                            <field name="analytic_tag_ids"-->
+<!--                                   groups="analytic.group_analytic_tags" widget="many2many_tags"/>-->
                         </group>
                     </group>
                     <group>
@@ -82,6 +81,7 @@
                         </group>
                         <group>
                             <field name="type" invisible="1"/>
+                            <field name="company_id" invisible="1"/>
                             <field name="company_id" options="{'no_create': True}"
                                    groups="base.group_multi_company"/>
                         </group>
@@ -222,11 +222,12 @@
                             <field name="partner_id" string="Vendor" widget="res_partner_many2one"
                                    context="{'res_partner_search_mode': 'supplier'}"/>
                             <field name="invoice_id" string="Invoice" options="{'no_create': True}"/>
-                            <field name="analytic_tag_ids"
-                                   groups="analytic.group_analytic_accounting" widget="many2many_tags"/>
+                            <field name="analytic_distribution" widget="analytic_distribution"/>
+<!--                            <field name="analytic_tag_ids"-->
+<!--                                   groups="analytic.group_analytic_accounting" widget="many2many_tags"/>-->
                         </group>
                     </group>
-                    <notebook colspan="4">
+                    <notebook>
                         <page string="Depreciation Board">
                             <field name="depreciation_line_ids" mode="tree" options="{'reload_whole_on_button': true}">
                                 <tree string="Depreciation Lines" decoration-info="(move_check == False)"

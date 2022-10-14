@@ -13,23 +13,27 @@ from odoo.tools import float_compare, float_is_zero
 class AccountAssetCategory(models.Model):
     _name = 'account.asset.category'
     _description = 'Asset category'
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'analytic.mixin']
+
+    exclude_types = ['asset_receivable', 'asset_cash', 'liability_payable',
+                     'liability_credit_card', 'equity', 'equity_unaffected']
 
     active = fields.Boolean(default=True)
     name = fields.Char(required=True, index=True, string="Asset Type")
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account')
-    analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tag')
+    # analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tag')
     account_asset_id = fields.Many2one('account.account', string='Asset Account',
                                        required=True,
-                                       domain=[('internal_type','=','other'), ('deprecated', '=', False)],
+                                       domain=[('account_type', 'not in', exclude_types), ('deprecated', '=', False)],
                                        help="Account used to record the purchase of the asset at its original price.")
     account_depreciation_id = fields.Many2one('account.account',
                                               string='Depreciation Entries: Asset Account',
-                                              required=True, domain=[('internal_type','=','other'), ('deprecated', '=', False)],
+                                              required=True, domain=[('account_type', 'not in', exclude_types), ('deprecated', '=', False)],
                                               help="Account used in the depreciation entries, to decrease the asset value.")
     account_depreciation_expense_id = fields.Many2one('account.account',
                                                       string='Depreciation Entries: Expense Account',
                                                       required=True,
-                                                      domain=[('internal_type','=','other'), ('deprecated', '=', False)],
+                                                      domain=[('account_type', 'not in', exclude_types), ('deprecated', '=', False)],
                                                       help="Account used in the periodical entries,"
                                                            " to record a part of the asset as expense.")
     journal_id = fields.Many2one('account.journal', string='Journal', required=True)
@@ -95,7 +99,7 @@ class AccountAssetCategory(models.Model):
 class AccountAssetAsset(models.Model):
     _name = 'account.asset.asset'
     _description = 'Asset/Revenue Recognition'
-    _inherit = ['mail.thread']
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'analytic.mixin']
 
     entry_count = fields.Integer(compute='_entry_count', string='# Asset Entries')
     name = fields.Char(string='Asset Name', required=True,
@@ -161,7 +165,7 @@ class AccountAssetAsset(models.Model):
     invoice_id = fields.Many2one('account.move', string='Invoice', states={'draft': [('readonly', False)]}, copy=False)
     type = fields.Selection(related="category_id.type", string='Type', required=True)
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account')
-    analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tag')
+    # analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tag')
     date_first_depreciation = fields.Selection([
         ('last_day_period', 'Based on Last Day of Purchase Period'),
         ('manual', 'Manual')],
@@ -462,7 +466,8 @@ class AccountAssetAsset(models.Model):
                     'prorata': category.prorata,
                     'date_first_depreciation': category.date_first_depreciation,
                     'account_analytic_id': category.account_analytic_id.id,
-                    'analytic_tag_ids': [(6, 0, category.analytic_tag_ids.ids)],
+                    'analytic_distribution': category.analytic_distribution,
+                    # 'analytic_tag_ids': [(6, 0, category.analytic_tag_ids.ids)],
                 }
             }
 
@@ -485,11 +490,12 @@ class AccountAssetAsset(models.Model):
             return depreciation_ids.create_grouped_move()
         return depreciation_ids.create_move()
 
-    @api.model
-    def create(self, vals):
-        asset = super(AccountAssetAsset, self.with_context(mail_create_nolog=True)).create(vals)
-        asset.sudo().compute_depreciation_board()
-        return asset
+    @api.model_create_multi
+    def create(self, vals_list):
+        assets = super(AccountAssetAsset, self.with_context(mail_create_nolog=True)).create(vals_list)
+        for asset in assets:
+            asset.sudo().compute_depreciation_board()
+        return assets
 
     def write(self, vals):
         res = super(AccountAssetAsset, self).write(vals)
@@ -568,7 +574,8 @@ class AccountAssetDepreciationLine(models.Model):
     def _prepare_move(self, line):
         category_id = line.asset_id.category_id
         account_analytic_id = line.asset_id.account_analytic_id
-        analytic_tag_ids = line.asset_id.analytic_tag_ids
+        # analytic_tag_ids = line.asset_id.analytic_tag_ids
+        analytic_distribution = line.asset_id.analytic_distribution
         depreciation_date = self.env.context.get('depreciation_date') or line.depreciation_date or fields.Date.context_today(self)
         company_currency = line.asset_id.company_id.currency_id
         current_currency = line.asset_id.currency_id
@@ -583,7 +590,8 @@ class AccountAssetDepreciationLine(models.Model):
             'credit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
             'partner_id': line.asset_id.partner_id.id,
             'analytic_account_id': account_analytic_id.id if category_id.type == 'sale' else False,
-            'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'sale' else False,
+            # 'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'sale' else False,
+            'analytic_distribution': analytic_distribution,
             'currency_id': company_currency != current_currency and current_currency.id or False,
             'amount_currency': company_currency != current_currency and - 1.0 * line.amount or 0.0,
         }
@@ -594,7 +602,8 @@ class AccountAssetDepreciationLine(models.Model):
             'debit': amount if float_compare(amount, 0.0, precision_digits=prec) > 0 else 0.0,
             'partner_id': line.asset_id.partner_id.id,
             'analytic_account_id': account_analytic_id.id if category_id.type == 'purchase' else False,
-            'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'purchase' else False,
+            # 'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'purchase' else False,
+            'analytic_distribution': analytic_distribution,
             'currency_id': company_currency != current_currency and current_currency.id or False,
             'amount_currency': company_currency != current_currency and line.amount or 0.0,
         }
@@ -610,7 +619,9 @@ class AccountAssetDepreciationLine(models.Model):
         asset_id = self[0].asset_id
         category_id = asset_id.category_id  # we can suppose that all lines have the same category
         account_analytic_id = asset_id.account_analytic_id
-        analytic_tag_ids = asset_id.analytic_tag_ids
+        # analytic_tag_ids = asset_id.analytic_tag_ids
+        analytic_distribution = asset_id.analytic_distribution
+
         depreciation_date = self.env.context.get('depreciation_date') or fields.Date.context_today(self)
         amount = 0.0
         for line in self:
@@ -628,7 +639,8 @@ class AccountAssetDepreciationLine(models.Model):
             'credit': amount,
             'journal_id': category_id.journal_id.id,
             'analytic_account_id': account_analytic_id.id if category_id.type == 'sale' else False,
-            'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'sale' else False,
+            'analytic_distribution': analytic_distribution,
+            # 'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'sale' else False,
         }
         move_line_2 = {
             'name': name,
@@ -637,7 +649,8 @@ class AccountAssetDepreciationLine(models.Model):
             'debit': amount,
             'journal_id': category_id.journal_id.id,
             'analytic_account_id': account_analytic_id.id if category_id.type == 'purchase' else False,
-            'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'purchase' else False,
+            'analytic_distribution': analytic_distribution,
+            # 'analytic_tag_ids': [(6, 0, analytic_tag_ids.ids)] if category_id.type == 'purchase' else False,
         }
         move_vals = {
             'ref': category_id.name,
