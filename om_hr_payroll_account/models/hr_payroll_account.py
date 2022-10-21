@@ -89,7 +89,7 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount > 0.0 and amount or 0.0,
                         'credit': amount < 0.0 and -amount or 0.0,
-                        'analytic_account_id': line.salary_rule_id.analytic_account_id.id,
+                        'analytic_distribution': line.salary_rule_id.analytic_distribution,
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(debit_line)
@@ -104,7 +104,7 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount < 0.0 and -amount or 0.0,
                         'credit': amount > 0.0 and amount or 0.0,
-                        'analytic_account_id': line.salary_rule_id.analytic_account_id.id,
+                        'analytic_distribution': line.salary_rule_id.analytic_distribution,
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(credit_line)
@@ -149,7 +149,7 @@ class HrPayslip(models.Model):
 class HrSalaryRule(models.Model):
     _inherit = 'hr.salary.rule'
 
-    analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account')
+    analytic_distribution = fields.Json('Analytic', copy=False)
     account_tax_id = fields.Many2one('account.tax', 'Tax')
     account_debit = fields.Many2one('account.account', 'Debit Account', domain=[('deprecated', '=', False)])
     account_credit = fields.Many2one('account.account', 'Credit Account', domain=[('deprecated', '=', False)])
@@ -159,7 +159,7 @@ class HrContract(models.Model):
     _inherit = 'hr.contract'
     _description = 'Employee Contract'
 
-    analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account')
+    analytic_distribution = fields.Json('Analytic', copy=False)
     journal_id = fields.Many2one('account.journal', 'Salary Journal')
 
 
