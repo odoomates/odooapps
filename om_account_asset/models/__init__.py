@@ -5,3 +5,4 @@ from . import account
 from . import account_asset
 from . import account_move
 from . import product
+from . import hr_employee.py
