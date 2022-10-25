@@ -25,6 +25,7 @@
         'views/account_asset_templates.xml',
         'views/product_views.xml',
         'report/account_asset_report_views.xml',
+        'views/hr_employee.xml',
     ],
     'assets': {
         'web.assets_backend': [
