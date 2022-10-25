@@ -97,6 +97,7 @@ class AccountAssetAsset(models.Model):
     _description = 'Asset/Revenue Recognition'
     _inherit = ['mail.thread']
 
+    employee_id = fields.Many2one('hr.employee', string='Employee')
     entry_count = fields.Integer(compute='_entry_count', string='# Asset Entries')
     name = fields.Char(string='Asset Name', required=True,
                        readonly=True, states={'draft': [('readonly', False)]})
