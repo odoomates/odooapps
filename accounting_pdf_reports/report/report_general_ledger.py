@@ -104,7 +104,7 @@ class ReportGeneralLedger(models.AbstractModel):
             LEFT JOIN res_currency c ON (l.currency_id=c.id)\
             LEFT JOIN res_partner p ON (l.partner_id=p.id)\
             JOIN account_journal j ON (l.journal_id=j.id)\
-            LEFT JOIN account_analytic_account aaa ON (aaa.id=l.analytic_account_id)\
+            LEFT JOIN account_analytic_account aaa ON (aaa.id=l.account_id)\
             JOIN account_account acc ON (l.account_id = acc.id) \
             WHERE l.account_id IN %s ''' + filters + ''' GROUP BY l.id, 
             l.account_id, l.date, j.code, l.currency_id, l.amount_currency, 

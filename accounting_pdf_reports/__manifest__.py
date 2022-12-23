@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 16 Accounting Financial Reports',
-    'version': '16.0.1.0.0',
+    'version': '16.0.2.0.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 16, Accounting Financial Reports, '
                    'Odoo 16 Financial Reports',
