@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 16 Remove Data',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'author': 'Odoo Mates, Sunpop.cn',
     'category': 'Tools',
     'description': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
