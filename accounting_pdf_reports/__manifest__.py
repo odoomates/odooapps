@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting Financial Reports',
-    'version': '14.0.5.2.0',
+    'version': '14.0.6.0.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 14, Accounting Financial Reports,'
                    ' Odoo 14 Financial Reports',
