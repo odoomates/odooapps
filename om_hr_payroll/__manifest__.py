@@ -3,7 +3,7 @@
 {
     'name': 'Odoo 16 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '16.0.1.0.1',
+    'version': '16.0.1.0.2',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 16 Community Edition',
