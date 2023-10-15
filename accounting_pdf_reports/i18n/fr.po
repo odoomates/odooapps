@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 14.0-20201019\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-11 14:51+0000\n"
+"POT-Creation-Date: 2023-10-15 16:13+0000\n"
 "PO-Revision-Date: 2023-10-15 16:14+0000\n"
 "Last-Translator: Weblate Admin <ronan.le_meillat@parapente.eu.org>\n"
 "Language-Team: French <https://weblate.oci.sctg.eu.org/projects/odooaps/"
@@ -32,6 +32,14 @@ msgstr ": Balance de vérification"
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_agedpartnerbalance
 msgid "<span>Not due</span>"
 msgstr "<span>Pas due</span>"
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
+#, fuzzy
+#| msgid "<strong>Display Account:</strong>"
+msgid "<strong>Analytic Accounts:</strong>"
+msgstr "<strong>Afficher le compte:</strong>"
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
@@ -80,6 +88,7 @@ msgstr "<strong>Journal:</strong>"
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "<strong>Journals:</strong>"
 msgstr "<strong>Journaux:</strong>"
 
@@ -114,6 +123,7 @@ msgstr "<strong>Date de début:</strong>"
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "<strong>Target Moves:</strong>"
 msgstr "<strong>Déplacements cibles:</strong>"
@@ -125,10 +135,18 @@ msgstr "<strong>Total</strong>"
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "Account"
 msgstr "Compte"
+
+#. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_account_account_type
+#, fuzzy
+#| msgid "Account Type"
+msgid "Account Account Type"
+msgstr "Type de compte"
 
 #. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_account_aged_trial_balance
@@ -146,6 +164,13 @@ msgid "Account Common Partner Report"
 msgstr "Rapport sur les partenaires communs du compte"
 
 #. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_account_common_report
+#, fuzzy
+#| msgid "Account Common Account Report"
+msgid "Account Common Report"
+msgstr "Rapport de compte commun de compte"
+
+#. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_account_report_partner_ledger
 msgid "Account Partner Ledger"
 msgstr "Grand livre du partenaire de compte"
@@ -157,7 +182,6 @@ msgstr "Journal d'impression du compte"
 
 #. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_account_financial_report
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__children_ids
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_form
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_search
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_tree
@@ -181,12 +205,22 @@ msgid "Account Type"
 msgstr "Type de compte"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__account_type_ids
+#, fuzzy
+#| msgid "Account Type"
+msgid "Account Types"
+msgstr "Type de compte"
+
+#. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_accounting_report
 msgid "Accounting Report"
 msgstr "Rapport comptable"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__account_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__account_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__account_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__account_ids
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_financial_report__type__accounts
 msgid "Accounts"
 msgstr "Comptes"
@@ -200,6 +234,27 @@ msgid "Aged Partner Balance"
 msgstr "Balance âgée des tiers"
 
 #. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_agedpartnerbalance
+#, fuzzy
+#| msgid "Aged Partner Balance"
+msgid "Aged Partner Balance Report"
+msgstr "Balance âgée des tiers"
+
+#. module: accounting_pdf_reports
+#: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_aged_payable
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_aged_payable
+#, fuzzy
+#| msgid "Aged Partner Balance"
+msgid "Aged Payable"
+msgstr "Balance âgée des tiers"
+
+#. module: accounting_pdf_reports
+#: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_aged_receivable
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_aged_receivable
+msgid "Aged Receivable"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_balance_report__display_account__all
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_account_report__display_account__all
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_report_general_ledger__display_account__all
@@ -207,21 +262,45 @@ msgid "All"
 msgstr "Toute"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_aged_trial_balance__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_balance_report__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_account_report__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_journal_report__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_partner_report__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_report__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_print_journal__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_report_general_ledger__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_report_partner_ledger__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_tax_report_wizard__target_move__all
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__accounting_report__target_move__all
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_agedpartnerbalance
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_financial
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "All Entries"
 msgstr "Toutes les écritures"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_aged_trial_balance__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_balance_report__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_account_report__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_journal_report__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_partner_report__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_common_report__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_print_journal__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_report_general_ledger__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_report_partner_ledger__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_tax_report_wizard__target_move__posted
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__accounting_report__target_move__posted
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_agedpartnerbalance
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_financial
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "All Posted Entries"
 msgstr "Toutes les entrées publiées"
@@ -237,9 +316,33 @@ msgid "All accounts'"
 msgstr "Tous les comptes'"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
+#, fuzzy
+#| msgid "All accounts"
+msgid "Analytic Account"
+msgstr "Tous les comptes"
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__analytic_account_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__analytic_account_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__analytic_account_ids
+#, fuzzy
+#| msgid "All accounts"
+msgid "Analytic Accounts"
+msgstr "Tous les comptes"
+
+#. module: accounting_pdf_reports
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_assets0
 msgid "Assets"
 msgstr "Actifs"
+
+#. module: accounting_pdf_reports
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_audit_reports
+#, fuzzy
+#| msgid "Account Reports"
+msgid "Audit Reports"
+msgstr "Rapports de compte"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_financial_report__style_overwrite__0
@@ -262,14 +365,39 @@ msgid "Balance Sheet"
 msgstr "Bilan"
 
 #. module: accounting_pdf_reports
+#: model:ir.actions.act_window,name:accounting_pdf_reports.action_partner_report_partnerledger
+#, fuzzy
+#| msgid "Account Partner Ledger"
+msgid "Balance Statement (Partner Ledger)"
+msgstr "Grand livre du partenaire de compte"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_liquidity
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__asset_cash
+msgid "Bank and Cash"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 msgid "Base Amount"
 msgstr "Montant de base"
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_aged_balance_view
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_common_report_view
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.accounting_tax_report_view
 msgid "Cancel"
 msgstr "Annuler"
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__children_ids
+msgid "Children"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_form
+msgid "Childrens"
+msgstr ""
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
@@ -282,14 +410,23 @@ msgid "Column Label"
 msgstr "Étiquette de colonne"
 
 #. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_account_common_journal_report
+#, fuzzy
+#| msgid "Account Common Account Report"
+msgid "Common Journal Report"
+msgstr "Rapport de compte commun de compte"
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__company_id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__company_id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__company_id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__company_id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__company_id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__company_id
 msgid "Company"
 msgstr "Société"
@@ -300,29 +437,41 @@ msgid "Comparison"
 msgstr "Comparaison"
 
 #. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_direct_costs
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__expense_direct_cost
+msgid "Cost of Revenue"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__create_uid
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__create_uid
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__create_uid
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__create_uid
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__create_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__create_uid
 msgid "Created by"
 msgstr "Créé par"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__create_date
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__create_date
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__create_date
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__create_date
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__create_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__create_date
 msgid "Created on"
 msgstr "Créé le"
@@ -331,9 +480,18 @@ msgstr "Créé le"
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_financial
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "Credit"
+msgstr "Crédit"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_credit_card
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__liability_credit_card
+#, fuzzy
+#| msgid "Credit"
+msgid "Credit Card"
 msgstr "Crédit"
 
 #. module: accounting_pdf_reports
@@ -344,13 +502,57 @@ msgid "Currency"
 msgstr "Devise"
 
 #. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_current_assets
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__asset_current
+#, fuzzy
+#| msgid "Assets"
+msgid "Current Assets"
+msgstr "Actifs"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_current_liabilities
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__liability_current
+msgid "Current Liabilities"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_unaffected_earnings
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__equity_unaffected
+msgid "Current Year Earnings"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_print_journal__sort_selection__date
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_report_general_ledger__sortby__sort_date
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__accounting_report__filter_cmp__filter_date
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 msgid "Date"
+msgstr "Fecha"
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__date_from
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__date_from_cmp
+#, fuzzy
+#| msgid "Date"
+msgid "Date From"
+msgstr "Fecha"
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__date_to
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__date_to_cmp
+#, fuzzy
+#| msgid "Date"
+msgid "Date To"
+msgstr "Fecha"
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
+#, fuzzy
+#| msgid "Date"
+msgid "Date:"
 msgstr "Fecha"
 
 #. module: accounting_pdf_reports
@@ -362,10 +564,17 @@ msgstr "Rendez-vous"
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_financial
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
 msgid "Debit"
 msgstr "Débit"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_depreciation
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__expense_depreciation
+msgid "Depreciation"
+msgstr ""
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__display_account
@@ -380,23 +589,19 @@ msgid "Display Debit/Credit Columns"
 msgstr "Afficher les colonnes Débit / Crédit"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__display_name
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__display_name
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax__display_name
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance__display_name
 msgid "Display Name"
 msgstr "Nom à afficher"
 
@@ -416,6 +621,20 @@ msgid "Display details"
 msgstr "Afficher les détails"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.res_config_settings_view_form
+#, fuzzy
+#| msgid "Sign on Reports"
+msgid "Drill Down Reports"
+msgstr "Signer sur les rapports"
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.res_config_settings_view_form
+#, fuzzy
+#| msgid "Accounting Report"
+msgid "Dynamic Accounting Reports"
+msgstr "Rapport comptable"
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__enable_filter
 msgid "Enable Comparison"
 msgstr "Activer la comparaison"
@@ -424,15 +643,22 @@ msgstr "Activer la comparaison"
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__date_to
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__date_to
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__date_to
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__date_to
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__date_to
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__date_to_cmp
 msgid "End Date"
 msgstr "Date de fin"
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.res_config_settings_view_form
+#, fuzzy
+#| msgid "Financial Reports"
+msgid "Enhanced Financial Reports"
+msgstr "Rapports financiers"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__sort_selection
@@ -445,8 +671,29 @@ msgid "Entry Label"
 msgstr "Étiquette d'entrée"
 
 #. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_equity
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__equity
+msgid "Equity"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.res_config_settings_view_form
+#, fuzzy
+#| msgid "Tax Reports"
+msgid "Excel Reports"
+msgstr "Rapports fiscaux"
+
+#. module: accounting_pdf_reports
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_expense0
 msgid "Expense"
+msgstr "Frais"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_expenses
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__expense
+#, fuzzy
+#| msgid "Expense"
+msgid "Expenses"
 msgstr "Frais"
 
 #. module: accounting_pdf_reports
@@ -455,28 +702,48 @@ msgid "Filter by"
 msgstr "Filtrer par"
 
 #. module: accounting_pdf_reports
+#: model:ir.actions.report,name:accounting_pdf_reports.action_report_financial
+#, fuzzy
+#| msgid "Financial Reports"
+msgid "Financial Report"
+msgstr "Rapports financiers"
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__style_overwrite
 msgid "Financial Report Style"
 msgstr "Style de rapport financier"
 
 #. module: accounting_pdf_reports
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_financial_report_tree
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_financial
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_legal_statement
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_reports_settings
 msgid "Financial Reports"
 msgstr "Rapports financiers"
 
 #. module: accounting_pdf_reports
-#: model:ir.actions.report,name:accounting_pdf_reports.action_report_financial
-msgid "Financial report"
-msgstr "Rapport financier"
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.res_config_settings_view_form
+#, fuzzy
+#| msgid "Financial Reports"
+msgid "Financial Reports in Excel"
+msgstr "Rapports financiers"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_fixed_assets
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__asset_fixed
+#, fuzzy
+#| msgid "Assets"
+msgid "Fixed Assets"
+msgstr "Actifs"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_account_financial_report__sign
 msgid ""
-"For accounts that are typically more debited than credited and that you would like to print as "
-"negative amounts in your reports, you should reverse the sign of the balance; e.g.: Expense account. "
-"The same applies for accounts that are typically more credited than debited and that you would like to "
-"print as positive amounts in your reports; e.g.: Income account."
+"For accounts that are typically more debited than credited and that you "
+"would like to print as negative amounts in your reports, you should reverse "
+"the sign of the balance; e.g.: Expense account. The same applies for "
+"accounts that are typically more credited than debited and that you would "
+"like to print as positive amounts in your reports; e.g.: Income account."
 msgstr ""
 "Pour les comptes qui sont généralement plus débités que crédités et que vous "
 "souhaitez imprimer sous forme de montants négatifs dans vos rapports, vous "
@@ -486,6 +753,7 @@ msgstr ""
 "Exemple : compte de revenus."
 
 #. module: accounting_pdf_reports
+#. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_aged_partner.py:0
 #: code:addons/accounting_pdf_reports/report/report_financial.py:0
 #: code:addons/accounting_pdf_reports/report/report_general_ledger.py:0
@@ -493,10 +761,6 @@ msgstr ""
 #: code:addons/accounting_pdf_reports/report/report_partner_ledger.py:0
 #: code:addons/accounting_pdf_reports/report/report_tax.py:0
 #: code:addons/accounting_pdf_reports/report/report_trial_balance.py:0
-#: code:addons/report/report_aged_partner.py:0 code:addons/report/report_financial.py:0
-#: code:addons/report/report_general_ledger.py:0 code:addons/report/report_journal.py:0
-#: code:addons/report/report_partner_ledger.py:0 code:addons/report/report_tax.py:0
-#: code:addons/report/report_trial_balance.py:0
 #, python-format
 msgid "Form content is missing, this report cannot be printed."
 msgstr ""
@@ -504,13 +768,16 @@ msgstr ""
 
 #. module: accounting_pdf_reports
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_general_ledger_menu
+#: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_moves_ledger_general
 #: model:ir.actions.report,name:accounting_pdf_reports.action_report_general_ledger
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_action_account_moves_ledger_general
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_general_ledger
 msgid "General Ledger"
 msgstr "Grand livre"
 
 #. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_account_report_general_ledger
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_general_ledger
 msgid "General Ledger Report"
 msgstr "État du grand livre"
 
@@ -520,31 +787,27 @@ msgid "Group By"
 msgstr "Grouper par"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__id
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__id
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax__id
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance__id
 msgid "ID"
 msgstr "ID"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_account_report_general_ledger__initial_balance
 msgid ""
-"If you selected date, this field allow you to add a row to display the amount of debit/credit/balance "
-"that precedes the filter you've set."
+"If you selected date, this field allow you to add a row to display the "
+"amount of debit/credit/balance that precedes the filter you've set."
 msgstr ""
 "Si vous avez sélectionné la date, ce champ vous permet d'ajouter une ligne "
 "pour afficher le montant de débit / crédit / solde qui précède le filtre que "
@@ -556,13 +819,24 @@ msgid "Include Initial Balances"
 msgstr "Inclure les soldes initiaux"
 
 #. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_revenue
 #: model:account.financial.report,name:accounting_pdf_reports.account_financial_report_income0
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__income
 msgid "Income"
 msgstr "Revenu"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_trialbalance
+#, fuzzy
+#| msgid "Trial Balance"
+msgid "Initial Balance"
+msgstr "Balance de vérification"
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_account_report_partner_ledger__amount_currency
-msgid "It adds the currency column on report if the currency differs from the company currency."
+msgid ""
+"It adds the currency column on report if the currency differs from the "
+"company currency."
 msgstr ""
 "It adds the currency column on report if the currency differs from the "
 "devise de l'entreprise."
@@ -589,10 +863,24 @@ msgid "Journal & Partner"
 msgstr "Journal & partenaire"
 
 #. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_journal
+#, fuzzy
+#| msgid "Journals Audit"
+msgid "Journal Audit Report"
+msgstr "Audit des journaux"
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_print_journal__sort_selection__move_name
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 msgid "Journal Entry Number"
 msgstr "Numéro d'écriture au journal"
+
+#. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_account_move_line
+#, fuzzy
+#| msgid "Journal"
+msgid "Journal Item"
+msgstr "Journal"
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
@@ -600,14 +888,23 @@ msgid "Journal and Partner"
 msgstr "Journal et partenaire"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
+#, fuzzy
+#| msgid "Journal"
+msgid "Journal:"
+msgstr "Journal"
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__journal_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__journal_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__journal_ids
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__journal_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__journal_ids
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__journal_ids
 msgid "Journals"
 msgstr "Journaux"
@@ -620,58 +917,73 @@ msgid "Journals Audit"
 msgstr "Audit des journaux"
 
 #. module: accounting_pdf_reports
+#: model:ir.actions.report,name:accounting_pdf_reports.action_report_journal_entries
+#, fuzzy
+#| msgid "Journal Entry Number"
+msgid "Journals Entries"
+msgstr "Numéro d'écriture au journal"
+
+#. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
 msgid "Label"
 msgstr "Étiqueter"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report____last_update
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report____last_update
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report____last_update
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard____last_update
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_agedpartnerbalance____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_financial____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_general_ledger____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_journal____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_partnerledger____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_tax____last_update
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_report_accounting_pdf_reports_report_trialbalance____last_update
 msgid "Last Modified on"
 msgstr "Dernière modification le"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__write_uid
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__write_uid
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__write_uid
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__write_uid
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__write_uid
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__write_uid
 msgid "Last Updated by"
 msgstr "Dernière mise à jour par"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__write_date
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__write_date
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__write_date
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__write_date
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__write_date
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__write_date
 msgid "Last Updated on"
 msgstr "Dernière mise à jour le"
+
+#. module: accounting_pdf_reports
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_entries_accounting_ledgers
+msgid "Ledgers"
+msgstr ""
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__level
@@ -696,6 +1008,7 @@ msgid "Move"
 msgstr "Mouvement"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__name
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_financial
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
 msgid "Name"
@@ -717,14 +1030,37 @@ msgid "No detail"
 msgstr "Aucun détail"
 
 #. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_non_current_assets
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__asset_non_current
+msgid "Non-current Assets"
+msgstr ""
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_non_current_liabilities
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__liability_non_current
+msgid "Non-current Liabilities"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_financial_report__style_overwrite__4
 msgid "Normal Text"
 msgstr "Texte normal"
 
 #. module: accounting_pdf_reports
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_legal_statement
-msgid "PDF Reports"
-msgstr "Rapports PDF"
+#: model:account.account.type,name:accounting_pdf_reports.data_account_off_sheet
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__off_balance
+#, fuzzy
+#| msgid "Balance Sheet"
+msgid "Off-Balance Sheet"
+msgstr "Bilan"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_other_income
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__income_other
+#, fuzzy
+#| msgid "Income"
+msgid "Other Income"
+msgstr "Revenu"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__parent_id
@@ -739,16 +1075,33 @@ msgstr "Rapport des parents"
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_general_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
 msgid "Partner"
 msgstr "Partenaire"
 
 #. module: accounting_pdf_reports
+#: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_moves_ledger_partner
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_partner_ledger_menu
 #: model:ir.actions.report,name:accounting_pdf_reports.action_report_partnerledger
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_action_account_moves_ledger_partner
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_partner_ledger
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_partnerledger
 msgid "Partner Ledger"
 msgstr "Grand livre des partenaires"
+
+#. module: accounting_pdf_reports
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_partnerledger
+#, fuzzy
+#| msgid "General Ledger Report"
+msgid "Partner Ledger Report"
+msgstr "État du grand livre"
+
+#. module: accounting_pdf_reports
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_finance_partner_reports
+#, fuzzy
+#| msgid "Parent Report"
+msgid "Partner Reports"
+msgstr "Rapport des parents"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__result_selection
@@ -758,9 +1111,30 @@ msgid "Partner's"
 msgstr "Les partenaires"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
+#, fuzzy
+#| msgid "Partner"
+msgid "Partner:"
+msgstr "Partenaire"
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__partner_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__partner_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__partner_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__partner_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__partner_ids
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__partner_ids
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_agedpartnerbalance
 msgid "Partners"
 msgstr "Les partenaires"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_payable
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__liability_payable
+#, fuzzy
+#| msgid "Payable Accounts"
+msgid "Payable"
+msgstr "Comptes fournisseurs"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_aged_trial_balance__result_selection__supplier
@@ -776,18 +1150,34 @@ msgid "Period Length (days)"
 msgstr "Durée de la période (jours)"
 
 #. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_prepayments
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__asset_prepayments
+msgid "Prepayments"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_financial_report__sign__1
 msgid "Preserve balance sign"
 msgstr "Conserver le signe de l'équilibre"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.res_config_settings_view_form
+msgid "Preview financial reports without downloading"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_aged_balance_view
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_common_report_view
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.accounting_tax_report_view
 msgid "Print"
 msgstr "Imprimer"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,help:accounting_pdf_reports.field_account_common_journal_report__amount_currency
 #: model:ir.model.fields,help:accounting_pdf_reports.field_account_print_journal__amount_currency
-msgid "Print Report with the currency column if the currency differs from the company currency."
+msgid ""
+"Print Report with the currency column if the currency differs from the "
+"company currency."
 msgstr ""
 "Imprimer le rapport avec la colonne de devise si la devise diffère de la "
 "devise de l'entreprise."
@@ -803,6 +1193,14 @@ msgstr "Bénéfice (perte) à déclarer"
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_account_report_pl
 msgid "Profit and Loss"
 msgstr "Profit et perte"
+
+#. module: accounting_pdf_reports
+#: model:account.account.type,name:accounting_pdf_reports.data_account_type_receivable
+#: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_account_type__type__asset_receivable
+#, fuzzy
+#| msgid "Receivable Accounts"
+msgid "Receivable"
+msgstr "Comptes clients"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_aged_trial_balance__result_selection__customer
@@ -832,9 +1230,21 @@ msgid "Ref"
 msgstr "Réf"
 
 #. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_journal_entries
+msgid "Reference:"
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_form
 msgid "Report"
 msgstr "Signaler"
+
+#. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__report_domain
+#, fuzzy
+#| msgid "Report Name"
+msgid "Report Domain"
+msgstr "Nom du rapport"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__name
@@ -843,6 +1253,8 @@ msgstr "Nom du rapport"
 
 #. module: accounting_pdf_reports
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_aged_balance_view
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.account_common_report_view
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.accounting_tax_report_view
 msgid "Report Options"
 msgstr "Options du rapport"
 
@@ -856,6 +1268,13 @@ msgstr "Type de rapport"
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_financial_report__type__account_report
 msgid "Report Value"
 msgstr "Valeur du rapport"
+
+#. module: accounting_pdf_reports
+#: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.view_account_financial_report_search
+#, fuzzy
+#| msgid "Report"
+msgid "Reports"
+msgstr "Signaler"
 
 #. module: accounting_pdf_reports
 #: model:ir.model.fields.selection,name:accounting_pdf_reports.selection__account_financial_report__sign__-1
@@ -891,13 +1310,13 @@ msgstr "Trier par"
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__date_from
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__date_from
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__date_from
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__date_from
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__date_from
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__date_from_cmp
 msgid "Start Date"
 msgstr "Date de début"
 
@@ -905,11 +1324,13 @@ msgstr "Date de début"
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_aged_trial_balance__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_balance_report__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_account_report__target_move
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_partner_report__target_move
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_report__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_general_ledger__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__target_move
-#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report__target_move
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_tax_report_wizard__target_move
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_accounting_report__target_move
 msgid "Target Moves"
 msgstr "Mouvements cibles"
@@ -931,7 +1352,8 @@ msgstr "Déclaration d'impôts"
 
 #. module: accounting_pdf_reports
 #: model:ir.actions.report,name:accounting_pdf_reports.action_report_account_tax
-#: model:ir.model,name:accounting_pdf_reports.model_account_tax_report
+#: model:ir.model,name:accounting_pdf_reports.model_account_tax_report_wizard
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_tax
 #: model:ir.ui.menu,name:accounting_pdf_reports.menu_account_report
 #: model_terms:ir.ui.view,arch_db:accounting_pdf_reports.report_tax
 msgid "Tax Report"
@@ -943,9 +1365,17 @@ msgid "Tax Reports"
 msgstr "Rapports fiscaux"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,help:accounting_pdf_reports.field_account_account_type__type
+msgid ""
+"These types are defined according to your country. The type contains more "
+"information about the account and its specificities."
+msgstr ""
+
+#. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_accounting_report__label_filter
 msgid ""
-"This label will be displayed on report to show the balance computed for the given comparison filter."
+"This label will be displayed on report to show the balance computed for the "
+"given comparison filter."
 msgstr ""
 "Cette étiquette sera affichée sur le rapport pour montrer le solde calculé "
 "pour lefiltre de comparaison donné."
@@ -953,8 +1383,9 @@ msgstr ""
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_accounting_report__debit_credit
 msgid ""
-"This option allows you to get more details about the way your balances are computed. Because it is "
-"space consuming, we do not allow to use it while doing a comparison."
+"This option allows you to get more details about the way your balances are "
+"computed. Because it is space consuming, we do not allow to use it while "
+"doing a comparison."
 msgstr ""
 "Cette option vous permet d'obtenir plus de détails sur la façon dont vos "
 "soldes sontcalculé. Parce qu'il prend de la place, nous ne permettons pas de "
@@ -978,23 +1409,25 @@ msgstr "Total"
 #. module: accounting_pdf_reports
 #: model:ir.actions.act_window,name:accounting_pdf_reports.action_account_balance_menu
 #: model:ir.actions.report,name:accounting_pdf_reports.action_report_trial_balance
-#: model:ir.ui.menu,name:accounting_pdf_reports.menu_general_Balance_report
+#: model:ir.ui.menu,name:accounting_pdf_reports.menu_general_balance_report
 msgid "Trial Balance"
 msgstr "Balance de vérification"
 
 #. module: accounting_pdf_reports
 #: model:ir.model,name:accounting_pdf_reports.model_account_balance_report
+#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_trialbalance
 msgid "Trial Balance Report"
 msgstr "Rapport de balance de vérification"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_account_type__type
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_financial_report__type
 msgid "Type"
 msgstr "Type"
 
 #. module: accounting_pdf_reports
+#. odoo-python
 #: code:addons/accounting_pdf_reports/report/report_aged_partner.py:0
-#: code:addons/report/report_aged_partner.py:0
 #, python-format
 msgid "Unknown Partner"
 msgstr "Partenaire inconnu"
@@ -1005,6 +1438,7 @@ msgid "View"
 msgstr "Vue"
 
 #. module: accounting_pdf_reports
+#: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_common_journal_report__amount_currency
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_print_journal__amount_currency
 #: model:ir.model.fields,field_description:accounting_pdf_reports.field_account_report_partner_ledger__amount_currency
 msgid "With Currency"
@@ -1035,8 +1469,9 @@ msgstr "Avec des mouvements"
 #. module: accounting_pdf_reports
 #: model:ir.model.fields,help:accounting_pdf_reports.field_account_financial_report__style_overwrite
 msgid ""
-"You can set up here the format you want this record to be displayed. If you leave the automatic "
-"formatting, it will be computed based on the financial reports hierarchy (auto-computed field 'level')."
+"You can set up here the format you want this record to be displayed. If you "
+"leave the automatic formatting, it will be computed based on the financial "
+"reports hierarchy (auto-computed field 'level')."
 msgstr ""
 "Vous pouvez définir ici le format dans lequel vous souhaitez que cet "
 "enregistrement soit affiché. Si tuquitter le formatage automatique, il sera "
@@ -1044,55 +1479,49 @@ msgstr ""
 "'niveau’)."
 
 #. module: accounting_pdf_reports
+#. odoo-python
 #: code:addons/accounting_pdf_reports/wizard/account_general_ledger.py:0
-#: code:addons/wizard/account_general_ledger.py:0
 #, python-format
 msgid "You must define a Start Date"
 msgstr "Vous devez définir une date de début"
 
 #. module: accounting_pdf_reports
-#: code:addons/accounting_pdf_reports/wizard/aged_partner.py:0 code:addons/wizard/aged_partner.py:0
+#. odoo-python
+#: code:addons/accounting_pdf_reports/wizard/aged_partner.py:0
 #, python-format
 msgid "You must set a period length greater than 0."
 msgstr "Vous devez définir une durée de période supérieure à 0."
 
 #. module: accounting_pdf_reports
-#: code:addons/accounting_pdf_reports/wizard/aged_partner.py:0 code:addons/wizard/aged_partner.py:0
+#. odoo-python
+#: code:addons/accounting_pdf_reports/wizard/aged_partner.py:0
 #, python-format
 msgid "You must set a start date."
 msgstr "Vous devez définir une date de début."
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_agedpartnerbalance
-msgid "report.accounting_pdf_reports.report_agedpartnerbalance"
-msgstr "report.accounting_pdf_reports.report_agedpartnerbalance"
+#~ msgid "Financial report"
+#~ msgstr "Rapport financier"
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_financial
-msgid "report.accounting_pdf_reports.report_financial"
-msgstr "report.accounting_pdf_reports.report_financial"
+#~ msgid "PDF Reports"
+#~ msgstr "Rapports PDF"
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_general_ledger
-msgid "report.accounting_pdf_reports.report_general_ledger"
-msgstr "report.accounting_pdf_reports.report_general_ledger"
+#~ msgid "report.accounting_pdf_reports.report_agedpartnerbalance"
+#~ msgstr "report.accounting_pdf_reports.report_agedpartnerbalance"
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_journal
-msgid "report.accounting_pdf_reports.report_journal"
-msgstr "report.accounting_pdf_reports.report_journal"
+#~ msgid "report.accounting_pdf_reports.report_financial"
+#~ msgstr "report.accounting_pdf_reports.report_financial"
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_partnerledger
-msgid "report.accounting_pdf_reports.report_partnerledger"
-msgstr "report.accounting_pdf_reports.report_partnerledger"
+#~ msgid "report.accounting_pdf_reports.report_general_ledger"
+#~ msgstr "report.accounting_pdf_reports.report_general_ledger"
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_tax
-msgid "report.accounting_pdf_reports.report_tax"
-msgstr "report.accounting_pdf_reports.report_tax"
+#~ msgid "report.accounting_pdf_reports.report_journal"
+#~ msgstr "report.accounting_pdf_reports.report_journal"
 
-#. module: accounting_pdf_reports
-#: model:ir.model,name:accounting_pdf_reports.model_report_accounting_pdf_reports_report_trialbalance
-msgid "report.accounting_pdf_reports.report_trialbalance"
-msgstr "report.accounting_pdf_reports.report_trialbalance"
+#~ msgid "report.accounting_pdf_reports.report_partnerledger"
+#~ msgstr "report.accounting_pdf_reports.report_partnerledger"
+
+#~ msgid "report.accounting_pdf_reports.report_tax"
+#~ msgstr "report.accounting_pdf_reports.report_tax"
+
+#~ msgid "report.accounting_pdf_reports.report_trialbalance"
+#~ msgstr "report.accounting_pdf_reports.report_trialbalance"
