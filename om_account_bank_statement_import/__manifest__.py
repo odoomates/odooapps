@@ -1,8 +1,8 @@
 # -*- encoding: utf-8 -*-
 
 {
-    'name': 'Odoo 16 Account Bank Statement Import',
-    'version': '16.0.1.0.0',
+    'name': 'Odoo 17 Account Bank Statement Import',
+    'version': '17.0.1.0.0',
     'category': 'Accounting',
     'depends': ['account'],
     'website': 'https://www.odoomates.tech',

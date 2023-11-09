@@ -21,11 +21,11 @@
     'support': 'odoomates@gmail.com',
     'depends': [
         'accounting_pdf_reports',
-        'om_account_asset',
-        'om_account_budget',
+        # 'om_account_asset',
+        # 'om_account_budget',
         'om_fiscal_year',
         'om_recurring_payments',
-        'om_account_bank_statement_import',
+        # 'om_account_bank_statement_import',
         'om_account_daily_reports',
         'om_account_followup',
     ],
@@ -37,7 +37,7 @@
         'views/account_group.xml',
         'views/account_tag.xml',
         'views/res_partner.xml',
-        'views/account_coa_template.xml',
+        # 'views/account_coa_template.xml',todo
         'views/fiscal_position_template.xml',
         'views/account_bank_statement.xml',
         'views/payment_method.xml',
