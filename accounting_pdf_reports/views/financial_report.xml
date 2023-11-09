@@ -22,15 +22,15 @@
                         </group>
                         <notebook>
                             <page string="Report"
-                                  attrs="{'invisible': [('type','not in',['accounts','account_type', 'account_report'])]}">
+                                  invisible="type not in ['accounts', 'account_type', 'account_report']">
                                 <group>
                                     <field name="display_detail"
-                                           attrs="{'invisible': [('type','not in',['accounts','account_type'])]}"/>
+                                           invisible="type not in ['accounts', 'account_type', 'account_report']"/>
                                     <field name="account_report_id"
-                                           attrs="{'invisible': [('type', '!=', 'account_report')]}"/>
+                                           invisible="type != 'account_report'"/>
                                 </group>
-                                <field name="account_ids" attrs="{'invisible': [('type', '!=', 'accounts')]}"/>
-                                <field name="account_type_ids" attrs="{'invisible': [('type', '!=', 'account_type')]}"/>
+                                <field name="account_ids" invisible="type != 'accounts'"/>
+                                <field name="account_type_ids" invisible="type != 'account_type'"/>
                             </page>
                             <page string="Childrens">
                                 <field name="children_ids" nolabel="1">

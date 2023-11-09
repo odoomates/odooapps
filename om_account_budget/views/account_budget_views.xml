@@ -65,34 +65,38 @@
         <field name="arch" type="xml">
             <form string="Budget">
                 <header>
-                    <button string="Confirm" name="action_budget_confirm" states="draft" type="object"
+                    <button string="Confirm" name="action_budget_confirm" type="object"
+                            invisible="state != 'draft'"
                             class="oe_highlight"/>
-                    <button string="Approve" name="action_budget_validate" states="confirm" type="object"
+                    <button string="Approve" name="action_budget_validate" type="object"
+                            invisible="state != 'confirm'"
                             class="oe_highlight"/>
-                    <button string="Done" name="action_budget_done" states="validate" type="object"
+                    <button string="Done" name="action_budget_done" type="object"
+                            invisible="state != 'validate'"
                             class="oe_highlight"/>
-                    <button string="Reset to Draft" name="action_budget_draft" states="cancel" type="object"/>
-                    <button string="Cancel Budget" name="action_budget_cancel" states="confirm,validate" type="object"/>
+                    <button string="Reset to Draft" name="action_budget_draft"
+                            invisible="state != 'cancel'" type="object"/>
+                    <button string="Cancel Budget" name="action_budget_cancel" invisible="state not in ('confirm', 'validate')" type="object"/>
                     <field name="state" widget="statusbar" />
                 </header>
                 <sheet string="Budget">
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only"/>
                         <h1>
-                            <field name="name" attrs="{'readonly':[('state','!=','draft')]}" placeholder="Budget Name"/>
+                            <field name="name" readonly="state != 'draft'" placeholder="Budget Name"/>
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="user_id" attrs="{'readonly':[('state','!=','draft')]}"/>
+                            <field name="user_id" readonly="state != 'draft'"/>
                         </group>
                         <group>
                             <label for="date_from" string="Period"/>
                             <div>
                                 <field name="date_from" class="oe_inline"
-                                       attrs="{'readonly':[('state','!=','draft')]}"/>
+                                       readonly="state != 'draft'"/>
                                 -
-                                <field name="date_to" class="oe_inline" attrs="{'readonly':[('state','!=','draft')]}"
+                                <field name="date_to" class="oe_inline" readonly="state != 'draft'"
                                        nolabel="1"/>
                             </div>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
@@ -102,7 +106,7 @@
                         <page string="Budget Lines">
                             <field name="crossovered_budget_line"
                                    context="{'default_date_from': date_from,'default_date_to': date_to}" colspan="4"
-                                   nolabel="1" attrs="{'readonly':[('state','!=','draft')]}">
+                                   nolabel="1" readonly="state != 'draft'">
                                 <tree string="Budget Lines" decoration-success="is_above_budget and planned_amount &gt; 0" decoration-danger="is_above_budget and planned_amount &lt; 0" editable="bottom">
                                     <field name="general_budget_id"/>
                                     <field name="analytic_account_id" groups="analytic.group_analytic_accounting"/>
@@ -300,28 +304,28 @@
                         <field name="currency_id" invisible="1"/>
                         <field name="crossovered_budget_state" invisible="1"/>
                         <field name="crossovered_budget_id"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="analytic_account_id"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="general_budget_id"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="date_from"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="date_to"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="paid_date"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="planned_amount"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="practical_amount"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="theoritical_amount"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="percentage"  widget="percentage"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                         <field name="company_id" options="{'no_create': True}"
                                groups="base.group_multi_company"
-                               attrs="{'readonly':[('crossovered_budget_state','!=','draft')]}"/>
+                               readonly="crossovered_budget_state != 'draft'"/>
                     </group>
                 </sheet>
             </form>

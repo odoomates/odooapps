@@ -1,5 +1,5 @@
 =============================
-Odoo 16 Daily Financial Reports
+Odoo 17 Daily Financial Reports
 =============================
 
 This module will add the reports like cash book report, bank book report and day book report

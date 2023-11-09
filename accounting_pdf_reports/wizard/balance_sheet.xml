@@ -78,18 +78,18 @@
             </field>
             <field name="target_move" position="after">
                 <field name="enable_filter"/>
-                <field name="debit_credit" attrs="{'invisible': [('enable_filter','=',True)]}"/>
+                <field name="debit_credit" invisible="enable_filter == True"/>
             </field>
             <field name="journal_ids" position="after">
                 <notebook tabpos="up" colspan="4">
-                    <page string="Comparison" name="comparison" attrs="{'invisible': [('enable_filter','=',False)]}">
+                    <page string="Comparison" name="comparison" invisible="enable_filter == True">
                         <group>
-                            <field name="label_filter" attrs="{'required': [('enable_filter', '=', True)]}"/>
+                            <field name="label_filter" required="enable_filter == True"/>
                             <field name="filter_cmp"/>
                         </group>
-                        <group string="Dates" attrs="{'invisible':[('filter_cmp', '!=', 'filter_date')]}">
-                            <field name="date_from_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
-                            <field name="date_to_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                        <group string="Dates" invisible="filter_cmp == 'filter_date'">
+                            <field name="date_from_cmp" required="filter_cmp == 'filter_date'"/>
+                            <field name="date_to_cmp" required="filter_cmp == 'filter_date'"/>
                         </group>
                     </page>
                 </notebook>
