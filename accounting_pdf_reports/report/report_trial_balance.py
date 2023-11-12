@@ -9,6 +9,32 @@ class ReportTrialBalance(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_trialbalance'
     _description = 'Trial Balance Report'
 
+    def _get_initial_balance(self, accounts):
+        if not self.env.context.get('date_from'):
+            return {}
+        initial_balance = {}
+
+        context = {
+            'date_to': self.env.context['date_from'],
+        }
+        tables, where_clause, where_params = self.env['account.move.line'].with_context(context)._query_get()
+        tables = tables.replace('"', '') if tables else 'account_move_line'
+
+        wheres = [""]
+        if where_clause.strip():
+            wheres.append(where_clause.strip())
+        filters = " AND ".join(wheres)
+
+        request = (f"SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, "
+                   f"(SUM(debit) - SUM(credit)) AS balance "
+                   f"FROM {tables} WHERE account_id IN %s {filters} GROUP BY account_id")
+
+        params = (tuple(accounts.ids),) + tuple(where_params)
+        self.env.cr.execute(request, params)
+        for row in self.env.cr.dictfetchall():
+            initial_balance[row.pop('id')] = row
+        return initial_balance
+
     def _get_accounts(self, accounts, display_account):
         """ compute the balance, debit and credit for the provided accounts
             :Arguments:
@@ -41,16 +67,23 @@ class ReportTrialBalance(models.AbstractModel):
         for row in self.env.cr.dictfetchall():
             account_result[row.pop('id')] = row
 
+        initial_balance = self._get_initial_balance(accounts)
         account_res = []
         for account in accounts:
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             currency = account.currency_id and account.currency_id or account.company_id.currency_id
             res['code'] = account.code
             res['name'] = account.name
+            if initial_balance.get(account.id):
+                res['initial_balance'] = initial_balance[account.id]['balance']
+            else:
+                res['initial_balance'] = 0
             if account.id in account_result:
                 res['debit'] = account_result[account.id].get('debit')
                 res['credit'] = account_result[account.id].get('credit')
-                res['balance'] = account_result[account.id].get('balance')
+                res['balance'] = res['initial_balance'] + account_result[account.id].get('balance')
+            else:
+                res['balance'] = res['initial_balance']
             if display_account == 'all':
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
