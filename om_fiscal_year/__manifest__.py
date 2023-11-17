@@ -20,9 +20,7 @@
         'security/account_security.xml',
         'wizard/change_lock_date.xml',
         'views/fiscal_year.xml',
-        # 'views/settings.xml',
+        'views/settings.xml',
     ],
     'images': ['static/description/banner.png'],
 }
-
-# todo nys settings page

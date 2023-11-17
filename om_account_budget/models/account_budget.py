@@ -43,10 +43,10 @@ class CrossoveredBudget(models.Model):
     _description = "Budget"
     _inherit = ['mail.thread']
 
-    name = fields.Char('Budget Name', required=True, states={'done': [('readonly', True)]})
+    name = fields.Char('Budget Name', required=True)
     user_id = fields.Many2one('res.users', 'Responsible', default=lambda self: self.env.user)
-    date_from = fields.Date('Start Date', required=True, states={'done': [('readonly', True)]})
-    date_to = fields.Date('End Date', required=True, states={'done': [('readonly', True)]})
+    date_from = fields.Date('Start Date', required=True)
+    date_to = fields.Date('End Date', required=True)
     state = fields.Selection([
         ('draft', 'Draft'),
         ('cancel', 'Cancelled'),
@@ -54,8 +54,10 @@ class CrossoveredBudget(models.Model):
         ('validate', 'Validated'),
         ('done', 'Done')
         ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, tracking=True)
-    crossovered_budget_line = fields.One2many('crossovered.budget.lines', 'crossovered_budget_id', 'Budget Lines',
-        states={'done': [('readonly', True)]}, copy=True)
+    crossovered_budget_line = fields.One2many(
+        'crossovered.budget.lines', 'crossovered_budget_id',
+        'Budget Lines', copy=True
+    )
     company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
 
     def action_budget_confirm(self):

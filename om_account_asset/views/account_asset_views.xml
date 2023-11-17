@@ -26,33 +26,39 @@
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only"/>
                         <h1>
-                            <field name="name" placeholder="e.g. Laptop iBook"/>
+                            <field name="name" placeholder="e.g. Laptop iBook" readonly="state != 'draft'"/>
                         </h1>
                     </div>
                     <group>
                         <group>
-                            <field name="category_id" string="Asset Category" domain="[('type', '=', 'purchase')]"
+                            <field name="category_id" string="Asset Category"
+                                   domain="[('type', '=', 'purchase')]"
+                                   readonly="state != 'draft'"
                                    context="{'default_type': 'purchase'}" help="Category of asset"/>
-                            <field name="code"/>
-                            <field name="date" help="Date of asset"/>
-                            <field name="date_first_depreciation"/>
+                            <field name="code" readonly="state != 'draft'"/>
+                            <field name="date" help="Date of asset" readonly="state != 'draft'"/>
+                            <field name="date_first_depreciation" readonly="state != 'draft'"/>
                             <field name="first_depreciation_manual_date"
+                                   readonly="state != 'draft'"
                                    invisible="date_first_depreciation != 'manual'"
                                    required="date_first_depreciation == 'manual'"/>
                             <field name="type" invisible="1"/>
                             <field name="account_analytic_id" groups="analytic.group_analytic_accounting"/>
                         </group>
                         <group>
-                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="currency_id" groups="base.group_multi_currency"
+                                   readonly="state != 'draft'"/>
                             <field name="company_id" options="{'no_create': True}"
+                                   readonly="state != 'draft'"
                                    groups="base.group_multi_company"/>
                             <field name="value" widget="monetary"
-                                   options="{'currency_field': 'currency_id'}" help="Gross value of asset"/>
+                                   readonly="state != 'draft'" help="Gross value of asset"/>
                             <field name="salvage_value" widget="monetary"
-                                   options="{'currency_field': 'currency_id'}"
+                                   readonly="state != 'draft'"
                                    invisible="type == 'sale'"/>
-                            <field name="value_residual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="value_residual" widget="monetary"/>
                             <field name="partner_id" string="Vendor" widget="res_partner_many2one"
+                                   readonly="state != 'draft'"
                                    context="{'res_partner_search_mode': 'supplier'}"/>
                             <field name="invoice_id" string="Invoice" options="{'no_create': True}"/>
                             <field name="analytic_distribution" widget="analytic_distribution"/>
@@ -62,7 +68,9 @@
                     </group>
                     <notebook>
                         <page string="Depreciation Board">
-                            <field name="depreciation_line_ids" mode="tree" options="{'reload_whole_on_button': true}">
+                            <field name="depreciation_line_ids" mode="tree"
+                                   readonly="state not in ('draft', 'open')"
+                                   options="{'reload_whole_on_button': true}">
                                 <tree string="Depreciation Lines" decoration-info="(move_check == False)"
                                       create="false">
                                     <field name="depreciation_date"/>
@@ -96,20 +104,28 @@
                         </page>
                         <page string="Depreciation Information">
                             <group>
-                                <field name="method" widget="radio" invisible="type == 'sale'"/>
+                                <field name="method" widget="radio"
+                                       invisible="type == 'sale'" readonly="state != 'draft'"/>
                                 <field name="method_progress_factor"
+                                       readonly="state != 'draft'"
                                        invisible="method == 'linear'"
                                        required="method == 'degressive'"/>
                                 <field name="method_time" string="Time Method Based On"
-                                       widget="radio" invisible="type != 'purchase'"/>
-                                <field name="prorata" invisible="method_time == 'end'"/>
+                                       widget="radio"
+                                       readonly="state != 'draft'"
+                                       invisible="type != 'purchase'"/>
+                                <field name="prorata"
+                                       invisible="method_time == 'end'"
+                                       readonly="state != 'draft'"/>
                             </group>
                             <group>
                                 <field name="method_number"
+                                       readonly="state != 'draft'"
                                        invisible="method_time == 'end'"
                                        required="method_time == 'number'"/>
-                                <field name="method_period"/>
+                                <field name="method_period" readonly="state != 'draft'"/>
                                 <field name="method_end"
+                                       readonly="state != 'draft'"
                                        invisible="method_time == 'end'"
                                        required="method_time == 'number'"/>
                             </group>

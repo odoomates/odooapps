@@ -17,10 +17,8 @@
         'security/account_budget_security.xml',
         'views/account_analytic_account_views.xml',
         'views/account_budget_views.xml',
-        # 'views/res_config_settings_views.xml',
+        'views/res_config_settings_views.xml',
     ],
     "images": ['static/description/banner.gif'],
     'demo': ['data/account_budget_demo.xml'],
 }
-
-#todo nys settings
