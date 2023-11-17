@@ -42,20 +42,22 @@
                         <label for="send_letter"/>
                     </div>
 
-                    <group string="Manual Action"
-                           attrs="{'invisible': [('manual_action', '=', False)]}">
+                    <group string="Manual Action" invisible="not manual_action">
+<!--                           attrs="{'invisible': [('manual_action', '=', False)]}">-->
                         <field name="manual_action_responsible_id"/>
-                        <field name="manual_action_note"
-                               attrs="{'required': [('manual_action', '&lt;&gt;', False)]}"
-                               placeholder="e.g. Call the customer, check if it's paid, ..."/>
+
+                        <field name="manual_action_note"/>
+<!--                               attrs="{'required': [('manual_action', '&lt;&gt;', False)]}" todo-->
+<!--                               placeholder="e.g. Call the customer, check if it's paid, ..."/>-->
                     </group>
-                    <group string="Send an Email"
-                           attrs="{'invisible': [('send_email', '=', False)]}">
-                        <field name="email_template_id"
-                               attrs="{'required': [('send_email', '&lt;&gt;', False)]}"/>
+                    <group string="Send an Email" invisible="not send_email">
+<!--                           attrs="{'invisible': [('send_email', '=', False)]}">-->
+                        <field name="email_template_id"/>
+<!--                               attrs="{'required': [('send_email', '&lt;&gt;', False)]}"/> todo-->
                     </group>
                     <group string="Send a Letter or Email"
-                           attrs="{'invisible': [('send_email', '=', False), ('send_letter', '=', False)]}">
+                           invisible="not send_email and not send_letter">
+<!--                           attrs="{'invisible': [('send_email', '=', False), ('send_letter', '=', False)]}">-->
                         <p colspan="2" class="oe_grey">
                             Write here the introduction in the letter,
                             according to the level of the follow-up. You can
