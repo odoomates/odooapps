@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 17 Fiscal Year & Lock Date',
-    'version': '17.0.1.0',
+    'version': '17.0.1.1',
     'category': 'Accounting',
     'summary': 'Odoo 17 Fiscal Year, Fiscal Year in Odoo 17, Lock Date in Odoo 17',
     'description': 'Odoo 17 Fiscal Year, Fiscal Year in Odoo 17',
