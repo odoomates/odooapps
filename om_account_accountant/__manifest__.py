@@ -25,7 +25,7 @@
         'om_account_budget',
         'om_fiscal_year',
         'om_recurring_payments',
-        # 'om_account_bank_statement_import',
+        'om_account_bank_statement_import',
         'om_account_daily_reports',
         'om_account_followup',
     ],
