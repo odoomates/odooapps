@@ -14,12 +14,12 @@ class HrPayslipLine(models.Model):
         """
         # use partner of salary rule or fallback on employee's address
         register_partner_id = self.salary_rule_id.register_id.partner_id
-        partner_id = register_partner_id.id or self.slip_id.employee_id.address_home_id.id
+        partner_id = register_partner_id.id
         if credit_account:
-            if register_partner_id or self.salary_rule_id.account_credit.internal_type in ('asset_receivable', 'liability_payable'):
+            if register_partner_id or self.salary_rule_id.account_credit.account_type in ('asset_receivable', 'liability_payable'):
                 return partner_id
         else:
-            if register_partner_id or self.salary_rule_id.account_debit.internal_type in ('asset_receivable', 'liability_payable'):
+            if register_partner_id or self.salary_rule_id.account_debit.account_type in ('asset_receivable', 'liability_payable'):
                 return partner_id
         return False
 
@@ -92,7 +92,7 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount > 0.0 and amount or 0.0,
                         'credit': amount < 0.0 and -amount or 0.0,
-                        'analytic_account_id': line.salary_rule_id.analytic_account_id.id,
+                        'analytic_distribution': {line.salary_rule_id.analytic_account_id.id: 100} if line.salary_rule_id.analytic_account_id else {},
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(debit_line)
@@ -107,7 +107,7 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount < 0.0 and -amount or 0.0,
                         'credit': amount > 0.0 and amount or 0.0,
-                        'analytic_account_id': line.salary_rule_id.analytic_account_id.id,
+                        'analytic_distribution': {line.salary_rule_id.analytic_account_id.id: 100} if line.salary_rule_id.analytic_account_id else {},
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(credit_line)
