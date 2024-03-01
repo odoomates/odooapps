@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 17 Accounting',
-    'version': '1.0.0',
+    'version': '2.0.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Account Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year For Odoo 17 Community Edition, Accounting Dashboard, Financial Reports, '
@@ -25,7 +25,6 @@
         'om_account_budget',
         'om_fiscal_year',
         'om_recurring_payments',
-        'om_account_bank_statement_import',
         'om_account_daily_reports',
         'om_account_followup',
     ],
