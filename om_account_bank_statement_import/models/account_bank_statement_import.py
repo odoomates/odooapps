@@ -90,7 +90,8 @@ class AccountBankStatementImport(models.TransientModel):
                                         'ref': field[2],
                                         'partner_id': self.get_partner(field[3]),
                                         'amount': field[4],
-                                        'currency_id':  self.get_currency(field[5])
+                                        'currency_id':  self.get_currency(field[5]),
+                                        'journal_id': self.env.context.get('active_id')
                                     })
                                     vals_list.append((0, 0, values))
                         statement_vals = {
@@ -126,7 +127,8 @@ class AccountBankStatementImport(models.TransientModel):
                                     'ref': line[2],
                                     'partner_id': self.get_partner(line[3]),
                                     'amount': line[4],
-                                    'currency_id': self.get_currency(line[5])
+                                    'currency_id': self.get_currency(line[5]),
+                                    'journal_id': self.env.context.get('active_id')
                                 })
                                 vals_list.append((0, 0, values))
                         statement_vals = {
