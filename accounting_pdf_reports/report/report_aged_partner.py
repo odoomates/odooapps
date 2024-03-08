@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from odoo import api, models, fields, _
 from odoo.exceptions import UserError
@@ -251,12 +249,9 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         else:
             account_type = ['asset_receivable', 'liability_payable']
         partner_ids = data['form']['partner_ids']
-        movelines, total, dummy = self._get_partner_move_lines(account_type,
-                                                               partner_ids,
-                                                               date_from,
-                                                               target_move,
-                                                               data['form'][
-                                                                   'period_length'])
+        movelines, total, dummy = self._get_partner_move_lines(
+            account_type, partner_ids, date_from, target_move, data['form']['period_length']
+        )
         return {
             'doc_ids': self.ids,
             'doc_model': model,

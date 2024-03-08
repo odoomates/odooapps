@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import api, models, fields
 
 
@@ -18,7 +16,6 @@ class AccountFinancialReport(models.Model):
             report.level = level
 
     def _get_children_by_order(self):
-        '''returns a recordset of all the children computed recursively, and sorted by sequence. Ready for the printing'''
         res = self
         children = self.search([('parent_id', 'in', self.ids)], order='sequence ASC')
         if children:
@@ -37,19 +34,25 @@ class AccountFinancialReport(models.Model):
         ('account_type', 'Account Type'),
         ('account_report', 'Report Value'),
         ], 'Type', default='sum')
-    account_ids = fields.Many2many('account.account', 'account_account_financial_report',
-                                   'report_line_id', 'account_id', 'Accounts')
+    account_ids = fields.Many2many(
+        'account.account', 'account_account_financial_report',
+        'report_line_id', 'account_id', 'Accounts'
+    )
     account_report_id = fields.Many2one('account.financial.report', 'Report Value')
-    account_type_ids = fields.Many2many('account.account.type', 'account_account_financial_report_type',
-                                        'report_id', 'account_type_id', 'Account Types')
+    account_type_ids = fields.Many2many(
+        'account.account.type', 'account_account_financial_report_type',
+        'report_id', 'account_type_id', 'Account Types'
+    )
     report_domain = fields.Char(string="Report Domain")
-    sign = fields.Selection([('-1', 'Reverse balance sign'), ('1', 'Preserve balance sign')], 'Sign on Reports',
-                            required=True, default='1',
-                            help='For accounts that are typically more debited than credited and that you would'
-                                 ' like to print as negative amounts in your reports, you should reverse the sign'
-                                 ' of the balance; e.g.: Expense account. The same applies for accounts that are '
-                                 'typically more credited than debited and that you would like to print as positive '
-                                 'amounts in your reports; e.g.: Income account.')
+    sign = fields.Selection(
+        [('-1', 'Reverse balance sign'), ('1', 'Preserve balance sign')], 'Sign on Reports',
+        required=True, default='1',
+        help='For accounts that are typically more debited than credited and that you would '
+             'like to print as negative amounts in your reports, you should reverse the sign '
+             'of the balance; e.g.: Expense account. The same applies for accounts that are '
+             'typically more credited than debited and that you would like to print as positive '
+             'amounts in your reports; e.g.: Income account.'
+    )
     display_detail = fields.Selection([
         ('no_detail', 'No detail'),
         ('detail_flat', 'Display children flat'),
