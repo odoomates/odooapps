@@ -45,6 +45,7 @@ Contributors
 ------------
 
 * Odoo Mates <odoomates@gmail.com>
+* Walnut Software Solutions <info@walnutit.com>
 
 
 Author & Maintainer
