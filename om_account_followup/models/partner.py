@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from functools import reduce
 from lxml import etree
 from odoo import api, fields, models, _
@@ -337,38 +335,57 @@ class ResPartner(models.Model):
                 partners.add(aml.partner_id.id)
         return list(partners)
 
-    payment_responsible_id = fields.Many2one('res.users', ondelete='set null',
-                                             string='Follow-up Responsible',
-                                             tracking=True, copy=False,
-                                             help="Optionally you can assign a user to this field, which will make "
-                                                  "him responsible for the action.", )
-    payment_note = fields.Text('Customer Payment Promise', help="Payment Note", copy=False)
-    payment_next_action = fields.Text('Next Action', copy=False, tracking=True,
-                                      help="This is the next action to be taken.  It will automatically be "
-                                           "set when the partner gets a follow-up level that requires a manual action. ")
-    payment_next_action_date = fields.Date('Next Action Date', copy=False,
-                                           help="This is when the manual follow-up is needed. The date will be "
-                                                "set to the current date when the partner gets a follow-up level "
-                                                "that requires a manual action. Can be practical to set manually "
-                                                "e.g. to see if he keeps his promises.")
-    unreconciled_aml_ids = fields.One2many('account.move.line', 'partner_id',
-                                           domain=[('full_reconcile_id', '=', False),
-                                                   ('account_id.account_type', '=', 'asset_receivable')])
-    latest_followup_date = fields.Date(compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
-                                       help="Latest date that the follow-up level of the partner was changed")
-    latest_followup_level_id = fields.Many2one('followup.line', compute='_get_latest', compute_sudo=True,
-                                               string="Latest Follow-up Level", help="The maximum follow-up level")
+    payment_responsible_id = fields.Many2one(
+        'res.users', ondelete='set null',
+        string='Follow-up Responsible', tracking=True, copy=False,
+        help="Optionally you can assign a user to this field, which will make "
+             "him responsible for the action.")
+    payment_note = fields.Text(
+        'Customer Payment Promise', help="Payment Note", copy=False
+    )
+    payment_next_action = fields.Text(
+        'Next Action', copy=False, tracking=True,
+        help="This is the next action to be taken.  It will automatically be "
+             "set when the partner gets a follow-up level that requires a manual action. "
+    )
+    payment_next_action_date = fields.Date(
+        'Next Action Date', copy=False,
+        help="This is when the manual follow-up is needed. The date will be "
+             "set to the current date when the partner gets a follow-up level "
+             "that requires a manual action. Can be practical to set manually "
+             "e.g. to see if he keeps his promises."
+    )
+    unreconciled_aml_ids = fields.One2many(
+        'account.move.line', 'partner_id',
+        domain=[('full_reconcile_id', '=', False), ('account_id.account_type', '=', 'asset_receivable')]
+    )
+    latest_followup_date = fields.Date(
+        compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
+        help="Latest date that the follow-up level of the partner was changed"
+    )
+    latest_followup_level_id = fields.Many2one(
+        'followup.line', compute='_get_latest', compute_sudo=True,
+        string="Latest Follow-up Level", help="The maximum follow-up level"
+    )
 
-    latest_followup_sequence = fields.Integer('Sequence', help="Gives the sequence order when displaying a list of follow-up lines.", default=0)
-
-    latest_followup_level_id_without_lit = fields.Many2one('followup.line',
-                                                           compute='_get_latest', store=True, compute_sudo=True,
-                                                           string="Latest Follow-up Level without litigation",
-                                                           help="The maximum follow-up level without taking into "
-                                                                "account the account move lines with litigation")
-    payment_amount_due = fields.Float(compute='_get_amounts_and_date',
-                                      string="Amount Due", search='_payment_due_search')
-    payment_amount_overdue = fields.Float(compute='_get_amounts_and_date',
-                                          string="Amount Overdue", search='_payment_overdue_search')
-    payment_earliest_due_date = fields.Date(compute='_get_amounts_and_date', string="Worst Due Date",
-                                            search='_payment_earliest_date_search')
+    latest_followup_sequence = fields.Integer(
+        'Sequence',
+        help="Gives the sequence order when displaying a list of follow-up lines.", default=0
+    )
+    latest_followup_level_id_without_lit = fields.Many2one(
+        'followup.line', compute='_get_latest', store=True, compute_sudo=True,
+        string="Latest Follow-up Level without litigation",
+        help="The maximum follow-up level without taking into "
+             "account the account move lines with litigation")
+    payment_amount_due = fields.Float(
+        compute='_get_amounts_and_date',
+        string="Amount Due", search='_payment_due_search'
+    )
+    payment_amount_overdue = fields.Float(
+        compute='_get_amounts_and_date',
+        string="Amount Overdue", search='_payment_overdue_search'
+    )
+    payment_earliest_due_date = fields.Date(
+        compute='_get_amounts_and_date', string="Worst Due Date",
+        search='_payment_earliest_date_search'
+    )

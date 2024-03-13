@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 17 Assets Management',
-    'version': '17.0.1.0',
+    'version': '17.0.1.0.1',
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['account'],
     'description': """Manage assets owned by a company or a person. 
@@ -30,9 +30,6 @@
     'assets': {
         'web.assets_backend': [
             'om_account_asset/static/src/scss/account_asset.scss',
-            # 'om_account_asset/static/src/js/account_asset.js',
         ],
     },
 }
-
-# todo mig js
