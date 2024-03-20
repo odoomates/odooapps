@@ -70,7 +70,7 @@ class AccountBankStatementImport(models.TransientModel):
                 if file_name.strip().endswith('.csv') or file_name.strip().endswith('.xlsx'):
                     statement = False
                     if file_name.strip().endswith('.csv'):
-                        keys = ['date', 'payment_ref', 'partner_id', 'amount', 'currency_id']
+                        keys = ['date', 'payment_ref', 'ref', 'partner_id', 'amount', 'currency_id']
                         try:
                             csv_data = base64.b64decode(data_file.datas)
                             data_file = io.StringIO(csv_data.decode("utf-8"))
