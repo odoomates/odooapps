@@ -1,7 +1,7 @@
 {
     'name': 'Odoo 17 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '17.0.1.0.3',
+    'version': '17.0.1.0.4',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 17 Community Edition',
