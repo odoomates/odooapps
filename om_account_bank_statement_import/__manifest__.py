@@ -1,8 +1,6 @@
-# -*- encoding: utf-8 -*-
-
 {
     'name': 'Odoo 17 Account Bank Statement Import',
-    'version': '17.0.0.0.0',
+    'version': '17.0.1.0.0',
     'category': 'Accounting',
     'depends': ['account'],
     'website': 'https://www.odoomates.tech',
@@ -22,6 +20,4 @@
         'demo/partner_bank.xml',
     ],
     'images': ['static/description/banner.png'],
-    'installable': True,
-    'auto_install': False,
 }
