@@ -1,5 +1,10 @@
 ## Module <om_account_followup>
 
+#### 19.05.2025
+#### Version 15.0.2.3.1
+##### IMP
+- Sanitize query
+
 #### 16.07.2022
 #### Version 15.0.2.3.0
 ##### IMP
