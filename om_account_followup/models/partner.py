@@ -269,29 +269,46 @@ class ResPartner(models.Model):
 
     def _get_followup_overdue_query(self, args, overdue_only=False):
         company_id = self.env.user.company_id.id
-        having_where_clause = ' AND '.join(
-            map(lambda x: '(SUM(bal2) %s %%s)' % (x[1]), args))
-        having_values = [x[2] for x in args]
-        having_where_clause = having_where_clause % (having_values[0])
-        overdue_only_str = overdue_only and 'AND date_maturity <= NOW()' or ''
-        return ('''SELECT pid AS partner_id, SUM(bal2) FROM
-                                    (SELECT CASE WHEN bal IS NOT NULL THEN bal
-                                    ELSE 0.0 END AS bal2, p.id as pid FROM
-                                    (SELECT (debit-credit) AS bal, partner_id
-                                    FROM account_move_line l
-                                    LEFT JOIN account_account a ON a.id = l.account_id
-                                    WHERE a.account_type = 'asset_receivable'
-                                    %s AND full_reconcile_id IS NULL
-                                    AND l.company_id = %s) AS l
-                                    RIGHT JOIN res_partner p
-                                    ON p.id = partner_id ) AS pl
-                                    GROUP BY pid HAVING %s''') % (
-            overdue_only_str, company_id, having_where_clause)
+        having_clauses = []
+        having_values = []
+
+        for field, operator, value in args:
+            if operator in ['=', '!=', '>', '>=', '<', '<=']:
+                having_clauses.append(f'SUM(bal2) {operator} %s')
+                having_values.append(value)
+            else:
+                raise ValueError(f"Unsupported operator: {operator}")
+
+        having_where_clause = ' AND '.join(having_clauses)
+        overdue_only_str = 'AND date_maturity <= NOW()' if overdue_only else ''
+
+        query = ('''
+            SELECT pid AS partner_id, SUM(bal2) FROM (
+                SELECT 
+                    CASE WHEN bal IS NOT NULL THEN bal ELSE 0.0 END AS bal2, 
+                    p.id as pid 
+                FROM (
+                    SELECT 
+                        (debit - credit) AS bal, 
+                        partner_id 
+                    FROM account_move_line l
+                    LEFT JOIN account_account a ON a.id = l.account_id
+                    WHERE a.account_type = 'asset_receivable'
+                    %s AND full_reconcile_id IS NULL
+                    AND l.company_id = %%s
+                ) AS l
+                RIGHT JOIN res_partner p ON p.id = partner_id 
+            ) AS pl
+            GROUP BY pid HAVING %s
+        ''') % (overdue_only_str, having_where_clause)
+
+        params = [company_id] + having_values
+        return query, params
 
     def _payment_overdue_search(self, operator, operand):
         args = [('payment_amount_overdue', operator, operand)]
-        query = self._get_followup_overdue_query(args, overdue_only=True)
-        self._cr.execute(query)
+        query, params = self._get_followup_overdue_query(args, overdue_only=True)
+        self._cr.execute(query, params)
         res = self._cr.fetchall()
         if not res:
             return [('id', '=', '0')]
@@ -310,7 +327,7 @@ class ResPartner(models.Model):
                 AND l.company_id = %s 
                 AND l.full_reconcile_id IS NULL 
                 AND partner_id IS NOT NULL GROUP BY partner_id"""
-        query = query % (company_id)
+        query = query % company_id
         if having_where_clause:
             query += ' HAVING %s ' % (having_where_clause)
         self._cr.execute(query)
@@ -321,8 +338,8 @@ class ResPartner(models.Model):
 
     def _payment_due_search(self, operator, operand):
         args = [('payment_amount_due', operator, operand)]
-        query = self._get_followup_overdue_query(args, overdue_only=False)
-        self._cr.execute(query)
+        query, params = self._get_followup_overdue_query(args, overdue_only=False)
+        self._cr.execute(query, params)
         res = self._cr.fetchall()
         if not res:
             return [('id', '=', '0')]
