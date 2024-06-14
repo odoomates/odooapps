@@ -390,7 +390,7 @@ class ResPartner(models.Model):
         help="Gives the sequence order when displaying a list of follow-up lines.", default=0
     )
     latest_followup_level_id_without_lit = fields.Many2one(
-        'followup.line', compute='_get_latest', store=True, compute_sudo=True,
+        'followup.line', compute='_get_latest', compute_sudo=True,
         string="Latest Follow-up Level without litigation",
         help="The maximum follow-up level without taking into "
              "account the account move lines with litigation")

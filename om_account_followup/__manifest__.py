@@ -2,7 +2,7 @@
 
 {
     'name': 'Customer Follow Up Management',
-    'version': '17.0.1.0.1',
+    'version': '17.0.2.0.1',
     'category': 'Accounting',
     'description': """Customer FollowUp Management""",
     'summary': """Customer FollowUp Management""",
@@ -26,6 +26,4 @@
     ],
     'demo': ['demo/demo.xml'],
     'images': ['static/description/banner.png'],
-    'installable': True,
-    'auto_install': False,
 }
