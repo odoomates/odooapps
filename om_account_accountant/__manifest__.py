@@ -2,7 +2,7 @@
 
 {
     'name': 'Odoo 17 Accounting',
-    'version': '2.0.1',
+    'version': '2.0.2',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '
