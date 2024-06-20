@@ -2,7 +2,7 @@
 
 {
     'name': 'Customer Follow Up Management',
-    'version': '14.0.5.0.1',
+    'version': '14.0.5.0.2',
     'category': 'Accounting',
     'description': """Customer FollowUp Management""",
     'summary': """Customer FollowUp Management""",
