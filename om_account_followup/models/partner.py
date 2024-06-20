@@ -295,7 +295,11 @@ class ResPartner(models.Model):
                         partner_id 
                     FROM account_move_line l
                     LEFT JOIN account_account a ON a.id = l.account_id
-                    WHERE a.account_type = 'asset_receivable'
+                    WHERE account_id IN (SELECT id FROM account_account
+                                            WHERE user_type_id IN (SELECT id
+                                            FROM account_account_type
+                                            WHERE type=\'receivable\'
+                                            ))
                     %s AND full_reconcile_id IS NULL
                     AND l.company_id = %%s
                 ) AS l
