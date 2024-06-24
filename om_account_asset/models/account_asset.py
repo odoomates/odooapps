@@ -8,6 +8,7 @@ from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare, float_is_zero
+from markupsafe import Markup
 
 
 class AccountAssetCategory(models.Model):
@@ -21,7 +22,6 @@ class AccountAssetCategory(models.Model):
     active = fields.Boolean(default=True)
     name = fields.Char(required=True, index=True, string="Asset Type")
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account')
-    # analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tag')
     account_asset_id = fields.Many2one('account.account', string='Asset Account',
                                        required=True,
                                        domain=[('account_type', 'not in', exclude_types), ('deprecated', '=', False)],
@@ -168,7 +168,6 @@ class AccountAssetAsset(models.Model):
     invoice_id = fields.Many2one('account.move', string='Invoice', copy=False)
     type = fields.Selection(related="category_id.type", string='Type', required=True)
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account')
-    # analytic_tag_ids = fields.Many2many('account.analytic.tag', string='Analytic Tag')
     date_first_depreciation = fields.Selection([
         ('last_day_period', 'Based on Last Day of Purchase Period'),
         ('manual', 'Manual')],
@@ -469,7 +468,6 @@ class AccountAssetAsset(models.Model):
                     'date_first_depreciation': category.date_first_depreciation,
                     'account_analytic_id': category.account_analytic_id.id,
                     'analytic_distribution': category.analytic_distribution,
-                    # 'analytic_tag_ids': [(6, 0, category.analytic_tag_ids.ids)],
                 }
             }
 
@@ -575,8 +573,6 @@ class AccountAssetDepreciationLine(models.Model):
 
     def _prepare_move(self, line):
         category_id = line.asset_id.category_id
-        account_analytic_id = line.asset_id.account_analytic_id
-        # analytic_tag_ids = line.asset_id.analytic_tag_ids
         analytic_distribution = line.asset_id.analytic_distribution
         depreciation_date = self.env.context.get('depreciation_date') or line.depreciation_date or fields.Date.context_today(self)
         company_currency = line.asset_id.company_id.currency_id
@@ -685,7 +681,7 @@ class AccountAssetDepreciationLine(models.Model):
             for name, values in tracked_values.items():
                 message += '<div> &nbsp; &nbsp; &bull; <b>%s</b>: ' % name
                 message += '%s</div>' % values
-            return message
+            return Markup(message)
 
         for line in self:
             if line.move_id and line.move_id.state == 'draft':
