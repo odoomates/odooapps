@@ -6,6 +6,7 @@ from dateutil.relativedelta import relativedelta
 from pytz import timezone
 from odoo import api, fields, models, tools, _
 from odoo.exceptions import UserError, ValidationError
+from collections import defaultdict
 
 
 class HrPayslip(models.Model):
@@ -609,8 +610,8 @@ class HrPayslipRun(models.Model):
         return self.write({'state': 'close'})
 
     def done_payslip_run(self):
-        for line in self.slip_ids:
-            line.action_payslip_done()
+        self.slip_ids.create_consolidated_move()
+        self.slip_ids.write({'state': 'done'})
         return self.write({'state': 'done'})
 
     def unlink(self):
@@ -618,3 +619,129 @@ class HrPayslipRun(models.Model):
             if rec.state == 'done':
                 raise ValidationError(_('You Cannot Delete Done Payslips Batches'))
         return super(HrPayslipRun, self).unlink()
+
+    def create_consolidated_move(self):
+        rule_lines = defaultdict(lambda: {
+            'name': '',
+            'debit': 0.0,
+            'credit': 0.0,
+            'debit_account_id': False,
+            'credit_account_id': False,
+            'analytic_account_id': False,
+            'tax_line_id': False
+        })
+
+        currency = self.env.user.company_id.currency_id
+        date = self[0].date or self[0].date_to
+
+        for slip in self:
+            for line in slip.details_by_salary_rule_category:
+                amount = currency.round(slip.credit_note and -line.total or line.total)
+                if currency.is_zero(amount):
+                    continue
+
+                rule_id = line.salary_rule_id.id
+                if not rule_lines[rule_id]['name']:
+                    rule_lines[rule_id]['name'] = line.salary_rule_id.name
+                    rule_lines[rule_id]['debit_account_id'] = line.salary_rule_id.account_debit.id
+                    rule_lines[rule_id]['credit_account_id'] = line.salary_rule_id.account_credit.id
+                    rule_lines[rule_id][
+                        'analytic_account_id'] = line.salary_rule_id.analytic_account_id.id if line.salary_rule_id.analytic_account_id else False
+                    rule_lines[rule_id]['tax_line_id'] = line.salary_rule_id.account_tax_id.id
+
+                if line.salary_rule_id.account_debit.id:
+                    rule_lines[rule_id]['debit'] += amount
+                if line.salary_rule_id.account_credit.id:
+                    rule_lines[rule_id]['credit'] += amount
+
+        # Check for missing debit or credit accounts in the consolidated lines
+        for values in rule_lines.values():
+            if not values['debit_account_id'] or not values['credit_account_id']:
+                raise UserError(_('Missing Debit Or Credit Account in one of the Salary Rules'))
+
+        # Creating consolidated move lines
+        line_ids = []
+        debit_sum = 0.0
+        credit_sum = 0.0
+
+        for values in rule_lines.values():
+            debit_amount = values['debit']
+            credit_amount = values['credit']
+
+            if debit_amount != 0.0:
+                debit_line = (0, 0, {
+                    'name': values['name'],
+                    'partner_id': False,
+                    'account_id': values['debit_account_id'],
+                    'journal_id': self[0].journal_id.id,
+                    'date': date,
+                    'debit': debit_amount,
+                    'credit': 0.0,
+                    'analytic_distribution': {values['analytic_account_id']: 100} if values[
+                        'analytic_account_id'] else {},
+                    'tax_line_id': values['tax_line_id'],
+                })
+                line_ids.append(debit_line)
+                debit_sum += debit_amount
+
+            if credit_amount != 0.0:
+                credit_line = (0, 0, {
+                    'name': values['name'],
+                    'partner_id': False,
+                    'account_id': values['credit_account_id'],
+                    'journal_id': self[0].journal_id.id,
+                    'date': date,
+                    'debit': 0.0,
+                    'credit': credit_amount,
+                    'analytic_distribution': {values['analytic_account_id']: 100} if values[
+                        'analytic_account_id'] else {},
+                    'tax_line_id': values['tax_line_id'],
+                })
+                line_ids.append(credit_line)
+                credit_sum += credit_amount
+
+        # Adding adjustment entries if necessary
+        if currency.compare_amounts(credit_sum, debit_sum) == -1:
+            acc_id = self[0].journal_id.default_account_id.id
+            if not acc_id:
+                raise UserError(_('The Expense Journal "%s" has not properly configured the Credit Account!') % (
+                    self[0].journal_id.name))
+            adjust_credit = (0, 0, {
+                'name': _('Adjustment Entry'),
+                'partner_id': False,
+                'account_id': acc_id,
+                'journal_id': self[0].journal_id.id,
+                'date': date,
+                'debit': 0.0,
+                'credit': currency.round(debit_sum - credit_sum),
+            })
+            line_ids.append(adjust_credit)
+
+        elif currency.compare_amounts(debit_sum, credit_sum) == -1:
+            acc_id = self[0].journal_id.default_account_id.id
+            if not acc_id:
+                raise UserError(_('The Expense Journal "%s" has not properly configured the Debit Account!') % (
+                    self[0].journal_id.name))
+            adjust_debit = (0, 0, {
+                'name': _('Adjustment Entry'),
+                'partner_id': False,
+                'account_id': acc_id,
+                'journal_id': self[0].journal_id.id,
+                'date': date,
+                'debit': currency.round(credit_sum - debit_sum),
+                'credit': 0.0,
+            })
+            line_ids.append(adjust_debit)
+
+        move_dict = {
+            'narration': _('Consolidated Payslip Journal Entry'),
+            'ref': ', '.join(self.mapped('number')),
+            'journal_id': self[0].journal_id.id,
+            'date': date,
+            'line_ids': line_ids
+        }
+
+        move = self.env['account.move'].create(move_dict)
+        self.write({'move_id': move.id, 'date': date})
+        move.action_post()
+
