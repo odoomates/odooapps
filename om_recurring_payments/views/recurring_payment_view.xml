@@ -7,9 +7,9 @@
         <field name="arch" type="xml">
             <form string="Recurring Payment">
                 <header>
-                    <button name="action_done" states="draft" string="Done" type="object"
+                    <button name="action_done" invisible="state != 'draft'" string="Done" type="object"
                             class="oe_highlight"/>
-                    <button name="action_draft" states="done" string="Set To Draft"
+                    <button name="action_draft" invisible="state != 'done'" string="Set To Draft"
                             type="object"/>
                     <field name="state" widget="statusbar"/>
                 </header>
@@ -17,7 +17,7 @@
                     <group>
                         <group>
                             <h1>
-                                <field name="name" attrs="{'invisible': [('name','=', False)]}"/>
+                                <field name="name" invisible="not name"/>
                             </h1>
                         </group>
                     </group>
@@ -50,7 +50,7 @@
                                     <field name="state" widget="badge"/>
                                     <button name="action_create_payment" type="object"
                                             string="Create Payment"
-                                            attrs="{'invisible': [('state', '=', 'done')]}"/>
+                                            invisible="state == 'done'"/>
                                 </tree>
                                 <form string="Recurring Payment Line" edit="0">
                                     <group>

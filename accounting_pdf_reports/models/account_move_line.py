@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from odoo import api, models, fields
 
@@ -56,7 +54,7 @@ class AccountMoveLine(models.Model):
             domain += [('analytic_tag_ids', 'in', context['analytic_tag_ids'].ids)]
 
         if context.get('analytic_account_ids'):
-            domain += [('analytic_account_id', 'in', context['analytic_account_ids'].ids)]
+            domain += [('analytic_distribution', 'in', context['analytic_account_ids'].ids)]
 
         if context.get('partner_ids'):
             domain += [('partner_id', 'in', context['partner_ids'].ids)]

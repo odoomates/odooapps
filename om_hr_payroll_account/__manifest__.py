@@ -1,10 +1,8 @@
-# -*- coding:utf-8 -*-
-
 {
-    'name': 'Odoo 16 HR Payroll Accounting',
+    'name': 'Odoo 18 HR Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
     'author': 'Odoo Mates, Odoo SA',
-    'version': '16.0.1.0.0',
+    'version': '1.0.0',
     'sequence': 1,
     'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
@@ -18,8 +16,6 @@
     'data': [
         'views/hr_payroll_account_views.xml'
     ],
-    'demo': [],
-    'test': ['../account/test/account_minimal_test.xml'],
     'images': ['static/description/banner.png'],
     'application': True,
 }

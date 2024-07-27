@@ -14,12 +14,12 @@ class HrPayslipLine(models.Model):
         """
         # use partner of salary rule or fallback on employee's address
         register_partner_id = self.salary_rule_id.register_id.partner_id
-        partner_id = register_partner_id.id or self.slip_id.employee_id.address_home_id.id
+        partner_id = register_partner_id.id
         if credit_account:
-            if register_partner_id or self.salary_rule_id.account_credit.internal_type in ('asset_receivable', 'liability_payable'):
+            if register_partner_id or self.salary_rule_id.account_credit.account_type in ('asset_receivable', 'liability_payable'):
                 return partner_id
         else:
-            if register_partner_id or self.salary_rule_id.account_debit.internal_type in ('asset_receivable', 'liability_payable'):
+            if register_partner_id or self.salary_rule_id.account_debit.account_type in ('asset_receivable', 'liability_payable'):
                 return partner_id
         return False
 
@@ -27,10 +27,13 @@ class HrPayslipLine(models.Model):
 class HrPayslip(models.Model):
     _inherit = 'hr.payslip'
 
-    date = fields.Date('Date Account', states={'draft': [('readonly', False)]}, readonly=True,
-        help="Keep empty to use the period of the validation(Payslip) date.")
-    journal_id = fields.Many2one('account.journal', 'Salary Journal', readonly=True, required=True,
-        states={'draft': [('readonly', False)]}, default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1))
+    date = fields.Date(
+        'Date Account', help="Keep empty to use the period of the validation(Payslip) date."
+    )
+    journal_id = fields.Many2one(
+        'account.journal', 'Salary Journal', required=True,
+        default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1)
+    )
     move_id = fields.Many2one('account.move', 'Accounting Entry', readonly=True, copy=False)
 
     @api.model_create_multi
@@ -89,7 +92,7 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount > 0.0 and amount or 0.0,
                         'credit': amount < 0.0 and -amount or 0.0,
-                        'analytic_account_id': line.salary_rule_id.analytic_account_id.id,
+                        'analytic_distribution': {line.salary_rule_id.analytic_account_id.id: 100} if line.salary_rule_id.analytic_account_id else {},
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(debit_line)
@@ -104,7 +107,7 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount < 0.0 and -amount or 0.0,
                         'credit': amount > 0.0 and amount or 0.0,
-                        'analytic_account_id': line.salary_rule_id.analytic_account_id.id,
+                        'analytic_distribution': {line.salary_rule_id.analytic_account_id.id: 100} if line.salary_rule_id.analytic_account_id else {},
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(credit_line)
@@ -166,5 +169,7 @@ class HrContract(models.Model):
 class HrPayslipRun(models.Model):
     _inherit = 'hr.payslip.run'
 
-    journal_id = fields.Many2one('account.journal', 'Salary Journal', states={'draft': [('readonly', False)]}, readonly=True,
-        required=True, default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1))
+    journal_id = fields.Many2one(
+        'account.journal', 'Salary Journal', required=True,
+        default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1)
+    )

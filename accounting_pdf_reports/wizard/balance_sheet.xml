@@ -12,9 +12,7 @@
         <field name="sign">-1</field>
         <field name="parent_id" ref="account_financial_report_profitandloss0"/>
         <field name="display_detail">detail_with_hierarchy</field>
-        <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('accounting_pdf_reports.data_account_type_other_income')),
-        (4,ref('accounting_pdf_reports.data_account_type_revenue'))]"/>
+        <field name="type">sum</field>
     </record>
 
     <record id="account_financial_report_expense0" model="account.financial.report">
@@ -23,8 +21,7 @@
         <field name="parent_id" ref="account_financial_report_profitandloss0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('accounting_pdf_reports.data_account_type_expenses')),
-        (4,ref('accounting_pdf_reports.data_account_type_direct_costs')), (4,ref('accounting_pdf_reports.data_account_type_depreciation'))]"/>
+        <field name="account_type_ids">expense</field>
     </record>
 
     <record id="account_financial_report_balancesheet0" model="account.financial.report">
@@ -37,10 +34,7 @@
         <field name="parent_id" ref="account_financial_report_balancesheet0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('accounting_pdf_reports.data_account_type_receivable')),
-        (4,ref('accounting_pdf_reports.data_account_type_liquidity')), (4,ref('accounting_pdf_reports.data_account_type_current_assets')),
-        (4,ref('accounting_pdf_reports.data_account_type_non_current_assets'), (4,ref('accounting_pdf_reports.data_account_type_prepayments'))),
-        (4,ref('accounting_pdf_reports.data_account_type_fixed_assets'))]"/>
+        <field name="account_type_ids">income_other</field>
     </record>
 
     <record id="account_financial_report_liabilitysum0" model="account.financial.report">
@@ -55,9 +49,7 @@
         <field name="parent_id" ref="account_financial_report_liabilitysum0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('accounting_pdf_reports.data_account_type_payable')),
-        (4,ref('accounting_pdf_reports.data_account_type_equity')), (4,ref('accounting_pdf_reports.data_account_type_current_liabilities')),
-        (4,ref('accounting_pdf_reports.data_account_type_non_current_liabilities'))]"/>
+        <field name="account_type_ids">income_other</field>
     </record>
 
     <record id="account_financial_report_profitloss_toreport0" model="account.financial.report">
@@ -78,18 +70,18 @@
             </field>
             <field name="target_move" position="after">
                 <field name="enable_filter"/>
-                <field name="debit_credit" attrs="{'invisible': [('enable_filter','=',True)]}"/>
+                <field name="debit_credit" invisible="enable_filter == True"/>
             </field>
             <field name="journal_ids" position="after">
                 <notebook tabpos="up" colspan="4">
-                    <page string="Comparison" name="comparison" attrs="{'invisible': [('enable_filter','=',False)]}">
+                    <page string="Comparison" name="comparison" invisible="enable_filter == False">
                         <group>
-                            <field name="label_filter" attrs="{'required': [('enable_filter', '=', True)]}"/>
+                            <field name="label_filter" required="enable_filter == True"/>
                             <field name="filter_cmp"/>
                         </group>
-                        <group string="Dates" attrs="{'invisible':[('filter_cmp', '!=', 'filter_date')]}">
-                            <field name="date_from_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
-                            <field name="date_to_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                        <group string="Dates" invisible="filter_cmp != 'filter_date'">
+                            <field name="date_from_cmp" required="filter_cmp == 'filter_date'"/>
+                            <field name="date_to_cmp" required="filter_cmp == 'filter_date'"/>
                         </group>
                     </page>
                 </notebook>

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from . import account_report_common
 from . import account_report_common_journal
 from . import account_report_print_journal

@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from functools import reduce
 from lxml import etree
 from odoo import api, fields, models, _
@@ -271,29 +269,46 @@ class ResPartner(models.Model):
 
     def _get_followup_overdue_query(self, args, overdue_only=False):
         company_id = self.env.user.company_id.id
-        having_where_clause = ' AND '.join(
-            map(lambda x: '(SUM(bal2) %s %%s)' % (x[1]), args))
-        having_values = [x[2] for x in args]
-        having_where_clause = having_where_clause % (having_values[0])
-        overdue_only_str = overdue_only and 'AND date_maturity <= NOW()' or ''
-        return ('''SELECT pid AS partner_id, SUM(bal2) FROM
-                                    (SELECT CASE WHEN bal IS NOT NULL THEN bal
-                                    ELSE 0.0 END AS bal2, p.id as pid FROM
-                                    (SELECT (debit-credit) AS bal, partner_id
-                                    FROM account_move_line l
-                                    LEFT JOIN account_account a ON a.id = l.account_id
-                                    WHERE a.account_type = 'asset_receivable'
-                                    %s AND full_reconcile_id IS NULL
-                                    AND l.company_id = %s) AS l
-                                    RIGHT JOIN res_partner p
-                                    ON p.id = partner_id ) AS pl
-                                    GROUP BY pid HAVING %s''') % (
-            overdue_only_str, company_id, having_where_clause)
+        having_clauses = []
+        having_values = []
+
+        for field, operator, value in args:
+            if operator in ['=', '!=', '>', '>=', '<', '<=']:
+                having_clauses.append(f'SUM(bal2) {operator} %s')
+                having_values.append(value)
+            else:
+                raise ValueError(f"Unsupported operator: {operator}")
+
+        having_where_clause = ' AND '.join(having_clauses)
+        overdue_only_str = 'AND date_maturity <= NOW()' if overdue_only else ''
+
+        query = ('''
+            SELECT pid AS partner_id, SUM(bal2) FROM (
+                SELECT 
+                    CASE WHEN bal IS NOT NULL THEN bal ELSE 0.0 END AS bal2, 
+                    p.id as pid 
+                FROM (
+                    SELECT 
+                        (debit - credit) AS bal, 
+                        partner_id 
+                    FROM account_move_line l
+                    LEFT JOIN account_account a ON a.id = l.account_id
+                    WHERE a.account_type = 'asset_receivable'
+                    %s AND full_reconcile_id IS NULL
+                    AND l.company_id = %%s
+                ) AS l
+                RIGHT JOIN res_partner p ON p.id = partner_id 
+            ) AS pl
+            GROUP BY pid HAVING %s
+        ''') % (overdue_only_str, having_where_clause)
+
+        params = [company_id] + having_values
+        return query, params
 
     def _payment_overdue_search(self, operator, operand):
         args = [('payment_amount_overdue', operator, operand)]
-        query = self._get_followup_overdue_query(args, overdue_only=True)
-        self._cr.execute(query)
+        query, params = self._get_followup_overdue_query(args, overdue_only=True)
+        self._cr.execute(query, params)
         res = self._cr.fetchall()
         if not res:
             return [('id', '=', '0')]
@@ -312,7 +327,7 @@ class ResPartner(models.Model):
                 AND l.company_id = %s 
                 AND l.full_reconcile_id IS NULL 
                 AND partner_id IS NOT NULL GROUP BY partner_id"""
-        query = query % (company_id)
+        query = query % company_id
         if having_where_clause:
             query += ' HAVING %s ' % (having_where_clause)
         self._cr.execute(query)
@@ -323,8 +338,8 @@ class ResPartner(models.Model):
 
     def _payment_due_search(self, operator, operand):
         args = [('payment_amount_due', operator, operand)]
-        query = self._get_followup_overdue_query(args, overdue_only=False)
-        self._cr.execute(query)
+        query, params = self._get_followup_overdue_query(args, overdue_only=False)
+        self._cr.execute(query, params)
         res = self._cr.fetchall()
         if not res:
             return [('id', '=', '0')]
@@ -337,38 +352,57 @@ class ResPartner(models.Model):
                 partners.add(aml.partner_id.id)
         return list(partners)
 
-    payment_responsible_id = fields.Many2one('res.users', ondelete='set null',
-                                             string='Follow-up Responsible',
-                                             tracking=True, copy=False,
-                                             help="Optionally you can assign a user to this field, which will make "
-                                                  "him responsible for the action.", )
-    payment_note = fields.Text('Customer Payment Promise', help="Payment Note", copy=False)
-    payment_next_action = fields.Text('Next Action', copy=False, tracking=True,
-                                      help="This is the next action to be taken.  It will automatically be "
-                                           "set when the partner gets a follow-up level that requires a manual action. ")
-    payment_next_action_date = fields.Date('Next Action Date', copy=False,
-                                           help="This is when the manual follow-up is needed. The date will be "
-                                                "set to the current date when the partner gets a follow-up level "
-                                                "that requires a manual action. Can be practical to set manually "
-                                                "e.g. to see if he keeps his promises.")
-    unreconciled_aml_ids = fields.One2many('account.move.line', 'partner_id',
-                                           domain=[('full_reconcile_id', '=', False),
-                                                   ('account_id.account_type', '=', 'asset_receivable')])
-    latest_followup_date = fields.Date(compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
-                                       help="Latest date that the follow-up level of the partner was changed")
-    latest_followup_level_id = fields.Many2one('followup.line', compute='_get_latest', compute_sudo=True,
-                                               string="Latest Follow-up Level", help="The maximum follow-up level")
+    payment_responsible_id = fields.Many2one(
+        'res.users', ondelete='set null',
+        string='Follow-up Responsible', tracking=True, copy=False,
+        help="Optionally you can assign a user to this field, which will make "
+             "him responsible for the action.")
+    payment_note = fields.Text(
+        'Customer Payment Promise', help="Payment Note", copy=False
+    )
+    payment_next_action = fields.Text(
+        'Next Action', copy=False, tracking=True,
+        help="This is the next action to be taken.  It will automatically be "
+             "set when the partner gets a follow-up level that requires a manual action. "
+    )
+    payment_next_action_date = fields.Date(
+        'Next Action Date', copy=False,
+        help="This is when the manual follow-up is needed. The date will be "
+             "set to the current date when the partner gets a follow-up level "
+             "that requires a manual action. Can be practical to set manually "
+             "e.g. to see if he keeps his promises."
+    )
+    unreconciled_aml_ids = fields.One2many(
+        'account.move.line', 'partner_id',
+        domain=[('full_reconcile_id', '=', False), ('account_id.account_type', '=', 'asset_receivable')]
+    )
+    latest_followup_date = fields.Date(
+        compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
+        help="Latest date that the follow-up level of the partner was changed"
+    )
+    latest_followup_level_id = fields.Many2one(
+        'followup.line', compute='_get_latest', compute_sudo=True,
+        string="Latest Follow-up Level", help="The maximum follow-up level"
+    )
 
-    latest_followup_sequence = fields.Integer('Sequence', help="Gives the sequence order when displaying a list of follow-up lines.", default=0)
-
-    latest_followup_level_id_without_lit = fields.Many2one('followup.line',
-                                                           compute='_get_latest', store=True, compute_sudo=True,
-                                                           string="Latest Follow-up Level without litigation",
-                                                           help="The maximum follow-up level without taking into "
-                                                                "account the account move lines with litigation")
-    payment_amount_due = fields.Float(compute='_get_amounts_and_date',
-                                      string="Amount Due", search='_payment_due_search')
-    payment_amount_overdue = fields.Float(compute='_get_amounts_and_date',
-                                          string="Amount Overdue", search='_payment_overdue_search')
-    payment_earliest_due_date = fields.Date(compute='_get_amounts_and_date', string="Worst Due Date",
-                                            search='_payment_earliest_date_search')
+    latest_followup_sequence = fields.Integer(
+        'Sequence',
+        help="Gives the sequence order when displaying a list of follow-up lines.", default=0
+    )
+    latest_followup_level_id_without_lit = fields.Many2one(
+        'followup.line', compute='_get_latest', compute_sudo=True,
+        string="Latest Follow-up Level without litigation",
+        help="The maximum follow-up level without taking into "
+             "account the account move lines with litigation")
+    payment_amount_due = fields.Float(
+        compute='_get_amounts_and_date',
+        string="Amount Due", search='_payment_due_search'
+    )
+    payment_amount_overdue = fields.Float(
+        compute='_get_amounts_and_date',
+        string="Amount Overdue", search='_payment_overdue_search'
+    )
+    payment_earliest_due_date = fields.Date(
+        compute='_get_amounts_and_date', string="Worst Due Date",
+        search='_payment_earliest_date_search'
+    )

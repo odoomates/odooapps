@@ -37,8 +37,8 @@
                         <group string="Calculations">
                             <field name="category_id"/>
                             <field name="amount_select"/>
-                            <field name="amount_fix" attrs="{'readonly':[('amount_select','!=','fix')]}"/>
-                            <field name="amount_percentage" attrs="{'readonly':[('amount_select','!=','percentage')]}"/>
+                            <field name="amount_fix" readonly="amount_select != 'fix'"/>
+                            <field name="amount_percentage" readonly="amount_select != 'percentage'"/>
                             <field name="sequence"/>
                         </group>
                         <field name="note"/>
@@ -137,16 +137,19 @@
             <field name="arch" type="xml">
                 <form string="Payslip">
                     <header>
-                        <button string="Confirm" name="action_payslip_done" type="object" states="draft"
+                        <button string="Confirm" name="action_payslip_done" type="object"
+                                invisible="state != 'draft'"
                                 class="oe_highlight"/>
-                        <button string="Refund" name="refund_sheet" states="confirm,done" type='object'/>
-                        <button string="Set to Draft" name="action_payslip_draft" type="object" states="cancel"/>
-                        <button string="Compute Sheet" name="compute_sheet" type="object" states="draft"
+                        <button string="Refund" name="refund_sheet"
+                                invisible="state not in ('confirm','done')"  type='object'/>
+                        <button string="Set to Draft" name="action_payslip_draft" type="object"
+                                invisible="state != 'cancel'"/>
+                        <button string="Compute Sheet" name="compute_sheet" type="object" invisible="state != 'draft'"
                                 class="oe_highlight"/>
                         <button string="Cancel Payslip" name="action_payslip_cancel" type="object"
-                                states="draft,done,verify"/>
+                                invisible="state not in ('draft', 'verify','done')"/>
                         <button string="Send E-Mail" name="action_send_email" type="object"
-                                class="oe_highlight" states="done,verify"/>
+                                class="oe_highlight" invisible="state not in ('verify','done')"/>/>
                         <field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
                     </header>
                     <sheet>
@@ -162,28 +165,29 @@
                         <div class="oe_title">
                             <label for="employee_id" class="oe_edit_only"/>
                             <h1>
-                                <field name="employee_id" placeholder="Employee"/>
+                                <field name="employee_id" placeholder="Employee" readonly="state != 'draft'"/>
                             </h1>
                         </div>
                         <group col="4">
                             <label for="date_from" string="Period"/>
                             <div>
-                                <field name="date_from" class="oe_inline"/>
+                                <field name="date_from" class="oe_inline" readonly="state != 'draft'"/>
                                 -
-                                <field name="date_to" class="oe_inline"/>
+                                <field name="date_to" class="oe_inline" readonly="state != 'draft'"/>
                             </div>
                             <field name="contract_id"
+                                   readonly="state != 'draft'"
                                    domain="[('employee_id','=',employee_id),('date_start','&lt;=',date_to),'|',('date_end','&gt;=',date_from),('date_end','=',False)]"
                                    context="{'default_employee_id': employee_id}"/>
-                            <field name="number"/>
-                            <field name="struct_id" attrs="{'required':[('contract_id','!=',False)]}"/>
-                            <field name="name"/>
-                            <field name="credit_note"/>
+                            <field name="number" readonly="state != 'draft'"/>
+                            <field name="struct_id" required="contract_id != False" readonly="state != 'draft'"/>
+                            <field name="name" readonly="state != 'draft'"/>
+                            <field name="credit_note" readonly="state != 'draft'"/>
                         </group>
                         <notebook>
                             <page string="Worked Days &amp; Inputs">
                                 <separator string="Worked Days"/>
-                                <field name="worked_days_line_ids">
+                                <field name="worked_days_line_ids" readonly="state != 'draft'">
                                     <tree string="Worked Days" editable="bottom">
                                         <field name="name"/>
                                         <field name="code"/>
@@ -204,7 +208,7 @@
                                     </form>
                                 </field>
                                 <separator string="Other Inputs"/>
-                                <field name="input_line_ids" colspan="4" nolabel="1">
+                                <field name="input_line_ids" colspan="4" nolabel="1" readonly="state != 'draft'">
                                     <tree string="Input Data" editable="bottom">
                                         <field name="name"/>
                                         <field name="code"/>
@@ -224,7 +228,7 @@
                                 </field>
                             </page>
                             <page string="Salary Computation">
-                                <field name="line_ids" colspan="4" nolabel="1">
+                                <field name="line_ids" colspan="4" nolabel="1" readonly="state != 'draft'">
                                     <tree string="Salary Structure" editable="bottom" decoration-info="total == 0">
                                         <field name="name"/>
                                         <field name="code"/>
@@ -266,15 +270,18 @@
                             <page string="Accounting Information">
                                 <group>
                                     <group string="Miscellaneous">
-                                        <field name="company_id" groups="base.group_multi_company"/>
-                                        <field name="payslip_run_id" domain="[('state','=','draft')]"/>
+                                        <field name="company_id" readonly="state != 'draft'"
+                                               groups="base.group_multi_company"/>
+                                        <field name="payslip_run_id" domain="[('state','=','draft')]"
+                                               readonly="state != 'draft'"/>
                                     </group>
                                     <group name="accounting" string="Accounting">
                                         <field name="paid" readonly="1"/>
                                     </group>
                                 </group>
                                 <div colspan="4">
-                                    <field name="note" placeholder="Add an internal note..."/>
+                                    <field name="note" placeholder="Add an internal note..."
+                                           readonly="state != 'draft'"/>
                                 </div>
                             </page>
                         </notebook>
@@ -404,30 +411,30 @@
             <field name="arch" type="xml">
                 <form string="Payslips Batches">
                     <header>
-                        <button name="%(action_hr_payslip_by_employees)d" type="action" states="draft"
+                        <button name="%(action_hr_payslip_by_employees)d" type="action" invisible="state != 'draft'"
                                 string="Generate Payslips" class="oe_highlight"/>
-                        <button string="Set to Draft" name="draft_payslip_run" type="object" states="close"/>
-                        <button string="Mark As Done" name="done_payslip_run" type="object" states="draft"
+                        <button string="Set to Draft" name="draft_payslip_run" type="object" invisible="state != 'close'"/>
+                        <button string="Mark As Done" name="done_payslip_run" type="object" invisible="state != 'draft'"
                                 class="oe_highlight"/>
-                        <button name="close_payslip_run" type="object" string="Close" states="draft"/>
+                        <button name="close_payslip_run" type="object" string="Close" invisible="state != 'draft'"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
                         <label for="name" class="oe_edit_only"/>
                         <h1>
-                            <field name="name"/>
+                            <field name="name" readonly="state != 'draft'"/>
                         </h1>
                         <group col="4">
                             <label for="date_start" string="Period"/>
                             <div>
-                                <field name="date_start" class="oe_inline"/>
+                                <field name="date_start" class="oe_inline" readonly="state != 'draft'"/>
                                 -
-                                <field name="date_end" class="oe_inline"/>
+                                <field name="date_end" class="oe_inline" readonly="state != 'draft'"/>
                             </div>
-                            <field name="credit_note"/>
+                            <field name="credit_note" readonly="state != 'draft'"/>
                         </group>
                         <separator string="Payslips"/>
-                        <field name="slip_ids"/>
+                        <field name="slip_ids" readonly="state != 'draft'"/>
                     </sheet>
                 </form>
             </field>
