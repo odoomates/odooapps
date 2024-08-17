@@ -3,6 +3,7 @@ from lxml import etree
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import formatLang
+from markupsafe import Markup
 
 
 class ResPartner(models.Model):
@@ -195,7 +196,7 @@ class ResPartner(models.Model):
                                 </table>
                                 <center>''' + _(
                     "Amount due") + ''' : %s </center>''' % (total)
-        return followup_table
+        return Markup(followup_table)
 
     def write(self, vals):
         if vals.get("payment_responsible_id", False):
