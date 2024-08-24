@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from functools import reduce
+from datetime import datetime
 from lxml import etree
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
@@ -179,6 +180,7 @@ class ResPartner(models.Model):
                     strbegin = "<TD>"
                     strend = "</TD>"
                     date = aml['date_maturity'] or aml['date']
+                    date = datetime.strptime(date, "%d/%m/%Y").date()
                     if date <= current_date and aml['balance'] > 0:
                         strbegin = "<TD><B>"
                         strend = "</B></TD>"
