@@ -5,16 +5,16 @@
 
         <record id="email_template_om_account_followup_level0" model="mail.template">
             <field name="name">First polite payment follow-up reminder email</field>
-            <field name="email_from">${(user.email or '')|safe}</field>
-            <field name="subject">${user.company_id.name} Payment Reminder</field>
-            <field name="email_to">${object.email|safe}</field>
-            <field name="lang">${object.lang}</field>
+            <field name="email_from">{{ (user.email or '') }}</field>
+            <field name="subject">{{ user.company_id.name }} Payment Reminder</field>
+            <field name="email_to">{{ object.email }}</field>
+            <field name="lang">{{ object.lang }}</field>
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
 
-    <p>Dear ${object.name},</p>
+    <p>Dear <t t-out="object.name"/>,</p>
     <p>
     Exception made if there was a mistake of ours, it seems that the following amount stays unpaid. Please, take
 appropriate measures in order to carry out this payment in the next 8 days.
@@ -27,13 +27,13 @@ contact our accounting department.
 Best Regards,
 <br/>
    <br/>
-${user.name}
+<t t-out="user.name" />
 
 <br/>
 <br/>
 
 
-${object.get_followup_table_html() | safe}
+<t t-out="object.get_followup_table_html()" />
 
     <br/>
 
@@ -44,16 +44,16 @@ ${object.get_followup_table_html() | safe}
         <!--Mail template level 1 -->
         <record id="email_template_om_account_followup_level1" model="mail.template">
             <field name="name">A bit urging second payment follow-up reminder email</field>
-            <field name="email_from">${(user.email or '')|safe}</field>
-            <field name="subject">${user.company_id.name} Payment Reminder</field>
-            <field name="email_to">${object.email|safe}</field>
-            <field name="lang">${object.lang}</field>
+            <field name="email_from">{{ (user.email or '') }}</field>
+            <field name="subject">{{ user.company_id.name }} Payment Reminder</field>
+            <field name="email_to">{{ object.email }}</field>
+            <field name="lang">{{ object.lang }}</field>
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
     
-    <p>Dear ${object.name},</p>
+    <p>Dear <t t-out="object.name"/>,</p>
    <p>
     We are disappointed to see that despite sending a reminder, that your account is now seriously overdue.
 It is essential that immediate payment is made, otherwise we will have to consider placing a stop on your account
@@ -68,12 +68,12 @@ Best Regards,
     
 <br/>
 <br/>
-${user.name}
+<t t-out="user.name" />
     
 <br/>
 <br/>
 
-${object.get_followup_table_html() | safe}
+<t t-out="object.get_followup_table_html()" />
 
     <br/>
 
@@ -84,16 +84,16 @@ ${object.get_followup_table_html() | safe}
         <!--Mail template level 2 -->
         <record id="email_template_om_account_followup_level2" model="mail.template">
             <field name="name">Urging payment follow-up reminder email</field>
-            <field name="email_from">${(user.email or '')|safe}</field>
-            <field name="subject">${user.company_id.name} Payment Reminder</field>
-            <field name="email_to">${object.email|safe}</field>
-            <field name="lang">${object.lang}</field>
+            <field name="email_from">{{ (user.email or '') }}</field>
+            <field name="subject">{{ user.company_id.name }} Payment Reminder</field>
+            <field name="email_to">{{ object.email }}</field>
+            <field name="lang">{{ object.lang }}</field>
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
     
-    <p>Dear ${object.name},</p>
+    <p>Dear <t t-out="object.name"/>,</p>
     <p>
     Despite several reminders, your account is still not settled.
 Unless full payment is made in next 8 days, legal action for the recovery of the debt will be taken without
@@ -105,12 +105,12 @@ In case of any queries concerning this matter, do not hesitate to contact our ac
 Best Regards,
 <br/>
 <br/>
-${user.name}
+<t t-out="user.name" />
 <br/>
 <br/>
 
 
-${object.get_followup_table_html() | safe}
+<t t-out="object.get_followup_table_html()" />
 
     <br/>
 
@@ -121,16 +121,16 @@ ${object.get_followup_table_html() | safe}
         <!-- Default follow up message -->
         <record id="email_template_om_account_followup_default" model="mail.template">
             <field name="name">Default payment follow-up reminder e-mail</field>
-            <field name="email_from">${(user.email or '')|safe}</field>
-            <field name="subject">${user.company_id.name} Payment Reminder</field>
-            <field name="email_to">${object.email|safe}</field>
-            <field name="lang">${object.lang}</field>
+            <field name="email_from">{{ (user.email or '') }}</field>
+            <field name="subject">{{ user.company_id.name }} Payment Reminder</field>
+            <field name="email_to">{{ object.email }}</field>
+            <field name="lang">{{ object.lang }}</field>
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
 <div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
     
-    <p>Dear ${object.name},</p>
+    <p>Dear <t t-out="object.name"/>,</p>
     <p>
     Exception made if there was a mistake of ours, it seems that the following amount stays unpaid. Please, take
 appropriate measures in order to carry out this payment in the next 8 days.
@@ -141,11 +141,11 @@ contact our accounting department.
 Best Regards,
 <br/>
 <br/>
-${user.name}
+<t t-out="user.name" />
 <br/>
 <br/>
 
-${object.get_followup_table_html() | safe}
+<t t-out="object.get_followup_table_html()" />
 
 <br/>
 </div>
