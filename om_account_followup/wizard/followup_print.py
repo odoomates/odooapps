@@ -13,7 +13,7 @@ class FollowupPrint(models.TransientModel):
         if self.env.context.get('active_model',
                                 'ir.ui.menu') == 'followup.followup':
             return self.env.context.get('active_id', False)
-        company_id = self.env.user.company_id.id
+        company_id = self.env.company.id
         followp_id = self.env['followup.followup'].search(
             [('company_id', '=', company_id)], limit=1)
         return followp_id or False
@@ -159,7 +159,7 @@ class FollowupPrint(models.TransientModel):
         }
 
     def _get_msg(self):
-        return self.env.user.company_id.follow_up_msg
+        return self.env.company.follow_up_msg
 
     def _get_partners_followp(self):
         data = self
