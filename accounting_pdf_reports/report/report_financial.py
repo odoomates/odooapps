@@ -132,13 +132,13 @@ class ReportFinancial(models.AbstractModel):
                     if data['debit_credit']:
                         vals['debit'] = value['debit']
                         vals['credit'] = value['credit']
-                        if not account.company_id.currency_id.is_zero(vals['debit']) or not account.company_id.currency_id.is_zero(vals['credit']):
+                        if not self.env.company.currency_id.is_zero(vals['debit']) or not self.env.company.currency_id.is_zero(vals['credit']):
                             flag = True
-                    if not account.company_id.currency_id.is_zero(vals['balance']):
+                    if not self.env.company.currency_id.is_zero(vals['balance']):
                         flag = True
                     if data['enable_filter']:
                         vals['balance_cmp'] = value['comp_bal'] * float(report.sign)
-                        if not account.company_id.currency_id.is_zero(vals['balance_cmp']):
+                        if not self.env.company.currency_id.currency_id.is_zero(vals['balance_cmp']):
                             flag = True
                     if flag:
                         sub_lines.append(vals)

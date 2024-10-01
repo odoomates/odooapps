@@ -27,7 +27,7 @@
                                        class="o_light_label"/>
                             </div>
                             <field name="account_asset_id" nolabel="1"
-                                   domain="[('company_id', '=', company_id)]"/>
+                                   domain="[('company_ids', 'in', company_id)]"/>
                             <div>
                                 <label for="account_depreciation_id"  invisible="type != 'purchase'"
                                        style="font-weight: bold" class="o_light_label"/>
@@ -36,7 +36,7 @@
                                        style="font-weight: bold" class="o_light_label"/>
                             </div>
                             <field name="account_depreciation_id" nolabel="1"
-                                   domain="[('company_id', '=', company_id)]"/>
+                                   domain="[('company_ids', 'in', company_id)]"/>
                         </group>
                         <group>
                             <div>
@@ -48,8 +48,8 @@
                                        style="font-weight: bold" class="o_light_label"/>
                             </div>
                             <field name="account_depreciation_expense_id" nolabel="1"
-                                   domain="[('company_id', '=', company_id)]"/>
-                            <field name="account_analytic_id" domain="[('company_id', '=', company_id)]"
+                                   domain="[('company_ids', 'in', company_id)]"/>
+                            <field name="account_analytic_id" domain="[('company_id', 'in', company_id)]"
                                    groups="analytic.group_analytic_accounting"/>
                             <field name="analytic_distribution" widget="analytic_distribution"/>
                         </group>
@@ -132,15 +132,15 @@
     </record>
 
     <record id="view_account_asset_category_tree" model="ir.ui.view">
-        <field name="name">account.asset.category.tree</field>
+        <field name="name">account.asset.category.list</field>
         <field name="model">account.asset.category</field>
         <field name="arch" type="xml">
-            <tree string="Asset category">
+            <list string="Asset category">
                 <field name="name"/>
                 <field name="journal_id"/>
                 <field name="method"/>
                 <field name="company_id" groups="base.group_multi_company"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -164,7 +164,7 @@
         <field name="name">Asset Category</field>
         <field name="res_model">account.asset.category</field>
         <field name="domain">[('type', '=', 'purchase')]</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">list,kanban,form</field>
         <field name="context">{'default_type': 'purchase'}</field>
     </record>
 

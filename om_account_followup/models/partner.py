@@ -40,7 +40,7 @@ class ResPartner(models.Model):
                 if (aml.company_id == company) and aml.followup_date and (
                         not latest_date or latest_date < aml.followup_date):
                     latest_date = aml.followup_date
-                if (aml.company_id == company) and not aml.blocked and \
+                if (aml.company_id == company) and \
                         (aml_followup and (not latest_days_without_lit or
                          latest_days_without_lit < aml_followup.delay)):
                     latest_days_without_lit = aml_followup.delay
@@ -172,7 +172,6 @@ class ResPartner(models.Model):
                 '''
                 total = 0
                 for aml in currency_dict['line']:
-                    block = aml['blocked'] and 'X' or ' '
                     total += aml['balance']
                     strbegin = "<TD>"
                     strend = "</TD>"
@@ -187,7 +186,6 @@ class ResPartner(models.Model):
                                       (aml['ref'] or '') + strend + \
                                       strbegin + str(date) + strend + \
                                       strbegin + str(aml['balance']) + \
-                                      strend + strbegin + block + \
                                       strend + "</TR>"
 
                 total = reduce(lambda x, y: x + y['balance'],

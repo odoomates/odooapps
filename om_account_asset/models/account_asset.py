@@ -537,7 +537,7 @@ class AccountAssetAsset(models.Model):
         return {
             'name': _('Journal Entries'),
             'view_type': 'form',
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'account.move',
             'view_id': False,
             'type': 'ir.actions.act_window',

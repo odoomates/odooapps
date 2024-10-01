@@ -3,11 +3,11 @@
     <data>
 
         <record id="customer_followup_tree" model="ir.ui.view">
-            <field name="name">res.partner.followup.inherit.tree</field>
+            <field name="name">res.partner.followup.inherit.list</field>
             <field name="model">res.partner</field>
             <field name="priority" eval="20"/>
             <field name="arch" type="xml">
-                <tree string="Customer Followup" create="false" delete="false">
+                <list string="Customer Followup" create="false" delete="false">
                     <field name="display_name"/>
                     <field name="payment_next_action_date"/>
                     <field name="payment_next_action"/>
@@ -19,12 +19,12 @@
                     <field name="latest_followup_level_id"/>
                     <field name="payment_amount_overdue"/>
                     <field name="payment_amount_due"/>
-                </tree>
+                </list>
             </field>
         </record>
 
         <record id="view_partner_inherit_customer_followup_tree" model="ir.ui.view">
-            <field name="name">res.partner.followup.inherit.tree</field>
+            <field name="name">res.partner.followup.inherit.list</field>
             <field name="model">res.partner</field>
             <field name="inherit_id" ref="base.view_partner_tree"/>
             <field name="arch" type="xml">
@@ -65,7 +65,7 @@
             <field name="name">Manual Follow-Ups</field>
             <field name="view_id" ref="customer_followup_tree"/>
             <field name="res_model">res.partner</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('payment_amount_due', '>', 0.0)]</field>
             <field name="context">{'Followupfirst':True, 'search_default_todo': True}</field>
             <field name="search_view_id" ref="customer_followup_search_view"/>
@@ -131,18 +131,17 @@
                             actions.
                         </p>
                         <field name="unreconciled_aml_ids">
-                            <tree string="Account Move line" editable="bottom"
+                            <list string="Account Move line" editable="bottom"
                                   create="false" delete="false"
                                   colors="red:(not date_maturity or date_maturity&lt;=current_date) and result&gt;0">
                                 <field name="date" readonly="True"/>
                                 <field name="company_id" readonly="True"
                                        groups="base.group_multi_company"/>
                                 <field name="move_id" readonly="True"/>
-                                <field name="blocked"/>
                                 <field name="date_maturity" readonly="True"/>
                                 <field name="result" readonly="True"/>
                                 <field name="followup_line_id" invisible='1'/>
-                            </tree>
+                            </list>
                         </field>
                         <group class="oe_subtotal_footer oe_right">
                             <field name="payment_amount_due"/>
@@ -162,7 +161,7 @@
 
         <record id="action_view_customer_followup_tree" model="ir.actions.act_window.view">
             <field name="sequence" eval="1"/>
-            <field name="view_mode">tree</field>
+            <field name="view_mode">list</field>
             <field name="view_id" ref="customer_followup_tree"/>
             <field name="act_window_id" ref="action_customer_followup"/>
         </record>
@@ -177,7 +176,7 @@
             <field name="name">My Follow-Ups</field>
             <field name="view_id" ref="customer_followup_tree"/>
             <field name="res_model">res.partner</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('payment_amount_due', '>', 0.0)]</field>
             <field name="context">{'Followupfirst':True, 'search_default_todo': True, 'search_default_my': True}</field>
             <field name="search_view_id" ref="customer_followup_search_view"/>

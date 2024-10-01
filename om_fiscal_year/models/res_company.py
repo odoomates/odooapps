@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import api, fields, models, _
 from odoo.exceptions import RedirectWarning, ValidationError
 
@@ -7,7 +5,6 @@ from odoo.exceptions import RedirectWarning, ValidationError
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    # RedirectWarning is changed with validation error to remove error of missing reconciliation view
     def _validate_fiscalyear_lock(self, values):
         if values.get('fiscalyear_lock_date'):
             draft_entries = self.env['account.move'].search([
@@ -18,7 +15,7 @@ class ResCompany(models.Model):
                 error_msg = _(
                     'There are still unposted entries in the period you want to lock. You should either post or delete them.')
                 action_error = {
-                    'view_mode': 'tree',
+                    'view_mode': 'list',
                     'name': 'Unposted Entries',
                     'res_model': 'account.move',
                     'type': 'ir.actions.act_window',

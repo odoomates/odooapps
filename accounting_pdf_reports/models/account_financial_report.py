@@ -39,31 +39,9 @@ class AccountFinancialReport(models.Model):
         'report_line_id', 'account_id', 'Accounts'
     )
     account_report_id = fields.Many2one('account.financial.report', 'Report Value')
-    account_type_ids = fields.Selection(
-        selection=[
-            ("asset_receivable", "Receivable"),
-            ("asset_cash", "Bank and Cash"),
-            ("asset_current", "Current Assets"),
-            ("asset_non_current", "Non-current Assets"),
-            ("asset_prepayments", "Prepayments"),
-            ("asset_fixed", "Fixed Assets"),
-            ("liability_payable", "Payable"),
-            ("liability_credit_card", "Credit Card"),
-            ("liability_current", "Current Liabilities"),
-            ("liability_non_current", "Non-current Liabilities"),
-            ("equity", "Equity"),
-            ("equity_unaffected", "Current Year Earnings"),
-            ("income", "Income"),
-            ("income_other", "Other Income"),
-            ("expense", "Expenses"),
-            ("expense_depreciation", "Depreciation"),
-            ("expense_direct_cost", "Cost of Revenue"),
-            ("off_balance", "Off-Balance Sheet"),
-        ],
-        string="Account Type",
-        help="Account Type is used for information purpose, "
-             "to generate country-specific legal reports, and set the rules to close a "
-             "fiscal year and generate opening entries."
+    account_type_ids = fields.Many2many(
+        'account.account.type', 'account_account_financial_report_type',
+        'report_id', 'account_type_id', 'Account Types'
     )
     report_domain = fields.Char(string="Report Domain")
     sign = fields.Selection(

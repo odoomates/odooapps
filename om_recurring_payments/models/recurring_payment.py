@@ -130,7 +130,7 @@ class RecurringPaymentLine(models.Model):
             'journal_id': self.journal_id.id,
             'company_id': self.company_id.id,
             'date': self.date,
-            'ref': self.recurring_payment_id.name,
+            'memo': self.recurring_payment_id.name,
             'partner_id': self.partner_id.id,
         }
         payment = self.env['account.payment'].create(vals)

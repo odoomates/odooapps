@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from collections import defaultdict
 from odoo.exceptions import ValidationError
@@ -59,7 +57,6 @@ class ReportFollowup(models.AbstractModel):
                 'date': format_date(self.env, line.date),
                 'date_maturity': format_date(self.env, line.date_maturity),
                 'balance': balance,
-                'blocked': line.blocked,
                 'currency_id': currency,
             }
             total = total + line_data['balance']
@@ -87,7 +84,6 @@ class ReportFollowup(models.AbstractModel):
             [('partner_id', '=', stat_line.partner_id.id),
              ('full_reconcile_id', '=', False),
              ('company_id', '=', stat_line.company_id.id),
-             ('blocked', '=', False),
              ('debit', '!=', False),
              ('account_id.account_type', '=', 'asset_receivable'),
              ('followup_line_id', '!=', False)])

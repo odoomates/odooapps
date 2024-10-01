@@ -16,7 +16,7 @@
     'live_test_url': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'data': [
         'security/ir.model.access.csv',
-        # 'data/account_account_type.xml',
+        'data/account_account_type.xml',
         'views/menu.xml',
         'views/ledger_menu.xml',
         'views/financial_report.xml',
@@ -43,5 +43,3 @@
     'pre_init_hook': '_pre_init_clean_m2m_models',
     'images': ['static/description/banner.gif'],
 }
-
-# todo nys settings page

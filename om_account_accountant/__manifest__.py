@@ -11,7 +11,6 @@
                    'Account Lock Date, Accounting Dashboard',
     'live_test_url': 'https://www.walnutit.com',
     'sequence': '1',
-    'website': 'https://www.walnutit.com',
     'author': 'Odoo Mates, Walnut Software Solutions, Odoo SA',
     'maintainer': 'Odoo Mates, Walnut Software Solutions',
     'license': 'LGPL-3',

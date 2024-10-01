@@ -62,16 +62,14 @@
                                    context="{'res_partner_search_mode': 'supplier'}"/>
                             <field name="invoice_id" string="Invoice" options="{'no_create': True}"/>
                             <field name="analytic_distribution" widget="analytic_distribution"/>
-<!--                            <field name="analytic_tag_ids"-->
-<!--                                   groups="analytic.group_analytic_accounting" widget="many2many_tags"/>-->
                         </group>
                     </group>
                     <notebook>
                         <page string="Depreciation Board">
-                            <field name="depreciation_line_ids" mode="tree"
+                            <field name="depreciation_line_ids" mode="list"
                                    readonly="state not in ('draft', 'open')"
                                    options="{'reload_whole_on_button': true}">
-                                <tree string="Depreciation Lines" decoration-info="(move_check == False)"
+                                <list string="Depreciation Lines" decoration-info="(move_check == False)"
                                       create="false">
                                     <field name="depreciation_date"/>
                                     <field name="amount" widget="monetary" string="Depreciation"/>
@@ -81,7 +79,7 @@
                                            invisible="parent_state != 'open'"/>
                                     <field name="move_posted_check" invisible="1"/>
                                     <field name="parent_state" invisible="1"/>
-                                </tree>
+                                </list>
                                 <form string="Depreciation Lines" create="false">
                                     <group>
                                         <group>
@@ -132,10 +130,7 @@
                         </page>
                     </notebook>
                 </sheet>
-                <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers"/>
-                    <field name="message_ids" widget="mail_thread"/>
-                </div>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -187,10 +182,10 @@
     </record>
 
     <record id="view_account_asset_asset_purchase_tree" model="ir.ui.view">
-        <field name="name">account.asset.asset.purchase.tree</field>
+        <field name="name">account.asset.asset.purchase.list</field>
         <field name="model">account.asset.asset</field>
         <field name="arch" type="xml">
-            <tree string="Assets" decoration-info="(state == 'draft')" decoration-muted="(state == 'close')">
+            <list string="Assets" decoration-info="(state == 'draft')" decoration-muted="(state == 'close')">
                 <field name="name"/>
                 <field name="category_id" string="Asset Category"/>
                 <field name="date"/>
@@ -200,7 +195,7 @@
                 <field name="currency_id" groups="base.group_multi_currency"/>
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -228,7 +223,7 @@
     <record model="ir.actions.act_window" id="action_account_asset_asset_form">
         <field name="name">Assets</field>
         <field name="res_model">account.asset.asset</field>
-        <field name="view_mode">tree,kanban,form</field>
+        <field name="view_mode">list,kanban,form</field>
         <field name="view_id" ref="view_account_asset_asset_purchase_tree"/>
         <field name="domain">[('category_id.type', '=', 'purchase')]</field>
     </record>

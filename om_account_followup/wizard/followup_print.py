@@ -1,8 +1,7 @@
-# -*- coding: utf-8 -*-
-
 import datetime
 import time
 from odoo import api, fields, models, _
+from markupsafe import Markup
 
 
 class FollowupPrint(models.TransientModel):
@@ -96,7 +95,7 @@ class FollowupPrint(models.TransientModel):
         result = {}
         action = partner_obj.do_partner_print(partner_ids_to_print, data)
         result['needprinting'] = needprinting
-        result['resulttext'] = resulttext
+        result['resulttext'] = Markup(resulttext)
         result['action'] = action or {}
         return result
 
@@ -151,7 +150,7 @@ class FollowupPrint(models.TransientModel):
             'name': _('Send Letters and Emails: Actions Summary'),
             'view_type': 'form',
             'context': context,
-            'view_mode': 'tree,form',
+            'view_mode': 'list,form',
             'res_model': 'followup.sending.results',
             'views': [(resource_id.id, 'form')],
             'type': 'ir.actions.act_window',
@@ -179,7 +178,6 @@ class FollowupPrint(models.TransientModel):
                 AND (l.partner_id is NOT NULL)
                 AND (l.debit > 0)
                 AND (l.company_id = %s)
-                AND (l.blocked = False)
                 ORDER BY l.date''' % (company_id))
         move_lines = self._cr.fetchall()
         old = None

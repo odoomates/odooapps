@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -103,7 +101,7 @@ class ReportCashBook(models.AbstractModel):
         # Calculate the debit, credit and balance for Accounts
         account_res = []
         for account in accounts:
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            currency = account.currency_id and account.currency_id or self.env.company.currency_id
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             res['code'] = account.code
             res['name'] = account.name

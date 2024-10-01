@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import api, fields, models
 from odoo import tools
 
@@ -20,7 +18,6 @@ class AccountFollowupStat(models.Model):
     debit = fields.Float('Debit', readonly=True)
     credit = fields.Float('Credit', readonly=True)
     company_id = fields.Many2one('res.company', 'Company', readonly=True)
-    blocked = fields.Boolean('Blocked', readonly=True)
 
     @api.model
     def init(self):
@@ -37,8 +34,7 @@ class AccountFollowupStat(models.Model):
                     sum(l.debit) AS debit,
                     sum(l.credit) AS credit,
                     sum(l.debit - l.credit) AS balance,
-                    l.company_id AS company_id,
-                    l.blocked as blocked
+                    l.company_id AS company_id
                 FROM
                     account_move_line l
                     LEFT JOIN account_account a ON (l.account_id = a.id)
@@ -47,5 +43,5 @@ class AccountFollowupStat(models.Model):
                     l.full_reconcile_id is NULL AND
                     l.partner_id IS NOT NULL
                 GROUP BY
-                    l.id, l.partner_id, l.company_id, l.blocked
+                    l.id, l.partner_id, l.company_id
             )""")

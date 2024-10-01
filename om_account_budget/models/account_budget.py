@@ -1,20 +1,18 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 
-# ---------------------------------------------------------
-# Budgets
-# ---------------------------------------------------------
+
 class AccountBudgetPost(models.Model):
     _name = "account.budget.post"
     _order = "name"
     _description = "Budgetary Position"
 
     name = fields.Char('Name', required=True)
-    account_ids = fields.Many2many('account.account', 'account_budget_rel', 'budget_id', 'account_id', 'Accounts',
-        domain=[('deprecated', '=', False)])
+    account_ids = fields.Many2many(
+        'account.account', 'account_budget_rel', 'budget_id',
+        'account_id', 'Accounts',
+        domain=[('deprecated', '=', False)]
+    )
     company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
 
     def _check_account_ids(self, vals):

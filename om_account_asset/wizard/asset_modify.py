@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
@@ -10,10 +7,14 @@ class AssetModify(models.TransientModel):
     _description = 'Modify Asset'
 
     name = fields.Text(string='Reason', required=True)
-    method_number = fields.Integer(string='Number of Depreciations', required=True)
+    method_number = fields.Integer(
+        string='Number of Depreciation', required=True
+    )
     method_period = fields.Integer(string='Period Length')
     method_end = fields.Date(string='Ending date')
-    asset_method_time = fields.Char(compute='_get_asset_method_time', string='Asset Method Time', readonly=True)
+    asset_method_time = fields.Char(
+        compute='_get_asset_method_time', string='Asset Method Time', readonly=True
+    )
 
     def _get_asset_method_time(self):
         if self.env.context.get('active_id'):

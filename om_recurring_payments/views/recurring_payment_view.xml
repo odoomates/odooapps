@@ -42,7 +42,7 @@
                     <notebook>
                         <page string="Recurring Entries">
                             <field name="line_ids">
-                                <tree create="0" delete="0" edit="0" decoration-success="state == 'done'">
+                                <list create="0" delete="0" edit="0" decoration-success="state == 'done'">
                                     <field name="date"/>
                                     <field name="amount"/>
                                     <field name="journal_id" domain="[('type', 'in', ('bank', 'cash'))]"/>
@@ -51,7 +51,7 @@
                                     <button name="action_create_payment" type="object"
                                             string="Create Payment"
                                             invisible="state == 'done'"/>
-                                </tree>
+                                </list>
                                 <form string="Recurring Payment Line" edit="0">
                                     <group>
                                         <group>
@@ -77,15 +77,15 @@
     </record>
 
     <record id="view_account_recurring_payment_tree" model="ir.ui.view">
-        <field name="name">recurring.payment.tree</field>
+        <field name="name">recurring.payment.list</field>
         <field name="model">recurring.payment</field>
         <field name="arch" type="xml">
-            <tree string="Recurring Payments">
+            <list string="Recurring Payments">
                 <field name="name"/>
                 <field name="partner_id"/>
                 <field name="journal_id"/>
                 <field name="state"/>
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -93,7 +93,7 @@
         <field name="name">Recurring Payment</field>
         <field name="type">ir.actions.act_window</field>
         <field name="res_model">recurring.payment</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_account_recurring_payment_tree"/>
     </record>
 

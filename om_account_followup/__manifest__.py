@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 {
     'name': 'Customer Follow Up Management',
     'version': '1.0.1',

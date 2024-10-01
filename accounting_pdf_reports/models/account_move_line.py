@@ -7,7 +7,7 @@ class AccountMoveLine(models.Model):
 
     @api.model
     def _query_get(self, domain=None):
-        self.check_access_rights('read')
+        self.check_access('read')
 
         context = dict(self._context or {})
         domain = domain or []
@@ -70,8 +70,6 @@ class AccountMoveLine(models.Model):
             domain.append(('parent_state', '!=', 'cancel'))
 
             query = self._where_calc(domain)
-
-            # Wrap the query with 'company_id IN (...)' to avoid bypassing company access rights.
             self._apply_ir_rules(query)
 
             tables, where_clause, where_clause_params = query.get_sql()
