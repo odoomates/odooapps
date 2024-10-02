@@ -13,8 +13,8 @@
     'support': 'odoomates@gmail.com',
     'depends': ['account'],
     'data': [
+        'security/security.xml',
         'security/ir.model.access.csv',
-        'security/account_security.xml',
         'wizard/change_lock_date.xml',
         'views/fiscal_year.xml',
         'views/settings.xml',

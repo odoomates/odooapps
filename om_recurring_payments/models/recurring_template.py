@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api
 
@@ -10,14 +8,11 @@ class AccountRecurringTemplate(models.Model):
     _rec_name = 'name'
 
     name = fields.Char('Name', required=True)
-    # account_id = fields.Many2one('account.account', 'Account', required=True)
     journal_id = fields.Many2one('account.journal', 'Journal', required=True)
     recurring_period = fields.Selection(selection=[('days', 'Days'),
                                                    ('weeks', 'Weeks'),
                                                    ('months', 'Months'),
                                                    ('years', 'Years')], store=True, required=True)
-    # date_begin = fields.Date(string='Start Date', required=True)
-    # date_end = fields.Date(string='End Date', required=True)
     description = fields.Text('Description')
     state = fields.Selection(selection=[('draft', 'Draft'),
                                         ('done', 'Done')], default='draft', string='Status')
@@ -26,7 +21,6 @@ class AccountRecurringTemplate(models.Model):
                                      required=True, default='draft', string='Generate Journal As')
     recurring_interval = fields.Integer('Recurring Interval', default=1, required=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company.id)
-    # next_call = fields.Date(string="Next Call", compute="_compute_next_call")
 
     @api.depends('date_begin', 'date_end')
     def _compute_next_call(self):
