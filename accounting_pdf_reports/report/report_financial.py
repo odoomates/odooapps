@@ -123,7 +123,7 @@ class ReportFinancial(models.AbstractModel):
                     flag = False
                     account = self.env['account.account'].browse(account_id)
                     vals = {
-                        'name': account.code + ' ' + account.name,
+                        'name': account.code or '' + ' ' + account.name,
                         'balance': value['balance'] * float(report.sign) or 0.0,
                         'type': 'account',
                         'level': report.display_detail == 'detail_with_hierarchy' and 4,
