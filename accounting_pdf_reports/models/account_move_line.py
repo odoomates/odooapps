@@ -71,6 +71,7 @@ class AccountMoveLine(models.Model):
 
             query = self._where_calc(domain)
             self._apply_ir_rules(query)
-
-            tables, where_clause, where_clause_params = query.get_sql()
+            from_string, from_params = query.from_clause
+            where_string, where_params = query.where_clause
+            tables, where_clause, where_clause_params = from_string, where_string, from_params + where_params
         return tables, where_clause, where_clause_params
