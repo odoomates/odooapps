@@ -12,10 +12,6 @@ class AccountBankBookReport(models.TransientModel):
         for journal in journals:
             if journal.default_account_id.id:
                 accounts.append(journal.default_account_id.id)
-            if journal.company_id.account_journal_payment_credit_account_id.id:
-                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
-            if journal.company_id.account_journal_payment_debit_account_id.id:
-                accounts.append(journal.company_id.account_journal_payment_debit_account_id.id)
             for acc_out in journal.outbound_payment_method_line_ids:
                 if acc_out.payment_account_id:
                     accounts.append(acc_out.payment_account_id.id)
@@ -46,17 +42,6 @@ class AccountBankBookReport(models.TransientModel):
                                      help='If you selected date, this field allow you to add a row '
                                           'to display the amount of debit/credit/balance that precedes the '
                                           'filter you\'ve set.')
-
-    @api.onchange('account_ids')
-    def onchange_account_ids(self):
-        if self.account_ids:
-            journals = self.env['account.journal'].search(
-                [('type', '=', 'bank')])
-            accounts = []
-            for journal in journals:
-                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
-            domain = {'account_ids': [('id', 'in', accounts)]}
-            return {'domain': domain}
 
     def _build_comparison_context(self, data):
         result = {}
