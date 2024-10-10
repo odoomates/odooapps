@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 18 Accounting',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '
@@ -37,6 +37,6 @@
         'views/account_journal.xml',
     ],
     'application': True,
-    'images': ['static/description/banner.gif'],
+    'images': ['static/description/banner.png'],
 }
 
