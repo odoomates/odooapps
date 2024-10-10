@@ -175,7 +175,10 @@ class CrossoveredBudgetLines(models.Model):
 
                 where_query = analytic_line_obj._where_calc(domain)
                 analytic_line_obj._apply_ir_rules(where_query, 'read')
-                from_clause, where_clause, where_clause_params = where_query.get_sql()
+                from_string, from_params = where_query.from_clause
+                where_string, where_params = where_query.where_clause
+                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
+
                 select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
 
             else:
@@ -187,7 +190,10 @@ class CrossoveredBudgetLines(models.Model):
                           ]
                 where_query = aml_obj._where_calc(domain)
                 aml_obj._apply_ir_rules(where_query, 'read')
-                from_clause, where_clause, where_clause_params = where_query.get_sql()
+                from_string, from_params = where_query.from_clause
+                where_string, where_params = where_query.where_clause
+                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
+
                 select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
 
             self.env.cr.execute(select, where_clause_params)
