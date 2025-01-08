@@ -75,3 +75,32 @@ class AccountMoveLine(models.Model):
             where_string, where_params = query.where_clause
             tables, where_clause, where_clause_params = from_string, where_string, from_params + where_params
         return tables, where_clause, where_clause_params
+
+    def format_analytic_distribution(self, distribution):
+        """
+        Format analytic distribution entries, handling both single and compound keys.
+
+        Args:
+            self: Odoo environment
+            distribution: Dict of analytic distribution (e.g. {'2':90} or {'2,1':90, '3':10})
+
+        Returns:
+            List of formatted strings with analytic account info and percentages
+        """
+        if not distribution:
+            return []
+        result = []
+        for key, percentage in distribution.items():
+            account_ids = [int(x) for x in key.split(',')]
+            accounts_info = []
+
+            for account_id in account_ids:
+                account = self.env['account.analytic.account'].browse(account_id)[0]
+                if account.partner_id:
+                    accounts_info.append(f"{account.name} - {account.partner_id.name}")
+                else:
+                    accounts_info.append(account.name)
+
+            formatted_entry = f"{', '.join(accounts_info)}: {percentage}%"
+            result.append(formatted_entry)
+        return result

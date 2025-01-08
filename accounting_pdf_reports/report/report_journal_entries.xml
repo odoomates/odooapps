@@ -45,7 +45,7 @@
                                         <th>Date</th>
                                         <th>Partner</th>
                                         <th>Label</th>
-                                        <th>Analytic Account</th>
+                                        <th>Analytic Distribution</th>
                                         <th>Debit</th>
                                         <th>Credit</th>
                                     </tr>
@@ -68,7 +68,10 @@
                                                 <span t-field="line.name"/>
                                             </td>
                                             <td>
-                                                <span t-field="line.analytic_account_id.display_name"/>
+                                                <div t-foreach="line.format_analytic_distribution(line.analytic_distribution)" t-as="entry">
+                                                    <t t-esc="entry"/>
+                                                    <br/>
+                                                </div>
                                             </td>
                                             <td class="text-end">
                                                 <span t-field="line.debit"
