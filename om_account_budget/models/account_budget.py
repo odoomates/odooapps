@@ -164,9 +164,14 @@ class CrossoveredBudgetLines(models.Model):
             acc_ids = line.general_budget_id.account_ids.ids
             date_to = line.date_to
             date_from = line.date_from
-            if line.analytic_account_id.id:
+            if line.analytic_account_id.plan_id:
+                analytic_plan = line.analytic_account_id.plan_id
+                if analytic_plan.id == 1:
+                    acount_field_name = 'account_id'
+                else:
+                    acount_field_name = f'x_plan{analytic_plan.id}_id'
                 analytic_line_obj = self.env['account.analytic.line']
-                domain = [('account_id', '=', line.analytic_account_id.id),
+                domain = [(acount_field_name, '=', line.analytic_account_id.id),
                           ('date', '>=', date_from),
                           ('date', '<=', date_to),
                           ]
@@ -235,12 +240,17 @@ class CrossoveredBudgetLines(models.Model):
             raise ValidationError(
                 _("You have to enter at least a budgetary position or analytic account on a budget line."))
 
-    
+
     def action_open_budget_entries(self):
-        if self.analytic_account_id:
+        if self.analytic_account_id.plan_id:
+            analytic_plan = self.analytic_account_id.plan_id
+            if analytic_plan.id == 1:
+                acount_field_name = 'account_id'
+            else:
+                acount_field_name = f'x_plan{analytic_plan.id}_id'
             # if there is an analytic account, then the analytic items are loaded
             action = self.env['ir.actions.act_window']._for_xml_id('analytic.account_analytic_line_action_entries')
-            action['domain'] = [('account_id', '=', self.analytic_account_id.id),
+            action['domain'] = [(acount_field_name, '=', self.analytic_account_id.id),
                                 ('date', '>=', self.date_from),
                                 ('date', '<=', self.date_to)
                                 ]
