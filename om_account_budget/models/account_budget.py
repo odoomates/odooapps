@@ -166,12 +166,9 @@ class CrossoveredBudgetLines(models.Model):
             date_from = line.date_from
             if line.analytic_account_id.plan_id:
                 analytic_plan = line.analytic_account_id.plan_id
-                if analytic_plan.id == 1:
-                    acount_field_name = 'account_id'
-                else:
-                    acount_field_name = f'x_plan{analytic_plan.id}_id'
+                analytic_col_name = analytic_plan._column_name()
                 analytic_line_obj = self.env['account.analytic.line']
-                domain = [(acount_field_name, '=', line.analytic_account_id.id),
+                domain = [(analytic_col_name, '=', line.analytic_account_id.id),
                           ('date', '>=', date_from),
                           ('date', '<=', date_to),
                           ]
@@ -244,13 +241,10 @@ class CrossoveredBudgetLines(models.Model):
     def action_open_budget_entries(self):
         if self.analytic_account_id.plan_id:
             analytic_plan = self.analytic_account_id.plan_id
-            if analytic_plan.id == 1:
-                acount_field_name = 'account_id'
-            else:
-                acount_field_name = f'x_plan{analytic_plan.id}_id'
+            analytic_col_name = analytic_plan._column_name()
             # if there is an analytic account, then the analytic items are loaded
             action = self.env['ir.actions.act_window']._for_xml_id('analytic.account_analytic_line_action_entries')
-            action['domain'] = [(acount_field_name, '=', self.analytic_account_id.id),
+            action['domain'] = [(analytic_col_name, '=', self.analytic_account_id.id),
                                 ('date', '>=', self.date_from),
                                 ('date', '<=', self.date_to)
                                 ]
