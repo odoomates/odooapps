@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 HR Payroll Accounting',
+    'name': 'Odoo 19 HR Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
     'author': 'Odoo Mates, Odoo SA',
     'version': '19.0.0.0',

@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 18 HR Payroll',
+    'name': 'Odoo 19 HR Payroll',
     'category': 'Generic Modules/Human Resources',
     'version': '19.0.0.0',
     'sequence': 1,
