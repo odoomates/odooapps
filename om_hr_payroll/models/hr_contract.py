@@ -11,6 +11,7 @@ class HrVersion(models.Model):
     _inherit = 'hr.version'
     _description = 'Employee Contract'
 
+
     struct_id = fields.Many2one('hr.payroll.structure', string='Salary Structure')
     schedule_pay = fields.Selection([
         ('monthly', 'Monthly'),

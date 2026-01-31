@@ -28,7 +28,7 @@
 
             </xpath>
             <xpath expr="//div[@name='title']" position="after">
-                <div class="o_row" name="contract_dates" invisible="not employee_id">
+                <div class="o_row" name="contract_dates" invisible="not employee_id" groups="hr.group_hr_manager">
                     <i class="fa fa-fw me-2 fa-briefcase text-primary" title="Contract"/>
                     <field name="contract_date_start" string="Start Date" placeholder="Not Employed"
                            class="o_hr_narrow_field me-3"/>
@@ -36,17 +36,12 @@
                     <field name="contract_date_end" string="End Date" placeholder="Indefinite"
                            class="o_hr_narrow_field ms-3" invisible="not contract_date_start"/>
                 </div>
-<!--                <div class="oe_title pe-0 w-100 mw-100" name="title" invisible="not employee_id">-->
-<!--                    <i class="fa fa-fw me-2 fa-briefcase text-primary" title="Contract"/>-->
-<!--                    <field name="contract_date_start" readonly="0"/>-->
-<!--                    <span>-</span>-->
-<!--                    <field name="contract_date_end" readonly="0"/>-->
-<!--                </div>-->
             </xpath>
             <xpath expr="//field[@name='job_id']" position="after">
                 <field name="struct_id" required="1"/>
                 <field name="type_id" required="1"/>
             </xpath>
+
             <xpath expr="//field[@name='job_id']" position="before">
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="currency_id" invisible="1"/>
