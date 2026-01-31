@@ -1,4 +1,5 @@
 from functools import reduce
+from markupsafe import Markup, escape
 from lxml import etree
 from odoo import api, fields, models, _
 from datetime import datetime
@@ -176,7 +177,7 @@ class ResPartner(models.Model):
                     strbegin = "<TD>"
                     strend = "</TD>"
                     date = aml['date_maturity'] or aml['date']
-                    date = datetime.strptime(date, "%d/%m/%Y").date()
+                    # date = datetime.strptime(date, "%d/%m/%Y").date()
                     if date <= current_date and aml['balance'] > 0:
                         strbegin = "<TD><B>"
                         strend = "</B></TD>"
@@ -205,14 +206,16 @@ class ResPartner(models.Model):
                     # Find partner_id of user put as responsible
                     responsible_partner_id = self.env["res.users"].browse(
                         vals['payment_responsible_id']).partner_id.id
+                    body_html = Markup(_(
+                        "You became responsible to do the next action for the payment follow-up of "
+                        "<b><a href='#id={id}&view_type=form&model=res.partner'>{name}</a></b>"
+                    )).format(
+                        id=part.id,
+                        name=escape(part.name)
+                    )
                     part.message_post(
-                        body=_("You became responsible to do the next action "
-                               "for the payment follow-up of") +
-                        " <b><a href='#id=" + str(part.id) +
-                        "&view_type=form&model=res.partner'> " + part.name +
-                        " </a></b>",
-                        type='comment',
-                        context=self.env.context,
+                        body=body_html,
+                        message_type='comment',
                         partner_ids=[responsible_partner_id])
         return super(ResPartner, self).write(vals)
 

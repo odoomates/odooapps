@@ -54,8 +54,10 @@ class ReportFollowup(models.AbstractModel):
             line_data = {
                 'name': line.move_id.name,
                 'ref': line.ref,
-                'date': format_date(self.env, line.date),
-                'date_maturity': format_date(self.env, line.date_maturity),
+                # 'date': format_date(self.env, line.date),
+                # 'date_maturity': format_date(self.env, line.date_maturity),
+                'date': line.date,
+                'date_maturity': line.date_maturity,
                 'balance': balance,
                 'currency_id': currency,
             }
