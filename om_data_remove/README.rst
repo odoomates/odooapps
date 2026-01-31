@@ -15,7 +15,7 @@ list by clicking on the "Update Apps List" link. Now install the module by
 clicking on the install button.
 
 Upgrade
-=======
+============
 
 To upgrade this module, you need to:
 
