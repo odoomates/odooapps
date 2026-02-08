@@ -27,8 +27,13 @@ class HrPayrollStructure(models.Model):
 
     @api.constrains('parent_id')
     def _check_parent_id(self):
-        if not self._check_recursion():
+        if self._has_cycle():
             raise ValidationError(_('You cannot create a recursive salary structure.'))
+
+    # @api.constrains('parent_id')
+    # def _check_parent_id(self):
+    #     if not self._check_recursion():
+    #         raise ValidationError(_('You cannot create a recursive salary structure.'))
 
     def copy(self, default=None):
         self.ensure_one()
