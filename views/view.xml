@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Remove Data Form View -->
+    <record id="view_remove_data" model="ir.ui.view">
+        <field name="name">Remove Data</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="OdooApp Customize Settings" class="oe_form_configuration" groups="base.group_system">
+                <div class="mt16 o_settings_container" name="data-clean">
+                    <span>
+                        <h2 class="text-danger">Data Cleaning (Be careful!)</h2>
+                        <h2 class="text-danger">
+                            Data is deleted directly from the database using queries. Once done, it is irreversible!
+                        </h2>
+                    </span>
+
+                    <!-- Remove All -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Remove All</span>
+                        <button string="Delete All Transactions Except Master Data"
+                                type="object"
+                                name="action_remove_all"
+                                confirm="⚠️ This action will permanently delete all transactions except master data. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Sale -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Sale</span>
+                        <button string="Delete All Sales Order"
+                                type="object"
+                                name="action_remove_sales"
+                                confirm="⚠️ This action will permanently delete all sales orders. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- POS -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">POS</span>
+                        <button string="Delete All POS Order"
+                                type="object"
+                                name="action_remove_pos"
+                                confirm="⚠️ This action will permanently delete all POS orders. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Purchase -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Purchase</span>
+                        <button string="Delete All Purchase Order and Requisition"
+                                type="object"
+                                name="action_remove_purchase"
+                                confirm="⚠️ This action will permanently delete all purchase orders and requisitions. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Expense -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Expense</span>
+                        <button string="Delete All Expense and Sheet"
+                                type="object"
+                                name="action_remove_expense"
+                                confirm="⚠️ This action will permanently delete all expense sheets and records. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- MRP -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">MRP</span>
+                        <button string="Delete All Manufacturing Orders"
+                                type="object"
+                                name="action_remove_mrp"
+                                confirm="⚠️ This action will permanently delete all manufacturing orders. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                        |
+                        <button string="Delete All BOMs"
+                                type="object"
+                                name="action_remove_mrp_bom"
+                                confirm="⚠️ This action will permanently delete all BOMs. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Inventory -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Inventory</span>
+                        <button string="Delete All Move/Picking/Package/Lot"
+                                type="object"
+                                name="action_remove_inventory"
+                                confirm="⚠️ This action will permanently delete all inventory moves, pickings, packages, and lots. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Accounting -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">
+                            Accounting
+                            <span title="Values set here are company-specific." groups="base.group_multi_company"/>
+                        </span>
+                        <button string="Delete All Voucher/Invoice/Bill"
+                                type="object"
+                                name="action_remove_account"
+                                confirm="⚠️ This action will permanently delete all accounting transactions. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                        |
+                        <button string="Clean and Reset Account Chart"
+                                type="object"
+                                name="action_remove_account_chart"
+                                confirm="⚠️ This action will reset your account chart. Are you sure?"
+                                class="btn btn-warning oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Project -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Project</span>
+                        <button string="Delete All Project/Task/Forecast"
+                                type="object"
+                                name="action_remove_project"
+                                confirm="⚠️ This action will permanently delete all project data. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Quality -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Quality</span>
+                        <button string="Delete All Quality"
+                                type="object"
+                                name="action_remove_quality"
+                                confirm="⚠️ This action will permanently delete all quality checks and alerts. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                        |
+                        <button string="Delete All Quality Settings"
+                                type="object"
+                                name="action_remove_quality_setting"
+                                confirm="⚠️ This action will permanently delete all quality settings. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Website and Blog -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Website & Blog</span>
+                        <button string="Delete All Website/Blog"
+                                type="object"
+                                name="action_remove_website"
+                                confirm="⚠️ This action will permanently delete all website and blog content. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                    <!-- Base Models -->
+                    <div class="col-12 col-lg-12 mb4">
+                        <span class="col-3 col-lg-2 text-start">Base Models</span>
+                        <button string="Delete All Product"
+                                type="object"
+                                name="action_remove_product"
+                                confirm="⚠️ This action will permanently delete all products. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                        |
+                        <button string="Delete All Product Attributes"
+                                type="object"
+                                name="action_remove_product_attribute"
+                                confirm="⚠️ This action will permanently delete all product attributes. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                        |
+                        <button string="Delete All Messages"
+                                type="object"
+                                name="action_remove_message"
+                                confirm="⚠️ This action will permanently delete all messages. Are you sure?"
+                                class="btn btn-danger oe_highlight"
+                                groups="base.group_system"/>
+                        |
+                        <button string="Reset Category and Location Complete Name"
+                                type="object"
+                                name="reset_cat_loc_name"
+                                class="btn btn-warning oe_highlight"
+                                groups="base.group_system"/>
+                    </div>
+
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- Action -->
+    <record id="action_remove_data" model="ir.actions.act_window">
+        <field name="name">Remove Data</field>
+        <field name="type">ir.actions.act_window</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_remove_data"/>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+    </record>
+
+    <!-- Menu -->
+    <menuitem id="menu_remove_data"
+              name="Remove Data"
+              action="action_remove_data"
+              parent="base.menu_administration"
+              sequence="1"
+              groups="base.group_system"/>
+
+</odoo>
