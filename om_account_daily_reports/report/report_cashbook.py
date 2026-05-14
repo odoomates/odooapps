@@ -25,6 +25,8 @@ class ReportCashBook(models.AbstractModel):
                        'move_lines': list of move line
                }
                """
+        if not accounts:
+            return []
         cr = self.env.cr
         MoveLine = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
