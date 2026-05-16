@@ -7,40 +7,6 @@ _logger = logging.getLogger(__name__)
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
-    # def _remove_data(self, o, s=[]):
-    #     if not self.env.user.has_group('base.group_system'):
-    #         return False
-    #     for line in o:
-    #         try:
-    #             if not self.env['ir.model']._get(line):
-    #                 continue
-    #         except Exception as e:
-    #             _logger.warning('remove data error get ir.model: %s,%s', line, e)
-    #             continue
-    #         obj_name = line
-    #         obj = self.pool.get(obj_name)
-    #         if not obj:
-    #             t_name = obj_name.replace('.', '_')
-    #         else:
-    #             t_name = obj._table
-    #         sql = "delete from %s" % t_name
-    #         try:
-    #             self.env.cr.execute(sql)
-    #             self.env.cr.commit()
-    #         except Exception as e:
-    #             _logger.warning('remove data error: %s,%s', line, e)
-    #     for line in s:
-    #         domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
-    #         try:
-    #             seqs = self.env['ir.sequence'].sudo().search(domain)
-    #             if seqs.exists():
-    #                 seqs.write({
-    #                     'number_next': 1,
-    #                 })
-    #         except Exception as e:
-    #             _logger.warning('reset sequence data error: %s,%s', line, e)
-    #     return True
-
     def _remove_data(self, o, s=[]):
         if not self.env.user.has_group('base.group_system'):
             return False
@@ -391,18 +357,6 @@ class ResConfigSettings(models.TransientModel):
             'account.account',
         ]
         return self._remove_data(to_removes, [])
-
-    # def _remove_project(self):
-    #     if not self.env.user.has_group('base.group_system'):
-    #         return False
-    #     to_removes = [
-    #         'account.analytic.line',
-    #         'project.task',
-    #         'project.forecast',
-    #         'project.project',
-    #     ]
-    #     seqs = []
-    #     return self._remove_data(to_removes, seqs)
 
     def _remove_project(self):
         if not self.env.user.has_group('base.group_system'):
