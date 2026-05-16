@@ -460,7 +460,7 @@ class AccountAssetAsset(models.Model):
     @api.depends('depreciation_line_ids.move_id')
     def _entry_count(self):
         for asset in self:
-            res = self.env['account.asset.depreciation.line'].search_count([('asset_id', '=', asset.id), ('move_id', '!=', False)])
+            res = self.env['account.asset.depreciation.line'].search_count([('asset_id', 'in', asset.ids), ('move_id', '!=', False)])
             asset.entry_count = res or 0
 
     @api.constrains('prorata', 'method_time')
