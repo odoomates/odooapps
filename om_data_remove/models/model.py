@@ -7,6 +7,40 @@ _logger = logging.getLogger(__name__)
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
+    # def _remove_data(self, o, s=[]):
+    #     if not self.env.user.has_group('base.group_system'):
+    #         return False
+    #     for line in o:
+    #         try:
+    #             if not self.env['ir.model']._get(line):
+    #                 continue
+    #         except Exception as e:
+    #             _logger.warning('remove data error get ir.model: %s,%s', line, e)
+    #             continue
+    #         obj_name = line
+    #         obj = self.pool.get(obj_name)
+    #         if not obj:
+    #             t_name = obj_name.replace('.', '_')
+    #         else:
+    #             t_name = obj._table
+    #         sql = "delete from %s" % t_name
+    #         try:
+    #             self.env.cr.execute(sql)
+    #             self.env.cr.commit()
+    #         except Exception as e:
+    #             _logger.warning('remove data error: %s,%s', line, e)
+    #     for line in s:
+    #         domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
+    #         try:
+    #             seqs = self.env['ir.sequence'].sudo().search(domain)
+    #             if seqs.exists():
+    #                 seqs.write({
+    #                     'number_next': 1,
+    #                 })
+    #         except Exception as e:
+    #             _logger.warning('reset sequence data error: %s,%s', line, e)
+    #     return True
+
     def _remove_data(self, o, s=[]):
         if not self.env.user.has_group('base.group_system'):
             return False
@@ -16,6 +50,7 @@ class ResConfigSettings(models.TransientModel):
                     continue
             except Exception as e:
                 _logger.warning('remove data error get ir.model: %s,%s', line, e)
+                self.env.cr.rollback()  # ← reset aborted transaction
                 continue
             obj_name = line
             obj = self.pool.get(obj_name)
@@ -25,9 +60,10 @@ class ResConfigSettings(models.TransientModel):
                 t_name = obj._table
             sql = "delete from %s" % t_name
             try:
-                self._cr.execute(sql)
-                self._cr.commit()
+                self.env.cr.execute(sql)
+                self.env.cr.commit()
             except Exception as e:
+                self.env.cr.rollback()  # ← reset aborted transaction
                 _logger.warning('remove data error: %s,%s', line, e)
         for line in s:
             domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
@@ -38,6 +74,7 @@ class ResConfigSettings(models.TransientModel):
                         'number_next': 1,
                     })
             except Exception as e:
+                self.env.cr.rollback()  # ← reset aborted transaction
                 _logger.warning('reset sequence data error: %s,%s', line, e)
         return True
 
@@ -89,9 +126,10 @@ class ResConfigSettings(models.TransientModel):
         ]
         res = self._remove_data(to_removes, seqs)
         try:
-            statement = self.env['account.bank.statement'].sudo().search([])
-            for s in statement:
-                s._end_balance()
+            pass
+            # statement = self.env['account.bank.statement'].sudo().search([])
+            # for s in statement:
+            #     s._end_balance()
         except Exception as e:
             _logger.error('reset sequence data error: %s', e)
         return res
@@ -167,8 +205,6 @@ class ResConfigSettings(models.TransientModel):
             'stock.picking',
             'stock.scrap',
             'stock.picking.batch',
-            'stock.inventory.line',
-            'stock.inventory',
             'stock.valuation.layer',
             'stock.production.lot',
             'procurement.group',
@@ -222,37 +258,56 @@ class ResConfigSettings(models.TransientModel):
         if not self.env.user.has_group('base.group_system'):
             return False
         company_id = self.env.company.id
-        self = self.with_context(force_company=company_id, company_id=company_id)
-        to_removes = [
-            'res.partner.bank',
-            'account.move.line',
-            'account.invoice',
-            'account.payment',
-            'account.bank.statement',
-            'account.tax.account.tag',
-            'account.tax',
-            'account.account.account.tag',
-            'wizard_multi_charts_accounts',
-            'account.journal',
-            'account.account',
-        ]
+        company = self.env['res.company'].browse(company_id)
+        self = self.with_company(company)
+
         try:
             field1 = self.env['ir.model.fields']._get('product.template', "taxes_id").id
             field2 = self.env['ir.model.fields']._get('product.template', "supplier_taxes_id").id
-
             sql = "delete from ir_default where (field_id = %s or field_id = %s) and company_id=%d" \
                   % (field1, field2, company_id)
             sql2 = "update account_journal set bank_account_id=NULL where company_id=%d;" % company_id
-            self._cr.execute(sql)
-            self._cr.execute(sql2)
-
-            self._cr.commit()
+            self.env.cr.execute(sql)
+            self.env.cr.execute(sql2)
+            self.env.cr.commit()
         except Exception as e:
+            self.env.cr.rollback()
             _logger.error('remove data error: %s,%s', 'account_chart: set tax and account_journal', e)
-        if self.env['ir.model']._get('pos.config'):
-            self.env['pos.config'].write({
-                'journal_id': False,
-            })
+            return False
+
+        # Step 2: NULL out account_journal.default_account_id
+        try:
+            self.env.cr.execute(
+                "UPDATE account_journal SET default_account_id = NULL WHERE company_id = %d" % company_id
+            )
+            self.env.cr.commit()
+        except Exception as e:
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'account_journal default_account_id', e)
+
+        # Step 3: NULL out pos_payment_method journal and account references
+        try:
+            if self.env['ir.model']._get('pos.payment.method'):
+                self.env.cr.execute(
+                    "UPDATE pos_payment_method SET journal_id = NULL, outstanding_account_id = NULL"
+                )
+                self.env.cr.commit()
+        except Exception as e:
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'pos_payment_method journal_id', e)
+
+        # Step 4: NULL out pos_config.journal_id via SQL
+        try:
+            if self.env['ir.model']._get('pos.config'):
+                self.env.cr.execute(
+                    "UPDATE pos_config SET journal_id = NULL"
+                )
+                self.env.cr.commit()
+        except Exception as e:
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'pos_config journal_id', e)
+
+        # Step 5: Clear partner account properties
         try:
             rec = self.env['res.partner'].search([])
             for r in rec:
@@ -261,20 +316,32 @@ class ResConfigSettings(models.TransientModel):
                     'property_account_payable_id': None,
                 })
         except Exception as e:
-            _logger.error('remove data error: %s,%s', 'account_chart', e)
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'account_chart res.partner', e)
+
+        # Step 6: Clear product category account properties
         try:
+            cat_fields = {
+                'property_account_income_categ_id': None,
+                'property_account_expense_categ_id': None,
+            }
+            optional_cat_fields = [
+                'property_account_creditor_price_difference_categ',
+                'property_stock_account_input_categ_id',
+                'property_stock_account_output_categ_id',
+                'property_stock_valuation_account_id',
+            ]
+            for f in optional_cat_fields:
+                if f in self.env['product.category']._fields:
+                    cat_fields[f] = None
             rec = self.env['product.category'].search([])
             for r in rec:
-                r.write({
-                    'property_account_income_categ_id': None,
-                    'property_account_expense_categ_id': None,
-                    'property_account_creditor_price_difference_categ': None,
-                    'property_stock_account_input_categ_id': None,
-                    'property_stock_account_output_categ_id': None,
-                    'property_stock_valuation_account_id': None,
-                })
+                r.write(cat_fields)
         except Exception as e:
-            pass
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'account_chart product.category', e)
+
+        # Step 7: Clear product template account properties
         try:
             rec = self.env['product.template'].search([])
             for r in rec:
@@ -283,19 +350,59 @@ class ResConfigSettings(models.TransientModel):
                     'property_account_expense_id': None,
                 })
         except Exception as e:
-            pass
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'account_chart product.template', e)
+
+        # Step 8: Clear stock location account properties via SQL
         try:
-            rec = self.env['stock.location'].search([])
-            for r in rec:
-                r.write({
-                    'valuation_in_account_id': None,
-                    'valuation_out_account_id': None,
-                })
+            if self.env['ir.model']._get('stock.location'):
+                for f in ['valuation_in_account_id', 'valuation_out_account_id']:
+                    if f in self.env['stock.location']._fields:
+                        self.env.cr.execute(
+                            "UPDATE stock_location SET %s = NULL" % f
+                        )
+                self.env.cr.commit()
         except Exception as e:
-            pass
-        seqs = []
-        res = self._remove_data(to_removes, seqs)
-        return res
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'account_chart stock.location', e)
+
+        # Step 9: NULL out payment_account_id on account_payment_method_line
+        try:
+            if self.env['ir.model']._get('account.payment.method.line'):
+                self.env.cr.execute(
+                    "UPDATE account_payment_method_line SET payment_account_id = NULL"
+                )
+                self.env.cr.commit()
+        except Exception as e:
+            self.env.cr.rollback()
+            _logger.error('remove data error: %s,%s', 'account_payment_method_line payment_account_id', e)
+
+        # Step 10: Delete in correct FK order
+        to_removes = [
+            'account.move.line',
+            'account.payment',
+            'account.bank.statement',
+            'account.tax.account.tag',
+            'account.tax',
+            'account.account.account.tag',
+            'account.payment.method.line',
+            'account.journal',
+            'res.partner.bank',
+            'account.account',
+        ]
+        return self._remove_data(to_removes, [])
+
+    # def _remove_project(self):
+    #     if not self.env.user.has_group('base.group_system'):
+    #         return False
+    #     to_removes = [
+    #         'account.analytic.line',
+    #         'project.task',
+    #         'project.forecast',
+    #         'project.project',
+    #     ]
+    #     seqs = []
+    #     return self._remove_data(to_removes, seqs)
 
     def _remove_project(self):
         if not self.env.user.has_group('base.group_system'):
@@ -304,6 +411,7 @@ class ResConfigSettings(models.TransientModel):
             'account.analytic.line',
             'project.task',
             'project.forecast',
+            'project.update',
             'project.project',
         ]
         seqs = []
