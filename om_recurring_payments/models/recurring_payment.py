@@ -86,17 +86,15 @@ class RecurringPayment(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         for vals in vals_list:
+            if vals.get('amount', 0) <= 0:
+                raise ValidationError(_('Amount must be a non-zero positive number.'))
+
             if 'company_id' in vals:
                 vals['name'] = self.env['ir.sequence'].with_context(force_company=vals['company_id']).next_by_code(
                     'recurring.payment') or _('New')
             else:
                 vals['name'] = self.env['ir.sequence'].next_by_code('recurring.payment') or _('New')
         return super(RecurringPayment, self).create(vals)
-
-    @api.constrains('amount')
-    def _check_amount(self):
-        if self.amount <= 0:
-            raise ValidationError(_('Amount Must Be Non-Zero Positive Number'))
 
     def unlink(self):
         for rec in self:

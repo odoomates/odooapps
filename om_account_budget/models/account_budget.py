@@ -163,40 +163,93 @@ class CrossoveredBudgetLines(models.Model):
             acc_ids = line.general_budget_id.account_ids.ids
             date_to = line.date_to
             date_from = line.date_from
+
             if line.analytic_account_id.id:
-                analytic_line_obj = self.env['account.analytic.line']
-                domain = [('account_id', '=', line.analytic_account_id.id),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ]
+                domain = [
+                    ('account_id', '=', line.analytic_account_id.id),
+                    ('date', '>=', date_from),
+                    ('date', '<=', date_to),
+                ]
                 if acc_ids:
                     domain += [('general_account_id', 'in', acc_ids)]
 
-                where_query = analytic_line_obj._where_calc(domain)
-                analytic_line_obj._apply_ir_rules(where_query, 'read')
-                from_string, from_params = where_query.from_clause
-                where_string, where_params = where_query.where_clause
-                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
-
-                select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
+                self.env.cr.execute("""
+                    SELECT SUM(amount)
+                    FROM account_analytic_line aal
+                    WHERE aal.account_id = %s
+                      AND aal.date >= %s
+                      AND aal.date <= %s
+                      {acc_filter}
+                """.format(
+                    acc_filter="AND aal.general_account_id IN %s" if acc_ids else ""
+                ), (
+                    line.analytic_account_id.id,
+                    date_from,
+                    date_to,
+                    *((tuple(acc_ids),) if acc_ids else ()),
+                ))
 
             else:
-                aml_obj = self.env['account.move.line']
-                domain = [('account_id', 'in',
-                           line.general_budget_id.account_ids.ids),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to)
-                          ]
-                where_query = aml_obj._where_calc(domain)
-                aml_obj._apply_ir_rules(where_query, 'read')
-                from_string, from_params = where_query.from_clause
-                where_string, where_params = where_query.where_clause
-                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
+                account_ids = line.general_budget_id.account_ids.ids
+                if not account_ids:
+                    line.practical_amount = 0.0
+                    continue
 
-                select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
+                self.env.cr.execute("""
+                    SELECT SUM(credit) - SUM(debit)
+                    FROM account_move_line aml
+                    INNER JOIN account_move am ON am.id = aml.move_id
+                    WHERE aml.account_id IN %s
+                      AND aml.date >= %s
+                      AND aml.date <= %s
+                      AND am.state = 'posted'
+                """, (
+                    tuple(account_ids),
+                    date_from,
+                    date_to,
+                ))
 
-            self.env.cr.execute(select, where_clause_params)
             line.practical_amount = self.env.cr.fetchone()[0] or 0.0
+
+    # def _compute_practical_amount(self):
+    #     for line in self:
+    #         acc_ids = line.general_budget_id.account_ids.ids
+    #         date_to = line.date_to
+    #         date_from = line.date_from
+    #         if line.analytic_account_id.id:
+    #             analytic_line_obj = self.env['account.analytic.line']
+    #             domain = [('account_id', '=', line.analytic_account_id.id),
+    #                       ('date', '>=', date_from),
+    #                       ('date', '<=', date_to),
+    #                       ]
+    #             if acc_ids:
+    #                 domain += [('general_account_id', 'in', acc_ids)]
+    #
+    #             where_query = analytic_line_obj._where_calc(domain)
+    #             analytic_line_obj._apply_ir_rules(where_query, 'read')
+    #             from_string, from_params = where_query.from_clause
+    #             where_string, where_params = where_query.where_clause
+    #             from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
+    #
+    #             select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
+    #
+    #         else:
+    #             aml_obj = self.env['account.move.line']
+    #             domain = [('account_id', 'in',
+    #                        line.general_budget_id.account_ids.ids),
+    #                       ('date', '>=', date_from),
+    #                       ('date', '<=', date_to)
+    #                       ]
+    #             where_query = aml_obj._where_calc(domain)
+    #             aml_obj._apply_ir_rules(where_query, 'read')
+    #             from_string, from_params = where_query.from_clause
+    #             where_string, where_params = where_query.where_clause
+    #             from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
+    #
+    #             select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
+    #
+    #         self.env.cr.execute(select, where_clause_params)
+    #         line.practical_amount = self.env.cr.fetchone()[0] or 0.0
 
     def _compute_theoritical_amount(self):
         # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
