@@ -149,7 +149,6 @@ class HrPayslip(models.Model):
             'name': (_("Refund Payslip")),
             'view_mode': 'list, form',
             'view_id': False,
-            'view_type': 'form',
             'res_model': 'hr.payslip',
             'type': 'ir.actions.act_window',
             'target': 'current',

@@ -6,7 +6,7 @@ from odoo.exceptions import ValidationError
 
 class RecurringPayment(models.Model):
     _name = 'recurring.payment'
-    _description = 'Recurring Payment('
+    _description = 'Recurring Payment'
     _rec_name = 'name'
 
     name = fields.Char('Name', readonly=True)

@@ -386,7 +386,6 @@ class AccountAssetAsset(models.Model):
             view_mode = 'tree,form'
         return {
             'name': name,
-            'view_type': 'form',
             'view_mode': view_mode,
             'res_model': 'account.move',
             'type': 'ir.actions.act_window',
@@ -536,7 +535,6 @@ class AccountAssetAsset(models.Model):
                     move_ids.append(depreciation_line.move_id.id)
         return {
             'name': _('Journal Entries'),
-            'view_type': 'form',
             'view_mode': 'list,form',
             'res_model': 'account.move',
             'view_id': False,
@@ -636,8 +634,6 @@ class AccountAssetDepreciationLine(models.Model):
     def _prepare_move_grouped(self):
         asset_id = self[0].asset_id
         category_id = asset_id.category_id  # we can suppose that all lines have the same category
-        account_analytic_id = asset_id.account_analytic_id
-        # analytic_tag_ids = asset_id.analytic_tag_ids
         analytic_distribution = asset_id.analytic_distribution
 
         depreciation_date = self.env.context.get('depreciation_date') or fields.Date.context_today(self)
