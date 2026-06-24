@@ -228,7 +228,7 @@ class TestAccountBudget(TransactionCase):
         user = self.env['res.users'].create({
             'name': 'Regular User',
             'login': 'regular_user_budget',
-            'groups_id': [(6, 0, [self.env.ref('base.group_user').id])]
+            'group_ids': [(6, 0, [self.env.ref('base.group_user').id])]
         })
         
         # User without accounting rights should not be able to create a budget
@@ -240,7 +240,7 @@ class TestAccountBudget(TransactionCase):
             })
 
         # Add accounting rights
-        user.groups_id = [(4, self.env.ref('account.group_account_user').id)]
+        user.write({'group_ids': [(4, self.env.ref('account.group_account_user').id)]})
         
         # Should now be able to create a budget
         budget = self.budget_model.with_user(user).create({
@@ -268,7 +268,7 @@ class TestAccountBudget(TransactionCase):
             'login': 'user_b_budget',
             'company_id': company_b.id,
             'company_ids': [(6, 0, [company_b.id])],
-            'groups_id': [(6, 0, [
+            'group_ids': [(6, 0, [
                 self.env.ref('base.group_user').id,
                 self.env.ref('account.group_account_user').id
             ])]
