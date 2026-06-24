@@ -66,3 +66,56 @@ class TestAccountBudget(TransactionCase):
         budget.action_budget_draft()
         self.assertEqual(budget.state, 'draft')
 
+    def test_03_budget_lines_constraints(self):
+        """Test constraints on budget lines (missing targets, dates outside budget)."""
+        budget = self.budget_model.create({
+            'name': 'Test Budget 2',
+            'date_from': '2026-01-01',
+            'date_to': '2026-12-31',
+        })
+        budget_line_model = self.env['crossovered.budget.lines']
+
+        # Scenario 3.1: Line without budget position and analytic account should fail
+        with self.assertRaises(ValidationError):
+            budget_line_model.create({
+                'crossovered_budget_id': budget.id,
+                'date_from': '2026-01-01',
+                'date_to': '2026-12-31',
+                'planned_amount': 1000,
+            })
+
+        # Create valid budget post
+        budget_post = self.budget_post_model.create({
+            'name': 'Valid Post for Lines',
+            'account_ids': [(4, self.test_account.id)]
+        })
+
+        # Scenario 3.2: Dates outside budget period
+        with self.assertRaises(ValidationError):
+            budget_line_model.create({
+                'crossovered_budget_id': budget.id,
+                'general_budget_id': budget_post.id,
+                'date_from': '2025-12-01',  # Before budget start
+                'date_to': '2026-12-31',
+                'planned_amount': 1000,
+            })
+
+        with self.assertRaises(ValidationError):
+            budget_line_model.create({
+                'crossovered_budget_id': budget.id,
+                'general_budget_id': budget_post.id,
+                'date_from': '2026-01-01',
+                'date_to': '2027-01-31',  # After budget end
+                'planned_amount': 1000,
+            })
+
+        # Scenario 3.3: Valid dates and targets should succeed
+        line = budget_line_model.create({
+            'crossovered_budget_id': budget.id,
+            'general_budget_id': budget_post.id,
+            'date_from': '2026-01-01',
+            'date_to': '2026-12-31',
+            'planned_amount': 1000,
+        })
+        self.assertTrue(line.id)
+
