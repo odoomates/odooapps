@@ -172,13 +172,8 @@ class CrossoveredBudgetLines(models.Model):
                 if acc_ids:
                     domain += [('general_account_id', 'in', acc_ids)]
 
-                where_query = analytic_line_obj._where_calc(domain)
-                analytic_line_obj._apply_ir_rules(where_query, 'read')
-                from_string, from_params = where_query.from_clause
-                where_string, where_params = where_query.where_clause
-                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
-
-                select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
+                result = analytic_line_obj._read_group(domain, aggregates=['amount:sum'])
+                line.practical_amount = result[0][0] if result and result[0] else 0.0
 
             else:
                 aml_obj = self.env['account.move.line']
@@ -187,16 +182,13 @@ class CrossoveredBudgetLines(models.Model):
                           ('date', '>=', date_from),
                           ('date', '<=', date_to)
                           ]
-                where_query = aml_obj._where_calc(domain)
-                aml_obj._apply_ir_rules(where_query, 'read')
-                from_string, from_params = where_query.from_clause
-                where_string, where_params = where_query.where_clause
-                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
-
-                select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
-
-            self.env.cr.execute(select, where_clause_params)
-            line.practical_amount = self.env.cr.fetchone()[0] or 0.0
+                
+                result = aml_obj._read_group(domain, aggregates=['credit:sum', 'debit:sum'])
+                if result and result[0]:
+                    credit_sum, debit_sum = result[0]
+                    line.practical_amount = (credit_sum or 0.0) - (debit_sum or 0.0)
+                else:
+                    line.practical_amount = 0.0
 
     def _compute_theoritical_amount(self):
         # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
