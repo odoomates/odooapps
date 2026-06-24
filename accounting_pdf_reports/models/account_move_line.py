@@ -1,5 +1,8 @@
 import ast
-from odoo.osv import expression
+import warnings
+with warnings.catch_warnings():
+    warnings.simplefilter('ignore', DeprecationWarning)
+    from odoo.osv import expression
 from odoo import api, models, fields
 
 
