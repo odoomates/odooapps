@@ -1,5 +1,5 @@
 from odoo.tests.common import TransactionCase
-from odoo.exceptions import ValidationError
+from odoo.exceptions import ValidationError, AccessError
 
 class TestAccountBudget(TransactionCase):
 
@@ -221,3 +221,59 @@ class TestAccountBudget(TransactionCase):
         # We don't assert the exact percentage because it depends on today's date during test run, 
         # but we can test if it doesn't crash.
         self.assertIsNotNone(line.percentage)
+
+    def test_06_security_access(self):
+        """Test that regular users cannot create budgets."""
+        # Create a regular user
+        user = self.env['res.users'].create({
+            'name': 'Regular User',
+            'login': 'regular_user_budget',
+            'groups_id': [(6, 0, [self.env.ref('base.group_user').id])]
+        })
+        
+        # User without accounting rights should not be able to create a budget
+        with self.assertRaises(AccessError):
+            self.budget_model.with_user(user).create({
+                'name': 'Unauthorized Budget',
+                'date_from': '2026-01-01',
+                'date_to': '2026-12-31',
+            })
+
+        # Add accounting rights
+        user.groups_id = [(4, self.env.ref('account.group_account_user').id)]
+        
+        # Should now be able to create a budget
+        budget = self.budget_model.with_user(user).create({
+            'name': 'Authorized Budget',
+            'date_from': '2026-01-01',
+            'date_to': '2026-12-31',
+        })
+        self.assertTrue(budget.id)
+
+    def test_07_multicompany_access(self):
+        """Test multi-company security rules on budgets."""
+        company_a = self.env['res.company'].create({'name': 'Company A'})
+        company_b = self.env['res.company'].create({'name': 'Company B'})
+
+        budget_a = self.budget_model.create({
+            'name': 'Budget A',
+            'date_from': '2026-01-01',
+            'date_to': '2026-12-31',
+            'company_id': company_a.id,
+        })
+
+        # Create a user in Company B
+        user_b = self.env['res.users'].create({
+            'name': 'User B',
+            'login': 'user_b_budget',
+            'company_id': company_b.id,
+            'company_ids': [(6, 0, [company_b.id])],
+            'groups_id': [(6, 0, [
+                self.env.ref('base.group_user').id,
+                self.env.ref('account.group_account_user').id
+            ])]
+        })
+
+        # User B should not be able to see Budget A
+        budgets_visible = self.budget_model.with_user(user_b).search([('id', '=', budget_a.id)])
+        self.assertFalse(budgets_visible)
