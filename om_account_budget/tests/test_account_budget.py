@@ -8,6 +8,7 @@ class TestAccountBudget(TransactionCase):
         super(TestAccountBudget, cls).setUpClass()
         cls.account_model = cls.env['account.account']
         cls.budget_post_model = cls.env['account.budget.post']
+        cls.budget_model = cls.env['crossovered.budget']
         
         # Create a test account
         cls.test_account = cls.account_model.create({
@@ -37,4 +38,31 @@ class TestAccountBudget(TransactionCase):
         # Scenario 1.3: Remove accounts from existing should fail
         with self.assertRaises(ValidationError):
             budget_post.write({'account_ids': [(5, 0, 0)]})
+
+    def test_02_budget_state_transitions(self):
+        """Test the workflow and state transitions of a budget."""
+        budget = self.budget_model.create({
+            'name': 'Test Budget',
+            'date_from': '2026-01-01',
+            'date_to': '2026-12-31',
+        })
+        # Scenario 2.1: Created budget is in draft state
+        self.assertEqual(budget.state, 'draft')
+
+        # Scenario 2.2: Test workflow transitions
+        budget.action_budget_confirm()
+        self.assertEqual(budget.state, 'confirm')
+
+        budget.action_budget_validate()
+        self.assertEqual(budget.state, 'validate')
+
+        budget.action_budget_done()
+        self.assertEqual(budget.state, 'done')
+
+        # Scenario 2.3: Test cancellation and reset to draft
+        budget.action_budget_cancel()
+        self.assertEqual(budget.state, 'cancel')
+
+        budget.action_budget_draft()
+        self.assertEqual(budget.state, 'draft')
 
