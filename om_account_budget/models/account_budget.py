@@ -222,7 +222,7 @@ class CrossoveredBudgetLines(models.Model):
             else:
                 line.percentage = 0.00
 
-    @api.constrains('general_budget_id', 'analytic_account_id')
+    @api.constrains('general_budget_id', 'analytic_account_id', 'crossovered_budget_id')
     def _must_have_analytical_or_budgetary_or_both(self):
         if not self.analytic_account_id and not self.general_budget_id:
             raise ValidationError(
