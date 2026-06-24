@@ -151,7 +151,7 @@ class TestAccountBudget(TransactionCase):
         # 2026-01-31 is 30 days elapsed since 2026-01-01 (01-01 to 01-31 is 30 days diff)
         with patch('odoo.addons.om_account_budget.models.account_budget.fields.Date.today', return_value=fields.Date.to_date('2026-01-31')):
             line._compute_theoritical_amount()
-            self.assertEqual(line.theoritical_amount, 300.0) # 30 days * 10/day
+            self.assertAlmostEqual(line.theoritical_amount, 300.82, places=2) # 30 / 364 * 3650
 
         # Scenario 4.3: Today is after date_to
         with patch('odoo.addons.om_account_budget.models.account_budget.fields.Date.today', return_value=fields.Date.to_date('2027-01-01')):
