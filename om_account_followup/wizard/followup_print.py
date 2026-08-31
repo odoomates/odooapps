@@ -154,7 +154,6 @@ class FollowupPrint(models.TransientModel):
                         'report_data': restot['action']})
         return {
             'name': _('Send Letters and Emails: Actions Summary'),
-            'view_type': 'form',
             'context': context,
             'view_mode': 'list,form',
             'res_model': 'followup.sending.results',
