@@ -172,13 +172,8 @@ class CrossoveredBudgetLines(models.Model):
                 if acc_ids:
                     domain += [('general_account_id', 'in', acc_ids)]
 
-                where_query = analytic_line_obj._where_calc(domain)
-                analytic_line_obj._apply_ir_rules(where_query, 'read')
-                from_string, from_params = where_query.from_clause
-                where_string, where_params = where_query.where_clause
-                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
-
-                select = "SELECT SUM(amount) from " + from_clause + " where " + where_clause
+                result = analytic_line_obj.read_group(domain, ['amount:sum'], [])
+                line.practical_amount = result[0]['amount'] if result and result[0]['amount'] is not None else 0.0
 
             else:
                 aml_obj = self.env['account.move.line']
@@ -187,16 +182,13 @@ class CrossoveredBudgetLines(models.Model):
                           ('date', '>=', date_from),
                           ('date', '<=', date_to)
                           ]
-                where_query = aml_obj._where_calc(domain)
-                aml_obj._apply_ir_rules(where_query, 'read')
-                from_string, from_params = where_query.from_clause
-                where_string, where_params = where_query.where_clause
-                from_clause, where_clause, where_clause_params = from_string, where_string, from_params + where_params
-
-                select = "SELECT sum(credit)-sum(debit) from " + from_clause + " where " + where_clause
-
-            self.env.cr.execute(select, where_clause_params)
-            line.practical_amount = self.env.cr.fetchone()[0] or 0.0
+                result = aml_obj.read_group(domain, ['credit:sum', 'debit:sum'], [])
+                if result:
+                    credit = result[0].get('credit') or 0.0
+                    debit = result[0].get('debit') or 0.0
+                    line.practical_amount = credit - debit
+                else:
+                    line.practical_amount = 0.0
 
     def _compute_theoritical_amount(self):
         # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
@@ -208,17 +200,19 @@ class CrossoveredBudgetLines(models.Model):
                 else:
                     theo_amt = line.planned_amount
             else:
-                line_timedelta = line.date_to - line.date_from
-                elapsed_timedelta = today - line.date_from
+                theo_amt = 0
+                if line.date_to and line.date_from:
+                    line_timedelta = line.date_to - line.date_from
+                    elapsed_timedelta = today - line.date_from
 
-                if elapsed_timedelta.days < 0:
-                    # If the budget line has not started yet, theoretical amount should be zero
-                    theo_amt = 0.00
-                elif line_timedelta.days > 0 and today < line.date_to:
-                    # If today is between the budget line date_from and date_to
-                    theo_amt = (elapsed_timedelta.total_seconds() / line_timedelta.total_seconds()) * line.planned_amount
-                else:
-                    theo_amt = line.planned_amount
+                    if elapsed_timedelta.days < 0:
+                        # If the budget line has not started yet, theoretical amount should be zero
+                        theo_amt = 0.00
+                    elif line_timedelta.days > 0 and today < line.date_to:
+                        # If today is between the budget line date_from and date_to
+                        theo_amt = (elapsed_timedelta.total_seconds() / line_timedelta.total_seconds()) * line.planned_amount
+                    else:
+                        theo_amt = line.planned_amount
             line.theoritical_amount = theo_amt
 
     def _compute_percentage(self):
