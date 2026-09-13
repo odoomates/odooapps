@@ -11,7 +11,7 @@ class AccountAgedTrialBalance(models.TransientModel):
 
     period_length = fields.Integer(string='Period Length (days)', required=True, default=30)
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True)
-    date_from = fields.Date(default=lambda *a: time.strftime('%Y-%m-%d'))
+    date_from = fields.Date(string='As of Date', default=lambda *a: time.strftime('%Y-%m-%d'))
 
     def _get_report_data(self, data):
         res = {}
@@ -21,7 +21,7 @@ class AccountAgedTrialBalance(models.TransientModel):
         if period_length <= 0:
             raise UserError(_('You must set a period length greater than 0.'))
         if not data['form']['date_from']:
-            raise UserError(_('You must set a start date.'))
+            raise UserError(_('You must set an as of date.'))
         start = data['form']['date_from']
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length - 1)
