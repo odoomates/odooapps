@@ -68,7 +68,7 @@
                                                 <span t-field="line.name"/>
                                             </td>
                                             <td>
-                                                <span t-field="line.analytic_account_id.display_name"/>
+                                                <span t-out="', '.join(line.distribution_analytic_account_ids.mapped('display_name'))"/>
                                             </td>
                                             <td class="text-end">
                                                 <span t-field="line.debit"
@@ -88,11 +88,11 @@
                                     <tr>
                                         <td colspan="5"></td>
                                         <td class="text-end">
-                                            <span t-esc="total_debit"
+                                            <span t-out="total_debit"
                                                   t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                         </td>
                                         <td class="text-end">
-                                            <span t-esc="total_credit"
+                                            <span t-out="total_credit"
                                                   t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
                                         </td>
                                     </tr>

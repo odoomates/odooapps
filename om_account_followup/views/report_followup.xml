@@ -18,13 +18,13 @@
                                 Document: Customer account statement
                                 <br/>
                                 Date:
-                                <span t-esc="data['date']"/>
+                                <span t-out="data['date']"/>
                                 <br/>
                                 Customer ref:
                                 <span t-field="o.partner_id.ref"/>
                             </p>
 
-                            <p t-raw="get_text(o,data['followup_id']).replace('\n', '&lt;br&gt;')"/>
+                            <p t-out="get_text(o,data['followup_id']).replace('\n', '&lt;br&gt;')"/>
 
                             <t t-foreach="getLines(o)" t-as="cur_lines">
                                 <table class="table table-condensed"
@@ -43,26 +43,26 @@
                                         <tr t-foreach="cur_lines['line']"
                                             t-as="line">
                                             <td>
-                                                <span t-esc="line['date']"/>
+                                                <span t-out="line['date']"/>
                                             </td>
                                             <td>
-                                                <span t-esc="line['name']"/>
+                                                <span t-out="line['name']"/>
                                             </td>
                                             <td>
-                                                <span t-esc="line['ref']"/>
+                                                <span t-out="line['ref']"/>
                                             </td>
                                             <td class="text-center">
-                                                <span t-esc="line['date_maturity']"/>
+                                                <span t-out="line['date_maturity']"/>
                                             </td>
                                             <td class="text-right">
-                                                <span t-esc="line['balance']"/>
+                                                <span t-out="line['balance']"/>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
 
                                 <p>Total:
-                                    <span t-esc="cur_lines['total']"/>
+                                    <span t-out="cur_lines['total']"/>
                                 </p>
                             </t>
                         </div>

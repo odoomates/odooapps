@@ -1,6 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <record id="view_move_form_asset_entry" model="ir.ui.view">
+        <field name="name">account.move.form.asset.entry</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="after">
+                <div class="alert alert-info mb-0" role="alert" invisible="not depreciation_asset_id">
+                    <field name="asset_entry_type" class="oe_inline" readonly="1"/> entry of the asset
+                    <field name="depreciation_asset_id" class="oe_inline" readonly="1"/>.
+                    <span invisible="asset_entry_type not in ('depreciation', 'revaluation') or state != 'draft'">
+                        Change its amount from the depreciation board of the asset.
+                    </span>
+                </div>
+            </div>
+            <field name="line_ids" position="attributes">
+                <attribute name="readonly">state != 'draft' or (depreciation_asset_id and asset_entry_type in ('depreciation', 'revaluation'))</attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_move_filter_asset" model="ir.ui.view">
+        <field name="name">account.move.select.asset</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <filter name="posted" position="after">
+                <filter name="scheduled_depreciation" string="Scheduled Depreciation"
+                        domain="[('depreciation_asset_id', '!=', False), ('asset_entry_type', 'in', ('depreciation', 'revaluation')), ('state', '=', 'draft')]"/>
+                <filter name="asset_entries" string="Asset Entries" domain="[('depreciation_asset_id', '!=', False)]"/>
+            </filter>
+            <field name="journal_id" position="after">
+                <field name="depreciation_asset_id"/>
+            </field>
+        </field>
+    </record>
+
     <record id="view_invoice_asset_category" model="ir.ui.view">
         <field name="name">account.move.supplier.form</field>
         <field name="model">account.move</field>

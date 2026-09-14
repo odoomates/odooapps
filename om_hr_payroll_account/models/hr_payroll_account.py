@@ -35,15 +35,15 @@ class HrPayslip(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        if 'journal_id' in self.env.context:
+        if self.env.context.get('journal_id'):
             for vals in vals_list:
-                vals['journal_id'] = self.env.context.get('journal_id')
+                vals.setdefault('journal_id', self.env.context['journal_id'])
         return super(HrPayslip, self).create(vals_list)
 
     @api.onchange('version_id')
     def onchange_version(self):
         super(HrPayslip, self).onchange_version()
-        self.journal_id = self.version_id.journal_id.id or (not self.version_id and self.default_get(['journal_id'])['journal_id'])
+        self.journal_id = self.version_id.journal_id or self.journal_id or self.default_get(['journal_id']).get('journal_id')
 
     def action_payslip_cancel(self):
         moves = self.mapped('move_id')
@@ -77,9 +77,6 @@ class HrPayslip(models.Model):
 
                 debit_account_id = line.salary_rule_id.account_debit.id
                 credit_account_id = line.salary_rule_id.account_credit.id
-                # if not debit_account_id or not credit_account_id:
-                #     raise UserError(_('Missing Debit Or Credit Account in salary rule: "%s" !') % (
-                #         line.salary_rule_id))
                 if debit_account_id:
                     debit_line = (0, 0, {
                         'name': line.name,

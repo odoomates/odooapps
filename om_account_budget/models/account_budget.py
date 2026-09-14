@@ -1,46 +1,23 @@
+from dateutil.relativedelta import relativedelta
+
 from odoo import api, fields, models, _
-from odoo.exceptions import ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
+
+from .account_budget_position import BUDGET_TYPES
+
+# fields that cannot change once the budget is confirmed
+LOCKED_BUDGET_FIELDS = {'name', 'date_from', 'date_to', 'company_id', 'line_ids'}
+WARNING_LEVELS = {'none': 0, 'threshold': 1, 'exceeded': 2}
 
 
-class AccountBudgetPost(models.Model):
-    _name = "account.budget.post"
-    _order = "name"
-    _description = "Budgetary Position"
-
-    name = fields.Char('Name', required=True)
-    account_ids = fields.Many2many(
-        'account.account', 'account_budget_rel', 'budget_id',
-        'account_id', 'Accounts'
-    )
-    company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
-
-    def _check_account_ids(self, vals):
-        # Raise an error to prevent the account.budget.post to have not specified account_ids.
-        # This check is done on create because require=True doesn't work on Many2many fields.
-        if 'account_ids' in vals:
-            account_ids = self.new({'account_ids': vals['account_ids']}, origin=self).account_ids
-        else:
-            account_ids = self.account_ids
-        if not account_ids:
-            raise ValidationError(_('The budget must have at least one account.'))
-
-    @api.model_create_multi
-    def create(self, vals_list):
-        for vals in vals_list:
-            self._check_account_ids(vals)
-        return super(AccountBudgetPost, self).create(vals_list)
-
-    def write(self, vals):
-        self._check_account_ids(vals)
-        return super(AccountBudgetPost, self).write(vals)
-
-
-class CrossoveredBudget(models.Model):
-    _name = "crossovered.budget"
-    _description = "Budget"
-    _inherit = ['mail.thread']
+class AccountBudget(models.Model):
+    _name = 'account.budget'
+    _description = 'Budget'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
+    _check_company_auto = True
 
     name = fields.Char('Budget Name', required=True)
+    active = fields.Boolean(default=True)
     user_id = fields.Many2one('res.users', 'Responsible', default=lambda self: self.env.user)
     date_from = fields.Date('Start Date', required=True)
     date_to = fields.Date('End Date', required=True)
@@ -50,12 +27,62 @@ class CrossoveredBudget(models.Model):
         ('confirm', 'Confirmed'),
         ('validate', 'Validated'),
         ('done', 'Done')
-        ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, tracking=True)
-    crossovered_budget_line = fields.One2many(
-        'crossovered.budget.lines', 'crossovered_budget_id',
-        'Budget Lines', copy=True
-    )
+    ], 'Status', default='draft', index=True, required=True, readonly=True, copy=False, tracking=True)
+    line_ids = fields.One2many('account.budget.line', 'budget_id', 'Budget Lines', copy=True)
     company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
+    currency_id = fields.Many2one(related='company_id.currency_id')
+
+    expense_planned_amount = fields.Monetary('Planned Expenses', compute='_compute_totals')
+    expense_theoretical_amount = fields.Monetary('Theoretical Expenses', compute='_compute_totals')
+    expense_practical_amount = fields.Monetary('Actual Expenses', compute='_compute_totals')
+    expense_achievement = fields.Float('Expenses Achievement', compute='_compute_totals')
+    revenue_planned_amount = fields.Monetary('Planned Revenues', compute='_compute_totals')
+    revenue_theoretical_amount = fields.Monetary('Theoretical Revenues', compute='_compute_totals')
+    revenue_practical_amount = fields.Monetary('Actual Revenues', compute='_compute_totals')
+    revenue_achievement = fields.Float('Revenues Achievement', compute='_compute_totals')
+    is_over_budget = fields.Boolean(
+        'Over Budget', compute='_compute_totals', search='_search_is_over_budget',
+        help="At least one expense line spent more than its theoretical amount.")
+
+    @api.depends('line_ids.planned_amount', 'line_ids.budget_type', 'line_ids.date_from', 'line_ids.date_to')
+    def _compute_totals(self):
+        # compute the amounts of every line at once
+        self.line_ids.mapped('practical_amount')
+        for budget in self:
+            for budget_type, dummy in BUDGET_TYPES:
+                lines = budget.line_ids.filtered(lambda line: line.budget_type == budget_type)
+                planned = sum(lines.mapped('planned_amount'))
+                theoretical = sum(lines.mapped('theoretical_amount'))
+                practical = sum(lines.mapped('practical_amount'))
+                budget[f'{budget_type}_planned_amount'] = planned
+                budget[f'{budget_type}_theoretical_amount'] = theoretical
+                budget[f'{budget_type}_practical_amount'] = practical
+                budget[f'{budget_type}_achievement'] = practical / theoretical if theoretical else 0.0
+            budget.is_over_budget = any(budget.line_ids.mapped('is_over_budget'))
+
+    def _search_is_over_budget(self, operator, value):
+        if operator not in ('=', '!=') or not isinstance(value, bool):
+            raise UserError(_('Operation not supported.'))
+        over_budget_lines = self.env['account.budget.line'].search([('is_over_budget', '=', True)])
+        in_operator = 'in' if (operator == '=') == value else 'not in'
+        return [('id', in_operator, over_budget_lines.budget_id.ids)]
+
+    @api.constrains('date_from', 'date_to')
+    def _check_dates(self):
+        for budget in self:
+            if budget.date_from > budget.date_to:
+                raise ValidationError(_('The budget "%s" must start before it ends.', budget.name))
+
+    def write(self, vals):
+        if LOCKED_BUDGET_FIELDS & set(vals) and not self.env.context.get('budget_force_edit'):
+            locked = self.filtered(lambda budget: budget.state != 'draft')
+            if locked:
+                raise UserError(_('Reset the budget "%s" to draft to change it.', locked[0].name))
+        return super().write(vals)
+
+    def _check_budget_manager(self):
+        if not self.env.su and not self.env.user.has_group('account.group_account_manager'):
+            raise AccessError(_('Only accounting managers can approve, close or cancel budgets.'))
 
     def action_budget_confirm(self):
         self.write({'state': 'confirm'})
@@ -64,201 +91,106 @@ class CrossoveredBudget(models.Model):
         self.write({'state': 'draft'})
 
     def action_budget_validate(self):
+        self._check_budget_manager()
         self.write({'state': 'validate'})
 
     def action_budget_cancel(self):
+        self._check_budget_manager()
         self.write({'state': 'cancel'})
 
     def action_budget_done(self):
+        self._check_budget_manager()
         self.write({'state': 'done'})
 
-
-class CrossoveredBudgetLines(models.Model):
-    _name = "crossovered.budget.lines"
-    _description = "Budget Line"
-
-    name = fields.Char(compute='_compute_line_name')
-    crossovered_budget_id = fields.Many2one('crossovered.budget', 'Budget', ondelete='cascade', index=True, required=True)
-    analytic_account_id = fields.Many2one('account.analytic.account', 'Analytic Account')
-    analytic_plan_id = fields.Many2one(related='analytic_account_id.plan_id')
-    general_budget_id = fields.Many2one('account.budget.post', 'Budgetary Position')
-    date_from = fields.Date('Start Date', required=True)
-    date_to = fields.Date('End Date', required=True)
-    paid_date = fields.Date('Paid Date')
-    currency_id = fields.Many2one('res.currency', related='company_id.currency_id', readonly=True)
-    planned_amount = fields.Monetary(
-        'Planned Amount', required=True,
-        help="Amount you plan to earn/spend. Record a positive amount if it is a revenue and a negative amount if it is a cost.")
-    practical_amount = fields.Monetary(
-        compute='_compute_practical_amount', string='Practical Amount', help="Amount really earned/spent.")
-    theoritical_amount = fields.Monetary(
-        compute='_compute_theoritical_amount', string='Theoretical Amount',
-        help="Amount you are supposed to have earned/spent at this date.")
-    percentage = fields.Float(
-        compute='_compute_percentage', string='Achievement',
-        help="Comparison between practical and theoretical amount. This measure tells you if you are below or over budget.")
-    company_id = fields.Many2one(related='crossovered_budget_id.company_id', comodel_name='res.company',
-        string='Company', store=True, readonly=True)
-    is_above_budget = fields.Boolean(compute='_is_above_budget')
-    crossovered_budget_state = fields.Selection(related='crossovered_budget_id.state', string='Budget State', store=True, readonly=True)
-
-    @api.model
-    def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
-        # overrides the default read_group in order to compute the computed fields manually for the group
-        fields_list = {'practical_amount', 'theoritical_amount', 'percentage'}
-        fields = {field.split(':', 1)[0] if field.split(':', 1)[0] in fields_list else field for field in fields}
-        result = super(CrossoveredBudgetLines, self).read_group(domain, fields, groupby, offset=offset, limit=limit,
-                                                                orderby=orderby, lazy=lazy)
-        if any(x in fields for x in fields_list):
-            for group_line in result:
-
-                # initialise fields to compute to 0 if they are requested
-                if 'practical_amount' in fields:
-                    group_line['practical_amount'] = 0
-                if 'theoritical_amount' in fields:
-                    group_line['theoritical_amount'] = 0
-                if 'percentage' in fields:
-                    group_line['percentage'] = 0
-                    group_line['practical_amount'] = 0
-                    group_line['theoritical_amount'] = 0
-
-                if group_line.get('__domain'):
-                    all_budget_lines_that_compose_group = self.search(group_line['__domain'])
-                else:
-                    all_budget_lines_that_compose_group = self.search([])
-                for budget_line_of_group in all_budget_lines_that_compose_group:
-                    if 'practical_amount' in fields or 'percentage' in fields:
-                        group_line['practical_amount'] += budget_line_of_group.practical_amount
-
-                    if 'theoritical_amount' in fields or 'percentage' in fields:
-                        group_line['theoritical_amount'] += budget_line_of_group.theoritical_amount
-
-                    if 'percentage' in fields:
-                        if group_line['theoritical_amount']:
-                            # use a weighted average
-                            group_line['percentage'] = float(
-                                (group_line['practical_amount'] or 0.0) / group_line['theoritical_amount']) * 100
-
-        return result
-
-    def _is_above_budget(self):
-        for line in self:
-            if line.theoritical_amount >= 0:
-                line.is_above_budget = line.practical_amount > line.theoritical_amount
-            else:
-                line.is_above_budget = line.practical_amount < line.theoritical_amount
-
-    def _compute_line_name(self):
-        #just in case someone opens the budget line in form view
-        for line in self:
-            computed_name = line.crossovered_budget_id.name
-            if line.general_budget_id:
-                computed_name += ' - ' + line.general_budget_id.name
-            if line.analytic_account_id:
-                computed_name += ' - ' + line.analytic_account_id.name
-            line.name = computed_name
-
-    def _compute_practical_amount(self):
-        for line in self:
-            acc_ids = line.general_budget_id.account_ids.ids
-            date_to = line.date_to
-            date_from = line.date_from
-            if line.analytic_account_id.id:
-                analytic_line_obj = self.env['account.analytic.line']
-                domain = [('account_id', '=', line.analytic_account_id.id),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ]
-                if acc_ids:
-                    domain += [('general_account_id', 'in', acc_ids)]
-
-                result = analytic_line_obj.read_group(domain, ['amount:sum'], [])
-                line.practical_amount = result[0]['amount'] if result and result[0]['amount'] is not None else 0.0
-
-            else:
-                aml_obj = self.env['account.move.line']
-                domain = [('account_id', 'in',
-                           line.general_budget_id.account_ids.ids),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to)
-                          ]
-                result = aml_obj.read_group(domain, ['credit:sum', 'debit:sum'], [])
-                if result:
-                    credit = result[0].get('credit') or 0.0
-                    debit = result[0].get('debit') or 0.0
-                    line.practical_amount = credit - debit
-                else:
-                    line.practical_amount = 0.0
-
-    def _compute_theoritical_amount(self):
-        # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
-        today = fields.Date.today()
-        for line in self:
-            if line.paid_date:
-                if today <= line.paid_date:
-                    theo_amt = 0.00
-                else:
-                    theo_amt = line.planned_amount
-            else:
-                theo_amt = 0
-                if line.date_to and line.date_from:
-                    line_timedelta = line.date_to - line.date_from
-                    elapsed_timedelta = today - line.date_from
-
-                    if elapsed_timedelta.days < 0:
-                        # If the budget line has not started yet, theoretical amount should be zero
-                        theo_amt = 0.00
-                    elif line_timedelta.days > 0 and today < line.date_to:
-                        # If today is between the budget line date_from and date_to
-                        theo_amt = (elapsed_timedelta.total_seconds() / line_timedelta.total_seconds()) * line.planned_amount
-                    else:
-                        theo_amt = line.planned_amount
-            line.theoritical_amount = theo_amt
-
-    def _compute_percentage(self):
-        for line in self:
-            if line.theoritical_amount != 0.00:
-                line.percentage = float((line.practical_amount or 0.0) / line.theoritical_amount)
-            else:
-                line.percentage = 0.00
-
-    @api.constrains('general_budget_id', 'analytic_account_id')
-    def _must_have_analytical_or_budgetary_or_both(self):
-        if not self.analytic_account_id and not self.general_budget_id:
-            raise ValidationError(
-                _("You have to enter at least a budgetary position or analytic account on a budget line."))
-
-    
-    def action_open_budget_entries(self):
-        if self.analytic_account_id:
-            # if there is an analytic account, then the analytic items are loaded
-            action = self.env['ir.actions.act_window']._for_xml_id('analytic.account_analytic_line_action_entries')
-            action['domain'] = [('account_id', '=', self.analytic_account_id.id),
-                                ('date', '>=', self.date_from),
-                                ('date', '<=', self.date_to)
-                                ]
-            if self.general_budget_id:
-                action['domain'] += [('general_account_id', 'in', self.general_budget_id.account_ids.ids)]
-        else:
-            # otherwise the journal entries booked on the accounts of the budgetary postition are opened
-            action = self.env['ir.actions.act_window']._for_xml_id('account.action_account_moves_all_a')
-            action['domain'] = [('account_id', 'in',
-                                 self.general_budget_id.account_ids.ids),
-                                ('date', '>=', self.date_from),
-                                ('date', '<=', self.date_to)
-                                ]
+    def action_open_budget_report(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('om_account_budget.action_account_budget_line_analysis')
+        action.update({
+            'name': _('Budget Report: %s', self.name),
+            'domain': [('budget_id', '=', self.id)],
+            'context': {'search_default_group_position_id': True},
+        })
         return action
 
-    @api.constrains('date_from', 'date_to')
-    def _line_dates_between_budget_dates(self):
-        for rec in self:
-            budget_date_from = rec.crossovered_budget_id.date_from
-            budget_date_to = rec.crossovered_budget_id.date_to
-            if rec.date_from:
-                date_from = rec.date_from
-                if date_from < budget_date_from or date_from > budget_date_to:
-                    raise ValidationError(_('"Start Date" of the budget line should be included in the Period of the budget'))
-            if rec.date_to:
-                date_to = rec.date_to
-                if date_to < budget_date_from or date_to > budget_date_to:
-                    raise ValidationError(_('"End Date" of the budget line should be included in the Period of the budget'))
+    def action_open_copy_wizard(self):
+        self.ensure_one()
+        return {
+            'name': _('Copy to Next Period'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.budget.copy',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_budget_id': self.id},
+        }
+
+    def action_open_split_wizard(self):
+        self.ensure_one()
+        return {
+            'name': _('Split Lines by Period'),
+            'type': 'ir.actions.act_window',
+            'res_model': 'account.budget.split',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_budget_id': self.id},
+        }
+
+    @staticmethod
+    def _shift_date(day, delta):
+        """ Move `day` by `delta`, keeping it on the last day of its month when it was. """
+        shifted = day + delta
+        if day == day + relativedelta(day=31):
+            shifted += relativedelta(day=31)
+        return shifted
+
+    def copy_to_period(self, date_from, date_to=None, name=None):
+        """ Copy the budget and its lines to the period starting on `date_from`. """
+        self.ensure_one()
+        if date_from.day == 1 and self.date_from.day == 1:
+            delta = relativedelta(date_from, self.date_from)
+        else:
+            delta = relativedelta(days=(date_from - self.date_from).days)
+        new_budget = self.copy({
+            'name': name or _('%s (copy)', self.name),
+            'date_from': date_from,
+            'date_to': date_to or self._shift_date(self.date_to, delta),
+            'line_ids': [(0, 0, {
+                **line.copy_data()[0],
+                'budget_id': False,
+                'date_from': self._shift_date(line.date_from, delta),
+                'date_to': self._shift_date(line.date_to, delta),
+                'planned_date': line.planned_date and self._shift_date(line.planned_date, delta),
+            }) for line in self.line_ids],
+        })
+        return new_budget
+
+    @api.model
+    def _cron_warn_budget_responsibles(self):
+        """ Warn the responsible of validated budgets when an expense line reaches the warning
+        threshold of its company, then when it goes over its planned amount. """
+        lines = self.env['account.budget.line'].search([
+            ('budget_state', '=', 'validate'), ('budget_type', '=', 'expense'), ('planned_amount', '>', 0),
+        ])
+        # the actual amounts depend on journal items which are not dependencies of the field
+        lines.invalidate_recordset(['practical_amount'])
+        for line in lines:
+            consumed = line.practical_amount / line.planned_amount
+            if consumed > 1:
+                level = 'exceeded'
+            elif consumed * 100 >= line.company_id.budget_warning_threshold:
+                level = 'threshold'
+            else:
+                level = 'none'
+            if WARNING_LEVELS[level] > WARNING_LEVELS[line.warning_level or 'none'] and line.budget_id.user_id:
+                if level == 'exceeded':
+                    body = _('%(line)s is over budget: %(practical)s spent for %(planned)s planned.',
+                             line=line.name, practical=line.practical_amount, planned=line.planned_amount)
+                else:
+                    body = _('%(line)s reached %(percent)s%% of its planned amount (%(practical)s of %(planned)s).',
+                             line=line.name, percent=round(consumed * 100), practical=line.practical_amount,
+                             planned=line.planned_amount)
+                line.budget_id.message_post(
+                    body=body, partner_ids=line.budget_id.user_id.partner_id.ids,
+                    message_type='notification', subtype_xmlid='mail.mt_comment',
+                )
+            if level != line.warning_level:
+                line.with_context(budget_force_edit=True).warning_level = level

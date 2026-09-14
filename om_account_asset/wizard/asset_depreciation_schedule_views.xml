@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="asset_depreciation_schedule_form" model="ir.ui.view">
+        <field name="name">asset.depreciation.schedule.form</field>
+        <field name="model">asset.depreciation.schedule</field>
+        <field name="arch" type="xml">
+            <form string="Depreciation Schedule">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                        <field name="category_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="group_by_category"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print" string="Print" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_asset_depreciation_schedule" model="ir.actions.act_window">
+        <field name="name">Depreciation Schedule</field>
+        <field name="res_model">asset.depreciation.schedule</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="asset_depreciation_schedule_form"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_asset_depreciation_schedule"
+              name="Depreciation Schedule"
+              action="action_asset_depreciation_schedule"
+              parent="account.account_reports_management_menu"
+              sequence="22"
+              groups="account.group_account_manager"/>
+
+</odoo>

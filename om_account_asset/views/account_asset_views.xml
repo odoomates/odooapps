@@ -7,125 +7,155 @@
         <field name="arch" type="xml">
             <form string="Asset">
                 <header>
-                    <button name="validate" string="Confirm" type="object" class="oe_highlight" invisible="state != 'draft'"/>
-                    <button type="object" name="compute_depreciation_board" string="Compute Depreciation"
+                    <button name="validate" string="Confirm" type="object" class="oe_highlight"
                             invisible="state != 'draft'"/>
-                    <button name="set_to_close" invisible="state != 'open'" string="Sell or Dispose" type="object"
-                            class="oe_highlight"/>
-                    <button name="set_to_draft" string="Set to Draft" type="object"
+                    <button name="compute_depreciation_board" string="Compute Depreciation" type="object"
+                            invisible="state != 'draft'"/>
+                    <button name="%(action_asset_modify)d" string="Modify Depreciation" type="action" class="oe_highlight"
+                            invisible="state != 'open'" groups="account.group_account_manager"/>
+                    <button name="%(action_asset_pause)d" string="Resume Depreciation" type="action" class="oe_highlight"
+                            invisible="state != 'paused'" groups="account.group_account_manager"/>
+                    <button name="%(action_asset_pause)d" string="Pause" type="action"
+                            invisible="state != 'open'" groups="account.group_account_manager"/>
+                    <button name="%(action_asset_sell)d" string="Sell / Dispose" type="action"
+                            invisible="state not in ('open', 'paused')" groups="account.group_account_manager"/>
+                    <button name="set_to_draft" string="Reset to Draft" type="object"
                             invisible="entry_count != 0 or state != 'open'"/>
-                    <button name="%(action_asset_modify)d" invisible="state != 'open'" string="Modify Depreciation" type="action"/>
+                    <button name="set_to_cancelled" string="Cancel" type="object"
+                            invisible="state not in ('open', 'paused', 'close') or parent_id"
+                            groups="account.group_account_manager"
+                            confirm="The journal entries of this asset and of its value increases will be deleted, or reversed when they cannot be deleted. Continue?"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,open"/>
                 </header>
                 <sheet>
+                    <field name="active" invisible="1"/>
+                    <field name="type" invisible="1"/>
+                    <field name="parent_id" invisible="1"/>
+                    <field name="invoice_id" invisible="1"/>
+                    <field name="disposal_move_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
                     <div class="oe_button_box" name="button_box">
-                        <button class="oe_stat_button" name="open_entries" type="object" icon="fa-pencil">
-                            <field string="Items" name="entry_count" widget="statinfo"/>
+                        <button class="oe_stat_button" name="open_invoice" type="object" icon="article"
+                                string="Bill" invisible="not invoice_id"/>
+                        <button class="oe_stat_button" name="open_entries" type="object" icon="menu">
+                            <field string="Posted Entries" name="entry_count" widget="statinfo"/>
                         </button>
+                        <button class="oe_stat_button" name="action_view_increases" type="object" icon="add_box"
+                                invisible="increase_count == 0">
+                            <field string="Value Increases" name="increase_count" widget="statinfo"/>
+                        </button>
+                        <button class="oe_stat_button" name="open_parent_asset" type="object" icon="account_tree"
+                                string="Parent Asset" invisible="not parent_id"/>
+                        <button class="oe_stat_button" name="open_disposal_move" type="object" icon="sell"
+                                string="Disposal Entry" invisible="not disposal_move_id"/>
                     </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <widget name="web_ribbon" title="Paused" bg_color="text-bg-warning" invisible="state != 'paused' or not active"/>
+                    <widget name="web_ribbon" title="Disposed" bg_color="text-bg-secondary" invisible="not disposal_date or not active"/>
                     <div class="oe_title">
-                        <label for="name" class="oe_edit_only"/>
+                        <label for="name" string="Asset Name"/>
                         <h1>
                             <field name="name" placeholder="e.g. Laptop iBook" readonly="state != 'draft'"/>
                         </h1>
                     </div>
-                    <group>
-                        <group>
-                            <field name="category_id" string="Asset Category"
-                                   domain="[('type', '=', 'purchase')]"
-                                   readonly="state != 'draft'"
-                                   context="{'default_type': 'purchase'}" help="Category of asset"/>
-                            <field name="code" readonly="state != 'draft'"/>
-                            <field name="date" help="Date of asset" readonly="state != 'draft'"/>
-                            <field name="date_first_depreciation" readonly="state != 'draft'"/>
-                            <field name="first_depreciation_manual_date"
-                                   readonly="state != 'draft'"
-                                   invisible="date_first_depreciation != 'manual'"
-                                   required="date_first_depreciation == 'manual'"/>
-                            <field name="type" invisible="1"/>
-                            <field name="account_analytic_id" groups="analytic.group_analytic_accounting"/>
-                        </group>
-                        <group>
-                            <field name="currency_id" groups="base.group_multi_currency"
-                                   readonly="state != 'draft'"/>
-                            <field name="company_id" options="{'no_create': True}"
-                                   readonly="state != 'draft'"
-                                   groups="base.group_multi_company"/>
-                            <field name="value" widget="monetary"
-                                   readonly="state != 'draft'" help="Gross value of asset"/>
-                            <field name="salvage_value" widget="monetary"
-                                   readonly="state != 'draft'"
-                                   invisible="type == 'sale'"/>
-                            <field name="value_residual" widget="monetary"/>
-                            <field name="partner_id" string="Vendor" widget="res_partner_many2one"
-                                   readonly="state != 'draft'"
-                                   context="{'res_partner_search_mode': 'supplier'}"/>
-                            <field name="invoice_id" string="Invoice" options="{'no_create': True}"/>
-                            <field name="analytic_distribution" widget="analytic_distribution"/>
-                        </group>
-                    </group>
                     <notebook>
-                        <page string="Depreciation Board">
-                            <field name="depreciation_line_ids" mode="list"
+                        <page string="Asset" name="asset">
+                            <group>
+                                <group string="Asset Values">
+                                    <field name="value" string="Asset Value" widget="monetary" readonly="state != 'draft'"/>
+                                    <field name="increase_value" widget="monetary" invisible="increase_value == 0"/>
+                                    <field name="date" readonly="state != 'draft'"/>
+                                    <field name="category_id" string="Asset Category"
+                                           domain="[('type', '=', 'purchase')]" context="{'default_type': 'purchase'}"
+                                           readonly="state != 'draft'"/>
+                                    <field name="account_asset_id" string="Fixed Asset Account"/>
+                                    <field name="code" readonly="state != 'draft'"/>
+                                </group>
+                                <group string="Current Values">
+                                    <field name="salvage_value" string="Not Depreciable Value" widget="monetary"
+                                           readonly="state != 'draft'" invisible="type == 'sale'"/>
+                                    <label for="book_value"/>
+                                    <div>
+                                        <field name="book_value" widget="monetary" class="oe_inline"/>
+                                        <span class="ms-1" invisible="salvage_value == 0">(incl.
+                                            <field name="value_residual" widget="monetary" class="oe_inline"/>
+                                            depreciable)</span>
+                                    </div>
+                                    <field name="opening_depreciation" string="Depreciated at Import" widget="monetary"
+                                           readonly="state != 'draft'" invisible="type == 'sale'"/>
+                                    <field name="pause_date" invisible="state != 'paused'"/>
+                                    <field name="disposal_date" invisible="not disposal_date"/>
+                                    <field name="disposal_result" widget="monetary" invisible="not disposal_date"/>
+                                </group>
+                                <group string="Depreciation Method">
+                                    <field name="method" readonly="state != 'draft'" invisible="type == 'sale'"/>
+                                    <field name="method_progress_factor" readonly="state != 'draft'"
+                                           invisible="method == 'linear'" required="method != 'linear'"/>
+                                    <field name="method_time" string="Duration Based On" readonly="state != 'draft'"
+                                           invisible="type != 'purchase'"/>
+                                    <field name="method_number" string="Number of Entries" readonly="state != 'draft'"
+                                           invisible="method_time != 'number'" required="method_time == 'number'"/>
+                                    <field name="method_rate" readonly="state != 'draft'"
+                                           invisible="method_time != 'rate'" required="method_time == 'rate'"/>
+                                    <field name="method_end" readonly="state != 'draft'"
+                                           invisible="method_time != 'end'" required="method_time == 'end'"/>
+                                    <label for="method_period" string="One Entry Every"/>
+                                    <div>
+                                        <field name="method_period" class="oe_inline" readonly="state != 'draft'"/> months
+                                    </div>
+                                    <field name="prorata" readonly="state != 'draft'"/>
+                                    <field name="date_first_depreciation" string="First Depreciation" readonly="state != 'draft'"/>
+                                    <field name="first_depreciation_manual_date" readonly="state != 'draft'"
+                                           invisible="date_first_depreciation != 'manual'"
+                                           required="date_first_depreciation == 'manual'"/>
+                                </group>
+                                <group string="Accounting">
+                                    <field name="company_id" options="{'no_create': True}" readonly="state != 'draft'"
+                                           groups="base.group_multi_company"/>
+                                    <field name="currency_id" readonly="state != 'draft'" groups="base.group_multi_currency"/>
+                                    <field name="account_depreciation_id" string="Depreciation Account"/>
+                                    <field name="account_depreciation_expense_id" string="Expense Account"/>
+                                    <field name="journal_id"/>
+                                    <field name="account_analytic_id" groups="analytic.group_analytic_accounting"/>
+                                    <field name="analytic_distribution" widget="analytic_distribution"
+                                           groups="analytic.group_analytic_accounting"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Depreciation Board" name="board" invisible="not depreciation_move_ids">
+                            <field name="depreciation_move_ids" mode="list"
                                    readonly="state not in ('draft', 'open')"
                                    options="{'reload_whole_on_button': true}">
-                                <list string="Depreciation Lines" decoration-info="(move_check == False)"
-                                      create="false">
-                                    <field name="depreciation_date"/>
-                                    <field name="amount" widget="monetary" string="Depreciation"/>
-                                    <field name="depreciated_value" readonly="1"/>
-                                    <field name="remaining_value" readonly="1" widget="monetary" string="Residual"/>
-                                    <field name="move_check" widget="deprec_lines_toggler"
-                                           invisible="parent_state != 'open'"/>
-                                    <field name="move_posted_check" invisible="1"/>
-                                    <field name="parent_state" invisible="1"/>
+                                <list editable="bottom" create="0" delete="0" default_order="date asc, id asc"
+                                      decoration-info="state == 'draft'"
+                                      decoration-muted="state == 'cancel' or asset_entry_reversed">
+                                    <field name="asset_currency_id" column_invisible="1"/>
+                                    <field name="date" string="Date" readonly="1"/>
+                                    <field name="ref" string="Label" readonly="1"/>
+                                    <field name="asset_depreciation_amount" readonly="state != 'draft'" sum="Total"/>
+                                    <field name="asset_cumulative_depreciation"/>
+                                    <field name="asset_depreciable_value"/>
+                                    <field name="asset_book_value" optional="hide"/>
+                                    <field name="name" string="Journal Entry" readonly="1"
+                                           widget="char_with_placeholder_field" placeholder="/"/>
+                                    <field name="asset_entry_reversed" widget="boolean" optional="hide" readonly="1"/>
+                                    <field name="state" string="Status" widget="badge" readonly="1"
+                                           decoration-info="state == 'draft'" decoration-success="state == 'posted'"/>
+                                    <button name="action_open_asset_entry" type="object" icon="fa-external-link"
+                                            title="Open the journal entry"/>
                                 </list>
-                                <form string="Depreciation Lines" create="false">
-                                    <group>
-                                        <group>
-                                            <field name="parent_state" invisible="1"/>
-                                            <field name="name"/>
-                                            <field name="sequence"/>
-                                            <field name="move_id"/>
-                                            <field name="move_check"/>
-                                            <field name="parent_state" invisible="1"/>
-                                        </group>
-                                        <group>
-                                            <field name="amount" widget="monetary"/>
-                                            <field name="depreciation_date"/>
-                                            <field name="depreciated_value"/>
-                                            <field name="remaining_value"/>
-                                        </group>
-                                    </group>
-                                </form>
                             </field>
+                            <p class="text-muted" invisible="not opening_depreciation">
+                                The depreciation at import is deducted from the first periods of the board.
+                            </p>
                         </page>
-                        <page string="Depreciation Information">
+                        <page string="Bills" name="bills">
                             <group>
-                                <field name="method" widget="radio"
-                                       invisible="type == 'sale'" readonly="state != 'draft'"/>
-                                <field name="method_progress_factor"
-                                       readonly="state != 'draft'"
-                                       invisible="method == 'linear'"
-                                       required="method == 'degressive'"/>
-                                <field name="method_time" string="Time Method Based On"
-                                       widget="radio"
-                                       readonly="state != 'draft'"
-                                       invisible="type != 'purchase'"/>
-                                <field name="prorata"
-                                       invisible="method_time == 'end'"
-                                       readonly="state != 'draft'"/>
-                            </group>
-                            <group>
-                                <field name="method_number"
-                                       readonly="state != 'draft'"
-                                       invisible="method_time == 'end'"
-                                       required="method_time == 'number'"/>
-                                <field name="method_period" readonly="state != 'draft'"/>
-                                <field name="method_end"
-                                       readonly="state != 'draft'"
-                                       invisible="method_time == 'end'"
-                                       required="method_time == 'number'"/>
+                                <group>
+                                    <field name="partner_id" string="Vendor" widget="res_partner_many2one"
+                                           context="{'res_partner_search_mode': 'supplier'}" readonly="state != 'draft'"/>
+                                    <field name="invoice_id" string="Vendor Bill" options="{'no_create': True}"/>
+                                </group>
                             </group>
                         </page>
                     </notebook>
@@ -145,35 +175,15 @@
                 <field name="date"/>
                 <field name="state"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_global_click">
-                            <div class="row mb4">
-                                <div class="col-6">
-                                    <strong>
-                                        <span>
-                                            <t t-esc="record.name.value"/>
-                                        </span>
-                                    </strong>
-                                </div>
-                                <div class="col-6 text-end">
-                                    <strong>
-                                        <t t-esc="record.date.value"/>
-                                    </strong>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6 text-muted">
-                                    <span>
-                                        <t t-esc="record.category_id.value"/>
-                                    </span>
-                                </div>
-                                <div class="col-6">
-                                    <span class="float-right text-end">
-                                        <field name="state" widget="kanban_label_selection"
-                                               options="{'classes': {'draft': 'primary', 'open': 'success', 'close': 'default'}}"/>
-                                    </span>
-                                </div>
-                            </div>
+                    <t t-name="card">
+                        <div class="d-flex mb4">
+                            <field name="name" class="fw-bold"/>
+                            <field name="date" class="ms-auto fw-bold"/>
+                        </div>
+                        <div class="d-flex">
+                            <field name="category_id" class="text-muted"/>
+                            <field name="state" widget="label_selection" class="ms-auto"
+                                   options="{'classes': {'draft': 'primary', 'open': 'success', 'paused': 'warning', 'close': 'default', 'cancelled': 'danger'}}"/>
                         </div>
                     </t>
                 </templates>
@@ -185,13 +195,16 @@
         <field name="name">account.asset.asset.purchase.list</field>
         <field name="model">account.asset.asset</field>
         <field name="arch" type="xml">
-            <list string="Assets" decoration-info="(state == 'draft')" decoration-muted="(state == 'close')">
+            <list string="Assets" decoration-info="(state == 'draft')" decoration-warning="(state == 'paused')"
+                  decoration-muted="(state in ('close', 'cancelled'))">
                 <field name="name"/>
                 <field name="category_id" string="Asset Category"/>
                 <field name="date"/>
                 <field name="partner_id" string="Vendor"/>
                 <field name="value"/>
                 <field name="value_residual" widget="monetary"/>
+                <field name="book_value" widget="monetary" optional="hide"/>
+                <field name="disposal_date" optional="hide"/>
                 <field name="currency_id" groups="base.group_multi_currency"/>
                 <field name="company_id" groups="base.group_multi_company"/>
                 <field name="state"/>
@@ -206,10 +219,15 @@
             <search string="Asset Account">
                 <field name="name" string="Asset"/>
                 <field name="date"/>
-                <filter string="Current" name="current" domain="[('state','in', ('draft','open'))]"
-                        help="Assets in draft and open states"/>
+                <filter string="Current" name="current" domain="[('state','in', ('draft','open','paused'))]"
+                        help="Assets in draft, running and on hold states"/>
+                <filter string="Paused" name="paused" domain="[('state','=', 'paused')]"
+                        help="Assets in on hold state"/>
                 <filter string="Closed" name="closed" domain="[('state','=', 'close')]"
                         help="Assets in closed state"/>
+                <filter string="Sold or Disposed" name="disposed" domain="[('disposal_date','!=', False)]"/>
+                <filter string="Cancelled" name="cancelled" domain="[('state','=', 'cancelled')]"
+                        help="Assets in cancelled state"/>
                 <field name="category_id" string="Asset Category"/>
                 <field name="partner_id" filter_domain="[('partner_id','child_of',self)]"/>
                 <group>
@@ -228,11 +246,18 @@
         <field name="domain">[('category_id.type', '=', 'purchase')]</field>
     </record>
 
-    <menuitem id="menu_action_account_asset_asset_form"
-              parent="account.account_account_menu"
-              action="action_account_asset_asset_form"
-              sequence="101"
-              groups="account.group_account_manager"/>
+    <menuitem id="menu_finance_entries_assets"
+              name="Assets"
+              parent="account.menu_finance_entries"
+              sequence="5"
+              groups="account.group_account_manager">
+
+        <menuitem id="menu_action_account_asset_asset_form"
+                  action="action_account_asset_asset_form"
+                  sequence="1"
+                  groups="account.group_account_manager"/>
+
+    </menuitem>
 
 
 </odoo>

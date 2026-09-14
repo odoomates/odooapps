@@ -6,11 +6,9 @@
     'summary': """Customer FollowUp Management""",
     'author': 'Odoo Mates, Odoo S.A',
     'license': 'LGPL-3',
-    'website': 'https://www.odoomates.tech',
     'depends': ['account', 'mail'],
     'data': [
-        'security/security.xml',
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/mail_template_data.xml',
         'wizard/followup_print_view.xml',
         'wizard/followup_results_view.xml',

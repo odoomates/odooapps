@@ -8,7 +8,7 @@
             <field name="arch" type="xml">
                 <list string="Salary Structure" editable="bottom" decoration-info="total == 0">
                     <field name="category_id"/>
-                    <field name="employee_id" invisible="1"/>
+                    <field name="employee_id" column_invisible="1"/>
                     <field name="sequence"/>
                     <field name="name"/>
                     <field name="code"/>
@@ -16,8 +16,8 @@
                     <field name="rate"/>
                     <field name="amount"/>
                     <field name="total"/>
-                    <field name="amount_select" invisible="1"/>
-                    <field name="register_id" invisible="1"/>
+                    <field name="amount_select" column_invisible="1"/>
+                    <field name="register_id" column_invisible="1"/>
                 </list>
             </field>
         </record>
@@ -81,7 +81,7 @@
                     <field name="date_to"/>
                     <field name="state"/>
                     <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
-                    <field name="payslip_run_id" invisible="1"/>
+                    <field name="payslip_run_id" column_invisible="1"/>
                 </list>
             </field>
         </record>
@@ -141,7 +141,7 @@
                                 invisible="state != 'draft'"
                                 class="oe_highlight"/>
                         <button string="Refund" name="refund_sheet"
-                                invisible="state not in ('confirm','done')" type='object'/>
+                                invisible="state != 'done' or credit_note" type='object'/>
                         <button string="Set to Draft" name="action_payslip_draft" type="object"
                                 invisible="state != 'cancel'"/>
                         <button string="Compute Sheet" name="compute_sheet" type="object" invisible="state != 'draft'"
@@ -149,8 +149,8 @@
                         <button string="Cancel Payslip" name="action_payslip_cancel" type="object"
                                 invisible="state not in ('draft', 'verify','done')"/>
                         <button string="Send E-Mail" name="action_send_email" type="object"
-                                class="oe_highlight" invisible="state not in ('verify','done')"/>/>
-                        <field name="state" widget="statusbar" statusbar_visible="draft,confirm"/>
+                                class="oe_highlight" invisible="state not in ('verify','done')"/>
+                        <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
                     </header>
                     <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -194,7 +194,7 @@
                                         <field name="number_of_days" sum="Total Working Days"/>
                                         <field name="number_of_hours"/>
                                         <field name="version_id"/>
-                                        <field name="sequence" invisible="True"/>
+                                        <field name="sequence" column_invisible="1"/>
                                     </list>
                                     <form string="Worked Day">
                                         <group col="4">
@@ -214,7 +214,7 @@
                                         <field name="code"/>
                                         <field name="amount"/>
                                         <field name="version_id"/>
-                                        <field name="sequence" invisible="True"/>
+                                        <field name="sequence" column_invisible="1"/>
                                     </list>
                                     <form string="Payslip Line">
                                         <group col="4">
@@ -233,7 +233,7 @@
                                         <field name="name"/>
                                         <field name="code"/>
                                         <field name="category_id"/>
-                                        <field name="sequence" invisible="1"/>
+                                        <field name="sequence" column_invisible="1"/>
                                         <field name="quantity"/>
                                         <field name="rate"/>
                                         <field name="salary_rule_id"/>
@@ -446,7 +446,8 @@
 
         <menuitem id="menu_hr_payslip_run"
                   action="action_hr_payslip_run_tree"
-                  parent="menu_hr_payroll_root"/>
+                  parent="menu_hr_payroll_root"
+                  groups="om_hr_payroll.group_hr_payroll_manager"/>
 
         <!--  Shortcuts -->
 

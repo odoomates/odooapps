@@ -1,9 +1,7 @@
-from odoo import fields, models, api
+from odoo import fields, models
 
 
 class AccountAnalyticAccount(models.Model):
     _inherit = "account.analytic.account"
 
-    crossovered_budget_line = fields.One2many(
-        'crossovered.budget.lines', 'analytic_account_id', 'Budget Lines'
-    )
+    budget_line_ids = fields.One2many('account.budget.line', 'analytic_account_id', string='Budget Lines')

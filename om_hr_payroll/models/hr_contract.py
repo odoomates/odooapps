@@ -23,26 +23,24 @@ class HrVersion(models.Model):
         ('bi-monthly', 'Bi-monthly'),
     ], string='Scheduled Pay', index=True, default='monthly',
     help="Defines the frequency of the wage payment.")
-    resource_calendar_id = fields.Many2one(required=True, help="Employee's working schedule.")
+    # payroll officers compute the payslips from the wage
+    wage = fields.Monetary(groups="hr.group_hr_manager,om_hr_payroll.group_hr_payroll_user")
     hra = fields.Monetary(string='HRA', help="House rent allowance.")
     travel_allowance = fields.Monetary(string="Travel Allowance", help="Travel allowance")
     da = fields.Monetary(string="DA", help="Dearness allowance")
     meal_allowance = fields.Monetary(string="Meal Allowance", help="Meal allowance")
     medical_allowance = fields.Monetary(string="Medical Allowance", help="Medical allowance")
     other_allowance = fields.Monetary(string="Other Allowance", help="Other allowances")
-    type_id = fields.Many2one('hr.contract.type', string="Employee Category",
+    type_id = fields.Many2one('hr.employee.type', string="Employee Category",
                               required=True, help="Employee category",
-                              default=lambda self: self.env['hr.contract.type'].search([], limit=1))
+                              default=lambda self: self.env['hr.employee.type'].search([], limit=1))
 
     @api.model
     def _get_whitelist_fields_from_template(self):
-        # Retrieve the list from the parent class
         res = super()._get_whitelist_fields_from_template()
-
-        # Add your custom field to the list
         res.append('struct_id')
-
         return res
+
     def get_all_structures(self):
         """
         @return: the structures linked to the given contracts, ordered by hierachy (parent=False first,
@@ -51,7 +49,6 @@ class HrVersion(models.Model):
         structures = self.mapped('struct_id')
         if not structures:
             return []
-        # YTI TODO return browse records
         return list(set(structures._get_parent_structure().ids))
 
     def get_attribute(self, code, attribute):

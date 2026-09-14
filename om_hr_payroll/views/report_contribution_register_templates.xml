@@ -14,11 +14,11 @@
                             </div>
                             <div class="col-3">
                                 <strong>Date From:</strong>
-                                <p t-esc="data['form']['date_from']"/>
+                                <p t-out="data['form']['date_from']"/>
                             </div>
                             <div class="col-3">
                                 <strong>Date To:</strong>
-                                <p t-esc="data['form']['date_to']"/>
+                                <p t-out="data['form']['date_to']"/>
                             </div>
                         </div>
 
@@ -36,23 +36,23 @@
                             <tbody>
                                 <tr t-foreach="lines_data.get(o.id, [])" t-as="line">
                                     <td>
-                                        <span t-esc="line.slip_id.name"/>
+                                        <span t-out="line.slip_id.name"/>
                                     </td>
                                     <td>
-                                        <span t-esc="line.code"/>
+                                        <span t-out="line.code"/>
                                     </td>
                                     <td>
-                                        <span t-esc="line.name"/>
+                                        <span t-out="line.name"/>
                                     </td>
                                     <td>
-                                        <span t-esc="line.quantity"/>
+                                        <span t-out="line.quantity"/>
                                     </td>
                                     <td class="text-right">
-                                        <span t-esc="line.amount"
+                                        <span t-out="line.amount"
                                               t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
                                     <td class="text-right">
-                                        <span t-esc="line.total"
+                                        <span t-out="line.total"
                                               t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                     </td>
                                 </tr>
@@ -67,7 +67,7 @@
                                             <strong>Total</strong>
                                         </td>
                                         <td class="text-right">
-                                            <span t-esc="lines_total.get(o.id)"
+                                            <span t-out="lines_total.get(o.id)"
                                                   t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
                                         </td>
                                     </tr>

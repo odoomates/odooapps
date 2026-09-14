@@ -6,7 +6,17 @@
         <field name="model">res.config.settings</field>
         <field name="inherit_id" ref="account.res_config_settings_view_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//setting[@id='account_budget']" position="replace"/>
+            <xpath expr="//setting[@id='account_budget']" position="replace">
+                <setting id="om_account_budget_warning" string="Budget warnings" company_dependent="1"
+                         groups="account.group_account_user,account.group_account_manager"
+                         help="Notify the responsible of a validated budget when an expense line reaches this share of its planned amount, then when it goes over it.">
+                    <div class="content-group">
+                        <div class="mt8">
+                            <field name="budget_warning_threshold" class="oe_inline"/> %
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
         </field>
     </record>
 

@@ -1,10 +1,10 @@
 {
-    'name': 'Odoo 19 Accounting Financial Reports',
+    'name': 'Odoo 20 Accounting Financial Reports',
     'version': '1.0.4',
     'category': 'Invoicing Management',
-    'description': 'Accounting Reports For Odoo 19, Accounting Financial Reports, '
-                   'Odoo 19 Financial Reports',
-    'summary': 'Accounting Reports For Odoo 19',
+    'description': 'Accounting Reports For Odoo 20, Accounting Financial Reports, '
+                   'Odoo 20 Financial Reports',
+    'summary': 'Accounting Reports For Odoo 20',
     'sequence': '1',
     'author': 'Odoo Mates, Odoo SA',
     'license': 'LGPL-3',
@@ -15,7 +15,7 @@
     'depends': ['account'],
     'live_test_url': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'data': [
-        'security/ir.model.access.csv',
+        'security/ir.access.csv',
         'data/account_account_type.xml',
         'views/menu.xml',
         'views/ledger_menu.xml',

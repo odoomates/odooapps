@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 19 Remove Data',
+    'name': 'Odoo 20 Remove Data',
     'version': '1.4',
     'author': 'Odoo Mates, Sunpop.cn',
     'category': 'Tools',

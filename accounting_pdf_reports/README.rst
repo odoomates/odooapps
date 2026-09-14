@@ -1,8 +1,8 @@
 ====================================
-Odoo 19 Accounting Financial Reports
+Odoo 20 Accounting Financial Reports
 ====================================
 
-This Module will provide all the financial reports for odoo 19
+This Module will provide all the financial reports for odoo 20
 community edition
 
 Installation

@@ -2,27 +2,27 @@
 <odoo>
 
     <template id="report_tax">
-        <t t-call="web.html_container">
-            <t t-set="data_report_margin_top" t-value="12"/>
-            <t t-set="data_report_header_spacing" t-value="9"/>
-            <t t-set="data_report_dpi" t-value="110"/>
+        <t t-call="web.html_container"
+            data_report_margin_top="12"
+            data_report_header_spacing="9"
+            data_report_dpi="110">
             <t t-call="web.internal_layout">
                 <div class="page">
                     <h3>Tax Report</h3>
                     <div class="row">
                         <div class="col-4">
                             <strong>Company:</strong>
-                            <p t-esc="res_company.name"/>
+                            <p t-out="res_company.name"/>
                         </div>
                         <div class="col-4">
                             <t>
                                 <strong>Date from :</strong>
-                                <span t-esc="data['date_from']"/>
+                                <span t-out="data['date_from']"/>
                             </t>
                             <br/>
                             <t>
                                 <strong>Date to :</strong>
-                                <span t-esc="data['date_to']"/>
+                                <span t-out="data['date_to']"/>
                             </t>
                         </div>
                         <div class="col-4">
@@ -44,14 +44,14 @@
                         </thead>
                         <tr align="left" t-foreach="lines['sale']" t-as="line">
                             <td>
-                                <span t-esc="line.get('name')"/>
+                                <span t-out="line.get('name')"/>
                             </td>
                             <td>
-                                <span t-att-style="style" t-esc="line.get('net')"
+                                <span t-att-style="style" t-out="line.get('net')"
                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                             <td>
-                                <span t-att-style="style" t-esc="line.get('tax')"
+                                <span t-att-style="style" t-out="line.get('tax')"
                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>
@@ -65,14 +65,14 @@
                         </tr>
                         <tr align="left" t-foreach="lines['purchase']" t-as="line">
                             <td>
-                                <span t-esc="line.get('name')"/>
+                                <span t-out="line.get('name')"/>
                             </td>
                             <td>
-                                <span t-att-style="style" t-esc="line.get('net')"
+                                <span t-att-style="style" t-out="line.get('net')"
                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                             <td>
-                                <span t-att-style="style" t-esc="line.get('tax')"
+                                <span t-att-style="style" t-out="line.get('tax')"
                                       t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                             </td>
                         </tr>

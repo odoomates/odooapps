@@ -67,9 +67,7 @@ class AccountMoveLine(models.Model):
             domain.append(('parent_state', '!=', 'cancel'))
 
             query = self._search(domain)
-            from_clause = query.from_clause
-            where_sql = query.where_clause
-            tables = from_clause.code
-            where_clause = where_sql.code
-            where_clause_params = list(from_clause.params) + list(where_sql.params)
+            tables, from_params, _to_flush = query.from_clause._sql_tuple
+            where_clause, where_params, _to_flush = query.where_clause._sql_tuple
+            where_clause_params = list(from_params) + list(where_params)
         return tables, where_clause, where_clause_params

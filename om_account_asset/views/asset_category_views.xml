@@ -61,6 +61,9 @@
                             <field name="method_number" string="Number of Entries"
                                    required="method_time == 'number'"
                                    invisible="method_time != 'number' or type == False"/>
+                            <field name="method_rate"
+                                   required="method_time == 'rate'"
+                                   invisible="method_time != 'rate'"/>
                             <label for="method_period" string="One Entry Every"/>
                             <div>
                                 <field name="method_period" nolabel="1"
@@ -79,13 +82,12 @@
                         </group>
                         <group string="Additional Options">
                             <field name="open_asset"/>
-                            <field name="group_entries"/>
                             <field name="date_first_depreciation"/>
                         </group>
                         <group invisible="type == 'sale'" string="Depreciation Method">
                             <field name="method" widget="radio"/>
                             <field name="method_progress_factor"
-                                   invisible="method_time == 'linear'" required="method == 'degressive'"/>
+                                   invisible="method == 'linear'" required="method != 'linear'"/>
                             <field name="prorata" invisible="method_time == 'end'"/>
                         </group>
                     </group>
@@ -103,28 +105,12 @@
                 <field name="journal_id"/>
                 <field name="method"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_card oe_kanban_global_click">
-                            <div class="row mb4">
-                                <div class="col-6">
-                                    <strong>
-                                        <span>
-                                            <t t-esc="record.name.value"/>
-                                        </span>
-                                    </strong>
-                                </div>
-                                <div class="col-6 text-end">
-                                    <span class="badge badge-pill">
-                                        <strong>
-                                            <t t-esc="record.method.value"/>
-                                        </strong>
-                                    </span>
-                                </div>
-                            </div>
-                            <div>
-                                <t t-esc="record.journal_id.value"/>
-                            </div>
+                    <t t-name="card">
+                        <div class="d-flex mb4">
+                            <field name="name" class="fw-bold"/>
+                            <field name="method" class="ms-auto badge rounded-pill fw-bold"/>
                         </div>
+                        <field name="journal_id"/>
                     </t>
                 </templates>
             </kanban>

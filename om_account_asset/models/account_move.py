@@ -11,16 +11,19 @@ class AccountMove(models.Model):
     )
 
     def button_draft(self):
-        res = super(AccountMove, self).button_draft()
         for move in self:
-            if any(asset_id.state != 'draft' for asset_id in move.asset_ids):
+            closed_assets = move.asset_ids.filtered(lambda a: a.state == 'close')
+            if closed_assets:
                 raise ValidationError(_(
-                    'You cannot reset to draft for an entry having a posted asset'))
-            if move.asset_ids:
-                move.asset_ids.sudo().write({'active': False})
-                for asset in move.asset_ids:
-                    asset.sudo().message_post(body=_("Vendor bill cancelled."))
-        return res
+                    'You cannot reset to draft an entry whose assets are closed, sold or disposed: %s',
+                    ', '.join(closed_assets.mapped('name'))))
+            # the assets are created again when the entry is posted again
+            running_assets = move.asset_ids.filtered(lambda a: a.state in ('open', 'paused'))
+            for asset in running_assets:
+                asset.sudo().set_to_cancelled()
+                asset.sudo().message_post(body=_("Vendor bill reset to draft."))
+            move.asset_ids.filtered(lambda a: a.state == 'draft').sudo().unlink()
+        return super(AccountMove, self).button_draft()
 
     @api.model
     def _refund_cleanup_lines(self, lines):
@@ -120,7 +123,7 @@ class AccountMoveLine(models.Model):
                 self.move_id.invoice_date or fields.Date.context_today(
                     self))
             vals = {
-                'name': self.name,
+                'name': self.name or self.product_id.display_name or self.asset_category_id.name,
                 'code': self.name or False,
                 'category_id': self.asset_category_id.id,
                 'value': price_subtotal,

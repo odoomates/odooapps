@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="asset_pause_form" model="ir.ui.view">
+        <field name="name">asset.pause.form</field>
+        <field name="model">asset.pause</field>
+        <field name="arch" type="xml">
+            <form string="Pause or Resume">
+                <field name="asset_id" invisible="1"/>
+                <field name="asset_state" invisible="1"/>
+                <p invisible="asset_state != 'open'">
+                    The running period is depreciated up to the date, then no depreciation is computed
+                    until the asset is resumed.
+                </p>
+                <p invisible="asset_state != 'paused'">
+                    The remaining depreciations are postponed by the time the asset was on hold.
+                </p>
+                <group>
+                    <field name="pause_date" invisible="asset_state != 'paused'"/>
+                    <field name="date"/>
+                    <field name="note"/>
+                </group>
+                <footer>
+                    <button name="action_apply" string="Pause" type="object" class="btn-primary"
+                            invisible="asset_state != 'open'"/>
+                    <button name="action_apply" string="Resume" type="object" class="btn-primary"
+                            invisible="asset_state != 'paused'"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_asset_pause" model="ir.actions.act_window">
+        <field name="name">Pause or Resume</field>
+        <field name="res_model">asset.pause</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="asset_pause_form"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

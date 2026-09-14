@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_budget_copy_form" model="ir.ui.view">
+        <field name="name">account.budget.copy.form</field>
+        <field name="model">account.budget.copy</field>
+        <field name="arch" type="xml">
+            <form string="Copy to Next Period">
+                <field name="budget_id" invisible="1"/>
+                <p class="text-muted">
+                    A draft copy of the budget is created, its lines are moved to the new period.
+                </p>
+                <group>
+                    <field name="name"/>
+                    <label for="date_from" string="Period"/>
+                    <div>
+                        <field name="date_from" class="oe_inline"/> - <field name="date_to" class="oe_inline"/>
+                    </div>
+                </group>
+                <footer>
+                    <button name="action_copy" string="Copy" type="object" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_budget_split_form" model="ir.ui.view">
+        <field name="name">account.budget.split.form</field>
+        <field name="model">account.budget.split</field>
+        <field name="arch" type="xml">
+            <form string="Split Lines by Period">
+                <field name="budget_id" invisible="1"/>
+                <p class="text-muted">
+                    Each line covering several periods is replaced by one line per period, its planned amount
+                    shared according to the days of each period.
+                </p>
+                <group>
+                    <field name="period" widget="radio" options="{'horizontal': true}"/>
+                    <field name="line_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_split" string="Split" type="object" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

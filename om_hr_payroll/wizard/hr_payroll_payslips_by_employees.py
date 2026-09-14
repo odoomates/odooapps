@@ -1,5 +1,5 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
-from odoo import api, fields, models, _
+from odoo import fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -13,8 +13,9 @@ class HrPayslipEmployees(models.TransientModel):
         payslips = self.env['hr.payslip']
         [data] = self.read()
         active_id = self.env.context.get('active_id')
-        if active_id:
-            [run_data] = self.env['hr.payslip.run'].browse(active_id).read(['date_start', 'date_end', 'credit_note'])
+        if not active_id:
+            raise UserError(_("Generate the payslips from a payslip batch."))
+        [run_data] = self.env['hr.payslip.run'].browse(active_id).read(['date_start', 'date_end', 'credit_note'])
         from_date = run_data.get('date_start')
         to_date = run_data.get('date_end')
         if not data['employee_ids']:

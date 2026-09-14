@@ -24,6 +24,7 @@ class PayslipDetailsReport(models.AbstractModel):
         result = {}
 
         if payslip_lines:
+            payslip_lines.flush_recordset(['category_id', 'slip_id', 'sequence'])
             self.env.cr.execute("""
                 SELECT pl.id, pl.category_id, pl.slip_id FROM hr_payslip_line as pl
                 LEFT JOIN hr_salary_rule_category AS rc on (pl.category_id = rc.id)

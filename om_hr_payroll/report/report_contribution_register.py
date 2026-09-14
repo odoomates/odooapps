@@ -6,11 +6,15 @@ from odoo.exceptions import UserError
 
 
 class ContributionRegisterReport(models.AbstractModel):
-    _name = 'report.om_om_hr_payroll.report_contribution_register'
+    _name = 'report.om_hr_payroll.report_contribution_register'
     _description = 'Payroll Contribution Register Report'
 
     def _get_payslip_lines(self, register_ids, date_from, date_to):
         result = {}
+        if not register_ids:
+            return result
+        self.env['hr.payslip'].flush_model(['date_from', 'date_to', 'state'])
+        self.env['hr.payslip.line'].flush_model(['slip_id', 'register_id', 'sequence'])
         self.env.cr.execute("""
             SELECT pl.id from hr_payslip_line as pl
             LEFT JOIN hr_payslip AS hp on (pl.slip_id = hp.id)

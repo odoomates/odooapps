@@ -25,8 +25,8 @@ class ResConfigSettings(models.TransientModel):
                 t_name = obj._table
             sql = "delete from %s" % t_name
             try:
-                self._cr.execute(sql)
-                self._cr.commit()
+                self.env.cr.execute(sql)
+                self.env.cr.commit()
             except Exception as e:
                 _logger.warning('remove data error: %s,%s', line, e)
         for line in s:
@@ -243,10 +243,10 @@ class ResConfigSettings(models.TransientModel):
             sql = "delete from ir_default where (field_id = %s or field_id = %s) and company_id=%d" \
                   % (field1, field2, company_id)
             sql2 = "update account_journal set bank_account_id=NULL where company_id=%d;" % company_id
-            self._cr.execute(sql)
-            self._cr.execute(sql2)
+            self.env.cr.execute(sql)
+            self.env.cr.execute(sql2)
 
-            self._cr.commit()
+            self.env.cr.commit()
         except Exception as e:
             _logger.error('remove data error: %s,%s', 'account_chart: set tax and account_journal', e)
         if self.env['ir.model']._get('pos.config'):

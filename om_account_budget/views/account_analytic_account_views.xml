@@ -7,33 +7,37 @@
         <field name="inherit_id" ref="analytic.view_account_analytic_account_form"/>
         <field name="priority" eval="50"/>
         <field name="arch" type="xml">
-            <xpath expr="//group[@name='main']" position='after'>
-                <notebook groups="account.group_account_user">
-                    <page string="Budget Items">
-                        <field name="crossovered_budget_line" widget="one2many_list" colspan="4" nolabel="1"
-                               mode="list">
-                            <list string="Budget Items" editable="top">
-                                <field name="crossovered_budget_id"/>
-                                <field name="general_budget_id"/>
+            <xpath expr="//notebook" position="inside">
+                <page string="Budget Items" groups="account.group_account_user,account.group_account_manager">
+                    <field name="budget_line_ids" widget="one2many_list" colspan="4" nolabel="1"
+                           mode="list">
+                        <list string="Budget Items" editable="top">
+                            <field name="budget_id"/>
+                            <field name="position_id"/>
+                            <field name="budget_type"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="distribution" optional="hide"/>
+                            <field name="planned_date" optional="hide"/>
+                            <field name="planned_amount" widget="monetary"/>
+                            <field name="practical_amount" sum="Actual Amount" widget="monetary"/>
+                            <field name="theoretical_amount" sum="Theoretical Amount" widget="monetary"/>
+                            <field name="achievement" widget="percentage"/>
+                        </list>
+                        <form string="Budget Items">
+                            <group>
+                                <field name="budget_id"/>
+                                <field name="position_id"/>
+                                <field name="budget_type"/>
                                 <field name="date_from"/>
                                 <field name="date_to"/>
-                                <field name="paid_date"/>
+                                <field name="distribution"/>
+                                <field name="planned_date" invisible="distribution != 'at_date'"/>
                                 <field name="planned_amount" widget="monetary"/>
-                                <field name="practical_amount" sum="Practical Amount" widget="monetary"/>
-                                <field name="theoritical_amount" sum="Theoritical Amount" widget="monetary"/>
-                                <field name="percentage"/>
-                            </list>
-                            <form string="Budget Items">
-                                <field name="crossovered_budget_id"/>
-                                <field name="general_budget_id"/>
-                                <field name="date_from"/>
-                                <field name="date_to"/>
-                                <field name="paid_date"/>
-                                <field name="planned_amount" widget="monetary"/>
-                            </form>
-                        </field>
-                    </page>
-                </notebook>
+                            </group>
+                        </form>
+                    </field>
+                </page>
             </xpath>
         </field>
     </record>

@@ -1,5 +1,5 @@
 ===================
-Odoo 19 Remove Data
+Odoo 20 Remove Data
 ===================
 
 This Module will help to remove transactional data from database

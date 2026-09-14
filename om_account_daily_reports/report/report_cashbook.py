@@ -144,6 +144,8 @@ class ReportCashBook(models.AbstractModel):
                 for acc_in in journal.inbound_payment_method_line_ids:
                     if acc_in.payment_account_id:
                         accounts += acc_in.payment_account_id
+        if not accounts:
+            raise UserError(_('No cash account found: select the accounts to print or configure the payment accounts of your cash journals.'))
         record = self.with_context(data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, init_balance, sortby, display_account)
         return {
             'doc_ids': docids,
