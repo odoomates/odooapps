@@ -104,6 +104,57 @@ class CrossoveredBudgetLines(models.Model):
     crossovered_budget_state = fields.Selection(related='crossovered_budget_id.state', string='Budget State', store=True, readonly=True)
 
     @api.model
+    def fields_get(self, allfields=None, attributes=None):
+        res = super().fields_get(allfields, attributes)
+        for fname, agg in [
+            ('practical_amount', 'sum'),
+            ('theoritical_amount', 'sum'),
+            ('percentage', 'avg'),
+        ]:
+            if fname in res:
+                res[fname]['aggregator'] = agg
+                res[fname]['group_operator'] = agg
+                res[fname]['sortable'] = True
+        return res
+
+    @api.model
+    def _read_group(self, domain, groupby=(), aggregates=(), having=(), offset=0, limit=None, order=None):
+        computed_aggs = {'practical_amount:sum', 'theoritical_amount:sum', 'percentage:avg'}
+        has_computed = any(a in computed_aggs for a in aggregates)
+        if not has_computed:
+            return super()._read_group(domain, groupby, aggregates, having, offset, limit, order)
+
+        sql_aggs = [a for a in aggregates if a not in computed_aggs]
+        rec_agg = 'id:recordset'
+        need_recs = rec_agg not in sql_aggs
+        if need_recs:
+            sql_aggs.append(rec_agg)
+
+        raw_res = super()._read_group(domain, groupby, sql_aggs, having, offset, limit, order)
+
+        out_res = []
+        rec_idx = len(groupby) + sql_aggs.index(rec_agg)
+        for row in raw_res:
+            row_list = list(row)
+            recs = row_list[rec_idx]
+
+            row_vals = list(row[:len(groupby)])
+            for agg in aggregates:
+                if agg == 'practical_amount:sum':
+                    row_vals.append(sum(recs.mapped('practical_amount')))
+                elif agg == 'theoritical_amount:sum':
+                    row_vals.append(sum(recs.mapped('theoritical_amount')))
+                elif agg == 'percentage:avg':
+                    theo = sum(recs.mapped('theoritical_amount'))
+                    prac = sum(recs.mapped('practical_amount'))
+                    row_vals.append((prac / theo * 100.0) if theo else 0.0)
+                else:
+                    orig_idx = len(groupby) + sql_aggs.index(agg)
+                    row_vals.append(row_list[orig_idx])
+            out_res.append(tuple(row_vals))
+        return out_res
+
+    @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
         # overrides the default read_group in order to compute the computed fields manually for the group
         fields_list = {'practical_amount', 'theoritical_amount', 'percentage'}
