@@ -3,8 +3,8 @@ from datetime import date
 from freezegun import freeze_time
 
 from odoo import Command, fields
-from odoo.exceptions import UserError
-from odoo.tests import tagged
+from odoo.exceptions import UserError, ValidationError
+from odoo.tests import new_test_user, tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -318,6 +318,138 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
             asset.set_to_close(disposal_date=date(2025, 2, 28))
         self.assertEqual(asset.children_ids.state, 'close')
 
+    def test_partial_sale(self):
+        asset = self._create_asset()
+        self._autopost('2025-03-31')
+        invoice = self.init_invoice('out_invoice', amounts=[325.0], invoice_date='2025-03-31', post=True)
+        wizard = self.env['asset.sell'].with_context(active_model='account.asset.asset', active_id=asset.id).create({
+            'action': 'sell',
+            'scope': 'partial',
+            'disposed_percent': 25.0,
+            'date': date(2025, 3, 31),
+            'sale_invoice_ids': [Command.set(invoice.ids)],
+        })
+        self.assertEqual(wizard.disposed_value, 300.0)
+        with freeze_time('2025-03-31'):
+            wizard.action_confirm()
+
+        partial = self._board(asset).filtered(lambda m: m.asset_entry_type == 'partial_disposal')
+        self.assertEqual(partial.state, 'posted')
+        # a quarter of the gross value (300) and of the depreciation (75) leave the books, sold 325
+        self.assertEqual(self._balances(partial), {
+            self.asset_account: -300.0,
+            self.accumulated_account: 75.0,
+            invoice.invoice_line_ids.account_id: 325.0,
+            self.gain_account: -100.0,
+        })
+        self.assertEqual(asset.state, 'open')
+        self.assertEqual(asset.value, 900.0)
+        self.assertEqual(asset.value_residual, 675.0)
+        self.assertEqual(partial.asset_cumulative_depreciation, 225.0)
+        self.assertEqual(partial.asset_depreciable_value, 675.0)
+        drafts = self._drafts(asset)
+        self.assertEqual(drafts.mapped('asset_depreciation_amount'), [75.0] * 9)
+        self.assertEqual(drafts[-1].asset_cumulative_depreciation, 900.0)
+        with self.assertRaises(UserError):
+            partial.button_draft()
+        with self.assertRaises(UserError), freeze_time('2025-04-05'):
+            partial._reverse_moves(cancel=True)
+
+        self._autopost('2025-06-30')
+        with freeze_time('2025-06-30'):
+            asset.set_to_close(disposal_date=date(2025, 6, 30))
+        self.assertEqual(self._balances(asset.disposal_move_id), {
+            self.asset_account: -900.0,
+            self.accumulated_account: 450.0,
+            self.loss_account: 450.0,
+        })
+
+        wizard = self.env['asset.depreciation.schedule'].create({
+            'date_from': date(2025, 1, 1),
+            'date_to': date(2025, 12, 31),
+            'category_ids': [Command.set(self.category.ids)],
+        })
+        line = wizard._get_schedule_data()['register'][0]['lines'][0]
+        self.assertEqual((line['cost_additions'], line['cost_disposals'], line['cost_closing']), (1200.0, 1200.0, 0.0))
+        self.assertEqual((line['depreciation_charge'], line['depreciation_disposals'], line['depreciation_closing']),
+                         (525.0, 525.0, 0.0))
+        self.assertTrue(line['is_disposed'])
+
+        # before the final disposal, the asset shows partly disposed
+        wizard.date_to = date(2025, 4, 30)
+        line = wizard._get_schedule_data()['register'][0]['lines'][0]
+        self.assertEqual((line['cost_additions'], line['cost_disposals'], line['cost_closing']), (1200.0, 300.0, 900.0))
+        self.assertEqual((line['depreciation_charge'], line['depreciation_disposals'], line['depreciation_closing']),
+                         (375.0, 75.0, 300.0))
+        self.assertTrue(line['is_partly_disposed'])
+
+    def test_partial_disposal_checks(self):
+        asset = self._create_asset()
+        self._autopost('2025-03-31')
+        with freeze_time('2025-03-31'):
+            with self.assertRaises(UserError):
+                asset._dispose_partially(date(2025, 3, 31), 1.0)
+            with self.assertRaises(UserError):
+                asset._dispose_partially(date(2025, 4, 30), 0.5)
+            # paused: nothing to depreciate, the resumed board uses the remaining values
+            asset.pause(date(2025, 3, 31))
+            asset._dispose_partially(date(2025, 3, 31), 0.5)
+        self.assertEqual(asset.state, 'paused')
+        self.assertEqual(asset.value_residual, 450.0)
+        with freeze_time('2025-04-01'):
+            asset.resume(date(2025, 4, 1))
+        self.assertAlmostEqual(sum(self._drafts(asset).mapped('asset_depreciation_amount')), 450.0)
+
+    # -------------------------------------------------------------------------
+    # Assets from vendor bills
+    # -------------------------------------------------------------------------
+
+    def _create_bill(self, **line_vals):
+        return self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'partner_id': self.partner_a.id,
+            'invoice_date': '2025-01-01',
+            'invoice_line_ids': [Command.create({
+                'name': 'Laptop',
+                'price_unit': 1000.0,
+                'account_id': self.asset_account.id,
+                'tax_ids': [],
+                **line_vals,
+            })],
+        })
+
+    def test_assets_from_bill_account(self):
+        self.category.write({'create_from_bill': True, 'asset_per_unit': True})
+        with self.assertRaises(ValidationError):
+            self.category.copy()
+        billing_user = new_test_user(
+            self.env, login='asset_billing', groups='account.group_account_invoice',
+            company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
+        bill = self._create_bill(quantity=3.0, price_unit=333.34).with_user(billing_user)
+        with freeze_time('2025-01-15'):
+            bill.action_post()
+
+        self.assertEqual(bill.invoice_line_ids.asset_category_id, self.category)
+        assets = bill.asset_ids.sorted('id')
+        self.assertEqual(assets.mapped('value'), [333.34, 333.34, 333.34])
+        self.assertEqual(assets.mapped('name'), ['Laptop (1/3)', 'Laptop (2/3)', 'Laptop (3/3)'])
+        self.assertEqual(set(assets.mapped('state')), {'open'})
+
+        # the credit note keeps the category of the line but does not create assets
+        with freeze_time('2025-01-20'):
+            refund = bill._reverse_moves()
+            refund.invoice_date = date(2025, 1, 20)
+            refund.action_post()
+        self.assertEqual(refund.invoice_line_ids.asset_category_id, self.category)
+        self.assertFalse(refund.asset_ids)
+        self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 3)
+
+    def test_bill_account_without_category(self):
+        bill = self._create_bill()
+        with freeze_time('2025-01-15'):
+            bill.action_post()
+        self.assertFalse(bill.asset_ids)
+
     # -------------------------------------------------------------------------
     # Reversal and cancellation
     # -------------------------------------------------------------------------
@@ -396,20 +528,40 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
             'date_to': date(2025, 12, 31),
             'category_ids': [Command.set(self.category.ids)],
         })
-        groups, total = wizard._get_schedule_data()
-        lines = {line['asset']: line for line in groups[0]['lines']}
-        self.assertDictEqual({k: v for k, v in lines[running].items() if k not in ('asset', 'method')}, {
-            'asset_opening': 1200.0, 'asset_increase': 0.0, 'asset_decrease': 0.0, 'asset_closing': 1200.0,
-            'depreciation_opening': 600.0, 'depreciation_increase': 600.0, 'depreciation_decrease': 0.0,
-            'depreciation_closing': 1200.0, 'book_value': 0.0,
+        schedule = wizard._get_schedule_data()
+        lines = {line['asset']: line for line in schedule['register'][0]['lines']}
+        movement_keys = (
+            'cost_opening', 'cost_additions', 'cost_disposals', 'cost_closing', 'depreciation_opening',
+            'depreciation_acquired', 'depreciation_charge', 'depreciation_disposals', 'depreciation_closing',
+            'nbv_opening', 'nbv_closing')
+        self.assertDictEqual({key: lines[running][key] for key in movement_keys}, {
+            'cost_opening': 1200.0, 'cost_additions': 0.0, 'cost_disposals': 0.0, 'cost_closing': 1200.0,
+            'depreciation_opening': 600.0, 'depreciation_acquired': 0.0, 'depreciation_charge': 600.0,
+            'depreciation_disposals': 0.0, 'depreciation_closing': 1200.0, 'nbv_opening': 600.0, 'nbv_closing': 0.0,
         })
-        self.assertDictEqual({k: v for k, v in lines[sold].items() if k not in ('asset', 'method')}, {
-            'asset_opening': 0.0, 'asset_increase': 1200.0, 'asset_decrease': 1200.0, 'asset_closing': 0.0,
-            'depreciation_opening': 0.0, 'depreciation_increase': 300.0, 'depreciation_decrease': 300.0,
-            'depreciation_closing': 0.0, 'book_value': 0.0,
+        self.assertEqual(lines[running]['depreciated_percent'], 100)
+        self.assertDictEqual({key: lines[sold][key] for key in movement_keys}, {
+            'cost_opening': 0.0, 'cost_additions': 1200.0, 'cost_disposals': 1200.0, 'cost_closing': 0.0,
+            'depreciation_opening': 0.0, 'depreciation_acquired': 0.0, 'depreciation_charge': 300.0,
+            'depreciation_disposals': 300.0, 'depreciation_closing': 0.0, 'nbv_opening': 0.0, 'nbv_closing': 0.0,
         })
-        self.assertEqual(total['asset_closing'], 1200.0)
+        self.assertTrue(lines[sold]['is_disposed'])
+        self.assertEqual(lines[sold]['disposed_nbv'], 900.0)
+        self.assertEqual(schedule['total']['cost_closing'], 1200.0)
+        self.assertEqual(schedule['categories'], [{'name': self.category.name, 'movements': schedule['total']}])
+
+        # the movement statement adds up: opening + movements = closing, for the cost and the depreciation
+        total = schedule['total']
+        self.assertEqual(total['cost_opening'] + total['cost_additions'] - total['cost_disposals'], total['cost_closing'])
+        self.assertEqual(
+            total['depreciation_opening'] + total['depreciation_acquired'] + total['depreciation_charge']
+            - total['depreciation_disposals'], total['depreciation_closing'])
+        rows = wizard._get_statement_rows(schedule['categories'])
+        self.assertNotIn('depreciation_acquired', [row[2] for row in rows])
+        self.assertEqual(wizard._get_statement_tables(schedule['categories'], total)[-1][-1][1], total)
 
         html = self.env['ir.actions.report']._render_qweb_html(
             'om_account_asset.report_depreciation_schedule', wizard.ids)[0]
         self.assertIn(b'Depreciation Schedule', html)
+        self.assertIn(b'Movement by Category', html)
+        self.assertIn(b'Asset Register', html)

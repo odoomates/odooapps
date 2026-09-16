@@ -24,10 +24,10 @@
                                 <span t-field="o.partner_id.ref"/>
                             </p>
 
-                            <p t-out="get_text(o,data['followup_id']).replace('\n', '&lt;br&gt;')"/>
+                            <p style="white-space: pre-line;" t-out="get_text(o,data['followup_id'])"/>
 
                             <t t-foreach="getLines(o)" t-as="cur_lines">
-                                <table class="table table-condensed"
+                                <table class="table table-sm"
                                        style="margin-top: 50px;">
                                     <thead>
                                         <tr>
@@ -35,8 +35,7 @@
                                             <th>Description</th>
                                             <th class="text-center">Ref</th>
                                             <th class="text-center">Maturity Date</th>
-                                            <th class="text-right">Amount</th>
-                                            <th class="text-center">Due</th>
+                                            <th class="text-end">Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -54,15 +53,17 @@
                                             <td class="text-center">
                                                 <span t-out="line['date_maturity']"/>
                                             </td>
-                                            <td class="text-right">
-                                                <span t-out="line['balance']"/>
+                                            <td class="text-end">
+                                                <span t-out="line['balance']"
+                                                      t-options="{'widget': 'monetary', 'display_currency': cur_lines['currency']}"/>
                                             </td>
                                         </tr>
                                     </tbody>
                                 </table>
 
                                 <p>Total:
-                                    <span t-out="cur_lines['total']"/>
+                                    <span t-out="cur_lines['total']"
+                                          t-options="{'widget': 'monetary', 'display_currency': cur_lines['currency']}"/>
                                 </p>
                             </t>
                         </div>

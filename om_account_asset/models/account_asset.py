@@ -38,7 +38,8 @@ BOARD_FIELDS = {
     'method_period', 'method_end', 'method_rate', 'method_progress_factor', 'method_time', 'prorata',
     'date_first_depreciation', 'first_depreciation_manual_date', 'category_id', 'currency_id',
 }
-BOARD_ENTRY_TYPES = ('depreciation', 'revaluation')
+# a partial disposal removes a share of the depreciation from the board
+BOARD_ENTRY_TYPES = ('depreciation', 'revaluation', 'partial_disposal')
 
 
 def _days_in_month(day):
@@ -138,6 +139,15 @@ class AccountAssetCategory(models.Model):
         help="Check this if you want to automatically confirm the assets "
              "of this category when created by invoices."
     )
+    create_from_bill = fields.Boolean(
+        string='Assets from Bills on the Asset Account',
+        help="Vendor bill lines booked on the asset account of this category get this category, "
+             "so that their assets are created when the bill is posted."
+    )
+    asset_per_unit = fields.Boolean(
+        string='One Asset per Unit',
+        help="A bill line of several units creates one asset for each unit instead of one for the line."
+    )
     type = fields.Selection(
         [('sale', 'Sale: Revenue Recognition'), ('purchase', 'Purchase: Asset')],
         required=True, index=True, default='purchase'
@@ -157,6 +167,26 @@ class AccountAssetCategory(models.Model):
         for category in self:
             if category.method_time == 'rate' and float_compare(category.method_rate, 0.0, precision_digits=2) <= 0:
                 raise ValidationError(_('The depreciation rate of "%s" must be greater than 0.', category.name))
+
+    @api.constrains('create_from_bill', 'account_asset_id', 'company_id', 'type', 'active')
+    def _check_create_from_bill(self):
+        for category in self.filtered(lambda c: c.create_from_bill and c.active):
+            if category.type != 'purchase':
+                raise ValidationError(_('Only asset categories can create their assets from the bills on their account.'))
+            if category._get_bill_categories(category.account_asset_id, category.company_id) != category:
+                raise ValidationError(_(
+                    'Another category already creates its assets from the bills on the account %s.',
+                    category.account_asset_id.display_name))
+
+    @api.model
+    def _get_bill_categories(self, account, company):
+        """ Categories giving their assets to the vendor bill lines booked on `account`. """
+        return self.search([
+            ('create_from_bill', '=', True),
+            ('type', '=', 'purchase'),
+            ('account_asset_id', '=', account.id),
+            ('company_id', '=', company.id),
+        ])
 
     @api.onchange('account_asset_id')
     def onchange_account_asset(self):
@@ -316,7 +346,7 @@ class AccountAssetAsset(models.Model):
             if asset._get_board_moves().filtered(lambda m: m.state == 'posted'):
                 raise UserError(_('You cannot delete a document that contains posted entries.'))
         self.depreciation_move_ids.with_context(om_asset_board_update=True).unlink()
-        return super(AccountAssetAsset, self).unlink()
+        return super().unlink()
 
     # -------------------------------------------------------------------------
     # BOARD COMPUTATION
@@ -754,11 +784,13 @@ class AccountAssetAsset(models.Model):
             'domain': [('id', 'in', disposal_moves.ids)],
         }
 
-    def _get_disposal_balances(self, disposal_date, sale_lines):
+    def _get_disposal_balances(self, disposal_date, sale_lines, disposed=None):
         """ Balance per account of the entry removing the asset from the books, in company currency:
         the gross value leaves the asset account, the accumulated depreciation is cancelled, the sale
         price leaves the income accounts of the invoice and the rest is a gain or a loss.
 
+        :param disposed: partial disposal, amounts in the currency of the asset removed from the books:
+                         value, opening (depreciation before import) and depreciation (posted)
         :return: (list of (account, balance), book value, sale price)
         """
         company = self.company_id
@@ -768,10 +800,14 @@ class AccountAssetAsset(models.Model):
         def to_company_currency(amount, at_date):
             return currency.round(self.currency_id._convert(amount, currency, company, at_date))
 
-        gross_value = to_company_currency(self.value, self.date)
-        accumulated = to_company_currency(self.opening_depreciation, self.date)
-        for move in self._get_board_moves().filtered(lambda m: m.state == 'posted'):
-            accumulated += to_company_currency(move.asset_depreciation_amount, move.date)
+        if disposed:
+            gross_value, accumulated = self._get_disposed_company_amounts(
+                disposed['value'], disposed['opening'], disposed['depreciation'], disposal_date)
+        else:
+            gross_value = to_company_currency(self.value, self.date)
+            accumulated = to_company_currency(self.opening_depreciation, self.date)
+            for move in self._get_board_moves().filtered(lambda m: m.state == 'posted'):
+                accumulated += to_company_currency(move.asset_depreciation_amount, move.date)
         sale_price_by_account = defaultdict(float)
         for line in sale_lines:
             sale_price_by_account[line.account_id] -= line.balance
@@ -786,6 +822,91 @@ class AccountAssetAsset(models.Model):
         balances += [(account, currency.round(amount)) for account, amount in sale_price_by_account.items()]
         balances.append((result_account, -result))
         return [(account, balance) for account, balance in balances if account and not currency.is_zero(balance)], book_value, sale_price
+
+    def _dispose_partially(self, disposal_date, share, sale_lines=None, note=None):
+        """ Sell or dispose of `share` (between 0 and 1) of the asset: the running period is depreciated up to
+        `disposal_date`, the same share of the gross value, salvage value and depreciation leaves the books with a
+        posted entry booking the gain or the loss, and the rest of the asset depreciates on.
+
+        :return: the partial disposal entry
+        """
+        self.ensure_one()
+        currency = self.currency_id
+        sale_lines = sale_lines or self.env['account.move.line']
+        if self.state not in ('open', 'paused'):
+            raise UserError(_('Only running or paused assets can be sold or disposed of.'))
+        if not 0.0 < share < 1.0:
+            raise UserError(_('The share of the asset disposed of must be between 0 and 100%.'))
+        if self.children_ids.filtered(lambda increase: increase.state in ('open', 'paused')):
+            raise UserError(_('"%s" has running value increases: sell or dispose of the whole asset.', self.name))
+        if disposal_date < self.date - timedelta(days=1):
+            raise UserError(_('"%s" cannot be disposed of before its acquisition.', self.name))
+        if disposal_date > fields.Date.context_today(self):
+            raise UserError(_('A partial disposal cannot be recorded in the future.'))
+        self._check_lock_date(disposal_date)
+        if self.state == 'open':
+            self._depreciate_until(disposal_date)
+
+        posted_moves = self._get_board_moves().filtered(lambda m: m.state == 'posted')
+        disposed = {
+            'value': currency.round(self.value * share),
+            'salvage': currency.round(self.salvage_value * share),
+            'opening': currency.round(self.opening_depreciation * share),
+            'depreciation': currency.round(sum(posted_moves.mapped('asset_depreciation_amount')) * share),
+        }
+        balances, book_value, sale_price = self._get_disposal_balances(disposal_date, sale_lines, disposed=disposed)
+        self.write({
+            'value': self.value - disposed['value'],
+            'salvage_value': self.salvage_value - disposed['salvage'],
+            'opening_depreciation': self.opening_depreciation - disposed['opening'],
+        })
+        label = _('%(asset)s: Partial Sale (%(share)s%%)', asset=self.name, share=round(share * 100, 2)) if sale_lines \
+            else _('%(asset)s: Partial Disposal (%(share)s%%)', asset=self.name, share=round(share * 100, 2))
+        move = self.env['account.move'].create({
+            'ref': label,
+            'date': disposal_date,
+            'journal_id': self.category_id.journal_id.id,
+            'move_type': 'entry',
+            'depreciation_asset_id': self.id,
+            'asset_entry_type': 'partial_disposal',
+            'asset_depreciation_amount': -disposed['depreciation'],
+            'asset_period_start': disposal_date,
+            'asset_disposed_value': disposed['value'],
+            'asset_disposed_salvage': disposed['salvage'],
+            'asset_disposed_opening': disposed['opening'],
+            'line_ids': [
+                Command.create({
+                    'name': label,
+                    'account_id': account.id,
+                    'balance': balance,
+                    'analytic_distribution': self.analytic_distribution,
+                })
+                for account, balance in balances
+            ],
+        })
+        move._post(soft=False)
+        if self.state == 'open':
+            self._recompute_board(keep_until=disposal_date)
+        company_currency = self.company_id.currency_id
+        result = company_currency.round(sale_price - book_value)
+        body = _('%(share)s%% sold on %(date)s (%(invoices)s), %(entry)s. Gain or loss: %(result)s. %(note)s',
+                 share=round(share * 100, 2), date=disposal_date, invoices=self._links_markup(sale_lines.move_id),
+                 entry=move._get_html_link(), result=result, note=note or '') if sale_lines else \
+            _('%(share)s%% disposed of on %(date)s, %(entry)s. Loss: %(result)s. %(note)s',
+              share=round(share * 100, 2), date=disposal_date, entry=move._get_html_link(), result=-result, note=note or '')
+        self.message_post(body=body)
+        return move
+
+    def _get_disposed_company_amounts(self, value, opening, depreciation, disposal_date):
+        """ Gross value and accumulated depreciation removed by a partial disposal, in company currency. """
+        company = self.company_id
+        currency = company.currency_id
+
+        def to_company_currency(amount, at_date):
+            return currency.round(self.currency_id._convert(amount, currency, company, at_date))
+
+        return (to_company_currency(value, self.date),
+                to_company_currency(opening, self.date) + to_company_currency(depreciation, disposal_date))
 
     def _dispose(self, disposal_date, sale_lines, note=None):
         """ Depreciate up to `disposal_date` and create the draft entry removing the asset from the books. """
@@ -942,14 +1063,14 @@ class AccountAssetAsset(models.Model):
         if default is None:
             default = {}
         default['name'] = self.name + _(' (copy)')
-        return super(AccountAssetAsset, self).copy_data(default)
+        return super().copy_data(default)
 
     @api.model_create_multi
     def create(self, vals_list):
         return super(AccountAssetAsset, self.with_context(mail_create_nolog=True)).create(vals_list)
 
     def write(self, vals):
-        res = super(AccountAssetAsset, self).write(vals)
+        res = super().write(vals)
         if 'analytic_distribution' in vals:
             self._get_board_moves().filtered(lambda m: m.state == 'draft').line_ids.analytic_distribution = vals['analytic_distribution']
         if BOARD_FIELDS & set(vals):

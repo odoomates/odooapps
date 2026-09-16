@@ -1,10 +1,12 @@
 from collections import defaultdict
 
 from dateutil.relativedelta import relativedelta
+from markupsafe import Markup
 
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.fields import Domain
+from odoo.tools.misc import formatLang
 
 from .account_budget_position import BUDGET_TYPES
 
@@ -216,6 +218,95 @@ class AccountBudgetLine(models.Model):
             for groups in result:
                 self._fill_computed_aggregates(domain, groups, computed_specs)
         return result
+
+    # -------------------------------------------------------------------------
+    # CONTROL OF THE EXPENSES
+    # -------------------------------------------------------------------------
+
+    def _get_committed_amount(self):
+        """ Expenses already decided but not recorded in the accounting yet (e.g. confirmed purchases). """
+        self.ensure_one()
+        return 0.0
+
+    def _get_item_amount(self, item):
+        """ Part of an expense counted by this budget line.
+
+        :param item: dictionary with date, account (account.account), analytic_distribution (dict), amount
+                     (company currency, positive for a cost)
+        """
+        self.ensure_one()
+        if not (self.date_from <= item['date'] <= self.date_to):
+            return 0.0
+        if self.position_id and item['account'] not in self.position_id.account_ids:
+            return 0.0
+        if self.analytic_account_id:
+            analytic_id = str(self.analytic_account_id.id)
+            percent = sum(
+                float(share) for key, share in (item.get('analytic_distribution') or {}).items()
+                if analytic_id in str(key).split(',')
+            )
+            return item['amount'] * percent / 100.0
+        return item['amount']
+
+    @api.model
+    def _get_budget_overruns(self, company, items):
+        """ Expense lines of the confirmed and validated budgets that `items` would push over their planned amount.
+
+        :param items: list of dictionaries, see `_get_item_amount`
+        :return: list of dictionaries with line, planned, actual, committed, new, over
+        """
+        items = [item for item in items if item.get('amount')]
+        if not items:
+            return []
+        dates = [item['date'] for item in items]
+        lines = self.search([
+            ('company_id', '=', company.id),
+            ('budget_state', 'in', ('confirm', 'validate')),
+            ('budget_type', '=', 'expense'),
+            ('date_from', '<=', max(dates)),
+            ('date_to', '>=', min(dates)),
+        ])
+        overruns = []
+        for line in lines:
+            new = line.currency_id.round(sum(line._get_item_amount(item) for item in items))
+            if line.currency_id.compare_amounts(new, 0.0) <= 0:
+                continue
+            committed = line._get_committed_amount()
+            total = line.practical_amount + committed + new
+            if line.currency_id.compare_amounts(total, line.planned_amount) > 0:
+                overruns.append({
+                    'line': line,
+                    'planned': line.planned_amount,
+                    'actual': line.practical_amount,
+                    'committed': committed,
+                    'new': new,
+                    'over': line.currency_id.round(total - line.planned_amount),
+                })
+        return overruns
+
+    @api.model
+    def _format_budget_overruns(self, overruns, html=True):
+        texts = []
+        for overrun in overruns:
+            line = overrun['line']
+            money = lambda amount: formatLang(self.env, amount, currency_obj=line.currency_id)
+            if line.currency_id.is_zero(overrun['committed']):
+                text = _('%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, this document %(new)s, '
+                         '%(over)s over budget',
+                         line=line.name, budget=line.budget_id.name, planned=money(overrun['planned']),
+                         actual=money(overrun['actual']), new=money(overrun['new']), over=money(overrun['over']))
+            else:
+                text = _('%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, committed %(committed)s, '
+                         'this document %(new)s, %(over)s over budget',
+                         line=line.name, budget=line.budget_id.name, planned=money(overrun['planned']),
+                         actual=money(overrun['actual']), committed=money(overrun['committed']),
+                         new=money(overrun['new']), over=money(overrun['over']))
+            texts.append(text)
+        if not html:
+            return '\n'.join('- %s' % text for text in texts)
+        return Markup('<strong>%s</strong><ul class="mb-0">%s</ul>') % (
+            _('This document goes over budget'),
+            Markup().join(Markup('<li>%s</li>') % text for text in texts))
 
     # -------------------------------------------------------------------------
     # CONSTRAINTS AND LOCK

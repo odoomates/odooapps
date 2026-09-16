@@ -287,3 +287,67 @@ class TestBudget(AccountTestInvoicingCommon):
         self.env['account.budget']._cron_warn_budget_responsibles()
         self.assertEqual(line.warning_level, 'exceeded')
         self.assertEqual(len(warnings()), 2)
+
+    # -------------------------------------------------------------------------
+    # Control of the expenses
+    # -------------------------------------------------------------------------
+
+    def _validated_budget_lines(self):
+        department = self._create_line(analytic_account_id=self.analytic_accounts[0].id, planned_amount=1000.0)
+        position = self._create_line(position_id=self.position.id, planned_amount=5000.0)
+        self.budget.action_budget_confirm()
+        self.budget.action_budget_validate()
+        return department, position
+
+    def test_bill_budget_warning(self):
+        department, _position = self._validated_budget_lines()
+        self._create_bill(800.0, analytic_account=self.analytic_accounts[0])
+
+        within = self._create_bill(150.0, analytic_account=self.analytic_accounts[0], post=False)
+        self.assertFalse(within.budget_warning)
+
+        over = self._create_bill(300.0, analytic_account=self.analytic_accounts[0], post=False)
+        overruns = over._get_budget_overruns()
+        self.assertEqual([(overrun['line'], overrun['over']) for overrun in overruns], [(department, 100.0)])
+        self.assertIn('over budget', over.budget_warning)
+        self.assertIn(department.name, over.budget_warning)
+
+        # the position line counts every bill on its accounts, analytic or not
+        big = self._create_bill(4500.0, post=False)
+        self.assertEqual([overrun['over'] for overrun in big._get_budget_overruns()], [300.0])
+
+        # outside the period of the budget, a refund, a posted bill: no warning
+        self.assertFalse(self._create_bill(9000.0, post=False, move_date='2027-01-05').budget_warning)
+        refund = self._create_move('in_refund', 5000.0, self.expense_account, post=False)
+        self.assertFalse(refund.budget_warning)
+        over.action_post()
+        self.assertFalse(over.budget_warning)
+
+    def test_block_documents_over_budget(self):
+        self._validated_budget_lines()
+        self.env.company.budget_block_documents = True
+        accountant = new_test_user(self.env, login='budget_accountant', groups='account.group_account_user',
+                                   company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
+        bill = self._create_bill(1500.0, analytic_account=self.analytic_accounts[0], post=False)
+        with self.assertRaises(UserError):
+            bill.with_user(accountant).action_post()
+        self.assertEqual(bill.state, 'draft')
+        # an accounting manager may post it
+        bill.action_post()
+        self.assertEqual(bill.state, 'posted')
+
+        self.env.company.budget_block_documents = False
+        other = self._create_bill(1500.0, analytic_account=self.analytic_accounts[0], post=False)
+        other.with_user(accountant).action_post()
+        self.assertEqual(other.state, 'posted')
+
+    def test_budget_vs_actual_report(self):
+        department, position = self._validated_budget_lines()
+        self._create_bill(250.0, analytic_account=self.analytic_accounts[0])
+        html = self.env['ir.actions.report']._render_qweb_html(
+            'om_account_budget.report_budget_vs_actual', self.budget.ids)[0].decode()
+        self.assertIn('Budget vs Actual', html)
+        self.assertIn(department.name, html)
+        self.assertIn(position.name, html)
+        self.assertIn('Expenses', html)
+        self.assertNotIn('Revenues', html)

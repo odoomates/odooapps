@@ -8,6 +8,13 @@ class AccountFollowupStat(models.Model):
     _rec_name = 'partner_id'
     _order = 'date_move'
     _auto = False
+    _depends = {
+        'account.move.line': [
+            'account_id', 'company_id', 'credit', 'date', 'debit',
+            'followup_date', 'followup_line_id', 'full_reconcile_id', 'partner_id',
+        ],
+        'account.account': ['account_type'],
+    }
 
     partner_id = fields.Many2one('res.partner', 'Partner', readonly=True)
     date_move = fields.Date('First move', readonly=True)

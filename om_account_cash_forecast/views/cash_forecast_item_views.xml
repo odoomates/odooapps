@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_cash_forecast_item_list" model="ir.ui.view">
+        <field name="name">account.cash.forecast.item.list</field>
+        <field name="model">account.cash.forecast.item</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" decoration-success="direction == 'in'" decoration-danger="direction == 'out'">
+                <field name="name"/>
+                <field name="direction"/>
+                <field name="amount"/>
+                <field name="currency_id" groups="base.group_multi_currency" options="{'no_create': True}"/>
+                <field name="date"/>
+                <field name="recurrence"/>
+                <field name="date_end" invisible="recurrence == 'none'"/>
+                <field name="partner_id" optional="show"/>
+                <field name="note" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_cash_forecast_item_search" model="ir.ui.view">
+        <field name="name">account.cash.forecast.item.search</field>
+        <field name="model">account.cash.forecast.item</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <filter string="Receipts" name="receipts" domain="[('direction', '=', 'in')]"/>
+                <filter string="Payments" name="payments" domain="[('direction', '=', 'out')]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_cash_forecast_item" model="ir.actions.act_window">
+        <field name="name">Expected Cash Items</field>
+        <field name="res_model">account.cash.forecast.item</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add the receipts and payments the invoices do not show</p>
+            <p>Salaries, rent, loan repayments, taxes... once or every month: they are part of the cash forecast.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_cash_forecast_item"
+              name="Expected Cash Items"
+              sequence="31"
+              parent="account.account_reports_management_menu"
+              action="action_cash_forecast_item"
+              groups="account.group_account_readonly,account.group_account_invoice"/>
+
+</odoo>

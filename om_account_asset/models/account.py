@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from datetime import date
@@ -24,6 +23,7 @@ class AccountMove(models.Model):
         ('revaluation', 'Re-evaluation'),
         ('value_increase', 'Value Increase'),
         ('disposal', 'Disposal'),
+        ('partial_disposal', 'Partial Disposal'),
         ('sale', 'Sale')],
         string='Asset Entry Type', copy=False, readonly=True,
     )
@@ -31,6 +31,16 @@ class AccountMove(models.Model):
     asset_depreciation_amount = fields.Monetary(
         string='Depreciation', currency_field='asset_currency_id', copy=False,
         help="Value of the asset depreciated by this entry, in the currency of the asset.",
+    )
+    asset_disposed_value = fields.Monetary(
+        string='Disposed Gross Value', currency_field='asset_currency_id', copy=False, readonly=True,
+        help="Partial disposal: gross value removed from the asset, in the currency of the asset.",
+    )
+    asset_disposed_salvage = fields.Monetary(
+        string='Disposed Salvage Value', currency_field='asset_currency_id', copy=False, readonly=True,
+    )
+    asset_disposed_opening = fields.Monetary(
+        string='Disposed Opening Depreciation', currency_field='asset_currency_id', copy=False, readonly=True,
     )
     asset_period_start = fields.Date(
         string='Depreciated From', copy=False, readonly=True,
@@ -59,19 +69,30 @@ class AccountMove(models.Model):
         'depreciation_asset_id.depreciation_move_ids.state',
         'depreciation_asset_id.depreciation_move_ids.date',
         'depreciation_asset_id.depreciation_move_ids.asset_depreciation_amount',
+        'depreciation_asset_id.depreciation_move_ids.asset_disposed_value',
     )
     def _compute_asset_board_values(self):
         values = {}
         for asset in self.depreciation_asset_id:
-            cumulative = asset.opening_depreciation
-            depreciable = asset.value - asset.salvage_value - asset.opening_depreciation
             board = asset._get_board_moves().sorted(
                 lambda m: (m.date or date.min, m.id if isinstance(m.id, int) else 0))
+            partial_disposals = board.filtered(lambda m: m.asset_entry_type == 'partial_disposal' and m.state != 'cancel')
+            # the values of the asset before its partial disposals
+            opening = asset.opening_depreciation + sum(partial_disposals.mapped('asset_disposed_opening'))
+            salvage = asset.salvage_value + sum(partial_disposals.mapped('asset_disposed_salvage'))
+            value = asset.value + sum(partial_disposals.mapped('asset_disposed_value'))
+            cumulative = opening
+            depreciable = value - salvage - opening
             for move in board:
                 if move.state != 'cancel':
                     cumulative += move.asset_depreciation_amount
                     depreciable -= move.asset_depreciation_amount
-                values[move.id] = (cumulative, depreciable, depreciable + asset.salvage_value)
+                    if move.asset_entry_type == 'partial_disposal':
+                        cumulative -= move.asset_disposed_opening
+                        salvage -= move.asset_disposed_salvage
+                        depreciable -= (move.asset_disposed_value - move.asset_disposed_salvage
+                                        - move.asset_disposed_opening)
+                values[move.id] = (cumulative, depreciable, depreciable + salvage)
         for move in self:
             cumulative, depreciable, book = values.get(move.id, (0.0, 0.0, 0.0))
             move.asset_cumulative_depreciation = cumulative
@@ -107,6 +128,24 @@ class AccountMove(models.Model):
                 raise UserError(_(
                     'The entry %(entry)s is part of the depreciation board of "%(asset)s": use the actions of '
                     'the asset (modify, pause, sell or dispose, cancel) to change its board.',
+                    entry=move.display_name, asset=move.depreciation_asset_id.name,
+                ))
+
+    def button_draft(self):
+        self._check_asset_partial_disposal_kept()
+        return super().button_draft()
+
+    def button_cancel(self):
+        self._check_asset_partial_disposal_kept()
+        return super().button_cancel()
+
+    def _check_asset_partial_disposal_kept(self):
+        if self.env.context.get('om_asset_board_update'):
+            return
+        for move in self:
+            if move.asset_entry_type == 'partial_disposal' and move.depreciation_asset_id.state != 'cancelled':
+                raise UserError(_(
+                    'The entry %(entry)s records the partial disposal of "%(asset)s": cancel the asset to remove it.',
                     entry=move.display_name, asset=move.depreciation_asset_id.name,
                 ))
 
@@ -156,6 +195,7 @@ class AccountMove(models.Model):
         if self.env.context.get('om_asset_board_update'):
             return super()._reverse_moves(default_values_list=default_values_list, cancel=cancel)
 
+        self._check_asset_partial_disposal_kept()
         board_moves = self.filtered(lambda m: m._is_asset_board_entry() and m.state == 'posted')
         for move, default_values in zip(self, default_values_list):
             if move in board_moves:

@@ -2,7 +2,7 @@
     'name': 'Odoo 20 HR Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
     'author': 'Odoo Mates, Odoo SA',
-    'version': '1.0.0',
+    'version': '1.1.0',
     'sequence': 1,
     'license': 'LGPL-3',
     'live_test_url': 'https://www.youtube.com/watch?v=0kaHMTtn7oY',
@@ -13,6 +13,7 @@
         'account'
     ],
     'data': [
+        'security/ir.access.csv',
         'views/hr_payroll_account_views.xml'
     ],
     'images': ['static/description/banner.png'],

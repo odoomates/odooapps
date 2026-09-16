@@ -100,6 +100,9 @@ class ReportJournal(models.AbstractModel):
 
         target_move = data['form'].get('target_move', 'all')
         sort_selection = data['form'].get('sort_selection', 'date')
+        # the lines are read with SQL: write the pending changes first
+        self.env['account.move.line'].flush_model()
+        self.env['account.move'].flush_model()
 
         res = {}
         for journal in data['form']['journal_ids']:

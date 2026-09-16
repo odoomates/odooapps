@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_period_closing_list" model="ir.ui.view">
+        <field name="name">account.period.closing.list</field>
+        <field name="model">account.period.closing</field>
+        <field name="arch" type="xml">
+            <list decoration-muted="state == 'closed'">
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="blocking_count" string="Blocking" optional="show"/>
+                <field name="warning_count" string="Warnings" optional="show"/>
+                <field name="task_todo_count" string="Tasks To Do" optional="show"/>
+                <field name="closed_by_id" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-info="state == 'open'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_account_period_closing_form" model="ir.ui.view">
+        <field name="name">account.period.closing.form</field>
+        <field name="model">account.period.closing</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_refresh" string="Check Again" type="object" invisible="state != 'open' or not id"/>
+                    <button name="action_close" string="Close Period" type="object" class="oe_highlight"
+                            invisible="state != 'open' or not id" groups="account.group_account_manager"/>
+                    <button name="action_reopen" string="Reopen" type="object" invisible="state != 'closed'"
+                            groups="account.group_account_manager"
+                            confirm="The lock dates set by this closing go back to their previous value. Reopen the period?"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date_from" readonly="state == 'closed'"/>
+                            <field name="date_to" readonly="state == 'closed'"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group>
+                            <field name="lock_type" readonly="state == 'closed'"/>
+                            <field name="last_check_date" invisible="not last_check_date"/>
+                            <field name="closed_by_id" invisible="state != 'closed'"/>
+                            <field name="closed_on" invisible="state != 'closed'"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-danger" role="alert" invisible="not blocking_count or state == 'closed'">
+                        <field name="blocking_count" class="oe_inline"/> point(s) must be dealt with before closing.
+                    </div>
+                    <notebook>
+                        <page string="Checklist" name="checklist">
+                            <field name="check_ids" readonly="state == 'closed'">
+                                <list create="0" delete="0" editable="bottom"
+                                      decoration-danger="status == 'blocking'" decoration-warning="status == 'warning'"
+                                      decoration-muted="status in ('ok', 'done')">
+                                    <field name="is_manual" column_invisible="1"/>
+                                    <field name="code" column_invisible="1"/>
+                                    <field name="name" readonly="1"/>
+                                    <field name="count" invisible="is_manual" readonly="1"/>
+                                    <field name="responsible_id" readonly="not is_manual" optional="show"/>
+                                    <field name="note" optional="hide"/>
+                                    <field name="done_by_id" optional="show"/>
+                                    <field name="done_on" optional="hide"/>
+                                    <field name="status" widget="badge" decoration-danger="status == 'blocking'"
+                                           decoration-warning="status in ('warning', 'todo')"
+                                           decoration-success="status in ('ok', 'done')"/>
+                                    <button name="action_open" type="object" string="Open" icon="open_in_new"
+                                            invisible="is_manual or not count"/>
+                                    <button name="action_mark_done" type="object" string="Done" icon="check"
+                                            invisible="not is_manual or status == 'done'"/>
+                                    <button name="action_mark_todo" type="object" string="Undo" icon="undo"
+                                            invisible="not is_manual or status != 'done'"/>
+                                </list>
+                            </field>
+                            <p class="text-muted">
+                                Blocking points prevent the closing. The tasks come from the closing tasks set in the
+                                configuration; add yours there.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_account_period_closing_search" model="ir.ui.view">
+        <field name="name">account.period.closing.search</field>
+        <field name="model">account.period.closing</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter string="Open" name="open" domain="[('state', '=', 'open')]"/>
+                <filter string="Closed" name="closed" domain="[('state', '=', 'closed')]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_period_closing" model="ir.actions.act_window">
+        <field name="name">Period Closing</field>
+        <field name="res_model">account.period.closing</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_account_period_closing_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Close a month</p>
+            <p>The checklist shows what is left to do in the period, then the period is closed and locked.</p>
+        </field>
+    </record>
+
+    <record id="view_account_period_closing_task_list" model="ir.ui.view">
+        <field name="name">account.period.closing.task.list</field>
+        <field name="model">account.period.closing.task</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="responsible_id"/>
+                <field name="note" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_account_period_closing_task" model="ir.actions.act_window">
+        <field name="name">Closing Tasks</field>
+        <field name="res_model">account.period.closing.task</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add the tasks of each closing</p>
+            <p>e.g. accrue the electricity, review the payroll: they are added to the checklist of each new closing.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_account_period_closing"
+              name="Period Closing"
+              sequence="5"
+              parent="account.account_closing_menu"
+              action="action_account_period_closing"
+              groups="account.group_account_user,account.group_account_manager"/>
+
+    <menuitem id="menu_account_period_closing_task"
+              name="Closing Tasks"
+              sequence="20"
+              parent="account.account_account_menu"
+              action="action_account_period_closing_task"
+              groups="account.group_account_manager"/>
+
+</odoo>

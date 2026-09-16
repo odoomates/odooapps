@@ -1,5 +1,14 @@
 from odoo import api, fields, models, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
+
+
+def _default_salary_journal(records):
+    # the payroll users may have no accounting rights: only the journal of the company is looked up
+    company = records.env.company
+    journal = records.env['account.journal'].sudo().search([
+        ('type', '=', 'general'), ('company_id', '=', company.id),
+    ], limit=1)
+    return journal.id
 
 
 class HrPayslipLine(models.Model):
@@ -28,31 +37,73 @@ class HrPayslip(models.Model):
         'Date Account', help="Keep empty to use the period of the validation(Payslip) date."
     )
     journal_id = fields.Many2one(
-        'account.journal', 'Salary Journal', required=True,
-        default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1)
+        'account.journal', 'Salary Journal', required=True, default=_default_salary_journal,
+        domain="[('company_id', '=', company_id)]",
     )
     move_id = fields.Many2one('account.move', 'Accounting Entry', readonly=True, copy=False)
 
+    @api.constrains('journal_id', 'company_id')
+    def _check_journal_company(self):
+        for slip in self:
+            if slip.company_id and slip.journal_id.sudo().company_id != slip.company_id:
+                raise ValidationError(_('The salary journal of the payslip %(payslip)s must belong to %(company)s.',
+                                        payslip=slip.name or slip.number or '', company=slip.company_id.name))
+
+    def _get_company_salary_journal(self):
+        self.ensure_one()
+        journal = self.version_id.journal_id
+        if journal.sudo().company_id == self.company_id:
+            return journal
+        if self.journal_id.sudo().company_id == self.company_id:
+            return self.journal_id
+        return self.env['account.journal'].browse(_default_salary_journal(self.with_company(self.company_id)))
+
     @api.model_create_multi
     def create(self, vals_list):
-        if self.env.context.get('journal_id'):
-            for vals in vals_list:
+        for vals in vals_list:
+            if self.env.context.get('journal_id'):
                 vals.setdefault('journal_id', self.env.context['journal_id'])
-        return super(HrPayslip, self).create(vals_list)
+            if not vals.get('journal_id') and vals.get('company_id'):
+                # the default journal is the one of the company of the payslip, not of the current company
+                journal_id = _default_salary_journal(self.with_company(vals['company_id']))
+                if journal_id:
+                    vals['journal_id'] = journal_id
+        return super().create(vals_list)
 
     @api.onchange('version_id')
     def onchange_version(self):
-        super(HrPayslip, self).onchange_version()
-        self.journal_id = self.version_id.journal_id or self.journal_id or self.default_get(['journal_id']).get('journal_id')
+        super().onchange_version()
+        self.journal_id = self._get_company_salary_journal()
+
+    @api.onchange('employee_id', 'date_from', 'date_to')
+    def onchange_employee(self):
+        res = super().onchange_employee()
+        if self.company_id and self.journal_id.sudo().company_id != self.company_id:
+            self.journal_id = self._get_company_salary_journal()
+        return res
 
     def action_payslip_cancel(self):
-        moves = self.mapped('move_id')
-        moves.filtered(lambda x: x.state == 'posted').button_cancel()
-        moves.unlink()
-        return super(HrPayslip, self).action_payslip_cancel()
+        self._check_own_payslip()
+        for slip in self.filtered('move_id'):
+            move = slip.move_id.sudo()
+            if move.reversal_move_ids.filtered(lambda reversal: reversal.state == 'posted'):
+                # already cancelled in the books by a reversal: the entry stays
+                continue
+            try:
+                with self.env.cr.savepoint():
+                    if move.state == 'posted':
+                        move.button_draft()
+                    move.unlink()
+            except UserError as error:
+                raise UserError(_(
+                    'The accounting entry %(entry)s of the payslip %(payslip)s cannot be deleted: %(reason)s\n'
+                    'Reverse the entry in Accounting, then cancel the payslip.',
+                    entry=move.display_name, payslip=slip.number or slip.name or '', reason=error.args[0],
+                )) from error
+        return super().action_payslip_cancel()
 
     def action_payslip_done(self):
-        res = super(HrPayslip, self).action_payslip_done()
+        res = super().action_payslip_done()
 
         for slip in self:
             line_ids = []
@@ -62,10 +113,15 @@ class HrPayslip(models.Model):
             currency = slip.company_id.currency_id
 
             name = _('Payslip of %s') % (slip.employee_id.name)
+            journal = slip.journal_id.sudo()
+            if journal.company_id != slip.company_id:
+                raise UserError(_('The salary journal %(journal)s does not belong to the company of the payslip %(payslip)s.',
+                                  journal=journal.name, payslip=slip.number or slip.name or ''))
             move_dict = {
                 'narration': name,
                 'ref': slip.number,
                 'journal_id': slip.journal_id.id,
+                'company_id': slip.company_id.id,
                 'date': date,
             }
             if not any(line.salary_rule_id.account_debit and line.salary_rule_id.account_credit for line in slip.details_by_salary_rule_category):
@@ -137,7 +193,8 @@ class HrPayslip(models.Model):
                 })
                 line_ids.append(adjust_debit)
             move_dict['line_ids'] = line_ids
-            move = self.env['account.move'].create(move_dict)
+            # the payroll users may have no accounting rights: the entry follows the configuration of the rules
+            move = self.env['account.move'].sudo().with_company(slip.company_id).create(move_dict)
             slip.write({'move_id': move.id, 'date': date})
             move.action_post()
         return res
@@ -164,6 +221,6 @@ class HrPayslipRun(models.Model):
     _inherit = 'hr.payslip.run'
 
     journal_id = fields.Many2one(
-        'account.journal', 'Salary Journal', required=True,
-        default=lambda self: self.env['account.journal'].search([('type', '=', 'general')], limit=1)
+        'account.journal', 'Salary Journal', required=True, default=_default_salary_journal,
+        domain="[('company_id', '=', company_id)]",
     )

@@ -22,14 +22,14 @@ msgid "Amount"
 msgstr "Сума"
 
 #. module: om_recurring_payments
+#. odoo-python
 #: code:addons/om_recurring_payments/models/recurring_payment.py:0
-#, python-format
 msgid "Amount Must Be Non-Zero Positive Number"
 msgstr ""
 
 #. module: om_recurring_payments
+#. odoo-python
 #: code:addons/om_recurring_payments/models/recurring_payment.py:0
-#, python-format
 msgid "Cannot delete done records !"
 msgstr ""
 
@@ -93,6 +93,7 @@ msgid "Description..."
 msgstr "Опис..."
 
 #. module: om_recurring_payments
+#: model:ir.model.fields,field_description:om_recurring_payments.field_account_payment__display_name
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__display_name
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__display_name
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__display_name
@@ -103,6 +104,7 @@ msgstr ""
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__account_recurring_template__state__done
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment__state__done
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment_line__state__done
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_search
 #: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_payment_form
 msgid "Done"
 msgstr "Виконано"
@@ -111,6 +113,8 @@ msgstr "Виконано"
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__account_recurring_template__state__draft
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment__state__draft
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment_line__state__draft
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_search
 msgid "Draft"
 msgstr "Чернетка"
 
@@ -127,12 +131,11 @@ msgstr "Створити журнал як"
 
 #. module: om_recurring_payments
 #: model:ir.actions.server,name:om_recurring_payments.action_generate_recurring_payment_ir_actions_server
-#: model:ir.cron,cron_name:om_recurring_payments.action_generate_recurring_payment
-#: model:ir.cron,name:om_recurring_payments.action_generate_recurring_payment
 msgid "Generate Recurring Payments"
 msgstr ""
 
 #. module: om_recurring_payments
+#: model:ir.model.fields,field_description:om_recurring_payments.field_account_payment__id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__id
@@ -143,15 +146,10 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__journal_id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__journal_id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__journal_id
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_search
 msgid "Journal"
 msgstr "Журнал"
-
-#. module: om_recurring_payments
-#: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template____last_update
-#: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment____last_update
-#: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line____last_update
-msgid "Last Modified on"
-msgstr ""
 
 #. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__write_uid
@@ -179,19 +177,43 @@ msgid "Name"
 msgstr "Назва"
 
 #. module: om_recurring_payments
+#. odoo-python
 #: code:addons/om_recurring_payments/models/recurring_payment.py:0
-#: code:addons/om_recurring_payments/models/recurring_payment.py:0
-#, python-format
 msgid "New"
 msgstr ""
 
 #. module: om_recurring_payments
+#: model:ir.module.module,shortdesc:base.module_om_recurring_payments
+msgid "Odoo 20 Recurring Payment"
+msgstr ""
+
+#. module: om_recurring_payments
+#: model:ir.module.module,description:base.module_om_recurring_payments
+msgid ""
+"Odoo 20 Recurring Payment, Recurring Payment In Odoo, Odoo 20 Accounting"
+msgstr ""
+
+#. module: om_recurring_payments
+#. odoo-python
+#: code:addons/om_recurring_payments/models/recurring_payment.py:0
+msgid "Only the lines not paid yet can be skipped."
+msgstr "Пропустити можна лише ще не оплачені рядки."
+
+#. module: om_recurring_payments
+#. odoo-python
+#: code:addons/om_recurring_payments/models/recurring_payment.py:0
+msgid "Only the skipped lines of a running recurring payment can be reset."
+msgstr "Скинути можна лише пропущені рядки активного регулярного платежу."
+
+#. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__partner_id
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__partner_id
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
 msgid "Partner"
 msgstr "Партнер"
 
 #. module: om_recurring_payments
+#: model:ir.model,name:om_recurring_payments.model_account_payment
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__payment_id
 msgid "Payment"
 msgstr ""
@@ -202,12 +224,18 @@ msgid "Payment Type"
 msgstr "Тип оплати"
 
 #. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_search
+msgid "Period"
+msgstr "Період"
+
+#. module: om_recurring_payments
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__account_recurring_template__journal_state__posted
 msgid "Posted"
 msgstr ""
 
 #. module: om_recurring_payments
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment__payment_type__inbound
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
 msgid "Receive Money"
 msgstr "Отримати гроші"
 
@@ -229,6 +257,7 @@ msgstr ""
 
 #. module: om_recurring_payments
 #: model:ir.actions.act_window,name:om_recurring_payments.action_account_recurring_payment
+#: model:ir.model,name:om_recurring_payments.model_recurring_payment
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__recurring_payment_id
 #: model:ir.ui.menu,name:om_recurring_payments.menu_recurring_payment
 #: model:ir.ui.menu,name:om_recurring_payments.menu_recurring_payments
@@ -243,11 +272,7 @@ msgid "Recurring Payment Line"
 msgstr ""
 
 #. module: om_recurring_payments
-#: model:ir.model,name:om_recurring_payments.model_recurring_payment
-msgid "Recurring Payment("
-msgstr ""
-
-#. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
 #: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_tree
 msgid "Recurring Payments"
 msgstr "Регулярний платіж"
@@ -263,13 +288,25 @@ msgstr "Повторюваний період"
 #: model:ir.model,name:om_recurring_payments.model_account_recurring_template
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__template_id
 #: model:ir.ui.menu,name:om_recurring_payments.menu_recurring_template
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_search
 #: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_tree
 #: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_template_form
 msgid "Recurring Template"
 msgstr "Повторювані шаблони"
 
 #. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_payment_form
+msgid "Reset"
+msgstr "Скинути"
+
+#. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
+msgid "Running"
+msgstr "Активні"
+
+#. module: om_recurring_payments
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment__payment_type__outbound
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
 msgid "Send Money"
 msgstr "Відправити гроші"
 
@@ -280,6 +317,16 @@ msgid "Set To Draft"
 msgstr ""
 
 #. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_payment_form
+msgid "Skip"
+msgstr "Пропустити"
+
+#. module: om_recurring_payments
+#: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment_line__state__cancel
+msgid "Skipped"
+msgstr "Пропущено"
+
+#. module: om_recurring_payments
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__date_begin
 msgid "Start Date"
 msgstr "Дата початку"
@@ -288,12 +335,69 @@ msgstr "Дата початку"
 #: model:ir.model.fields,field_description:om_recurring_payments.field_account_recurring_template__state
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment__state
 #: model:ir.model.fields,field_description:om_recurring_payments.field_recurring_payment_line__state
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_template_search
 msgid "Status"
 msgstr "Статус"
 
 #. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_payment_form
+msgid "Stop"
+msgstr "Зупинити"
+
+#. module: om_recurring_payments
+#: model:ir.model.fields.selection,name:om_recurring_payments.selection__recurring_payment__state__cancel
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
+msgid "Stopped"
+msgstr "Зупинено"
+
+#. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_account_recurring_payment_search
+msgid "Template"
+msgstr "Шаблон"
+
+#. module: om_recurring_payments
+#. odoo-python
+#: code:addons/om_recurring_payments/models/recurring_payment.py:0
+msgid ""
+"The payment of this line is already being created, please try again in a "
+"moment."
+msgstr "Платіж за цим рядком уже створюється, спробуйте ще раз за мить."
+
+#. module: om_recurring_payments
+#: model_terms:ir.ui.view,arch_db:om_recurring_payments.view_recurring_payment_form
+msgid ""
+"The payments not created yet will be skipped. Do you want to stop this "
+"recurring payment?"
+msgstr ""
+"Ще не створені платежі буде пропущено. Зупинити цей регулярний платіж?"
+
+#. module: om_recurring_payments
+#. odoo-python
+#: code:addons/om_recurring_payments/models/recurring_template.py:0
+msgid "The recurring interval must be a positive number."
+msgstr "Повторюваний інтервал має бути додатним числом."
+
+#. module: om_recurring_payments
+#. odoo-python
+#: code:addons/om_recurring_payments/models/recurring_payment.py:0
+msgid "The recurring interval of template %s must be a positive number."
+msgstr "Повторюваний інтервал шаблону %s має бути додатним числом."
+
+#. module: om_recurring_payments
+#. odoo-python
+#: code:addons/om_recurring_payments/models/recurring_payment.py:0
+msgid "The start date must be before the end date."
+msgstr "Дата початку має бути раніше за дату закінчення."
+
+#. module: om_recurring_payments
 #: model:ir.model.fields.selection,name:om_recurring_payments.selection__account_recurring_template__journal_state__draft
 msgid "Un Posted"
+msgstr ""
+
+#. module: om_recurring_payments
+#: model:ir.module.module,summary:base.module_om_recurring_payments
+msgid "Use recurring payments to handle periodically repeated payments"
 msgstr ""
 
 #. module: om_recurring_payments
@@ -307,7 +411,7 @@ msgid "Years"
 msgstr ""
 
 #. module: om_recurring_payments
+#. odoo-python
 #: code:addons/om_recurring_payments/models/recurring_payment.py:0
-#, python-format
 msgid "You cannot Set to Draft as one of the line is already in done state"
 msgstr ""

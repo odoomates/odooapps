@@ -1,4 +1,3 @@
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
@@ -36,8 +35,8 @@ class ContributionRegisterReport(models.AbstractModel):
 
         register_ids = self.env.context.get('active_ids', [])
         contrib_registers = self.env['hr.contribution.register'].browse(register_ids)
-        date_from = data['form'].get('date_from', fields.Date.today())
-        date_to = data['form'].get('date_to', str(datetime.now() + relativedelta(months=+1, day=1, days=-1))[:10])
+        date_from = data['form'].get('date_from') or fields.Date.context_today(self).replace(day=1)
+        date_to = data['form'].get('date_to') or fields.Date.context_today(self) + relativedelta(day=31)
         lines_data = self._get_payslip_lines(register_ids, date_from, date_to)
         lines_total = {}
         for register in contrib_registers:

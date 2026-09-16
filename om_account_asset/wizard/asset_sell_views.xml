@@ -11,7 +11,11 @@
                 <field name="currency_id" invisible="1"/>
                 <group>
                     <group>
+                        <field name="asset_currency_id" invisible="1"/>
                         <field name="action" widget="radio" options="{'horizontal': true}"/>
+                        <field name="scope" widget="radio" options="{'horizontal': true}"/>
+                        <field name="disposed_percent" invisible="scope != 'partial'" required="scope == 'partial'"/>
+                        <field name="disposed_value" invisible="scope != 'partial'"/>
                         <field name="date"/>
                         <field name="book_value"/>
                     </group>
@@ -35,7 +39,12 @@
                 <group>
                     <field name="note" placeholder="Why is the asset sold or disposed of?"/>
                 </group>
-                <p class="text-muted">
+                <p class="text-muted" invisible="scope != 'partial'">
+                    The asset is depreciated up to the date, then a posted entry removes the share of its gross value
+                    and accumulated depreciation and books the difference with the sale price as a gain or a loss.
+                    The rest of the asset keeps depreciating over the same life.
+                </p>
+                <p class="text-muted" invisible="scope != 'full'">
                     The asset is depreciated up to the date, then a draft entry removes its gross value and
                     accumulated depreciation and books the difference with the sale price as a gain or a loss.
                 </p>

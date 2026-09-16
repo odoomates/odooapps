@@ -13,6 +13,18 @@ class AssetSell(models.TransientModel):
         [('sell', 'Sell'), ('dispose', 'Dispose')],
         string='Action', required=True, default='sell',
     )
+    scope = fields.Selection(
+        [('full', 'Whole Asset'), ('partial', 'Part of the Asset')],
+        string='Disposed Of', required=True, default='full',
+    )
+    disposed_percent = fields.Float(
+        string='Share Disposed Of (%)', digits=(16, 2), default=50.0,
+        help="Share of the asset in the books today: its gross value, salvage value and depreciation "
+             "decrease in the same proportion.",
+    )
+    disposed_value = fields.Monetary(
+        string='Gross Value Disposed Of', compute='_compute_disposed_value', currency_field='asset_currency_id')
+    asset_currency_id = fields.Many2one(related='asset_id.currency_id', string='Asset Currency')
     date = fields.Date(string='Date', required=True, default=fields.Date.context_today)
     note = fields.Text(string='Reason')
     sale_invoice_ids = fields.Many2many(
@@ -37,6 +49,12 @@ class AssetSell(models.TransientModel):
             res['asset_id'] = self.env.context.get('active_id')
         return res
 
+    @api.depends('asset_id.value', 'disposed_percent', 'scope')
+    def _compute_disposed_value(self):
+        for wizard in self:
+            share = wizard.disposed_percent / 100.0 if wizard.scope == 'partial' else 1.0
+            wizard.disposed_value = wizard.asset_currency_id.round(wizard.asset_id.value * share)
+
     @api.depends('sale_invoice_ids')
     def _compute_sale_line_ids(self):
         for wizard in self:
@@ -57,4 +75,7 @@ class AssetSell(models.TransientModel):
             if not self.sale_line_ids:
                 raise UserError(_('Select the invoice lines of the sale.'))
             sale_lines = self.sale_line_ids
+        if self.scope == 'partial':
+            move = self.asset_id._dispose_partially(self.date, self.disposed_percent / 100.0, sale_lines=sale_lines, note=self.note)
+            return self.asset_id._open_record_action(move)
         return self.asset_id.set_to_close(sale_lines=sale_lines, disposal_date=self.date, note=self.note)

@@ -26,63 +26,126 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
-                    <div class="page" style="font-size: 11px;">
-                        <h2><span t-out="o.company_id.name"/>: Depreciation Schedule</h2>
-                        <p>
-                            <strong>From</strong> <span t-field="o.date_from"/>
-                            <strong>to</strong> <span t-field="o.date_to"/>
-                        </p>
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th colspan="3"/>
-                                    <th colspan="4" class="text-center">Asset Value</th>
-                                    <th colspan="4" class="text-center">Accumulated Depreciation</th>
-                                    <th/>
-                                </tr>
-                                <tr>
-                                    <th>Asset</th>
-                                    <th>Acquisition</th>
-                                    <th>Method</th>
-                                    <th class="text-end"><span t-field="o.date_from"/></th>
-                                    <th class="text-end">+</th>
-                                    <th class="text-end">-</th>
-                                    <th class="text-end"><span t-field="o.date_to"/></th>
-                                    <th class="text-end"><span t-field="o.date_from"/></th>
-                                    <th class="text-end">+</th>
-                                    <th class="text-end">-</th>
-                                    <th class="text-end"><span t-field="o.date_to"/></th>
-                                    <th class="text-end">Book Value</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <t t-foreach="groups" t-as="group">
-                                    <tr t-if="o.group_by_category" class="fw-bold">
-                                        <td colspan="3"><span t-out="group['name']"/></td>
-                                        <t t-set="row" t-value="group['totals']"/>
-                                        <td t-foreach="columns" t-as="column" class="text-end">
-                                            <span t-out="row[column]" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                        </td>
+                    <div class="page o_asset_schedule" style="font-size: 11px;">
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <div>
+                                <h2 class="mb-0">Depreciation Schedule</h2>
+                            </div>
+                            <div class="text-end">
+                                <div>
+                                    <strong>Period:</strong>
+                                    <span t-field="o.date_from"/> - <span t-field="o.date_to"/>
+                                </div>
+                                <div><strong>Currency:</strong> <span t-out="currency.name"/></div>
+                            </div>
+                        </div>
+
+                        <div t-if="not schedule['register']" class="text-muted">
+                            No asset for this period.
+                        </div>
+
+                        <t t-else="">
+                            <h4>Movement by Category</h4>
+                            <t t-foreach="statement_tables" t-as="columns">
+                                <table class="table table-sm table-borderless mb-4" style="width: auto; min-width: 60%;">
+                                    <thead>
+                                        <tr class="border-bottom">
+                                            <th style="min-width: 14rem;"/>
+                                            <th t-foreach="columns" t-as="column" class="text-end" style="min-width: 7rem;">
+                                                <span t-out="column[0]"/>
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-set="previous_section" t-value="False"/>
+                                        <t t-foreach="statement_rows" t-as="row">
+                                            <tr t-if="row[0] != previous_section" class="fw-bold">
+                                                <td t-att-colspan="len(columns) + 1" class="pt-2">
+                                                    <span t-out="row[0]"/>
+                                                </td>
+                                            </tr>
+                                            <t t-set="previous_section" t-value="row[0]"/>
+                                            <t t-set="is_closing" t-value="row[2] in ('cost_closing', 'depreciation_closing', 'nbv_closing')"/>
+                                            <tr t-att-class="'fw-bold border-top' if is_closing else ''">
+                                                <td class="ps-3"><span t-out="row[1]"/></td>
+                                                <td t-foreach="columns" t-as="column" class="text-end">
+                                                    <t t-set="amount" t-value="row[3] * column[1][row[2]]"/>
+                                                    <span t-if="currency.is_zero(amount)">-</span>
+                                                    <span t-elif="amount &lt; 0">(<span t-out="-amount" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>)</span>
+                                                    <span t-else="" t-out="amount" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+                                                </td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </t>
+
+                            <div style="page-break-before: always;"/>
+                            <h4>Asset Register</h4>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Code</th>
+                                        <th>Asset</th>
+                                        <th>In Service</th>
+                                        <th>Life</th>
+                                        <th class="text-end">Cost</th>
+                                        <th class="text-end">Salvage</th>
+                                        <th class="text-end">NBV at <span t-field="o.date_from"/></th>
+                                        <th class="text-end">Charge</th>
+                                        <th class="text-end">Disposed NBV</th>
+                                        <th class="text-end">NBV at <span t-field="o.date_to"/></th>
+                                        <th class="text-end">Depreciated</th>
                                     </tr>
-                                    <tr t-foreach="group['lines']" t-as="line">
-                                        <td><span t-out="line['asset'].display_name"/></td>
-                                        <td><span t-field="line['asset'].date"/></td>
-                                        <td><span t-out="line['method']"/></td>
-                                        <t t-set="row" t-value="line"/>
-                                        <td t-foreach="columns" t-as="column" class="text-end">
-                                            <span t-out="row[column]" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                        </td>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="schedule['register']" t-as="group">
+                                        <tr t-if="o.group_by_category" class="fw-bold">
+                                            <td colspan="11" class="pt-3"><span t-out="group['name'].upper()"/></td>
+                                        </tr>
+                                        <tr t-foreach="group['lines']" t-as="line">
+                                            <td><span t-out="line['code']"/></td>
+                                            <td>
+                                                <span t-out="line['asset'].name"/>
+                                                <span t-if="line['is_disposed']" class="text-muted"> (disposed)</span>
+                                                <span t-if="line['is_partly_disposed']" class="text-muted"> (partly disposed)</span>
+                                            </td>
+                                            <td><span t-field="line['asset'].date"/></td>
+                                            <td><span t-out="line['life']"/></td>
+                                            <td class="text-end"><span t-out="line['cost']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="line['salvage_value']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="line['nbv_opening']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="line['depreciation_charge']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="line['disposed_nbv']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="line['nbv_closing']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="line['depreciated_percent']"/>%</td>
+                                        </tr>
+                                        <tr t-if="o.group_by_category" class="fw-bold border-top">
+                                            <td colspan="4" class="text-end">Subtotal <span t-out="group['name']"/></td>
+                                            <t t-set="totals" t-value="group['totals']"/>
+                                            <td class="text-end"><span t-out="totals['cost']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="totals['salvage_value']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="totals['nbv_opening']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="totals['depreciation_charge']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="totals['disposed_nbv']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td class="text-end"><span t-out="totals['nbv_closing']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                            <td/>
+                                        </tr>
+                                    </t>
+                                    <tr class="fw-bold" style="border-top: 2px solid;">
+                                        <td colspan="4" class="text-end">Total</td>
+                                        <t t-set="totals" t-value="schedule['total']"/>
+                                        <td class="text-end"><span t-out="totals['cost']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end"><span t-out="totals['salvage_value']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end"><span t-out="totals['nbv_opening']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end"><span t-out="totals['depreciation_charge']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end"><span t-out="totals['disposed_nbv']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td class="text-end"><span t-out="totals['nbv_closing']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
+                                        <td/>
                                     </tr>
-                                </t>
-                                <tr class="fw-bold border-top">
-                                    <td colspan="3">Total</td>
-                                    <t t-set="row" t-value="total"/>
-                                    <td t-foreach="columns" t-as="column" class="text-end">
-                                        <span t-out="row[column]" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
+                                </tbody>
+                            </table>
+                        </t>
                     </div>
                 </t>
             </t>

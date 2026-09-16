@@ -19,7 +19,7 @@ class ReportDayBook(models.AbstractModel):
         if form_data['target_move'] == 'posted':
             target_move = "AND m.state = 'posted'"
         else:
-            target_move = ''
+            target_move = "AND m.state != 'cancel'"
 
         sql = ("""
                     SELECT 0 AS lid, 
@@ -74,6 +74,8 @@ class ReportDayBook(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         form_data = data['form']

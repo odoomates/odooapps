@@ -8,8 +8,8 @@ class ChangeLockDate(models.TransientModel):
 
     @api.model
     def default_get(self, vals):
-        res = super(ChangeLockDate, self).default_get(vals)
-        company_rec = self.env.user.company_id
+        res = super().default_get(vals)
+        company_rec = self.env.company
         res.update({
             'company_id': company_rec.id,
             'hard_lock_date': company_rec.hard_lock_date,
@@ -22,7 +22,7 @@ class ChangeLockDate(models.TransientModel):
 
     company_id = fields.Many2one(
         'res.company', string="Company",
-        required=True, default=lambda self: self.env.user.company_id
+        required=True, default=lambda self: self.env.company
     )
     tax_lock_date = fields.Date(
         string="Tax Return Lock Date",
@@ -41,7 +41,7 @@ class ChangeLockDate(models.TransientModel):
     )
     fiscalyear_lock_date = fields.Date(
         string='Lock Date for All Users',
-        default=lambda self: self.env.user.company_id.fiscalyear_lock_date,
+        default=lambda self: self.env.company.fiscalyear_lock_date,
         help='No users, including Advisers, can edit accounts prior to and inclusive of '
              'this date. Use it for fiscal year locking.'
     )

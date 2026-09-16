@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- A cheque on the top third of an A4 page and two stubs below, e.g. for voucher cheque paper -->
+        <record id="check_format_a4_top" model="account.check.format">
+            <field name="name">Cheque on Top with 2 Stubs (A4)</field>
+            <field name="sequence">10</field>
+            <field name="paper_size">a4</field>
+            <field name="page_width">210</field>
+            <field name="page_height">297</field>
+            <field name="date_format">locale</field>
+            <field name="print_stub" eval="True"/>
+            <field name="stub_top">105</field>
+            <field name="stub_2_top">205</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 160, 'y': 20, 'width': 40}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 30, 'y': 38, 'width': 125}),
+                Command.create({'sequence': 3, 'field': 'amount', 'x': 160, 'y': 38, 'width': 40, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 4, 'field': 'amount_in_words', 'x': 15, 'y': 48, 'width': 185, 'height': 12, 'line_height': 6}),
+                Command.create({'sequence': 5, 'field': 'memo', 'x': 15, 'y': 78, 'width': 90}),
+            ]"/>
+        </record>
+
+        <!-- A cheque leaf of a cheque book, 202 x 92 mm (e.g. the CTS-2010 cheques of India) -->
+        <record id="check_format_leaf" model="account.check.format">
+            <field name="name">Cheque Leaf (202 x 92 mm)</field>
+            <field name="sequence">20</field>
+            <field name="paper_size">custom</field>
+            <field name="page_width">202</field>
+            <field name="page_height">92</field>
+            <field name="date_format">%d%m%Y</field>
+            <field name="words_suffix">Only</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 152, 'y': 8, 'width': 48, 'letter_spacing': 3.2, 'font_size': 12}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 18, 'y': 21, 'width': 150}),
+                Command.create({'sequence': 3, 'field': 'amount_in_words', 'x': 30, 'y': 29, 'width': 125, 'height': 16, 'line_height': 8}),
+                Command.create({'sequence': 4, 'field': 'amount', 'x': 158, 'y': 36, 'width': 40, 'bold': True}),
+                Command.create({'sequence': 5, 'field': 'text', 'text': 'A/C PAYEE ONLY', 'x': 6, 'y': 16, 'width': 34, 'font_size': 8, 'rotation': -30, 'border': 'crossing', 'line_height': 5}),
+            ]"/>
+        </record>
+
+    </data>
+</odoo>

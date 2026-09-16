@@ -15,12 +15,18 @@ class HrPayslipEmployees(models.TransientModel):
         active_id = self.env.context.get('active_id')
         if not active_id:
             raise UserError(_("Generate the payslips from a payslip batch."))
-        [run_data] = self.env['hr.payslip.run'].browse(active_id).read(['date_start', 'date_end', 'credit_note'])
+        run = self.env['hr.payslip.run'].browse(active_id)
+        [run_data] = run.read(['date_start', 'date_end', 'credit_note'])
         from_date = run_data.get('date_start')
         to_date = run_data.get('date_end')
         if not data['employee_ids']:
             raise UserError(_("You must select employee(s) to generate payslip(s)."))
-        for employee in self.env['hr.employee'].browse(data['employee_ids']):
+        employees = self.env['hr.employee'].browse(data['employee_ids'])
+        other_company = employees.filtered(lambda employee: employee.company_id != run.company_id)
+        if other_company:
+            raise UserError(_('The employees %(employees)s do not belong to the company of the batch %(company)s.',
+                              employees=', '.join(other_company.mapped('name')), company=run.company_id.name))
+        for employee in employees:
             slip_data = self.env['hr.payslip'].onchange_employee_id(from_date, to_date, employee.id, contract_id=False)
             res = {
                 'employee_id': employee.id,

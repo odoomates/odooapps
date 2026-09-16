@@ -6,6 +6,13 @@ from dateutil.relativedelta import relativedelta
 from pytz import timezone
 
 
+# what may still be written on a confirmed payslip: the trail of what happened to it
+PAYSLIP_CLOSED_WRITABLE = {
+    'state', 'paid', 'note', 'move_id', 'date', 'number', 'message_ids', 'message_follower_ids',
+    'activity_ids', 'line_ids', 'payslip_run_id',
+}
+
+
 class HrPayslip(models.Model):
     _name = 'hr.payslip'
     _description = 'Pay Slip'
@@ -19,10 +26,9 @@ class HrPayslip(models.Model):
     number = fields.Char(string='Reference', copy=False)
     employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
     date_from = fields.Date(string='Date From', required=True,
-                            default=lambda self: fields.Date.to_string(date.today().replace(day=1)))
+                            default=lambda self: fields.Date.context_today(self).replace(day=1))
     date_to = fields.Date(string='Date To', required=True,
-                          default=lambda self: fields.Date.to_string(
-                              (datetime.now() + relativedelta(months=+1, day=1, days=-1)).date()))
+                          default=lambda self: fields.Date.context_today(self) + relativedelta(day=31))
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -74,14 +80,33 @@ class HrPayslip(models.Model):
         if any(self.filtered(lambda payslip: payslip.date_from > payslip.date_to)):
             raise ValidationError(_("Payslip 'Date From' must be earlier 'Date To'."))
 
+    def _is_payroll_manager(self):
+        return self.env.su or self.env.user.has_group('om_hr_payroll.group_hr_payroll_manager')
+
+    def _check_own_payslip(self):
+        """ Payroll officers do not confirm, cancel or reset their own payslips: a payroll manager does. """
+        if self.env.su or self.env.user.has_group('om_hr_payroll.group_hr_payroll_manager'):
+            return
+        own = self.filtered(lambda payslip: payslip.employee_id.user_id == self.env.user)
+        if own:
+            raise UserError(_('You cannot change the status of your own payslip %s: ask a payroll manager.',
+                              ', '.join(own.mapped(lambda payslip: payslip.number or payslip.name or ''))))
+
     def action_payslip_draft(self):
+        self._check_own_payslip()
+        confirmed = self.filtered(lambda payslip: payslip.state == 'done')
+        if confirmed and not self._is_payroll_manager():
+            raise UserError(_('Only a payroll manager can set a confirmed payslip back to draft: %s',
+                              ', '.join(confirmed.mapped(lambda payslip: payslip.number or payslip.name or ''))))
         return self.write({'state': 'draft'})
 
     def action_payslip_done(self):
+        self._check_own_payslip()
         self.compute_sheet()
         return self.write({'state': 'done'})
 
     def action_payslip_cancel(self):
+        self._check_own_payslip()
         return self.write({'state': 'cancel'})
 
     def refund_sheet(self):
@@ -140,7 +165,7 @@ class HrPayslip(models.Model):
     def unlink(self):
         if any(self.filtered(lambda payslip: payslip.state not in ('draft', 'cancel'))):
             raise UserError(_('You cannot delete a payslip which is not draft or cancelled!'))
-        return super(HrPayslip, self).unlink()
+        return super().unlink()
 
     @api.model
     def get_versions(self, employee, date_from, date_to):
@@ -156,7 +181,20 @@ class HrPayslip(models.Model):
             fields.Date.to_date(date_from), fields.Date.to_date(date_to))
         return versions.sorted('date_version', reverse=True).ids
 
+    def write(self, vals):
+        # a confirmed or rejected payslip is a document: its amounts, employee and period do not change any more
+        if not self._is_payroll_manager() and set(vals) - PAYSLIP_CLOSED_WRITABLE:
+            closed = self.filtered(lambda payslip: payslip.state in ('done', 'cancel'))
+            if closed:
+                raise UserError(_('The payslip %s is confirmed: ask a payroll manager to change it.',
+                                  closed[0].number or closed[0].name or ''))
+        return super().write(vals)
+
     def compute_sheet(self):
+        closed = self.filtered(lambda payslip: payslip.state in ('done', 'cancel'))
+        if closed:
+            raise UserError(_('The payslip %s is confirmed: set it back to draft before computing it again.',
+                              closed[0].number or closed[0].name or ''))
         for payslip in self:
             number = payslip.number or self.env['ir.sequence'].next_by_code('salary.slip')
             # delete old payslip lines
@@ -277,7 +315,8 @@ class HrPayslip(models.Model):
 
             def sum(self, code, from_date, to_date=None):
                 if to_date is None:
-                    to_date = fields.Date.today()
+                    to_date = fields.Date.context_today(self.env['hr.payslip'])
+                self.env.flush_all()
                 self.env.cr.execute("""
                     SELECT sum(amount) as sum
                     FROM hr_payslip as hp, hr_payslip_input as pi
@@ -291,7 +330,8 @@ class HrPayslip(models.Model):
 
             def _sum(self, code, from_date, to_date=None):
                 if to_date is None:
-                    to_date = fields.Date.today()
+                    to_date = fields.Date.context_today(self.env['hr.payslip'])
+                self.env.flush_all()
                 self.env.cr.execute("""
                     SELECT sum(number_of_days) as number_of_days, sum(number_of_hours) as number_of_hours
                     FROM hr_payslip as hp, hr_payslip_worked_days as pi
@@ -313,7 +353,8 @@ class HrPayslip(models.Model):
 
             def sum(self, code, from_date, to_date=None):
                 if to_date is None:
-                    to_date = fields.Date.today()
+                    to_date = fields.Date.context_today(self.env['hr.payslip'])
+                self.env.flush_all()
                 self.env.cr.execute("""SELECT sum(case when hp.credit_note = False then (pl.total) else (-pl.total) end)
                             FROM hr_payslip as hp, hr_payslip_line as pl
                             WHERE hp.employee_id = %s AND hp.state = 'done'
@@ -553,7 +594,26 @@ class HrPayslipLine(models.Model):
                 payslip = self.env['hr.payslip'].browse(values.get('slip_id'))
                 values['employee_id'] = values.get('employee_id') or payslip.employee_id.id
                 values['version_id'] = values.get('version_id') or payslip.version_id.id
-        return super(HrPayslipLine, self).create(vals_list)
+        lines = super().create(vals_list)
+        lines._check_payslip_open()
+        return lines
+
+    def write(self, vals):
+        self._check_payslip_open()
+        return super().write(vals)
+
+    def unlink(self):
+        self._check_payslip_open()
+        return super().unlink()
+
+    def _check_payslip_open(self):
+        """ The lines of a confirmed payslip are what was paid: only a payroll manager changes them. """
+        if self.env['hr.payslip']._is_payroll_manager():
+            return
+        closed = self.slip_id.filtered(lambda payslip: payslip.state in ('done', 'cancel'))
+        if closed:
+            raise UserError(_('The payslip %s is confirmed: its lines cannot be changed.',
+                              closed[0].number or closed[0].name or ''))
 
 
 class HrPayslipWorkedDays(models.Model):
@@ -598,14 +658,15 @@ class HrPayslipRun(models.Model):
     ], string='Status', index=True, readonly=True, copy=False, default='draft')
     date_start = fields.Date(
         string='Date From', required=True,
-        default=lambda self: fields.Date.to_string(date.today().replace(day=1))
+        default=lambda self: fields.Date.context_today(self).replace(day=1)
     )
     date_end = fields.Date(
         string='Date To', required=True,
-        default=lambda self: fields.Date.to_string((datetime.now() + relativedelta(months=+1, day=1, days=-1)).date())
+        default=lambda self: fields.Date.context_today(self) + relativedelta(day=31)
     )
     credit_note = fields.Boolean(string='Credit Note',
                                  help="If its checked, indicates that all payslips generated from here are refund payslips.")
+    company_id = fields.Many2one('res.company', string='Company', required=True, default=lambda self: self.env.company)
 
     def draft_payslip_run(self):
         return self.write({'state': 'draft'})
@@ -613,12 +674,35 @@ class HrPayslipRun(models.Model):
     def close_payslip_run(self):
         return self.write({'state': 'close'})
 
+    def action_send_payslips(self):
+        """ Email their confirmed payslip to the employees of the batch, with the payslip attached. """
+        self.ensure_one()
+        template = self.env.ref('om_hr_payroll.mail_template_payslip')
+        payslips = self.slip_ids.filtered(lambda payslip: payslip.state == 'done')
+        without_email = payslips.filtered(lambda payslip: not payslip.employee_id.work_email)
+        to_send = payslips - without_email
+        if to_send:
+            to_send.message_post_with_source(template, message_type='comment', subtype_xmlid='mail.mt_comment')
+        message = _('%s payslip(s) sent.', len(to_send))
+        if without_email:
+            message += ' ' + _('Not sent, the employee has no work email: %s.',
+                               ', '.join(without_email.mapped('employee_id.name')))
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'type': 'warning' if without_email or not to_send else 'success',
+                'message': message,
+                'sticky': bool(without_email),
+            },
+        }
+
     def done_payslip_run(self):
-        for line in self.slip_ids:
-            line.action_payslip_done()
+        # the payslips already confirmed or rejected keep their status and their amounts
+        self.slip_ids.filtered(lambda payslip: payslip.state in ('draft', 'verify')).action_payslip_done()
         return self.write({'state': 'done'})
 
     def unlink(self):
         if any(self.filtered(lambda payslip_run: payslip_run.state not in ('draft'))):
             raise UserError(_('You cannot delete a payslip batch which is not draft!'))
-        return super(HrPayslipRun, self).unlink()
+        return super().unlink()

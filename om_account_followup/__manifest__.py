@@ -1,6 +1,6 @@
 {
     'name': 'Customer Follow Up Management',
-    'version': '1.0.2',
+    'version': '1.0.4',
     'category': 'Accounting',
     'description': """Customer FollowUp Management""",
     'summary': """Customer FollowUp Management""",
@@ -10,6 +10,7 @@
     'data': [
         'security/ir.access.csv',
         'data/mail_template_data.xml',
+        'data/ir_cron.xml',
         'wizard/followup_print_view.xml',
         'wizard/followup_results_view.xml',
         'views/followup_view.xml',

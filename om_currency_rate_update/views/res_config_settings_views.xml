@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_rate_update" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.rate.update</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- the automatic rates are given by this module -->
+            <setting id="update_exchange_rates" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </setting>
+            <setting id="update_exchange_rates" position="after">
+                <setting id="om_update_exchange_rates" string="Automatic Currency Rates" company_dependent="1"
+                         invisible="not group_multi_currency"
+                         help="Update the exchange rates from the source of your choice">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="rate_interval" string="Update" class="col-lg-4 o_light_label"/>
+                            <field name="rate_interval"/>
+                        </div>
+                        <div class="row">
+                            <label for="rate_provider" string="Source" class="col-lg-4 o_light_label"/>
+                            <field name="rate_provider"/>
+                        </div>
+                        <div class="row">
+                            <label for="rate_fallback_provider" string="Backup Source" class="col-lg-4 o_light_label"/>
+                            <field name="rate_fallback_provider" placeholder="None"/>
+                        </div>
+                        <div class="row" groups="base.group_system"
+                             invisible="'openexchangerates' not in (rate_provider, rate_fallback_provider)">
+                            <label for="rate_openexchangerates_key" string="App ID" class="col-lg-4 o_light_label"/>
+                            <field name="rate_openexchangerates_key" password="True"/>
+                        </div>
+                        <div class="row" groups="base.group_system"
+                             invisible="'exchangerate_api' not in (rate_provider, rate_fallback_provider)">
+                            <label for="rate_exchangerate_api_key" string="API Key" class="col-lg-4 o_light_label"/>
+                            <field name="rate_exchangerate_api_key" password="True" placeholder="Optional"/>
+                        </div>
+                        <div class="row">
+                            <label for="rate_currency_ids" string="Currencies" class="col-lg-4 o_light_label"/>
+                            <field name="rate_currency_ids" widget="many2many_tags" placeholder="All active currencies"
+                                   options="{'no_create': True}" context="{'active_test': False}"/>
+                        </div>
+                        <div class="row">
+                            <label for="rate_date_policy" string="Rate Date" class="col-lg-4 o_light_label"/>
+                            <field name="rate_date_policy"/>
+                        </div>
+                        <div class="row">
+                            <label for="rate_max_change" string="Maximum Change (%)" class="col-lg-4 o_light_label"/>
+                            <field name="rate_max_change"/>
+                        </div>
+                        <div class="row" invisible="rate_interval == 'manual'">
+                            <label for="rate_next_date" string="Next Update" class="col-lg-4 o_light_label"/>
+                            <field name="rate_next_date"/>
+                        </div>
+                        <div class="text-muted small mt8" invisible="rate_provider not in ('frankfurter', 'ecb')">
+                            This source quotes about 30 major currencies, without key. For every currency, choose Open
+                            Exchange Rates (App ID from openexchangerates.org) or ExchangeRate-API as source or backup.
+                        </div>
+                        <div class="mt8" invisible="not rate_last_update">
+                            <span class="o_light_label">Last update: </span><field name="rate_last_update" class="oe_inline"/>
+                            <div class="text-muted small"><field name="rate_last_message"/></div>
+                        </div>
+                        <div class="mt8">
+                            <button name="action_test_currency_rates" type="object" string="Test Connection" class="btn-link" icon="wifi"/>
+                            <button name="action_update_currency_rates" type="object" string="Update Now" class="btn-link" icon="refresh"/>
+                        </div>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+
+</odoo>

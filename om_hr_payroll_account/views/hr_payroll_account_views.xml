@@ -8,13 +8,12 @@
         <field name="arch" type="xml">
             <field name="paid" position="after">
                 <field name="date" readonly="state != 'draft'"/>
-                <field name="journal_id" required="1" readonly="state != 'draft'"/>
-                <field name="move_id" readonly="1"/>
+                <field name="journal_id" required="1" readonly="state != 'draft'" options="{'no_create': True, 'no_open': True}"/>
+                <field name="move_id" readonly="1" groups="account.group_account_readonly,account.group_account_invoice"/>
                 <field name="state" invisible="1"/>
             </field>
             <button name="action_payslip_cancel" position="attributes">
-                <attribute name="context">{'force_delete': True}</attribute>
-                <attribute name="confirm">Are you sure to delete the related accounting entry ?</attribute>
+                <attribute name="confirm">The accounting entry of the payslip is deleted. Continue?</attribute>
             </button>
         </field>
     </record>

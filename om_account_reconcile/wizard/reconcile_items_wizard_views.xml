@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_reconcile_items_wizard_form" model="ir.ui.view">
+        <field name="name">om.reconcile.items.wizard.form</field>
+        <field name="model">om.reconcile.items.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Match Journal Items">
+                <field name="company_currency_id" invisible="1"/>
+                <field name="company_id" invisible="1"/>
+                <field name="is_balanced" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="account_id"/>
+                        <field name="debit"/>
+                        <field name="credit"/>
+                        <field name="difference" decoration-warning="not is_balanced" decoration-success="is_balanced"/>
+                    </group>
+                    <group invisible="is_balanced">
+                        <field name="writeoff"/>
+                        <field name="writeoff_account_id" invisible="not writeoff" required="writeoff"/>
+                        <field name="writeoff_journal_id" invisible="not writeoff" required="writeoff"/>
+                        <field name="writeoff_date" invisible="not writeoff" required="writeoff"/>
+                        <field name="writeoff_label" invisible="not writeoff"/>
+                    </group>
+                </group>
+                <div class="text-muted" invisible="is_balanced or writeoff">
+                    The items are matched partially: the difference stays open.
+                </div>
+                <field name="line_ids" readonly="1">
+                    <list>
+                        <field name="date"/>
+                        <field name="move_id"/>
+                        <field name="partner_id"/>
+                        <field name="name"/>
+                        <field name="company_currency_id" column_invisible="1"/>
+                        <field name="currency_id" column_invisible="1"/>
+                        <field name="amount_residual" string="Open Amount" sum="Total"/>
+                        <field name="amount_residual_currency" string="Open Amount in Currency" groups="base.group_multi_currency"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_reconcile" type="object" string="Match" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_move_line_match_list" model="ir.ui.view">
+        <field name="name">account.move.line.list.om.match</field>
+        <field name="model">account.move.line</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <list string="Journal Items to Match" create="0" edit="0" delete="0">
+                <header>
+                    <button name="om_action_match" type="object" string="Match" class="btn-primary"/>
+                </header>
+                <field name="date"/>
+                <field name="move_id"/>
+                <field name="account_id"/>
+                <field name="partner_id"/>
+                <field name="name" optional="show"/>
+                <field name="date_maturity" optional="show"/>
+                <field name="company_currency_id" column_invisible="1"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount_residual" string="Open Amount" sum="Total"/>
+                <field name="amount_residual_currency" string="Open Amount in Currency" groups="base.group_multi_currency" optional="hide"/>
+                <field name="matching_number" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_move_line_match" model="ir.actions.act_window">
+        <field name="name">Match Journal Items</field>
+        <field name="res_model">account.move.line</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="view_move_line_match_list"/>
+        <field name="search_view_id" ref="account.view_account_move_line_filter"/>
+        <field name="domain">[('parent_state', '=', 'posted'), ('reconciled', '=', False), ('account_id.reconcile', '=', True), ('display_type', 'not in', ('line_section', 'line_subsection', 'line_note'))]</field>
+        <field name="context">{'search_default_group_by_account': 1, 'search_default_group_by_partner': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No journal item to match</p>
+            <p>Select open journal items of the same account and match them together.</p>
+        </field>
+    </record>
+
+    <record id="action_match_suggestions" model="ir.actions.server">
+        <field name="name">Match Suggestions</field>
+        <field name="model_id" ref="account.model_account_move_line"/>
+        <field name="binding_model_id" ref="account.model_account_move_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_basic'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = model.om_action_match_suggestions([('id', 'in', env.context.get('active_ids', []))])</field>
+    </record>
+
+    <menuitem id="menu_move_line_match"
+              action="action_move_line_match"
+              parent="account.account_transactions_menu"
+              sequence="5"
+              groups="account.group_account_basic"/>
+
+</odoo>

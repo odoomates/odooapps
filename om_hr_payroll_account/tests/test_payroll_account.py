@@ -1,7 +1,8 @@
 from datetime import date
 
 from odoo import Command
-from odoo.tests import Form, tagged
+from odoo.exceptions import UserError, ValidationError
+from odoo.tests import Form, new_test_user, tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -39,8 +40,8 @@ class TestPayrollAccount(AccountTestInvoicingCommon):
             'struct_id': structure.id,
         })
 
-    def _new_payslip(self):
-        with Form(self.env['hr.payslip']) as payslip_form:
+    def _new_payslip(self, env=None):
+        with Form((env or self.env)['hr.payslip']) as payslip_form:
             payslip_form.employee_id = self.employee
             payslip_form.date_from = date(2026, 8, 1)
             payslip_form.date_to = date(2026, 8, 31)
@@ -84,3 +85,37 @@ class TestPayrollAccount(AccountTestInvoicingCommon):
         self.assertEqual(run.slip_ids.journal_id, self.journal)
         run.done_payslip_run()
         self.assertEqual(run.slip_ids.move_id.journal_id, self.journal)
+
+    def test_payroll_user_without_accounting_rights(self):
+        officer = new_test_user(self.env, login='payroll_only', groups='base.group_user,om_hr_payroll.group_hr_payroll_user',
+                                company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
+        self.assertFalse(officer.has_group('account.group_account_invoice'))
+        payslip = self._new_payslip(self.env(user=officer))
+        self.assertEqual(payslip.journal_id.company_id, self.env.company)
+        payslip.with_user(officer).action_payslip_done()
+        self.assertEqual(payslip.move_id.state, 'posted')
+        self.assertEqual(payslip.move_id.company_id, self.env.company)
+
+    def test_journal_of_another_company(self):
+        other_journal = self.company_data_2['default_journal_misc'] if hasattr(self, 'company_data_2') else \
+            self.setup_other_company()['default_journal_misc']
+        payslip = self._new_payslip()
+        with self.assertRaises(ValidationError):
+            payslip.journal_id = other_journal
+
+    def test_cancel_refused_when_entry_is_locked(self):
+        payslip = self._new_payslip()
+        payslip.action_payslip_done()
+        move = payslip.move_id
+        self.env.company.fiscalyear_lock_date = date(2026, 8, 31)
+        with self.assertRaises(UserError):
+            payslip.action_payslip_cancel()
+        self.assertEqual(payslip.state, 'done')
+        self.assertEqual(move.state, 'posted')
+
+        # once reversed in accounting, the payslip can be cancelled and the entry stays
+        self.env.company.fiscalyear_lock_date = False
+        move._reverse_moves(default_values_list=[{'date': date(2026, 9, 1)}], cancel=True)
+        payslip.action_payslip_cancel()
+        self.assertEqual(payslip.state, 'cancel')
+        self.assertTrue(move.exists())

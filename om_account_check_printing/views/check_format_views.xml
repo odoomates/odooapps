@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_check_format_form" model="ir.ui.view">
+        <field name="name">account.check.format.form</field>
+        <field name="model">account.check.format</field>
+        <field name="arch" type="xml">
+            <form string="Cheque Format">
+                <header>
+                    <button name="action_print_test" type="object" string="Test Print" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Cheque book of the main bank"/></h1>
+                    </div>
+                    <group>
+                        <group string="Paper">
+                            <field name="paper_size"/>
+                            <field name="page_width" readonly="paper_size != 'custom'"/>
+                            <field name="page_height" readonly="paper_size != 'custom'"/>
+                            <field name="offset_x"/>
+                            <field name="offset_y"/>
+                            <field name="font_size"/>
+                        </group>
+                        <group string="Values">
+                            <field name="date_format"/>
+                            <field name="amount_with_currency"/>
+                            <field name="amount_stars"/>
+                            <field name="words_uppercase"/>
+                            <field name="words_suffix"/>
+                            <field name="words_fill"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Printed Fields" name="fields">
+                            <p class="text-muted">
+                                Positions are measured in millimetres from the top left corner of the page. Print a test
+                                on plain paper, hold it against a cheque and adjust the positions.
+                            </p>
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="field"/>
+                                    <field name="text" invisible="field != 'text'" required="field == 'text'"/>
+                                    <field name="x"/>
+                                    <field name="y"/>
+                                    <field name="width"/>
+                                    <field name="height" optional="show"/>
+                                    <field name="line_height" optional="hide"/>
+                                    <field name="font_size" optional="show"/>
+                                    <field name="bold" optional="show"/>
+                                    <field name="align" optional="show"/>
+                                    <field name="letter_spacing" optional="hide"/>
+                                    <field name="rotation" optional="hide"/>
+                                    <field name="border" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Stubs" name="stubs">
+                            <group>
+                                <field name="print_stub"/>
+                                <field name="stub_top" invisible="not print_stub"/>
+                                <field name="stub_2_top" invisible="not print_stub"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_check_format_list" model="ir.ui.view">
+        <field name="name">account.check.format.list</field>
+        <field name="model">account.check.format</field>
+        <field name="arch" type="xml">
+            <list string="Cheque Formats">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="paper_size"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_check_format" model="ir.actions.act_window">
+        <field name="name">Cheque Formats</field>
+        <field name="res_model">account.check.format</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a cheque format</p>
+            <p>Place the date, payee and amounts where the cheques of your bank expect them.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_check_format"
+              name="Cheque Formats"
+              parent="account.account_account_menu"
+              action="action_check_format"
+              sequence="50"
+              groups="account.group_account_manager"/>
+
+</odoo>

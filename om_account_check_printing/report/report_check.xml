@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_check" model="ir.actions.report">
+        <field name="name">Print Cheques</field>
+        <field name="model">account.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_check_printing.report_check</field>
+        <field name="print_report_name">'Cheques - %s' % (object.partner_id.name or '',)</field>
+        <field name="attachment_use" eval="False"/>
+    </record>
+
+    <record id="action_report_check_test" model="ir.actions.report">
+        <field name="name">Cheque Test Print</field>
+        <field name="model">account.check.format</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_check_printing.report_check_test</field>
+        <field name="attachment_use" eval="False"/>
+    </record>
+
+    <!-- one page per cheque: the fields at their position in millimetres, then the stubs -->
+    <template id="check_pages">
+        <t t-set="check_size" t-value="check_format._get_page_size()"/>
+        <div t-foreach="pages" t-as="page" class="page o_om_check_page"
+             t-att-style="'position: relative; width: %.1fmm; height: %.1fmm; overflow: hidden; page-break-after: always; font-size: %.1fpt;' % (check_size[0] - 1, check_size[1] - 1, check_format.font_size)">
+            <t t-foreach="check_format.line_ids" t-as="line">
+                <div t-att-style="line._get_style()"><span t-out="line._get_text(page['values'])"/> <span t-if="line._get_fill(page['values'])" style="word-break: break-all;" t-out="line._get_fill(page['values'])"/></div>
+            </t>
+            <t t-if="check_format.print_stub">
+                <t t-foreach="[top for top in (check_format.stub_top, check_format.stub_2_top) if top]" t-as="stub_top">
+                    <div t-att-style="'position: absolute; left: %.1fmm; top: %.1fmm; width: %.1fmm;' % (10 + check_format.offset_x, stub_top + check_format.offset_y, check_size[0] - 20)">
+                        <div class="fw-bold mb-1">
+                            <span t-out="page['partner_name']"/>
+                            <span class="float-end" t-out="page['values']['date']"/>
+                        </div>
+                        <table class="table table-sm" style="font-size: 9pt;">
+                            <thead>
+                                <tr>
+                                    <th>Due Date</th>
+                                    <th>Description</th>
+                                    <th class="text-end">Original Amount</th>
+                                    <th class="text-end">Balance Due</th>
+                                    <th class="text-end">Payment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="page['stub_lines']" t-as="stub_line">
+                                    <td><span t-out="stub_line['due_date']"/></td>
+                                    <td><span t-out="stub_line['number']"/></td>
+                                    <td class="text-end"><span t-out="stub_line['amount_total']"/></td>
+                                    <td class="text-end"><span t-out="stub_line['amount_residual']"/></td>
+                                    <td class="text-end"><span t-out="stub_line['amount_paid']"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="text-end fw-bold">
+                            <span t-out="page['values']['amount']"/>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </template>
+
+    <template id="report_check">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="payment">
+                    <t t-set="check_format" t-value="payment.journal_id._get_check_format()"/>
+                    <t t-set="pages" t-value="payment._om_check_pages(check_format)"/>
+                    <t t-call="om_account_check_printing.check_pages"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_check_test">
+        <t t-call="web.html_container">
+            <t t-call="web.basic_layout">
+                <t t-foreach="docs" t-as="check_format">
+                    <t t-set="pages" t-value="check_format._get_sample_pages()"/>
+                    <t t-call="om_account_check_printing.check_pages"/>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

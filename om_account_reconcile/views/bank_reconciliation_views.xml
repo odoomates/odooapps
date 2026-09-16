@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_bank_reconciliation" model="ir.actions.client">
+        <field name="name">Bank Reconciliation</field>
+        <field name="tag">om_bank_reconciliation</field>
+    </record>
+
+    <menuitem id="menu_bank_reconciliation"
+              name="Bank Reconciliation"
+              action="action_bank_reconciliation"
+              parent="account.menu_finance_entries"
+              sequence="1"
+              groups="account.group_account_basic"/>
+
+    <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.om.account.reconcile</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='bank_cash_buttons']" position="inside">
+                <button type="object" name="om_action_open_bank_reconciliation" class="btn btn-secondary"
+                        groups="account.group_account_basic">Reconcile</button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

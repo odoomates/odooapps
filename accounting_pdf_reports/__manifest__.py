@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Financial Reports',
-    'version': '1.0.4',
+    'version': '1.1.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 20, Accounting Financial Reports, '
                    'Odoo 20 Financial Reports',
@@ -21,6 +21,7 @@
         'views/ledger_menu.xml',
         'views/financial_report.xml',
         'views/settings.xml',
+        'views/account_account_views.xml',
         'wizard/account_report_common_view.xml',
         'wizard/partner_ledger.xml',
         'wizard/general_ledger.xml',
@@ -30,6 +31,7 @@
         'wizard/tax_report.xml',
         'wizard/aged_partner.xml',
         'wizard/journal_audit.xml',
+        'wizard/cash_flow.xml',
         'report/report.xml',
         'report/report_partner_ledger.xml',
         'report/report_general_ledger.xml',
@@ -39,6 +41,7 @@
         'report/report_aged_partner.xml',
         'report/report_journal_audit.xml',
         'report/report_journal_entries.xml',
+        'report/report_cash_flow.xml',
     ],
     'pre_init_hook': '_pre_init_clean_m2m_models',
     'images': ['static/description/banner.gif'],

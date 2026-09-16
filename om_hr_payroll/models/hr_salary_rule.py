@@ -19,7 +19,8 @@ class HrPayrollStructure(models.Model):
 
     name = fields.Char(required=True)
     code = fields.Char(string='Reference', required=True)
-    company_id = fields.Many2one('res.company', string='Company', required=True, default=lambda self: self.env.company)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company,
+                                 help="Leave empty to share the structure with all the companies.")
     note = fields.Text(string='Description')
     parent_id = fields.Many2one('hr.payroll.structure', string='Parent', default=_get_parent)
     children_ids = fields.One2many('hr.payroll.structure', 'parent_id', string='Children', copy=True)
@@ -36,7 +37,7 @@ class HrPayrollStructure(models.Model):
         if self.code:
             default.update({'code': _("%s (copy)") % (self.code)})
 
-        return super(HrPayrollStructure, self).copy(default)
+        return super().copy(default)
 
     def get_all_rules(self):
         """

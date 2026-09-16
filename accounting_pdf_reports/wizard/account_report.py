@@ -40,7 +40,7 @@ class AccountingReport(models.TransientModel):
         return result
 
     def check_report(self):
-        res = super(AccountingReport, self).check_report()
+        res = super().check_report()
         data = {}
         data['form'] = self.read(['account_report_id', 'date_from_cmp', 'date_to_cmp', 'journal_ids', 'filter_cmp', 'target_move'])[0]
         for field in ['account_report_id']:

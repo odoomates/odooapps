@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_cash_forecast" model="report.paperformat">
+        <field name="name">Cash Forecast (A4 landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">20</field>
+        <field name="margin_bottom">15</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">12</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_cash_forecast" model="ir.actions.report">
+        <field name="name">Cash Forecast</field>
+        <field name="model">account.cash.forecast.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_cash_forecast.report_cash_forecast</field>
+        <field name="paperformat_id" ref="paperformat_cash_forecast"/>
+    </record>
+
+    <template id="report_cash_forecast_amount">
+        <td t-att-class="'text-end text-danger' if amount &lt; 0 and negative_red else 'text-end'">
+            <span t-if="currency.is_zero(amount)">-</span>
+            <span t-else="" t-out="amount" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/>
+        </td>
+    </template>
+
+    <template id="report_cash_forecast">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.internal_layout">
+                    <t t-set="forecast" t-value="forecasts[o.id]"/>
+                    <t t-set="currency" t-value="forecast['currency']"/>
+                    <div class="page" style="font-size: 10px;">
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <h2 class="mb-0">Cash Forecast</h2>
+                            <div class="text-end">
+                                <div><strong>From:</strong> <span t-field="o.date_from"/>, by <span t-field="o.period_type"/></div>
+                                <div><strong>Currency:</strong> <span t-out="currency.name"/></div>
+                            </div>
+                        </div>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th style="min-width: 11rem;"/>
+                                    <th t-foreach="forecast['columns']" t-as="column" class="text-end"><span t-out="column"/></th>
+                                    <th class="text-end">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="fw-bold">
+                                    <td>Opening balance</td>
+                                    <t t-foreach="forecast['opening']" t-as="amount">
+                                        <t t-set="negative_red" t-value="True"/>
+                                        <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                    </t>
+                                    <td/>
+                                </tr>
+                                <t t-foreach="forecast['sections']" t-as="section">
+                                    <tr class="fw-bold">
+                                        <td t-att-colspan="len(forecast['columns']) + 2" class="pt-3"><span t-out="section['name']"/></td>
+                                    </tr>
+                                    <t t-foreach="section['rows']" t-as="row">
+                                        <tr>
+                                            <td class="ps-3"><span t-out="row['name']"/></td>
+                                            <t t-foreach="row['amounts']" t-as="amount">
+                                                <t t-set="negative_red" t-value="False"/>
+                                                <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                            </t>
+                                            <t t-set="amount" t-value="row['total']"/>
+                                            <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                        </tr>
+                                        <t t-if="o.display_partners">
+                                            <tr t-foreach="row['partners']" t-as="partner" class="text-muted">
+                                                <td class="ps-5"><span t-out="partner['name']"/></td>
+                                                <t t-foreach="partner['amounts']" t-as="amount">
+                                                    <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                                </t>
+                                                <t t-set="amount" t-value="partner['total']"/>
+                                                <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                            </tr>
+                                        </t>
+                                    </t>
+                                    <tr class="fw-bold border-top">
+                                        <td class="ps-3">Total <span t-out="section['name'].lower()"/></td>
+                                        <t t-foreach="section['totals']" t-as="amount">
+                                            <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                        </t>
+                                        <t t-set="amount" t-value="section['total']"/>
+                                        <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                    </tr>
+                                </t>
+                                <tr class="fw-bold" style="border-top: 2px solid;">
+                                    <td>Net cash flow</td>
+                                    <t t-foreach="forecast['net']" t-as="amount">
+                                        <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                    </t>
+                                    <t t-set="amount" t-value="forecast['net_total']"/>
+                                    <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                </tr>
+                                <tr class="fw-bold">
+                                    <td>Closing balance</td>
+                                    <t t-foreach="forecast['closing']" t-as="amount">
+                                        <t t-set="negative_red" t-value="True"/>
+                                        <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
+                                    </t>
+                                    <td/>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="forecast['lowest'] &lt; 0" class="text-danger fw-bold">
+                            The cash balance is expected to go negative.
+                        </p>
+                        <p class="text-muted">
+                            The balance is the one of the Bank and Cash accounts. The invoices and bills are expected
+                            on their due date; the payments registered but not reconciled with the bank yet are
+                            expected on their date.
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

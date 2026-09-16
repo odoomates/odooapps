@@ -33,6 +33,9 @@ class AccountMoveLine(models.Model):
         state = context.get('state')
         if state and state.lower() != 'all':
             domain += [('parent_state', '=', state)]
+        else:
+            # "All Entries" are the draft and posted ones: cancelled entries never count
+            domain += [('parent_state', '!=', 'cancel')]
 
         if context.get('company_id'):
             domain += [('company_id', '=', context['company_id'])]

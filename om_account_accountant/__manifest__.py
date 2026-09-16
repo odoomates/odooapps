@@ -1,13 +1,13 @@
 {
     'name': 'Odoo 20 Accounting Community',
-    'version': '1.0.3',
+    'version': '1.0.4',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '
-               'Customer Follow up Management, Bank Statement Import',
+               'Customer Follow up Management, Bank Reconciliation',
     'description': 'Odoo 20 Financial Reports, Asset Management and '
                    'Budget, Financial Reports, Recurring Payments, '
-                   'Bank Statement Import, Customer Follow Up Management,'
+                   'Bank Reconciliation, Customer Follow Up Management,'
                    'Account Lock Date, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
     'sequence': '1',
@@ -24,6 +24,7 @@
         'om_recurring_payments',
         'om_account_daily_reports',
         'om_account_followup',
+        'om_account_reconcile',
     ],
     'data': [
         'security/group.xml',

@@ -9,9 +9,11 @@
                 <header>
                     <button name="action_done" invisible="state != 'draft'" string="Done" type="object"
                             class="oe_highlight"/>
-                    <button name="action_draft" invisible="state != 'done'" string="Set To Draft"
+                    <button name="action_stop" invisible="state != 'done'" string="Stop" type="object"
+                            confirm="The payments not created yet will be skipped. Do you want to stop this recurring payment?"/>
+                    <button name="action_draft" invisible="state == 'draft'" string="Set To Draft"
                             type="object"/>
-                    <field name="state" widget="statusbar"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
                 </header>
                 <sheet>
                     <group>
@@ -27,7 +29,8 @@
                             <field name="partner_id"/>
                             <field name="payment_type"/>
                             <field name="amount" widget="monetary"/>
-                            <field name="journal_id" domain="[('type', 'in', ('bank', 'cash'))]"/>
+                            <field name="currency_id" groups="base.group_multi_currency"/>
+                            <field name="journal_id"/>
                         </group>
                         <group>
                             <field name="date_begin" widget="daterange"
@@ -37,40 +40,46 @@
                             <field name="recurring_period"/>
                             <field name="recurring_interval"/>
                             <field name="journal_state"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                     </group>
                     <notebook>
                         <page string="Recurring Entries">
                             <field name="line_ids">
-                                <list create="0" delete="0" edit="0" decoration-success="state == 'done'">
+                                <list create="0" delete="0" edit="0" decoration-success="state == 'done'"
+                                      decoration-muted="state == 'cancel'">
                                     <field name="date"/>
                                     <field name="amount"/>
-                                    <field name="journal_id" domain="[('type', 'in', ('bank', 'cash'))]"/>
-                                    <field name="currency_id" groups="base.group_multi_company"/>
-                                    <field name="state" widget="badge"/>
+                                    <field name="journal_id"/>
+                                    <field name="currency_id" groups="base.group_multi_currency"/>
+                                    <field name="payment_id" optional="hide"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'"/>
                                     <button name="action_create_payment" type="object"
                                             string="Create Payment"
-                                            invisible="state == 'done'"/>
+                                            invisible="state != 'draft' or parent.state != 'done'"/>
+                                    <button name="action_skip" type="object" string="Skip"
+                                            invisible="state != 'draft' or parent.state != 'done'"/>
+                                    <button name="action_reset" type="object" string="Reset"
+                                            invisible="state != 'cancel' or parent.state != 'done'"/>
                                 </list>
                                 <form string="Recurring Payment Line" edit="0">
                                     <group>
                                         <group>
                                             <field name="date"/>
                                             <field name="amount"/>
+                                            <field name="state"/>
                                         </group>
                                         <group>
-                                            <field name="journal_id"
-                                                   domain="[('type', 'in', ('bank', 'cash'))]"/>
-                                            <field name="currency_id" groups="base.group_multi_company"/>
+                                            <field name="journal_id"/>
+                                            <field name="currency_id" groups="base.group_multi_currency"/>
+                                            <field name="payment_id"/>
                                         </group>
                                     </group>
                                 </form>
                             </field>
                         </page>
                     </notebook>
-                    <group>
-                        <field name="description" placeholder="Description..." nolabel="1" colspan="4"/>
-                    </group>
+                    <field name="description" placeholder="Description..."/>
                 </sheet>
             </form>
         </field>
@@ -83,9 +92,43 @@
             <list string="Recurring Payments">
                 <field name="name"/>
                 <field name="partner_id"/>
+                <field name="template_id" optional="show"/>
+                <field name="payment_type" optional="show"/>
+                <field name="amount" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="date_begin" optional="hide"/>
+                <field name="date_end" optional="show"/>
                 <field name="journal_id"/>
-                <field name="state"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-muted="state == 'cancel'"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_account_recurring_payment_search" model="ir.ui.view">
+        <field name="name">recurring.payment.search</field>
+        <field name="model">recurring.payment</field>
+        <field name="arch" type="xml">
+            <search string="Recurring Payments">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="template_id"/>
+                <field name="journal_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Running" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Stopped" name="cancel" domain="[('state', '=', 'cancel')]"/>
+                <separator/>
+                <filter string="Send Money" name="outbound" domain="[('payment_type', '=', 'outbound')]"/>
+                <filter string="Receive Money" name="inbound" domain="[('payment_type', '=', 'inbound')]"/>
+                <group>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Template" name="group_template" context="{'group_by': 'template_id'}"/>
+                    <filter string="Journal" name="group_journal" context="{'group_by': 'journal_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -95,6 +138,7 @@
         <field name="res_model">recurring.payment</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_account_recurring_payment_tree"/>
+        <field name="search_view_id" ref="view_account_recurring_payment_search"/>
     </record>
 
     <menuitem id="menu_recurring_payment"

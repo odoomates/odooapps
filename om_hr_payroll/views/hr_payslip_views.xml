@@ -156,7 +156,7 @@
                         <div class="oe_button_box" name="button_box">
                             <button name="%(act_payslip_lines)d"
                                     class="oe_stat_button"
-                                    icon="fa-money"
+                                    icon="list_alt"
                                     type="action">
                                 <field name="payslip_count" widget="statinfo" string="Payslip"
                                        help="Payslip Computation Details"/>
@@ -414,6 +414,9 @@
                         <button string="Mark As Done" name="done_payslip_run" type="object" invisible="state != 'draft'"
                                 class="oe_highlight"/>
                         <button name="close_payslip_run" type="object" string="Close" invisible="state != 'draft'"/>
+                        <button name="action_send_payslips" type="object" string="Send Payslips by Email"
+                                invisible="state == 'draft'"
+                                confirm="The confirmed payslips of the batch are emailed to the employees. Continue?"/>
                         <field name="state" widget="statusbar"/>
                     </header>
                     <sheet>
@@ -429,6 +432,8 @@
                                 <field name="date_end" class="oe_inline" readonly="state != 'draft'"/>
                             </div>
                             <field name="credit_note" readonly="state != 'draft'"/>
+                            <field name="company_id" readonly="state != 'draft'" groups="base.group_multi_company"
+                                   options="{'no_create': True}"/>
                         </group>
                         <separator string="Payslips"/>
                         <field name="slip_ids" readonly="state != 'draft'"/>

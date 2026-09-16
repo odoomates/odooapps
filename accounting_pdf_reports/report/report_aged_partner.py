@@ -42,12 +42,14 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         res = []
         total = []
         cr = self.env.cr
-        user_company = self.env.user.company_id
-        user_currency = user_company.currency_id
-        company_ids = self.env.context.get('company_ids') or [user_company.id]
-        move_state = ['draft', 'posted']
-        date = self.env.context.get('date') or fields.Date.today()
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
+        # the company of the report (given by the wizard), not the default company of the user
         company = self.env['res.company'].browse(self.env.context.get('company_id')) or self.env.company
+        user_currency = company.currency_id
+        company_ids = self.env.context.get('company_ids') or [company.id]
+        move_state = ['draft', 'posted']
+        date = self.env.context.get('date') or fields.Date.context_today(self)
 
         if target_move == 'posted':
             move_state = ['posted']
@@ -122,7 +124,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                     line_amount -= line_currency._convert(partial_line.amount,
                                                           user_currency,
                                                           company, date)
-            if not self.env.user.company_id.currency_id.is_zero(line_amount):
+            if not user_currency.is_zero(line_amount):
                 undue_amounts[partner_id] += line_amount
                 lines[partner_id].append({
                     'line': line,
@@ -179,7 +181,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                         line_currency_id = partial_line.company_id.currency_id
                         line_amount -= line_currency_id._convert(
                             partial_line.amount, user_currency, company, date)
-                if not self.env.user.company_id.currency_id.is_zero(line_amount):
+                if not user_currency.is_zero(line_amount):
                     partners_amount[partner_id] += line_amount
                     lines[partner_id].append({
                         'line': line,
@@ -199,7 +201,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
 
             total[6] = total[6] + undue_amt
             values['direction'] = undue_amt
-            if not float_is_zero(values['direction'], precision_rounding=self.env.user.company_id.currency_id.rounding):
+            if not float_is_zero(values['direction'], precision_rounding=user_currency.rounding):
                 at_least_one_amount = True
 
             for i in range(5):
@@ -210,7 +212,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 total[(i)] = total[(i)] + (during and during[0] or 0)
                 values[str(i)] = during and during[0] or 0.0
                 if not float_is_zero(values[str(i)],
-                                     precision_rounding=self.env.user.company_id.currency_id.rounding):
+                                     precision_rounding=user_currency.rounding):
                     at_least_one_amount = True
             values['total'] = sum([values['direction']] + [values[str(i)] for i in range(5)])
             ## Add for total
@@ -232,6 +234,11 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         return res, total, lines
 
     @api.model
+    def _get_form_company_id(self, form):
+        company = form.get('company_id')
+        return company[0] if isinstance(company, (list, tuple)) else company or self.env.company.id
+
+    @api.model
     def _get_report_values(self, docids, data=None):
         if (not data.get('form') or not self.env.context.get('active_model')
                 or self.env.context.get('active_id') is None):
@@ -241,7 +248,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         docs = self.env[model].browse(self.env.context.get('active_id'))
 
         target_move = data['form'].get('target_move', 'all')
-        date_from = data['form'].get('date_from', time.strftime('%Y-%m-%d'))
+        date_from = data['form'].get('date_from') or fields.Date.context_today(self)
 
         if data['form']['result_selection'] == 'customer':
             account_type = ['asset_receivable']
@@ -250,7 +257,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         else:
             account_type = ['asset_receivable', 'liability_payable']
         partner_ids = data['form']['partner_ids']
-        movelines, total, dummy = self._get_partner_move_lines(
+        movelines, total, dummy = self.with_context(company_id=self._get_form_company_id(data['form']))._get_partner_move_lines(
             account_type, partner_ids, date_from, target_move, data['form']['period_length']
         )
         return {

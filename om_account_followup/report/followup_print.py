@@ -43,9 +43,8 @@ class ReportFollowup(models.AbstractModel):
              ('full_reconcile_id', '=', False),
              ('company_id', '=', company_id),
              '|', ('date_maturity', '=', False),
-             ('date_maturity', '<=', fields.Date.today())])
+             ('date_maturity', '<=', fields.Date.context_today(self))])
         lines_per_currency = defaultdict(list)
-        total = 0
         for line in moveline_ids:
             currency = line.currency_id or line.company_id.currency_id
             balance = line.debit - line.credit
@@ -56,13 +55,13 @@ class ReportFollowup(models.AbstractModel):
                 'ref': line.ref,
                 'date': format_date(self.env, line.date),
                 'date_maturity': format_date(self.env, line.date_maturity),
+                'due_date': line.date_maturity or line.date,
                 'balance': balance,
                 'currency_id': currency,
             }
-            total = total + line_data['balance']
             lines_per_currency[currency].append(line_data)
 
-        return [{'total': total, 'line': lines, 'currency': currency} for
+        return [{'total': sum(line['balance'] for line in lines), 'line': lines, 'currency': currency} for
                 currency, lines in
                 lines_per_currency.items()]
 

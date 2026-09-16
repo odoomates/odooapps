@@ -110,6 +110,13 @@
                         same customer, the actions of the most
                         overdue invoice will be executed.
                     </p>
+                    <group>
+                        <group>
+                            <field name="auto_send"/>
+                            <field name="auto_user_id" invisible="not auto_send" required="auto_send"/>
+                            <field name="last_auto_send" invisible="not last_auto_send"/>
+                        </group>
+                    </group>
                     <field name="followup_line"/>
                 </form>
             </field>
@@ -155,47 +162,6 @@
             </field>
         </record>
 
-        <record id="view_move_line_reconcile_tree" model="ir.ui.view">
-            <field name="name">account.move.line.list</field>
-            <field name="model">account.move.line</field>
-            <field name="arch" type="xml">
-                <list string="Journal Items to Reconcile" create="false">
-                    <field name="date"/>
-                    <field name="move_id"/>
-                    <field name="ref"/>
-                    <field name="name"/>
-                    <field name="partner_id"/>
-                    <field name="account_id"/>
-                    <field name="journal_id" column_invisible="1"/>
-                    <field name="full_reconcile_id"/>
-                    <field name="debit" sum="Total debit"/>
-                    <field name="credit" sum="Total credit"/>
-                </list>
-            </field>
-        </record>
-
-        <record id="account_manual_reconcile_action" model="ir.actions.act_window">
-            <field name="context">{'search_default_unreconciled': 1,'view_mode':True}</field>
-            <field name="name">Journal Items to Reconcile</field>
-            <field name="res_model">account.move.line</field>
-            <field name="view_id" ref="view_move_line_reconcile_tree"/>
-            <field name="view_mode">list</field>
-            <field name="help" type="html">
-                <p>
-                    No journal items found.
-                </p>
-            </field>
-        </record>
-
-        <menuitem id="om_account_followup_main_menu"
-                  parent="account.menu_finance_configuration"
-                  name="Follow-up"/>
-
-        <menuitem id="om_account_followup_menu"
-                  name="Follow-up Levels"
-                  action="action_om_account_followup_definition_form"
-                  parent="om_account_followup_main_menu" />
-
         <menuitem id="om_account_followup_main_menu"
                   parent="account.menu_finance_configuration"
                   name="Follow-up"/>
@@ -204,9 +170,6 @@
                   name="Follow-up Levels"
                   action="action_om_account_followup_definition_form"
                   parent="om_account_followup_main_menu"/>
-
-
-
 
     </data>
 </odoo>

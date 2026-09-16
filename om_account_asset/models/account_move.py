@@ -23,20 +23,10 @@ class AccountMove(models.Model):
                 asset.sudo().set_to_cancelled()
                 asset.sudo().message_post(body=_("Vendor bill reset to draft."))
             move.asset_ids.filtered(lambda a: a.state == 'draft').sudo().unlink()
-        return super(AccountMove, self).button_draft()
-
-    @api.model
-    def _refund_cleanup_lines(self, lines):
-        result = super(AccountMove, self)._refund_cleanup_lines(lines)
-        for i, line in enumerate(lines):
-            for name, field in line._fields.items():
-                if name == 'asset_category_id':
-                    result[i][2][name] = False
-                    break
-        return result
+        return super().button_draft()
 
     def action_cancel(self):
-        res = super(AccountMove, self).action_cancel()
+        res = super().action_cancel()
         assets = self.env['account.asset.asset'].sudo().search(
             [('invoice_id', 'in', self.ids)])
         if assets:
@@ -46,10 +36,13 @@ class AccountMove(models.Model):
         return res
 
     def action_post(self):
-        result = super(AccountMove, self).action_post()
-        for inv in self:
-            context = dict(self.env.context)
-            context.pop('default_type', None)
+        for bill in self.filtered(lambda m: m.move_type == 'in_invoice'):
+            bill.invoice_line_ids.filtered(lambda line: not line.asset_category_id)._set_bill_asset_category()
+        result = super().action_post()
+        context = dict(self.env.context)
+        context.pop('default_type', None)
+        # credit notes keep the category of the reversed lines but do not create assets
+        for inv in self.filtered(lambda m: m.move_type in ('in_invoice', 'out_invoice')):
             for mv_line in inv.invoice_line_ids:
                 mv_line.with_context(context).asset_create()
         return result
@@ -74,19 +67,6 @@ class AccountMoveLine(models.Model):
         readonly=True, store=True
     )
 
-    @api.model
-    def default_get(self, fields):
-        res = super(AccountMoveLine, self).default_get(fields)
-        if self.env.context.get('create_bill') and not self.asset_category_id:
-            if self.product_id and self.move_id.move_type == 'out_invoice' and \
-                    self.product_id.product_tmpl_id.deferred_revenue_category_id:
-                self.asset_category_id = self.product_id.product_tmpl_id.deferred_revenue_category_id.id
-            elif self.product_id and self.product_id.product_tmpl_id.asset_category_id and \
-                    self.move_id.move_type == 'in_invoice':
-                self.asset_category_id = self.product_id.product_tmpl_id.asset_category_id.id
-            self.onchange_asset_category_id()
-        return res
-
     @api.depends('asset_category_id', 'move_id.invoice_date')
     def _get_asset_date(self):
         for rec in self:
@@ -100,12 +80,11 @@ class AccountMoveLine(models.Model):
                                       'your asset category cannot be 0.'))
                 months = cat.method_number * cat.method_period
                 if rec.move_id.move_type in ['out_invoice', 'out_refund']:
-                    price_subtotal = self.currency_id._convert(
-                        self.price_subtotal,
-                        self.company_currency_id,
-                        self.company_id,
-                        self.move_id.invoice_date or fields.Date.context_today(
-                            self))
+                    price_subtotal = rec.currency_id._convert(
+                        rec.price_subtotal,
+                        rec.company_currency_id,
+                        rec.company_id,
+                        rec.move_id.invoice_date or fields.Date.context_today(rec))
 
                     rec.asset_mrr = price_subtotal / months
                 if rec.move_id.invoice_date:
@@ -114,33 +93,69 @@ class AccountMoveLine(models.Model):
                     rec.asset_start_date = start_date
                     rec.asset_end_date = end_date
 
+    def _set_bill_asset_category(self):
+        """ Give the vendor bill lines booked on the asset account of a category creating its assets
+        from bills the category of that account. """
+        Category = self.env['account.asset.category']
+        for line in self:
+            if line.display_type == 'product' and line.account_id:
+                category = Category._get_bill_categories(line.account_id, line.company_id)
+                if len(category) == 1:
+                    line.asset_category_id = category
+
+    def _prepare_asset_vals(self):
+        """ :return: list of values of the assets created by the line, one per unit when the category says so """
+        self.ensure_one()
+        move = self.move_id
+        category = self.asset_category_id
+        date = move.invoice_date or move.date
+        currency = move.company_currency_id
+        price_subtotal = currency.round(self.currency_id._convert(
+            self.price_subtotal, currency, self.company_id, move.invoice_date or fields.Date.context_today(self)))
+        base_vals = {
+            'name': self.name or self.product_id.display_name or category.name,
+            'code': self.name or False,
+            'category_id': category.id,
+            'value': price_subtotal,
+            'partner_id': move.partner_id.id,
+            'company_id': move.company_id.id,
+            'currency_id': currency.id,
+            'date': date,
+            'invoice_id': move.id,
+        }
+        base_vals.update(self.env['account.asset.asset'].onchange_category_id_values(category.id)['value'])
+        units = self.quantity
+        if category.type != 'purchase' or not category.asset_per_unit or units <= 1 or units != int(units):
+            return [base_vals]
+        units = int(units)
+        unit_value = currency.round(price_subtotal / units)
+        vals_list = []
+        for index in range(units):
+            # the last asset takes the rounding difference
+            value = unit_value if index < units - 1 else currency.round(price_subtotal - unit_value * (units - 1))
+            vals_list.append({
+                **base_vals,
+                'name': _('%(name)s (%(index)s/%(count)s)', name=base_vals['name'], index=index + 1, count=units),
+                'value': value,
+            })
+        return vals_list
+
     def asset_create(self):
-        if self.asset_category_id:
-            price_subtotal = self.currency_id._convert(
-                self.price_subtotal,
-                self.company_currency_id,
-                self.company_id,
-                self.move_id.invoice_date or fields.Date.context_today(
-                    self))
-            vals = {
-                'name': self.name or self.product_id.display_name or self.asset_category_id.name,
-                'code': self.name or False,
-                'category_id': self.asset_category_id.id,
-                'value': price_subtotal,
-                'partner_id': self.move_id.partner_id.id,
-                'company_id': self.move_id.company_id.id,
-                'currency_id': self.move_id.company_currency_id.id,
-                'date': self.move_id.invoice_date or self.move_id.date,
-                'invoice_id': self.move_id.id,
-            }
-            changed_vals = self.env['account.asset.asset'].onchange_category_id_values(vals['category_id'])
-            vals.update(changed_vals['value'])
-            asset = self.env['account.asset.asset'].create(vals)
-            if self.asset_category_id.open_asset:
-                if asset.date_first_depreciation == 'manual':
-                    asset.first_depreciation_manual_date = asset.date
-                asset.validate()
+        for line in self.filtered('asset_category_id'):
+            # the users posting bills cannot confirm assets
+            assets = self.env['account.asset.asset'].sudo().create(line._prepare_asset_vals())
+            if line.asset_category_id.open_asset:
+                for asset in assets:
+                    if asset.date_first_depreciation == 'manual':
+                        asset.first_depreciation_manual_date = asset.date
+                assets.validate()
         return True
+
+    @api.onchange('account_id')
+    def _onchange_account_asset_category(self):
+        for line in self:
+            if line.move_id.move_type == 'in_invoice' and not line.asset_category_id:
+                line._set_bill_asset_category()
 
     @api.onchange('asset_category_id', 'product_uom_id')
     def onchange_asset_category_id(self):
@@ -151,13 +166,10 @@ class AccountMoveLine(models.Model):
 
     @api.onchange('product_id')
     def _inverse_product_id(self):
-        res = super(AccountMoveLine, self)._inverse_product_id()
+        res = super()._inverse_product_id()
         for rec in self:
             if rec.product_id:
                 if rec.move_id.move_type == 'out_invoice':
                     rec.asset_category_id = rec.product_id.product_tmpl_id.deferred_revenue_category_id.id
                 elif rec.move_id.move_type == 'in_invoice':
                     rec.asset_category_id = rec.product_id.product_tmpl_id.asset_category_id.id
-
-    def get_invoice_line_account(self, type, product, fpos, company):
-        return product.asset_category_id.account_asset_id or super(AccountMoveLine, self).get_invoice_line_account(type, product, fpos, company)

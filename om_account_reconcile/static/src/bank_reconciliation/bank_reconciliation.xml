@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_account_reconcile.BankReconciliation">
+        <div class="o_action o_om_bank_rec">
+            <ControlPanel>
+                <t t-set-slot="control-panel-buttons">
+                    <button class="btn btn-secondary o_om_bank_rec_auto" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.autoReconcile()">
+                        Auto-reconcile
+                    </button>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <select class="form-select w-auto o_om_bank_rec_journal" t-on-change="(ev) => this.onJournalChange(ev)">
+                            <option t-foreach="this.state.journals" t-as="journal" t-key="journal.id"
+                                    t-att-value="journal.id" t-att-selected="journal.id === this.state.journalId"
+                                    t-out="journal.display_name"/>
+                        </select>
+                        <div class="btn-group" role="group">
+                            <button t-foreach="[['to_reconcile', 'To Reconcile'], ['reconciled', 'Reconciled'], ['all', 'All']]"
+                                    t-as="filter" t-key="filter[0]"
+                                    t-att-class="'btn btn-secondary' + (this.state.filter === filter[0] ? ' active' : '')"
+                                    t-att-data-filter="filter[0]"
+                                    t-on-click="() => this.setFilter(filter[0])" t-out="filter[1]"/>
+                        </div>
+                        <input type="search" class="form-control w-auto o_om_bank_rec_search"
+                               placeholder="Search label, partner or amount"
+                               t-att-value="this.state.search" t-on-input="(ev) => this.onSearchInput(ev)"/>
+                    </div>
+                </t>
+            </ControlPanel>
+
+            <div class="o_content o_om_bank_rec_content">
+                <div class="o_om_bank_rec_list">
+                    <div t-if="!this.state.transactions.length" class="o_om_bank_rec_empty text-muted p-4">
+                        No transaction to show.
+                    </div>
+                    <div t-foreach="this.state.transactions" t-as="tr" t-key="tr.id"
+                         t-att-class="'o_om_bank_rec_transaction' + (tr.id === this.state.selectedId ? ' o_selected' : '') + (tr.is_reconciled ? ' o_reconciled' : '')"
+                         t-att-data-id="tr.id"
+                         t-on-click="() => this.selectTransaction(tr.id)">
+                        <div class="d-flex justify-content-between gap-2">
+                            <span class="text-muted small" t-out="tr.date_display"/>
+                            <span t-att-class="'fw-bold text-nowrap ' + (tr.amount &lt; 0 ? 'text-danger' : '')"
+                                  t-out="this.format(tr.amount, tr.currency_id)"/>
+                        </div>
+                        <div class="text-truncate" t-out="tr.label"/>
+                        <div class="d-flex justify-content-between gap-2 small">
+                            <span class="text-truncate text-muted" t-out="tr.partner_name"/>
+                            <span t-if="tr.is_reconciled" class="badge text-bg-success">Reconciled</span>
+                            <span t-elif="tr.review_state === 'todo'" class="badge text-bg-warning">To check</span>
+                        </div>
+                    </div>
+                    <button t-if="this.state.transactions.length &lt; this.state.count"
+                            class="btn btn-link w-100" t-on-click="() => this.loadMore()">
+                        Load more
+                    </button>
+                </div>
+
+                <div class="o_om_bank_rec_panel">
+                    <div t-if="!this.transaction" class="o_om_bank_rec_empty text-muted p-4">
+                        Select a transaction to reconcile it.
+                    </div>
+                    <t t-else="" t-call="om_account_reconcile.BankReconciliation.Panel"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_account_reconcile.BankReconciliation.Panel">
+        <t t-set="tr" t-value="this.transaction"/>
+        <div class="o_om_bank_rec_header card mb-3">
+            <div class="card-body">
+                <div class="d-flex flex-wrap justify-content-between gap-3">
+                    <div class="flex-grow-1">
+                        <div class="text-muted small">
+                            <t t-out="tr.date_display"/> · <t t-out="tr.journal_name"/>
+                        </div>
+                        <h4 class="mb-2 o_om_bank_rec_label" t-out="tr.label"/>
+                        <div class="o_om_bank_rec_partner" style="max-width: 360px;">
+                            <RecordSelector t-if="!this.isReconciled"
+                                            resModel="'res.partner'"
+                                            resId="this.state.proposal.partner_id"
+                                            update.bind="this.setPartner"
+                                            placeholder="'Partner'"/>
+                            <span t-else="" t-out="tr.partner_name"/>
+                        </div>
+                    </div>
+                    <div class="text-end">
+                        <div t-att-class="'fs-3 fw-bold ' + (tr.amount &lt; 0 ? 'text-danger' : '')"
+                             t-out="this.format(tr.amount, tr.currency_id)"/>
+                        <div t-if="!this.isReconciled" class="o_om_bank_rec_remaining">
+                            <span class="text-muted">To reconcile: </span>
+                            <span t-att-class="this.remaining ? 'fw-bold text-warning' : 'fw-bold text-success'"
+                                  t-out="this.formatAbs(this.remaining, tr.currency_id)"/>
+                        </div>
+                        <div class="d-flex justify-content-end gap-2 mt-2">
+                            <button class="btn btn-link btn-sm" t-on-click="() => this.openMove(tr.move_id)">Open entry</button>
+                            <button t-if="!this.isReconciled" class="btn btn-link btn-sm o_om_bank_rec_to_check"
+                                    t-on-click="() => this.toggleToCheck()"
+                                    t-out="tr.review_state === 'todo' ? 'Mark as checked' : 'To check'"/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <t t-if="this.isReconciled">
+            <table class="table table-sm o_om_bank_rec_entry">
+                <thead>
+                    <tr><th>Account</th><th>Label</th><th>Matched with</th><th class="text-end">Amount</th></tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="this.state.data.entry_lines" t-as="line" t-key="line.id">
+                        <td t-out="line.account_display"/>
+                        <td t-out="line.label"/>
+                        <td t-out="line.matched_move_names.join(', ')"/>
+                        <td class="text-end" t-out="this.format(line.amount_currency, line.currency_id)"/>
+                    </tr>
+                </tbody>
+            </table>
+            <button class="btn btn-secondary o_om_bank_rec_undo" t-att-disabled="this.state.busy" t-on-click="() => this.undo()">
+                Undo reconciliation
+            </button>
+        </t>
+
+        <t t-else="">
+            <div class="card mb-3 o_om_bank_rec_proposal">
+                <div class="card-body p-0">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>Counterpart</th>
+                                <th>Account</th>
+                                <th class="text-end">Open amount</th>
+                                <th class="text-end" style="width: 11rem;">Reconciled amount</th>
+                                <th style="width: 2rem;"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="this.state.data.entry_lines.filter((line) => !line.is_suspense)" t-as="line" t-key="'existing' + line.id" class="text-muted">
+                                <td><t t-out="line.label"/> <span class="badge text-bg-light">already reconciled</span></td>
+                                <td t-out="line.account_display"/>
+                                <td/>
+                                <td class="text-end" t-out="this.formatAbs(line.amount_currency, line.currency_id)"/>
+                                <td/>
+                            </tr>
+                            <tr t-foreach="this.state.proposal.matches" t-as="match" t-key="'match' + match.aml_id" class="o_om_bank_rec_match_row">
+                                <td>
+                                    <a href="#" t-on-click.prevent="() => this.openMove(match.candidate.move_id)" t-out="match.candidate.move_name"/>
+                                    <div class="small text-muted" t-out="match.candidate.partner_name"/>
+                                </td>
+                                <td class="small" t-out="match.candidate.account_display"/>
+                                <td class="text-end" t-out="this.formatAbs(match.candidate.residual_currency, match.candidate.currency_id)"/>
+                                <td class="text-end">
+                                    <input type="text" class="o_input text-end o_om_bank_rec_match_amount"
+                                           t-att-value="match.amount === null ? '' : match.amount"
+                                           t-att-placeholder="this.formatAbs(this.previewAmountFor(match), match.candidate.currency_id)"
+                                           t-on-change="(ev) => this.setMatchAmount(match_index, ev)"/>
+                                </td>
+                                <td><button class="btn btn-link text-danger p-0" title="Remove" t-on-click="() => this.removeMatch(match_index)">×</button></td>
+                            </tr>
+                            <tr t-foreach="this.state.proposal.writeoffs" t-as="writeoff" t-key="'writeoff' + writeoff_index" class="o_om_bank_rec_writeoff_row">
+                                <td t-out="writeoff.label or tr.label"/>
+                                <td class="small" t-out="this.writeoffPreviewLine(writeoff_index).account_display or ''"/>
+                                <td/>
+                                <td class="text-end" t-out="this.formatAbs(this.writeoffPreviewLine(writeoff_index).amount_transaction ?? writeoff.amount, tr.currency_id)"/>
+                                <td><button class="btn btn-link text-danger p-0" title="Remove" t-on-click="() => this.removeWriteoff(writeoff_index)">×</button></td>
+                            </tr>
+                            <tr t-foreach="(this.state.preview?.lines or []).filter((line) => line.kind === 'tax')" t-as="line" t-key="'tax' + line_index" class="text-muted">
+                                <td t-out="line.label"/>
+                                <td class="small" t-out="line.account_display"/>
+                                <td/>
+                                <td class="text-end" t-out="this.formatAbs(line.amount_transaction, tr.currency_id)"/>
+                                <td/>
+                            </tr>
+                            <tr t-if="!this.state.proposal.matches.length and !this.state.proposal.writeoffs.length">
+                                <td colspan="5" class="text-muted text-center py-3">
+                                    Add journal items to match or a counterpart below.
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="card-footer d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <div>
+                        <span class="text-muted">Left on the suspense account: </span>
+                        <span t-att-class="this.remaining ? 'fw-bold text-warning' : 'fw-bold text-success'"
+                              t-out="this.formatAbs(this.remaining, tr.currency_id)"/>
+                    </div>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-secondary" t-on-click="() => this.resetProposal()">Reset</button>
+                        <button class="btn btn-primary o_om_bank_rec_validate" t-att-disabled="!this.canValidate"
+                                title="Ctrl+Enter" t-on-click="() => this.validate()">
+                            <t t-out="this.state.preview?.is_complete ? 'Validate' : 'Validate (partial)'"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs mb-2">
+                <li class="nav-item">
+                    <a href="#" t-att-class="'nav-link' + (this.state.tab === 'match' ? ' active' : '')"
+                       data-tab="match" t-on-click.prevent="() => this.state.tab = 'match'">Match journal items</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" t-att-class="'nav-link' + (this.state.tab === 'writeoff' ? ' active' : '')"
+                       data-tab="writeoff" t-on-click.prevent="() => this.state.tab = 'writeoff'">Counterpart</a>
+                </li>
+                <li class="nav-item" t-if="this.state.data.models.length">
+                    <a href="#" t-att-class="'nav-link' + (this.state.tab === 'models' ? ' active' : '')"
+                       data-tab="models" t-on-click.prevent="() => this.state.tab = 'models'">Reconciliation models</a>
+                </li>
+            </ul>
+
+            <div t-if="this.state.tab === 'match'" class="o_om_bank_rec_candidates">
+                <input type="search" class="form-control mb-2 o_om_bank_rec_candidate_search"
+                       placeholder="Search a reference, a partner or an amount"
+                       t-att-value="this.state.candidateSearch" t-on-input="(ev) => this.onCandidateSearchInput(ev)"/>
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Entry</th><th>Partner</th><th>Date</th><th>Due</th><th>Account</th>
+                            <th class="text-end">Open amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.candidates" t-as="candidate" t-key="candidate.id"
+                            t-att-class="'o_om_bank_rec_candidate' + (this.matchedIds.has(candidate.id) ? ' table-active' : '')"
+                            t-att-data-id="candidate.id"
+                            t-on-click="() => this.addMatch(candidate)">
+                            <td>
+                                <t t-out="candidate.move_name"/>
+                                <span t-if="candidate.score &gt;= 60" class="badge text-bg-info ms-1">Suggested</span>
+                                <div class="small text-muted" t-out="candidate.label"/>
+                            </td>
+                            <td t-out="candidate.partner_name"/>
+                            <td t-out="candidate.date_display"/>
+                            <td t-out="candidate.date_maturity_display"/>
+                            <td class="small" t-out="candidate.account_display"/>
+                            <td t-att-class="'text-end ' + (candidate.residual_currency &lt; 0 ? 'text-danger' : '')"
+                                t-out="this.format(candidate.residual_currency, candidate.currency_id)"/>
+                        </tr>
+                        <tr t-if="!this.state.candidates.length">
+                            <td colspan="6" class="text-muted text-center py-3">No open journal item found.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div t-if="this.state.tab === 'writeoff'" class="card o_om_bank_rec_writeoff_form">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Account</label>
+                            <RecordSelector resModel="'account.account'" resId="this.state.writeoff.account_id"
+                                            domain="this.accountDomain" update.bind="this.setWriteoffAccount"
+                                            placeholder="'Account'"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Label</label>
+                            <input type="text" class="o_input o_om_bank_rec_writeoff_label" t-att-value="this.state.writeoff.label"
+                                   t-att-placeholder="tr.label" t-on-change="(ev) => this.state.writeoff.label = ev.target.value"/>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Taxes</label>
+                            <MultiRecordSelector resModel="'account.tax'" resIds="this.state.writeoff.tax_ids"
+                                                 domain="this.taxDomain" update.bind="this.setWriteoffTaxes"
+                                                 placeholder="'Taxes'"/>
+                            <div class="form-check mt-1">
+                                <input type="checkbox" class="form-check-input" id="om_bank_rec_tax_included"
+                                       t-att-checked="this.state.writeoff.tax_included"
+                                       t-on-change="(ev) => this.state.writeoff.tax_included = ev.target.checked"/>
+                                <label class="form-check-label" for="om_bank_rec_tax_included">The amount includes the taxes</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Amount</label>
+                            <input type="text" class="o_input text-end o_om_bank_rec_writeoff_amount"
+                                   t-att-value="this.state.writeoff.amount"
+                                   t-on-change="(ev) => this.setWriteoffAmount(ev)"/>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary mt-3 o_om_bank_rec_add_writeoff" t-on-click="() => this.addWriteoff()">Add counterpart</button>
+                </div>
+            </div>
+
+            <div t-if="this.state.tab === 'models'" class="d-flex flex-wrap gap-2 o_om_bank_rec_models">
+                <button t-foreach="this.state.data.models" t-as="model" t-key="model.id"
+                        t-att-class="'btn ' + (model.applicable ? 'btn-primary' : 'btn-secondary')"
+                        t-on-click="() => this.applyModel(model)" t-out="model.name"/>
+            </div>
+        </t>
+    </t>
+
+</templates>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_budget_vs_actual" model="ir.actions.report">
+        <field name="name">Budget vs Actual</field>
+        <field name="model">account.budget</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_budget.report_budget_vs_actual</field>
+        <field name="print_report_name">'Budget vs Actual - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_account_budget"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_budget_vs_actual">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="budget">
+                <t t-call="web.internal_layout">
+                    <t t-set="currency" t-value="budget.currency_id"/>
+                    <t t-set="has_committed" t-value="'committed_amount' in budget.line_ids._fields"/>
+                    <div class="page" style="font-size: 11px;">
+                        <div class="d-flex justify-content-between align-items-end mb-3">
+                            <h2 class="mb-0">Budget vs Actual: <span t-field="budget.name"/></h2>
+                            <div class="text-end">
+                                <div><strong>Period:</strong> <span t-field="budget.date_from"/> - <span t-field="budget.date_to"/></div>
+                                <div><strong>Status:</strong> <span t-field="budget.state"/></div>
+                                <div t-if="budget.user_id"><strong>Responsible:</strong> <span t-field="budget.user_id"/></div>
+                            </div>
+                        </div>
+                        <t t-foreach="[('revenue', 'Revenues'), ('expense', 'Expenses')]" t-as="section">
+                            <t t-set="lines" t-value="budget.line_ids.filtered(lambda line: line.budget_type == section[0])"/>
+                            <t t-if="lines">
+                                <h4 t-out="section[1]"/>
+                                <table class="table table-sm mb-4">
+                                    <thead>
+                                        <tr>
+                                            <th>Budget Line</th>
+                                            <th>Period</th>
+                                            <th class="text-end">Planned</th>
+                                            <th class="text-end">Expected to Date</th>
+                                            <th class="text-end">Actual</th>
+                                            <th t-if="has_committed and section[0] == 'expense'" class="text-end">Committed</th>
+                                            <th class="text-end" t-out="'Remaining' if section[0] == 'expense' else 'To Earn'"/>
+                                            <th class="text-end">Achieved</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="lines" t-as="line">
+                                            <t t-set="committed" t-value="line.committed_amount if has_committed and section[0] == 'expense' else 0.0"/>
+                                            <t t-set="remaining" t-value="line.planned_amount - line.practical_amount - committed"/>
+                                            <td><span t-field="line.name"/></td>
+                                            <td><span t-field="line.date_from"/> - <span t-field="line.date_to"/></td>
+                                            <td class="text-end"><span t-field="line.planned_amount"/></td>
+                                            <td class="text-end"><span t-field="line.theoretical_amount"/></td>
+                                            <td class="text-end"><span t-field="line.practical_amount"/></td>
+                                            <td t-if="has_committed and section[0] == 'expense'" class="text-end">
+                                                <span t-out="committed" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                            </td>
+                                            <td t-att-class="'text-end' + (' text-danger' if section[0] == 'expense' and currency.compare_amounts(remaining, 0.0) &lt; 0 else '')">
+                                                <span t-out="remaining" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                            </td>
+                                            <td class="text-end">
+                                                <t t-if="line.planned_amount"><span t-out="round(100.0 * line.practical_amount / line.planned_amount)"/>%</t>
+                                            </td>
+                                        </tr>
+                                        <t t-set="planned" t-value="sum(lines.mapped('planned_amount'))"/>
+                                        <t t-set="actual" t-value="sum(lines.mapped('practical_amount'))"/>
+                                        <t t-set="committed_total" t-value="sum(lines.mapped('committed_amount')) if has_committed and section[0] == 'expense' else 0.0"/>
+                                        <tr class="fw-bold border-top">
+                                            <td colspan="2">Total <t t-out="section[1]"/></td>
+                                            <td class="text-end"><span t-out="planned" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                            <td class="text-end"><span t-out="sum(lines.mapped('theoretical_amount'))" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                            <td class="text-end"><span t-out="actual" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                            <td t-if="has_committed and section[0] == 'expense'" class="text-end">
+                                                <span t-out="committed_total" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                            </td>
+                                            <td class="text-end"><span t-out="planned - actual - committed_total" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                            <td class="text-end"><t t-if="planned"><span t-out="round(100.0 * actual / planned)"/>%</t></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </t>
+                        </t>
+                        <div t-if="not budget.line_ids" class="text-muted">This budget has no line.</div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
