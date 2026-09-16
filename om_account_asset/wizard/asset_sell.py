@@ -76,6 +76,7 @@ class AssetSell(models.TransientModel):
                 raise UserError(_('Select the invoice lines of the sale.'))
             sale_lines = self.sale_line_ids
         if self.scope == 'partial':
-            move = self.asset_id._dispose_partially(self.date, self.disposed_percent / 100.0, sale_lines=sale_lines, note=self.note)
+            move = self.asset_id._dispose_partially(self.date, self.disposed_percent / 100.0,
+                                                    sale_lines=sale_lines, note=self.note)
             return self.asset_id._open_record_action(move)
         return self.asset_id.set_to_close(sale_lines=sale_lines, disposal_date=self.date, note=self.note)

@@ -134,7 +134,8 @@ class TestFollowup(AccountTestInvoicingCommon):
                         ('id', 'in', partners.ids), (field_name, operator, value),
                     ])
                     expected = partners.filtered(lambda p: compare[operator](
-                        p[field_name], value if value is not False or field_name == 'payment_earliest_due_date' else 0.0,
+                        p[field_name],
+                        value if value is not False or field_name == 'payment_earliest_due_date' else 0.0,
                     ))
                     self.assertEqual(found, expected)
 
@@ -208,7 +209,8 @@ class TestFollowup(AccountTestInvoicingCommon):
             company_id=self.company.id,
         )
         self._create_customer_invoice('2026-01-01')
-        wizard = self.env['followup.print'].with_user(manager).create({'date': '2026-01-20', 'followup_id': self.plan.id})
+        wizard = self.env['followup.print'].with_user(manager).create(
+            {'date': '2026-01-20', 'followup_id': self.plan.id})
         self.assertIn('1 email(s) sent', wizard.do_process()['context']['description'])
 
     def test_default_template_is_optional(self):
@@ -242,7 +244,8 @@ class TestFollowup(AccountTestInvoicingCommon):
             'date': '2026-01-20', 'followup_id': self.plan.id,
         })
         self.assertIn('1 e-mail(s) envoyé(s)', wizard.do_process()['context']['description'])
-        subject = self.env.ref('om_account_followup.email_template_om_account_followup_default').with_context(lang='fr_FR').subject
+        subject = self.env.ref(
+            'om_account_followup.email_template_om_account_followup_default').with_context(lang='fr_FR').subject
         self.assertEqual(subject, '{{ env.company.name }}  Rappel de paiement')
 
     def test_monthly_automatic_sending(self):

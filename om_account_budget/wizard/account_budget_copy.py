@@ -9,9 +9,12 @@ class AccountBudgetCopy(models.TransientModel):
     _description = 'Copy a Budget to Another Period'
 
     budget_id = fields.Many2one('account.budget', required=True, ondelete='cascade')
-    name = fields.Char('New Budget Name', required=True, compute='_compute_period', store=True, readonly=False, precompute=True)
-    date_from = fields.Date('Start Date', required=True, compute='_compute_period', store=True, readonly=False, precompute=True)
-    date_to = fields.Date('End Date', required=True, compute='_compute_period', store=True, readonly=False, precompute=True)
+    name = fields.Char('New Budget Name', required=True, compute='_compute_period', store=True, readonly=False,
+                       precompute=True)
+    date_from = fields.Date('Start Date', required=True, compute='_compute_period', store=True, readonly=False,
+                            precompute=True)
+    date_to = fields.Date('End Date', required=True, compute='_compute_period', store=True, readonly=False,
+                          precompute=True)
 
     @api.depends('budget_id')
     def _compute_period(self):

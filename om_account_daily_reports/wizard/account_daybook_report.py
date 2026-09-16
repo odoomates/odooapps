@@ -11,7 +11,8 @@ class AccountDayBookReport(models.TransientModel):
                                     ('all', 'All Entries')], string='Target Moves', required=True,
                                    default='posted')
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True,
-                                   default=lambda self: self.env['account.journal'].search([('company_id', '=', self.env.company.id)]))
+                                   default=lambda self: self.env['account.journal'].search(
+                                       [('company_id', '=', self.env.company.id)]))
     account_ids = fields.Many2many('account.account', 'account_account_daybook_report', 'report_line_id',
                                    'account_id', 'Accounts')
 

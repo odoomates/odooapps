@@ -325,8 +325,10 @@ class AccountBudgetLine(models.Model):
             budget = line.budget_id
             if line.date_from > line.date_to:
                 raise ValidationError(_('The line "%s" must start before it ends.', line.name))
-            if not (budget.date_from <= line.date_from <= budget.date_to) or not (budget.date_from <= line.date_to <= budget.date_to):
-                raise ValidationError(_('The period of the line "%s" must be included in the period of the budget.', line.name))
+            if (not (budget.date_from <= line.date_from <= budget.date_to)
+                    or not (budget.date_from <= line.date_to <= budget.date_to)):
+                raise ValidationError(_(
+                    'The period of the line "%s" must be included in the period of the budget.', line.name))
 
     @api.constrains('planned_amount')
     def _check_planned_amount(self):
@@ -339,7 +341,8 @@ class AccountBudgetLine(models.Model):
     @api.constrains('distribution', 'planned_date', 'date_from', 'date_to')
     def _check_planned_date(self):
         for line in self:
-            if line.distribution == 'at_date' and not (line.planned_date and line.date_from <= line.planned_date <= line.date_to):
+            if line.distribution == 'at_date' and not (
+                    line.planned_date and line.date_from <= line.planned_date <= line.date_to):
                 raise ValidationError(_('Set a planned date within the period of the line "%s".', line.name))
 
     @api.constrains('budget_id', 'position_id', 'analytic_account_id', 'budget_type', 'date_from', 'date_to')

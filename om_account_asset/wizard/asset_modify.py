@@ -55,7 +55,8 @@ class AssetModify(models.TransientModel):
         for wizard in self:
             asset = wizard.asset_id
             if asset.state == 'open' and wizard.date:
-                wizard.value_at_date = asset._get_residual_at(wizard.date) - asset._get_partial_depreciation(wizard.date)[1]
+                wizard.value_at_date = (
+                    asset._get_residual_at(wizard.date) - asset._get_partial_depreciation(wizard.date)[1])
             else:
                 wizard.value_at_date = asset.value_residual
 
@@ -134,10 +135,12 @@ class AssetModify(models.TransientModel):
             asset._create_value_increase(self.date, difference, self.increase_counterpart_account_id)
         asset._recompute_board(keep_until=self.date)
 
-        dummy, tracking_values = asset._mail_track(self.env['account.asset.asset'].fields_get(changed_fields), previous_values)
+        dummy, tracking_values = asset._mail_track(
+            self.env['account.asset.asset'].fields_get(changed_fields), previous_values)
         body = self.note
         if not currency.is_zero(difference):
             body = _('%(note)s. Book value changed from %(before)s to %(after)s.',
                      note=self.note, before=previous_book_value, after=previous_book_value + difference)
-        asset.message_post(subject=_('Asset modified'), body=body, message_type='tracking', tracking_values=tracking_values)
+        asset.message_post(subject=_('Asset modified'), body=body, message_type='tracking',
+                           tracking_values=tracking_values)
         return {'type': 'ir.actions.act_window_close'}

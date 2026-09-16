@@ -56,7 +56,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         arg_list = (tuple(move_state), tuple(account_type))
 
         reconciliation_clause = '(l.reconciled IS FALSE)'
-        cr.execute('SELECT debit_move_id, credit_move_id FROM account_partial_reconcile where max_date > %s', (date_from,))
+        cr.execute('SELECT debit_move_id, credit_move_id FROM account_partial_reconcile where max_date > %s',
+                   (date_from,))
         reconciled_after_date = []
         for row in cr.fetchall():
             reconciled_after_date += [row[0], row[1]]
@@ -64,9 +65,10 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             reconciliation_clause = '(l.reconciled IS FALSE OR l.id IN %s)'
             arg_list += (tuple(reconciled_after_date),)
         arg_list += (date_from, tuple(company_ids))
-        query = '''
+        query = ('''
             SELECT DISTINCT l.partner_id, UPPER(res_partner.name)
-            FROM account_move_line AS l left join res_partner on l.partner_id = res_partner.id, account_account, account_move am
+            FROM account_move_line AS l left join res_partner on l.partner_id = res_partner.id, '''
+                 '''account_account, account_move am
             WHERE (l.account_id = account_account.id)
                 AND (l.move_id = am.id)
                 AND (am.state IN %s)
@@ -74,7 +76,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 AND ''' + reconciliation_clause + '''
                 AND (l.date <= %s)
                 AND l.company_id IN %s
-            ORDER BY UPPER(res_partner.name)'''
+            ORDER BY UPPER(res_partner.name)''')
         cr.execute(query, arg_list)
         partners = cr.dictfetchall()
         # put a total of 0
@@ -228,7 +230,8 @@ class ReportAgedPartnerBalance(models.AbstractModel):
                 values['name'] = _('Unknown Partner')
                 values['trust'] = False
 
-            if at_least_one_amount or (self.env.context.get('include_nullified_amount') and lines[partner['partner_id']]):
+            if at_least_one_amount or (self.env.context.get('include_nullified_amount')
+                                       and lines[partner['partner_id']]):
                 res.append(values)
 
         return res, total, lines
@@ -257,7 +260,9 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         else:
             account_type = ['asset_receivable', 'liability_payable']
         partner_ids = data['form']['partner_ids']
-        movelines, total, dummy = self.with_context(company_id=self._get_form_company_id(data['form']))._get_partner_move_lines(
+        movelines, total, dummy = self.with_context(
+            company_id=self._get_form_company_id(data['form'])
+        )._get_partner_move_lines(
             account_type, partner_ids, date_from, target_move, data['form']['period_length']
         )
         return {

@@ -9,7 +9,8 @@ class AccountPrintJournal(models.TransientModel):
     sort_selection = fields.Selection([('date', 'Date'), ('move_name', 'Journal Entry Number')],
                                       'Entries Sorted by', required=True, default='move_name')
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True,
-                                   default=lambda self: self.env['account.journal'].search([('type', 'in', ['sale', 'purchase'])]))
+                                   default=lambda self: self.env['account.journal'].search(
+                                       [('type', 'in', ['sale', 'purchase'])]))
 
     def _get_report_data(self, data):
         data = self.pre_print_report(data)
@@ -18,4 +19,5 @@ class AccountPrintJournal(models.TransientModel):
 
     def _print_report(self, data):
         data = self._get_report_data(data)
-        return self.env.ref('accounting_pdf_reports.action_report_journal').with_context(landscape=True).report_action(self, data=data)
+        return self.env.ref('accounting_pdf_reports.action_report_journal').with_context(
+            landscape=True).report_action(self, data=data)

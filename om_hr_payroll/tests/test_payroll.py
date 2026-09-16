@@ -75,7 +75,8 @@ class TestPayroll(TransactionCase):
         payslip = self._new_payslip(self.employee)
         self.assertEqual(payslip.version_id, self.employee.current_version_id)
         self.assertEqual(payslip.struct_id, self.structure)
-        self.assertEqual(payslip.worked_days_line_ids.mapped(lambda line: (line.code, line.number_of_days)), [('WORK100', 21.0)])
+        self.assertEqual(payslip.worked_days_line_ids.mapped(lambda line: (line.code, line.number_of_days)),
+                         [('WORK100', 21.0)])
         self.assertEqual(payslip.input_line_ids.mapped('code'), ['BONUS'])
 
         payslip.input_line_ids.amount = 250.0
@@ -110,7 +111,8 @@ class TestPayroll(TransactionCase):
         payslip.compute_sheet()
         self.assertEqual(self._totals(payslip)['BASIC'], 6000.0)
 
-        run = self.env['hr.payslip.run'].create({'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
+        run = self.env['hr.payslip.run'].create({
+            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
         wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set(self.employee.ids)]})
         wizard.with_context(active_id=run.id).compute_sheet()
         self.assertEqual(run.slip_ids.version_id, new_version)
@@ -119,8 +121,10 @@ class TestPayroll(TransactionCase):
 
     def test_payslip_batch(self):
         other_employee = self._create_employee('Second Employee', wage=3000.0)
-        run = self.env['hr.payslip.run'].create({'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
-        wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set((self.employee | other_employee).ids)]})
+        run = self.env['hr.payslip.run'].create({
+            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
+        wizard = self.env['hr.payslip.employees'].create({
+            'employee_ids': [Command.set((self.employee | other_employee).ids)]})
         with self.assertRaises(UserError):
             wizard.compute_sheet()
         wizard.with_context(active_id=run.id).compute_sheet()
@@ -140,7 +144,8 @@ class TestPayroll(TransactionCase):
         self.assertEqual(self._totals(refund)['NET'], self._totals(payslip)['NET'])
 
     def test_payroll_officer(self):
-        officer = new_test_user(self.env, login='payroll_officer', groups='base.group_user,om_hr_payroll.group_hr_payroll_user')
+        officer = new_test_user(self.env, login='payroll_officer',
+                                groups='base.group_user,om_hr_payroll.group_hr_payroll_user')
         payslip = self._new_payslip(self.employee.with_user(officer)).with_user(officer)
         payslip.compute_sheet()
         self.assertEqual(self._totals(payslip)['NET'], 5500.0)
@@ -154,7 +159,8 @@ class TestPayroll(TransactionCase):
             self.assertIn('Payroll Employee', html)
 
         register = self.env.ref('om_hr_payroll.contrib_register_employees')
-        wizard = self.env['payslip.lines.contribution.register'].create({'date_from': date(2026, 8, 1), 'date_to': date(2026, 8, 31)})
+        wizard = self.env['payslip.lines.contribution.register'].create({
+            'date_from': date(2026, 8, 1), 'date_to': date(2026, 8, 31)})
         action = wizard.with_context(active_ids=register.ids, discard_logo_check=True).print_report()
         values = self.env['report.om_hr_payroll.report_contribution_register'].with_context(active_ids=register.ids)\
             ._get_report_values([], data=action['data'])
@@ -172,8 +178,10 @@ class TestPayroll(TransactionCase):
     def test_send_batch_payslips_by_email(self):
         self.employee.work_email = 'payroll.employee@example.com'
         without_email = self._create_employee('No Email Employee', wage=3000.0)
-        run = self.env['hr.payslip.run'].create({'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
-        wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set((self.employee | without_email).ids)]})
+        run = self.env['hr.payslip.run'].create({
+            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
+        wizard = self.env['hr.payslip.employees'].create({
+            'employee_ids': [Command.set((self.employee | without_email).ids)]})
         wizard.with_context(active_id=run.id).compute_sheet()
         run.done_payslip_run()
         action = run.action_send_payslips()
@@ -191,7 +199,8 @@ class TestPayroll(TransactionCase):
     # -------------------------------------------------------------------------
 
     def _officer(self, login='payroll_officer_sec', **values):  # noqa: D401
-        return new_test_user(self.env, login=login, groups='base.group_user,om_hr_payroll.group_hr_payroll_user', **values)
+        return new_test_user(self.env, login=login,
+                             groups='base.group_user,om_hr_payroll.group_hr_payroll_user', **values)
 
     def test_officer_cannot_change_salary_rules(self):
         officer = self._officer()
@@ -230,7 +239,8 @@ class TestPayroll(TransactionCase):
         company_2 = self.env['res.company'].create({'name': 'Payroll Company 2'})
         employee_2 = self._create_employee('Company 2 Employee', company_id=company_2.id)
         if 'journal_id' in self.env['hr.payslip']._fields:
-            self.env['account.journal'].create({'name': 'Salaries', 'code': 'SAL2', 'type': 'general', 'company_id': company_2.id})
+            self.env['account.journal'].create({
+                'name': 'Salaries', 'code': 'SAL2', 'type': 'general', 'company_id': company_2.id})
         payslip_2 = self.env['hr.payslip'].create({
             'employee_id': employee_2.id, 'company_id': company_2.id,
             'date_from': date(2026, 8, 1), 'date_to': date(2026, 8, 31),
@@ -243,8 +253,10 @@ class TestPayroll(TransactionCase):
 
     def test_batch_confirmation_keeps_processed_payslips(self):
         other_employee = self._create_employee('Rejected Employee', wage=3000.0)
-        run = self.env['hr.payslip.run'].create({'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
-        wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set((self.employee | other_employee).ids)]})
+        run = self.env['hr.payslip.run'].create({
+            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
+        wizard = self.env['hr.payslip.employees'].create({
+            'employee_ids': [Command.set((self.employee | other_employee).ids)]})
         wizard.with_context(active_id=run.id).compute_sheet()
         done = run.slip_ids.filtered(lambda slip: slip.employee_id == self.employee)
         rejected = run.slip_ids - done
@@ -264,7 +276,8 @@ class TestPayroll(TransactionCase):
         })
         wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set(self.employee.ids)]})
         with self.assertRaises(UserError):
-            wizard.with_context(active_id=run.id, allowed_company_ids=[self.env.company.id, company_2.id]).compute_sheet()
+            wizard.with_context(
+                active_id=run.id, allowed_company_ids=[self.env.company.id, company_2.id]).compute_sheet()
 
     def test_a_confirmed_payslip_is_locked_for_officers(self):
         officer = self._officer(login='payroll_officer_lock')

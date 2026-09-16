@@ -18,9 +18,10 @@ class ReportTax(models.AbstractModel):
         }
 
     def _sql_from_amls_one(self):
-        sql = """SELECT "account_move_line".tax_line_id, COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
+        sql = ("""SELECT "account_move_line".tax_line_id, """
+               """COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
                     FROM %s
-                    WHERE %s GROUP BY "account_move_line".tax_line_id"""
+                    WHERE %s GROUP BY "account_move_line".tax_line_id""")
         return sql
 
     def _sql_from_amls_two(self):

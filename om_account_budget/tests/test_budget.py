@@ -108,13 +108,15 @@ class TestBudget(AccountTestInvoicingCommon):
         lines.invalidate_recordset(['practical_amount'])
 
         AnalyticLine = self.registry['account.analytic.line']
-        with patch.object(AnalyticLine, '_read_group', autospec=True, side_effect=AnalyticLine._read_group) as read_group:
+        with patch.object(AnalyticLine, '_read_group', autospec=True,
+                          side_effect=AnalyticLine._read_group) as read_group:
             self.assertEqual(lines.mapped('practical_amount'), [10.0, 20.0, 30.0])
         self.assertEqual(read_group.call_count, 1)
 
     def test_theoretical_amount_includes_the_last_day(self):
         line = self._create_line(position_id=self.position.id, date_from='2026-01-01', date_to='2026-01-10')
-        for today, expected in (('2025-12-31', 0.0), ('2026-01-01', 100.0), ('2026-01-10', 1000.0), ('2026-02-01', 1000.0)):
+        for today, expected in (('2025-12-31', 0.0), ('2026-01-01', 100.0), ('2026-01-10', 1000.0),
+                                ('2026-02-01', 1000.0)):
             with freeze_time(today):
                 line.invalidate_recordset(['theoretical_amount'])
                 self.assertEqual(line.theoretical_amount, expected, today)

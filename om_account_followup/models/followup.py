@@ -36,7 +36,8 @@ class FollowupFollowup(models.Model):
         """ Monthly job: process the follow-ups of the plans sending them automatically. """
         today = fields.Date.context_today(self)
         for followup in self.search([('auto_send', '=', True)]):
-            if followup.last_auto_send and (followup.last_auto_send.year, followup.last_auto_send.month) == (today.year, today.month):
+            if followup.last_auto_send and (
+                    (followup.last_auto_send.year, followup.last_auto_send.month) == (today.year, today.month)):
                 continue
             wizard = self.env['followup.print'].with_user(followup.auto_user_id).with_company(followup.company_id)
             wizard.with_context(followup_automatic=True).create({
@@ -61,7 +62,8 @@ class FollowupLine(models.Model):
     @api.model
     def default_get(self, default_fields):
         values = super().default_get(default_fields)
-        template = self.env.ref('om_account_followup.email_template_om_account_followup_default', raise_if_not_found=False)
+        template = self.env.ref('om_account_followup.email_template_om_account_followup_default',
+                                raise_if_not_found=False)
         if template and 'email_template_id' in default_fields:
             values.setdefault('email_template_id', template.id)
         return values

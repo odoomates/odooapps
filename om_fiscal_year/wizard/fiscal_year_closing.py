@@ -61,7 +61,8 @@ class AccountFiscalYearClosing(models.TransientModel):
     @api.depends('company_id')
     def _compute_unaffected_earnings_account_id(self):
         for wizard in self:
-            wizard.unaffected_earnings_account_id = wizard.company_id and wizard.company_id.get_unaffected_earnings_account()
+            wizard.unaffected_earnings_account_id = (wizard.company_id
+                                                     and wizard.company_id.get_unaffected_earnings_account())
 
     @api.depends('fiscal_year_id', 'lock')
     def _compute_checklist(self):

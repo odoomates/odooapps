@@ -10,7 +10,8 @@ class AccountCashForecastReport(models.TransientModel):
 
     company_id = fields.Many2one('res.company', required=True, readonly=True, default=lambda self: self.env.company)
     date_from = fields.Date(string='From', required=True, default=fields.Date.context_today)
-    period_type = fields.Selection([('week', 'Weeks'), ('month', 'Months')], string='By', required=True, default='month')
+    period_type = fields.Selection([('week', 'Weeks'), ('month', 'Months')], string='By', required=True,
+                                   default='month')
     period_count = fields.Integer(string='Number of Periods', required=True, default=12)
     overdue = fields.Selection(
         [('include', 'Expected now, in an Overdue column'), ('exclude', 'Left out')],

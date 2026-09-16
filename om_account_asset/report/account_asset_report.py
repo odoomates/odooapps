@@ -12,7 +12,8 @@ class AssetAssetReport(models.Model):
     asset_id = fields.Many2one('account.asset.asset', string='Asset', readonly=True)
     asset_category_id = fields.Many2one('account.asset.category', string='Asset category', readonly=True)
     partner_id = fields.Many2one('res.partner', string='Partner', readonly=True)
-    state = fields.Selection([('draft', 'Draft'), ('open', 'Running'), ('paused', 'Paused'), ('close', 'Close')], string='Status', readonly=True)
+    state = fields.Selection([('draft', 'Draft'), ('open', 'Running'), ('paused', 'Paused'), ('close', 'Close')],
+                             string='Status', readonly=True)
     depreciation_value = fields.Float(string='Amount of Depreciation Lines', readonly=True)
     installment_value = fields.Float(string='Amount of Installment Lines', readonly=True)
     move_check = fields.Boolean(string='Posted', readonly=True)

@@ -21,7 +21,8 @@ class AccountMoveLine(models.Model):
             domain += [(date_field, '<=', context['date_to'])]
         if context.get('date_from'):
             if not context.get('strict_range'):
-                domain += ['|', (date_field, '>=', context['date_from']), ('account_id.include_initial_balance', '=', True)]
+                domain += ['|', (date_field, '>=', context['date_from']),
+                           ('account_id.include_initial_balance', '=', True)]
             elif context.get('initial_bal'):
                 domain += [(date_field, '<', context['date_from'])]
             else:
@@ -45,7 +46,9 @@ class AccountMoveLine(models.Model):
             domain += [('company_id', '=', self.env.company.id)]
 
         if context.get('reconcile_date'):
-            domain += ['|', ('reconciled', '=', False), '|', ('matched_debit_ids.max_date', '>', context['reconcile_date']), ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
+            domain += ['|', ('reconciled', '=', False), '|',
+                       ('matched_debit_ids.max_date', '>', context['reconcile_date']),
+                       ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
 
         if context.get('account_tag_ids'):
             domain += [('account_id.tag_ids', 'in', context['account_tag_ids'].ids)]

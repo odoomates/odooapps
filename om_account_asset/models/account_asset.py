@@ -172,7 +172,8 @@ class AccountAssetCategory(models.Model):
     def _check_create_from_bill(self):
         for category in self.filtered(lambda c: c.create_from_bill and c.active):
             if category.type != 'purchase':
-                raise ValidationError(_('Only asset categories can create their assets from the bills on their account.'))
+                raise ValidationError(
+                    _('Only asset categories can create their assets from the bills on their account.'))
             if category._get_bill_categories(category.account_asset_id, category.company_id) != category:
                 raise ValidationError(_(
                     'Another category already creates its assets from the bills on the account %s.',
@@ -332,8 +333,10 @@ class AccountAssetAsset(models.Model):
         compute='_compute_gross_increase_count', string='Value Increase',
         help="Value added to the asset by its value increases.")
     account_asset_id = fields.Many2one(related='category_id.account_asset_id', string='Fixed Asset Account')
-    account_depreciation_id = fields.Many2one(related='category_id.account_depreciation_id', string='Accumulated Depreciation Account')
-    account_depreciation_expense_id = fields.Many2one(related='category_id.account_depreciation_expense_id', string='Depreciation Expense Account')
+    account_depreciation_id = fields.Many2one(
+        related='category_id.account_depreciation_id', string='Accumulated Depreciation Account')
+    account_depreciation_expense_id = fields.Many2one(
+        related='category_id.account_depreciation_expense_id', string='Depreciation Expense Account')
     journal_id = fields.Many2one(related='category_id.journal_id', string='Journal')
     increase_move_id = fields.Many2one(
         'account.move', string='Value Increase Entry', copy=False, readonly=True,
@@ -821,7 +824,8 @@ class AccountAssetAsset(models.Model):
         balances = [(category.account_asset_id, -gross_value), (category.account_depreciation_id, accumulated)]
         balances += [(account, currency.round(amount)) for account, amount in sale_price_by_account.items()]
         balances.append((result_account, -result))
-        return [(account, balance) for account, balance in balances if account and not currency.is_zero(balance)], book_value, sale_price
+        return [(account, balance) for account, balance in balances
+                if account and not currency.is_zero(balance)], book_value, sale_price
 
     def _dispose_partially(self, disposal_date, share, sale_lines=None, note=None):
         """ Sell or dispose of `share` (between 0 and 1) of the asset: the running period is depreciated up to
@@ -893,7 +897,8 @@ class AccountAssetAsset(models.Model):
                  share=round(share * 100, 2), date=disposal_date, invoices=self._links_markup(sale_lines.move_id),
                  entry=move._get_html_link(), result=result, note=note or '') if sale_lines else \
             _('%(share)s%% disposed of on %(date)s, %(entry)s. Loss: %(result)s. %(note)s',
-              share=round(share * 100, 2), date=disposal_date, entry=move._get_html_link(), result=-result, note=note or '')
+              share=round(share * 100, 2), date=disposal_date, entry=move._get_html_link(), result=-result,
+              note=note or '')
         self.message_post(body=body)
         return move
 
@@ -1072,7 +1077,8 @@ class AccountAssetAsset(models.Model):
     def write(self, vals):
         res = super().write(vals)
         if 'analytic_distribution' in vals:
-            self._get_board_moves().filtered(lambda m: m.state == 'draft').line_ids.analytic_distribution = vals['analytic_distribution']
+            self._get_board_moves().filtered(
+                lambda m: m.state == 'draft').line_ids.analytic_distribution = vals['analytic_distribution']
         if BOARD_FIELDS & set(vals):
             # refresh the preview of draft assets, running boards change through the asset actions
             for asset in self.filtered(lambda a: a.state == 'draft' and a.depreciation_move_ids):

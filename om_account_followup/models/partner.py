@@ -258,7 +258,8 @@ class ResPartner(models.Model):
             ) AS pl
             GROUP BY pid HAVING %s
         """,
-            SQL("AND COALESCE(l.date_maturity, l.date) <= %s", fields.Date.context_today(self)) if overdue_only else SQL(),
+            (SQL("AND COALESCE(l.date_maturity, l.date) <= %s", fields.Date.context_today(self))
+             if overdue_only else SQL()),
             self.env.company.id,
             having,
         )

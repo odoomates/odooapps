@@ -57,7 +57,8 @@ class AccountPeriodClosing(models.Model):
             elif closing.date_from.day == 1 and closing.date_to == closing.date_from + relativedelta(day=31):
                 closing.name = format_date(self.env, closing.date_from, date_format='MMMM y')
             else:
-                closing.name = '%s - %s' % (format_date(self.env, closing.date_from), format_date(self.env, closing.date_to))
+                closing.name = '%s - %s' % (format_date(self.env, closing.date_from),
+                                            format_date(self.env, closing.date_to))
 
     @api.depends('date_from')
     def _compute_date_to(self):

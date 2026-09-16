@@ -60,7 +60,8 @@ class EcbProvider(RateProvider):
             response.raise_for_status()
             root = etree.fromstring(response.content)
         except (requests.RequestException, etree.XMLSyntaxError) as error:
-            raise UserError(self.company.env._('%(provider)s could not be reached: %(error)s', provider=self.name, error=error)) from error
+            raise UserError(self.company.env._(
+                '%(provider)s could not be reached: %(error)s', provider=self.name, error=error)) from error
         namespace = {'ecb': 'http://www.ecb.int/vocabulary/2002-08-01/eurofxref'}
         day = root.find('.//ecb:Cube[@time]', namespace)
         if day is None:

@@ -219,9 +219,11 @@ class AccountCheckFormatLine(models.Model):
     line_height = fields.Float(string='Line Spacing (mm)', default=8.0, digits=(16, 1))
     font_size = fields.Float(string='Font Size (pt)', digits=(16, 1), help="Leave at 0 for the size of the format.")
     bold = fields.Boolean()
-    align = fields.Selection([('left', 'Left'), ('center', 'Center'), ('right', 'Right')], default='left', required=True)
+    align = fields.Selection(
+        [('left', 'Left'), ('center', 'Center'), ('right', 'Right')], default='left', required=True)
     letter_spacing = fields.Float(
-        string='Letter Spacing (mm)', digits=(16, 2), help="Spreads the characters, e.g. the digits of a date in boxes.")
+        string='Letter Spacing (mm)', digits=(16, 2),
+        help="Spreads the characters, e.g. the digits of a date in boxes.")
     rotation = fields.Integer(string='Rotation (°)', help="e.g. -30 for an A/C Payee crossing.")
     border = fields.Selection(
         [('none', 'None'), ('box', 'Box'), ('crossing', 'Two Lines (crossing)')], default='none', required=True)

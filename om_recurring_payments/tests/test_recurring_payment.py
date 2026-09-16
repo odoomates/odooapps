@@ -48,7 +48,8 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
 
         # a template saved before the constraint existed must not hang the confirmation
         recurring_payment = self._create_recurring_payment()
-        self.env.cr.execute("UPDATE account_recurring_template SET recurring_interval = 0 WHERE id = %s", [self.template.id])
+        self.env.cr.execute("UPDATE account_recurring_template SET recurring_interval = 0 WHERE id = %s",
+                            [self.template.id])
         self.env.invalidate_all()
         with self.assertRaises(UserError):
             recurring_payment.action_done()

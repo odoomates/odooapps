@@ -17,7 +17,8 @@ class AccountMove(models.Model):
     def _compute_budget_warning(self):
         for move in self:
             overruns = move._get_budget_overruns() if move.state == 'draft' else []
-            move.budget_warning = self.env['account.budget.line']._format_budget_overruns(overruns) if overruns else False
+            move.budget_warning = (
+                self.env['account.budget.line']._format_budget_overruns(overruns) if overruns else False)
 
     def _get_budget_overruns(self):
         self.ensure_one()
@@ -42,8 +43,8 @@ class AccountMove(models.Model):
                 overruns = move._get_budget_overruns()
                 if overruns:
                     raise UserError(_(
-                        '%(move)s cannot be posted, it goes over budget:\n%(lines)s\nAsk an accounting manager to post it or '
-                        'to raise the budget.',
+                        '%(move)s cannot be posted, it goes over budget:\n%(lines)s\nAsk an accounting manager '
+                        'to post it or to raise the budget.',
                         move=move.display_name,
                         lines=self.env['account.budget.line']._format_budget_overruns(overruns, html=False)))
         return super()._post(soft=soft)

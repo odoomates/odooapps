@@ -29,7 +29,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
                                  invoice_date=date, currency=currency, post=True)
 
     def _open_line(self, move):
-        return move.line_ids.filtered(lambda line: line.account_id.account_type in ('asset_receivable', 'liability_payable'))
+        return move.line_ids.filtered(
+            lambda line: line.account_id.account_type in ('asset_receivable', 'liability_payable'))
 
     def _transaction(self, amount, label='Transaction', partner=None, date='2026-01-20', **values):
         return self.env['account.bank.statement.line'].create({
@@ -118,7 +119,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         self.assertFalse(st_line.is_reconciled)
         self.assertEqual(st_line.amount_residual, -200.0)
 
-        st_line._om_reconcile({'writeoffs': [{'account_id': self.income_account.id, 'amount': -200.0, 'label': 'Extra'}]})
+        st_line._om_reconcile({'writeoffs': [
+            {'account_id': self.income_account.id, 'amount': -200.0, 'label': 'Extra'}]})
         self.assertTrue(st_line.is_reconciled)
         self.assertIn((self.income_account.id, -200.0), self._entry_lines(st_line))
 
@@ -133,7 +135,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
                 self.assertTrue(st_line.is_reconciled)
                 lines = st_line.move_id.line_ids
                 self.assertEqual(lines.filtered(
-                    lambda line: line.account_id == self.expense_account and not line.tax_repartition_line_id).balance, 100.0)
+                    lambda line: line.account_id == self.expense_account
+                    and not line.tax_repartition_line_id).balance, 100.0)
                 tax_line = lines.filtered('tax_repartition_line_id')
                 self.assertEqual(tax_line.balance, 15.0)
                 self.assertEqual(tax_line.tax_line_id, self.purchase_tax)
@@ -209,20 +212,24 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
     def test_writeoff_model(self):
         model = self.env['account.reconcile.model'].create({
             'name': 'Bank fees', 'rule_type': 'reco_model', 'match_label': 'contains', 'match_label_param': 'FEE',
-            'line_ids': [Command.create({'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
+            'line_ids': [Command.create({
+                'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })
         st_line = self._transaction(-20.0, label='monthly fee', partner=False)
         self.assertTrue(model._om_is_applicable(st_line))
         self.assertFalse(model._om_is_applicable(self._transaction(-20.0, label='rent', partner=False)))
         st_line._om_reconcile(model._om_get_proposal(st_line))
         self.assertTrue(st_line.is_reconciled)
-        self.assertEqual(st_line.move_id.line_ids.filtered(lambda line: line.account_id == self.expense_account).reconcile_model_id, model)
+        self.assertEqual(
+            st_line.move_id.line_ids.filtered(lambda line: line.account_id == self.expense_account).reconcile_model_id,
+            model)
 
     def test_regex_and_fixed_amounts(self):
         model = self.env['account.reconcile.model'].create({
             'name': 'Commission', 'rule_type': 'reco_model',
             'line_ids': [
-                Command.create({'account_id': self.expense_account.id, 'amount_type': 'regex', 'amount_string': r'COM ([\d,]+)'}),
+                Command.create({'account_id': self.expense_account.id, 'amount_type': 'regex',
+                                'amount_string': r'COM ([\d,]+)'}),
                 Command.create({'account_id': self.income_account.id, 'amount_type': 'fixed', 'amount_string': '-1'}),
             ],
         })
@@ -240,7 +247,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         self.env['account.reconcile.model'].create({
             'name': 'Invoices with 2% tolerance', 'rule_type': 'matching_rule',
             'payment_tolerance': 2.0, 'payment_tolerance_type': 'percentage',
-            'line_ids': [Command.create({'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
+            'line_ids': [Command.create({
+                'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })
         invoice = self._invoice(1000.0, partner=partner)
         st_line = self._transaction(990.0, label='ACME TRANSFER', partner=False)
@@ -284,7 +292,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         entry = self.env['account.move'].create({
             'journal_id': self.misc_journal.id, 'date': '2026-01-15',
             'line_ids': [
-                Command.create({'account_id': receivable.account_id.id, 'partner_id': self.partner_a.id, 'balance': -990.0}),
+                Command.create({'account_id': receivable.account_id.id, 'partner_id': self.partner_a.id,
+                                'balance': -990.0}),
                 Command.create({'account_id': self.income_account.id, 'balance': 990.0}),
             ],
         })
@@ -295,7 +304,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
             (items + entry.line_ids.filtered(lambda line: line.account_id == self.income_account))._om_reconcile_items()
 
         items._om_reconcile_items(writeoff={
-            'account_id': self.expense_account.id, 'journal_id': self.misc_journal.id, 'date': '2026-01-31', 'label': 'Discount',
+            'account_id': self.expense_account.id, 'journal_id': self.misc_journal.id,
+            'date': '2026-01-31', 'label': 'Discount',
         })
         self.assertTrue(all(items.mapped('reconciled')))
         self.assertIn(invoice.payment_state, ('paid', 'in_payment'))
@@ -317,7 +327,8 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         invoice = self._invoice(400.0)
         fee_model = self.env['account.reconcile.model'].create({
             'name': 'Fee', 'rule_type': 'reco_model',
-            'line_ids': [Command.create({'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
+            'line_ids': [Command.create({
+                'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })
         st_line = self._transaction(390.0, label='Payment %s' % invoice.name)
         StLine = self.env['account.bank.statement.line']
@@ -361,5 +372,6 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
 
         other_invoice = self._invoice(75.0)
         other_refund = self._invoice(75.0, move_type='out_refund')
-        self.env['account.move.line'].om_action_match_suggestions([('move_id', 'in', (other_invoice + other_refund).ids)])
+        self.env['account.move.line'].om_action_match_suggestions(
+            [('move_id', 'in', (other_invoice + other_refund).ids)])
         self.assertTrue(all(self._open_line(other_invoice + other_refund).mapped('reconciled')))

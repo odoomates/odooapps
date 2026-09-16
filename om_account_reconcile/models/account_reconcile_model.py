@@ -39,7 +39,8 @@ class AccountReconcileModel(models.Model):
             elif self.match_label == 'match_regex':
                 if not any(re.search(self.match_label_param, text) for text in texts):
                     return False
-        if self.match_partner_ids and st_line.partner_id.commercial_partner_id not in self.match_partner_ids.commercial_partner_id:
+        if (self.match_partner_ids
+                and st_line.partner_id.commercial_partner_id not in self.match_partner_ids.commercial_partner_id):
             return False
         return True
 
@@ -101,7 +102,8 @@ class AccountReconcileModel(models.Model):
                     return float('%s.%s' % (re.sub(r'\D', '', groups[0]), re.sub(r'\D', '', groups[1])))
                 value = groups[0].strip()
                 if ',' in value and '.' in value:
-                    value = value.replace(',', '') if value.rfind('.') > value.rfind(',') else value.replace('.', '').replace(',', '.')
+                    value = (value.replace(',', '') if value.rfind('.') > value.rfind(',')
+                             else value.replace('.', '').replace(',', '.'))
                 else:
                     value = value.replace(',', '.')
                 return abs(float(value))
@@ -123,23 +125,31 @@ class AccountReconcileModel(models.Model):
         amls = self.env['account.move.line'].search(
             st_line._om_candidates_domain() + [
                 ('partner_id', 'child_of', partner.id),
-                ('account_id.account_type', 'in', ('asset_receivable', 'liability_payable', 'asset_current', 'liability_current')),
+                ('account_id.account_type', 'in',
+                 ('asset_receivable', 'liability_payable', 'asset_current', 'liability_current')),
             ],
-            order='date_maturity %s, date %s, id' % (('asc', 'asc') if self.matching_order == 'old_first' else ('desc', 'desc')),
+            order='date_maturity %s, date %s, id' % (
+                ('asc', 'asc') if self.matching_order == 'old_first' else ('desc', 'desc')
+            ),
         )
         amls = amls.filtered(lambda aml: (aml.amount_residual > 0) == (residual > 0))
-        tolerance = self.payment_tolerance if self.payment_tolerance_type == 'amount' else abs(residual) * self.payment_tolerance / 100.0
+        tolerance = (self.payment_tolerance if self.payment_tolerance_type == 'amount'
+                     else abs(residual) * self.payment_tolerance / 100.0)
 
         selected = self.env['account.move.line']
         total = 0.0
         for aml in amls:
-            aml_amount = st_line._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency, aml.amount_residual)
+            aml_amount = st_line._om_to_transaction_amount(
+                aml.currency_id, aml.amount_residual_currency, aml.amount_residual,
+            )
             total += aml_amount
             selected |= aml
             difference = trans_currency.round(abs(residual) - abs(total))
             if abs(difference) <= tolerance + trans_currency.rounding / 2:
                 # matched in full: the difference within the tolerance is written off below
-                proposal = {'matches': [{'aml_id': aml.id, 'amount': abs(aml.amount_residual_currency)} for aml in selected]}
+                proposal = {
+                    'matches': [{'aml_id': aml.id, 'amount': abs(aml.amount_residual_currency)} for aml in selected],
+                }
                 if not trans_currency.is_zero(difference):
                     if not self.line_ids.filtered('account_id'):
                         return {}

@@ -17,13 +17,15 @@ class TestCheckFormat(AccountTestInvoicingCommon):
         cls.bank = cls.company_data['default_journal_bank']
         cls.bank.check_manual_sequencing = True
         cls.env.company.account_check_printing_layout = LAYOUT
-        cls.check_method = cls.bank.outbound_payment_method_line_ids.filtered(lambda line: line.code == 'check_printing')
+        cls.check_method = cls.bank.outbound_payment_method_line_ids.filtered(
+            lambda line: line.code == 'check_printing')
         cls.a4_format = cls.env.ref('om_account_check_printing.check_format_a4_top')
         cls.leaf_format = cls.env.ref('om_account_check_printing.check_format_leaf')
 
     def _pay_bill(self, amount=1234.5):
         bill = self.init_invoice('in_invoice', amounts=[amount], taxes=[], invoice_date='2026-03-01', post=True)
-        payments = self.env['account.payment.register'].with_context(active_model='account.move', active_ids=bill.ids).create({
+        payments = self.env['account.payment.register'].with_context(
+            active_model='account.move', active_ids=bill.ids).create({
             'journal_id': self.bank.id,
             'payment_method_line_id': self.check_method.id,
             'payment_date': date(2026, 3, 15),
@@ -63,7 +65,8 @@ class TestCheckFormat(AccountTestInvoicingCommon):
         html = report._render_qweb_html(report.report_name, payment.ids)[0].decode()
         self.assertEqual(payment.memo, bill.name)
         self.assertEqual(html.count(bill.name), 3)  # the memo on the cheque and the bill on both stubs
-        self.assertEqual(self.env.ref(LAYOUT).with_context(om_check_format_id=self.a4_format.id).get_paperformat().format, 'A4')
+        self.assertEqual(
+            self.env.ref(LAYOUT).with_context(om_check_format_id=self.a4_format.id).get_paperformat().format, 'A4')
 
     def test_format_changes_and_test_print(self):
         check_format = self.leaf_format.copy({'name': 'My Bank'})
@@ -82,7 +85,8 @@ class TestCheckFormat(AccountTestInvoicingCommon):
         action = check_format.action_print_test()
         self.assertEqual(action['report_name'], 'om_account_check_printing.report_check_test')
         report = self.env.ref('om_account_check_printing.action_report_check_test')
-        html = report.with_context(om_check_format_id=check_format.id)._render_qweb_html(report.report_name, check_format.ids)[0].decode()
+        html = report.with_context(om_check_format_id=check_format.id)._render_qweb_html(
+            report.report_name, check_format.ids)[0].decode()
         self.assertIn('Sample Supplier Ltd', html)
 
     def test_no_format(self):

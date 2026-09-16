@@ -30,7 +30,8 @@ class ReportCashForecast(models.AbstractModel):
     def _get_transit_accounts(self, company):
         journals = self.env['account.journal'].sudo().search([('company_id', 'child_of', company.id)])
         method_lines = self.env['account.payment.method.line'].sudo().search([('journal_id', 'in', journals.ids)])
-        return method_lines.payment_account_id.filtered(lambda account: account.account_type != 'asset_cash').sudo(False)
+        return method_lines.payment_account_id.filtered(
+            lambda account: account.account_type != 'asset_cash').sudo(False)
 
     def _get_forecast_items(self, wizard, date_to):
         """ The receipts (positive) and payments (negative) expected up to `date_to`, in company currency.
@@ -160,7 +161,8 @@ class ReportCashForecast(models.AbstractModel):
 
         labels = self._get_row_labels()
         sections = []
-        for key, name, row_keys in (('receipts', _('Receipts'), RECEIPT_ROWS), ('payments', _('Payments'), PAYMENT_ROWS)):
+        for key, name, row_keys in (('receipts', _('Receipts'), RECEIPT_ROWS),
+                                    ('payments', _('Payments'), PAYMENT_ROWS)):
             rows = []
             for row_key in row_keys:
                 if row_key not in amounts:
@@ -177,7 +179,8 @@ class ReportCashForecast(models.AbstractModel):
                 rows.append({'key': row_key, 'name': labels[row_key], 'amounts': row_amounts,
                              'total': currency.round(sum(row_amounts)), 'partners': row_partners})
             totals = [currency.round(sum(row['amounts'][index] for row in rows)) for index in range(len(columns))]
-            sections.append({'key': key, 'name': name, 'rows': rows, 'totals': totals, 'total': currency.round(sum(totals))})
+            sections.append({'key': key, 'name': name, 'rows': rows, 'totals': totals,
+                             'total': currency.round(sum(totals))})
 
         net = [currency.round(sum(section['totals'][index] for section in sections)) for index in range(len(columns))]
         openings, closings = [], []

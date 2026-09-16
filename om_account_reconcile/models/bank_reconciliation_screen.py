@@ -44,7 +44,8 @@ class AccountBankStatementLine(models.Model):
             'date_maturity_display': format_date(self.env, aml.date_maturity) if aml.date_maturity else '',
             'partner_name': aml.partner_id.display_name or '',
             'account_display': aml.account_id.display_name,
-            'label': ' - '.join(part for part in (aml.move_id.ref, aml.name) if part and part != aml.move_id.name) or '',
+            'label': ' - '.join(part for part in (aml.move_id.ref, aml.name)
+                                if part and part != aml.move_id.name) or '',
             'residual_currency': aml.amount_residual_currency,
             'currency_id': aml.currency_id.id,
             'residual_transaction': trans_currency.round(self._om_to_transaction_amount(
@@ -116,7 +117,8 @@ class AccountBankStatementLine(models.Model):
         suggestion = self._om_suggested_proposal()
         amls = self.env['account.move.line'].browse([match['aml_id'] for match in suggestion.get('matches', [])])
         data['suggestion'] = {
-            'matches': [{'aml_id': aml.id, 'amount': None, 'candidate': self._om_screen_candidate(aml)} for aml in amls],
+            'matches': [{'aml_id': aml.id, 'amount': None, 'candidate': self._om_screen_candidate(aml)}
+                        for aml in amls],
         }
         models = self.env['account.reconcile.model'].search([
             ('company_id', '=', self.company_id.id),

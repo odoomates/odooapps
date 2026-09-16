@@ -16,10 +16,11 @@ FRANKFURTER = {'amount': 1.0, 'base': 'EUR', 'date': '2026-09-15',
                'rates': {'USD': 1.1539, 'GBP': 0.8558, 'INR': 110.7285}}
 OPEN_EXCHANGE_RATES = {'timestamp': 1789430551, 'base': 'USD',
                        'rates': {'USD': 1.0, 'EUR': 0.8666, 'GBP': 0.7416, 'INR': 95.96, 'AED': 3.6725}}
-ECB = b"""<?xml version="1.0" encoding="UTF-8"?>
-<gesmes:Envelope xmlns:gesmes="http://www.gesmes.org/xml/2002-08-01" xmlns="http://www.ecb.int/vocabulary/2002-08-01/eurofxref">
+ECB = (b"""<?xml version="1.0" encoding="UTF-8"?>
+<gesmes:Envelope xmlns:gesmes="http://www.gesmes.org/xml/2002-08-01" """
+       b"""xmlns="http://www.ecb.int/vocabulary/2002-08-01/eurofxref">
   <Cube><Cube time='2026-09-14'><Cube currency='USD' rate='1.1500'/><Cube currency='GBP' rate='0.8500'/></Cube></Cube>
-</gesmes:Envelope>"""
+</gesmes:Envelope>""")
 
 
 class FakeResponse:
@@ -58,13 +59,15 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         super().setUpClass()
         cls.company = cls.env.company
         Currency = cls.env['res.currency'].with_context(active_test=False)
-        cls.eur, cls.gbp, cls.inr, cls.aed = (Currency.search([('name', '=', code)]) for code in ('EUR', 'GBP', 'INR', 'AED'))
+        cls.eur, cls.gbp, cls.inr, cls.aed = (Currency.search([('name', '=', code)])
+                                              for code in ('EUR', 'GBP', 'INR', 'AED'))
         (cls.eur | cls.gbp | cls.inr | cls.aed).active = True
         cls.company.write({
             'rate_provider': 'frankfurter',
             'rate_currency_ids': [Command.set((cls.eur | cls.gbp | cls.inr | cls.aed).ids)],
         })
-        cls.env['res.currency.rate'].search([('currency_id', 'in', (cls.eur | cls.gbp | cls.inr | cls.aed).ids)]).unlink()
+        cls.env['res.currency.rate'].search(
+            [('currency_id', 'in', (cls.eur | cls.gbp | cls.inr | cls.aed).ids)]).unlink()
 
     def _rate(self, currency, day=date(2026, 9, 15)):
         return self.env['res.currency.rate'].search(
@@ -88,7 +91,8 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         self.assertIn('4 rate(s) saved', self.company.rate_last_message)
 
         # a second update of the same day replaces the rates
-        with patch(GET, fake_get({'frankfurter': FakeResponse(dict(FRANKFURTER, rates=dict(FRANKFURTER['rates'], USD=1.2))),
+        with patch(GET, fake_get({'frankfurter': FakeResponse(dict(FRANKFURTER,
+                                                                   rates=dict(FRANKFURTER['rates'], USD=1.2))),
                                   'openexchangerates': FakeResponse(OPEN_EXCHANGE_RATES)})):
             self.company._update_currency_rates()
         self.assertEqual(len(self._rate(self.eur)), 1)
@@ -101,8 +105,10 @@ class TestRateUpdate(AccountTestInvoicingCommon):
     def test_main_source_fails(self):
         self.company.write({'rate_provider': 'openexchangerates', 'rate_openexchangerates_key': 'SECRET',
                             'rate_fallback_provider': 'ecb'})
-        with patch(GET, fake_get({'openexchangerates': requests.ConnectionError('https://openexchangerates.org/api/latest.json?app_id=SECRET'),
-                                  'ecb.europa': FakeResponse(content=ECB)})):
+        with patch(GET, fake_get({
+            'openexchangerates': requests.ConnectionError(
+                'https://openexchangerates.org/api/latest.json?app_id=SECRET'),
+            'ecb.europa': FakeResponse(content=ECB)})):
             self.company._update_currency_rates()
         self.assertEqual(self._rate(self.gbp, date(2026, 9, 14)).rate_source, 'European Central Bank')
         self.assertNotIn('SECRET', self.company.rate_last_message)
@@ -110,7 +116,8 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         self.assertIn('Not quoted by the sources: AED, INR', self.company.rate_last_message)
 
     def test_refused_key_and_failure_notification(self):
-        self.company.write({'rate_provider': 'openexchangerates', 'rate_openexchangerates_key': 'WRONG', 'rate_interval': 'daily'})
+        self.company.write({'rate_provider': 'openexchangerates', 'rate_openexchangerates_key': 'WRONG',
+                            'rate_interval': 'daily'})
         refused = FakeResponse({'error': True, 'status': 401, 'message': 'invalid_app_id',
                                 'description': 'Invalid App ID provided.'}, status_code=401)
         self.env.user.group_ids = [Command.link(self.env.ref('account.group_account_manager').id)]
@@ -118,7 +125,8 @@ class TestRateUpdate(AccountTestInvoicingCommon):
             for day in ('2026-09-15', '2026-09-16', '2026-09-17'):
                 with freeze_time(day):
                     self.env['res.company']._cron_update_currency_rates()
-                self.assertEqual(str(self.company.rate_next_date), str(date.fromisoformat(day).replace(day=int(day[-2:]) + 1)))
+                self.assertEqual(str(self.company.rate_next_date),
+                                 str(date.fromisoformat(day).replace(day=int(day[-2:]) + 1)))
         self.assertEqual(self.company.rate_failure_count, 3)
         self.assertIn('Invalid App ID provided.', self.company.rate_last_message)
         self.assertFalse(self._rate(self.eur))

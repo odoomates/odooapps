@@ -32,4 +32,5 @@ class AccountReportGeneralLedger(models.TransientModel):
 
     def _print_report(self, data):
         records, data = self._get_report_data(data)
-        return self.env.ref('accounting_pdf_reports.action_report_general_ledger').with_context(landscape=True).report_action(records, data=data)
+        return self.env.ref('accounting_pdf_reports.action_report_general_ledger').with_context(
+            landscape=True).report_action(records, data=data)

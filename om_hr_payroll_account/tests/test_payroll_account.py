@@ -35,7 +35,8 @@ class TestPayrollAccount(AccountTestInvoicingCommon):
         })
         calendar = cls.env['resource.calendar'].create({'name': 'Payroll 40h', 'company_id': cls.env.company.id})
         cls.employee = cls.env['hr.employee'].create({
-            'name': 'Accounted Employee', 'resource_calendar_id': calendar.id, 'tz': 'UTC', 'company_id': cls.env.company.id,
+            'name': 'Accounted Employee', 'resource_calendar_id': calendar.id, 'tz': 'UTC',
+            'company_id': cls.env.company.id,
             'date_version': date(2026, 1, 1), 'contract_date_start': date(2026, 1, 1), 'wage': 4000.0,
             'struct_id': structure.id,
         })
@@ -78,7 +79,8 @@ class TestPayrollAccount(AccountTestInvoicingCommon):
 
     def test_batch_journal(self):
         run = self.env['hr.payslip.run'].create({
-            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31), 'journal_id': self.journal.id,
+            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31),
+            'journal_id': self.journal.id,
         })
         wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set(self.employee.ids)]})
         wizard.with_context(active_id=run.id).compute_sheet()
@@ -87,7 +89,8 @@ class TestPayrollAccount(AccountTestInvoicingCommon):
         self.assertEqual(run.slip_ids.move_id.journal_id, self.journal)
 
     def test_payroll_user_without_accounting_rights(self):
-        officer = new_test_user(self.env, login='payroll_only', groups='base.group_user,om_hr_payroll.group_hr_payroll_user',
+        officer = new_test_user(self.env, login='payroll_only',
+                                groups='base.group_user,om_hr_payroll.group_hr_payroll_user',
                                 company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
         self.assertFalse(officer.has_group('account.group_account_invoice'))
         payslip = self._new_payslip(self.env(user=officer))

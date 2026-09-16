@@ -131,7 +131,8 @@ class ResCompany(models.Model):
             if skipped:
                 messages.append(_('Not saved, changed more than %(max)s%%: %(currencies)s',
                                   max=company.rate_max_change, currencies=', '.join(skipped)))
-            summary = _('%(count)s rate(s) saved for %(date)s.', count=len(saved), date=date) if saved else _('No rate saved.')
+            summary = (_('%(count)s rate(s) saved for %(date)s.', count=len(saved), date=date)
+                       if saved else _('No rate saved.'))
             company.sudo().write({
                 'rate_last_update': fields.Datetime.now(),
                 'rate_last_message': '\n'.join([summary] + messages),
@@ -152,7 +153,8 @@ class ResCompany(models.Model):
         reference = Rate._get_last_rates_for_companies(self)[self]
         saved, skipped = [], []
         for currency, rate in rates.items():
-            existing = Rate.search([('currency_id', '=', currency.id), ('company_id', '=', self.id), ('name', '=', date)], limit=1)
+            existing = Rate.search([('currency_id', '=', currency.id), ('company_id', '=', self.id),
+                                    ('name', '=', date)], limit=1)
             previous = Rate.search([('currency_id', '=', currency.id), ('company_id', 'in', (self.id, False)),
                                     ('name', '<', date)], order='name desc', limit=1)
             if self.rate_max_change and previous.company_rate and \

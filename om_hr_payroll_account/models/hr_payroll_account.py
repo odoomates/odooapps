@@ -22,10 +22,12 @@ class HrPayslipLine(models.Model):
         register_partner_id = self.salary_rule_id.register_id.partner_id
         partner_id = register_partner_id.id
         if credit_account:
-            if register_partner_id or self.salary_rule_id.account_credit.account_type in ('asset_receivable', 'liability_payable'):
+            if register_partner_id or self.salary_rule_id.account_credit.account_type in (
+                    'asset_receivable', 'liability_payable'):
                 return partner_id
         else:
-            if register_partner_id or self.salary_rule_id.account_debit.account_type in ('asset_receivable', 'liability_payable'):
+            if register_partner_id or self.salary_rule_id.account_debit.account_type in (
+                    'asset_receivable', 'liability_payable'):
                 return partner_id
         return False
 
@@ -115,7 +117,8 @@ class HrPayslip(models.Model):
             name = _('Payslip of %s') % (slip.employee_id.name)
             journal = slip.journal_id.sudo()
             if journal.company_id != slip.company_id:
-                raise UserError(_('The salary journal %(journal)s does not belong to the company of the payslip %(payslip)s.',
+                raise UserError(_('The salary journal %(journal)s does not belong to the company of the '
+                                  'payslip %(payslip)s.',
                                   journal=journal.name, payslip=slip.number or slip.name or ''))
             move_dict = {
                 'narration': name,
@@ -124,7 +127,8 @@ class HrPayslip(models.Model):
                 'company_id': slip.company_id.id,
                 'date': date,
             }
-            if not any(line.salary_rule_id.account_debit and line.salary_rule_id.account_credit for line in slip.details_by_salary_rule_category):
+            if not any(line.salary_rule_id.account_debit and line.salary_rule_id.account_credit
+                       for line in slip.details_by_salary_rule_category):
                 raise UserError(_('Missing Debit Or Credit Account in Salary Rule'))
             for line in slip.details_by_salary_rule_category:
                 amount = currency.round(slip.credit_note and -line.total or line.total)
@@ -142,7 +146,8 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount > 0.0 and amount or 0.0,
                         'credit': amount < 0.0 and -amount or 0.0,
-                        'analytic_distribution': {line.salary_rule_id.analytic_account_id.id: 100} if line.salary_rule_id.analytic_account_id else {},
+                        'analytic_distribution': ({line.salary_rule_id.analytic_account_id.id: 100}
+                                                  if line.salary_rule_id.analytic_account_id else {}),
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(debit_line)
@@ -157,7 +162,8 @@ class HrPayslip(models.Model):
                         'date': date,
                         'debit': amount < 0.0 and -amount or 0.0,
                         'credit': amount > 0.0 and amount or 0.0,
-                        'analytic_distribution': {line.salary_rule_id.analytic_account_id.id: 100} if line.salary_rule_id.analytic_account_id else {},
+                        'analytic_distribution': ({line.salary_rule_id.analytic_account_id.id: 100}
+                                                  if line.salary_rule_id.analytic_account_id else {}),
                         'tax_line_id': line.salary_rule_id.account_tax_id.id,
                     })
                     line_ids.append(credit_line)
@@ -166,7 +172,8 @@ class HrPayslip(models.Model):
             if currency.compare_amounts(credit_sum, debit_sum) == -1:
                 acc_id = slip.journal_id.default_account_id.id
                 if not acc_id:
-                    raise UserError(_('The Expense Journal "%s" has not properly configured the Credit Account!') % (slip.journal_id.name))
+                    raise UserError(_('The Expense Journal "%s" has not properly configured the Credit Account!')
+                                    % (slip.journal_id.name))
                 adjust_credit = (0, 0, {
                     'name': _('Adjustment Entry'),
                     'partner_id': False,
@@ -181,7 +188,8 @@ class HrPayslip(models.Model):
             elif currency.compare_amounts(debit_sum, credit_sum) == -1:
                 acc_id = slip.journal_id.default_account_id.id
                 if not acc_id:
-                    raise UserError(_('The Expense Journal "%s" has not properly configured the Debit Account!') % (slip.journal_id.name))
+                    raise UserError(_('The Expense Journal "%s" has not properly configured the Debit Account!')
+                                    % (slip.journal_id.name))
                 adjust_debit = (0, 0, {
                     'name': _('Adjustment Entry'),
                     'partner_id': False,

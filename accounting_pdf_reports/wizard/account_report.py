@@ -42,7 +42,8 @@ class AccountingReport(models.TransientModel):
     def check_report(self):
         res = super().check_report()
         data = {}
-        data['form'] = self.read(['account_report_id', 'date_from_cmp', 'date_to_cmp', 'journal_ids', 'filter_cmp', 'target_move'])[0]
+        data['form'] = self.read(['account_report_id', 'date_from_cmp', 'date_to_cmp', 'journal_ids',
+                                  'filter_cmp', 'target_move'])[0]
         for field in ['account_report_id']:
             if isinstance(data['form'][field], tuple):
                 data['form'][field] = data['form'][field][0]
@@ -51,5 +52,7 @@ class AccountingReport(models.TransientModel):
         return res
 
     def _print_report(self, data):
-        data['form'].update(self.read(['date_from_cmp', 'debit_credit', 'date_to_cmp', 'filter_cmp', 'account_report_id', 'enable_filter', 'label_filter', 'target_move'])[0])
-        return self.env.ref('accounting_pdf_reports.action_report_financial').report_action(self, data=data, config=False)
+        data['form'].update(self.read(['date_from_cmp', 'debit_credit', 'date_to_cmp', 'filter_cmp',
+                                       'account_report_id', 'enable_filter', 'label_filter', 'target_move'])[0])
+        return self.env.ref('accounting_pdf_reports.action_report_financial').report_action(
+            self, data=data, config=False)

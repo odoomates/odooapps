@@ -18,7 +18,8 @@ class AccountMoveLine(models.Model):
             raise UserError(_('The account %s does not allow reconciliation.', account.display_name))
         for line in self:
             if line.parent_state != 'posted':
-                raise UserError(_('The journal entry %s must be posted before being reconciled.', line.move_id.display_name))
+                raise UserError(_('The journal entry %s must be posted before being reconciled.',
+                                  line.move_id.display_name))
             if line.reconciled:
                 raise UserError(_('The journal item %s is already reconciled.', line.display_name))
 
@@ -58,12 +59,14 @@ class AccountMoveLine(models.Model):
         try:
             self.lock_for_update()
         except LockError:
-            raise UserError(_('These journal items are being reconciled by someone else, please try again in a moment.'))
+            raise UserError(
+                _('These journal items are being reconciled by someone else, please try again in a moment.'))
         summary = self._om_matching_summary()
         company_currency = self.env['res.currency'].browse(summary['company_currency_id'])
         lines = self
         needs_writeoff = not company_currency.is_zero(summary['difference']) or (
-            summary['currency_id'] and not self.env['res.currency'].browse(summary['currency_id']).is_zero(summary['difference_currency']))
+            summary['currency_id']
+            and not self.env['res.currency'].browse(summary['currency_id']).is_zero(summary['difference_currency']))
         if writeoff and needs_writeoff:
             lines |= self._om_create_writeoff(summary, writeoff)
         self._reconcile_plan([lines])
@@ -74,7 +77,8 @@ class AccountMoveLine(models.Model):
         account = self.account_id
         company = self.company_id.root_id if self.company_id.root_id in self.env.companies else self.company_id[:1]
         journal = self.env['account.journal'].browse(writeoff['journal_id'])
-        currency = self.env['res.currency'].browse(summary['currency_id']) if summary['currency_id'] else company.currency_id
+        currency = (self.env['res.currency'].browse(summary['currency_id'])
+                    if summary['currency_id'] else company.currency_id)
         difference = summary['difference']
         difference_currency = summary['difference_currency'] if summary['currency_id'] else difference
         label = writeoff.get('label') or _('Write-off')
@@ -168,7 +172,8 @@ class AccountMoveLine(models.Model):
             'tag': 'display_notification',
             'params': {
                 'type': 'success' if count else 'info',
-                'message': _('%s group(s) of journal items matched.', count) if count else _('No journal items to match.'),
+                'message': _('%s group(s) of journal items matched.', count) if count
+                           else _('No journal items to match.'),
                 'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
             },
         }

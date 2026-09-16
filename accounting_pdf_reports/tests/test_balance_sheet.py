@@ -45,7 +45,8 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
             'date': '2025-06-01',
             'line_ids': [
                 (0, 0, {'name': 'rent', 'balance': 600.0, 'account_id': prepayments.id}),
-                (0, 0, {'name': 'rent', 'balance': -600.0, 'account_id': self.company_data['default_account_payable'].id}),
+                (0, 0, {'name': 'rent', 'balance': -600.0,
+                        'account_id': self.company_data['default_account_payable'].id}),
             ],
         }).action_post()
         lines = self._balance_sheet('2025-12-31')

@@ -24,7 +24,8 @@ class HrPayrollStructure(models.Model):
     note = fields.Text(string='Description')
     parent_id = fields.Many2one('hr.payroll.structure', string='Parent', default=_get_parent)
     children_ids = fields.One2many('hr.payroll.structure', 'parent_id', string='Children', copy=True)
-    rule_ids = fields.Many2many('hr.salary.rule', 'hr_structure_salary_rule_rel', 'struct_id', 'rule_id', string='Salary Rules')
+    rule_ids = fields.Many2many('hr.salary.rule', 'hr_structure_salary_rule_rel', 'struct_id', 'rule_id',
+                                string='Salary Rules')
 
     @api.constrains('parent_id')
     def _check_parent_id(self):
@@ -125,7 +126,8 @@ class HrSalaryRule(models.Model):
                     # employee: hr.employee object
                     # contract: hr.version object (the employee contract)
                     # rules: object containing the rules code (previously computed)
-                    # categories: object containing the computed salary rule categories (sum of amount of all rules belonging to that category).
+                    # categories: object containing the computed salary rule categories (sum of amount of all rules '''
+        '''belonging to that category).
                     # worked_days: object containing the computed worked days
                     # inputs: object containing the computed inputs
 
@@ -139,7 +141,8 @@ class HrSalaryRule(models.Model):
         ('percentage', 'Percentage (%)'),
         ('fix', 'Fixed Amount'),
         ('code', 'Python Code'),
-    ], string='Amount Type', index=True, required=True, default='fix', help="The computation method for the rule amount.")
+    ], string='Amount Type', index=True, required=True, default='fix',
+       help="The computation method for the rule amount.")
     amount_fix = fields.Float(string='Fixed Amount')
     amount_percentage = fields.Float(string='Percentage (%)',
         help='For example, enter 50.0 to apply a percentage of 50%')
@@ -151,7 +154,8 @@ class HrSalaryRule(models.Model):
                     # employee: hr.employee object
                     # contract: hr.version object (the employee contract)
                     # rules: object containing the rules code (previously computed)
-                    # categories: object containing the computed salary rule categories (sum of amount of all rules belonging to that category).
+                    # categories: object containing the computed salary rule categories (sum of amount of all rules '''
+        '''belonging to that category).
                     # worked_days: object containing the computed worked days.
                     # inputs: object containing the computed inputs.
 
@@ -190,27 +194,30 @@ class HrSalaryRule(models.Model):
         if self.amount_select == 'fix':
             try:
                 return self.amount_fix, float(safe_eval(self.quantity, localdict)), 100.0
-            except:
-                raise UserError(_('Wrong quantity defined for salary rule %s (%s).') % (self.name, self.code))
+            except Exception as ex:
+                raise UserError(_(
+                    'Wrong quantity defined for salary rule %s (%s). Here is the error received: %s',
+                    self.name, self.code, repr(ex))) from ex
         elif self.amount_select == 'percentage':
             try:
                 return (float(safe_eval(self.amount_percentage_base, localdict)),
                         float(safe_eval(self.quantity, localdict)),
                         self.amount_percentage)
-            except:
-                raise UserError(_('Wrong percentage base or quantity defined for salary rule %s (%s).') % (self.name, self.code))
+            except Exception as ex:
+                raise UserError(_(
+                    'Wrong percentage base or quantity defined for salary rule %s (%s). '
+                    'Here is the error received: %s',
+                    self.name, self.code, repr(ex))) from ex
         else:
             try:
                 safe_eval(self.amount_python_compute, localdict, mode='exec')
-                return float(localdict['result']), 'result_qty' in localdict and localdict['result_qty'] or 1.0, 'result_rate' in localdict and localdict['result_rate'] or 100.0
+                return (float(localdict['result']),
+                        'result_qty' in localdict and localdict['result_qty'] or 1.0,
+                        'result_rate' in localdict and localdict['result_rate'] or 100.0)
             except Exception as ex:
                 raise UserError(_(
-                        """
-                        Wrong python code defined for salary rule %s (%s).
-                        Here is the error received:
-                        %s
-                        """
-                    ) % (self.name, self.code, repr(ex)))
+                    'Wrong python code defined for salary rule %s (%s). Here is the error received: %s',
+                    self.name, self.code, repr(ex))) from ex
 
     def _satisfy_condition(self, localdict):
         """
@@ -225,20 +232,18 @@ class HrSalaryRule(models.Model):
             try:
                 result = safe_eval(self.condition_range, localdict)
                 return self.condition_range_min <= result and result <= self.condition_range_max or False
-            except:
-                raise UserError(_('Wrong range condition defined for salary rule %s (%s).') % (self.name, self.code))
+            except Exception as ex:
+                raise UserError(_(
+                    'Wrong range condition defined for salary rule %s (%s). Here is the error received: %s',
+                    self.name, self.code, repr(ex))) from ex
         else:  # python code
             try:
                 safe_eval(self.condition_python, localdict, mode='exec')
                 return 'result' in localdict and localdict['result'] or False
             except Exception as ex:
                 raise UserError(_(
-                        """
-                        Wrong python condition defined for salary rule %s (%s).
-                        Here is the error received:
-                        %s
-                        """
-                    ) % (self.name, self.code, repr(ex)))
+                    'Wrong python condition defined for salary rule %s (%s). Here is the error received: %s',
+                    self.name, self.code, repr(ex))) from ex
 
 
 class HrRuleInput(models.Model):

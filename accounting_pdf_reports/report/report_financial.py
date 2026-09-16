@@ -134,7 +134,8 @@ class ReportFinancial(models.AbstractModel):
                     if data['debit_credit']:
                         vals['debit'] = value['debit']
                         vals['credit'] = value['credit']
-                        if not self.env.company.currency_id.is_zero(vals['debit']) or not self.env.company.currency_id.is_zero(vals['credit']):
+                        if (not self.env.company.currency_id.is_zero(vals['debit'])
+                                or not self.env.company.currency_id.is_zero(vals['credit'])):
                             flag = True
                     if not self.env.company.currency_id.is_zero(vals['balance']):
                         flag = True

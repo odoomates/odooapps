@@ -15,7 +15,8 @@ class TestBudgetPurchase(AccountTestInvoicingCommon):
             'name': 'Workshop', 'plan_id': cls.env['account.analytic.plan'].create({'name': 'Sites'}).id,
         })
         cls.product = cls._create_product(name='Tools', standard_price=100.0, purchase_method='purchase')
-        budget = cls.env['account.budget'].create({'name': 'Budget 2026', 'date_from': '2026-01-01', 'date_to': '2026-12-31'})
+        budget = cls.env['account.budget'].create({'name': 'Budget 2026', 'date_from': '2026-01-01',
+                                                   'date_to': '2026-12-31'})
         cls.budget_line = cls.env['account.budget.line'].create({
             'budget_id': budget.id, 'analytic_account_id': cls.department.id,
             'date_from': '2026-01-01', 'date_to': '2026-12-31', 'planned_amount': 1000.0,
@@ -64,7 +65,8 @@ class TestBudgetPurchase(AccountTestInvoicingCommon):
 
     def test_block_purchase_orders(self):
         self.env.company.budget_block_documents = True
-        buyer = new_test_user(self.env, login='budget_buyer', groups='purchase.group_purchase_user,account.group_account_user',
+        buyer = new_test_user(self.env, login='budget_buyer',
+                              groups='purchase.group_purchase_user,account.group_account_user',
                               company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
         order = self._order(12)
         with self.assertRaises(UserError):

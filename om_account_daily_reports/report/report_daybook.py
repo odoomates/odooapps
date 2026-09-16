@@ -25,7 +25,9 @@ class ReportDayBook(models.AbstractModel):
                     SELECT 0 AS lid, 
                           l.account_id AS account_id, l.date AS ldate, j.code AS lcode, 
                           l.amount_currency AS amount_currency,l.ref AS lref,l.name AS lname, 
-                          COALESCE(SUM(l.credit),0.0) AS credit,COALESCE(l.debit,0) AS debit,COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) as balance, 
+                          COALESCE(SUM(l.credit),0.0) AS credit,COALESCE(l.debit,0) AS debit,"""
+               """COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit),0) as balance, """
+               """
                               m.name AS move_name, 
                               c.symbol AS currency_code, 
                               p.name AS lpartner_id, 
@@ -95,7 +97,8 @@ class ReportDayBook(models.AbstractModel):
             dates.append(date_from + timedelta(days=day))
         for date in dates:
             date_data = str(date)
-            accounts_res = self.with_context(data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, form_data, date_data)
+            accounts_res = self.with_context(
+                data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, form_data, date_data)
             if accounts_res['lines']:
                 record.append({
                     'date': date,

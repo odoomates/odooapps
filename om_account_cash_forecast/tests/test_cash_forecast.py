@@ -20,7 +20,8 @@ class TestCashForecast(AccountTestInvoicingCommon):
             'date': '2026-01-31',
             'line_ids': [
                 Command.create({'name': 'capital', 'account_id': cls.bank.default_account_id.id, 'balance': 5000.0}),
-                Command.create({'name': 'capital', 'account_id': cls.company_data['default_account_revenue'].id, 'balance': -5000.0}),
+                Command.create({'name': 'capital', 'account_id': cls.company_data['default_account_revenue'].id,
+                                'balance': -5000.0}),
             ],
         })
         move.action_post()

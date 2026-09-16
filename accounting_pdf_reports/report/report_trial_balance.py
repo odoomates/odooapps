@@ -53,7 +53,8 @@ class ReportTrialBalance(models.AbstractModel):
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
                 account_res.append(res)
-            if display_account == 'movement' and (not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
+            if display_account == 'movement' and (
+                    not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
                 account_res.append(res)
         return account_res
 

@@ -129,7 +129,8 @@ def _rename_indexes(cr, table, old_prefix, column_renames):
         if new_index != index:
             cr.execute("SELECT to_regclass(%s)", [new_index])
             if not cr.fetchone()[0]:
-                cr.execute(sql.SQL('ALTER INDEX {} RENAME TO {}').format(sql.Identifier(index), sql.Identifier(new_index)))
+                cr.execute(sql.SQL('ALTER INDEX {} RENAME TO {}').format(
+                    sql.Identifier(index), sql.Identifier(new_index)))
 
 
 def _rename_models(cr):
@@ -156,7 +157,9 @@ def _rename_models(cr):
         _execute(cr, """
             UPDATE ir_model_data
                SET name = regexp_replace(name, %s, %s)
-             WHERE module = %s AND model IN ('ir.model', 'ir.model.fields', 'ir.model.fields.selection', 'ir.model.constraint')
+             WHERE module = %s
+               AND model IN ('ir.model', 'ir.model.fields', 'ir.model.fields.selection',
+                             'ir.model.constraint')
                AND name ~ %s
         """, [f'^(model_|field_|selection__|constraint_){old_key}(__|$)', f'\\1{new_key}\\2', MODULE,
               f'^(model_|field_|selection__|constraint_){old_key}(__|$)'])
@@ -169,7 +172,8 @@ def _rename_fields(cr):
             cr.execute("SELECT 1 FROM ir_model_fields WHERE model = %s AND name = %s", [model, new_field])
             if cr.fetchone():
                 continue
-            _execute(cr, "UPDATE ir_model_fields SET name = %s WHERE model = %s AND name = %s", [new_field, model, old_field])
+            _execute(cr, "UPDATE ir_model_fields SET name = %s WHERE model = %s AND name = %s",
+                     [new_field, model, old_field])
             _execute(cr, "UPDATE ir_model_fields SET relation_field = %s WHERE relation = %s AND relation_field = %s",
                      [new_field, model, old_field])
             _execute(cr, """
@@ -182,8 +186,10 @@ def _rename_fields(cr):
             """, [f'^selection__{model_key}__{old_field}__', f'selection__{model_key}__{new_field}__', MODULE,
                   f'^selection__{model_key}__{old_field}__'])
             # saved filters and actions of the budget models refer to the field names
-            for table, column, model_column in (('ir_filters', 'domain', 'model_id'), ('ir_filters', 'context', 'model_id'),
-                                                ('ir_filters', 'sort', 'model_id'), ('ir_act_window', 'domain', 'res_model'),
+            for table, column, model_column in (('ir_filters', 'domain', 'model_id'),
+                                                ('ir_filters', 'context', 'model_id'),
+                                                ('ir_filters', 'sort', 'model_id'),
+                                                ('ir_act_window', 'domain', 'res_model'),
                                                 ('ir_act_window', 'context', 'res_model')):
                 if column_exists(cr, table, column):
                     cr.execute(sql.SQL("""
@@ -220,7 +226,8 @@ def _rename_xmlids(cr):
     for old_name, new_name in XMLIDS.items():
         cr.execute("SELECT 1 FROM ir_model_data WHERE module = %s AND name = %s", [MODULE, new_name])
         if not cr.fetchone():
-            _execute(cr, "UPDATE ir_model_data SET name = %s WHERE module = %s AND name = %s", [new_name, MODULE, old_name])
+            _execute(cr, "UPDATE ir_model_data SET name = %s WHERE module = %s AND name = %s",
+                     [new_name, MODULE, old_name])
 
 
 def migrate(cr, version):

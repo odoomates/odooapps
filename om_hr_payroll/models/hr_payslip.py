@@ -112,7 +112,10 @@ class HrPayslip(models.Model):
     def refund_sheet(self):
         refunds = self.env['hr.payslip']
         for payslip in self:
-            copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + (payslip.name or '')})
+            copied_payslip = payslip.copy({
+                'credit_note': True,
+                'name': _('Refund: %s', payslip.name or ''),
+            })
             copied_payslip.compute_sheet()
             copied_payslip.action_payslip_done()
             refunds |= copied_payslip
@@ -205,7 +208,8 @@ class HrPayslip(models.Model):
 
             if not version_ids:
                 raise ValidationError(
-                    _("No running version/contract found for the employee: %s or no version in the given period" % payslip.employee_id.name))
+                    _("No running version/contract found for the employee: %s or no version in the given period"
+                      % payslip.employee_id.name))
 
             lines = [(0, 0, line) for line in self._get_payslip_lines(version_ids, payslip.id)]
             payslip.write({'line_ids': lines, 'number': number})
@@ -484,7 +488,8 @@ class HrPayslip(models.Model):
                 # set the list of contract for which the input have to be filled
                 contract_ids = [contract_id]
             else:
-                # if we don't give the contract, then the input to fill should be for all current contracts of the employee
+                # if we don't give the contract, then the input to fill should be for all current contracts
+                # of the employee
                 contract_ids = self.get_versions(employee, date_from, date_to)
 
         if not contract_ids:
@@ -665,7 +670,8 @@ class HrPayslipRun(models.Model):
         default=lambda self: fields.Date.context_today(self) + relativedelta(day=31)
     )
     credit_note = fields.Boolean(string='Credit Note',
-                                 help="If its checked, indicates that all payslips generated from here are refund payslips.")
+                                 help="If its checked, indicates that all payslips generated from here are refund "
+                                      "payslips.")
     company_id = fields.Many2one('res.company', string='Company', required=True, default=lambda self: self.env.company)
 
     def draft_payslip_run(self):

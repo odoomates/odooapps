@@ -61,7 +61,11 @@ def migrate(cr, version):
     has_resume_date = column_exists(cr, 'account_asset_asset', 'resume_depreciation_date')
     resume_dates = {}
     if has_resume_date:
-        cr.execute("SELECT id, resume_depreciation_date FROM account_asset_asset WHERE resume_depreciation_date IS NOT NULL AND state = 'open'")
+        cr.execute("""
+            SELECT id, resume_depreciation_date
+              FROM account_asset_asset
+             WHERE resume_depreciation_date IS NOT NULL AND state = 'open'
+        """)
         resume_dates = dict(cr.fetchall())
 
     moves_to_create = []
@@ -105,7 +109,8 @@ def migrate(cr, version):
                     skipped_assets.append(asset.id)
                     break
                 moves_to_create.append({
-                    **asset._prepare_depreciation_move_vals(row['amount'], period_start, line_date, entry_type=entry_type),
+                    **asset._prepare_depreciation_move_vals(
+                        row['amount'], period_start, line_date, entry_type=entry_type),
                     'auto_post': 'at_date',
                 })
             if row['move_state'] == 'posted' and (not resume_dates.get(asset.id) or line_date < resume_dates[asset.id]):

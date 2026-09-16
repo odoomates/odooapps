@@ -60,7 +60,8 @@ class TestPeriodClosing(AccountTestInvoicingCommon):
         self.company.purchase_lock_date = date(2026, 1, 31)
         march = self._closing(lock_type='sale_purchase')
         march.action_close()
-        self.assertEqual((self.company.sale_lock_date, self.company.purchase_lock_date), (date(2026, 3, 31), date(2026, 3, 31)))
+        self.assertEqual((self.company.sale_lock_date, self.company.purchase_lock_date),
+                         (date(2026, 3, 31), date(2026, 3, 31)))
         self.assertFalse(self.company.fiscalyear_lock_date)
         april = self._closing(date_from=date(2026, 4, 1), lock_type='none')
         april.action_close()
@@ -82,12 +83,14 @@ class TestPeriodClosing(AccountTestInvoicingCommon):
             'date': '2026-03-05',
             'line_ids': [
                 Command.create({'name': 'rent', 'account_id': bank.default_account_id.id, 'balance': -500.0}),
-                Command.create({'name': 'rent', 'account_id': self.company_data['default_account_expense'].id, 'balance': 500.0}),
+                Command.create({'name': 'rent', 'account_id': self.company_data['default_account_expense'].id,
+                                'balance': 500.0}),
             ],
         }).action_post()
         # the same bill entered twice
         for _index in range(2):
-            self.init_invoice('in_invoice', amounts=[80.0], taxes=[], invoice_date='2026-03-12', post=True).ref = 'SUP-001'
+            self.init_invoice('in_invoice', amounts=[80.0], taxes=[],
+                              invoice_date='2026-03-12', post=True).ref = 'SUP-001'
         # a bank transaction not reconciled
         self.env['account.bank.statement.line'].create({
             'journal_id': bank.id, 'date': '2026-03-20', 'payment_ref': 'unknown', 'amount': 42.0,

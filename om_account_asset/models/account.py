@@ -76,7 +76,8 @@ class AccountMove(models.Model):
         for asset in self.depreciation_asset_id:
             board = asset._get_board_moves().sorted(
                 lambda m: (m.date or date.min, m.id if isinstance(m.id, int) else 0))
-            partial_disposals = board.filtered(lambda m: m.asset_entry_type == 'partial_disposal' and m.state != 'cancel')
+            partial_disposals = board.filtered(
+                lambda m: m.asset_entry_type == 'partial_disposal' and m.state != 'cancel')
             # the values of the asset before its partial disposals
             opening = asset.opening_depreciation + sum(partial_disposals.mapped('asset_disposed_opening'))
             salvage = asset.salvage_value + sum(partial_disposals.mapped('asset_disposed_salvage'))
@@ -222,7 +223,8 @@ class AccountAssetAsset(models.Model):
         if self.state == 'close' and not self.disposal_date:
             self.write({'state': 'open'})
         if self.state == 'open':
-            next_move = self._get_board_moves().filtered(lambda m: m.state == 'draft').sorted(lambda m: (m.date, m.id))[:1]
+            next_move = self._get_board_moves().filtered(
+                lambda m: m.state == 'draft').sorted(lambda m: (m.date, m.id))[:1]
             if next_move:
                 next_move.with_context(om_asset_no_rebalance=True).asset_depreciation_amount += amount
             else:

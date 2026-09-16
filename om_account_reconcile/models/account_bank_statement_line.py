@@ -89,7 +89,8 @@ class AccountBankStatementLine(models.Model):
 
         if aml.currency_id == trans_currency:
             currency = trans_currency
-            amounts = self._prepare_counterpart_amounts_using_st_line_rate(trans_currency, -residual, -residual_currency)
+            amounts = self._prepare_counterpart_amounts_using_st_line_rate(
+                trans_currency, -residual, -residual_currency)
         elif aml.currency_id == company_currency:
             currency = trans_currency
             amounts = self._prepare_counterpart_amounts_using_st_line_rate(company_currency, -residual, -residual)
@@ -188,7 +189,8 @@ class AccountBankStatementLine(models.Model):
         for match in proposal.get('matches') or []:
             aml = AccountMoveLine.browse(match['aml_id'])
             amount = match.get('amount')
-            aml_amount = self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency, aml.amount_residual)
+            aml_amount = self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency,
+                                                        aml.amount_residual)
             if amount is None and not trans_currency.is_zero(aml_amount) and (aml_amount > 0) == (to_cover > 0) \
                     and trans_currency.compare_amounts(abs(aml_amount), abs(to_cover)) > 0:
                 # by default an item is only matched up to the amount of the transaction
@@ -208,8 +210,10 @@ class AccountBankStatementLine(models.Model):
             if aml.reconciled:
                 raise UserError(_('The journal item %s is already reconciled.', aml.display_name))
             if aml.parent_state != 'posted':
-                raise UserError(_('The journal entry %s must be posted before being reconciled.', aml.move_id.display_name))
-            if not aml.account_id.reconcile and aml.account_id.account_type not in ('asset_cash', 'liability_credit_card'):
+                raise UserError(
+                    _('The journal entry %s must be posted before being reconciled.', aml.move_id.display_name))
+            if (not aml.account_id.reconcile
+                    and aml.account_id.account_type not in ('asset_cash', 'liability_credit_card')):
                 raise UserError(_('The account %s does not allow reconciliation.', aml.account_id.display_name))
             if aml.move_id == self.move_id:
                 raise UserError(_('A transaction cannot be matched with itself.'))
@@ -269,7 +273,8 @@ class AccountBankStatementLine(models.Model):
 
         _liquidity_lines, suspense_lines, _other_lines = self._seek_for_lines()
         move = self.move_id.with_context(skip_readonly_check=True, check_move_validity=False, force_delete=True)
-        AccountMoveLine = self.env['account.move.line'].with_context(skip_readonly_check=True, check_move_validity=False)
+        AccountMoveLine = self.env['account.move.line'].with_context(skip_readonly_check=True,
+                                                                     check_move_validity=False)
         new_lines = AccountMoveLine.create([{**vals, 'move_id': move.id} for vals, _aml in lines])
         suspense_lines.with_context(force_delete=True, skip_readonly_check=True, check_move_validity=False).unlink()
         trans_currency, company_currency = self._om_currencies()
@@ -410,7 +415,8 @@ class AccountBankStatementLine(models.Model):
                               and (aml.amount_residual > 0) == (residual > 0)]
             same_direction.sort(key=lambda aml: (aml.date_maturity or aml.date, aml.id))
             for aml in same_direction:
-                total += self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency, aml.amount_residual)
+                total += self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency,
+                                                        aml.amount_residual)
                 selected.append(aml)
                 comparison = trans_currency.compare_amounts(abs(total), abs(residual))
                 if comparison == 0 and len(selected) > 1:
@@ -452,7 +458,8 @@ class AccountBankStatementLine(models.Model):
             if not self.partner_id and model._om_is_applicable(self):
                 self.partner_id = model.mapped_partner_id
                 break
-        for model in company_models.filtered(lambda model: model.trigger == 'auto_reconcile' and not model.mapped_partner_id):
+        for model in company_models.filtered(
+                lambda model: model.trigger == 'auto_reconcile' and not model.mapped_partner_id):
             if not model._om_is_applicable(self):
                 continue
             proposal = model._om_get_proposal(self)

@@ -13,5 +13,6 @@ def migrate(cr, version):
     if not version:
         return
     for old_name, new_name in RENAMED_COLUMNS.items():
-        if column_exists(cr, 'account_asset_asset', old_name) and not column_exists(cr, 'account_asset_asset', new_name):
+        if (column_exists(cr, 'account_asset_asset', old_name)
+                and not column_exists(cr, 'account_asset_asset', new_name)):
             rename_column(cr, 'account_asset_asset', old_name, new_name)

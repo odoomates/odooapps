@@ -17,11 +17,16 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
         super().setUpClass()
         Account = cls.env['account.account']
         cls.asset_account = Account.create({'code': '151100', 'name': 'Equipment', 'account_type': 'asset_fixed'})
-        cls.accumulated_account = Account.create({'code': '151900', 'name': 'Accumulated Depreciation', 'account_type': 'asset_fixed'})
-        cls.expense_account = Account.create({'code': '681100', 'name': 'Depreciation Expense', 'account_type': 'expense_depreciation'})
-        cls.gain_account = Account.create({'code': '771100', 'name': 'Gain on Asset Sale', 'account_type': 'income_other'})
-        cls.loss_account = Account.create({'code': '671100', 'name': 'Loss on Asset Disposal', 'account_type': 'expense'})
-        cls.counterpart_account = Account.create({'code': '106100', 'name': 'Revaluation Reserve', 'account_type': 'equity'})
+        cls.accumulated_account = Account.create({
+            'code': '151900', 'name': 'Accumulated Depreciation', 'account_type': 'asset_fixed'})
+        cls.expense_account = Account.create({
+            'code': '681100', 'name': 'Depreciation Expense', 'account_type': 'expense_depreciation'})
+        cls.gain_account = Account.create({
+            'code': '771100', 'name': 'Gain on Asset Sale', 'account_type': 'income_other'})
+        cls.loss_account = Account.create({
+            'code': '671100', 'name': 'Loss on Asset Disposal', 'account_type': 'expense'})
+        cls.counterpart_account = Account.create({
+            'code': '106100', 'name': 'Revaluation Reserve', 'account_type': 'equity'})
         cls.env.company.write({
             'asset_gain_account_id': cls.gain_account.id,
             'asset_loss_account_id': cls.loss_account.id,
@@ -552,7 +557,8 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
 
         # the movement statement adds up: opening + movements = closing, for the cost and the depreciation
         total = schedule['total']
-        self.assertEqual(total['cost_opening'] + total['cost_additions'] - total['cost_disposals'], total['cost_closing'])
+        self.assertEqual(
+            total['cost_opening'] + total['cost_additions'] - total['cost_disposals'], total['cost_closing'])
         self.assertEqual(
             total['depreciation_opening'] + total['depreciation_acquired'] + total['depreciation_charge']
             - total['depreciation_disposals'], total['depreciation_closing'])

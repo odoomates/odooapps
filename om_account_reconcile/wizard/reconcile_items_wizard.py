@@ -29,7 +29,8 @@ class OmReconcileItemsWizard(models.TransientModel):
     @api.model
     def default_get(self, fields_list):
         values = super().default_get(fields_list)
-        if 'line_ids' in fields_list and not values.get('line_ids') and self.env.context.get('active_model') == 'account.move.line':
+        if ('line_ids' in fields_list and not values.get('line_ids')
+                and self.env.context.get('active_model') == 'account.move.line'):
             values['line_ids'] = [fields.Command.set(self.env.context.get('active_ids') or [])]
         return values
 
@@ -38,7 +39,8 @@ class OmReconcileItemsWizard(models.TransientModel):
         for wizard in self:
             lines = wizard.line_ids
             summary = lines._om_matching_summary() if lines else {}
-            currency = self.env['res.currency'].browse(summary.get('company_currency_id')) or self.env.company.currency_id
+            currency = (self.env['res.currency'].browse(summary.get('company_currency_id'))
+                        or self.env.company.currency_id)
             wizard.company_id = lines.company_id.root_id[:1] or self.env.company
             wizard.company_currency_id = currency
             wizard.account_id = summary.get('account_id') if len(lines.account_id) == 1 else False

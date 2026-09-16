@@ -33,7 +33,8 @@ class AssetDepreciationSchedule(models.TransientModel):
 
     def _get_excel_report(self):
         # the Excel export comes with the Accounting Excel Reports module
-        return self.env.ref('accounting_excel_reports.action_report_depreciation_schedule_excel', raise_if_not_found=False)
+        return self.env.ref(
+            'accounting_excel_reports.action_report_depreciation_schedule_excel', raise_if_not_found=False)
 
     def _default_date_from(self):
         return self.env.company.compute_fiscalyear_dates(fields.Date.context_today(self))['date_from']
@@ -51,7 +52,8 @@ class AssetDepreciationSchedule(models.TransientModel):
         ]
         if self.category_ids:
             domain.append(('category_id', 'in', self.category_ids.ids))
-        return self.env['account.asset.asset'].with_context(active_test=False).search(domain, order='category_id, date, id')
+        return self.env['account.asset.asset'].with_context(active_test=False).search(
+            domain, order='category_id, date, id')
 
     def _get_asset_movements(self, asset):
         """ Movements of the cost and of the accumulated depreciation of `asset` between `date_from` and
@@ -93,9 +95,10 @@ class AssetDepreciationSchedule(models.TransientModel):
             movements['cost_disposals'] += (
                 movements['cost_opening'] + movements['cost_additions'] - movements['cost_disposals'])
             movements['depreciation_disposals'] += (
-                movements['depreciation_opening'] + movements['depreciation_acquired'] + movements['depreciation_charge']
-                - movements['depreciation_disposals'])
-        movements['cost_closing'] = movements['cost_opening'] + movements['cost_additions'] - movements['cost_disposals']
+                movements['depreciation_opening'] + movements['depreciation_acquired']
+                + movements['depreciation_charge'] - movements['depreciation_disposals'])
+        movements['cost_closing'] = (
+            movements['cost_opening'] + movements['cost_additions'] - movements['cost_disposals'])
         movements['depreciation_closing'] = (
             movements['depreciation_opening'] + movements['depreciation_acquired'] + movements['depreciation_charge']
             - movements['depreciation_disposals'])
@@ -116,7 +119,8 @@ class AssetDepreciationSchedule(models.TransientModel):
         movements = self._get_asset_movements(asset)
         cost = movements['cost_opening'] + movements['cost_additions']
         depreciable = cost - movements['salvage_value']
-        depreciated = movements['depreciation_opening'] + movements['depreciation_acquired'] + movements['depreciation_charge']
+        depreciated = (
+            movements['depreciation_opening'] + movements['depreciation_acquired'] + movements['depreciation_charge'])
         return {
             'asset': asset,
             'code': asset.code or '',

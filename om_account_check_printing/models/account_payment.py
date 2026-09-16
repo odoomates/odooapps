@@ -20,7 +20,8 @@ class AccountPayment(models.Model):
                 _('Create a cheque format and choose it on the bank journal %s.', self.journal_id[:1].name),
                 action.id, _('Go to the cheque formats'))
         self.write({'is_sent': True})
-        return self.env.ref(CHECK_FORMAT_LAYOUT).with_context(om_check_format_id=check_format.id).report_action(self, config=False)
+        return self.env.ref(CHECK_FORMAT_LAYOUT).with_context(
+            om_check_format_id=check_format.id).report_action(self, config=False)
 
     def _om_check_pages(self, check_format):
         """ :return: the pages printed for the payment: the cheque on the first one, VOID on the next ones when

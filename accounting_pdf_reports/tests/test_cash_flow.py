@@ -13,14 +13,16 @@ class TestCashFlow(AccountTestInvoicingCommon):
         super().setUpClass()
         cls.bank_journal = cls.company_data['default_journal_bank']
         cls.bank = cls.bank_journal.default_account_id
-        cls.bank_2 = cls.env['account.journal'].create({'name': 'Second Bank', 'code': 'BNK2', 'type': 'bank'}).default_account_id
+        cls.bank_2 = cls.env['account.journal'].create({
+            'name': 'Second Bank', 'code': 'BNK2', 'type': 'bank'}).default_account_id
         cls.transit = cls.bank_journal.suspense_account_id
         Account = cls.env['account.account']
         cls.equipment = Account.create({'code': 'EQUIP', 'name': 'Equipment', 'account_type': 'asset_fixed'})
         cls.loan = Account.create({'code': 'LOAN', 'name': 'Bank Loan', 'account_type': 'liability_non_current'})
         cls.capital = Account.create({'code': 'CAPITAL', 'name': 'Capital', 'account_type': 'equity'})
         cls.dividends = Account.create({
-            'code': 'DIVREC', 'name': 'Dividends Received', 'account_type': 'income_other', 'cash_flow_activity': 'investing',
+            'code': 'DIVREC', 'name': 'Dividends Received', 'account_type': 'income_other',
+            'cash_flow_activity': 'investing',
         })
 
     def _entry(self, date, *lines, journal=None):
@@ -37,7 +39,8 @@ class TestCashFlow(AccountTestInvoicingCommon):
         wizard = self.env['account.cash.flow.report'].create({
             'date_from': '2026-01-01', 'date_to': '2026-12-31', **form,
         })
-        data = {'form': wizard.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id', 'display_detail'])[0]}
+        data = {'form': wizard.read(
+            ['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id', 'display_detail'])[0]}
         return wizard, self.env['report.accounting_pdf_reports.report_cash_flow']._get_report_values(wizard.ids, data)
 
     @staticmethod
@@ -56,7 +59,8 @@ class TestCashFlow(AccountTestInvoicingCommon):
         payment = self._entry('2026-02-10', (self.transit, 1000.0, {}),
                               (receivable, -1000.0, {'partner_id': invoice.partner_id.id}))
         (invoice.line_ids | payment.line_ids).filtered(lambda line: line.account_id == receivable).reconcile()
-        bank_receipt = self._entry('2026-02-11', (self.bank, 1000.0, {}), (self.transit, -1000.0, {}), journal=self.bank_journal)
+        bank_receipt = self._entry('2026-02-11', (self.bank, 1000.0, {}), (self.transit, -1000.0, {}),
+                                   journal=self.bank_journal)
         (payment.line_ids | bank_receipt.line_ids).filtered(lambda line: line.account_id == self.transit).reconcile()
 
         # a bill paid straight from the bank
@@ -100,7 +104,8 @@ class TestCashFlow(AccountTestInvoicingCommon):
 
         html = self.env['ir.actions.report']._render_qweb_html(
             'accounting_pdf_reports.report_cash_flow', wizard.ids,
-            data={'form': wizard.read(['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id', 'display_detail'])[0]},
+            data={'form': wizard.read(
+                ['date_from', 'date_to', 'journal_ids', 'target_move', 'company_id', 'display_detail'])[0]},
         )[0].decode()
         self.assertIn('Cash Flow Statement', html)
         self.assertIn('Cash received from customers', html)

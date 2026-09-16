@@ -173,7 +173,8 @@ class ReportBankBook(models.AbstractModel):
                         accounts += acc_in.payment_account_id
 
         if not accounts:
-            raise UserError(_('No bank account found: select the accounts to print or configure the payment accounts of your bank journals.'))
+            raise UserError(_('No bank account found: select the accounts to print or configure the payment '
+                              'accounts of your bank journals.'))
         record = self.with_context(data['form'].get('comparison_context', {}))._get_account_move_entry(
             accounts, init_balance, sortby, display_account
         )
