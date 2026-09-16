@@ -1,16 +1,17 @@
 {
     'name': 'Odoo 20 Accounting Community',
-    'version': '1.0.4',
+    'version': '1.0.5',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
-               'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '
-               'Customer Follow up Management, Bank Reconciliation',
+               'Lock Dates, Fiscal Year, Period Closing, Accounting Dashboard, Financial Reports, '
+               'Cash Flow Statement, Cash Forecast, Customer Follow up Management, Bank Reconciliation, '
+               'Cheque Printing, Automatic Currency Rates',
     'description': 'Odoo 20 Financial Reports, Asset Management and '
-                   'Budget, Financial Reports, Recurring Payments, '
-                   'Bank Reconciliation, Customer Follow Up Management,'
-                   'Account Lock Date, Accounting Dashboard',
+                   'Budget, Financial Reports, Cash Flow Statement, Cash Forecast, '
+                   'Recurring Payments, Bank Reconciliation, Customer Follow Up Management, '
+                   'Account Lock Date, Fiscal Year and Period Closing, Cheque Printing, '
+                   'Automatic Currency Rates, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
-    'sequence': '1',
     'sequence': '1',
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
@@ -25,6 +26,9 @@
         'om_account_daily_reports',
         'om_account_followup',
         'om_account_reconcile',
+        'om_account_cash_forecast',
+        'om_account_check_printing',
+        'om_currency_rate_update',
     ],
     'data': [
         'security/group.xml',
