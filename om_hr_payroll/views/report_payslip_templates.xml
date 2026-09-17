@@ -1,110 +1,100 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- the employee and the period of a payslip, shared by the payslip and its details -->
+    <template id="report_payslip_employee">
+        <div id="informations" class="row mb-4">
+            <div class="col">
+                <strong>Employee</strong>
+                <div t-field="o.employee_id"/>
+                <div t-if="o.employee_id.job_id" class="text-muted" t-field="o.employee_id.job_id"/>
+            </div>
+            <div class="col">
+                <strong>Period</strong>
+                <div><span t-field="o.date_from"/> - <span t-field="o.date_to"/></div>
+            </div>
+            <div class="col" t-if="o.number">
+                <strong>Reference</strong>
+                <div t-field="o.number"/>
+            </div>
+            <div class="col" t-if="o.employee_id.identification_id">
+                <strong>Identification No</strong>
+                <div t-field="o.employee_id.identification_id"/>
+            </div>
+            <div class="col" t-if="o.employee_id.work_email">
+                <strong>Email</strong>
+                <div t-field="o.employee_id.work_email"/>
+            </div>
+            <div class="col" t-if="o.employee_id.bank_account_ids">
+                <strong>Bank Account</strong>
+                <div t-field="o.employee_id.bank_account_ids"/>
+            </div>
+        </div>
+    </template>
+
+    <template id="report_payslip_signature">
+        <div class="row mt-5">
+            <div class="col-4 offset-8 text-center">
+                <div class="border-top border-dark pt-1"><strong>Authorized signature</strong></div>
+            </div>
+        </div>
+    </template>
+
     <template id="report_payslip">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
+                <t t-set="layout_document_title">
+                    <span t-if="o.credit_note">Payslip Refund</span>
+                    <span t-else="">Payslip</span>
+                </t>
                 <t t-call="web.external_layout">
+                    <t t-set="currency" t-value="o.company_id.currency_id"/>
+                    <t t-set="net_lines" t-value="o.line_ids.filtered(lambda line: line.category_id.code == 'NET')"/>
                     <div class="page">
-                        <h2>Pay Slip</h2>
-                        <p t-field="o.name"/>
+                        <h4 t-field="o.name" class="mb-3"/>
+                        <t t-call="om_hr_payroll.report_payslip_employee"/>
 
-                        <table class="table table-sm table-bordered">
-                            <tr>
-                                <td>
-                                    <strong>Name</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.employee_id"/>
-                                </td>
-                                <td>
-                                    <strong>Designation</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.employee_id.job_id"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Email</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.employee_id.work_email"/>
-                                </td>
-                                <td>
-                                    <strong>Identification No</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.employee_id.identification_id"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Reference</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.number"/>
-                                </td>
-                                <td>
-                                    <strong>Bank Account</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.employee_id.bank_account_ids"/>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <strong>Date From</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.date_from"/>
-                                </td>
-                                <td>
-                                    <strong>Date To</strong>
-                                </td>
-                                <td>
-                                    <span t-field="o.date_to"/>
-                                </td>
-                            </tr>
-                        </table>
-
-                        <table class="table table-sm">
+                        <table class="table table-sm o_main_table">
                             <thead>
                                 <tr>
-                                    <th>Code</th>
-                                    <th>Name</th>
-                                    <th>Quantity/rate</th>
-                                    <th>Amount</th>
-                                    <th>Total</th>
+                                    <th class="text-start">Code</th>
+                                    <th class="text-start">Name</th>
+                                    <th class="text-end">Quantity/Rate</th>
+                                    <th class="text-end">Amount</th>
+                                    <th class="text-end">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip)" t-as="line">
-                                    <td>
-                                        <span t-field="line.code"/>
+                                <tr t-foreach="o.line_ids.filtered(lambda line: line.appears_on_payslip)" t-as="line"
+                                    t-att-class="'fw-bold' if line.category_id.code == 'NET' else None">
+                                    <td><span t-field="line.code"/></td>
+                                    <td><span t-field="line.name"/></td>
+                                    <td class="text-end"><span t-field="line.quantity"/></td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="line.amount" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                     </td>
-                                    <td>
-                                        <span t-field="line.name"/>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="line.total" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                     </td>
-                                    <td>
-                                        <span t-field="line.quantity"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="line.amount"
-                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
-                                    </td>
-                                    <td>
-                                        <span t-out="line.total"
-                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
-                                    </td>
-
                                 </tr>
                             </tbody>
                         </table>
 
-                        <p class="text-right">
-                            <strong>Authorized signature</strong>
-                        </p>
+                        <div t-if="net_lines" class="row justify-content-end">
+                            <div class="col-5">
+                                <table class="table table-sm table-borderless">
+                                    <tr class="border-top border-dark fw-bold">
+                                        <td>Net Salary</td>
+                                        <td class="text-end text-nowrap">
+                                            <span t-out="sum(net_lines.mapped('total'))"
+                                                  t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <t t-call="om_hr_payroll.report_payslip_signature"/>
                     </div>
                 </t>
             </t>

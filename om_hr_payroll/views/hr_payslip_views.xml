@@ -96,34 +96,26 @@
             <field name="model">hr.payslip</field>
             <field name="arch" type="xml">
                 <kanban class="o_kanban_mobile">
+                    <field name="credit_note"/>
                     <templates>
                         <t t-name="card">
-                            <div t-attf-class="oe_kanban_content oe_kanban_global_click">
-                                <div class="row">
-                                    <div class="col-6">
-                                        <strong>
-                                            <field name="employee_id"/>
-                                        </strong>
-                                    </div>
-                                    <div class="col-6">
-                                        <span class="float-right badge badge-secondary">
-                                            <field name="state"/>
-                                        </span>
-                                    </div>
-                                    <div class="col-12">
-                                        <span>
-                                            <field name="date_from"/>
-                                            -
-                                            <field name="date_to"/>
-                                        </span>
-                                    </div>
-                                    <div class="col-12">
-                                        <span>
-                                            <field name="name"/>
-                                        </span>
-                                    </div>
-                                </div>
+                            <div class="d-flex align-items-center">
+                                <field name="employee_id" widget="many2one_avatar_employee" class="me-2"/>
+                                <field name="employee_id" class="fw-bold text-truncate"/>
+                                <field name="state" widget="badge" class="ms-auto"
+                                       decoration-info="state in ('draft', 'verify')"
+                                       decoration-success="state == 'done'"
+                                       decoration-danger="state == 'cancel'"/>
                             </div>
+                            <field name="name" class="text-truncate"/>
+                            <footer class="text-muted">
+                                <div>
+                                    <i class="oi me-1" data-icon="schedule" role="img" aria-label="Period" title="Period"/>
+                                    <field name="date_from"/> - <field name="date_to"/>
+                                </div>
+                                <field name="number" class="ms-auto"/>
+                            </footer>
+                            <span t-if="record.credit_note.raw_value" class="badge text-bg-warning">Refund</span>
                         </t>
                     </templates>
                 </kanban>
@@ -353,6 +345,14 @@
             <field name="res_model">hr.payslip</field>
             <field name="view_mode">list,kanban,form</field>
             <field name="search_view_id" ref="view_hr_payslip_filter"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a payslip
+                </p>
+                <p>
+                    A payslip computes the salary of an employee for a period from the structure of the contract. Use a batch to create the payslips of several employees at once.
+                </p>
+            </field>
         </record>
 
         <menuitem id="menu_department_tree"
@@ -365,6 +365,14 @@
             <field name="name">Payslips</field>
             <field name="view_mode">list,form</field>
             <field name="context">{'search_default_employee_id': [active_id], 'default_employee_id': active_id}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No payslip for this employee
+                </p>
+                <p>
+                    Create a payslip, or generate one from a payslip batch.
+                </p>
+            </field>
         </record>
 
         <!-- payslip runs -->
@@ -403,6 +411,7 @@
             <field name="model">hr.payslip.run</field>
             <field name="arch" type="xml">
                 <kanban class="o_kanban_mobile">
+                    <field name="credit_note"/>
                     <templates>
                         <t t-name="card">
                             <div class="d-flex">
@@ -475,6 +484,14 @@
             <field name="res_model">hr.payslip.run</field>
             <field name="view_mode">list,kanban,form</field>
             <field name="search_view_id" ref="hr_payslip_run_filter"/>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    Create a payslip batch
+                </p>
+                <p>
+                    A batch generates the payslips of the selected employees for the same period, then confirms and sends them together.
+                </p>
+            </field>
         </record>
 
         <menuitem id="menu_hr_payslip_run"

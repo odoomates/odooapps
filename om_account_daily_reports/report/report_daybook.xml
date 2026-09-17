@@ -8,59 +8,58 @@
             data_report_dpi="110">
             <t t-call="web.internal_layout">
                 <div class="page">
-                    <h2>Account Day Book</h2>
+                    <h2>Day Book</h2>
 
-                    <div class="row mt32">
-                        <div class="col-4">
+                    <div id="informations" class="row mb-4">
+                        <div class="col">
                             <strong>Journals:</strong>
-                            <p t-out="', '.join([ lt or '' for lt in print_journal ])"/>
+                            <div t-out="', '.join([journal or '' for journal in print_journal])"/>
                         </div>
-
-                        <div class="col-3">
-                            <strong>Start Date:</strong>
-                            <p t-out="data['date_from']"/>
+                        <div class="col" t-if="data['date_from'] or data['date_to']">
+                            <strong>Period:</strong>
+                            <div>
+                                <t t-if="data['date_from'] and data['date_to']"><span t-out="data['date_from']" t-options="{'widget': 'date'}"/> - <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                                <t t-elif="data['date_from']">From <span t-out="data['date_from']" t-options="{'widget': 'date'}"/></t>
+                                <t t-else="">Until <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                            </div>
                         </div>
-                        <div class="col-3">
-                            <strong>End Date:</strong>
-                            <p t-out="data['date_to']"/>
-                        </div>
-                        <div class="col-3">
+                        <div class="col">
                             <strong>Target Moves:</strong>
-                            <p t-if="data['target_move'] == 'all'">All Entries</p>
-                            <p t-if="data['target_move'] == 'posted'">Posted Entries</p>
+                            <div t-if="data['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['target_move'] == 'posted'">Posted Entries</div>
                         </div>
                     </div>
+
                     <table class="table table-sm table-reports">
                         <thead>
-                            <tr class="text-center">
+                            <tr>
                                 <th>Date</th>
                                 <th>JRNL</th>
                                 <th>Partner</th>
                                 <th>Ref</th>
                                 <th>Move</th>
                                 <th>Entry Label</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                                <th>Balance</th>
-                                <th groups="base.group_multi_currency">Currency</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Credit</th>
+                                <th class="text-end">Balance</th>
+                                <th class="text-end" groups="base.group_multi_currency">Currency</th>
                             </tr>
                         </thead>
                         <tbody>
                             <t t-foreach="Accounts" t-as="account">
                                 <tr style="font-weight: bold;">
                                     <td colspan="6">
-                                        <span style="color: white;" t-out="'..'"/>
                                         <span t-out="account['date']"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="account['debit']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="account['credit']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="account['balance']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
@@ -85,19 +84,19 @@
                                     <td>
                                         <span t-out="line['lname']"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="line['debit']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="line['credit']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="line['balance']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end" groups="base.group_multi_currency">
+                                    <td class="text-end text-nowrap" groups="base.group_multi_currency">
                                         <span t-out="line['amount_currency'] if line['amount_currency'] and line['amount_currency'] > 0.00 else ''"/>
                                         <span t-out="line['currency_code'] if line['amount_currency'] and line['amount_currency'] > 0.00 else ''"/>
                                     </td>

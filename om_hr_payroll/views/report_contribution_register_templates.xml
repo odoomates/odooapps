@@ -4,76 +4,61 @@
     <template id="report_contribution_register">
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
+                <t t-set="layout_document_title">Contribution Register</t>
                 <t t-call="web.external_layout">
+                    <t t-set="currency" t-value="o.company_id.currency_id or res_company.currency_id"/>
                     <div class="page">
-                        <h2>PaySlip Lines by Contribution Register</h2>
-                        <div class="row mt32 mb32">
-                            <div class="col-3">
-                                <strong>Register Name:</strong>
-                                <p t-field="o.name"/>
+                        <div id="informations" class="row mb-4">
+                            <div class="col">
+                                <strong>Register</strong>
+                                <div t-field="o.name"/>
                             </div>
-                            <div class="col-3">
-                                <strong>Date From:</strong>
-                                <p t-out="data['form']['date_from']"/>
-                            </div>
-                            <div class="col-3">
-                                <strong>Date To:</strong>
-                                <p t-out="data['form']['date_to']"/>
+                            <div class="col">
+                                <strong>Period</strong>
+                                <div>
+                                    <span t-out="data['form']['date_from']" t-options="{'widget': 'date'}"/> -
+                                    <span t-out="data['form']['date_to']" t-options="{'widget': 'date'}"/>
+                                </div>
                             </div>
                         </div>
 
-                        <table class="table table-sm">
+                        <table class="table table-sm o_main_table">
                             <thead>
                                 <tr>
-                                    <th>PaySlip Name</th>
-                                    <th>Code</th>
-                                    <th>Name</th>
-                                    <th>Quantity/Rate</th>
-                                    <th>Amount</th>
-                                    <th>Total</th>
+                                    <th class="text-start">Payslip</th>
+                                    <th class="text-start">Code</th>
+                                    <th class="text-start">Name</th>
+                                    <th class="text-end">Quantity/Rate</th>
+                                    <th class="text-end">Amount</th>
+                                    <th class="text-end">Total</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr t-foreach="lines_data.get(o.id, [])" t-as="line">
-                                    <td>
-                                        <span t-out="line.slip_id.name"/>
+                                    <td><span t-out="line.slip_id.name"/></td>
+                                    <td><span t-out="line.code"/></td>
+                                    <td><span t-out="line.name"/></td>
+                                    <td class="text-end"><span t-out="line.quantity"/></td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="line.amount" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                     </td>
-                                    <td>
-                                        <span t-out="line.code"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="line.name"/>
-                                    </td>
-                                    <td>
-                                        <span t-out="line.quantity"/>
-                                    </td>
-                                    <td class="text-right">
-                                        <span t-out="line.amount"
-                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
-                                    </td>
-                                    <td class="text-right">
-                                        <span t-out="line.total"
-                                              t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="line.total" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                     </td>
                                 </tr>
+                                <tr t-if="not lines_data.get(o.id)">
+                                    <td colspan="6" class="text-muted">No confirmed payslip line in this period.</td>
+                                </tr>
                             </tbody>
+                            <tfoot>
+                                <tr class="fw-bold border-top border-dark">
+                                    <td colspan="5">Total</td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="lines_total.get(o.id)" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
                         </table>
-
-                        <div class="row justify-content-end">
-                            <div class="col-4">
-                                <table class="table table-sm">
-                                    <tr class="border-black">
-                                        <td>
-                                            <strong>Total</strong>
-                                        </td>
-                                        <td class="text-right">
-                                            <span t-out="lines_total.get(o.id)"
-                                                  t-options='{"widget": "monetary", "display_currency": o.company_id.currency_id}'/>
-                                        </td>
-                                    </tr>
-                                </table>
-                            </div>
-                        </div>
                     </div>
                 </t>
             </t>

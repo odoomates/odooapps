@@ -3,102 +3,76 @@
 
     <template id="report_journal_entries">
         <t t-call="web.html_container">
-            <t t-call="web.external_layout">
-                <t t-foreach="docs" t-as="o">
-                    <div class="page" style="font-size:15px;">
-                        <div>
-                            <h3>
-                                <span t-field="o.name"/>
-                            </h3>
+            <t t-foreach="docs" t-as="o">
+                <t t-set="layout_document_title">
+                    <span>Journal Entry</span> <span t-field="o.name"/>
+                </t>
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <div id="informations" class="row mb-4">
+                            <div class="col">
+                                <strong>Journal</strong>
+                                <div t-field="o.journal_id"/>
+                            </div>
+                            <div class="col">
+                                <strong>Date</strong>
+                                <div t-field="o.date"/>
+                            </div>
+                            <div class="col" t-if="o.partner_id">
+                                <strong>Partner</strong>
+                                <div t-field="o.partner_id"/>
+                            </div>
+                            <div class="col" t-if="o.ref">
+                                <strong>Reference</strong>
+                                <div t-field="o.ref"/>
+                            </div>
+                            <div class="col">
+                                <strong>Status</strong>
+                                <div t-field="o.state"/>
+                            </div>
                         </div>
-                        <br></br>
-                        <div class="row">
-                            <table width="100%" class="table-bordered">
 
+                        <table class="table table-sm o_main_table">
+                            <thead>
                                 <tr>
-                                    <td>Journal:
-                                        <span t-field="o.journal_id.name"/>
+                                    <th class="text-start">Account</th>
+                                    <th class="text-start">Partner</th>
+                                    <th class="text-start">Label</th>
+                                    <th class="text-start">Analytic Account</th>
+                                    <th class="text-end">Debit</th>
+                                    <th class="text-end">Credit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <td><span t-field="line.account_id"/></td>
+                                    <td><span t-field="line.partner_id"/></td>
+                                    <td><span t-field="line.name"/></td>
+                                    <td><span t-out="', '.join(line.distribution_analytic_account_ids.mapped('display_name'))"/></td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-field="line.debit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
                                     </td>
-                                    <td>
-                                        Date:
-                                        <span t-field="o.date" t-options="{'widget': 'date'}"/>
+                                    <td class="text-end text-nowrap">
+                                        <span t-field="line.credit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td>
-                                        Partner:
-                                        <span t-field="o.partner_id.display_name"/>
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold border-top border-dark">
+                                    <td colspan="4">Total</td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="sum(o.line_ids.mapped('debit'))"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
                                     </td>
-                                    <td>
-                                        Reference:
-                                        <span t-field="o.ref"/>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="sum(o.line_ids.mapped('credit'))"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
                                     </td>
                                 </tr>
-                            </table>
-                        </div>
-                        <div class="row">
-                            <br></br>
-                            <table width="100%" class="table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>Account</th>
-                                        <th>Date</th>
-                                        <th>Partner</th>
-                                        <th>Label</th>
-                                        <th>Analytic Account</th>
-                                        <th>Debit</th>
-                                        <th>Credit</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <t t-set="total_credit" t-value="0"/>
-                                    <t t-set="total_debit" t-value="0"/>
-                                    <t t-foreach="o.line_ids" t-as="line">
-                                        <tr>
-                                            <td>
-                                                <span t-field="line.account_id.name"/>
-                                            </td>
-                                            <td>
-                                                <span t-field="line.date" t-options="{'widget': 'date'}"/>
-                                            </td>
-                                            <td>
-                                                <span t-field="line.partner_id.display_name"/>
-                                            </td>
-                                            <td>
-                                                <span t-field="line.name"/>
-                                            </td>
-                                            <td>
-                                                <span t-out="', '.join(line.distribution_analytic_account_ids.mapped('display_name'))"/>
-                                            </td>
-                                            <td class="text-end">
-                                                <span t-field="line.debit"
-                                                      t-options="{'widget': 'monetary', 'display_currency': line.currency_id}"/>
+                            </tfoot>
+                        </table>
 
-                                            </td>
-                                            <td class="text-end">
-                                                <span t-field="line.credit"
-                                                      t-options="{'widget': 'monetary', 'display_currency': line.currency_id}"/>
-                                            </td>
-                                            <t t-set="total_credit" t-value="total_credit + line.credit"/>
-                                            <t t-set="total_debit" t-value="total_debit + line.debit"/>
-                                        </tr>
-                                    </t>
-                                </tbody>
-                                <tfooter>
-                                    <tr>
-                                        <td colspan="5"></td>
-                                        <td class="text-end">
-                                            <span t-out="total_debit"
-                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                        </td>
-                                        <td class="text-end">
-                                            <span t-out="total_credit"
-                                                  t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/>
-                                        </td>
-                                    </tr>
-                                </tfooter>
-                            </table>
-                        </div>
+                        <div t-if="o.narration" class="mt-4" t-field="o.narration"/>
                     </div>
                 </t>
             </t>

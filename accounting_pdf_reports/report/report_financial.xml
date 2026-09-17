@@ -8,19 +8,19 @@
                     <div class="page">
                         <h2 t-out="data['account_report_id'][1]"/>
 
-                        <div class="row mt32 mb32">
-                            <div class="col-4">
-                                <strong>Target Moves:</strong>
-                                <p>
-                                    <span t-if="data['target_move'] == 'all'">All Entries</span>
-                                    <span t-if="data['target_move'] == 'posted'">All Posted Entries</span>
-                                </p>
+                        <div id="informations" class="row mb-4">
+                            <div class="col" t-if="data['date_from'] or data['date_to']">
+                                <strong>Period:</strong>
+                                <div>
+                                    <t t-if="data['date_from'] and data['date_to']"><span t-out="data['date_from']" t-options="{'widget': 'date'}"/> - <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                                    <t t-elif="data['date_from']">From <span t-out="data['date_from']" t-options="{'widget': 'date'}"/></t>
+                                    <t t-else="">Until <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                                </div>
                             </div>
-                            <div class="col-4">
-                                <p>
-                                    <t t-if="data['date_from']"><strong>Date from :</strong> <span t-out="data['date_from']"/><br/></t>
-                                    <t t-if="data['date_to']"><strong>Date to :</strong> <span t-out="data['date_to']"/></t>
-                                </p>
+                            <div class="col">
+                                <strong>Target Moves:</strong>
+                                <div t-if="data['target_move'] == 'all'">All Entries</div>
+                                <div t-if="data['target_move'] == 'posted'">All Posted Entries</div>
                             </div>
                         </div>
 
@@ -34,25 +34,21 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr t-foreach="get_account_lines" t-as="a">
-                                    <t t-if="a['level'] != 0">
-                                        <t t-if="int(a.get('level')) &gt; 3"><t t-set="style" t-value="'font-weight: normal;'"/></t>
-                                        <t t-if="not int(a.get('level')) &gt; 3"><t t-set="style" t-value="'font-weight: bold;'"/></t>
-
-                                        <td>
-                                            <span style="color: white;" t-out="'..' * int(a.get('level', 0))"/>
-                                            <span t-att-style="style" t-out="a.get('name')"/>
-                                        </td>
-                                        <td class="text-end" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-out="a.get('debit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-                                        </td>
-                                        <td class="text-end" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-out="a.get('credit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-                                        </td>
-                                        <td class="text-end" style="white-space: text-nowrap;">
-                                            <span t-att-style="style" t-out="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-                                        </td>
-                                    </t>
+                                <tr t-foreach="get_account_lines" t-as="a" t-if="a['level'] != 0">
+                                    <t t-set="style" t-value="'font-weight: normal;' if int(a.get('level')) &gt; 3 else 'font-weight: bold;'"/>
+                                    <td>
+                                        <span style="color: white;" t-out="'..' * int(a.get('level', 0))"/>
+                                        <span t-att-style="style" t-out="a.get('name')"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-att-style="style" t-out="a.get('debit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-att-style="style" t-out="a.get('credit')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-att-style="style" t-out="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -65,17 +61,13 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr t-foreach="get_account_lines" t-as="a">
-                                    <t t-if="a['level'] != 0">
-                                        <t t-if="int(a.get('level')) &gt; 3"><t t-set="style" t-value="'font-weight: normal;'"/></t>
-                                        <t t-if="not int(a.get('level')) &gt; 3"><t t-set="style" t-value="'font-weight: bold;'"/></t>
-
-                                        <td>
-                                            <span style="color: white;" t-out="'..' * int(a.get('level', 0))"/>
-                                            <span t-att-style="style" t-out="a.get('name')"/>
-                                        </td>
-                                        <td class="text-end"><span t-att-style="style" t-out="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                                    </t>
+                                <tr t-foreach="get_account_lines" t-as="a" t-if="a['level'] != 0">
+                                    <t t-set="style" t-value="'font-weight: normal;' if int(a.get('level')) &gt; 3 else 'font-weight: bold;'"/>
+                                    <td>
+                                        <span style="color: white;" t-out="'..' * int(a.get('level', 0))"/>
+                                        <span t-att-style="style" t-out="a.get('name')"/>
+                                    </td>
+                                    <td class="text-end text-nowrap"><span t-att-style="style" t-out="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -89,21 +81,18 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr t-foreach="get_account_lines" t-as="a">
-                                    <t t-if="a['level'] != 0">
-                                        <t t-if="int(a.get('level')) &gt; 3"><t t-set="style" t-value="'font-weight: normal;'"/></t>
-                                        <t t-if="not int(a.get('level')) &gt; 3"><t t-set="style" t-value="'font-weight: bold;'"/></t>
-                                        <td>
-                                            <span style="color: white;" t-out="'..' * int(a.get('level', 0))"/>
-                                            <span t-att-style="style" t-out="a.get('name')"/>
-                                        </td>
-                                        <td class="text-end">
-                                            <span t-att-style="style" t-out="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-                                        </td>
-                                        <td class="text-end">
-                                            <span t-att-style="style" t-out="a.get('balance_cmp')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
-                                        </td>
-                                    </t>
+                                <tr t-foreach="get_account_lines" t-as="a" t-if="a['level'] != 0">
+                                    <t t-set="style" t-value="'font-weight: normal;' if int(a.get('level')) &gt; 3 else 'font-weight: bold;'"/>
+                                    <td>
+                                        <span style="color: white;" t-out="'..' * int(a.get('level', 0))"/>
+                                        <span t-att-style="style" t-out="a.get('name')"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-att-style="style" t-out="a.get('balance')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-att-style="style" t-out="a.get('balance_cmp')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>

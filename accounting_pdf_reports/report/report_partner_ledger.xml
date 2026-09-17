@@ -9,26 +9,26 @@
                 data_report_dpi="110">
                 <div class="page">
                     <h2>Partner Ledger</h2>
-                    <div class="row">
-                        <div class="col-3">
-                            <strong>Company:</strong>
-                            <p t-out="res_company.name"/>
+
+                    <div id="informations" class="row mb-4">
+                        <div class="col" t-if="data['form']['date_from'] or data['form']['date_to']">
+                            <strong>Period:</strong>
+                            <div>
+                                <t t-if="data['form']['date_from'] and data['form']['date_to']"><span t-out="data['form']['date_from']" t-options="{'widget': 'date'}"/> - <span t-out="data['form']['date_to']" t-options="{'widget': 'date'}"/></t>
+                                <t t-elif="data['form']['date_from']">From <span t-out="data['form']['date_from']" t-options="{'widget': 'date'}"/></t>
+                                <t t-else="">Until <span t-out="data['form']['date_to']" t-options="{'widget': 'date'}"/></t>
+                            </div>
                         </div>
-                        <div class="col-3">
-                            <t t-if="data['form']['date_from']">
-                                <strong>Date from :</strong>
-                                <span t-out="data['form']['date_from']"/>
-                                <br/>
-                            </t>
-                            <t t-if="data['form']['date_to']">
-                                <strong>Date to :</strong>
-                                <span t-out="data['form']['date_to']"/>
-                            </t>
-                        </div>
-                        <div class="col-3">
+                        <div class="col">
                             <strong>Target Moves:</strong>
-                            <p t-if="data['form']['target_move'] == 'all'">All Entries</p>
-                            <p t-if="data['form']['target_move'] == 'posted'">All Posted Entries</p>
+                            <div t-if="data['form']['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['form']['target_move'] == 'posted'">All Posted Entries</div>
+                        </div>
+                        <div class="col">
+                            <strong>Partners:</strong>
+                            <div t-if="data['form'].get('result_selection') == 'customer'">Receivable Accounts</div>
+                            <div t-if="data['form'].get('result_selection') == 'supplier'">Payable Accounts</div>
+                            <div t-if="data['form'].get('result_selection') == 'customer_supplier'">Receivable and Payable Accounts</div>
                         </div>
                     </div>
 
@@ -39,10 +39,10 @@
                                 <th>JRNL</th>
                                 <th>Account</th>
                                 <th>Ref</th>
-                                <th>Debit</th>
-                                <th>Credit</th>
-                                <th>Balance</th>
-                                <th t-if="data['form']['amount_currency']">Currency</th>
+                                <th class="text-end">Debit</th>
+                                <th class="text-end">Credit</th>
+                                <th class="text-end">Balance</th>
+                                <th class="text-end" t-if="data['form']['amount_currency']">Currency</th>
                             </tr>
                         </thead>
                         <t t-foreach="docs" t-as="o">
@@ -53,15 +53,15 @@
                                         -
                                         <strong t-out="o.name"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <strong t-out="sum_partner(data, o, 'debit')"
                                                 t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <strong t-out="sum_partner(data, o, 'credit')"
                                                 t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <strong t-out="sum_partner(data, o, 'debit - credit')"
                                                 t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
@@ -79,19 +79,19 @@
                                     <td>
                                         <span t-out="line['displayed_name']"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="line['debit']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="line['credit']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <span t-out="line['progress']"
                                               t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
-                                    <td class="text-end" t-if="data['form']['amount_currency']">
+                                    <td class="text-end text-nowrap" t-if="data['form']['amount_currency']">
                                         <t t-if="line['currency_id']">
                                             <span t-out="line['amount_currency']"
                                                   t-options="{'widget': 'monetary', 'display_currency': line['currency_id']}"/>

@@ -10,31 +10,25 @@
                 <div class="page">
                     <h2>Aged Partner Balance</h2>
 
-                    <div class="row mt32">
-                        <div class="col-3">
+                    <div id="informations" class="row mb-4">
+                        <div class="col">
                             <strong>As of Date:</strong>
-                            <p t-out="data['date_from']"/>
+                            <div t-out="data['date_from']" t-options="{'widget': 'date'}"/>
                         </div>
-                        <div class="col-3">
-                            <strong>Period Length (days)</strong>
-                            <p t-out="data['period_length']"/>
+                        <div class="col">
+                            <strong>Period Length (days):</strong>
+                            <div t-out="data['period_length']"/>
                         </div>
-                    </div>
-                    <div class="row mb32">
-                        <div class="col-3">
-                            <strong>Partner's:</strong>
-                            <p>
-                                <span t-if="data['result_selection'] == 'customer'">Receivable Accounts</span>
-                                <span t-if="data['result_selection'] == 'supplier'">Payable Accounts</span>
-                                <span t-if="data['result_selection'] == 'customer_supplier'">Receivable and Payable Accounts</span>
-                            </p>
+                        <div class="col">
+                            <strong>Partners:</strong>
+                            <div t-if="data['result_selection'] == 'customer'">Receivable Accounts</div>
+                            <div t-if="data['result_selection'] == 'supplier'">Payable Accounts</div>
+                            <div t-if="data['result_selection'] == 'customer_supplier'">Receivable and Payable Accounts</div>
                         </div>
-                        <div class="col-3">
+                        <div class="col">
                             <strong>Target Moves:</strong>
-                            <p>
-                                <span t-if="data['target_move'] == 'all'">All Entries</span>
-                                <span t-if="data['target_move'] == 'posted'">All Posted Entries</span>
-                            </p>
+                            <div t-if="data['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['target_move'] == 'posted'">All Posted Entries</div>
                         </div>
                     </div>
 
@@ -42,9 +36,7 @@
                         <thead>
                             <tr>
                                 <th>Partners</th>
-                                <th class="text-end">
-                                    <span>Not due</span>
-                                </th>
+                                <th class="text-end">Not due</th>
                                 <th class="text-end"><span t-out="data['4']['name']"/></th>
                                 <th class="text-end"><span t-out="data['3']['name']"/></th>
                                 <th class="text-end"><span t-out="data['2']['name']"/></th>
@@ -54,13 +46,13 @@
                             </tr>
                             <tr t-if="get_partner_lines">
                                 <th>Account Total</th>
-                                <th class="text-end"><span t-out="get_direction[6]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
-                                <th class="text-end"><span t-out="get_direction[4]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
-                                <th class="text-end"><span t-out="get_direction[3]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
-                                <th class="text-end"><span t-out="get_direction[2]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
-                                <th class="text-end"><span t-out="get_direction[1]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
-                                <th class="text-end"><span t-out="get_direction[0]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
-                                <th class="text-end"><span t-out="get_direction[5]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[6]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[4]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[3]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[2]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[1]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[0]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
+                                <th class="text-end text-nowrap"><span t-out="get_direction[5]" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -68,25 +60,25 @@
                                 <td>
                                     <span t-out="partner['name']"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['direction']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['4']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['3']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['2']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['1']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['0']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
-                                <td class="text-end">
+                                <td class="text-end text-nowrap">
                                     <span t-out="partner['total']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>

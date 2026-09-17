@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_payslip_analysis_view_pivot" model="ir.ui.view">
+        <field name="name">hr.payslip.analysis.pivot</field>
+        <field name="model">hr.payslip.analysis</field>
+        <field name="arch" type="xml">
+            <pivot string="Payroll Analysis" sample="1">
+                <field name="department_id" type="row"/>
+                <field name="date" interval="month" type="col"/>
+                <field name="total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="hr_payslip_analysis_view_graph" model="ir.ui.view">
+        <field name="name">hr.payslip.analysis.graph</field>
+        <field name="model">hr.payslip.analysis</field>
+        <field name="arch" type="xml">
+            <graph string="Payroll Analysis" type="bar" stacked="1" sample="1">
+                <field name="date" interval="month"/>
+                <field name="department_id"/>
+                <field name="total" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="hr_payslip_analysis_view_list" model="ir.ui.view">
+        <field name="name">hr.payslip.analysis.list</field>
+        <field name="model">hr.payslip.analysis</field>
+        <field name="arch" type="xml">
+            <list string="Payroll Analysis" create="0" edit="0" delete="0" sample="1"
+                  decoration-muted="state == 'cancel'" decoration-danger="credit_note">
+                <field name="date"/>
+                <field name="number"/>
+                <field name="employee_id" widget="many2one_avatar_employee"/>
+                <field name="department_id" optional="show"/>
+                <field name="job_id" optional="hide"/>
+                <field name="struct_id" optional="hide"/>
+                <field name="payslip_run_id" optional="hide"/>
+                <field name="category_id"/>
+                <field name="salary_rule_id"/>
+                <field name="code" optional="hide"/>
+                <field name="quantity" optional="hide"/>
+                <field name="rate" optional="hide"/>
+                <field name="amount" optional="hide"/>
+                <field name="total" sum="Total"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="credit_note" column_invisible="1"/>
+                <field name="state" widget="badge" optional="show"
+                       decoration-info="state in ('draft', 'verify')" decoration-success="state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_payslip_analysis_view_search" model="ir.ui.view">
+        <field name="name">hr.payslip.analysis.search</field>
+        <field name="model">hr.payslip.analysis</field>
+        <field name="arch" type="xml">
+            <search string="Payroll Analysis">
+                <field name="employee_id"/>
+                <field name="department_id"/>
+                <field name="job_id"/>
+                <field name="salary_rule_id"/>
+                <field name="category_id"/>
+                <field name="payslip_run_id"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <filter string="Not Rejected" name="not_cancelled" domain="[('state', '!=', 'cancel')]"/>
+                <separator/>
+                <filter string="Basic" name="basic" domain="[('category_id.code', '=', 'BASIC')]"/>
+                <filter string="Allowances" name="allowances" domain="[('category_id.code', '=', 'ALW')]"/>
+                <filter string="Gross" name="gross" domain="[('category_id.code', '=', 'GROSS')]"/>
+                <filter string="Deductions" name="deductions" domain="[('category_id.code', '=', 'DED')]"/>
+                <filter string="Net" name="net" domain="[('category_id.code', '=', 'NET')]"/>
+                <filter string="Company Contributions" name="contributions" domain="[('category_id.code', '=', 'COMP')]"/>
+                <separator/>
+                <filter string="Refunds" name="refunds" domain="[('credit_note', '=', True)]"/>
+                <separator/>
+                <filter string="Period" name="filter_date" date="date" default_period="year"/>
+                <group>
+                    <filter string="Employee" name="group_employee" context="{'group_by': 'employee_id'}"/>
+                    <filter string="Department" name="group_department" context="{'group_by': 'department_id'}"/>
+                    <filter string="Job Position" name="group_job" context="{'group_by': 'job_id'}"/>
+                    <filter string="Structure" name="group_struct" context="{'group_by': 'struct_id'}"/>
+                    <filter string="Batch" name="group_batch" context="{'group_by': 'payslip_run_id'}"/>
+                    <filter string="Category" name="group_category" context="{'group_by': 'category_id'}"/>
+                    <filter string="Rule" name="group_rule" context="{'group_by': 'salary_rule_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Company" name="group_company" context="{'group_by': 'company_id'}"
+                            groups="base.group_multi_company"/>
+                    <filter string="Period" name="group_date" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_hr_payslip_analysis" model="ir.actions.act_window">
+        <field name="name">Payroll Analysis</field>
+        <field name="res_model">hr.payslip.analysis</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="hr_payslip_analysis_view_search"/>
+        <field name="context">{'search_default_done': 1, 'search_default_net': 1, 'search_default_filter_date': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No confirmed payslip yet
+            </p>
+            <p>
+                Analyse the salaries, the allowances, the deductions and the company contributions
+                by employee, department, job position or month, once the payslips are confirmed.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_hr_payslip_analysis_employee" model="ir.actions.act_window">
+        <field name="name">Salary History</field>
+        <field name="res_model">hr.payslip.analysis</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="hr_payslip_analysis_view_search"/>
+        <field name="context">{'search_default_done': 1, 'search_default_employee_id': [active_id],
+            'pivot_row_groupby': ['category_id'], 'pivot_column_groupby': ['date:month'],
+            'graph_groupbys': ['date:month', 'category_id']}</field>
+    </record>
+
+    <menuitem id="menu_hr_payroll_reporting"
+              name="Reporting"
+              parent="menu_hr_payroll_root"
+              sequence="90"
+              groups="om_hr_payroll.group_hr_payroll_user"/>
+
+    <menuitem id="menu_hr_payslip_analysis"
+              name="Payroll Analysis"
+              action="action_hr_payslip_analysis"
+              parent="menu_hr_payroll_reporting"
+              sequence="10"/>
+
+</odoo>

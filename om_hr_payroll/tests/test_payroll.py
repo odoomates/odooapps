@@ -152,6 +152,22 @@ class TestPayroll(TransactionCase):
         self.assertEqual(refund.state, 'done')
         self.assertEqual(self._totals(refund)['NET'], self._totals(payslip)['NET'])
 
+    def test_payroll_analysis(self):
+        department = self.env['hr.department'].create({'name': 'Payroll Analysis Dept'})
+        employee = self._create_employee('Analysed Employee', department_id=department.id)
+        payslip = self._new_payslip(employee)
+        payslip.action_payslip_done()
+        self.env['hr.payslip'].search(payslip.refund_sheet()['domain'])
+
+        officer = new_test_user(self.env, login='payroll_analyst',
+                                groups='base.group_user,om_hr_payroll.group_hr_payroll_user')
+        Analysis = self.env['hr.payslip.analysis'].with_user(officer)
+        groups = Analysis._read_group(
+            [('employee_id', '=', employee.id), ('code', '=', 'NET')], ['department_id', 'credit_note'], ['total:sum'])
+        self.assertEqual({credit_note: total for _department, credit_note, total in groups},
+                         {False: 5500.0, True: -5500.0})
+        self.assertEqual({dep for dep, _credit_note, _total in groups}, {department})
+
     def test_payroll_officer(self):
         officer = new_test_user(self.env, login='payroll_officer',
                                 groups='base.group_user,om_hr_payroll.group_hr_payroll_user')

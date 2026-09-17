@@ -7,23 +7,25 @@
                 <t t-set="currency" t-value="cash_flow['currency']"/>
                 <t t-set="by_account" t-value="data.get('display_detail') == 'accounts'"/>
                 <div class="page">
-                    <h2><span t-out="cash_flow['company'].name"/>: Cash Flow Statement</h2>
+                    <h2>Cash Flow Statement</h2>
 
-                    <div class="row mt32 mb32">
-                        <div class="col-4">
+                    <div id="informations" class="row mb-4">
+                        <div class="col" t-if="data['date_from'] or data['date_to']">
                             <strong>Period:</strong>
-                            <p><span t-out="data['date_from']"/> - <span t-out="data['date_to']"/></p>
+                            <div>
+                                <t t-if="data['date_from'] and data['date_to']"><span t-out="data['date_from']" t-options="{'widget': 'date'}"/> - <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                                <t t-elif="data['date_from']">From <span t-out="data['date_from']" t-options="{'widget': 'date'}"/></t>
+                                <t t-else="">Until <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                            </div>
                         </div>
-                        <div class="col-4">
+                        <div class="col">
                             <strong>Target Moves:</strong>
-                            <p>
-                                <span t-if="data['target_move'] == 'all'">All Entries</span>
-                                <span t-if="data['target_move'] == 'posted'">All Posted Entries</span>
-                            </p>
+                            <div t-if="data['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['target_move'] == 'posted'">All Posted Entries</div>
                         </div>
-                        <div class="col-4">
+                        <div class="col">
                             <strong>Journals:</strong>
-                            <p t-out="', '.join(print_journal)"/>
+                            <div t-out="', '.join([journal or '' for journal in print_journal])"/>
                         </div>
                     </div>
 
@@ -37,7 +39,7 @@
                         <tbody>
                             <tr class="fw-bold">
                                 <td>Cash and cash equivalents at the beginning of the period</td>
-                                <td class="text-end"><span t-out="cash_flow['opening']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                <td class="text-end text-nowrap"><span t-out="cash_flow['opening']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                             </tr>
                             <t t-foreach="cash_flow['sections']" t-as="section">
                                 <tr class="fw-bold">
@@ -50,27 +52,27 @@
                                 <t t-foreach="section['lines']" t-as="line">
                                     <tr>
                                         <td class="ps-4"><span t-out="line['name']"/></td>
-                                        <td class="text-end"><span t-out="line['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                        <td class="text-end text-nowrap"><span t-out="line['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                                     </tr>
                                     <t t-if="by_account">
                                         <tr t-foreach="line['accounts']" t-as="account" class="text-muted">
                                             <td class="ps-5"><span t-out="account['code']"/> <span t-out="account['name']"/></td>
-                                            <td class="text-end"><span t-out="account['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                            <td class="text-end text-nowrap"><span t-out="account['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                                         </tr>
                                     </t>
                                 </t>
                                 <tr class="fw-bold border-top">
                                     <td class="ps-4">Net cash from <span t-out="section['name'].lower()"/></td>
-                                    <td class="text-end"><span t-out="section['total']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                    <td class="text-end text-nowrap"><span t-out="section['total']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                                 </tr>
                             </t>
-                            <tr class="fw-bold" style="border-top: 2px solid;">
+                            <tr class="fw-bold border-top border-dark">
                                 <td>Net increase (decrease) in cash and cash equivalents</td>
-                                <td class="text-end"><span t-out="cash_flow['net_change']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                <td class="text-end text-nowrap"><span t-out="cash_flow['net_change']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                             </tr>
                             <tr class="fw-bold">
                                 <td>Cash and cash equivalents at the end of the period</td>
-                                <td class="text-end"><span t-out="cash_flow['closing']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                <td class="text-end text-nowrap"><span t-out="cash_flow['closing']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                             </tr>
                         </tbody>
                     </table>

@@ -9,32 +9,24 @@
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
                     <div class="page">
-                        <h2><t t-out="o.name"/> Journal</h2>
+                        <h2>Journal Audit: <t t-out="o.name"/></h2>
 
-                        <div class="row mt32">
-                            <div class="col-3">
-                                <strong>Company:</strong>
-                                <p t-out="res_company.name"/>
-                            </div>
-                            <div class="col-3">
+                        <div id="informations" class="row mb-4">
+                            <div class="col">
                                 <strong>Journal:</strong>
-                                <p t-out="o.name"/>
+                                <div t-out="o.name"/>
                             </div>
-                            <div class="col-3">
+                            <div class="col">
                                 <strong>Entries Sorted By:</strong>
-                                <p t-if="data['form'].get('sort_selection') != 'l.date'">Journal Entry Number</p>
-                                <p t-if="data['form'].get('sort_selection') == 'l.date'">Date</p>
+                                <div t-if="data['form'].get('sort_selection') != 'l.date'">Journal Entry Number</div>
+                                <div t-if="data['form'].get('sort_selection') == 'l.date'">Date</div>
                             </div>
-                            <div class="col-3">
+                            <div class="col">
                                 <strong>Target Moves:</strong>
-                                <p t-if="data['form']['target_move'] == 'all'">All Entries</p>
-                                <p t-if="data['form']['target_move'] == 'posted'">All Posted Entries</p>
+                                <div t-if="data['form']['target_move'] == 'all'">All Entries</div>
+                                <div t-if="data['form']['target_move'] == 'posted'">All Posted Entries</div>
                             </div>
                         </div>
-
-                        <style>
-                            .o_journal_audit_total td { border-top: 2px solid #000; }
-                        </style>
 
                         <table class="table table-sm table-reports">
                             <thead>
@@ -46,7 +38,7 @@
                                     <th>Label</th>
                                     <th class="text-end">Debit</th>
                                     <th class="text-end">Credit</th>
-                                    <th t-if="data['form']['amount_currency']">Currency</th>
+                                    <th class="text-end" t-if="data['form']['amount_currency']">Currency</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -56,8 +48,8 @@
                                     <td><span t-field="aml.account_id.code"/></td>
                                     <td><span t-out="aml.sudo().partner_id and aml.sudo().partner_id.name and aml.sudo().partner_id.name[:23] or ''"/></td>
                                     <td><span t-out="aml.name and aml.name[:35]"/></td>
-                                    <td class="text-end"><span t-out="aml.debit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                                    <td class="text-end"><span t-out="aml.credit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                    <td class="text-end text-nowrap"><span t-out="aml.debit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                    <td class="text-end text-nowrap"><span t-out="aml.credit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                                     <td class="text-end" t-if="data['form']['amount_currency']">
                                         <span t-if="aml.amount_currency" t-out="aml.amount_currency" t-options="{'widget': 'monetary', 'display_currency': aml.currency_id}"/>
                                     </td>
@@ -65,12 +57,12 @@
                             </tbody>
 
                             <tfoot>
-                                <tr class="o_journal_audit_total">
+                                <tr class="o_journal_audit_total fw-bold border-top border-dark">
                                     <td colspan="5"><strong>Total</strong></td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <strong><span t-out="sum_debit(data, o)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></strong>
                                     </td>
-                                    <td class="text-end">
+                                    <td class="text-end text-nowrap">
                                         <strong><span t-out="sum_credit(data, o)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></strong>
                                     </td>
                                     <td t-if="data['form']['amount_currency']"/>
@@ -78,22 +70,22 @@
                             </tfoot>
                         </table>
                         <t t-set="taxes" t-value="get_taxes(data, o)"/>
-                        <div t-if="taxes" class="row">
-                            <div class="col-4">
+                        <div t-if="taxes" class="row mt-4">
+                            <div class="col-6">
                                 <table class="table table-sm table-reports">
                                     <thead>
                                         <tr><th colspan="3">Tax Declaration</th></tr>
                                         <tr>
                                             <th>Name</th>
-                                            <th>Base Amount</th>
-                                            <th>Tax Amount</th>
+                                            <th class="text-end">Base Amount</th>
+                                            <th class="text-end">Tax Amount</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr t-foreach="taxes" t-as="tax">
                                             <td><span t-out="tax.name"/></td>
-                                            <td><span t-out="taxes[tax]['base_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
-                                            <td><span t-out="taxes[tax]['tax_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                            <td class="text-end text-nowrap"><span t-out="taxes[tax]['base_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                            <td class="text-end text-nowrap"><span t-out="taxes[tax]['tax_amount']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                                         </tr>
                                     </tbody>
                                 </table>
