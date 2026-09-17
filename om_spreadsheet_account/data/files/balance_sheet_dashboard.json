@@ -1,0 +1,735 @@
+{
+    "version": "19.3.10",
+    "sheets": [
+        {
+            "id": "69e38221-f858-57a5-9011-da276f24cf6e",
+            "name": "Dashboard",
+            "colNumber": 20,
+            "rowNumber": 80,
+            "rows": {},
+            "cols": {
+                "0": {
+                    "size": 280
+                },
+                "1": {
+                    "size": 140
+                },
+                "2": {
+                    "size": 140
+                },
+                "3": {
+                    "size": 140
+                }
+            },
+            "merges": [],
+            "cells": {
+                "A1": "=CONCATENATE(_t(\"Balance at \"),TEXT(Data!B2,\"mm/dd/yyyy\"),_t(\", compared with \"),TEXT(Data!B7,\"mm/dd/yyyy\"))",
+                "A8": "=_t(\"Balance Sheet\")",
+                "B8": "=TEXT(Data!$B$2,\"mm/dd/yyyy\")",
+                "C8": "=TEXT(Data!$B$7,\"mm/dd/yyyy\")",
+                "D8": "=_t(\"Change\")",
+                "A9": "=_t(\"Assets\")",
+                "A10": "=_t(\"Bank and Cash\")",
+                "B10": "=OM.ACCOUNT.BALANCE(\"asset_cash\",\"\",Data!$B$2)",
+                "C10": "=OM.ACCOUNT.BALANCE(\"asset_cash\",\"\",Data!$B$7)",
+                "D10": "=B10-C10",
+                "A11": "=_t(\"Receivables\")",
+                "B11": "=OM.ACCOUNT.BALANCE(\"asset_receivable\",\"\",Data!$B$2)",
+                "C11": "=OM.ACCOUNT.BALANCE(\"asset_receivable\",\"\",Data!$B$7)",
+                "D11": "=B11-C11",
+                "A12": "=_t(\"Current Assets\")",
+                "B12": "=OM.ACCOUNT.BALANCE(\"asset_current\",\"\",Data!$B$2)",
+                "C12": "=OM.ACCOUNT.BALANCE(\"asset_current\",\"\",Data!$B$7)",
+                "D12": "=B12-C12",
+                "A13": "=_t(\"Prepayments\")",
+                "B13": "=OM.ACCOUNT.BALANCE(\"asset_prepayments\",\"\",Data!$B$2)",
+                "C13": "=OM.ACCOUNT.BALANCE(\"asset_prepayments\",\"\",Data!$B$7)",
+                "D13": "=B13-C13",
+                "A14": "=_t(\"Total Current Assets\")",
+                "B14": "=B10+B11+B12+B13",
+                "C14": "=C10+C11+C12+C13",
+                "D14": "=B14-C14",
+                "A15": "=_t(\"Fixed Assets\")",
+                "B15": "=OM.ACCOUNT.BALANCE(\"asset_fixed\",\"\",Data!$B$2)",
+                "C15": "=OM.ACCOUNT.BALANCE(\"asset_fixed\",\"\",Data!$B$7)",
+                "D15": "=B15-C15",
+                "A16": "=_t(\"Non-current Assets\")",
+                "B16": "=OM.ACCOUNT.BALANCE(\"asset_non_current\",\"\",Data!$B$2)",
+                "C16": "=OM.ACCOUNT.BALANCE(\"asset_non_current\",\"\",Data!$B$7)",
+                "D16": "=B16-C16",
+                "A17": "=_t(\"Total Assets\")",
+                "B17": "=B14+B15+B16",
+                "C17": "=C14+C15+C16",
+                "D17": "=B17-C17",
+                "A18": "=_t(\"Liabilities\")",
+                "A19": "=_t(\"Payables\")",
+                "B19": "=-OM.ACCOUNT.BALANCE(\"liability_payable\",\"\",Data!$B$2)",
+                "C19": "=-OM.ACCOUNT.BALANCE(\"liability_payable\",\"\",Data!$B$7)",
+                "D19": "=B19-C19",
+                "A20": "=_t(\"Credit Cards\")",
+                "B20": "=-OM.ACCOUNT.BALANCE(\"liability_credit_card\",\"\",Data!$B$2)",
+                "C20": "=-OM.ACCOUNT.BALANCE(\"liability_credit_card\",\"\",Data!$B$7)",
+                "D20": "=B20-C20",
+                "A21": "=_t(\"Current Liabilities\")",
+                "B21": "=-OM.ACCOUNT.BALANCE(\"liability_current\",\"\",Data!$B$2)",
+                "C21": "=-OM.ACCOUNT.BALANCE(\"liability_current\",\"\",Data!$B$7)",
+                "D21": "=B21-C21",
+                "A22": "=_t(\"Total Current Liabilities\")",
+                "B22": "=B19+B20+B21",
+                "C22": "=C19+C20+C21",
+                "D22": "=B22-C22",
+                "A23": "=_t(\"Non-current Liabilities\")",
+                "B23": "=-OM.ACCOUNT.BALANCE(\"liability_non_current\",\"\",Data!$B$2)",
+                "C23": "=-OM.ACCOUNT.BALANCE(\"liability_non_current\",\"\",Data!$B$7)",
+                "D23": "=B23-C23",
+                "A24": "=_t(\"Total Liabilities\")",
+                "B24": "=B22+B23",
+                "C24": "=C22+C23",
+                "D24": "=B24-C24",
+                "A25": "=_t(\"Equity\")",
+                "A26": "=_t(\"Capital and Reserves\")",
+                "B26": "=-OM.ACCOUNT.BALANCE(\"equity,equity_unaffected\",\"\",Data!$B$2)",
+                "C26": "=-OM.ACCOUNT.BALANCE(\"equity,equity_unaffected\",\"\",Data!$B$7)",
+                "D26": "=B26-C26",
+                "A27": "=_t(\"Current Year Earnings\")",
+                "B27": "=-OM.ACCOUNT.BALANCE(\"income,income_other,expense_direct_cost,expense,expense_depreciation,expense_other\",Data!$B$9,Data!$B$2)",
+                "C27": "=-OM.ACCOUNT.BALANCE(\"income,income_other,expense_direct_cost,expense,expense_depreciation,expense_other\",Data!$B$10,Data!$B$7)",
+                "D27": "=B27-C27",
+                "A28": "=_t(\"Previous Years Unallocated Earnings\")",
+                "B28": "=ROUND(B17-B24-B26-B27,6)+0",
+                "C28": "=ROUND(C17-C24-C26-C27,6)+0",
+                "D28": "=B28-C28",
+                "A29": "=_t(\"Total Equity\")",
+                "B29": "=B26+B27+B28",
+                "C29": "=C26+C27+C28",
+                "D29": "=B29-C29",
+                "A30": "=_t(\"Total Liabilities and Equity\")",
+                "B30": "=B24+B29",
+                "C30": "=C24+C29",
+                "D30": "=B30-C30"
+            },
+            "styles": {
+                "A1": 2,
+                "A8": 3,
+                "B8": 4,
+                "C8": 4,
+                "D8": 4,
+                "A9": 3,
+                "B9": 3,
+                "C9": 3,
+                "D9": 3,
+                "A10": 1,
+                "B10": 1,
+                "C10": 1,
+                "D10": 1,
+                "A11": 1,
+                "B11": 1,
+                "C11": 1,
+                "D11": 1,
+                "A12": 1,
+                "B12": 1,
+                "C12": 1,
+                "D12": 1,
+                "A13": 1,
+                "B13": 1,
+                "C13": 1,
+                "D13": 1,
+                "A14": 1,
+                "B14": 1,
+                "C14": 1,
+                "D14": 1,
+                "A15": 1,
+                "B15": 1,
+                "C15": 1,
+                "D15": 1,
+                "A16": 1,
+                "B16": 1,
+                "C16": 1,
+                "D16": 1,
+                "A17": 5,
+                "B17": 5,
+                "C17": 5,
+                "D17": 5,
+                "A18": 3,
+                "B18": 3,
+                "C18": 3,
+                "D18": 3,
+                "A19": 1,
+                "B19": 1,
+                "C19": 1,
+                "D19": 1,
+                "A20": 1,
+                "B20": 1,
+                "C20": 1,
+                "D20": 1,
+                "A21": 1,
+                "B21": 1,
+                "C21": 1,
+                "D21": 1,
+                "A22": 1,
+                "B22": 1,
+                "C22": 1,
+                "D22": 1,
+                "A23": 1,
+                "B23": 1,
+                "C23": 1,
+                "D23": 1,
+                "A24": 5,
+                "B24": 5,
+                "C24": 5,
+                "D24": 5,
+                "A25": 3,
+                "B25": 3,
+                "C25": 3,
+                "D25": 3,
+                "A26": 1,
+                "B26": 1,
+                "C26": 1,
+                "D26": 1,
+                "A27": 1,
+                "B27": 1,
+                "C27": 1,
+                "D27": 1,
+                "A28": 1,
+                "B28": 1,
+                "C28": 1,
+                "D28": 1,
+                "A29": 5,
+                "B29": 5,
+                "C29": 5,
+                "D29": 5,
+                "A30": 5,
+                "B30": 5,
+                "C30": 5,
+                "D30": 5
+            },
+            "formats": {},
+            "borders": {
+                "A10": 1,
+                "B10": 1,
+                "C10": 1,
+                "D10": 1,
+                "A11": 1,
+                "B11": 1,
+                "C11": 1,
+                "D11": 1,
+                "A12": 1,
+                "B12": 1,
+                "C12": 1,
+                "D12": 1,
+                "A13": 1,
+                "B13": 1,
+                "C13": 1,
+                "D13": 1,
+                "A14": 1,
+                "B14": 1,
+                "C14": 1,
+                "D14": 1,
+                "A15": 1,
+                "B15": 1,
+                "C15": 1,
+                "D15": 1,
+                "A16": 1,
+                "B16": 1,
+                "C16": 1,
+                "D16": 1,
+                "A17": 2,
+                "B17": 2,
+                "C17": 2,
+                "D17": 2,
+                "A19": 1,
+                "B19": 1,
+                "C19": 1,
+                "D19": 1,
+                "A20": 1,
+                "B20": 1,
+                "C20": 1,
+                "D20": 1,
+                "A21": 1,
+                "B21": 1,
+                "C21": 1,
+                "D21": 1,
+                "A22": 1,
+                "B22": 1,
+                "C22": 1,
+                "D22": 1,
+                "A23": 1,
+                "B23": 1,
+                "C23": 1,
+                "D23": 1,
+                "A24": 2,
+                "B24": 2,
+                "C24": 2,
+                "D24": 2,
+                "A26": 1,
+                "B26": 1,
+                "C26": 1,
+                "D26": 1,
+                "A27": 1,
+                "B27": 1,
+                "C27": 1,
+                "D27": 1,
+                "A28": 1,
+                "B28": 1,
+                "C28": 1,
+                "D28": 1,
+                "A29": 2,
+                "B29": 2,
+                "C29": 2,
+                "D29": 2,
+                "A30": 2,
+                "B30": 2,
+                "C30": 2,
+                "D30": 2
+            },
+            "conditionalFormats": [],
+            "dataValidationRules": [],
+            "figures": [
+                {
+                    "id": "482da37c-1ba0-5c18-9835-d755ebbfb00b",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 0,
+                        "y": 30
+                    },
+                    "width": 190,
+                    "height": 110,
+                    "tag": "chart",
+                    "data": {
+                        "type": "scorecard",
+                        "title": {
+                            "text": "Total Assets",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "background": "",
+                        "keyValue": "Dashboard!B17",
+                        "baselineColorDown": "#DC6965",
+                        "baselineColorUp": "#00A04A",
+                        "baselineMode": "percentage",
+                        "humanize": true,
+                        "chartId": "482da37c-1ba0-5c18-9835-d755ebbfb00b",
+                        "baseline": "Data!G16",
+                        "baselineDescr": {
+                            "text": "vs comparison"
+                        }
+                    }
+                },
+                {
+                    "id": "efb0397c-e3b7-5cb0-a9e0-57a5250f5b3f",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 200,
+                        "y": 30
+                    },
+                    "width": 190,
+                    "height": 110,
+                    "tag": "chart",
+                    "data": {
+                        "type": "scorecard",
+                        "title": {
+                            "text": "Total Liabilities",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "background": "",
+                        "keyValue": "Dashboard!B24",
+                        "baselineColorDown": "#DC6965",
+                        "baselineColorUp": "#00A04A",
+                        "baselineMode": "percentage",
+                        "humanize": true,
+                        "chartId": "efb0397c-e3b7-5cb0-a9e0-57a5250f5b3f",
+                        "baseline": "Data!G17",
+                        "baselineDescr": {
+                            "text": "vs comparison"
+                        }
+                    }
+                },
+                {
+                    "id": "37298280-179e-5f89-81fe-12026aadd04e",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 400,
+                        "y": 30
+                    },
+                    "width": 190,
+                    "height": 110,
+                    "tag": "chart",
+                    "data": {
+                        "type": "scorecard",
+                        "title": {
+                            "text": "Total Equity",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "background": "",
+                        "keyValue": "Dashboard!B29",
+                        "baselineColorDown": "#DC6965",
+                        "baselineColorUp": "#00A04A",
+                        "baselineMode": "percentage",
+                        "humanize": true,
+                        "chartId": "37298280-179e-5f89-81fe-12026aadd04e",
+                        "baseline": "Data!G18",
+                        "baselineDescr": {
+                            "text": "vs comparison"
+                        }
+                    }
+                },
+                {
+                    "id": "bd319a3f-42a9-56fa-a89d-02307bbd0169",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 600,
+                        "y": 30
+                    },
+                    "width": 190,
+                    "height": 110,
+                    "tag": "chart",
+                    "data": {
+                        "type": "scorecard",
+                        "title": {
+                            "text": "Current Ratio",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "background": "",
+                        "keyValue": "Data!B16",
+                        "baselineColorDown": "#DC6965",
+                        "baselineColorUp": "#00A04A",
+                        "baselineMode": "percentage",
+                        "humanize": true,
+                        "chartId": "bd319a3f-42a9-56fa-a89d-02307bbd0169"
+                    }
+                },
+                {
+                    "id": "334660b1-0e25-5f0b-b39b-f1a0d163c048",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 800,
+                        "y": 30
+                    },
+                    "width": 190,
+                    "height": 110,
+                    "tag": "chart",
+                    "data": {
+                        "type": "scorecard",
+                        "title": {
+                            "text": "Quick Ratio",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "background": "",
+                        "keyValue": "Data!B17",
+                        "baselineColorDown": "#DC6965",
+                        "baselineColorUp": "#00A04A",
+                        "baselineMode": "percentage",
+                        "humanize": true,
+                        "chartId": "334660b1-0e25-5f0b-b39b-f1a0d163c048"
+                    }
+                },
+                {
+                    "id": "de956c29-8fcb-5e0e-8b8f-917079e50b08",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 1000,
+                        "y": 30
+                    },
+                    "width": 190,
+                    "height": 110,
+                    "tag": "chart",
+                    "data": {
+                        "type": "scorecard",
+                        "title": {
+                            "text": "Debt to Equity",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "background": "",
+                        "keyValue": "Data!B18",
+                        "baselineColorDown": "#DC6965",
+                        "baselineColorUp": "#00A04A",
+                        "baselineMode": "percentage",
+                        "humanize": true,
+                        "chartId": "de956c29-8fcb-5e0e-8b8f-917079e50b08"
+                    }
+                },
+                {
+                    "id": "2db18849-e7c3-5937-8896-bf1ce8ebf8f1",
+                    "col": 0,
+                    "row": 0,
+                    "offset": {
+                        "x": 720,
+                        "y": 184
+                    },
+                    "width": 440,
+                    "height": 320,
+                    "tag": "chart",
+                    "data": {
+                        "type": "bar",
+                        "title": {
+                            "text": "Assets, Liabilities and Equity",
+                            "color": "#01666B",
+                            "bold": true
+                        },
+                        "legendPosition": "top",
+                        "humanize": true,
+                        "dataSource": {
+                            "type": "range",
+                            "labelRange": "Data!D16:D18",
+                            "dataSets": [
+                                {
+                                    "dataSetId": "0",
+                                    "dataRange": "Data!E16:E18"
+                                },
+                                {
+                                    "dataSetId": "1",
+                                    "dataRange": "Data!F16:F18"
+                                }
+                            ],
+                            "dataSetsHaveTitle": false
+                        },
+                        "dataSetStyles": {
+                            "0": {
+                                "label": "Period"
+                            },
+                            "1": {
+                                "label": "Comparison"
+                            }
+                        },
+                        "chartId": "2db18849-e7c3-5937-8896-bf1ce8ebf8f1",
+                        "stacked": false,
+                        "aggregated": false
+                    }
+                }
+            ],
+            "tables": [],
+            "areGridLinesVisible": false,
+            "isVisible": true,
+            "headerGroups": {
+                "ROW": [],
+                "COL": []
+            },
+            "comments": {},
+            "backgroundColor": "#F9FAFB"
+        },
+        {
+            "id": "e0b399ea-e42c-5335-948b-a3544439d9fb",
+            "name": "Data",
+            "colNumber": 26,
+            "rowNumber": 100,
+            "rows": {},
+            "cols": {
+                "0": {
+                    "size": 200
+                },
+                "1": {
+                    "size": 130
+                },
+                "2": {
+                    "size": 130
+                },
+                "6": {
+                    "size": 180
+                }
+            },
+            "merges": [],
+            "cells": {
+                "G1": "=_t(\"Same Period Last Year\")",
+                "G2": "=_t(\"Previous Period\")",
+                "A1": "=_t(\"Period\")",
+                "B1": "=ODOO.FILTER.VALUE(\"Period\")",
+                "A2": "=_t(\"End\")",
+                "B2": "=IF(ISNUMBER(C1),C1,TODAY())",
+                "A3": "=_t(\"Start\")",
+                "B3": "=IF(ISNUMBER(B1),B1,ODOO.FISCALYEAR.START(B2))",
+                "A4": "=_t(\"Compare with\")",
+                "B4": "=ODOO.FILTER.VALUE(\"Compare With\")",
+                "A5": "=_t(\"Previous period\")",
+                "B5": "=B4=G2",
+                "A6": "=_t(\"Months in the period\")",
+                "B6": "=IF(AND(DAY(B3)=1,B2=EOMONTH(B2,0)),(YEAR(B2)-YEAR(B3))*12+MONTH(B2)-MONTH(B3)+1,0)",
+                "A7": "=_t(\"Comparison end\")",
+                "B7": "=IF(B5,B3-1,EDATE(B2,-12))",
+                "A8": "=_t(\"Comparison start\")",
+                "B8": "=IF(B5,IF(B6,EDATE(B3,-B6),B3-(B2-B3)-1),EDATE(B3,-12))",
+                "A9": "=_t(\"Fiscal year start\")",
+                "B9": "=ODOO.FISCALYEAR.START(B2)",
+                "A10": "=_t(\"Comparison fiscal year start\")",
+                "B10": "=ODOO.FISCALYEAR.START(B7)",
+                "A11": "=_t(\"Description\")",
+                "B11": "=CONCATENATE(TEXT(B3,\"mm/dd/yyyy\"),_t(\" to \"),TEXT(B2,\"mm/dd/yyyy\"),_t(\", compared with \"),TEXT(B8,\"mm/dd/yyyy\"),_t(\" to \"),TEXT(B7,\"mm/dd/yyyy\"))",
+                "A12": "=_t(\"Comparison\")",
+                "B12": "=IF(B5,_t(\"Previous Period\"),_t(\"Last Year\"))",
+                "A15": "=_t(\"Ratios\")",
+                "A16": "=_t(\"Current Ratio\")",
+                "B16": "=IFERROR(Dashboard!B14/Dashboard!B22,0)",
+                "A17": "=_t(\"Quick Ratio\")",
+                "B17": "=IFERROR((Dashboard!B10+Dashboard!B11)/Dashboard!B22,0)",
+                "A18": "=_t(\"Debt to Equity\")",
+                "B18": "=IFERROR(Dashboard!B24/Dashboard!B29,0)",
+                "D15": "=_t(\"Structure\")",
+                "E15": "=_t(\"Period\")",
+                "F15": "=_t(\"Comparison\")",
+                "G15": "=_t(\"Compared with\")",
+                "D16": "=Dashboard!A17",
+                "E16": "=Dashboard!B17",
+                "F16": "=Dashboard!C17",
+                "G16": "=IF(F16=0,\"\",F16)",
+                "D17": "=Dashboard!A24",
+                "E17": "=Dashboard!B24",
+                "F17": "=Dashboard!C24",
+                "G17": "=IF(F17=0,\"\",F17)",
+                "D18": "=Dashboard!A29",
+                "E18": "=Dashboard!B29",
+                "F18": "=Dashboard!C29",
+                "G18": "=IF(F18=0,\"\",F18)"
+            },
+            "styles": {
+                "G1": 1,
+                "G2": 1,
+                "A1": 1,
+                "A2": 1,
+                "A3": 1,
+                "A4": 1,
+                "A5": 1,
+                "A6": 1,
+                "A7": 1,
+                "A8": 1,
+                "A9": 1,
+                "A10": 1,
+                "A11": 1,
+                "A12": 1,
+                "A15": 3,
+                "A16": 1,
+                "A17": 1,
+                "A18": 1,
+                "D15": 3,
+                "E15": 4,
+                "F15": 4,
+                "G15": 4,
+                "D16": 1,
+                "D17": 1,
+                "D18": 1
+            },
+            "formats": {
+                "B1": 1,
+                "B2": 1,
+                "B3": 1,
+                "B7": 1,
+                "B8": 1,
+                "B9": 1,
+                "B10": 1,
+                "C1": 1,
+                "B16": 2,
+                "B17": 2,
+                "B18": 2
+            },
+            "borders": {},
+            "conditionalFormats": [],
+            "dataValidationRules": [],
+            "figures": [],
+            "tables": [],
+            "areGridLinesVisible": true,
+            "isVisible": true,
+            "headerGroups": {
+                "ROW": [],
+                "COL": []
+            },
+            "comments": {}
+        }
+    ],
+    "styles": {
+        "1": {
+            "textColor": "#434343"
+        },
+        "2": {
+            "textColor": "#8F8F8F",
+            "italic": true
+        },
+        "3": {
+            "textColor": "#434343",
+            "bold": true,
+            "fontSize": 11,
+            "fillColor": "#E7F2F2"
+        },
+        "4": {
+            "textColor": "#434343",
+            "bold": true,
+            "fontSize": 11,
+            "fillColor": "#E7F2F2",
+            "align": "right"
+        },
+        "5": {
+            "textColor": "#01666B",
+            "bold": true,
+            "fillColor": "#F1F7F7"
+        }
+    },
+    "formats": {
+        "1": "mm/dd/yyyy",
+        "2": "0.00"
+    },
+    "borders": {
+        "1": {
+            "bottom": {
+                "style": "thin",
+                "color": "#D9D9D9"
+            }
+        },
+        "2": {
+            "top": {
+                "style": "thin",
+                "color": "#01666B"
+            }
+        }
+    },
+    "revisionId": "START_REVISION",
+    "uniqueFigureIds": true,
+    "settings": {
+        "locale": {
+            "name": "English (US)",
+            "code": "en_US",
+            "thousandsSeparator": ",",
+            "decimalSeparator": ".",
+            "dateFormat": "mm/dd/yyyy",
+            "timeFormat": "hh:mm:ss",
+            "formulaArgSeparator": ",",
+            "weekStart": 7
+        }
+    },
+    "pivots": {},
+    "pivotNextId": 1,
+    "customTableStyles": {},
+    "namedRanges": [],
+    "globalFilters": [
+        {
+            "id": "6810fc21-b42d-59a0-81a8-a98d48d087c6",
+            "type": "date",
+            "label": "Period",
+            "defaultValue": "year_to_date"
+        },
+        {
+            "id": "b517e2b5-21b1-5f42-9fbc-9c23501afb38",
+            "type": "text",
+            "label": "Compare With",
+            "rangesOfAllowedValues": [
+                "Data!G1:G2"
+            ],
+            "defaultValue": {
+                "operator": "in",
+                "strings": [
+                    "Same Period Last Year"
+                ]
+            }
+        }
+    ],
+    "lists": {},
+    "listNextId": 1,
+    "odooLinkReferences": {}
+}

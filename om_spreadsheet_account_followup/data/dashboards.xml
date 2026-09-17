@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- after the dashboards of om_spreadsheet_account in the Finance section; the file is built by
+         tools/build_dashboards.py, the sample by om_spreadsheet_account/tools/export_samples.py -->
+
+    <record id="dashboard_followups_forecast" model="spreadsheet.dashboard">
+        <field name="name">Follow-ups and Cash Forecast</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account_followup/data/files/followups_forecast_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('account.model_account_move')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account_followup/data/files/followups_forecast_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_invoice')])]"/>
+        <field name="sequence">42</field>
+        <field name="is_published">True</field>
+    </record>
+
+</odoo>

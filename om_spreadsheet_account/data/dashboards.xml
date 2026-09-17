@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The accounting dashboards, next to the Invoicing dashboard of the Finance section. The files are built by
+         tools/build_dashboards.py. -->
+
+    <record id="dashboard_accounting_overview" model="spreadsheet.dashboard">
+        <field name="name">Accounting Overview</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account/data/files/accounting_overview_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('account.model_account_move')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account/data/files/accounting_overview_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_manager')])]"/>
+        <field name="sequence">30</field>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="dashboard_profit_and_loss" model="spreadsheet.dashboard">
+        <field name="name">Profit and Loss</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account/data/files/profit_and_loss_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('account.model_account_move')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account/data/files/profit_and_loss_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_manager')])]"/>
+        <field name="sequence">31</field>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="dashboard_balance_sheet" model="spreadsheet.dashboard">
+        <field name="name">Balance Sheet</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account/data/files/balance_sheet_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('account.model_account_move')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account/data/files/balance_sheet_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_manager')])]"/>
+        <field name="sequence">32</field>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="dashboard_receivables_payables" model="spreadsheet.dashboard">
+        <field name="name">Receivables and Payables</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account/data/files/receivables_payables_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('account.model_account_move')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account/data/files/receivables_payables_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_invoice')])]"/>
+        <field name="sequence">33</field>
+        <field name="is_published">True</field>
+    </record>
+
+    <record id="dashboard_bank_cash" model="spreadsheet.dashboard">
+        <field name="name">Bank and Cash</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account/data/files/bank_cash_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('account.model_account_move')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account/data/files/bank_cash_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_manager')])]"/>
+        <field name="sequence">34</field>
+        <field name="is_published">True</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- after the dashboards of om_spreadsheet_account in the Finance section; the file is built by
+         tools/build_dashboards.py, the sample by om_spreadsheet_account/tools/export_samples.py -->
+
+    <record id="dashboard_budgets" model="spreadsheet.dashboard">
+        <field name="name">Budgets</field>
+        <field name="spreadsheet_binary_data" type="bytes" file="om_spreadsheet_account_budget/data/files/budgets_dashboard.json"/>
+        <field name="main_data_model_ids" eval="[Command.set([ref('om_account_budget.model_account_budget_line')])]"/>
+        <field name="sample_dashboard_file_path">om_spreadsheet_account_budget/data/files/budgets_sample_dashboard.json</field>
+        <field name="dashboard_group_id" ref="spreadsheet_dashboard.spreadsheet_dashboard_group_finance"/>
+        <field name="group_ids" eval="[Command.set([ref('account.group_account_readonly'), ref('account.group_account_manager')])]"/>
+        <field name="sequence">41</field>
+        <field name="is_published">True</field>
+    </record>
+
+</odoo>

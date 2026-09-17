@@ -29,6 +29,10 @@
         'om_account_cash_forecast',
         'om_account_check_printing',
         'om_currency_rate_update',
+        'om_spreadsheet_account',
+        'om_spreadsheet_account_asset',
+        'om_spreadsheet_account_budget',
+        'om_spreadsheet_account_followup',
     ],
     'data': [
         'security/group.xml',
