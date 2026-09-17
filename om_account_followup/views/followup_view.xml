@@ -8,6 +8,7 @@
             <field name="arch" type="xml">
                 <list string="Follow-up Steps">
                     <field name="name"/>
+                    <field name="email_template_id" optional="show"/>
                     <field name="delay"/>
                     <field name="send_email"/>
                     <field name="send_letter"/>
@@ -91,33 +92,38 @@
             <field name="name">followup.followup.form</field>
             <field name="model">followup.followup</field>
             <field name="arch" type="xml">
-                <form string="Follow-up">
-                    <h1>
-                        <field name="name"/>
-                    </h1>
-                    <label for="company_id" groups="base.group_multi_company"/>
-                    <field name="company_id" widget="selection"
-                           class="oe_inline"
-                           groups="base.group_multi_company"/>
-                    <p class="oe_grey">
-                        To remind customers of paying their invoices, you can
-                        define different actions depending on how severely
-                        overdue the customer is. These actions are bundled
-                        into follow-up levels that are triggered when the due
-                        date of an invoice has passed a certain
-                        number of days. If there are other overdue invoices for
-                        the
-                        same customer, the actions of the most
-                        overdue invoice will be executed.
-                    </p>
-                    <group>
+                <form string="Follow-up Plan">
+                    <sheet>
+                        <div class="oe_button_box" name="button_box">
+                            <button name="action_open_partners" type="object" class="oe_stat_button" icon="group"
+                                    invisible="not id">
+                                <field name="partner_count" widget="statinfo" string="Customers"/>
+                            </button>
+                        </div>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1><field name="name" placeholder="e.g. Key accounts"/></h1>
+                        </div>
                         <group>
-                            <field name="auto_send"/>
-                            <field name="auto_user_id" invisible="not auto_send" required="auto_send"/>
-                            <field name="last_auto_send" invisible="not last_auto_send"/>
+                            <group>
+                                <field name="is_default"/>
+                                <field name="company_id" options="{'no_create': True}"
+                                       groups="base.group_multi_company"/>
+                                <field name="company_id" invisible="1"/>
+                            </group>
+                            <group>
+                                <field name="auto_send"/>
+                                <field name="auto_user_id" invisible="not auto_send" required="auto_send"/>
+                                <field name="last_auto_send" invisible="not last_auto_send"/>
+                            </group>
                         </group>
-                    </group>
-                    <field name="followup_line"/>
+                        <p class="text-muted">
+                            The reminders are sent when an invoice is overdue by the number of days of a level.
+                            When a customer has several overdue invoices, the reminder of the most overdue one is
+                            sent. The customers without a plan of their own follow the default plan.
+                        </p>
+                        <field name="followup_line"/>
+                    </sheet>
                 </form>
             </field>
         </record>
@@ -126,8 +132,12 @@
             <field name="name">followup.followup.list</field>
             <field name="model">followup.followup</field>
             <field name="arch" type="xml">
-                <list string="Follow-up">
-                    <field name="company_id"/>
+                <list string="Follow-up Plans">
+                    <field name="sequence" widget="handle"/>
+                    <field name="name"/>
+                    <field name="is_default"/>
+                    <field name="auto_send"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
                 </list>
             </field>
         </record>
@@ -136,35 +146,29 @@
             <field name="name">account.followup.select</field>
             <field name="model">followup.followup</field>
             <field name="arch" type="xml">
-                <search string="Search Follow-up">
+                <search string="Search Follow-up Plans">
+                    <field name="name"/>
                     <field name="company_id" groups="base.group_multi_company"/>
                 </search>
             </field>
         </record>
 
         <record id="action_om_account_followup_definition_form" model="ir.actions.act_window">
-            <field name="name">Follow-up Levels</field>
-            <field name="type">ir.actions.act_window</field>
+            <field name="name">Follow-up Plans</field>
             <field name="res_model">followup.followup</field>
             <field name="search_view_id" ref="view_om_account_followup_filter"/>
             <field name="view_mode">list,form</field>
             <field name="help" type="html">
-                <p class="oe_view_nocontent_create">
-                    Click to define follow-up levels and their related actions.
-                </p>
+                <p class="o_view_nocontent_smiling_face">Create a follow-up plan</p>
                 <p>
-                    For each step, specify the actions to be taken and delay in
-                    days. It is
-                    possible to use print and e-mail templates to send specific
-                    messages to
-                    the customer.
+                    A plan lists the reminders sent to the customers who do not pay on time: after how many days,
+                    by email, by letter, or as an action for the person in charge.
                 </p>
             </field>
         </record>
 
-
         <menuitem id="om_account_followup_menu"
-                  name="Follow-up Levels"
+                  name="Follow-up Plans"
                   action="action_om_account_followup_definition_form"
                   parent="account.account_invoicing_menu"
                   sequence="40"/>

@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_customer_statement" model="ir.actions.report">
+        <field name="name">Customer Statement</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_followup.report_customer_statement</field>
+        <field name="print_report_name">'Statement - %s' % (object.name or '')</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_type">report</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
+
+    <template id="report_customer_statement_document">
+        <t t-call="web.external_layout">
+            <t t-set="address">
+                <address t-field="partner.self"
+                         t-options='{"widget": "contact", "fields": ["address", "name"], "no_marker": True}'/>
+                <div t-if="partner.vat">
+                    <t t-out="company.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="partner.vat"/>
+                </div>
+            </t>
+            <div class="page">
+                <h2>Customer Statement</h2>
+                <table class="table table-borderless table-sm w-auto mb-3">
+                    <tr>
+                        <td class="pe-5"><strong>Date</strong><br/><span t-out="today_label"/></td>
+                        <td class="pe-5" t-if="partner.ref">
+                            <strong>Customer Reference</strong><br/><span t-field="partner.ref"/>
+                        </td>
+                        <td t-if="partner.latest_followup_level_id">
+                            <strong>Reminder</strong><br/><span t-field="partner.latest_followup_level_id.name"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <p t-if="level_text(partner)" style="white-space: pre-line;" t-out="level_text(partner)"/>
+
+                <t t-foreach="statement(partner)" t-as="group">
+                    <t t-set="currency" t-value="group['currency']"/>
+                    <table class="table table-sm o_main_table mt-4">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Document</th>
+                                <th>Reference</th>
+                                <th>Due Date</th>
+                                <th class="text-end">Days Overdue</th>
+                                <th class="text-end">Amount</th>
+                                <th class="text-end">Open Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="group['lines']" t-as="item"
+                                t-att-class="'text-muted' if item['disputed'] else ('fw-bold' if item['overdue'] and item['residual'] &gt; 0 else '')">
+                                <td><span t-out="format_date(item['date'])"/></td>
+                                <td>
+                                    <span t-out="item['name']"/>
+                                    <span t-if="item['disputed']" class="badge text-bg-secondary ms-1">Disputed</span>
+                                </td>
+                                <td><span t-out="item['ref']"/></td>
+                                <td><span t-out="format_date(item['date_maturity'])"/></td>
+                                <td class="text-end"><span t-if="item['days_overdue']" t-out="item['days_overdue']"/></td>
+                                <td class="text-end">
+                                    <span t-out="item['amount']"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-out="item['residual']"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="row justify-content-end">
+                        <div class="col-6">
+                            <table class="table table-sm">
+                                <tr>
+                                    <td><strong>Total Open</strong></td>
+                                    <td class="text-end">
+                                        <strong t-out="group['total']"
+                                                t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Overdue</strong></td>
+                                    <td class="text-end">
+                                        <strong t-out="group['total_overdue']"
+                                                t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <table class="table table-sm table-bordered text-center">
+                        <thead>
+                            <tr>
+                                <th t-foreach="group['ageing']" t-as="bucket" t-out="bucket[0]"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td t-foreach="group['ageing']" t-as="bucket">
+                                    <span t-out="bucket[1]"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+                <p t-if="not statement(partner)">Nothing is open on this account.</p>
+
+                <div t-if="bank_accounts" class="mt-4">
+                    <strong>Payment Details</strong>
+                    <p class="m-0" t-foreach="bank_accounts" t-as="bank">
+                        <span t-out="bank.display_name"/>
+                    </p>
+                </div>
+                <p class="mt-3 text-muted">
+                    If you have already paid, please ignore the overdue amounts. For any question about this
+                    statement, contact our accounting department.
+                </p>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_customer_statement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="partner">
+                <t t-set="partner" t-value="partner.with_context(lang=partner.lang)"/>
+                <t t-call="om_account_followup.report_customer_statement_document" t-lang="partner.lang"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

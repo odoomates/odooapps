@@ -6,11 +6,38 @@
             <field name="name">followup.stat.graph</field>
             <field name="model">followup.stat</field>
             <field name="arch" type="xml">
-                <graph string="Follow-up lines">
+                <graph string="Follow-ups">
                     <field name="followup_id" type="row"/>
-                    <field name="date_followup" type="col"/>
-                    <field name="balance" type="measure"/>
+                    <field name="balance_overdue" type="measure"/>
                 </graph>
+            </field>
+        </record>
+
+        <record id="view_om_account_followup_stat_pivot" model="ir.ui.view">
+            <field name="name">followup.stat.pivot</field>
+            <field name="model">followup.stat</field>
+            <field name="arch" type="xml">
+                <pivot string="Follow-ups" sample="1">
+                    <field name="followup_id" type="row"/>
+                    <field name="balance" type="measure"/>
+                    <field name="balance_overdue" type="measure"/>
+                </pivot>
+            </field>
+        </record>
+
+        <record id="view_om_account_followup_stat_list" model="ir.ui.view">
+            <field name="name">followup.stat.list</field>
+            <field name="model">followup.stat</field>
+            <field name="arch" type="xml">
+                <list string="Follow-ups" create="false">
+                    <field name="partner_id"/>
+                    <field name="followup_id"/>
+                    <field name="date_followup"/>
+                    <field name="date_move"/>
+                    <field name="balance" sum="Total"/>
+                    <field name="balance_overdue" sum="Total"/>
+                    <field name="company_id" groups="base.group_multi_company"/>
+                </list>
             </field>
         </record>
 
@@ -19,31 +46,30 @@
             <field name="model">followup.stat</field>
             <field name="arch" type="xml">
                 <search string="Follow-ups Sent">
-                    <field name="date_move"/>
-                    <field name="date_move_last"/>
                     <field name="partner_id"/>
-                    <field name="balance"/>
+                    <field name="followup_id"/>
+                    <filter string="Overdue" name="overdue" domain="[('balance_overdue', '>', 0)]"/>
+                    <filter string="Reminded" name="reminded" domain="[('followup_id', '!=', False)]"/>
+                    <separator/>
+                    <filter string="Latest Follow-up" name="date_followup" date="date_followup"/>
                     <group>
-                        <filter string="Partner" name="partner"
-                                context="{'group_by':'partner_id'}"/>
+                        <filter string="Customer" name="partner" context="{'group_by': 'partner_id'}"/>
                         <filter string="Follow-up Level" name="followup_level"
-                                context="{'group_by':'followup_id'}"/>
-                        <filter string="Company" name="company"
-                                groups="base.group_multi_company"
-                                context="{'group_by':'company_id'}"/>
-                        <separator/>
+                                context="{'group_by': 'followup_id'}"/>
+                        <filter string="Company" name="company" groups="base.group_multi_company"
+                                context="{'group_by': 'company_id'}"/>
                         <filter string="Latest Follow-up Month" name="lastest_month"
-                                context="{'group_by':'date_followup:month'}"/>
+                                context="{'group_by': 'date_followup:month'}"/>
                     </group>
                 </search>
             </field>
         </record>
 
         <record id="action_followup_stat" model="ir.actions.act_window">
-            <field name="name">Follow-ups Analysis</field>
+            <field name="name">Follow-up Analysis</field>
             <field name="res_model">followup.stat</field>
-            <field name="view_mode">graph</field>
-            <field name="context">{'search_default_followup_level':1}</field>
+            <field name="view_mode">graph,pivot,list</field>
+            <field name="context">{'search_default_followup_level': 1, 'search_default_overdue': 1}</field>
             <field name="search_view_id" ref="view_om_account_followup_stat_search"/>
         </record>
 

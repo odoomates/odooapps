@@ -11,31 +11,16 @@
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
-<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
-
-    <p>Dear <t t-out="object.name"/>,</p>
-    <p>
-    Exception made if there was a mistake of ours, it seems that the following amount stays unpaid. Please, take
-appropriate measures in order to carry out this payment in the next 8 days.
-
-Would your payment have been carried out after this mail was sent, please ignore this message. Do not hesitate to
-contact our accounting department.  
-
+<div style="margin: 0; padding: 0; font-size: 14px;">
+    <p style="margin: 0 0 12px 0;">Dear <t t-out="object.name or ''"/>,</p>
+    <p style="margin: 0 0 12px 0;">This is a friendly reminder that the invoices below are past their due date.</p>
+    <p style="margin: 0 0 12px 0;">If you have already paid them, please ignore this message. Otherwise, you can pay them from the links below or by bank transfer. Do not hesitate to contact us if you have any question.</p>
+    <t t-out="object.get_followup_table_html()"/>
+    <p style="margin: 12px 0 0 0;">
+        Best regards,<br/>
+        <t t-out="user.name or ''"/><br/>
+        <t t-out="env.company.name or ''"/>
     </p>
-<br/>
-Best Regards,
-<br/>
-   <br/>
-<t t-out="user.name" />
-
-<br/>
-<br/>
-
-
-<t t-out="object.get_followup_table_html()" />
-
-    <br/>
-
 </div>
             ]]></field>
         </record>
@@ -50,32 +35,16 @@ Best Regards,
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
-<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
-    
-    <p>Dear <t t-out="object.name"/>,</p>
-   <p>
-    We are disappointed to see that despite sending a reminder, that your account is now seriously overdue.
-It is essential that immediate payment is made, otherwise we will have to consider placing a stop on your account
-which means that we will no longer be able to supply your company with (goods/services).
-Please, take appropriate measures in order to carry out this payment in the next 8 days.
-If there is a problem with paying invoice that we are not aware of, do not hesitate to contact our accounting
-department. so that we can resolve the matter quickly.
-Details of due payments is printed below.
- </p>
-<br/>
-Best Regards,
-    
-<br/>
-<br/>
-<t t-out="user.name" />
-    
-<br/>
-<br/>
-
-<t t-out="object.get_followup_table_html()" />
-
-    <br/>
-
+<div style="margin: 0; padding: 0; font-size: 14px;">
+    <p style="margin: 0 0 12px 0;">Dear <t t-out="object.name or ''"/>,</p>
+    <p style="margin: 0 0 12px 0;">Despite our previous reminder, the invoices below are still unpaid.</p>
+    <p style="margin: 0 0 12px 0;">Please settle them within the next 8 days, or let us know if there is an issue we should be aware of, so that we can solve it quickly.</p>
+    <t t-out="object.get_followup_table_html()"/>
+    <p style="margin: 12px 0 0 0;">
+        Best regards,<br/>
+        <t t-out="user.name or ''"/><br/>
+        <t t-out="env.company.name or ''"/>
+    </p>
 </div>
             ]]></field>
         </record>
@@ -90,29 +59,16 @@ Best Regards,
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
-<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
-    
-    <p>Dear <t t-out="object.name"/>,</p>
-    <p>
-    Despite several reminders, your account is still not settled.
-Unless full payment is made in next 8 days, legal action for the recovery of the debt will be taken without
-further notice.
-I trust that this action will prove unnecessary and details of due payments is printed below.
-In case of any queries concerning this matter, do not hesitate to contact our accounting department.
-</p>
-<br/>
-Best Regards,
-<br/>
-<br/>
-<t t-out="user.name" />
-<br/>
-<br/>
-
-
-<t t-out="object.get_followup_table_html()" />
-
-    <br/>
-
+<div style="margin: 0; padding: 0; font-size: 14px;">
+    <p style="margin: 0 0 12px 0;">Dear <t t-out="object.name or ''"/>,</p>
+    <p style="margin: 0 0 12px 0;">Despite several reminders, the invoices below are still unpaid.</p>
+    <p style="margin: 0 0 12px 0;">Unless the full amount is paid within the next 8 days, we will have to put your account on hold and take further action to recover the debt. We trust this will not be necessary: please contact our accounting department if you have any question.</p>
+    <t t-out="object.get_followup_table_html()"/>
+    <p style="margin: 12px 0 0 0;">
+        Best regards,<br/>
+        <t t-out="user.name or ''"/><br/>
+        <t t-out="env.company.name or ''"/>
+    </p>
 </div>
             ]]></field>
         </record>
@@ -127,26 +83,16 @@ Best Regards,
             <field name="model_id" ref="base.model_res_partner"/>
             <field name="auto_delete" eval="True"/>
             <field name="body_html"><![CDATA[
-<div style="font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); ">
-    
-    <p>Dear <t t-out="object.name"/>,</p>
-    <p>
-    Exception made if there was a mistake of ours, it seems that the following amount stays unpaid. Please, take
-appropriate measures in order to carry out this payment in the next 8 days.
-Would your payment have been carried out after this mail was sent, please ignore this message. Do not hesitate to
-contact our accounting department.
+<div style="margin: 0; padding: 0; font-size: 14px;">
+    <p style="margin: 0 0 12px 0;">Dear <t t-out="object.name or ''"/>,</p>
+    <p style="margin: 0 0 12px 0;">According to our records, the invoices below are past their due date.</p>
+    <p style="margin: 0 0 12px 0;">If you have already paid them, please ignore this message. Otherwise, please settle them at your earliest convenience, and do not hesitate to contact us if you have any question.</p>
+    <t t-out="object.get_followup_table_html()"/>
+    <p style="margin: 12px 0 0 0;">
+        Best regards,<br/>
+        <t t-out="user.name or ''"/><br/>
+        <t t-out="env.company.name or ''"/>
     </p>
-<br/>
-Best Regards,
-<br/>
-<br/>
-<t t-out="user.name" />
-<br/>
-<br/>
-
-<t t-out="object.get_followup_table_html()" />
-
-<br/>
 </div>
             ]]></field>
         </record>

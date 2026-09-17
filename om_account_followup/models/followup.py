@@ -4,26 +4,26 @@ from odoo.exceptions import ValidationError
 
 class FollowupFollowup(models.Model):
     _name = 'followup.followup'
-    _description = 'Account Follow-up'
-    _rec_name = 'name'
+    _description = 'Follow-up Plan'
+    _order = 'sequence, id'
 
-    name = fields.Char(string="Name", related='company_id.name', readonly=True)
+    name = fields.Char(string='Name', required=True, default=lambda self: self.env.company.name)
+    sequence = fields.Integer(default=10)
+    is_default = fields.Boolean(
+        string='Default Plan',
+        help='The plan of the customers of the company who have no plan of their own.')
     followup_line = fields.One2many('followup.line', 'followup_id', 'Follow-up', copy=True)
     company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
     auto_send = fields.Boolean(
-        string='Send Automatically Every Month',
-        help='Once a month, update the follow-up levels, send the follow-up emails and assign the manual actions. '
-             'Letters are not printed automatically: print them from the customers.')
+        string='Send Automatically',
+        help='Every day, send the reminders that are due: update the follow-up levels, send the emails and '
+             'schedule the manual actions. Letters are not printed automatically: print them from the customers.')
     auto_user_id = fields.Many2one(
         'res.users', string='Send As', default=lambda self: self.env.user,
         domain="[('share', '=', False), ('company_ids', 'in', company_id)]",
         help='The follow-up emails are sent in the name of this user, with the access rights of this user.')
     last_auto_send = fields.Date(string='Last Automatic Sending', readonly=True, copy=False)
-
-    _company_uniq = models.Constraint(
-        'unique(company_id)',
-        'Only one follow-up per company is allowed',
-    )
+    partner_count = fields.Integer(string='Customers', compute='_compute_partner_count')
 
     @api.constrains('auto_send', 'auto_user_id')
     def _check_auto_user(self):
@@ -31,13 +31,95 @@ class FollowupFollowup(models.Model):
             if followup.auto_send and not followup.auto_user_id:
                 raise ValidationError(_('Choose the user sending the automatic follow-ups.'))
 
+    @api.constrains('is_default', 'company_id')
+    def _check_one_default(self):
+        for company in self.filtered('is_default').company_id:
+            if self.search_count([('company_id', '=', company.id), ('is_default', '=', True)]) > 1:
+                raise ValidationError(_('The company %s already has a default follow-up plan.', company.name))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('is_default'):
+                company_id = vals.get('company_id') or self.env.company.id
+                self.search([('company_id', '=', company_id), ('is_default', '=', True)]).write(
+                    {'is_default': False})
+        plans = super().create(vals_list)
+        # the first plan of a company is its default plan
+        for plan in plans:
+            if not plan.is_default and not self.search_count(
+                    [('company_id', '=', plan.company_id.id), ('is_default', '=', True)]):
+                plan.is_default = True
+        return plans
+
+    def write(self, vals):
+        if vals.get('is_default'):
+            # one default plan per company: the other plans of the company stop being the default
+            companies = self.company_id if 'company_id' not in vals else self.env['res.company'].browse(
+                vals['company_id'])
+            self.search([('company_id', 'in', companies.ids), ('is_default', '=', True),
+                         ('id', 'not in', self.ids)]).write({'is_default': False})
+        return super().write(vals)
+
+    def _compute_partner_count(self):
+        Partner = self.env['res.partner']
+        for plan in self:
+            partners = Partner.with_company(plan.company_id).search_count([('followup_plan_id', '=', plan.id)])
+            plan.partner_count = partners
+
+    @api.model
+    def _get_default_plan(self, company=None):
+        company = company or self.env.company
+        return self.search([('company_id', '=', company.id)], order='is_default desc, sequence, id', limit=1)
+
+    def _get_levels(self):
+        """ :return: the levels of the plan, from the first to the last """
+        self.ensure_one()
+        return self.followup_line.sorted(lambda line: (line.delay, line.id))
+
+    @api.model
+    def _create_default_plans(self, companies):
+        """ A plan with three reminders for the companies without any plan """
+        for company in companies:
+            if self.sudo().search_count([('company_id', '=', company.id)]):
+                continue
+            templates = [self.env.ref('om_account_followup.email_template_om_account_followup_level%s' % index,
+                                      raise_if_not_found=False) for index in range(3)]
+            self.sudo().create({
+                'name': company.name,
+                'company_id': company.id,
+                'is_default': True,
+                'followup_line': [
+                    (0, 0, {
+                        'name': _('Friendly reminder'), 'delay': 7, 'send_email': True, 'send_letter': False,
+                        'email_template_id': templates[0].id if templates[0] else False,
+                    }),
+                    (0, 0, {
+                        'name': _('Second reminder'), 'delay': 21, 'send_email': True, 'send_letter': True,
+                        'email_template_id': templates[1].id if templates[1] else False,
+                    }),
+                    (0, 0, {
+                        'name': _('Final notice'), 'delay': 45, 'send_email': True, 'send_letter': True,
+                        'manual_action': True, 'manual_action_note': _('Call the customer about the overdue '
+                                                                        'invoices.'),
+                        'email_template_id': templates[2].id if templates[2] else False,
+                    }),
+                ],
+            })
+
+    def action_open_partners(self):
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('om_account_followup.action_customer_followup')
+        action['domain'] = [('followup_plan_id', '=', self.id)]
+        action['context'] = {'search_default_filter_action_needed': False}
+        return action
+
     @api.model
     def _cron_send_followups(self):
-        """ Monthly job: process the follow-ups of the plans sending them automatically. """
+        """ Daily job: send the reminders that are due for the plans sending them automatically. """
         today = fields.Date.context_today(self)
         for followup in self.search([('auto_send', '=', True)]):
-            if followup.last_auto_send and (
-                    (followup.last_auto_send.year, followup.last_auto_send.month) == (today.year, today.month)):
+            if followup.last_auto_send == today:
                 continue
             wizard = self.env['followup.print'].with_user(followup.auto_user_id).with_company(followup.company_id)
             wizard.with_context(followup_automatic=True).create({

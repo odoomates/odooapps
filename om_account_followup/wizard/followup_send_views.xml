@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_followup_send_form" model="ir.ui.view">
+        <field name="name">followup.send.form</field>
+        <field name="model">followup.send</field>
+        <field name="arch" type="xml">
+            <form string="Send Reminder">
+                <field name="partner_count" invisible="1"/>
+                <div class="alert alert-warning" role="alert" invisible="not warning">
+                    <field name="warning" class="text-break" style="white-space: pre-line;"/>
+                </div>
+                <group>
+                    <group>
+                        <field name="partner_ids" widget="many2many_tags" invisible="partner_count == 1"
+                               options="{'no_create': True}"/>
+                        <field name="partner_ids" widget="many2many_tags" readonly="1"
+                               invisible="partner_count != 1" string="Customer"/>
+                        <field name="level_id" invisible="partner_count != 1" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="send_email"/>
+                        <field name="print_letter"/>
+                        <field name="attach_invoices" invisible="not send_email"/>
+                    </group>
+                </group>
+                <group invisible="not send_email">
+                    <field name="template_id" options="{'no_create': True}"/>
+                    <field name="recipient_ids" widget="many2many_tags_email" invisible="partner_count != 1"
+                           options="{'no_create': True}"/>
+                    <field name="subject" invisible="partner_count != 1" placeholder="Subject"/>
+                </group>
+                <field name="body" invisible="not send_email or partner_count != 1" class="oe-bordered-editor"
+                       options="{'style-inline': true}"/>
+                <p class="text-muted" invisible="partner_count == 1 or not send_email">
+                    Each customer receives the email of the template, with its own overdue invoices.
+                </p>
+                <footer>
+                    <button name="action_send" type="object" string="Send" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_followup_send" model="ir.actions.act_window">
+        <field name="name">Send Reminder</field>
+        <field name="res_model">followup.send</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_user')), (4, ref('account.group_account_manager'))]"/>
+    </record>
+
+</odoo>

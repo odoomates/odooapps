@@ -2,24 +2,80 @@
 <odoo>
     <data>
 
+        <!-- the Follow-ups screen: the customers with something open, what to do with them today -->
+
         <record id="customer_followup_tree" model="ir.ui.view">
-            <field name="name">res.partner.followup.inherit.list</field>
+            <field name="name">res.partner.followup.list</field>
             <field name="model">res.partner</field>
             <field name="priority" eval="20"/>
             <field name="arch" type="xml">
-                <list string="Customer Followup" create="false" delete="false">
-                    <field name="display_name"/>
-                    <field name="payment_next_action_date"/>
-                    <field name="payment_next_action"/>
+                <list string="Follow-ups" create="false" delete="false" sample="1"
+                      decoration-muted="followup_status in ('excluded', 'no_action_needed')">
+                    <header>
+                        <button name="action_followup_send" type="object" string="Send Reminders"
+                                class="btn-primary"
+                                groups="account.group_account_user,account.group_account_manager"/>
+                        <button name="action_followup_print_statement" type="object" string="Print Statements"/>
+                        <button name="action_followup_exclude" type="object" string="Exclude"
+                                groups="account.group_account_user,account.group_account_manager"/>
+                    </header>
+                    <field name="display_name" string="Customer"/>
+                    <field name="followup_status" widget="badge"
+                           decoration-danger="followup_status == 'in_need_of_action'"
+                           decoration-info="followup_status == 'with_overdue_invoices'"
+                           decoration-warning="followup_status == 'promise'"/>
+                    <field name="latest_followup_level_id" string="Last Reminder" optional="show"/>
+                    <field name="followup_level_due_id" optional="show"/>
+                    <field name="followup_next_date" optional="show"/>
+                    <field name="payment_earliest_due_date" string="Oldest Due Date" optional="show"/>
+                    <field name="followup_promise_date" optional="hide"/>
+                    <field name="payment_responsible_id" widget="many2one_avatar_user" optional="show"/>
+                    <field name="followup_plan_id" optional="hide"/>
+                    <field name="followup_currency_id" column_invisible="1"/>
+                    <field name="payment_amount_overdue" widget="monetary" sum="Total"
+                           options="{'currency_field': 'followup_currency_id'}"/>
+                    <field name="payment_amount_due" widget="monetary" sum="Total"
+                           options="{'currency_field': 'followup_currency_id'}"/>
                     <field name="user_id" column_invisible="1"/>
                     <field name="country_id" column_invisible="1"/>
                     <field name="parent_id" column_invisible="1"/>
-                    <field name="payment_responsible_id"/>
-                    <field name="payment_earliest_due_date"/>
-                    <field name="latest_followup_level_id"/>
-                    <field name="payment_amount_overdue"/>
-                    <field name="payment_amount_due"/>
                 </list>
+            </field>
+        </record>
+
+        <record id="customer_followup_kanban" model="ir.ui.view">
+            <field name="name">res.partner.followup.kanban</field>
+            <field name="model">res.partner</field>
+            <field name="priority" eval="20"/>
+            <field name="arch" type="xml">
+                <kanban create="false" sample="1">
+                    <field name="followup_currency_id"/>
+                    <templates>
+                        <t t-name="card">
+                            <div class="d-flex justify-content-between">
+                                <field name="display_name" class="fw-bold"/>
+                                <field name="followup_status" widget="badge"
+                                       decoration-danger="followup_status == 'in_need_of_action'"
+                                       decoration-info="followup_status == 'with_overdue_invoices'"
+                                       decoration-warning="followup_status == 'promise'"/>
+                            </div>
+                            <div class="d-flex justify-content-between mt-1">
+                                <span class="text-muted">Overdue</span>
+                                <field name="payment_amount_overdue" widget="monetary"
+                                       options="{'currency_field': 'followup_currency_id'}"/>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Due</span>
+                                <field name="payment_amount_due" widget="monetary"
+                                       options="{'currency_field': 'followup_currency_id'}"/>
+                            </div>
+                            <footer class="pt-1">
+                                <field name="latest_followup_level_id" class="text-muted"/>
+                                <field name="payment_responsible_id" widget="many2one_avatar_user" class="ms-auto"/>
+                            </footer>
+                        </t>
+                    </templates>
+                </kanban>
             </field>
         </record>
 
@@ -35,126 +91,50 @@
         </record>
 
         <record id="customer_followup_search_view" model="ir.ui.view">
-            <field name="name">Search</field>
+            <field name="name">res.partner.followup.search</field>
             <field name="model">res.partner</field>
+            <field name="mode">primary</field>
             <field name="inherit_id" ref="base.view_res_partner_filter"/>
             <field name="arch" type="xml">
-                <xpath expr="//group[1]" position="after">
+                <xpath expr="//search" position="inside">
+                    <field name="payment_responsible_id"/>
+                    <field name="followup_plan_id"/>
+                    <separator/>
+                    <filter string="Action Needed" name="filter_action_needed"
+                            domain="[('followup_status', '=', 'in_need_of_action')]"/>
+                    <filter string="Waiting for the Next Reminder" name="filter_reminded"
+                            domain="[('followup_status', '=', 'with_overdue_invoices')]"/>
+                    <filter string="Promise to Pay" name="filter_promise"
+                            domain="[('followup_status', '=', 'promise')]"/>
+                    <filter string="Excluded" name="filter_excluded"
+                            domain="[('followup_status', '=', 'excluded')]"/>
+                    <separator/>
+                    <filter string="Overdue" name="credits" domain="[('payment_amount_overdue', '>', 0.0)]"/>
+                    <separator/>
+                    <filter string="My Follow-ups" name="my" domain="[('payment_responsible_id', '=', uid)]"/>
+                    <filter string="No Responsible" name="no_responsibe"
+                            domain="[('payment_responsible_id', '=', False)]"/>
                     <group>
-                        <filter string="Partners with Overdue Credits" domain="[('payment_amount_overdue', '>', 0.0)]"
-                                name="credits"/>
-                        <separator/>
-                        <filter string="Follow-ups To Do"
-                                domain="[('payment_next_action_date', '&lt;=', time.strftime('%%Y-%%m-%%d')), ('payment_amount_overdue', '>', 0.0)]"
-                                name="todo"/>
-                        <separator/>
-                        <filter string="No Responsible" name="no_responsibe" domain="[('payment_responsible_id', '=', False)]"/>
-                        <filter string="My Follow-ups" domain="[('payment_responsible_id','=', uid)]" name="my"/>
+                        <filter string="Follow-up Responsible" name="responsibe"
+                                context="{'group_by': 'payment_responsible_id'}"/>
+                        <filter string="Follow-up Plan" name="group_plan"
+                                context="{'group_by': 'followup_plan_id'}"/>
                     </group>
-                </xpath>
-                <xpath expr="//group[1]" position="inside">
-                    <filter string="Follow-up Responsible" name="responsibe"
-                            context="{'group_by':'payment_responsible_id'}"/>
-                    <filter string="Followup Level" name="followup_level"
-                            context="{'group_by':'latest_followup_level_id'}"/>
                 </xpath>
             </field>
         </record>
 
         <record id="action_customer_followup" model="ir.actions.act_window">
-            <field name="name">Manual Follow-Ups</field>
-            <field name="view_id" ref="customer_followup_tree"/>
+            <field name="name">Follow-ups</field>
             <field name="res_model">res.partner</field>
-            <field name="view_mode">list,form</field>
-            <field name="domain">[('payment_amount_due', '>', 0.0)]</field>
-            <field name="context">{'search_default_todo': True}</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="domain">[('payment_amount_due', '!=', 0.0)]</field>
+            <field name="context">{'search_default_filter_action_needed': True, 'res_partner_search_mode': 'customer'}</field>
             <field name="search_view_id" ref="customer_followup_search_view"/>
-        </record>
-
-        <record id="view_partner_inherit_followup_form" model="ir.ui.view">
-            <field name="name">res.partner.followup.form.inherit</field>
-            <field name="inherit_id" ref="base.view_partner_form"/>
-            <field name="model">res.partner</field>
-            <field name="arch" type="xml">
-                <xpath expr="//page[@name='sales_purchases']" position="after">
-                    <page string="Payment Follow-up"
-                          groups="account.group_account_invoice"
-                          name="followup_tab">
-
-                        <div class="oe_right"
-                             name="followup_button">
-                            <button name="do_button_print" type="object"
-                                    string="Print Overdue Payments"
-                                    groups="account.group_account_user,account.group_account_manager"
-                                    help="Print overdue payments report independent of follow-up line"
-                                    invisible="payment_amount_due &lt;= 0.0"/>
-                            <button name="do_partner_mail" type="object"
-                                    string="Send Overdue Email"
-                                    groups="account.group_account_user,account.group_account_manager"
-                                    help="If not specified by the latest follow-up level, it will send from the default email template"
-                                    invisible="payment_amount_due &lt;= 0.0"/>
-                        </div>
-
-                        <p invisible="not latest_followup_date">
-                            The
-                            <field name="latest_followup_date"
-                                   class="oe_inline"/>
-                            , the latest payment follow-up was:
-                            <field name="latest_followup_level_id"
-                                   class="oe_inline"/>
-                        </p>
-                        <group>
-                            <field name="payment_responsible_id"
-                                   placeholder="Responsible of credit collection"
-                                   class="oe_inline"/>
-                            <label for="payment_next_action"/>
-                            <div>
-                                <field name="payment_next_action_date"
-                                       class="oe_inline"/>
-                                <button name="action_done" type="object"
-                                        string="⇾ Mark as Done"
-                                        help="Click to mark the action as done."
-                                        class="oe_link"
-                                        invisible="not payment_next_action_date"
-                                        groups="account.group_account_user,account.group_account_manager"/>
-                                <field name="payment_next_action"
-                                       placeholder="Action to be taken e.g. Give a phonecall, Check if it's paid, ..."/>
-                            </div>
-                        </group>
-                        <label for="payment_note" class="oe_edit_only"/>
-                        <field name="payment_note"
-                               placeholder="He said the problem was temporary and promised to pay 50%% before 15th of May, balance before 1st of July."/>
-                        <p class="oe_grey">
-                            Below is the history of the transactions of this
-                            customer.
-                        </p>
-                        <field name="unreconciled_aml_ids">
-                            <list string="Account Move line" editable="bottom"
-                                  create="false" delete="false"
-                                  decoration-danger="(not date_maturity or date_maturity &lt;= context_today().strftime('%Y-%m-%d')) and result &gt; 0">
-                                <field name="date" readonly="True"/>
-                                <field name="company_id" readonly="True"
-                                       groups="base.group_multi_company"/>
-                                <field name="move_id" readonly="True"/>
-                                <field name="date_maturity" readonly="True"/>
-                                <field name="result" readonly="True"/>
-                                <field name="followup_line_id" column_invisible="1"/>
-                            </list>
-                        </field>
-                        <group class="oe_subtotal_footer oe_right">
-                            <field name="payment_amount_due"/>
-                        </group>
-                        <div class="oe_clear"/>
-                    </page>
-                </xpath>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">Nothing to follow up</p>
+                <p>The customers with open invoices show here, with the reminders to send today.</p>
             </field>
-        </record>
-
-        <record id="action_view_customer_followup_form" model="ir.actions.act_window.view">
-            <field name="sequence" eval="2"/>
-            <field name="view_mode">form</field>
-            <field name="view_id" ref="view_partner_inherit_followup_form"/>
-            <field name="act_window_id" ref="action_customer_followup"/>
         </record>
 
         <record id="action_view_customer_followup_tree" model="ir.actions.act_window.view">
@@ -164,20 +144,33 @@
             <field name="act_window_id" ref="action_customer_followup"/>
         </record>
 
+        <record id="action_view_customer_followup_kanban" model="ir.actions.act_window.view">
+            <field name="sequence" eval="2"/>
+            <field name="view_mode">kanban</field>
+            <field name="view_id" ref="customer_followup_kanban"/>
+            <field name="act_window_id" ref="action_customer_followup"/>
+        </record>
+
         <menuitem id="om_account_followup_s"
                   action="action_customer_followup"
                   parent="menu_finance_followup"
-                  name="Do Manual Follow-Ups"
+                  name="Follow-ups"
                   sequence="1"/>
 
         <record id="action_customer_my_followup" model="ir.actions.act_window">
-            <field name="name">My Follow-Ups</field>
-            <field name="view_id" ref="customer_followup_tree"/>
+            <field name="name">My Follow-ups</field>
             <field name="res_model">res.partner</field>
-            <field name="view_mode">list,form</field>
-            <field name="domain">[('payment_amount_due', '>', 0.0)]</field>
-            <field name="context">{'search_default_todo': True, 'search_default_my': True}</field>
+            <field name="view_mode">list,kanban,form</field>
+            <field name="domain">[('payment_amount_due', '!=', 0.0)]</field>
+            <field name="context">{'search_default_filter_action_needed': True, 'search_default_my': True}</field>
             <field name="search_view_id" ref="customer_followup_search_view"/>
+        </record>
+
+        <record id="action_view_customer_my_followup_tree" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1"/>
+            <field name="view_mode">list</field>
+            <field name="view_id" ref="customer_followup_tree"/>
+            <field name="act_window_id" ref="action_customer_my_followup"/>
         </record>
 
         <menuitem id="menu_sale_followup"
@@ -185,6 +178,94 @@
                   sequence="10"
                   action="action_customer_my_followup"
                   groups="account.group_account_invoice"/>
+
+        <!-- the Payment Follow-up tab of the customers -->
+
+        <record id="view_partner_inherit_followup_form" model="ir.ui.view">
+            <field name="name">res.partner.followup.form.inherit</field>
+            <field name="inherit_id" ref="base.view_partner_form"/>
+            <field name="model">res.partner</field>
+            <field name="arch" type="xml">
+                <xpath expr="//page[@name='sales_purchases']" position="after">
+                    <page string="Payment Follow-up" name="followup_tab" groups="account.group_account_invoice"
+                          invisible="not is_company and parent_id">
+                        <div class="d-flex flex-wrap gap-2 mb-3" name="followup_button">
+                            <button name="action_followup_send" type="object" string="Send Reminder"
+                                    class="btn btn-primary"
+                                    groups="account.group_account_user,account.group_account_manager"
+                                    invisible="payment_amount_due &lt;= 0.0 or followup_excluded"/>
+                            <button name="action_followup_print_statement" type="object"
+                                    string="Print Statement" class="btn btn-secondary"
+                                    invisible="payment_amount_due == 0.0"/>
+                            <button name="action_followup_log_call" type="object" string="Log a Call"
+                                    class="btn btn-secondary"/>
+                            <button name="action_followup_open_items" type="object" string="Open Items"
+                                    class="btn btn-secondary" invisible="payment_amount_due == 0.0"/>
+                        </div>
+                        <group>
+                            <group string="Follow-up" name="followup_status_group">
+                                <field name="followup_status" widget="badge"
+                                       decoration-danger="followup_status == 'in_need_of_action'"
+                                       decoration-info="followup_status == 'with_overdue_invoices'"
+                                       decoration-warning="followup_status == 'promise'"/>
+                                <field name="followup_plan_id" placeholder="Default plan"
+                                       options="{'no_create': True}"/>
+                                <field name="latest_followup_level_id" string="Last Reminder"
+                                       invisible="not latest_followup_level_id"/>
+                                <field name="latest_followup_date" invisible="not latest_followup_date"/>
+                                <field name="followup_level_due_id" invisible="not followup_level_due_id"/>
+                                <field name="followup_next_date" invisible="not followup_next_date"/>
+                                <field name="payment_responsible_id" widget="many2one_avatar_user"
+                                       placeholder="In charge of the collection"/>
+                            </group>
+                            <group string="Amounts" name="followup_amounts_group">
+                                <field name="followup_currency_id" invisible="1"/>
+                                <field name="payment_amount_due" widget="monetary"
+                                       options="{'currency_field': 'followup_currency_id'}"/>
+                                <field name="payment_amount_overdue" widget="monetary"
+                                       options="{'currency_field': 'followup_currency_id'}"/>
+                                <field name="payment_earliest_due_date" string="Oldest Due Date"
+                                       invisible="not payment_earliest_due_date"/>
+                            </group>
+                            <group string="Promise to Pay" name="followup_promise_group">
+                                <field name="followup_promise_date"/>
+                                <field name="followup_promise_amount" invisible="not followup_promise_date"/>
+                                <field name="payment_note" string="Note"
+                                       placeholder="e.g. Will pay half before the 15th, the rest next month"/>
+                                <button name="action_followup_clear_promise" type="object" string="Clear Promise"
+                                        class="btn-link p-0" colspan="2" invisible="not followup_promise_date"/>
+                            </group>
+                            <group string="Exclusion" name="followup_exclusion_group">
+                                <field name="followup_excluded"/>
+                                <field name="followup_exclusion_reason" invisible="not followup_excluded"
+                                       placeholder="e.g. Payment plan agreed with the customer"/>
+                            </group>
+                        </group>
+                        <field name="unreconciled_aml_ids" readonly="1">
+                            <list string="Open Items" create="false" delete="false"
+                                  decoration-muted="followup_disputed"
+                                  decoration-danger="not followup_disputed and (not date_maturity or date_maturity &lt;= context_today().strftime('%Y-%m-%d')) and result &gt; 0">
+                                <field name="date"/>
+                                <field name="company_id" groups="base.group_multi_company"/>
+                                <field name="move_id"/>
+                                <field name="date_maturity"/>
+                                <field name="followup_line_id" optional="show"/>
+                                <field name="followup_date" optional="hide"/>
+                                <field name="followup_disputed" optional="show"/>
+                                <field name="result" sum="Total"/>
+                            </list>
+                        </field>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+
+        <record id="action_view_customer_followup_form" model="ir.actions.act_window.view">
+            <field name="sequence" eval="3"/>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_partner_inherit_followup_form"/>
+            <field name="act_window_id" ref="action_customer_followup"/>
+        </record>
 
     </data>
 </odoo>

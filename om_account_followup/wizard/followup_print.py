@@ -1,6 +1,4 @@
-import datetime
 from odoo import api, fields, models, _
-from odoo.tools import SQL
 from markupsafe import Markup
 
 
@@ -12,18 +10,14 @@ class FollowupPrint(models.TransientModel):
         if self.env.context.get('active_model',
                                 'ir.ui.menu') == 'followup.followup':
             return self.env.context.get('active_id', False)
-        company_id = self.env.company.id
-        followp_id = self.env['followup.followup'].search(
-            [('company_id', '=', company_id)], limit=1)
-        return followp_id or False
+        return self.env['followup.followup']._get_default_plan() or False
 
     date = fields.Date('Follow-up Sending Date', required=True,
                        help="This field allow you to select a forecast date "
                             "to plan your follow-ups",
                        default=fields.Date.context_today)
-    followup_id = fields.Many2one('followup.followup', 'Follow-Up',
-                                  required=True, readonly=True,
-                                  default=_get_followup)
+    followup_id = fields.Many2one('followup.followup', 'Plan', required=True, default=_get_followup,
+                                  domain="[('company_id', 'in', allowed_company_ids)]")
     partner_ids = fields.Many2many('followup.stat.by.partner',
                                    'partner_stat_rel', 'osv_memory_id',
                                    'partner_id', 'Partners', required=True)
@@ -87,19 +81,20 @@ class FollowupPrint(models.TransientModel):
                      'followup_date': date})
 
     def clear_manual_actions(self, partner_list):
-        partner_list_ids = [partner.partner_id.id for partner in self.env[
-            'followup.stat.by.partner'].browse(partner_list)]
-        ids = self.env['res.partner'].search(
-            ['&', ('id', 'not in', partner_list_ids), '|',
-             ('payment_responsible_id', '!=', False),
-             ('payment_next_action_date', '!=', False)])
-
-        partners_to_clear = []
-        for part in ids:
-            if not part.unreconciled_aml_ids:
-                partners_to_clear.append(part.id)
-                part.action_done()
-        return len(partners_to_clear)
+        """ The follow-up activities of the customers who have paid everything are done """
+        partner_list_ids = self.env['followup.stat.by.partner'].browse(partner_list).partner_id.ids
+        activity_type = self.env.ref('om_account_followup.mail_activity_type_followup')
+        activities = self.env['mail.activity'].search([
+            ('res_model', '=', 'res.partner'),
+            ('activity_type_id', '=', activity_type.id),
+            ('res_id', 'not in', partner_list_ids),
+        ])
+        partners = self.env['res.partner'].browse(activities.mapped('res_id')).exists()
+        paid = partners.filtered(lambda partner: partner.payment_amount_due <= 0)
+        done = activities.filtered(lambda activity: activity.res_id in paid.ids)
+        if done:
+            done.action_feedback(feedback=_('Nothing is due any more.'))
+        return len(paid)
 
     def do_process(self):
         self = self.with_company(self.company_id)
@@ -138,58 +133,29 @@ class FollowupPrint(models.TransientModel):
         }
 
     def _get_partners_followp(self):
-        data = self
-        company_id = data.company_id.id
-        context = self.env.context
-        self.env['account.move.line'].flush_model([
-            'account_id', 'company_id', 'date', 'date_maturity', 'debit',
-            'followup_line_id', 'full_reconcile_id', 'partner_id',
-        ])
-        self.env.cr.execute(SQL(
-            '''SELECT
-                    l.partner_id,
-                    l.followup_line_id,
-                    l.date_maturity,
-                    l.date, l.id
-                FROM account_move_line AS l
-                LEFT JOIN account_account AS a
-                ON (l.account_id=a.id)
-                WHERE (l.full_reconcile_id IS NULL)
-                AND a.account_type = 'asset_receivable'
-                AND (l.partner_id is NOT NULL)
-                AND (l.debit > 0)
-                AND (l.company_id = %s)
-                ORDER BY l.date''', company_id))
-        move_lines = self.env.cr.fetchall()
-        old = None
-        fups = {}
-        fup_id = context.get('followup_id') or data.followup_id.id
-        current_date = fields.Date.to_date(context.get('date') or data.date)
-        levels = self.env['followup.line'].search([('followup_id', '=', fup_id)], order='delay')
-        for level in levels:
-            delay = datetime.timedelta(days=level.delay)
-            fups[old] = (current_date - delay, level.id)
-            old = level.id
+        """ The customers of the plan whose reminders are due, and the level each open item reaches.
 
+        The excluded customers and the ones who promised to pay later are left alone.
+        """
+        company = self.company_id
+        date = fields.Date.to_date(self.env.context.get('date') or self.date)
+        plan = self.env['followup.followup'].browse(self.env.context.get('followup_id')) or self.followup_id
+        Partner = self.env['res.partner'].with_company(company)
+        lines = self.env['account.move.line'].sudo().search(
+            self.env['account.move.line']._followup_open_domain(company))
+        partners = Partner.browse(lines.partner_id.ids).filtered(
+            lambda partner: partner._followup_plan() == plan
+            and not partner.followup_excluded
+            and not (partner.followup_promise_date and partner.followup_promise_date >= date))
+        state = partners._followup_state(date)
+        stat = self.env['followup.stat.by.partner']
         partner_list = []
         to_update = {}
-
-        for partner_id, followup_line_id, date_maturity, date, id in \
-                move_lines:
-            if not partner_id:
+        for partner, values in state.items():
+            if not values['lines_due']:
                 continue
-            if followup_line_id not in fups:
-                continue
-            stat_line_id = self.env['followup.stat.by.partner']._get_stat_id(partner_id, company_id)
-            if date_maturity:
-                if date_maturity <= fups[followup_line_id][0]:
-                    if stat_line_id not in partner_list:
-                        partner_list.append(stat_line_id)
-                    to_update[str(id)] = {'level': fups[followup_line_id][1],
-                                          'partner_id': stat_line_id}
-            elif date and date <= fups[followup_line_id][0]:
-                if stat_line_id not in partner_list:
-                    partner_list.append(stat_line_id)
-                to_update[str(id)] = {'level': fups[followup_line_id][1],
-                                      'partner_id': stat_line_id}
+            stat_line_id = stat._get_stat_id(partner.id, company.id)
+            partner_list.append(stat_line_id)
+            for line, level in values['lines_due'].items():
+                to_update[str(line.id)] = {'level': level.id, 'partner_id': stat_line_id}
         return {'partner_ids': partner_list, 'to_update': to_update}

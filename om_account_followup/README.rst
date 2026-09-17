@@ -7,37 +7,49 @@ This Module will add customer follow up management in Odoo 20 Community Edition
 Features
 ========
 
-* Define one follow-up plan per company, with as many follow-up levels as you
-  need.
+* A Follow-ups screen listing the customers with open invoices and what to do
+  today: Action Needed, Overdue (waiting for the next reminder), Promise to
+  Pay or Excluded, with the reminder due, the next reminder date, the overdue
+  and due amounts and the responsible, in a list or in cards.
+* Send a reminder from the screen or from the customer: a dialog previews the
+  email for one customer, lets you edit it, choose the recipients, attach the
+  PDF of the overdue invoices and print the statement, or sends the reminders
+  of several customers at once.
+* The reminder emails list the overdue invoices with a link to each invoice on
+  the customer portal, where the customer can download and pay it.
+* A Customer Statement PDF with all the open items, the days overdue, the total
+  and overdue amounts, the ageing (not due, 1-30, 31-60, 61-90 and over 90
+  days) and the bank details of the company, printed from the customers.
+* Several follow-up plans per company: the customers follow the default plan,
+  or the plan chosen on their form, e.g. a lenient plan for key accounts. A new
+  company gets a plan with a friendly reminder, a second reminder and a final
+  notice.
 * Set on each level the number of days after the due date, the printed
   message, whether an email is sent, whether a letter is printed and whether a
-  manual action is assigned.
-* Choose the email template and the responsible user assigned by a level.
-* Process the overdue customers in one step: the follow-up level of the
-  unreconciled receivable items is updated, the emails are sent, the letters
-  are gathered in one PDF and the manual actions are assigned.
-* Get a summary at the end of the processing with the number of emails sent,
-  the addresses that were missing, the letters to print and the manual actions
-  per responsible.
-* Let the follow-ups run by themselves: tick Send Automatically Every Month on
-  the plan and the monthly scheduled action processes it in the name of the
+  manual action is scheduled, with its email template and responsible.
+* An invoice overdue on several levels gets the reminder of the highest level
+  reached.
+* The manual actions are activities of the follow-up responsible of the
+  customer, or of the responsible of the level; they are marked as done once
+  the customer has paid everything.
+* Exclude a customer from the follow-ups, with a reason.
+* Record a promise to pay, with its date and amount: no reminder is sent until
+  that date.
+* Flag an invoice as disputed, with a reason: it is left out of the reminders,
+  of the overdue amounts and of the analysis until the dispute is settled.
+* Let the reminders go out by themselves: tick Send Automatically on the plan
+  and the daily scheduled action sends the reminders due in the name of the
   user selected in Send As. Letters are not printed by the scheduled action.
-* Follow the overdue amounts on the customer form, in a Payment Follow-up tab
-  showing the unreconciled entries, the latest follow-up level and date, the
-  next action, its date and its responsible.
-* Print the overdue payments report or send the overdue email for one customer
-  from the buttons of that tab, and clear the next action with Mark as Done.
-* Browse the customers to remind with the filters on overdue credits,
-  follow-ups to do, unassigned customers and your own follow-ups.
-* See and set the follow-up level and the follow-up date on the journal items.
-* Print the Follow-up Report PDF for the selected customers.
-* A message is posted on the customer when a letter is going to be sent and
-  when a user becomes responsible for the next action.
-* The follow-up plans and the follow-up statistics are restricted to the
-  allowed companies by record rules.
-* Billing users can read the follow-up levels, accounting managers can create
-  and change them.
-* Demo data is installed on a demo database.
+* Send All Reminders processes the customers of a plan in one step: the levels
+  are updated, the emails sent, the letters gathered in one PDF and the manual
+  actions scheduled, with a summary at the end.
+* The Follow-up Analysis shows, per customer, the amount due, the amount
+  overdue and the level reached, in graph, pivot and list views.
+* Only posted invoices are followed up; the amounts follow the active company.
+* Billing users can read the follow-ups and the plans, accountants can send the
+  reminders, accounting managers can create and change the plans.
+* The follow-up plans and statistics are restricted to the allowed companies
+  by record rules.
 
 Installation
 ============
@@ -62,30 +74,30 @@ clicking on the upgrade button.
 Configuration
 =============
 
-Go to Accounting > Configuration > Invoicing > Follow-up Levels and define the
-levels of the plan of your company: the due days, the message to print, and
-what has to happen at that level (email, letter, manual action).
+Go to Accounting > Configuration > Invoicing > Follow-up Plans. Each company
+has a default plan: adapt its levels (the due days, the message to print, the
+email template, and what happens at that level), or add other plans and choose
+them on the customers who need them.
 
-Only one plan per company is allowed.
-
-If you want the follow-ups to be processed every month without any manual
-step, tick Send Automatically Every Month on the plan and select the user in
-the Send As field.
+To send the reminders every day without any manual step, tick Send
+Automatically on the plan and select the user in the Send As field.
 
 
 Usage
 =====
 
-Go to Accounting > Follow-Ups > Send Letters and Emails, check the sending
-date, select the customers to remind and process them. The summary screen
-shows what was done and lets you print the letters.
+Go to Accounting > Follow-Ups > Follow-ups. The customers who need a reminder
+today are listed first: open one, or select several, and click Send Reminder(s).
+Print Statements prints their customer statements.
 
-Accounting > Follow-Ups > Do Manual Follow-Ups lists the customers with
-overdue credits, and Accounting > Follow-Ups > My Follow-Ups lists the ones you
-are responsible for.
+On the Payment Follow-up tab of a customer, see where the customer stands, send
+a reminder, print the statement, log a call, record a promise to pay or
+exclude the customer. The Disputed box of the Other Info tab of an invoice
+leaves it out of the reminders.
 
-A single customer can also be followed up from the Payment Follow-up tab of
-its form.
+Accounting > Follow-Ups > Send All Reminders processes all the customers of a
+plan at once, and Accounting > Follow-Ups > My Follow-Ups lists the customers
+you are responsible for.
 
 
 Credits
