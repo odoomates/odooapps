@@ -6,104 +6,193 @@
         <field name="model">res.config.settings</field>
         <field name="priority">20</field>
         <field name="arch" type="xml">
-            <form string="odooApp Customize Settings" class="oe_form_configuration">
-                <div class="mt16 o_settings_container" name="data-clean">
-                    <span>
-                        <h2>Data Cleaning (Be careful to do that!)</h2>
-                        <h2>
-                            Data is deleted direcly from the database table using queries, once you done, it is not
-                            reversible !
-                        </h2>
-                    </span>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Remove All</span>
-                        <button string="Delete All Transactions Except Master Data" type="object" name="action_remove_all" confirm="Please confirm to delete the data?" class="oe_highlight"/>
+            <form string="Data Cleaning" create="false">
+                <sheet>
+                    <div class="alert alert-danger" role="alert">
+                        <strong>The data are deleted for good.</strong>
+                        They are removed from the database tables directly, for all the companies, and nothing can
+                        restore them. Make a backup of the database first.
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Sale</span>
-                        <button string="Delete All Sales Order" type="object" name="action_remove_sales"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Everything</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">All the transactions, the master data kept</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_all" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-danger"
+                                context="{'om_removal': 'all'}" invisible="not om_remove_count_all"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">POS</span>
-                        <button string="Delete All POS Order" type="object" name="action_remove_pos"
-                                confirm="Please confirm to delete the select data?"
-                                class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Sales</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Sales orders</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_sales" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'sales'}" invisible="not om_remove_count_sales"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Purchase</span>
-                        <button string="Delete All Purchase Order and Requisition" type="object" name="action_remove_purchase"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Point of Sale orders and sessions</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_pos" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'pos'}" invisible="not om_remove_count_pos"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Expense</span>
-                        <button string="Delete All Expense and Sheet" type="object" name="action_remove_expense"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Purchases and Expenses</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Purchase orders and requisitions</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_purchase" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'purchase'}" invisible="not om_remove_count_purchase"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">MRP</span>
-                        <button string="Delete All Manufacturing Order" type="object" name="action_remove_mrp"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All BOM" type="object" name="action_remove_mrp_bom"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Expenses and expense reports</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_expense" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'expense'}" invisible="not om_remove_count_expense"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Inventory</span>
-                        <button string="Delete All Move/Picking/Package/Lot" type="object" name="action_remove_inventory"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Manufacturing</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Manufacturing orders</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_mrp" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'mrp'}" invisible="not om_remove_count_mrp"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">
-                            Accounting
-                            <span title="Values set here are company-specific." groups="base.group_multi_company"/>
-                        </span>
-                        <button string="Delete All Voucher/Invoice/Bill" type="object" name="action_remove_account"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Clean and reset Account Chart" type="object" name="action_remove_account_chart"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Bills of materials</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_mrp_bom" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'mrp_bom'}" invisible="not om_remove_count_mrp_bom"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Project</span>
-                        <button string="Delete All Project/Task/Forecast" type="object" name="action_remove_project"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Inventory</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Moves, transfers, packages and lots</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_inventory" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'inventory'}" invisible="not om_remove_count_inventory"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Quality</span>
-                        <button string="Delete All Quality" type="object" name="action_remove_quality"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All Quality Setting" type="object" name="action_remove_quality_setting"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Accounting</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Journal entries, invoices, bills and payments</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_account" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'account'}" invisible="not om_remove_count_account"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Website And Blog</span>
-                        <button string="Delete All Website/Blog" type="object" name="action_remove_website"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Chart of accounts, taxes and journals</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_account_chart" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'account_chart'}" invisible="not om_remove_count_account_chart"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Base Models</span>
-                        <button string="Delete All Product" type="object" name="action_remove_product"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All Product Attribute" type="object" name="action_remove_product_attribute"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All Message" type="object" name="action_remove_message"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Reset Category And Location Complete Name" type="object"
-                                name="reset_cat_loc_name" class="oe_highlight"/>
+                    <h4 class="mt-4 mb-2">Projects</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Projects and tasks</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_project" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'project'}" invisible="not om_remove_count_project"/>
                     </div>
+                    <h4 class="mt-4 mb-2">Quality</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Quality checks and alerts</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_quality" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'quality'}" invisible="not om_remove_count_quality"/>
+                    </div>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Quality control points</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_quality_setting" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'quality_setting'}" invisible="not om_remove_count_quality_setting"/>
+                    </div>
+                    <h4 class="mt-4 mb-2">Website</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Website pages and blog posts</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_website" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'website'}" invisible="not om_remove_count_website"/>
+                    </div>
+                    <h4 class="mt-4 mb-2">Master Data</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Products</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_product" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'product'}" invisible="not om_remove_count_product"/>
+                    </div>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Product attributes</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_product_attribute" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'product_attribute'}" invisible="not om_remove_count_product_attribute"/>
+                    </div>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Messages, followers and activities</div>
+                        <div class="text-muted text-nowrap">
+                            <field name="om_remove_count_message" class="oe_inline"/> records
+                        </div>
+                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
+                                context="{'om_removal': 'message'}" invisible="not om_remove_count_message"/>
+                    </div>
+                    <h4 class="mt-4 mb-2">Tools</h4>
+                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
+                        <div class="flex-grow-1">Recompute the full names of the product categories and locations</div>
+                        <button name="reset_cat_loc_name" type="object" string="Recompute" class="btn btn-sm btn-secondary"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_data_remove_wizard_form" model="ir.ui.view">
+        <field name="name">om.data.remove.wizard.form</field>
+        <field name="model">om.data.remove.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Delete Data">
+                <div class="alert alert-danger" role="alert">
+                    <strong><field name="record_count" class="oe_inline"/> records</strong> will be deleted for good,
+                    for all the companies. This cannot be undone.
                 </div>
+                <group>
+                    <field name="removal"/>
+                    <field name="model_names"/>
+                    <field name="confirmation" placeholder="Type DELETE to confirm"/>
+                </group>
+                <footer>
+                    <button name="action_remove" type="object" string="Delete" class="btn-danger" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
             </form>
         </field>
     </record>
 
     <record id="action_remove_data" model="ir.actions.act_window">
-        <field name="name">Remove Data</field>
-        <field name="type">ir.actions.act_window</field>
+        <field name="name">Data Cleaning</field>
         <field name="res_model">res.config.settings</field>
         <field name="view_mode">form</field>
         <field name="view_id" ref="view_remove_data"/>
@@ -111,7 +200,7 @@
 
     <menuitem
             id="menu_remove_data"
-            name="Remove Data"
+            name="Data Cleaning"
             action="action_remove_data"
             parent="base.menu_administration"
             sequence="1"

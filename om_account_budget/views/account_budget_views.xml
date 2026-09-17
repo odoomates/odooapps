@@ -86,13 +86,13 @@
             <form string="Budget">
                 <header>
                     <button string="Confirm" name="action_budget_confirm" type="object"
-                            invisible="state != 'draft'" class="oe_highlight"/>
+                            invisible="state != 'draft'" class="btn-primary"/>
                     <button string="Approve" name="action_budget_validate" type="object"
                             invisible="state != 'confirm'" groups="account.group_account_manager"
-                            class="oe_highlight"/>
+                            class="btn-primary"/>
                     <button string="Done" name="action_budget_done" type="object"
                             invisible="state != 'validate'" groups="account.group_account_manager"
-                            class="oe_highlight"/>
+                            class="btn-primary"/>
                     <button string="Reset to Draft" name="action_budget_draft" type="object"
                             invisible="state not in ('confirm', 'cancel')"/>
                     <button string="Split by Period" name="action_open_split_wizard" type="object"
@@ -162,36 +162,43 @@
                                     <field name="is_over_budget" column_invisible="1"/>
                                 </list>
                                 <form string="Budget Line">
-                                    <group>
+                                    <sheet>
                                         <group>
-                                            <field name="currency_id" invisible="1"/>
-                                            <field name="position_id"/>
-                                            <field name="analytic_account_id"/>
-                                            <field name="budget_type" widget="radio" options="{'horizontal': true}"/>
-                                            <field name="planned_amount"/>
+                                            <group>
+                                                <field name="currency_id" invisible="1"/>
+                                                <field name="position_id"/>
+                                                <field name="analytic_account_id"/>
+                                                <field name="budget_type" widget="radio" options="{'horizontal': true}"/>
+                                                <field name="planned_amount"/>
+                                            </group>
+                                            <group>
+                                                <field name="date_from" string="Period" widget="daterange"
+                                                       options="{'end_date_field': 'date_to', 'always_range': True}"/>
+                                                <field name="date_to" invisible="1"/>
+                                                <field name="distribution" widget="radio"/>
+                                                <field name="planned_date" invisible="distribution != 'at_date'"
+                                                       required="distribution == 'at_date'"/>
+                                            </group>
                                         </group>
-                                        <group>
-                                            <field name="date_from" string="Period" widget="daterange"
-                                                   options="{'end_date_field': 'date_to', 'always_range': True}"/>
-                                            <field name="date_to" invisible="1"/>
-                                            <field name="distribution" widget="radio"/>
-                                            <field name="planned_date" invisible="distribution != 'at_date'"
-                                                   required="distribution == 'at_date'"/>
-                                        </group>
-                                    </group>
+                                    </sheet>
                                 </form>
                             </field>
-                            <group class="oe_subtotal_footer" invisible="state == 'draft'">
-                                <label for="expense_practical_amount" string="Expenses" class="fw-bold"/>
-                                <div class="text-end">
-                                    <field name="expense_practical_amount" class="oe_inline"/> /
-                                    <field name="expense_planned_amount" class="oe_inline"/>
-                                </div>
-                                <label for="revenue_practical_amount" string="Revenues" class="fw-bold"/>
-                                <div class="text-end">
-                                    <field name="revenue_practical_amount" class="oe_inline"/> /
-                                    <field name="revenue_planned_amount" class="oe_inline"/>
-                                </div>
+                            <group invisible="state == 'draft'">
+                                <group/>
+                                <group class="oe_subtotal_footer border-top-0" name="budget_total">
+                                    <label for="expense_practical_amount" string="Expenses"/>
+                                    <div class="text-end text-nowrap">
+                                        <field name="expense_practical_amount" class="oe_inline"/>
+                                        <span class="text-muted"> of </span>
+                                        <field name="expense_planned_amount" class="oe_inline"/>
+                                    </div>
+                                    <label for="revenue_practical_amount" string="Revenues"/>
+                                    <div class="text-end text-nowrap">
+                                        <field name="revenue_practical_amount" class="oe_inline"/>
+                                        <span class="text-muted"> of </span>
+                                        <field name="revenue_planned_amount" class="oe_inline"/>
+                                    </div>
+                                </group>
                             </group>
                         </page>
                     </notebook>
@@ -244,7 +251,7 @@
                         </div>
                         <footer>
                             <div>
-                                <i class="fa fa-clock-o" role="img" aria-label="Period" title="Period"/>
+                                <i class="oi me-1" data-icon="schedule" role="img" aria-label="Period" title="Period"/>
                                 <field name="date_from"/> - <field name="date_to"/>
                             </div>
                             <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>

@@ -6,10 +6,10 @@
             <field name="name">followup.line.list</field>
             <field name="model">followup.line</field>
             <field name="arch" type="xml">
-                <list string="Follow-up Steps">
+                <list string="Follow-up Levels">
+                    <field name="delay"/>
                     <field name="name"/>
                     <field name="email_template_id" optional="show"/>
-                    <field name="delay"/>
                     <field name="send_email"/>
                     <field name="send_letter"/>
                     <field name="manual_action"/>
@@ -21,69 +21,52 @@
             <field name="name">followup.line.form</field>
             <field name="model">followup.line</field>
             <field name="arch" type="xml">
-                <form string="Follow-up Steps">
-                    <label for="name" class="oe_edit_only"/>
-                    <h1>
-                        <field name="name"/>
-                    </h1>
-                    <div class="oe_inline">
-                        After
-                        <field name="delay" class="oe_inline"/>
-                        days overdue, do the following actions:
-                    </div>
-                    <div>
-                        <field name="manual_action" class="oe_inline"/>
-                        <label for="manual_action"/>
-                    </div>
-                    <div>
-                        <field name="send_email" class="oe_inline"/>
-                        <label for="send_email"/>
-                    </div>
-                    <div>
-                        <field name="send_letter" class="oe_inline"/>
-                        <label for="send_letter"/>
-                    </div>
-
-                    <group string="Manual Action" invisible="not manual_action">
-                        <field name="manual_action_responsible_id"/>
-                        <field name="manual_action_note"/>
-                    </group>
-                    <group string="Send an Email" invisible="not send_email">
-                        <field name="email_template_id"/>
-                    </group>
-                    <group string="Send a Letter or Email"
-                           invisible="not send_email and not send_letter">
-                        <p colspan="2" class="oe_grey">
-                            Write here the introduction in the letter,
-                            according to the level of the follow-up. You can
-                            use the following keywords in the text. Don't
-                            forget to translate in all languages you installed
-                            using to top right icon.
-                            <table>
-                                <tr>
-                                    <td t-translation="off">%%(partner_name)s
-                                    </td>
-                                    <td>: Partner Name</td>
-                                </tr>
-                                <tr>
-                                    <td t-translation="off">%%(date)s</td>
-                                    <td>: Current Date</td>
-                                </tr>
-                                <tr>
-                                    <td t-translation="off">
-                                        %%(user_signature)s
-                                    </td>
-                                    <td>: User Name</td>
-                                </tr>
-                                <tr>
-                                    <td t-translation="off">%%(company_name)s
-                                    </td>
-                                    <td>: User's Company Name</td>
-                                </tr>
-                            </table>
-                        </p>
-                        <field name="description" nolabel="1" colspan="2"/>
-                    </group>
+                <form string="Follow-up Level">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1><field name="name" placeholder="e.g. Second reminder"/></h1>
+                        </div>
+                        <group>
+                            <group>
+                                <label for="delay" string="Send After"/>
+                                <div class="o_row">
+                                    <field name="delay" class="oe_inline"/>
+                                    <span class="ms-2">days overdue</span>
+                                </div>
+                            </group>
+                            <group string="Actions">
+                                <field name="send_email" widget="boolean_toggle"/>
+                                <field name="send_letter" widget="boolean_toggle"/>
+                                <field name="manual_action" widget="boolean_toggle"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Email" name="email" invisible="not send_email">
+                                <group>
+                                    <field name="email_template_id" options="{'no_create': True}"/>
+                                </group>
+                            </page>
+                            <page string="Letter" name="letter" invisible="not send_letter and not send_email">
+                                <div class="alert alert-info" role="alert">
+                                    The message printed at the top of the customer statement. It can use
+                                    <code>%%(partner_name)s</code> (the customer),
+                                    <code>%%(date)s</code> (the date of the statement),
+                                    <code>%%(company_name)s</code> (your company) and
+                                    <code>%%(user_signature)s</code> (the user printing it).
+                                    Write <code>%%%%</code> for a percent sign.
+                                </div>
+                                <field name="description" nolabel="1"/>
+                            </page>
+                            <page string="Manual Action" name="manual_action" invisible="not manual_action">
+                                <group>
+                                    <field name="manual_action_responsible_id" widget="many2one_avatar_user"
+                                           placeholder="The follow-up responsible of the customer"/>
+                                    <field name="manual_action_note" placeholder="e.g. Call the customer"/>
+                                </group>
+                            </page>
+                        </notebook>
+                    </sheet>
                 </form>
             </field>
         </record>

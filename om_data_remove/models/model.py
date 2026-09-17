@@ -1,11 +1,204 @@
 import logging
 from odoo import api, fields, models, _
+from odoo.exceptions import AccessError, UserError
 
 _logger = logging.getLogger(__name__)
+
+# the models each removal deletes, in the order they are deleted
+REMOVAL_MODELS = {
+    'sales': [
+        'sale.order.line',
+        'sale.order',
+    ],
+    'product': [
+        'product.product',
+        'product.template',
+    ],
+    'product_attribute': [
+        'product.attribute.value',
+        'product.attribute',
+    ],
+    'pos': [
+        'pos.payment',
+        'pos.order.line',
+        'pos.order',
+        'pos.session',
+    ],
+    'purchase': [
+        'purchase.order.line',
+        'purchase.order',
+        'purchase.requisition.line',
+        'purchase.requisition',
+    ],
+    'expense': [
+        'hr.expense.sheet',
+        'hr.expense',
+        'hr.payslip',
+        'hr.payslip.run',
+    ],
+    'mrp': [
+        'mrp.workcenter.productivity',
+        'mrp.workorder',
+        'mrp.production.workcenter.line',
+        'change.production.qty',
+        'mrp.production',
+        'mrp.production.product.line',
+        'mrp.unbuild',
+        'change.production.qty',
+        'sale.forecast.indirect',
+        'sale.forecast',
+    ],
+    'mrp_bom': [
+        'mrp.bom.line',
+        'mrp.bom',
+    ],
+    'inventory': [
+        'stock.quant',
+        'stock.move.line',
+        'stock.package_level',
+        'stock.quantity.history',
+        'stock.quant.package',
+        'stock.move',
+        'stock.picking',
+        'stock.scrap',
+        'stock.picking.batch',
+        'stock.inventory.line',
+        'stock.inventory',
+        'stock.valuation.layer',
+        'stock.production.lot',
+        'procurement.group',
+    ],
+    'account': [
+        'payment.transaction',
+        'account.bank.statement.line',
+        'account.payment',
+        'account.analytic.line',
+        'account.analytic.account',
+        'account.partial.reconcile',
+        'account.move.line',
+        'hr.expense.sheet',
+        'account.move',
+    ],
+    'account_chart': [
+        'res.partner.bank',
+        'account.move.line',
+        'account.invoice',
+        'account.payment',
+        'account.bank.statement',
+        'account.tax.account.tag',
+        'account.tax',
+        'account.account.account.tag',
+        'wizard_multi_charts_accounts',
+        'account.journal',
+        'account.account',
+    ],
+    'project': [
+        'account.analytic.line',
+        'project.task',
+        'project.forecast',
+        'project.project',
+    ],
+    'quality': [
+        'quality.check',
+        'quality.alert',
+    ],
+    'quality_setting': [
+        'quality.point',
+        'quality.alert.stage',
+        'quality.alert.team',
+        'quality.point.test_type',
+        'quality.reason',
+        'quality.tag',
+    ],
+    'website': [
+        'blog.tag.category',
+        'blog.tag',
+        'blog.post',
+        'blog.blog',
+        'product.wishlist',
+        'website.published.multi.mixin',
+        'website.published.mixin',
+        'website.multi.mixin',
+        'website.visitor',
+        'website.redirect',
+        'website.seo.metadata',
+    ],
+    'message': [
+        'mail.message',
+        'mail.followers',
+        'mail.activity',
+    ],
+}
+
+# what the Data Cleaning screen offers: key, section, label
+REMOVAL_GROUPS = [
+    ('all', 'Everything', 'All the transactions, the master data kept'),
+    ('sales', 'Sales', 'Sales orders'),
+    ('pos', 'Sales', 'Point of Sale orders and sessions'),
+    ('purchase', 'Purchases and Expenses', 'Purchase orders and requisitions'),
+    ('expense', 'Purchases and Expenses', 'Expenses and expense reports'),
+    ('mrp', 'Manufacturing', 'Manufacturing orders'),
+    ('mrp_bom', 'Manufacturing', 'Bills of materials'),
+    ('inventory', 'Inventory', 'Moves, transfers, packages and lots'),
+    ('account', 'Accounting', 'Journal entries, invoices, bills and payments'),
+    ('account_chart', 'Accounting', 'Chart of accounts, taxes and journals'),
+    ('project', 'Projects', 'Projects and tasks'),
+    ('quality', 'Quality', 'Quality checks and alerts'),
+    ('quality_setting', 'Quality', 'Quality control points'),
+    ('website', 'Website', 'Website pages and blog posts'),
+    ('product', 'Master Data', 'Products'),
+    ('product_attribute', 'Master Data', 'Product attributes'),
+    ('message', 'Master Data', 'Messages, followers and activities'),
+]
+# what Delete All removes, see _remove_all
+ALL_GROUPS = ['account', 'quality', 'website', 'quality_setting', 'inventory', 'purchase', 'mrp', 'sales', 'project',
+              'pos', 'expense', 'account_chart', 'message']
+CONFIRMATION_WORD = 'DELETE'
 
 
 class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
+
+    # the number of records each removal would delete
+    for _key, _section, _label in REMOVAL_GROUPS:
+        locals()['om_remove_count_%s' % _key] = fields.Integer(
+            string=_label, compute='_compute_om_remove_counts')
+    del _key, _section, _label
+
+    @api.model
+    def _om_removal_models(self, key):
+        keys = ALL_GROUPS if key == 'all' else [key]
+        return [model for group in keys for model in REMOVAL_MODELS[group] if model in self.env]
+
+    @api.model
+    def _om_removal_count(self, key):
+        return sum(
+            self.env[model].sudo().with_context(active_test=False).search_count([])
+            for model in self._om_removal_models(key)
+            if not self.env[model]._abstract
+        )
+
+    def _compute_om_remove_counts(self):
+        counts = {}
+        if self.env.user.has_group('base.group_system'):
+            counts = {key: self._om_removal_count(key) for key, _section, _label in REMOVAL_GROUPS}
+        for settings in self:
+            for key, _section, _label in REMOVAL_GROUPS:
+                settings['om_remove_count_%s' % key] = counts.get(key, 0)
+
+    def action_om_open_removal(self):
+        """ Ask for the confirmation of the removal given in the context """
+        key = self.env.context.get('om_removal')
+        if key not in dict((group[0], group) for group in REMOVAL_GROUPS):
+            raise UserError(_('Unknown removal.'))
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Delete Data'),
+            'res_model': 'om.data.remove.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_removal': key},
+        }
 
     def _remove_data(self, o, s=[]):
         if not self.env.user.has_group('base.group_system'):
@@ -44,10 +237,7 @@ class ResConfigSettings(models.TransientModel):
     def _remove_sales(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'sale.order.line',
-            'sale.order',
-        ]
+        to_removes = list(REMOVAL_MODELS['sales'])
         seqs = [
             'sale',
         ]
@@ -56,10 +246,7 @@ class ResConfigSettings(models.TransientModel):
     def _remove_product(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'product.product',
-            'product.template',
-        ]
+        to_removes = list(REMOVAL_MODELS['product'])
         seqs = [
             'product.product',
         ]
@@ -68,22 +255,14 @@ class ResConfigSettings(models.TransientModel):
     def _remove_product_attribute(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'product.attribute.value',
-            'product.attribute',
-        ]
+        to_removes = list(REMOVAL_MODELS['product_attribute'])
         seqs = []
         return self._remove_data(to_removes, seqs)
 
     def _remove_pos(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'pos.payment',
-            'pos.order.line',
-            'pos.order',
-            'pos.session',
-        ]
+        to_removes = list(REMOVAL_MODELS['pos'])
         seqs = [
             'pos.',
         ]
@@ -99,12 +278,7 @@ class ResConfigSettings(models.TransientModel):
     def _remove_purchase(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'purchase.order.line',
-            'purchase.order',
-            'purchase.requisition.line',
-            'purchase.requisition',
-        ]
+        to_removes = list(REMOVAL_MODELS['purchase'])
         seqs = [
             'purchase.',
         ]
@@ -113,12 +287,7 @@ class ResConfigSettings(models.TransientModel):
     def _remove_expense(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'hr.expense.sheet',
-            'hr.expense',
-            'hr.payslip',
-            'hr.payslip.run',
-        ]
+        to_removes = list(REMOVAL_MODELS['expense'])
         seqs = [
             'hr.expense.',
         ]
@@ -127,18 +296,7 @@ class ResConfigSettings(models.TransientModel):
     def _remove_mrp(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'mrp.workcenter.productivity',
-            'mrp.workorder',
-            'mrp.production.workcenter.line',
-            'change.production.qty',
-            'mrp.production',
-            'mrp.production.product.line',
-            'mrp.unbuild',
-            'change.production.qty',
-            'sale.forecast.indirect',
-            'sale.forecast',
-        ]
+        to_removes = list(REMOVAL_MODELS['mrp'])
         seqs = [
             'mrp.',
         ]
@@ -147,32 +305,14 @@ class ResConfigSettings(models.TransientModel):
     def _remove_mrp_bom(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'mrp.bom.line',
-            'mrp.bom',
-        ]
+        to_removes = list(REMOVAL_MODELS['mrp_bom'])
         seqs = []
         return self._remove_data(to_removes, seqs)
 
     def _remove_inventory(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'stock.quant',
-            'stock.move.line',
-            'stock.package_level',
-            'stock.quantity.history',
-            'stock.quant.package',
-            'stock.move',
-            'stock.picking',
-            'stock.scrap',
-            'stock.picking.batch',
-            'stock.inventory.line',
-            'stock.inventory',
-            'stock.valuation.layer',
-            'stock.production.lot',
-            'procurement.group',
-        ]
+        to_removes = list(REMOVAL_MODELS['inventory'])
         seqs = [
             'stock.',
             'picking.',
@@ -185,17 +325,7 @@ class ResConfigSettings(models.TransientModel):
     def _remove_account(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'payment.transaction',
-            'account.bank.statement.line',
-            'account.payment',
-            'account.analytic.line',
-            'account.analytic.account',
-            'account.partial.reconcile',
-            'account.move.line',
-            'hr.expense.sheet',
-            'account.move',
-        ]
+        to_removes = list(REMOVAL_MODELS['account'])
         res = self._remove_data(to_removes, [])
         domain = [
             ('company_id', '=', self.env.company.id),
@@ -223,19 +353,7 @@ class ResConfigSettings(models.TransientModel):
             return False
         company_id = self.env.company.id
         self = self.with_context(force_company=company_id, company_id=company_id)
-        to_removes = [
-            'res.partner.bank',
-            'account.move.line',
-            'account.invoice',
-            'account.payment',
-            'account.bank.statement',
-            'account.tax.account.tag',
-            'account.tax',
-            'account.account.account.tag',
-            'wizard_multi_charts_accounts',
-            'account.journal',
-            'account.account',
-        ]
+        to_removes = list(REMOVAL_MODELS['account_chart'])
         try:
             field1 = self.env['ir.model.fields']._get('product.template', "taxes_id").id
             field2 = self.env['ir.model.fields']._get('product.template', "supplier_taxes_id").id
@@ -300,22 +418,14 @@ class ResConfigSettings(models.TransientModel):
     def _remove_project(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'account.analytic.line',
-            'project.task',
-            'project.forecast',
-            'project.project',
-        ]
+        to_removes = list(REMOVAL_MODELS['project'])
         seqs = []
         return self._remove_data(to_removes, seqs)
 
     def _remove_quality(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'quality.check',
-            'quality.alert',
-        ]
+        to_removes = list(REMOVAL_MODELS['quality'])
         seqs = [
             'quality.check',
             'quality.alert',
@@ -325,43 +435,20 @@ class ResConfigSettings(models.TransientModel):
     def _remove_quality_setting(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'quality.point',
-            'quality.alert.stage',
-            'quality.alert.team',
-            'quality.point.test_type',
-            'quality.reason',
-            'quality.tag',
-        ]
+        to_removes = list(REMOVAL_MODELS['quality_setting'])
         return self._remove_data(to_removes)
 
     def _remove_website(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'blog.tag.category',
-            'blog.tag',
-            'blog.post',
-            'blog.blog',
-            'product.wishlist',
-            'website.published.multi.mixin',
-            'website.published.mixin',
-            'website.multi.mixin',
-            'website.visitor',
-            'website.redirect',
-            'website.seo.metadata',
-        ]
+        to_removes = list(REMOVAL_MODELS['website'])
         seqs = []
         return self._remove_data(to_removes, seqs)
 
     def _remove_message(self):
         if not self.env.user.has_group('base.group_system'):
             return False
-        to_removes = [
-            'mail.message',
-            'mail.followers',
-            'mail.activity',
-        ]
+        to_removes = list(REMOVAL_MODELS['message'])
         seqs = []
         return self._remove_data(to_removes, seqs)
 
@@ -453,3 +540,42 @@ class ResConfigSettings(models.TransientModel):
         except:
             pass
         return True
+
+
+class OmDataRemoveWizard(models.TransientModel):
+    """ The confirmation of a removal: the data are deleted only once the user typed the confirmation word """
+    _name = 'om.data.remove.wizard'
+    _description = 'Delete Data'
+
+    removal = fields.Selection([(key, label) for key, _section, label in REMOVAL_GROUPS], required=True,
+                               readonly=True)
+    record_count = fields.Integer(string='Records', compute='_compute_record_count')
+    model_names = fields.Char(string='Tables', compute='_compute_record_count')
+    confirmation = fields.Char(
+        string='Confirmation', help='Type %s to confirm that the data are deleted for good.' % CONFIRMATION_WORD)
+
+    @api.depends('removal')
+    def _compute_record_count(self):
+        settings = self.env['res.config.settings']
+        for wizard in self:
+            wizard.record_count = settings._om_removal_count(wizard.removal) if wizard.removal else 0
+            names = settings._om_removal_models(wizard.removal) if wizard.removal else []
+            wizard.model_names = ', '.join(self.env['ir.model']._get(name).name or name for name in names)
+
+    def action_remove(self):
+        self.ensure_one()
+        if not self.env.user.has_group('base.group_system'):
+            raise AccessError(_('Only the administrators can delete data.'))
+        if (self.confirmation or '').strip().upper() != CONFIRMATION_WORD:
+            raise UserError(_('Type %s to confirm the removal.', CONFIRMATION_WORD))
+        settings = self.env['res.config.settings'].create({})
+        getattr(settings, 'action_remove_%s' % self.removal)()
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'message': _('The data were deleted.'),
+                'type': 'success',
+                'next': {'type': 'ir.actions.client', 'tag': 'soft_reload'},
+            },
+        }

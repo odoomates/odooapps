@@ -8,7 +8,7 @@
             <form string="Recurring Payment">
                 <header>
                     <button name="action_done" invisible="state != 'draft'" string="Done" type="object"
-                            class="oe_highlight"/>
+                            class="btn-primary"/>
                     <button name="action_stop" invisible="state != 'done'" string="Stop" type="object"
                             confirm="The payments not created yet will be skipped. Do you want to stop this recurring payment?"/>
                     <button name="action_draft" invisible="state == 'draft'" string="Set To Draft"
@@ -16,13 +16,11 @@
                     <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
                 </header>
                 <sheet>
-                    <group>
-                        <group>
-                            <h1>
-                                <field name="name" invisible="not name"/>
-                            </h1>
-                        </group>
-                    </group>
+                    <div class="oe_title" invisible="not name">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
                     <group>
                         <group>
                             <field name="template_id"/>
@@ -44,7 +42,7 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Recurring Entries">
+                        <page string="Recurring Entries" name="entries">
                             <field name="line_ids">
                                 <list create="0" delete="0" edit="0" decoration-success="state == 'done'"
                                       decoration-muted="state == 'cancel'">

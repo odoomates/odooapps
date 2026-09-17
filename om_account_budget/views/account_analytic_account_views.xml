@@ -8,9 +8,8 @@
         <field name="priority" eval="50"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Budget Items" groups="account.group_account_user,account.group_account_manager">
-                    <field name="budget_line_ids" widget="one2many_list" colspan="4" nolabel="1"
-                           mode="list">
+                <page string="Budget Items" name="budget_items" groups="account.group_account_user,account.group_account_manager">
+                    <field name="budget_line_ids" mode="list">
                         <list string="Budget Items" editable="top">
                             <field name="budget_id"/>
                             <field name="position_id"/>
@@ -19,22 +18,32 @@
                             <field name="date_to"/>
                             <field name="distribution" optional="hide"/>
                             <field name="planned_date" optional="hide"/>
-                            <field name="planned_amount" widget="monetary"/>
-                            <field name="practical_amount" sum="Actual Amount" widget="monetary"/>
-                            <field name="theoretical_amount" sum="Theoretical Amount" widget="monetary"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="planned_amount" sum="Budget"/>
+                            <field name="practical_amount" string="Achieved" sum="Achieved"/>
+                            <field name="theoretical_amount" string="Theoretical" sum="Theoretical" optional="hide"/>
                             <field name="achievement" widget="percentage"/>
                         </list>
                         <form string="Budget Items">
-                            <group>
-                                <field name="budget_id"/>
-                                <field name="position_id"/>
-                                <field name="budget_type"/>
-                                <field name="date_from"/>
-                                <field name="date_to"/>
-                                <field name="distribution"/>
-                                <field name="planned_date" invisible="distribution != 'at_date'"/>
-                                <field name="planned_amount" widget="monetary"/>
-                            </group>
+                            <sheet>
+                                <group>
+                                    <group>
+                                        <field name="currency_id" invisible="1"/>
+                                        <field name="budget_id"/>
+                                        <field name="position_id"/>
+                                        <field name="budget_type" widget="radio" options="{'horizontal': true}"/>
+                                        <field name="planned_amount"/>
+                                    </group>
+                                    <group>
+                                        <field name="date_from" string="Period" widget="daterange"
+                                               options="{'end_date_field': 'date_to', 'always_range': True}"/>
+                                        <field name="date_to" invisible="1"/>
+                                        <field name="distribution" widget="radio"/>
+                                        <field name="planned_date" invisible="distribution != 'at_date'"
+                                               required="distribution == 'at_date'"/>
+                                    </group>
+                                </group>
+                            </sheet>
                         </form>
                     </field>
                 </page>

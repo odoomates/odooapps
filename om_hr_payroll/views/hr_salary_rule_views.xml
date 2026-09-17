@@ -6,7 +6,7 @@
         <field name="name">hr.payroll.structure.list</field>
         <field name="model">hr.payroll.structure</field>
         <field name="arch" type="xml">
-            <list string="Employee Function">
+            <list string="Salary Structures">
                 <field name="name"/>
                 <field name="code"/>
                 <field name="rule_ids"/>
@@ -22,22 +22,8 @@
             <kanban class="o_kanban_mobile">
                 <templates>
                     <t t-name="card">
-                        <div t-attf-class="oe_kanban_content oe_kanban_global_click">
-                            <div class="row">
-                                <div class="col-12">
-                                    <strong>
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <span>Code:
-                                        <field name="code"/>
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
+                        <field name="name" class="fw-bold"/>
+                        <span class="text-muted">Code: <field name="code"/></span>
                     </t>
                 </templates>
             </kanban>
@@ -71,15 +57,23 @@
         <field name="name">hr.payroll.structure.form</field>
         <field name="model">hr.payroll.structure</field>
         <field name="arch" type="xml">
-            <form string="Employee Function">
-                <group col="4">
-                    <field name="name"/>
-                    <field name="code"/>
-                    <field name="parent_id"/>
-                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+            <form string="Salary Structure">
+                <sheet>
+                <div class="oe_title">
+                    <label for="name"/>
+                    <h1><field name="name" placeholder="e.g. Monthly Employees"/></h1>
+                </div>
+                <group>
+                    <group>
+                        <field name="code"/>
+                        <field name="parent_id"/>
+                    </group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                    </group>
                 </group>
-                <notebook colspan="4">
-                    <page string="Salary Rules">
+                <notebook>
+                    <page string="Salary Rules" name="rules">
                         <field name="rule_ids" domain="[('parent_rule_id','=',False)]">
                             <list>
                                 <field name="name"/>
@@ -91,6 +85,7 @@
                         </field>
                     </page>
                 </notebook>
+                </sheet>
             </form>
         </field>
     </record>
@@ -112,15 +107,22 @@
         <field name="name">hr.salary.rule.category.form</field>
         <field name="model">hr.salary.rule.category</field>
         <field name="arch" type="xml">
-            <form string="Salary Categories">
-                <group col="4">
-                    <field name="name"/>
-                    <field name="code"/>
-                    <field name="parent_id"/>
-                </group>
-                <group string="Notes">
-                    <field name="note" nolabel="1"/>
-                </group>
+            <form string="Salary Rule Category">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Allowance"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                        </group>
+                        <group>
+                            <field name="parent_id"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Notes"/>
+                </sheet>
             </form>
         </field>
     </record>
@@ -184,15 +186,8 @@
             <kanban class="o_kanban_mobile">
                 <templates>
                     <t t-name="card">
-                        <div t-attf-class="oe_kanban_content oe_kanban_global_click">
-                            <div class="row">
-                                <div class="col-12">
-                                    <strong>
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                            </div>
-                        </div>
+                        <field name="name" class="fw-bold"/>
+                        <field name="partner_id" class="text-muted"/>
                     </t>
                 </templates>
             </kanban>
@@ -214,19 +209,22 @@
         <field name="name">hr.contribution.register.form</field>
         <field name="model">hr.contribution.register</field>
         <field name="arch" type="xml">
-            <form string="Contribution">
-                <group>
-                    <field name="name"/>
-                    <field name="partner_id"/>
-                    <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"
-                           class="oe_inline"/>
-                </group>
-                <newline/>
-                <group>
-                    <separator string="Description"/>
-                    <newline/>
-                    <field name="note" nolabel="1"/>
-                </group>
+            <form string="Contribution Register">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Social Security"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Description"/>
+                </sheet>
             </form>
         </field>
     </record>
@@ -277,27 +275,11 @@
             <kanban class="o_kanban_mobile">
                 <templates>
                     <t t-name="card">
-                        <div t-attf-class="oe_kanban_content oe_kanban_global_click">
-                            <div class="row">
-                                <div class="col-8">
-                                    <strong>
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                                <div class="col-4">
-                                    <span class="float-right">
-                                        <field name="category_id"/>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-12">
-                                    <span>Code:
-                                        <field name="code"/>
-                                    </span>
-                                </div>
-                            </div>
+                        <div class="d-flex">
+                            <field name="name" class="fw-bold"/>
+                            <field name="category_id" class="ms-auto badge text-bg-light"/>
                         </div>
+                        <span class="text-muted">Code: <field name="code"/></span>
                     </t>
                 </templates>
             </kanban>
@@ -322,90 +304,91 @@
         <field name="name">hr.salary.rule.form</field>
         <field name="model">hr.salary.rule</field>
         <field name="arch" type="xml">
-            <form string="Salary Rules">
-                <label for="name" class="oe_edit_only"/>
-                <h1>
-                    <field name="name"/>
-                </h1>
-                <label for="category_id" class="oe_edit_only"/>
-                <h2>
-                    <field name="category_id"/>
-                </h2>
-
-                <group col="4">
-                    <field name="code"/>
-                    <field name="sequence"/>
-                    <field name="active"/>
-                    <field name="appears_on_payslip"/>
-                    <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
-                </group>
-                <notebook colspan="6">
-                    <page string="General">
-                        <group col="4">
-                            <separator colspan="4" string="Conditions"/>
-                            <field name="condition_select"/>
-                            <newline/>
-                            <field name="condition_python"
-                                   widget="ace" options="{'mode': 'python'}"
-                                   invisible="condition_select != 'python'"
-                                   required="condition_select == 'python'"
-                                   colspan="4"/>
-                            <newline/>
-                            <field name="condition_range"
-                                   invisible="condition_select != 'range'"
-                                   required="condition_select == 'range'"/>
-                            <newline/>
-                            <field name="condition_range_min" colspan="2"
-                                   invisible="condition_select != 'range'"
-                                   required="condition_select == 'range'"/>
-                            <newline/>
-                            <field name="condition_range_max" colspan="2"
-                                   invisible="condition_select != 'range'"
-                                   required="condition_select == 'range'"/>
-                            <newline/>
-                            <separator colspan="4" string="Computation"/>
-                            <field name="amount_select"/>
-                            <newline/>
-                            <field name="amount_percentage_base"
-                                   invisible="amount_select != 'percentage'"
-                                   required="amount_select == 'percentage'"/>
-                            <newline/>
-                            <field name="quantity"
-                                   invisible="amount_select == 'code'"
-                                   required="amount_select != 'code'"/>
-                            <newline/>
-                            <field name="amount_fix"
-                                   invisible="amount_select != 'fix'"
-                                   required="amount_select == 'fix'"/>
-                            <newline/>
-                            <field colspan="4" name="amount_python_compute"
-                                   widget="ace" options="{'mode': 'python'}"
-                                   invisible="amount_select != 'code'"
-                                   required="amount_select == 'code'"/>
-                            <field name="amount_percentage"
-                                   invisible="amount_select != 'percentage'"
-                                   required="amount_select == 'percentage'"/>
-                            <separator colspan="4" string="Company Contribution"/>
-                            <field name="register_id"/>
+            <form string="Salary Rule">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Basic Salary"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="category_id"/>
+                            <field name="code"/>
+                            <field name="sequence"/>
                         </group>
-                    </page>
-                    <page name="rules" string="Child Rules">
-                        <field name="parent_rule_id"/>
-                        <separator string="Children Definition"/>
-                        <field name="child_ids"/>
-                    </page>
-                    <page string="Inputs">
-                        <field name="input_ids" mode="list">
-                            <list string="Input Data" editable="bottom">
-                                <field name="name"/>
-                                <field name="code"/>
-                            </list>
-                        </field>
-                    </page>
-                    <page string="Description">
-                        <field name="note"/>
-                    </page>
-                </notebook>
+                        <group>
+                            <field name="appears_on_payslip"/>
+                            <field name="active" invisible="1"/>
+                            <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="General" name="general">
+                            <group>
+                                <group string="Condition" name="condition">
+                                    <field name="condition_select"/>
+                                    <field name="condition_range"
+                                           invisible="condition_select != 'range'"
+                                           required="condition_select == 'range'"/>
+                                    <field name="condition_range_min"
+                                           invisible="condition_select != 'range'"
+                                           required="condition_select == 'range'"/>
+                                    <field name="condition_range_max"
+                                           invisible="condition_select != 'range'"
+                                           required="condition_select == 'range'"/>
+                                </group>
+                                <group string="Computation" name="computation">
+                                    <field name="amount_select"/>
+                                    <field name="amount_fix"
+                                           invisible="amount_select != 'fix'"
+                                           required="amount_select == 'fix'"/>
+                                    <field name="amount_percentage"
+                                           invisible="amount_select != 'percentage'"
+                                           required="amount_select == 'percentage'"/>
+                                    <field name="amount_percentage_base"
+                                           invisible="amount_select != 'percentage'"
+                                           required="amount_select == 'percentage'"/>
+                                    <field name="quantity"
+                                           invisible="amount_select == 'code'"
+                                           required="amount_select != 'code'"/>
+                                </group>
+                            </group>
+                            <div invisible="condition_select != 'python'">
+                                <label for="condition_python" class="fw-bold"/>
+                                <field name="condition_python" widget="code" options="{'mode': 'python'}"
+                                       required="condition_select == 'python'"/>
+                            </div>
+                            <div invisible="amount_select != 'code'">
+                                <label for="amount_python_compute" class="fw-bold"/>
+                                <field name="amount_python_compute" widget="code" options="{'mode': 'python'}"
+                                       required="amount_select == 'code'"/>
+                            </div>
+                            <group>
+                                <group string="Company Contribution" name="contribution">
+                                    <field name="register_id"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="rules" string="Child Rules">
+                            <group>
+                                <field name="parent_rule_id"/>
+                            </group>
+                            <field name="child_ids"/>
+                        </page>
+                        <page string="Inputs" name="inputs">
+                            <field name="input_ids" mode="list">
+                                <list string="Input Data" editable="bottom">
+                                    <field name="name"/>
+                                    <field name="code"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="note" placeholder="What the rule computes and why"/>
+                        </page>
+                    </notebook>
+                </sheet>
             </form>
         </field>
     </record>

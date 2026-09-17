@@ -7,20 +7,22 @@
         <field name="arch" type="xml">
             <form string="Report Options">
                 <group>
-                    <field name="target_move" widget="radio"/>
+                    <group name="options">
+                        <field name="target_move" widget="radio"/>
+                    </group>
+                    <group name="period">
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
                 </group>
-                <group col="4">
-                    <field name="date_from"/>
-                    <field name="date_to"/>
-                </group>
-                <group>
+                <group name="filters">
                     <field name="journal_ids" widget="many2many_tags"/>
                     <field name="account_ids" widget="many2many_tags" invisible="1"/>
                 </group>
                 <footer>
                     <button name="check_report" string="Print" type="object" default_focus="1"
-                            class="oe_highlight"/>
-                    <button string="Cancel" class="btn btn-default" special="cancel"/>
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
                 </footer>
             </form>
         </field>
