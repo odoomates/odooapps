@@ -52,41 +52,19 @@
             </xpath>
 
             <xpath expr="//group[@name='salary_info']" position="after">
-                <group string="Monthly Advantages in Cash" name='allowances'>
-                    <label for="hra"/>
-                    <div class="o_row">
-                        <field name="hra" nolabel="1"/>
-                        <span>/ month</span>
-                    </div>
-                    <label for="da"/>
-                    <div class="o_row">
-                        <field name="da" nolabel="1"/>
-                        <span>/ month</span>
-                    </div>
-                    <label for="travel_allowance"/>
-                    <div class="o_row">
-
-                        <field name="travel_allowance" nolabel="1"/>
-                        <span>/ month</span>
-                    </div>
-                    <label for="meal_allowance"/>
-                    <div class="o_row">
-
-                        <field name="meal_allowance" nolabel="1"/>
-                        <span>/ month</span>
-                    </div>
-                    <label for="medical_allowance"/>
-                    <div class="o_row">
-
-                        <field name="medical_allowance" nolabel="1"/>
-                        <span>/ month</span>
-                    </div>
-                    <label for="other_allowance"/>
-                    <div class="o_row">
-
-                        <field name="other_allowance" nolabel="1"/>
-                        <span>/ month</span>
-                    </div>
+                <group string="Salary Components" name="salary_components">
+                    <field name="salary_component_ids" nolabel="1" colspan="2"
+                           context="{'default_company_id': company_id}">
+                        <list editable="bottom">
+                            <field name="sequence" column_invisible="1"/>
+                            <field name="company_id" column_invisible="1"/>
+                            <field name="component_id"
+                                   domain="['|', ('company_id', '=', False), ('company_id', '=', company_id)]"/>
+                            <field name="code" optional="show"/>
+                            <field name="amount"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
                 </group>
             </xpath>
         </field>

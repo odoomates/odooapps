@@ -25,12 +25,10 @@ class HrVersion(models.Model):
     help="Defines the frequency of the wage payment.")
     # payroll officers compute the payslips from the wage
     wage = fields.Monetary(groups="hr.group_hr_manager,om_hr_payroll.group_hr_payroll_user")
-    hra = fields.Monetary(string='HRA', help="House rent allowance.")
-    travel_allowance = fields.Monetary(string="Travel Allowance", help="Travel allowance")
-    da = fields.Monetary(string="DA", help="Dearness allowance")
-    meal_allowance = fields.Monetary(string="Meal Allowance", help="Meal allowance")
-    medical_allowance = fields.Monetary(string="Medical Allowance", help="Medical allowance")
-    other_allowance = fields.Monetary(string="Other Allowance", help="Other allowances")
+    salary_component_ids = fields.One2many(
+        'hr.version.salary.component', 'version_id', string='Salary Components', copy=True,
+        help='What the employee is paid besides the wage, e.g. a housing or a transport component. '
+             'The salary rules read them with components.<CODE>.')
     type_id = fields.Many2one('hr.employee.type', string="Employee Category",
                               required=True, help="Employee category",
                               default=lambda self: self.env['hr.employee.type'].search([], limit=1))
@@ -50,6 +48,12 @@ class HrVersion(models.Model):
         if not structures:
             return []
         return list(set(structures._get_parent_structure().ids))
+
+    def get_component(self, code):
+        """ :return: the amount of the salary component `code` on the version, 0.0 when it has none """
+        self.ensure_one()
+        component = self.salary_component_ids.filtered(lambda line: line.code == code)[:1]
+        return component.amount
 
     def get_attribute(self, code, attribute):
         return self.env['hr.contract.advantage.template'].search([('code', '=', code)], limit=1)[attribute]

@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Rule parameters -->
+
+    <record id="hr_rule_parameter_view_list" model="ir.ui.view">
+        <field name="name">hr.rule.parameter.list</field>
+        <field name="model">hr.rule.parameter</field>
+        <field name="arch" type="xml">
+            <list string="Rule Parameters">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="value_type"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_rule_parameter_view_form" model="ir.ui.view">
+        <field name="name">hr.rule.parameter.form</field>
+        <field name="model">hr.rule.parameter</field>
+        <field name="arch" type="xml">
+            <form string="Rule Parameter">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Social Security Rate"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="e.g. SS_RATE"/>
+                            <field name="value_type"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Values" name="values">
+                            <field name="value_ids">
+                                <list editable="bottom">
+                                    <field name="date_from"/>
+                                    <field name="value_type" column_invisible="1"/>
+                                    <field name="value_number" invisible="value_type != 'number'"/>
+                                    <field name="value_text" invisible="value_type != 'text'"/>
+                                </list>
+                            </field>
+                            <div class="text-muted mt-2">
+                                A value applies from its date until the next one. A payslip computed again for
+                                an old period keeps the value of that period.
+                            </div>
+                        </page>
+                        <page string="Description" name="note">
+                            <field name="note" nolabel="1"
+                                   placeholder="What the parameter is, and which rules read it."/>
+                        </page>
+                    </notebook>
+                    <div class="text-muted">
+                        The salary rules read it with <strong>parameters.&lt;CODE&gt;</strong>, e.g.
+                        <code>result = -categories.GROSS * parameters.SS_RATE / 100</code>.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_rule_parameter" model="ir.actions.act_window">
+        <field name="name">Rule Parameters</field>
+        <field name="res_model">hr.rule.parameter</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Keep the rates and the thresholds out of the salary rules
+            </p>
+            <p>
+                A rule parameter holds a rate, a threshold or a ceiling by date. Changing it next year is
+                entering a value, not editing the code of a rule, and the payslips of this year keep the value
+                of this year.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_hr_rule_parameter"
+              name="Rule Parameters"
+              parent="menu_hr_payroll_configuration"
+              action="action_hr_rule_parameter"
+              sequence="7"/>
+
+    <!-- Salary brackets -->
+
+    <record id="hr_salary_bracket_view_list" model="ir.ui.view">
+        <field name="name">hr.salary.bracket.list</field>
+        <field name="model">hr.salary.bracket</field>
+        <field name="arch" type="xml">
+            <list string="Salary Brackets">
+                <field name="name"/>
+                <field name="code"/>
+                <field name="computation"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="hr_salary_bracket_view_form" model="ir.ui.view">
+        <field name="name">hr.salary.bracket.form</field>
+        <field name="model">hr.salary.bracket</field>
+        <field name="arch" type="xml">
+            <form string="Salary Bracket">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Income Tax"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code" placeholder="e.g. INCOME_TAX"/>
+                            <field name="computation"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tables" name="versions">
+                            <field name="version_ids">
+                                <form string="Table">
+                                    <group col="4">
+                                        <field name="date_from"/>
+                                        <field name="key" placeholder="e.g. SINGLE"/>
+                                    </group>
+                                    <field name="line_ids">
+                                        <list editable="bottom">
+                                            <field name="lower"/>
+                                            <field name="upper"/>
+                                            <field name="rate"/>
+                                            <field name="fixed_amount"/>
+                                        </list>
+                                    </field>
+                                </form>
+                                <list>
+                                    <field name="date_from"/>
+                                    <field name="key"/>
+                                </list>
+                            </field>
+                            <div class="text-muted mt-2">
+                                A table applies from its date on. Use the key when the same scale has a table
+                                per filing status, per state or per pay frequency, and leave it empty
+                                otherwise. The last band has no upper limit: leave its To at zero.
+                            </div>
+                        </page>
+                        <page string="Description" name="note">
+                            <field name="note" nolabel="1"
+                                   placeholder="What the bracket computes, and which rules read it."/>
+                        </page>
+                    </notebook>
+                    <div class="text-muted">
+                        The salary rules read it with
+                        <strong>brackets.&lt;CODE&gt;.compute(amount)</strong>, e.g.
+                        <code>result = -brackets.INCOME_TAX.compute(categories.GROSS)</code>, and pass a key
+                        with <code>compute(amount, key=employee.filing_status)</code>.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_salary_bracket" model="ir.actions.act_window">
+        <field name="name">Salary Brackets</field>
+        <field name="res_model">hr.salary.bracket</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Enter a scale of bands instead of writing it in code
+            </p>
+            <p>
+                A salary bracket holds the bands of a tax or of a contribution by date, and a rule computes an
+                amount from it in one line. The bands of the previous years stay, so an old payslip computed
+                again is still right.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_hr_salary_bracket"
+              name="Salary Brackets"
+              parent="menu_hr_payroll_configuration"
+              action="action_hr_salary_bracket"
+              sequence="8"/>
+
+</odoo>

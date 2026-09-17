@@ -6,14 +6,20 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.5a1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-16 08:52+0000\n"
-"PO-Revision-Date: 2026-09-16 08:52+0000\n"
+"POT-Creation-Date: 2026-09-16 12:49+0000\n"
+"PO-Revision-Date: 2026-09-16 12:49+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_salary_bracket.py:0
+msgid " for %s"
+msgstr ""
 
 #. module: om_hr_payroll
 #. odoo-python
@@ -81,11 +87,6 @@ msgstr ""
 #. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_contract_form_inherit
 msgid "<span invisible=\"not contract_date_start\">to</span>"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_contract_form_inherit
-msgid "<span>/ month</span>"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -171,6 +172,60 @@ msgid ""
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.constraint,message:om_hr_payroll.constraint_hr_rule_parameter_value_parameter_date_uniq
+msgid "A rule parameter can only have one value per date."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.actions.act_window,help:om_hr_payroll.action_hr_rule_parameter
+msgid ""
+"A rule parameter holds a rate, a threshold or a ceiling by date. Changing it next year is\n"
+"                entering a value, not editing the code of a rule, and the payslips of this year keep the value\n"
+"                of this year."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.constraint,message:om_hr_payroll.constraint_hr_salary_bracket_version_bracket_date_key_uniq
+msgid "A salary bracket can only have one table per date and key."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.actions.act_window,help:om_hr_payroll.action_hr_salary_bracket
+msgid ""
+"A salary bracket holds the bands of a tax or of a contribution by date, and a rule computes an\n"
+"                amount from it in one line. The bands of the previous years stay, so an old payslip computed\n"
+"                again is still right."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.constraint,message:om_hr_payroll.constraint_hr_version_salary_component_version_component_uniq
+msgid "A salary component can only be set once on a version."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.actions.act_window,help:om_hr_payroll.action_hr_salary_component
+msgid ""
+"A salary component, e.g. a housing or a transport component, holds an amount on the contract of\n"
+"                the employee. The salary rules read it with components.&lt;CODE&gt;, so the same rules serve\n"
+"                every company whatever it pays."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid ""
+"A table applies from its date on. Use the key when the same scale has a table\n"
+"                                per filing status, per state or per pay frequency, and leave it empty\n"
+"                                otherwise. The last band has no upper limit: leave its To at zero."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid ""
+"A value applies from its date until the next one. A payslip computed again for\n"
+"                                an old period keeps the value of that period."
+msgstr ""
+
+#. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.res_config_settings_view_form
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.view_hr_payslip_form
 msgid "Accounting"
@@ -188,6 +243,9 @@ msgstr ""
 
 #. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__active
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__active
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__active
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__active
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__active
 msgid "Active"
 msgstr ""
@@ -243,6 +301,11 @@ msgid "Allowance"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_allowances
+msgid "Allowances"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_payslip_line__condition_select__none
 #: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_salary_rule__condition_select__none
 msgid "Always True"
@@ -251,6 +314,7 @@ msgstr ""
 #. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_input__amount
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__amount
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__amount
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_contribution_register
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_payslip
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_payslip_details
@@ -289,8 +353,21 @@ msgid ""
 msgstr ""
 
 #. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_search
+msgid "Archived"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip__message_attachment_count
 msgid "Attachment Count"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__line_ids
+msgid "Bands"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -314,6 +391,11 @@ msgid "Bi-weekly"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__bracket_id
+msgid "Bracket"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.view_hr_payslip_line_form
 msgid "Calculations"
 msgstr ""
@@ -330,7 +412,9 @@ msgstr ""
 
 #. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__category_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__category_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__category_id
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_search
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.view_hr_rule_filter
 msgid "Category"
 msgstr ""
@@ -369,8 +453,12 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__code
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__code
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__code
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__code
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__code
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__code
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__code
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__code
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__code
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_contribution_register
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_payslip
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_payslip_details
@@ -394,8 +482,14 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip__company_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__company_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__company_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__company_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__company_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__company_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__company_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__company_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__company_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__company_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__company_id
 msgid "Company"
 msgstr ""
 
@@ -406,12 +500,18 @@ msgid "Company Contribution"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__component_id
+msgid "Component"
+msgstr ""
+
+#. module: om_hr_payroll
 #. odoo-python
 #: code:addons/om_hr_payroll/models/hr_payslip.py:0
 msgid "Compose Email"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__computation
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_rule_form
 msgid "Computation"
 msgstr ""
@@ -500,8 +600,15 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__create_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__create_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__create_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__create_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__create_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__create_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_payslip_lines_contribution_register__create_uid
 msgid "Created by"
 msgstr ""
@@ -517,8 +624,15 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__create_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__create_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__create_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__create_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__create_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__create_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_payslip_lines_contribution_register__create_date
 msgid "Created on"
 msgstr ""
@@ -530,9 +644,9 @@ msgid "Credit Note"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__da
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__da
-msgid "DA"
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__currency_id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__currency_id
+msgid "Currency"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -550,20 +664,18 @@ msgid "Date To"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_da
-#: model:hr.salary.rule.category,name:om_hr_payroll.DA
-msgid "Dearness Allowance"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__da
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__da
-msgid "Dearness allowance"
-msgstr ""
-
-#. module: om_hr_payroll
 #: model:hr.salary.rule.category,name:om_hr_payroll.DED
 msgid "Deduction"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_deductions
+msgid "Deductions"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__default_amount
+msgid "Default Amount"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -585,15 +697,26 @@ msgid ""
 msgstr ""
 
 #. module: om_hr_payroll
+#: model_terms:ir.actions.act_window,help:om_hr_payroll.action_hr_salary_component
+msgid "Describe what the employees are paid besides their wage"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_contribution_register__note
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payroll_structure__note
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_input__name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__note
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__note
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__note
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__note
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__note
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__note
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_contribution_register_form
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_rule_form
 msgid "Description"
 msgstr ""
@@ -621,9 +744,16 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__display_name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_payslip_lines_contribution_register__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_report_om_hr_payroll_report_contribution_register__display_name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_report_om_hr_payroll_report_payslip_details__display_name
@@ -753,6 +883,11 @@ msgid "End Date"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model_terms:ir.actions.act_window,help:om_hr_payroll.action_hr_salary_bracket
+msgid "Enter a scale of bands instead of writing it in code"
+msgstr ""
+
+#. module: om_hr_payroll
 #. odoo-python
 #: code:addons/om_hr_payroll/models/hr_salary_rule.py:0
 msgid "Error! You cannot create recursive hierarchy of Salary Rule Category."
@@ -771,11 +906,22 @@ msgid "Eventual third party involved in the salary payment of the employees."
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_salary_bracket__computation__excess
+msgid "Excess: the fixed amount of the band, plus its rate on what exceeds it"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__amount_fix
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__fixed_amount
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__amount_fix
 #: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_payslip_line__amount_select__fix
 #: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_salary_rule__amount_select__fix
 msgid "Fixed Amount"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_salary_bracket__computation__flat
+msgid "Flat: the rate of the band on the whole amount"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -798,6 +944,13 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_hr_payroll/report/report_contribution_register.py:0
 msgid "Form content is missing, this report cannot be printed."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__date_from
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__lower
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__date_from
+msgid "From"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -840,26 +993,8 @@ msgid "Gross"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__hra
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__hra
-msgid "HRA"
-msgstr ""
-
-#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip__has_message
 msgid "Has Message"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_hra
-#: model:hr.salary.rule.category,name:om_hr_payroll.HRA
-msgid "House Rent Allowance"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__hra
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__hra
-msgid "House rent allowance."
 msgstr ""
 
 #. module: om_hr_payroll
@@ -874,9 +1009,16 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__id
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_payslip_lines_contribution_register__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_report_om_hr_payroll_report_contribution_register__id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_report_om_hr_payroll_report_payslip_details__id
@@ -968,6 +1110,16 @@ msgid ""
 msgstr ""
 
 #. module: om_hr_payroll
+#: model_terms:ir.actions.act_window,help:om_hr_payroll.action_hr_rule_parameter
+msgid "Keep the rates and the thresholds out of the salary rules"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__key
+msgid "Key"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_contract_advantage_template__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_contribution_register__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payroll_structure__write_uid
@@ -978,8 +1130,15 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__write_uid
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__write_uid
 #: model:ir.model.fields,field_description:om_hr_payroll.field_payslip_lines_contribution_register__write_uid
 msgid "Last Updated by"
 msgstr ""
@@ -995,10 +1154,34 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__write_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__write_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_version__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__write_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__write_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__write_date
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__write_date
 #: model:ir.model.fields,field_description:om_hr_payroll.field_payslip_lines_contribution_register__write_date
 msgid "Last Updated on"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket_line__upper
+msgid "Leave at zero for the last band, which has no limit."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket__company_id
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket_line__company_id
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket_version__company_id
+msgid "Leave empty for a bracket shared by every company."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_rule_parameter__company_id
+msgid "Leave empty for a parameter shared by every company."
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1039,6 +1222,19 @@ msgid "Manager"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket__computation
+msgid ""
+"Marginal taxes each slice at the rate of its band, as the income tax of most countries does.\n"
+"Excess takes the fixed amount of the band the amount falls in, plus the rate of that band on what exceeds its floor.\n"
+"Flat applies the rate of the band the amount falls in to the whole amount."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_salary_bracket__computation__marginal
+msgid "Marginal: each band on its own slice"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_payslip_run_form
 msgid "Mark As Done"
 msgstr ""
@@ -1052,34 +1248,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__condition_range_max
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__condition_range_max
 msgid "Maximum Range"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_meal
-#: model:hr.salary.rule.category,name:om_hr_payroll.Meal
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__meal_allowance
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__meal_allowance
-msgid "Meal Allowance"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__meal_allowance
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__meal_allowance
-msgid "Meal allowance"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_medical
-#: model:hr.salary.rule.category,name:om_hr_payroll.Medical
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__medical_allowance
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__medical_allowance
-msgid "Medical Allowance"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__medical_allowance
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__medical_allowance
-msgid "Medical allowance"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1109,11 +1277,6 @@ msgid "Monthly"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_contract_form_inherit
-msgid "Monthly Advantages in Cash"
-msgstr ""
-
-#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip__my_activity_date_deadline
 msgid "My Activity Deadline"
 msgstr ""
@@ -1124,6 +1287,9 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payroll_structure__name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_run__name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__name
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__name
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule_category__name
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.report_contribution_register
@@ -1174,10 +1340,26 @@ msgstr ""
 
 #. module: om_hr_payroll
 #. odoo-python
+#: code:addons/om_hr_payroll/models/hr_rule_parameter.py:0
+msgid ""
+"No rule parameter %(code)s: create it in Payroll > Configuration > Rule "
+"Parameters, or correct the salary rule reading it."
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
 #: code:addons/om_hr_payroll/models/hr_payslip.py:0
 msgid ""
 "No running version/contract found for the employee: %s or no version in the "
 "given period"
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_salary_bracket.py:0
+msgid ""
+"No salary bracket %(code)s: create it in Payroll > Configuration > Salary "
+"Brackets, or correct the salary rule reading it."
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1200,6 +1382,11 @@ msgstr ""
 #. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_rule_category_form
 msgid "Notes"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_rule_parameter__value_type__number
+msgid "Number"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1254,21 +1441,18 @@ msgid "Only a payroll manager can set a confirmed payslip back to draft: %s"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model:hr.salary.rule.category,name:om_hr_payroll.Other
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__other_allowance
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__other_allowance
-msgid "Other Allowance"
-msgstr ""
-
-#. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.view_hr_payslip_form
 msgid "Other Inputs"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__other_allowance
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__other_allowance
-msgid "Other allowances"
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__paid_rate
+msgid "Paid Rate"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__parameter_id
+msgid "Parameter"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1511,6 +1695,13 @@ msgid "Print"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_component__default_amount
+msgid ""
+"Proposed on the versions where the component is added. The amount of each "
+"version can be changed."
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__amount_python_compute
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__amount_python_compute
 #: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_payslip_line__amount_select__code
@@ -1566,6 +1757,7 @@ msgstr ""
 
 #. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__rate
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__rate
 msgid "Rate (%)"
 msgstr ""
 
@@ -1623,13 +1815,70 @@ msgid "Rule"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid "Rule Parameter"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.actions.act_window,name:om_hr_payroll.action_hr_rule_parameter
+#: model:ir.ui.menu,name:om_hr_payroll.menu_hr_rule_parameter
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_list
+msgid "Rule Parameters"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_salary_bracket
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "Salary Bracket"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_salary_bracket_line
+msgid "Salary Bracket Band"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_salary_bracket_version
+msgid "Salary Bracket Table"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.actions.act_window,name:om_hr_payroll.action_hr_salary_bracket
+#: model:ir.ui.menu,name:om_hr_payroll.menu_hr_salary_bracket
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_list
+msgid "Salary Brackets"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_rule_category_form
 msgid "Salary Categories"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_salary_component
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
+msgid "Salary Component"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_version_salary_component
+msgid "Salary Component of a Version"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.actions.act_window,name:om_hr_payroll.action_hr_salary_component
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__salary_component_ids
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__salary_component_ids
+#: model:ir.ui.menu,name:om_hr_payroll.menu_hr_salary_component
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_contract_form_inherit
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_list
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_search
+msgid "Salary Components"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1661,6 +1910,16 @@ msgstr ""
 #: model:ir.model,name:om_hr_payroll.model_hr_rule_input
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_input__input_id
 msgid "Salary Rule Input"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_rule_parameter
+msgid "Salary Rule Parameter"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model,name:om_hr_payroll.model_hr_rule_parameter_value
+msgid "Salary Rule Parameter Value"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1742,7 +2001,9 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_input__sequence
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__sequence
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__sequence
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_component__sequence
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_rule__sequence
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__sequence
 msgid "Sequence"
 msgstr ""
 
@@ -1794,6 +2055,80 @@ msgid "Structure"
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__version_id
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "Table"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket__version_ids
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "Tables"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_rule_parameter__value_type__text
+msgid "Text"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__value_text
+msgid "Text Value"
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_salary_bracket.py:0
+msgid "The band from %(lower)s ends at %(upper)s, before it starts."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_component__category_id
+msgid ""
+"The category of the salary rule paying the component. It only documents the "
+"component: the rules decide what is computed."
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_salary_component.py:0
+msgid ""
+"The code %s cannot be used: write a code starting with a letter and made of "
+"letters, digits and underscores, e.g. HOUSING."
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_salary_bracket.py:0
+msgid ""
+"The code %s cannot be used: write a code starting with a letter and made of "
+"letters, digits and underscores, e.g. INCOME_TAX."
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_rule_parameter.py:0
+msgid ""
+"The code %s cannot be used: write a code starting with a letter and made of "
+"letters, digits and underscores, e.g. SS_RATE."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.constraint,message:om_hr_payroll.constraint_hr_rule_parameter_code_company_uniq
+msgid "The code of a rule parameter must be unique per company."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.constraint,message:om_hr_payroll.constraint_hr_salary_bracket_code_company_uniq
+msgid "The code of a salary bracket must be unique per company."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.constraint,message:om_hr_payroll.constraint_hr_salary_component_code_company_uniq
+msgid "The code of a salary component must be unique per company."
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,help:om_hr_payroll.field_hr_payslip_line__code
 #: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_rule__code
 msgid ""
@@ -1841,6 +2176,36 @@ msgid "The minimum amount, applied for this rule."
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket__code
+msgid ""
+"The name the salary rules read the bracket by, e.g. INCOME_TAX for "
+"brackets.INCOME_TAX."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_rule_parameter__code
+msgid ""
+"The name the salary rules read the parameter by, e.g. SS_RATE for "
+"parameters.SS_RATE."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_component__code
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_version_salary_component__code
+msgid ""
+"The name under which the salary rules read the component, e.g. HOUSING for "
+"components.HOUSING."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_payslip_worked_days__paid_rate
+msgid ""
+"The part of the days that is paid, from the time type of the time off: 1 for"
+" a time off paid in full, 0 for an unpaid one, 0.5 for a time off paid at "
+"half."
+msgstr ""
+
+#. module: om_hr_payroll
 #. odoo-python
 #: code:addons/om_hr_payroll/models/hr_payslip.py:0
 msgid "The payslip %s is confirmed: ask a payroll manager to change it."
@@ -1860,6 +2225,52 @@ msgid ""
 msgstr ""
 
 #. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_rule_parameter.py:0
+msgid ""
+"The rule parameter %(code)s has no value on %(date)s: add the value that "
+"applies from that date in Payroll > Configuration > Rule Parameters."
+msgstr ""
+
+#. module: om_hr_payroll
+#. odoo-python
+#: code:addons/om_hr_payroll/models/hr_salary_bracket.py:0
+msgid ""
+"The salary bracket %(code)s has no table on %(date)s%(key)s: add it in "
+"Payroll > Configuration > Salary Brackets."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid ""
+"The salary rules read it with\n"
+"                        <strong>brackets.&lt;CODE&gt;.compute(amount)</strong>, e.g.\n"
+"                        <code>result = -brackets.INCOME_TAX.compute(categories.GROSS)</code>, and pass a key\n"
+"                        with <code>compute(amount, key=employee.filing_status)</code>."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid ""
+"The salary rules read it with <strong>parameters.&lt;CODE&gt;</strong>, e.g.\n"
+"                        <code>result = -categories.GROSS * parameters.SS_RATE / 100</code>."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
+msgid ""
+"The salary rules read the amount of this component with\n"
+"                        <strong>components.&lt;CODE&gt;</strong>, e.g. <code>result = components.HOUSING</code>."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_salary_bracket_version__key
+msgid ""
+"The variant of the table, when a tax has one per filing status, per state or"
+" per pay frequency, e.g. SINGLE. Leave empty when there is only one table."
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,help:om_hr_payroll.field_hr_payslip_input__version_id
 #: model:ir.model.fields,help:om_hr_payroll.field_hr_payslip_worked_days__version_id
 msgid "The version for which applied this input"
@@ -1872,6 +2283,16 @@ msgid ""
 "This will be used to compute the % fields values; in general it is on basic,"
 " but you can also use categories code fields in lowercase as a variable "
 "names (hra, ma, lta, etc.) and the variable basic."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__work_entry_type_id
+msgid "Time Type"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_salary_bracket_line__upper
+msgid "To"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1888,22 +2309,13 @@ msgid "Total Working Days"
 msgstr ""
 
 #. module: om_hr_payroll
-#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_travel
-#: model:hr.salary.rule.category,name:om_hr_payroll.Travel
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_employee__travel_allowance
-#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version__travel_allowance
-msgid "Travel Allowance"
-msgstr ""
-
-#. module: om_hr_payroll
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__travel_allowance
-#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__travel_allowance
-msgid "Travel allowance"
-msgstr ""
-
-#. module: om_hr_payroll
 #: model:ir.model.fields,help:om_hr_payroll.field_hr_payslip__activity_exception_decoration
 msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:hr.salary.rule,name:om_hr_payroll.hr_rule_unpaid_leave
+msgid "Unpaid Time Off"
 msgstr ""
 
 #. module: om_hr_payroll
@@ -1929,6 +2341,28 @@ msgid "Used to display the salary rule on payslip."
 msgstr ""
 
 #. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__value_number
+msgid "Value"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__value_type
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter_value__value_type
+msgid "Value Type"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_rule_parameter__value_ids
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid "Values"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,field_description:om_hr_payroll.field_hr_version_salary_component__version_id
+msgid "Version"
+msgstr ""
+
+#. module: om_hr_payroll
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_input__version_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_line__version_id
 #: model:ir.model.fields,field_description:om_hr_payroll.field_hr_payslip_worked_days__version_id
@@ -1949,6 +2383,29 @@ msgstr ""
 #. module: om_hr_payroll
 #: model:ir.model.fields.selection,name:om_hr_payroll.selection__hr_version__schedule_pay__weekly
 msgid "Weekly"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "What the bracket computes, and which rules read it."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
+msgid "What the component pays for, and how the salary rules use it."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_employee__salary_component_ids
+#: model:ir.model.fields,help:om_hr_payroll.field_hr_version__salary_component_ids
+msgid ""
+"What the employee is paid besides the wage, e.g. a housing or a transport "
+"component. The salary rules read them with components.<CODE>."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid "What the parameter is, and which rules read it."
 msgstr ""
 
 #. module: om_hr_payroll
@@ -2035,6 +2492,41 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_hr_payroll/wizard/hr_payroll_payslips_by_employees.py:0
 msgid "You must select employee(s) to generate payslip(s)."
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
+msgid "e.g. HOUSING"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_component_view_form
+msgid "e.g. Housing"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "e.g. INCOME_TAX"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "e.g. Income Tax"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_salary_bracket_view_form
+msgid "e.g. SINGLE"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid "e.g. SS_RATE"
+msgstr ""
+
+#. module: om_hr_payroll
+#: model_terms:ir.ui.view,arch_db:om_hr_payroll.hr_rule_parameter_view_form
+msgid "e.g. Social Security Rate"
 msgstr ""
 
 #. module: om_hr_payroll

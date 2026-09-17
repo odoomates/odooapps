@@ -19,10 +19,55 @@ Features
   Python condition.
 * Group rules in categories such as Basic, Allowance, Gross, Deduction and Net,
   and use a category total inside another rule.
-* Start from the rules the module installs: Basic Salary, House Rent
-  Allowance, Dearness Allowance, Travel, Meal, Medical and Other Allowance,
-  Gross and Net, computed from the allowance fields the module adds to the
-  employment version of the employee.
+* Describe what your company pays besides the wage as salary components, e.g.
+  Housing or Transport, and set their amount on the employment version of each
+  employee. A salary rule reads a component with ``components.HOUSING``, so the
+  same module serves any country without a field per allowance.
+* Start from the rules the module installs: Basic Salary, Unpaid Time Off,
+  Allowances, Deductions, Gross and Net. Allowances pays every component of the
+  Allowance category and Deductions subtracts every component of the Deduction
+  category, so a new component is paid without writing a rule; give a component
+  its own rule when it has to appear on its own line of the payslip.
+* Take the time off that is not paid off the payslip automatically. How much of
+  a time off is paid comes from its Time Type: nothing is taken off a time off
+  paid in full, the whole of an unpaid one, and half of a time off whose rate is
+  50%. A closing day of the company carries no time type and is paid. The rule
+  belongs to the Basic category, so the gross of the payslip is what was really
+  earned in the period, and the taxes computed on it are right.
+* Write your own rules against the worked days with
+  ``worked_days.unpaid_ratio()``, the part of the period that is not paid, and
+  ``worked_days.scheduled_days()``, the days the employee was due to work.
+* Keep the rates, the thresholds and the ceilings out of the salary rules as
+  rule parameters, each with its values by date. A rule reads one with
+  ``parameters.SS_RATE``, and the value taken is the one of the period being
+  paid, so a payslip computed again for an old period stays right. Changing a
+  rate next year is entering a value in Payroll > Configuration > Rule
+  Parameters, not editing the code of a rule.
+* Enter the bands of a tax or of a contribution as a salary bracket instead of
+  writing them in code, and compute an amount from them in one line:
+  ``result = -brackets.INCOME_TAX.compute(categories.GROSS)``. A bracket holds a
+  table per date, and a table per key when the same scale has one per filing
+  status, per state or per pay frequency:
+  ``brackets.FED_TAX.compute(base, key=employee.filing_status)``. The bands are
+  applied in the way the country asks for: marginal, each band on its own slice;
+  excess, the fixed amount of the band plus its rate on what exceeds its floor;
+  or flat, on the whole amount.
+* A rule reading a parameter or a bracket that is not configured, or that has no
+  value on the date of the payslip, stops the payslip and names what is missing:
+  a rate quietly worth zero would be a payslip that is wrong without saying so.
+* Payroll managers own the parameters and the brackets, payroll officers read
+  them: a rate is changed without giving anyone the right to write Python.
+* Compute on what the employee has already been paid this year with
+  ``ytd.GROSS``, the total of a salary rule over the payslips of the year
+  already confirmed. Refunds are taken back, the payslips still draft do not
+  count, and the year is the fiscal year of the company, so a company closing in
+  March has a payroll year running April to March without anything more to set.
+  The payslip being computed is not part of it: a rule needing the year
+  including this period writes ``ytd.GROSS + categories.GROSS``, which says so
+  and does not depend on the order the rules are computed in.
+* Use it for what has to be counted over the year: a contribution stopping at a
+  yearly ceiling, a tax computed on the year and spread over the periods, or a
+  payslip showing its year to date.
 * Generate the payslips of a batch for the employees you select, then confirm
   the whole batch in one step; employees belonging to another company than the
   batch are refused.
@@ -78,7 +123,11 @@ Configuration
   installs a set of rules you can use as they are or adapt.
 * Add the third parties you pay through payslips in Payroll > Configuration >
   Contribution Registers, and point the relevant salary rules at them.
-* Fill the wage and the allowances of each employee, and pick the salary
+* Describe what you pay besides the wage in Payroll > Configuration > Salary
+  Components, e.g. a Housing component with the code ``HOUSING``. Put it in the
+  Allowance category to have it paid, or in the Deduction category to have it
+  subtracted.
+* Fill the wage and the salary components of each employee, and pick the salary
   structure, in Payroll > Employees > Contracts.
 * To also post the payslips in accounting, tick Payroll Entries in Payroll >
   Configuration > Settings, which installs the payroll accounting module.

@@ -1,10 +1,52 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+
+from .hr_rule_parameter import RuleParameters
+from .hr_salary_bracket import SalaryBrackets
 import babel
 from datetime import date, datetime, time
 from dateutil.relativedelta import relativedelta
 from pytz import timezone
 
+
+# the worked days line holding the time the employee was due to work, the others being the time off
+WORKED_DAYS_CODE = 'WORK100'
+
+
+class YearToDate:
+    """ What the employee has already been paid since the beginning of the year, by salary rule.
+
+    The rules read it as ``ytd.GROSS``. It holds the payslips already confirmed, not the one being computed:
+    a rule needing the year including this period writes ``ytd.GROSS + categories.GROSS``, which says what it
+    does and does not depend on the order the rules are computed in.
+    """
+
+    def __init__(self, env, employee_id, date_from, date_to):
+        self.env = env
+        self.employee_id = employee_id
+        self.date_from = date_from
+        self.date_to = date_to
+        self.totals = {}
+
+    def __getattr__(self, code):
+        return self.total(code)
+
+    def total(self, code):
+        """ :return: the total of the rule `code` over the payslips of the year already confirmed """
+        if code not in self.totals:
+            self.env.flush_all()
+            self.env.cr.execute("""
+                SELECT COALESCE(SUM(CASE WHEN slip.credit_note THEN -line.total ELSE line.total END), 0.0)
+                  FROM hr_payslip slip
+                  JOIN hr_payslip_line line ON line.slip_id = slip.id
+                 WHERE slip.employee_id = %s
+                   AND slip.state = 'done'
+                   AND slip.date_from >= %s
+                   AND slip.date_to <= %s
+                   AND line.code = %s
+            """, (self.employee_id, self.date_from, self.date_to, code))
+            self.totals[code] = self.env.cr.fetchone()[0] or 0.0
+        return self.totals[code]
 
 # what may still be written on a confirmed payslip: the trail of what happened to it
 PAYSLIP_CLOSED_WRITABLE = {
@@ -216,6 +258,31 @@ class HrPayslip(models.Model):
         return True
 
     @api.model
+    def _get_year_start(self, date, company):
+        """ :return: the day the payroll year of the company starts, for the year containing `date`
+
+        The fiscal year of the company is used, so that the year to date follows what the company already
+        declares in Odoo: April to March, July to June or the calendar year. Without accounting installed,
+        there is no fiscal year to read and the calendar year is used.
+        """
+        if hasattr(company, 'compute_fiscalyear_dates'):
+            return company.compute_fiscalyear_dates(date)['date_from']
+        return date.replace(month=1, day=1)
+
+    @api.model
+    def _get_paid_rate(self, work_entry_type):
+        """ :return: how much of a time off of this time type is paid: 1.0 in full, 0.0 not at all, 0.5 half
+
+        A time type marked unpaid in the Time Off application is not paid whatever its rate, and a time off
+        without a time type is taken as paid, so that nothing is deducted by surprise.
+        """
+        if not work_entry_type:
+            return 1.0
+        if 'unpaid' in work_entry_type._fields and work_entry_type.unpaid:
+            return 0.0
+        return work_entry_type.amount_rate
+
+    @api.model
     def get_worked_day_lines(self, versions, date_from, date_to):
         """
         @param versions: Browse record of hr.version
@@ -236,13 +303,17 @@ class HrPayslip(models.Model):
             day_leave_intervals = version.employee_id.list_leaves(day_from, day_to, calendar=calendar)
             for day, hours, leave in day_leave_intervals:
                 holiday = leave.holiday_id
-                current_leave_struct = leaves.setdefault(holiday.work_entry_type_id, {
-                    'name': holiday.work_entry_type_id.name or _('Global Leaves'),
+                work_entry_type = holiday.work_entry_type_id
+                current_leave_struct = leaves.setdefault(work_entry_type, {
+                    'name': work_entry_type.name or _('Global Leaves'),
                     'sequence': 5,
-                    'code': holiday.work_entry_type_id.code or 'GLOBAL',
+                    'code': work_entry_type.code or 'GLOBAL',
                     'number_of_days': 0.0,
                     'number_of_hours': 0.0,
                     'version_id': version.id,
+                    'work_entry_type_id': work_entry_type.id,
+                    # a time off without a time type is taken as paid: nothing is deducted for it
+                    'paid_rate': self._get_paid_rate(work_entry_type),
                 })
                 current_leave_struct['number_of_hours'] -= hours
                 work_hours = calendar.get_work_hours_count(
@@ -263,7 +334,7 @@ class HrPayslip(models.Model):
             attendances = {
                 'name': _("Normal Working Days paid at 100%"),
                 'sequence': 1,
-                'code': 'WORK100',
+                'code': WORKED_DAYS_CODE,
                 'number_of_days': work_data['days'],
                 'number_of_hours': work_data['hours'],
                 'version_id': version.id,
@@ -352,6 +423,23 @@ class HrPayslip(models.Model):
                 res = self._sum(code, from_date, to_date)
                 return res and res[1] or 0.0
 
+            def scheduled_days(self):
+                """ :return: the days the employee was due to work in the period, time off included """
+                return sum(line.number_of_days for line in self.dict.values() if line.code == WORKED_DAYS_CODE)
+
+            def unpaid_ratio(self):
+                """ :return: the part of the period that the time off is not paid at, as a negative number
+
+                The days of a time off are held negative, so 2 unpaid days out of 22 give -0.0909. Multiply
+                it by the wage to get what has to be taken off the payslip.
+                """
+                scheduled = self.scheduled_days()
+                if not scheduled:
+                    return 0.0
+                unpaid = sum(line.number_of_days * (1.0 - line.paid_rate)
+                             for line in self.dict.values() if line.code != WORKED_DAYS_CODE)
+                return unpaid / scheduled
+
         class Payslips(BrowsableObject):
             """a class that will be used into the python code, mainly for usability purposes"""
 
@@ -384,8 +472,16 @@ class HrPayslip(models.Model):
         payslips = Payslips(payslip.employee_id.id, payslip, self.env)
         rules = BrowsableObject(payslip.employee_id.id, rules_dict, self.env)
 
+        # the rates and the scales the rules read, as they stand at the end of the period being paid
+        parameters = RuleParameters(self.env, payslip.date_to, payslip.company_id)
+        brackets = SalaryBrackets(self.env, payslip.date_to, payslip.company_id)
+        ytd = YearToDate(
+            self.env, payslip.employee_id.id,
+            self._get_year_start(payslip.date_to, payslip.company_id or self.env.company),
+            payslip.date_to)
+
         baselocaldict = {'categories': categories, 'rules': rules, 'payslip': payslips, 'worked_days': worked_days,
-                         'inputs': inputs}
+                         'inputs': inputs, 'parameters': parameters, 'brackets': brackets, 'ytd': ytd}
 
         versions = self.env['hr.version'].browse(version_ids)
 
@@ -401,8 +497,13 @@ class HrPayslip(models.Model):
         for version in versions:
             employee = version.employee_id
 
-            # salary rules access the version of the employee as `contract`
-            localdict = dict(baselocaldict, employee=employee, contract=version)
+            # salary rules access the version of the employee as `contract`, and the amounts set on it as
+            # `components`, e.g. components.HOUSING
+            components = BrowsableObject(
+                employee.id,
+                {line.code: line.amount for line in version.salary_component_ids if line.code},
+                self.env)
+            localdict = dict(baselocaldict, employee=employee, contract=version, components=components)
 
             for rule in sorted_rules:
                 key = rule.code + '-' + str(version.id)
@@ -585,7 +686,9 @@ class HrPayslipLine(models.Model):
     rate = fields.Float(string='Rate (%)', default=100.0)
     amount = fields.Float()
     quantity = fields.Float(default=1.0)
-    total = fields.Float(compute='_compute_total', string='Total')
+    # stored: the totals of the payslips already paid are summed in SQL, by the year to date and by
+    # payslip.sum() in the salary rules
+    total = fields.Float(compute='_compute_total', string='Total', store=True)
 
     @api.depends('quantity', 'amount', 'rate')
     def _compute_total(self):
@@ -634,6 +737,11 @@ class HrPayslipWorkedDays(models.Model):
     number_of_hours = fields.Float(string='Number of Hours')
     version_id = fields.Many2one('hr.version', string='Version/Contract', required=True,
                                  help="The version for which applied this input")
+    work_entry_type_id = fields.Many2one('hr.work.entry.type', string='Time Type')
+    paid_rate = fields.Float(
+        string='Paid Rate', default=1.0,
+        help='The part of the days that is paid, from the time type of the time off: 1 for a time off paid '
+             'in full, 0 for an unpaid one, 0.5 for a time off paid at half.')
 
 
 class HrPayslipInput(models.Model):

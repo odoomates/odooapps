@@ -1,7 +1,7 @@
 {
     'name': 'Odoo 20 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '1.2.0',
+    'version': '2.0.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 20 Community Edition',
@@ -21,6 +21,8 @@
         'wizard/hr_payroll_payslips_by_employees_views.xml',
         'views/hr_contract_type_views.xml',
         'views/hr_contract_views.xml',
+        'views/hr_salary_component_views.xml',
+        'views/hr_rule_parameter_views.xml',
         'views/hr_salary_rule_views.xml',
         'views/hr_payslip_views.xml',
         'views/hr_employee_views.xml',
@@ -31,6 +33,9 @@
         'views/report_payslip_templates.xml',
         'views/report_payslip_details_templates.xml',
         'data/mail_template.xml',
+    ],
+    'demo': [
+        'demo/hr_payroll_demo.xml',
     ],
     'images': ['static/description/banner.png'],
     'application': True,

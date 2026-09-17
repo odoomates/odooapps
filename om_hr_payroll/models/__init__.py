@@ -1,3 +1,6 @@
+from . import hr_rule_parameter
+from . import hr_salary_bracket
+from . import hr_salary_component
 from . import hr_contract
 from . import hr_employee
 from . import res_config_settings

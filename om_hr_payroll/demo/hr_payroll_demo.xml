@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Examples of what a company pays besides the wage. They are only demonstration data: describe your own
+         components in Payroll > Configuration > Salary Components. -->
+    <data noupdate="1">
+
+        <record id="salary_component_housing" model="hr.salary.component">
+            <field name="name">Housing</field>
+            <field name="code">HOUSING</field>
+            <field name="sequence">10</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="company_id" eval="False"/>
+            <field name="note">What the company pays towards the accommodation of the employee.</field>
+        </record>
+
+        <record id="salary_component_transport" model="hr.salary.component">
+            <field name="name">Transport</field>
+            <field name="code">TRANSPORT</field>
+            <field name="sequence">20</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="company_id" eval="False"/>
+            <field name="note">What the company pays towards the commute of the employee.</field>
+        </record>
+
+        <record id="salary_component_meal" model="hr.salary.component">
+            <field name="name">Meal</field>
+            <field name="code">MEAL</field>
+            <field name="sequence">30</field>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="salary_component_advance_repayment" model="hr.salary.component">
+            <field name="name">Advance Repayment</field>
+            <field name="code">ADVANCE</field>
+            <field name="sequence">40</field>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="company_id" eval="False"/>
+            <field name="note">What the employee repays each period on an advance. The amount is entered
+                positive: the Deductions rule subtracts it.</field>
+        </record>
+
+        <!-- What a rate and a scale look like once they are data instead of code. -->
+
+        <record id="rule_parameter_pension_rate" model="hr.rule.parameter">
+            <field name="name">Pension Rate</field>
+            <field name="code">PENSION_RATE</field>
+            <field name="company_id" eval="False"/>
+            <field name="note">The part of the gross paid to the pension, in percent. A rule reads it with
+                parameters.PENSION_RATE.</field>
+        </record>
+
+        <record id="rule_parameter_pension_rate_value" model="hr.rule.parameter.value">
+            <field name="parameter_id" ref="rule_parameter_pension_rate"/>
+            <field name="date_from" eval="'2026-01-01'"/>
+            <field name="value_number">5.0</field>
+        </record>
+
+        <record id="salary_bracket_income_tax" model="hr.salary.bracket">
+            <field name="name">Income Tax</field>
+            <field name="code">INCOME_TAX</field>
+            <field name="computation">marginal</field>
+            <field name="company_id" eval="False"/>
+            <field name="note">An example scale, not the scale of any country. A rule reads it with
+                brackets.INCOME_TAX.compute(categories.GROSS).</field>
+        </record>
+
+        <record id="salary_bracket_income_tax_2026" model="hr.salary.bracket.version">
+            <field name="bracket_id" ref="salary_bracket_income_tax"/>
+            <field name="date_from" eval="'2026-01-01'"/>
+        </record>
+
+        <record id="salary_bracket_income_tax_2026_band_1" model="hr.salary.bracket.line">
+            <field name="version_id" ref="salary_bracket_income_tax_2026"/>
+            <field name="lower">0</field>
+            <field name="upper">2000</field>
+            <field name="rate">0</field>
+        </record>
+
+        <record id="salary_bracket_income_tax_2026_band_2" model="hr.salary.bracket.line">
+            <field name="version_id" ref="salary_bracket_income_tax_2026"/>
+            <field name="lower">2000</field>
+            <field name="upper">5000</field>
+            <field name="rate">10</field>
+        </record>
+
+        <record id="salary_bracket_income_tax_2026_band_3" model="hr.salary.bracket.line">
+            <field name="version_id" ref="salary_bracket_income_tax_2026"/>
+            <field name="lower">5000</field>
+            <field name="upper">0</field>
+            <field name="rate">20</field>
+        </record>
+
+    </data>
+</odoo>

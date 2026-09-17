@@ -16,8 +16,9 @@ class TestPayroll(TransactionCase):
             'name': 'Basic', 'code': 'BASIC', 'sequence': 1, 'category_id': cls.env.ref('om_hr_payroll.BASIC').id,
             'amount_select': 'code', 'amount_python_compute': 'result = contract.wage',
         }, {
-            'name': 'House Rent', 'code': 'HRA', 'sequence': 3, 'category_id': cls.env.ref('om_hr_payroll.ALW').id,
-            'amount_select': 'code', 'amount_python_compute': 'result = contract.hra',
+            'name': 'Housing', 'code': 'HOUSING', 'sequence': 3,
+            'category_id': cls.env.ref('om_hr_payroll.ALW').id,
+            'amount_select': 'code', 'amount_python_compute': 'result = components.HOUSING',
         }, {
             'name': 'Bonus', 'code': 'BONUS', 'sequence': 4, 'category_id': cls.env.ref('om_hr_payroll.ALW').id,
             'amount_select': 'code', 'amount_python_compute': 'result = inputs.BONUS and inputs.BONUS.amount',
@@ -39,14 +40,22 @@ class TestPayroll(TransactionCase):
         cls.structure = cls.env['hr.payroll.structure'].create({
             'name': 'Test Structure', 'code': 'TEST', 'parent_id': False, 'rule_ids': [Command.set(rules.ids)],
         })
+        cls.housing = cls.env['hr.salary.component'].create({
+            'name': 'Housing', 'code': 'HOUSING', 'category_id': cls.env.ref('om_hr_payroll.ALW').id,
+            'default_amount': 1000.0,
+        })
         cls.employee = cls._create_employee('Payroll Employee')
 
     @classmethod
-    def _create_employee(cls, name, wage=5000.0, **values):
+    def _create_employee(cls, name, wage=5000.0, housing=1000.0, **values):
         return cls.env['hr.employee'].create({
             'name': name, 'resource_calendar_id': cls.calendar.id, 'tz': 'UTC',
             'date_version': date(2026, 1, 1), 'contract_date_start': date(2026, 1, 1),
-            'wage': wage, 'hra': 1000.0, 'struct_id': cls.structure.id, **values,
+            'wage': wage, 'struct_id': cls.structure.id,
+            'salary_component_ids': [Command.create({
+                'component_id': cls.housing.id, 'amount': housing,
+            })],
+            **values,
         })
 
     def _new_payslip(self, employee, date_from=date(2026, 8, 1), date_to=date(2026, 8, 31)):
@@ -83,7 +92,7 @@ class TestPayroll(TransactionCase):
         payslip.compute_sheet()
         self.assertTrue(payslip.number)
         self.assertEqual(self._totals(payslip), {
-            'BASIC': 5000.0, 'HRA': 1000.0, 'BONUS': 250.0, 'GROSS': 6250.0, 'TAX': -500.0, 'NET': 5750.0,
+            'BASIC': 5000.0, 'HOUSING': 1000.0, 'BONUS': 250.0, 'GROSS': 6250.0, 'TAX': -500.0, 'NET': 5750.0,
         })
 
     def test_time_off_in_worked_days(self):
