@@ -36,9 +36,20 @@ export class OmBankReconciliation extends Component {
         this.notification = usePlugin(NotificationPlugin);
         const params = this.props.action.params || {};
         this.state = proxy({
+            // "bank" clears the transactions of the bank, "open_items" the invoices against the payments
+            mode: params.mode || "bank",
+            accountType: "receivable",
+            groups: [],
+            groupCount: 0,
+            selectedGroup: null,
+            openItems: [],
+            openItemTotals: { debit: 0, credit: 0, clearable: 0 },
+            pickedItemIds: [],
+            // what closes the rest of a partial settlement: a discount, a bad debt, a rounding
+            itemWriteoff: { enabled: false, account_id: false, journal_id: false, label: "" },
             journals: [],
             journalId: params.journal_id || this.props.action.context?.default_journal_id || false,
-            filter: "to_reconcile",
+            filter: params.filter || "to_reconcile",
             search: "",
             transactions: [],
             count: 0,
@@ -54,6 +65,7 @@ export class OmBankReconciliation extends Component {
         });
         this.debouncedSearchTransactions = useDebounced(() => this.loadTransactions(), 300);
         this.debouncedSearchCandidates = useDebounced(() => this.loadCandidates(), 300);
+        this.debouncedSearchGroups = useDebounced(() => this.loadGroups(), 300);
 
         useHotkey("control+enter", () => this.validate(), { bypassEditableProtection: true });
         useHotkey("alt+arrowdown", () => this.selectRelative(1), { bypassEditableProtection: true });
@@ -61,7 +73,211 @@ export class OmBankReconciliation extends Component {
 
         onWillStart(async () => {
             await this.loadJournals();
+            if (this.state.mode === "open_items") {
+                await this.loadGroups();
+            } else {
+                await this.loadTransactions();
+                if (params.st_line_id) {
+                    await this.selectTransaction(params.st_line_id);
+                }
+            }
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // Open items: the invoices and the payments that clear each other
+    // ------------------------------------------------------------------
+
+    async setMode(mode) {
+        if (this.state.mode === mode) {
+            return;
+        }
+        this.state.mode = mode;
+        this.state.search = "";
+        if (mode === "open_items") {
+            await this.loadGroups();
+        } else {
             await this.loadTransactions();
+        }
+    }
+
+    onOpenItemsSearchInput(ev) {
+        this.state.search = ev.target.value;
+        this.debouncedSearchGroups();
+    }
+
+    async setAccountType(accountType) {
+        this.state.accountType = accountType;
+        this.state.selectedGroup = null;
+        this.state.openItems = [];
+        this.state.pickedItemIds = [];
+        await this.loadGroups();
+    }
+
+    async loadGroups() {
+        const result = await this.orm.call("account.move.line", "om_open_items_search_groups", [], {
+            account_type: this.state.accountType,
+            search: this.state.search,
+        });
+        this.state.groups = result.groups;
+        this.state.groupCount = result.count;
+        const selected = this.state.selectedGroup;
+        if (selected && !result.groups.some((group) => this.sameGroup(group, selected))) {
+            this.state.selectedGroup = null;
+            this.state.openItems = [];
+            this.state.pickedItemIds = [];
+        }
+    }
+
+    sameGroup(one, other) {
+        return one.partner_id === other.partner_id && one.account_id === other.account_id;
+    }
+
+    async selectGroup(group) {
+        this.state.selectedGroup = group;
+        const result = await this.orm.call("account.move.line", "om_open_items_get_lines", [
+            group.partner_id,
+            group.account_id,
+        ]);
+        this.state.openItems = result.lines;
+        this.state.openItemTotals = {
+            debit: result.debit,
+            credit: result.credit,
+            clearable: result.clearable,
+        };
+        // what an accountant would pick: the oldest items of both sides that cancel out
+        this.state.pickedItemIds = result.suggestion || [];
+    }
+
+    toggleItem(itemId) {
+        const picked = this.state.pickedItemIds;
+        this.state.pickedItemIds = picked.includes(itemId)
+            ? picked.filter((id) => id !== itemId)
+            : [...picked, itemId];
+    }
+
+    isPicked(itemId) {
+        return this.state.pickedItemIds.includes(itemId);
+    }
+
+    get pickedItems() {
+        return this.state.openItems.filter((item) => this.isPicked(item.id));
+    }
+
+    get pickedDifference() {
+        return this.pickedItems.reduce((total, item) => total + item.amount_residual, 0);
+    }
+
+    get canReconcileItems() {
+        // what is owed and what settles it: items all on the same side settle nothing
+        const picked = this.pickedItems;
+        return (
+            picked.length > 1 &&
+            picked.some((item) => item.amount_residual > 0) &&
+            picked.some((item) => item.amount_residual < 0) &&
+            !this.state.busy
+        );
+    }
+
+    get stillOpenAfter() {
+        /** What is left open once the picked items are reconciled: a partial payment leaves the rest. */
+        return this.pickedDifference;
+    }
+
+    get canWriteOffItems() {
+        return this.canReconcileItems && !!this.stillOpenAfter;
+    }
+
+    get itemWriteoffReady() {
+        const writeoff = this.state.itemWriteoff;
+        return !!(writeoff.enabled && writeoff.account_id && writeoff.journal_id);
+    }
+
+    toggleItemWriteoff() {
+        const writeoff = this.state.itemWriteoff;
+        writeoff.enabled = !writeoff.enabled;
+        if (writeoff.enabled && !writeoff.journal_id) {
+            writeoff.journal_id = this.state.journals[0]?.id || false;
+        }
+    }
+
+    setItemWriteoffAccount(accountId) {
+        this.state.itemWriteoff.account_id = accountId || false;
+    }
+
+    setItemWriteoffJournal(journalId) {
+        this.state.itemWriteoff.journal_id = journalId || false;
+    }
+
+    setItemWriteoffLabel(ev) {
+        this.state.itemWriteoff.label = ev.target.value;
+    }
+
+    async reconcileItems() {
+        if (!this.canReconcileItems) {
+            return;
+        }
+        const writeoff = this.state.itemWriteoff;
+        if (writeoff.enabled && !this.itemWriteoffReady) {
+            this.notification.add(_t("Choose the account and the journal of the write-off."), {
+                type: "warning",
+            });
+            return;
+        }
+        this.state.busy = true;
+        try {
+            await this.orm.call("account.move.line", "om_open_items_reconcile", [
+                this.state.pickedItemIds,
+                writeoff.enabled && this.stillOpenAfter
+                    ? {
+                          account_id: writeoff.account_id,
+                          journal_id: writeoff.journal_id,
+                          label: writeoff.label,
+                      }
+                    : null,
+            ]);
+            this.state.itemWriteoff = {
+                enabled: false,
+                account_id: false,
+                journal_id: false,
+                label: "",
+            };
+            this.notification.add(_t("The journal items are reconciled."), { type: "success" });
+            const group = this.state.selectedGroup;
+            await this.loadGroups();
+            const still = this.state.groups.find((candidate) => this.sameGroup(candidate, group));
+            if (still) {
+                await this.selectGroup(still);
+            } else {
+                this.state.selectedGroup = null;
+                this.state.openItems = [];
+                this.state.pickedItemIds = [];
+            }
+        } finally {
+            this.state.busy = false;
+        }
+    }
+
+    openJournal() {
+        this.actionService.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Transactions"),
+            res_model: "account.bank.statement.line",
+            views: [
+                [false, "list"],
+                [false, "form"],
+            ],
+            domain: [["journal_id", "=", this.state.journalId]],
+            context: { default_journal_id: this.state.journalId },
+        });
+    }
+
+    openItemMove(item) {
+        this.actionService.doAction({
+            type: "ir.actions.act_window",
+            res_model: "account.move",
+            res_id: item.move_id,
+            views: [[false, "form"]],
         });
     }
 

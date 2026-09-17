@@ -35,6 +35,11 @@ class AccountBankStatementLine(models.Model):
                 cron._trigger()
         return st_lines
 
+    def om_action_reconcile(self):
+        """ Open the reconciliation screen on this transaction. """
+        self.ensure_one()
+        return self.journal_id.om_action_open_bank_reconciliation(state='all', st_line_id=self.id)
+
     # -------------------------------------------------------------------------
     # Access
     # -------------------------------------------------------------------------

@@ -28,7 +28,11 @@ Features
   type creates its asset when the bill is posted, and the type can confirm the
   asset at once or create one asset per unit of the line.
 * Let an asset type claim the vendor bill lines booked on its asset account, so
-  the lines get their type without the encoder choosing it.
+  the lines get their type without the encoder choosing it. The Asset Category
+  column of the bill lines is hidden by default: show it from the optional
+  columns when a category has to be chosen by hand.
+* Open the assets of a vendor bill, and the assets of an asset category, from a
+  smart button on the bill and on the category.
 * Set an Asset Type and a Deferred Revenue Type on a product so that bill and
   invoice lines are filled in from the product.
 * Modify a running asset from a date: the running period is depreciated first, a
@@ -79,7 +83,9 @@ Configuration
 =============
 
 Create your asset types in Accounting > Configuration > Accounting > Asset
-Category, with their accounts, journal and depreciation method.
+Categories (Configuration > Management when Odoo 20 Accounting
+(om_account_accountant) is installed), with their accounts, journal and
+depreciation method.
 
 Set the gain and loss accounts used when an asset is sold or disposed of in
 Accounting > Configuration > Settings, under Asset gains and losses.
@@ -91,7 +97,7 @@ the Accounting tab of the product form.
 Usage
 =====
 
-Go to Accounting > Accounting > Assets > Assets and create an asset, or let a
+Go to Accounting > Accounting > Assets and create an asset, or let a
 posted vendor bill create it. Check the board with Compute Depreciation, then
 press Confirm to start the depreciation.
 
@@ -100,7 +106,7 @@ Dispose or Cancel as the life of the asset requires.
 
 Print the schedule from Accounting > Reporting > Management > Depreciation
 Schedule, and open the analysis from Accounting > Reporting > Management >
-Assets.
+Asset Analysis.
 
 
 Credits

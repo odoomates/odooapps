@@ -15,4 +15,28 @@
         </field>
     </record>
 
+    <!-- the dashboard shows the journals, they are created from the configuration -->
+    <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.om.account.accountant</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="create">0</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- the standard list of the journals hides its New button: a journal can be created from the list -->
+    <record id="view_account_journal_tree" model="ir.ui.view">
+        <field name="name">account.journal.list</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="js_class"/>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

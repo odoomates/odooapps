@@ -17,11 +17,20 @@ Features
 * Two horizontal and vertical offsets move the whole layout to correct the alignment of your printer,
   without touching the position of each field.
 * Choose the date format printed on the cheque: the format of the language, or one of DD/MM/YYYY,
-  MM/DD/YYYY, YYYY-MM-DD, DD-MM-YYYY, DDMMYYYY or DD Mon YYYY.
+  MM/DD/YYYY, YYYY-MM-DD, DD-MM-YYYY, DDMMYYYY, DD Mon YYYY, DD.MM.YYYY, YYYY/MM/DD, YYYYMMDD or
+  Month DD, YYYY.
 * The amount in figures can be printed with the currency symbol and surrounded by stars so that nothing
   can be added to it.
 * The amount in words can be printed in capitals, followed by a suffix such as "Only", and the rest of
   the line filled with stars.
+* The cents can follow the amount in words in words, or as a fraction as on the cheques of the US
+  (e.g. "One Thousand Dollars and 50/100").
+* The amount in words can be printed in a language of its own, whatever the language of the user, and a
+  second time in another language for bilingual cheques, e.g. English and Arabic in the Gulf countries.
+* For cheques printed on blank cheque paper with magnetic toner, a MICR line can be printed at the
+  bottom of the cheque in the E-13B font you upload, following the US (ANSI X9) or the Canadian
+  (CPA-005) layout, with the cheque number and the routing and account numbers of the bank account of
+  the journal.
 * Optionally print one or two payment stubs under the cheque, listing the bills paid by the payment with
   their due date, number, original amount, balance due and amount paid.
 * When the stub spills over several pages, the cheque is printed on the first page and the next pages
@@ -34,8 +43,13 @@ Features
   companies.
 * Each bank journal points to the cheque format of its cheque book; when none is set, the first format
   available for the company is used.
-* Two cheque formats are installed as examples: a cheque on the top of an A4 page with two stubs, and a
-  202 x 92 mm cheque leaf.
+* Cheque formats are installed for the common cheques: A4 pages with the cheque on top or in the middle
+  and two stubs, US Letter voucher cheques with the cheque on top, in the middle or at the bottom, the
+  8.5 x 3.5 in business cheque of the US and Canada, the Canadian CPA-006 cheque with its YYYYMMDD date
+  boxes, a 202 x 92 mm cheque leaf (e.g. India CTS-2010), and cheque leaves for the UK and Ireland, the
+  Gulf countries and Australia and New Zealand. Calibrate them with a test print on your own cheques.
+* A cheque format can be linked to the countries where it is used: a bank journal without a cheque
+  format takes the first format of the country of its company, else the first format used anywhere.
 * Accounting advisers can create and change the cheque formats; other accounting users can read them.
 
 Installation
@@ -65,7 +79,7 @@ Set the cheque layout to "Configurable Cheque Format" on the company, or on the 
 Accounting > Configuration > Accounting > Journals, on the tab where the cheque printing options of the
 standard Check Printing module are.
 
-Then go to Accounting > Configuration > Accounting > Cheque Formats, start from one of the two formats
+Then go to Accounting > Configuration > Invoicing > Cheque Formats, start from one of the two formats
 installed or create your own, place the fields, print a test and adjust the positions and the offsets
 until they match your cheques. Choose the format on the bank journal that uses that cheque book.
 

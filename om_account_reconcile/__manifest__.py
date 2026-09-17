@@ -14,6 +14,7 @@
         'security/ir.access.csv',
         'data/ir_cron.xml',
         'views/res_config_settings_views.xml',
+        'views/account_bank_statement_views.xml',
         'views/bank_reconciliation_views.xml',
         'wizard/reconcile_items_wizard_views.xml',
     ],

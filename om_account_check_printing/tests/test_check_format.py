@@ -1,6 +1,8 @@
+import base64
+import re
 from datetime import date
 
-from odoo.exceptions import RedirectWarning, ValidationError
+from odoo.exceptions import RedirectWarning, UserError, ValidationError
 from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -103,3 +105,124 @@ class TestCheckFormat(AccountTestInvoicingCommon):
             # the standard message asking for a layout
             payment.print_checks()
         self.assertFalse(payment.is_sent)
+
+    def test_every_installed_format_prints(self):
+        """ The formats shipped with the module print their sample on a page of their own size. """
+        report = self.env.ref('om_account_check_printing.action_report_check_test')
+        formats = self.env['account.check.format'].search([('company_id', '=', False)])
+        self.assertGreaterEqual(len(formats), 10)
+        for check_format in formats:
+            with self.subTest(check_format=check_format.name):
+                html = report.with_context(om_check_format_id=check_format.id)._render_qweb_html(
+                    report.report_name, check_format.ids)[0].decode()
+                self.assertIn('Sample Supplier Ltd', html)
+                width, height = check_format._get_page_size()
+                self.assertIn('width: %.1fmm; height: %.1fmm' % (width - 1, height - 1), html)
+                for line in check_format.line_ids:
+                    self.assertLessEqual(line.x + line.width, width + 0.1, 'the field stays on the page')
+                    self.assertLessEqual(line.y, height, 'the field stays on the page')
+
+    def test_the_format_of_the_country_is_taken_by_default(self):
+        self.bank.check_format_id = False
+        self.env.company.country_id = self.env.ref('base.us')
+        self.assertEqual(self.bank._get_check_format(),
+                         self.env.ref('om_account_check_printing.check_format_us_top'))
+        self.env.company.country_id = self.env.ref('base.ca')
+        self.assertEqual(self.bank._get_check_format(),
+                         self.env.ref('om_account_check_printing.check_format_us_ca_leaf'))
+        self.env.company.country_id = self.env.ref('base.be')
+        self.assertEqual(self.bank._get_check_format(), self.a4_format,
+                         'without a format of its own, a country takes the first format used anywhere')
+        self.bank.check_format_id = self.leaf_format
+        self.assertEqual(self.bank._get_check_format(), self.leaf_format, 'the format of the journal comes first')
+
+    def test_date_formats(self):
+        check_format = self.leaf_format.copy({'name': 'Dates'})
+        day = date(2026, 3, 5)
+        for date_format, expected in (('%Y%m%d', '20260305'), ('%d.%m.%Y', '05.03.2026'),
+                                      ('%Y/%m/%d', '2026/03/05'), ('%B %d, %Y', 'March 05, 2026')):
+            check_format.date_format = date_format
+            self.assertEqual(check_format._format_date(day), expected)
+
+    def test_cents_as_a_fraction(self):
+        check_format = self.env.ref('om_account_check_printing.check_format_us_ca_leaf')
+        usd = self.env.ref('base.USD')
+        words = check_format._format_words(1234.5, usd)
+        self.assertTrue(words.endswith(' AND 50/100'), words)
+        self.assertIn('THOUSAND', words)
+        self.assertNotIn('CENTS', words)
+        self.assertTrue(check_format._format_words(12.0, usd).endswith(' AND 00/100'))
+        self.assertTrue(check_format._format_words(7.009, usd).endswith(' AND 01/100'), 'rounded to the cent')
+        kwd = self.env.ref('base.KWD')
+        kwd.active = True
+        self.assertTrue(check_format._format_words(3.25, kwd).endswith(' AND 250/1000'))
+
+    def test_words_in_a_second_language(self):
+        self.env['res.lang']._activate_lang('fr_FR')
+        check_format = self.leaf_format.copy({'name': 'Bilingual', 'words_lang_2': 'fr_FR'})
+        check_format.line_ids.create({
+            'format_id': check_format.id, 'field': 'amount_in_words_2', 'x': 30, 'y': 45, 'width': 125,
+        })
+        currency = self.env.company.currency_id
+        values = check_format._get_field_values('Partner', 1000.0, currency, date(2026, 3, 5), '', '1',
+                                                self.env.company)
+        self.assertIn('MILLE', values['amount_in_words_2'])
+        self.assertIn('THOUSAND', values['amount_in_words'])
+        void = check_format._get_field_values('Partner', 1000.0, currency, date(2026, 3, 5), '', '1',
+                                              self.env.company, void=True)
+        self.assertFalse(void['amount_in_words_2'])
+
+        check_format.words_lang = 'fr_FR'
+        self.assertIn('MILLE', check_format._format_words(1000.0, currency), 'the words follow the format')
+
+    def test_micr_line(self):
+        check_format = self.env.ref('om_account_check_printing.check_format_us_ca_leaf').copy({'name': 'Blank'})
+        with self.assertRaises(ValidationError):
+            check_format.print_micr = True
+        check_format.write({'print_micr': True, 'micr_font': base64.b64encode(b'not really a font').decode()})
+        self.assertEqual(check_format._format_micr('000123', '011000015', '12-3456-789'),
+                         'C000123C A011000015A 123456789C')
+        with self.assertRaises(UserError):
+            check_format._format_micr('1', '12345', '123')
+        with self.assertRaises(UserError):
+            check_format._format_micr('1', '011000015', '')
+
+        check_format.micr_style = 'ca'
+        self.assertEqual(check_format._format_micr('42', '12345-001', '1234567'), 'C42C A12345D001A 1234567C')
+        self.assertEqual(check_format._format_micr('42', '000112345', '1234567'), 'C42C A12345D001A 1234567C',
+                         'the electronic form 0 + institution + transit')
+        with self.assertRaises(UserError):
+            check_format._format_micr('42', '12345', '1234567')
+
+        check_format.micr_style = 'us'
+        self.bank.check_format_id = check_format
+        with self.assertRaises(UserError):
+            check_format._get_field_values('Partner', 1.0, self.env.company.currency_id, date(2026, 3, 5), '', '1',
+                                           self.env.company, bank_account=self.env['res.partner.bank'])
+        self.bank.bank_account_id = self.env['res.partner.bank'].create({
+            'partner_id': self.env.company.partner_id.id,
+            'account_number': '555-666-777',
+            'clearing_number': '011000015',
+        })
+        bill, payment = self._pay_bill()
+        payment.print_checks()
+        report = self.env.ref(LAYOUT).with_context(om_check_format_id=check_format.id)
+        html = report._render_qweb_html(report.report_name, payment.ids)[0].decode()
+        micr = 'C%sC A011000015A 555666777C' % re.sub(r'[^0-9]', '', payment.check_number)
+        self.assertIn(micr, html)
+        self.assertIn("font-family: 'OmCheckMicr%d'" % check_format.id, html)
+        self.assertIn("@font-face { font-family: 'OmCheckMicr%d'" % check_format.id, html, 'the CSS is not escaped')
+        self.assertIn('top: 79.87mm', html, '3/16 inch above the bottom of the cheque, less the font height')
+
+        test = self.env.ref('om_account_check_printing.action_report_check_test')
+        html = test.with_context(om_check_format_id=check_format.id)._render_qweb_html(
+            test.report_name, check_format.ids)[0].decode()
+        self.assertIn('C000123C A011000015A 1234567890C', html)
+
+    def test_no_micr_without_the_option(self):
+        bill, payment = self._pay_bill()
+        self.bank.check_format_id = self.leaf_format
+        report = self.env.ref(LAYOUT).with_context(om_check_format_id=self.leaf_format.id)
+        html = report._render_qweb_html(report.report_name, payment.ids)[0].decode()
+        self.assertNotIn('o_om_check_micr', html)
+        self.assertNotIn('@font-face', html)

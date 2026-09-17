@@ -61,9 +61,10 @@ clicking on the upgrade button.
 Configuration
 =============
 
-Create at least one template in Accounting > Configuration > Recurring Payment >
-Recurring Template, choose its journal, its interval and how the payments have
-to be generated, then press Confirm.
+Create at least one template in Accounting > Configuration > Accounting >
+Recurring Templates (Configuration > Management when Odoo 20 Accounting
+(om_account_accountant) is installed), choose its journal, its interval and how
+the payments have to be generated, then press Confirm.
 
 The scheduled action Generate Recurring Payments runs once a day and is active
 after the installation.
@@ -72,7 +73,7 @@ after the installation.
 Usage
 =====
 
-Go to Accounting > Configuration > Recurring Payment > Recurring Payment, create
+Go to Accounting > Accounting > Recurring Payments, create
 a record with the partner, the amount, the dates and the template, and press
 Done to build the schedule.
 

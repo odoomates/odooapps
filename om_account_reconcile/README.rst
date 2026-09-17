@@ -41,6 +41,13 @@ Features
   of your choice; without a write-off the items are matched partially.
 * Let the Match Suggestions action reconcile, in one go, the groups of open
   items of a same account and partner whose amounts cancel each other.
+* The bank and cash cards of the accounting dashboard show what is left to do:
+  a Reconcile button with the number of transactions to reconcile, the balance
+  of the last statement and the transactions marked to check.
+* Type transactions in from the New Transaction button of a bank or cash card,
+  and the cash counted at the end of the day, with its transactions, from the
+  New Statement button of a cash card. The transactions and the statements get
+  a list and a form of their own.
 * Only users of the accounting group can reconcile, and a transaction or a group
   of items being reconciled is locked so that two users cannot reconcile it
   twice.
@@ -79,13 +86,13 @@ recurring counterparts to be proposed or applied automatically.
 Usage
 =====
 
-Go to Accounting > Accounting > Bank Reconciliation, select a transaction, check
-the proposed items or search for others, add a counterpart when needed and
-validate.
+Go to Accounting > Accounting > Reconciliation > Bank Reconciliation, select a
+transaction, check the proposed items or search for others, add a counterpart
+when needed and validate.
 
 To match open items that did not come from the bank, go to Accounting >
-Accounting > Transactions > Match Journal Items, select the items of one account
-and press Match.
+Accounting > Reconciliation > Open Items, or to Match Journal Items in the same
+menu, select the items of one account and press Match.
 
 
 Credits

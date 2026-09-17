@@ -77,7 +77,7 @@ class AccountAssetCategory(models.Model):
                      'liability_credit_card', 'equity', 'equity_unaffected']
 
     active = fields.Boolean(default=True)
-    name = fields.Char(required=True, index=True, string="Asset Type")
+    name = fields.Char(required=True, index=True, string="Name")
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account')
     account_asset_id = fields.Many2one(
         'account.account', string='Asset Account',
@@ -162,11 +162,38 @@ class AccountAssetCategory(models.Model):
              ' year (depending on the periodicity of the depreciations).\n'
              '  * Based on purchase date: The depreciation dates will be based on the purchase date.')
 
+    asset_count = fields.Integer(compute='_compute_asset_count', string='# Assets')
+
+    def _compute_asset_count(self):
+        counts = dict(self.env['account.asset.asset']._read_group(
+            [('category_id', 'in', self.ids)], ['category_id'], ['__count']))
+        for category in self:
+            category.asset_count = counts.get(category, 0)
+
+    def action_view_assets(self):
+        self.ensure_one()
+        assets = self.env['account.asset.asset'].search([('category_id', '=', self.id)])
+        action = assets._get_assets_action(
+            _('Assets of %s', self.name) if self.type == 'purchase' else _('Deferred Revenues of %s', self.name))
+        action['context'] = {'default_category_id': self.id}
+        return action
+
     @api.constrains('method_time', 'method_rate')
     def _check_method_rate(self):
         for category in self:
             if category.method_time == 'rate' and float_compare(category.method_rate, 0.0, precision_digits=2) <= 0:
                 raise ValidationError(_('The depreciation rate of "%s" must be greater than 0.', category.name))
+
+    @api.constrains('type', 'account_asset_id', 'account_depreciation_id', 'account_depreciation_expense_id')
+    def _check_depreciation_expense_account(self):
+        for category in self.filtered(lambda c: c.type == 'purchase'):
+            if category.account_depreciation_expense_id in (
+                    category.account_asset_id | category.account_depreciation_id):
+                raise ValidationError(_(
+                    'The depreciation expense account of the asset category "%(category)s" must differ from its '
+                    'asset account and its accumulated depreciation account: booked on the same account, the '
+                    'depreciation would cancel itself and never reach the profit and loss.',
+                    category=category.name))
 
     @api.constrains('create_from_bill', 'account_asset_id', 'company_id', 'type', 'active')
     def _check_create_from_bill(self):
@@ -1107,6 +1134,18 @@ class AccountAssetAsset(models.Model):
             'views': [(False, 'form')],
             'res_id': record.id,
         }
+
+    def _get_assets_action(self, name):
+        """ :return: the action showing these assets, the form when there is only one """
+        action = self.env['ir.actions.act_window']._for_xml_id('om_account_asset.action_account_asset_asset_form')
+        action.update({
+            'name': name,
+            'domain': [('id', 'in', self.ids)],
+            'context': {'create': False},
+        })
+        if len(self) == 1:
+            action.update({'view_mode': 'form', 'views': [(False, 'form')], 'res_id': self.id})
+        return action
 
     def open_invoice(self):
         self.ensure_one()

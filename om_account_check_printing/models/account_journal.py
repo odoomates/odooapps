@@ -11,8 +11,15 @@ class AccountJournal(models.Model):
     )
 
     def _get_check_format(self):
-        """ :return: the cheque format of the journal, else the first one of its company """
+        """ :return: the cheque format of the journal, else the first one of its company, preferring the formats
+                     of the country of the company """
         self.ensure_one()
-        return self.check_format_id or self.env['account.check.format'].search([
+        if self.check_format_id:
+            return self.check_format_id
+        formats = self.env['account.check.format'].search([
             '|', ('company_id', '=', False), ('company_id', '=', self.company_id.id),
-        ], limit=1)
+        ])
+        country = self.company_id.country_id
+        return (formats.filtered(lambda check_format: country in check_format.country_ids)[:1]
+                or formats.filtered(lambda check_format: not check_format.country_ids)[:1]
+                or formats[:1])

@@ -22,7 +22,8 @@
             ]"/>
         </record>
 
-        <!-- A cheque leaf of a cheque book, 202 x 92 mm (e.g. the CTS-2010 cheques of India) -->
+        <!-- A cheque leaf of a cheque book, 202 x 92 mm (e.g. the CTS-2010 cheques of India, also a close match for
+             the cheques of Pakistan, Bangladesh and Sri Lanka) -->
         <record id="check_format_leaf" model="account.check.format">
             <field name="name">Cheque Leaf (202 x 92 mm)</field>
             <field name="sequence">20</field>
@@ -37,6 +38,186 @@
                 Command.create({'sequence': 3, 'field': 'amount_in_words', 'x': 30, 'y': 29, 'width': 125, 'height': 16, 'line_height': 8}),
                 Command.create({'sequence': 4, 'field': 'amount', 'x': 158, 'y': 36, 'width': 40, 'bold': True}),
                 Command.create({'sequence': 5, 'field': 'text', 'text': 'A/C PAYEE ONLY', 'x': 6, 'y': 16, 'width': 34, 'font_size': 8, 'rotation': -30, 'border': 'crossing', 'line_height': 5}),
+            ]"/>
+        </record>
+
+        <!-- A cheque in the middle third of an A4 page, a stub above and below it -->
+        <record id="check_format_a4_middle" model="account.check.format">
+            <field name="name">Cheque in the Middle with 2 Stubs (A4)</field>
+            <field name="sequence">15</field>
+            <field name="paper_size">a4</field>
+            <field name="page_width">210</field>
+            <field name="page_height">297</field>
+            <field name="date_format">locale</field>
+            <field name="print_stub" eval="True"/>
+            <field name="stub_top">8</field>
+            <field name="stub_2_top">205</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 160, 'y': 119, 'width': 40}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 30, 'y': 137, 'width': 125}),
+                Command.create({'sequence': 3, 'field': 'amount', 'x': 160, 'y': 137, 'width': 40, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 4, 'field': 'amount_in_words', 'x': 15, 'y': 147, 'width': 185, 'height': 12, 'line_height': 6}),
+                Command.create({'sequence': 5, 'field': 'memo', 'x': 15, 'y': 177, 'width': 90}),
+            ]"/>
+        </record>
+
+        <!-- US voucher cheques: the cheque on the top third of a Letter page, two stubs below it -->
+        <record id="check_format_us_top" model="account.check.format">
+            <field name="name">US Cheque on Top with 2 Stubs (Letter)</field>
+            <field name="sequence">30</field>
+            <field name="paper_size">letter</field>
+            <field name="page_width">215.9</field>
+            <field name="page_height">279.4</field>
+            <field name="date_format">%m/%d/%Y</field>
+            <field name="words_cents">fraction</field>
+            <field name="country_ids" eval="[Command.set([ref('base.us')])]"/>
+            <field name="print_stub" eval="True"/>
+            <field name="stub_top">100</field>
+            <field name="stub_2_top">193</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 165, 'y': 18, 'width': 40}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 30, 'y': 33, 'width': 130}),
+                Command.create({'sequence': 3, 'field': 'amount', 'x': 168, 'y': 33, 'width': 38, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 4, 'field': 'amount_in_words', 'x': 12, 'y': 43, 'width': 170, 'height': 7, 'line_height': 7}),
+                Command.create({'sequence': 5, 'field': 'memo', 'x': 20, 'y': 72, 'width': 80}),
+            ]"/>
+        </record>
+
+        <!-- US voucher cheques: the cheque in the middle third, a stub above and below it -->
+        <record id="check_format_us_middle" model="account.check.format">
+            <field name="name">US Cheque in the Middle with 2 Stubs (Letter)</field>
+            <field name="sequence">31</field>
+            <field name="paper_size">letter</field>
+            <field name="page_width">215.9</field>
+            <field name="page_height">279.4</field>
+            <field name="date_format">%m/%d/%Y</field>
+            <field name="words_cents">fraction</field>
+            <field name="country_ids" eval="[Command.set([ref('base.us')])]"/>
+            <field name="print_stub" eval="True"/>
+            <field name="stub_top">8</field>
+            <field name="stub_2_top">193</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 165, 'y': 111.1, 'width': 40}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 30, 'y': 126.1, 'width': 130}),
+                Command.create({'sequence': 3, 'field': 'amount', 'x': 168, 'y': 126.1, 'width': 38, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 4, 'field': 'amount_in_words', 'x': 12, 'y': 136.1, 'width': 170, 'height': 7, 'line_height': 7}),
+                Command.create({'sequence': 5, 'field': 'memo', 'x': 20, 'y': 165.1, 'width': 80}),
+            ]"/>
+        </record>
+
+        <!-- US voucher cheques: two stubs on top, the cheque on the bottom third -->
+        <record id="check_format_us_bottom" model="account.check.format">
+            <field name="name">US Cheque at the Bottom with 2 Stubs (Letter)</field>
+            <field name="sequence">32</field>
+            <field name="paper_size">letter</field>
+            <field name="page_width">215.9</field>
+            <field name="page_height">279.4</field>
+            <field name="date_format">%m/%d/%Y</field>
+            <field name="words_cents">fraction</field>
+            <field name="country_ids" eval="[Command.set([ref('base.us')])]"/>
+            <field name="print_stub" eval="True"/>
+            <field name="stub_top">8</field>
+            <field name="stub_2_top">101</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 165, 'y': 204.2, 'width': 40}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 30, 'y': 219.2, 'width': 130}),
+                Command.create({'sequence': 3, 'field': 'amount', 'x': 168, 'y': 219.2, 'width': 38, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 4, 'field': 'amount_in_words', 'x': 12, 'y': 229.2, 'width': 170, 'height': 7, 'line_height': 7}),
+                Command.create({'sequence': 5, 'field': 'memo', 'x': 20, 'y': 258.2, 'width': 80}),
+            ]"/>
+        </record>
+
+        <!-- A continuous or single business cheque of the US and Canada, 215.9 x 88.9 mm -->
+        <record id="check_format_us_ca_leaf" model="account.check.format">
+            <field name="name">US / Canada Business Cheque (8.5 x 3.5 in)</field>
+            <field name="sequence">40</field>
+            <field name="paper_size">custom</field>
+            <field name="page_width">215.9</field>
+            <field name="page_height">88.9</field>
+            <field name="date_format">%m/%d/%Y</field>
+            <field name="words_cents">fraction</field>
+            <field name="country_ids" eval="[Command.set([ref('base.us'), ref('base.ca')])]"/>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 165, 'y': 18, 'width': 40}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 30, 'y': 33, 'width': 130}),
+                Command.create({'sequence': 3, 'field': 'amount', 'x': 168, 'y': 33, 'width': 38, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 4, 'field': 'amount_in_words', 'x': 12, 'y': 43, 'width': 170, 'height': 7, 'line_height': 7}),
+                Command.create({'sequence': 5, 'field': 'memo', 'x': 20, 'y': 72, 'width': 80}),
+            ]"/>
+        </record>
+
+        <!-- Canadian cheque of the CPA Standard 006: the date in YYYYMMDD boxes with the format printed under it -->
+        <record id="check_format_ca_cpa" model="account.check.format">
+            <field name="name">Canadian Cheque CPA-006 (8.5 x 3.5 in)</field>
+            <field name="sequence">41</field>
+            <field name="paper_size">custom</field>
+            <field name="page_width">215.9</field>
+            <field name="page_height">88.9</field>
+            <field name="date_format">%Y%m%d</field>
+            <field name="words_cents">fraction</field>
+            <field name="micr_style">ca</field>
+            <field name="country_ids" eval="[Command.set([ref('base.ca')])]"/>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 160, 'y': 12, 'width': 45, 'letter_spacing': 2.5, 'font_size': 12}),
+                Command.create({'sequence': 2, 'field': 'text', 'text': 'Y Y Y Y M M D D', 'x': 160, 'y': 18, 'width': 45, 'font_size': 6, 'letter_spacing': 0.6, 'line_height': 4}),
+                Command.create({'sequence': 3, 'field': 'payee', 'x': 30, 'y': 33, 'width': 130}),
+                Command.create({'sequence': 4, 'field': 'amount', 'x': 168, 'y': 33, 'width': 38, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 5, 'field': 'amount_in_words', 'x': 12, 'y': 43, 'width': 170, 'height': 7, 'line_height': 7}),
+                Command.create({'sequence': 6, 'field': 'memo', 'x': 20, 'y': 72, 'width': 80}),
+            ]"/>
+        </record>
+
+        <!-- A cheque leaf of the UK and Ireland, whose size varies by bank: calibrate it with a test print. The A/C Payee crossing is pre-printed on these cheques. -->
+        <record id="check_format_uk_leaf" model="account.check.format">
+            <field name="name">UK / Ireland Cheque Leaf (178 x 86 mm)</field>
+            <field name="sequence">50</field>
+            <field name="paper_size">custom</field>
+            <field name="page_width">178</field>
+            <field name="page_height">86</field>
+            <field name="date_format">%d/%m/%Y</field>
+            <field name="country_ids" eval="[Command.set([ref('base.uk'), ref('base.ie')])]"/>
+            <field name="words_suffix">Only</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 128, 'y': 8, 'width': 45}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 15, 'y': 22, 'width': 120}),
+                Command.create({'sequence': 3, 'field': 'amount_in_words', 'x': 15, 'y': 32, 'width': 115, 'height': 16, 'line_height': 8}),
+                Command.create({'sequence': 4, 'field': 'amount', 'x': 135, 'y': 38, 'width': 38, 'align': 'right', 'bold': True}),
+            ]"/>
+        </record>
+
+        <!-- A cheque leaf of the Gulf countries, whose size varies by bank: calibrate it with a test print -->
+        <record id="check_format_gulf_leaf" model="account.check.format">
+            <field name="name">Gulf Cheque Leaf (178 x 82 mm)</field>
+            <field name="sequence">60</field>
+            <field name="paper_size">custom</field>
+            <field name="page_width">178</field>
+            <field name="page_height">82</field>
+            <field name="date_format">%d/%m/%Y</field>
+            <field name="country_ids" eval="[Command.set([ref('base.ae'), ref('base.sa'), ref('base.qa'), ref('base.kw'), ref('base.bh'), ref('base.om')])]"/>
+            <field name="words_suffix">Only</field>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 128, 'y': 8, 'width': 45}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 15, 'y': 22, 'width': 120}),
+                Command.create({'sequence': 3, 'field': 'amount_in_words', 'x': 15, 'y': 32, 'width': 115, 'height': 16, 'line_height': 8}),
+                Command.create({'sequence': 4, 'field': 'amount', 'x': 135, 'y': 38, 'width': 38, 'align': 'right', 'bold': True}),
+                Command.create({'sequence': 5, 'field': 'text', 'text': 'A/C PAYEE ONLY', 'x': 4, 'y': 14, 'width': 34, 'font_size': 8, 'rotation': -30, 'border': 'crossing', 'line_height': 5}),
+            ]"/>
+        </record>
+
+        <!-- A cheque leaf of Australia and New Zealand, whose size varies by bank: calibrate it with a test print. The Not Negotiable crossing is pre-printed on these cheques. -->
+        <record id="check_format_au_leaf" model="account.check.format">
+            <field name="name">Australia / New Zealand Cheque Leaf (175 x 80 mm)</field>
+            <field name="sequence">70</field>
+            <field name="paper_size">custom</field>
+            <field name="page_width">175</field>
+            <field name="page_height">80</field>
+            <field name="date_format">%d/%m/%Y</field>
+            <field name="country_ids" eval="[Command.set([ref('base.au'), ref('base.nz')])]"/>
+            <field name="line_ids" eval="[
+                Command.create({'sequence': 1, 'field': 'date', 'x': 125, 'y': 8, 'width': 45}),
+                Command.create({'sequence': 2, 'field': 'payee', 'x': 15, 'y': 22, 'width': 120}),
+                Command.create({'sequence': 3, 'field': 'amount_in_words', 'x': 15, 'y': 32, 'width': 115, 'height': 16, 'line_height': 8}),
+                Command.create({'sequence': 4, 'field': 'amount', 'x': 135, 'y': 38, 'width': 38, 'align': 'right', 'bold': True}),
             ]"/>
         </record>
 

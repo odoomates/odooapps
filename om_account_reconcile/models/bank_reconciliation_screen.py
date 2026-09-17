@@ -86,6 +86,8 @@ class AccountBankStatementLine(models.Model):
             domain.append(('is_reconciled', '=', False))
         elif state == 'reconciled':
             domain.append(('is_reconciled', '=', True))
+        elif state == 'to_review':
+            domain.append(('review_state', 'in', ('todo', 'anomaly')))
         if search:
             search = search.strip()
             text_domain = ['|', '|', ('payment_ref', 'ilike', search), ('partner_id.name', 'ilike', search),
@@ -231,11 +233,55 @@ class AccountBankStatementLine(models.Model):
 class AccountJournal(models.Model):
     _inherit = 'account.journal'
 
-    def om_action_open_bank_reconciliation(self):
+    def om_action_open_bank_reconciliation(self, state='to_reconcile', st_line_id=False):
+        """ :param state: the transactions listed first: to_reconcile, to_review, reconciled or all """
         self.ensure_one()
+        params = {'journal_id': self.id, 'filter': state}
+        if st_line_id:
+            params['st_line_id'] = st_line_id
         return {
             'type': 'ir.actions.client',
             'tag': 'om_bank_reconciliation',
             'name': _('Bank Reconciliation'),
-            'params': {'journal_id': self.id},
+            'params': params,
+        }
+
+    # -------------------------------------------------------------------------
+    # Dashboard
+    # -------------------------------------------------------------------------
+
+    def om_action_open_to_review(self):
+        return self.om_action_open_bank_reconciliation(state='to_review')
+
+    def om_action_new_transaction(self):
+        """ A transaction typed in, e.g. the cash spent during the day or a bank fee seen on the online banking. """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('New Transaction'),
+            'res_model': 'account.bank.statement.line',
+            'views': [(self.env.ref('om_account_reconcile.view_bank_statement_line_form').id, 'form')],
+            'target': 'new',
+            'context': {'default_journal_id': self.id, 'default_date': fields.Date.context_today(self)},
+        }
+
+    def om_action_new_statement(self):
+        """ A statement of the cash counted at the end of the day, with the transactions of the day. """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('New Statement'),
+            'res_model': 'account.bank.statement',
+            'views': [(self.env.ref('om_account_reconcile.view_bank_statement_form').id, 'form')],
+            'context': {'default_journal_id': self.id, 'default_date': fields.Date.context_today(self)},
+        }
+
+    def om_action_open_last_statement(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.last_statement_id.display_name,
+            'res_model': 'account.bank.statement',
+            'views': [(self.env.ref('om_account_reconcile.view_bank_statement_form').id, 'form')],
+            'res_id': self.last_statement_id.id,
         }

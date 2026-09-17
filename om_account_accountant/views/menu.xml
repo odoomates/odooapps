@@ -3,12 +3,6 @@
 
     <menuitem id="account.menu_finance" name="Accounting"/>
 
-    <menuitem id="menu_account_templates"
-              sequence="100"
-              name="Templates"
-              parent="account.menu_finance_configuration"
-              groups="base.group_no_one"/>
-
     <record id="account.menu_action_account_moves_all" model="ir.ui.menu">
         <field name="group_ids" eval="[(5,0,0)]" />
     </record>
@@ -18,7 +12,7 @@
     </record>
 
     <menuitem id="menu_finance_entries_accounting_journals" name="Journals"
-              parent="account.menu_finance_entries" sequence="2">
+              parent="account.menu_finance_entries" sequence="5">
 
         <menuitem id="menu_action_account_moves_journal_sales"
                   action="account.action_account_moves_journal_sales"
@@ -37,5 +31,72 @@
                   groups="account.group_account_readonly" sequence="4"/>
 
     </menuitem>
+
+    <!-- The menus of the accounting apps, arranged together: the daily work under Accounting, the reports
+         under Reporting and the settings under Configuration. Each app places its menus on its own when it is
+         installed alone; this module only gathers them. -->
+
+    <!-- Accounting: the closing comes last, after the daily work -->
+    <record id="account.account_closing_menu" model="ir.ui.menu">
+        <field name="sequence">90</field>
+    </record>
+
+    <!-- Configuration > Accounting: room between the standard settings for the ones of the apps -->
+    <record id="account.menu_action_account_form" model="ir.ui.menu">
+        <field name="sequence">10</field>
+    </record>
+    <record id="account.menu_action_tax_form" model="ir.ui.menu">
+        <field name="sequence">20</field>
+    </record>
+    <record id="account.menu_action_account_journal_form" model="ir.ui.menu">
+        <field name="sequence">30</field>
+    </record>
+    <record id="account.menu_action_currency_form" model="ir.ui.menu">
+        <field name="sequence">40</field>
+    </record>
+    <record id="account.menu_action_account_fiscal_position_form" model="ir.ui.menu">
+        <field name="sequence">50</field>
+    </record>
+    <record id="account.menu_action_account_journal_group_list" model="ir.ui.menu">
+        <field name="sequence">80</field>
+    </record>
+    <record id="account.menu_action_tax_group" model="ir.ui.menu">
+        <field name="sequence">90</field>
+    </record>
+    <record id="account.menu_action_rounding_form_view" model="ir.ui.menu">
+        <field name="sequence">100</field>
+    </record>
+
+    <!-- Configuration > Invoicing: the payment settings first -->
+    <record id="account.menu_action_incoterm_open" model="ir.ui.menu">
+        <field name="sequence">50</field>
+    </record>
+    <record id="account.menu_product_product_categories" model="ir.ui.menu">
+        <field name="sequence">60</field>
+    </record>
+
+    <!-- Configuration > Management: the settings of the assets, the budgets, the recurring payments and the
+         closing -->
+    <menuitem id="menu_account_management_config"
+              name="Management"
+              parent="account.menu_finance_configuration"
+              sequence="30"/>
+
+    <record id="om_account_asset.menu_action_account_asset_asset_list_normal_purchase" model="ir.ui.menu">
+        <field name="parent_id" ref="menu_account_management_config"/>
+        <field name="sequence">10</field>
+    </record>
+    <record id="om_account_budget.menu_account_budget_position" model="ir.ui.menu">
+        <field name="parent_id" ref="menu_account_management_config"/>
+        <field name="sequence">20</field>
+    </record>
+    <record id="om_recurring_payments.menu_recurring_template" model="ir.ui.menu">
+        <field name="parent_id" ref="menu_account_management_config"/>
+        <field name="sequence">30</field>
+    </record>
+    <record id="om_fiscal_year.menu_account_period_closing_task" model="ir.ui.menu">
+        <field name="parent_id" ref="menu_account_management_config"/>
+        <field name="sequence">40</field>
+    </record>
 
 </odoo>

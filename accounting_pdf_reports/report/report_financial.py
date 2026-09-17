@@ -102,7 +102,8 @@ class ReportFinancial(models.AbstractModel):
                 'name': report.name,
                 'balance': res[report.id]['balance'] * float(report.sign),
                 'type': 'report',
-                'level': bool(report.style_overwrite) and report.style_overwrite or report.level,
+                # the style is a selection of strings: '0' is the automatic formatting, i.e. the level in the tree
+                'level': int(report.style_overwrite or 0) or report.level,
                 'account_type': report.type or False, #used to underline the financial report balances
             }
             if data['debit_credit']:

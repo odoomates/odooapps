@@ -18,7 +18,7 @@ Features
 * Payments registered but not yet reconciled with the bank (outstanding receipts and payments accounts)
   are listed on their own lines.
 * Bank and cash entries already recorded with a date inside the forecast are included.
-* Expected cash items you enter by hand (salaries, rent, loan repayments, taxes) are added to the
+* Cash forecast items you enter by hand (salaries, rent, loan repayments, taxes) are added to the
   forecast, once or repeated every week, month, quarter or year, with an optional end date.
 * Each expected item can be entered in another currency; it is converted to the company currency at
   the rate of the starting date of the forecast.
@@ -28,9 +28,9 @@ Features
 * The report prints the opening balance, the totals of the receipts and payments, the net cash flow and
   the closing balance of every period, and warns when the balance is expected to go negative.
 * When the module accounting_excel_reports is installed, a Print Excel button exports the same forecast.
-* Accounting billing users can read and change the expected cash items; accounting read-only users can
+* Accounting billing users can read and change the cash forecast items; accounting read-only users can
   read them.
-* Expected cash items belong to a company and are only visible to the users of that company.
+* Cash forecast items belong to a company and are only visible to the users of that company.
 
 Installation
 ============
@@ -59,7 +59,7 @@ There is nothing to configure. The forecast reads the invoices, bills, payments 
 are already in the database.
 
 If you expect receipts or payments that are not in an invoice or a bill, add them under
-Accounting > Reporting > Management > Expected Cash Items: a description, the amount, whether it is a
+Accounting > Accounting > Cash Forecast Items: a description, the amount, whether it is a
 receipt or a payment, the date it is expected on and, when it comes back, how often it repeats.
 
 Usage

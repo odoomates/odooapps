@@ -30,7 +30,11 @@
                             <field name="amount_stars"/>
                             <field name="words_uppercase"/>
                             <field name="words_suffix"/>
+                            <field name="words_cents"/>
+                            <field name="words_lang"/>
+                            <field name="words_lang_2"/>
                             <field name="words_fill"/>
+                            <field name="country_ids" widget="many2many_tags" options="{'no_create': True}"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                             <field name="active" invisible="1"/>
                         </group>
@@ -60,6 +64,27 @@
                                 </list>
                             </field>
                         </page>
+                        <page string="MICR Line" name="micr">
+                            <p class="text-muted">
+                                Only for cheques printed on blank cheque paper with magnetic toner: the cheques of
+                                your bank already carry their MICR line. The routing number and the account number
+                                are taken from the bank account of the journal.
+                            </p>
+                            <group>
+                                <group>
+                                    <field name="print_micr"/>
+                                    <field name="micr_style" invisible="not print_micr"/>
+                                    <field name="micr_font" filename="micr_font_filename"
+                                           invisible="not print_micr" required="print_micr"/>
+                                    <field name="micr_font_filename" invisible="1"/>
+                                </group>
+                                <group invisible="not print_micr">
+                                    <field name="micr_bottom"/>
+                                    <field name="micr_right"/>
+                                    <field name="micr_font_size"/>
+                                </group>
+                            </group>
+                        </page>
                         <page string="Stubs" name="stubs">
                             <group>
                                 <field name="print_stub"/>
@@ -81,8 +106,26 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="paper_size"/>
+                <field name="country_ids" widget="many2many_tags" optional="show"/>
                 <field name="company_id" groups="base.group_multi_company"/>
             </list>
+        </field>
+    </record>
+
+    <record id="view_check_format_search" model="ir.ui.view">
+        <field name="name">account.check.format.search</field>
+        <field name="model">account.check.format</field>
+        <field name="arch" type="xml">
+            <search string="Cheque Formats">
+                <field name="name"/>
+                <field name="country_ids"/>
+                <filter name="any_country" string="Any Country" domain="[('country_ids', '=', False)]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_paper_size" string="Paper" context="{'group_by': 'paper_size'}"/>
+                </group>
+            </search>
         </field>
     </record>
 
@@ -98,9 +141,9 @@
 
     <menuitem id="menu_check_format"
               name="Cheque Formats"
-              parent="account.account_account_menu"
+              parent="account.account_invoicing_menu"
               action="action_check_format"
-              sequence="50"
+              sequence="25"
               groups="account.group_account_manager"/>
 
 </odoo>

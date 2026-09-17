@@ -9,6 +9,17 @@ class AccountMove(models.Model):
     asset_ids = fields.One2many(
         'account.asset.asset', 'invoice_id', string="Assets"
     )
+    asset_count = fields.Integer(
+        compute='_compute_asset_count', string='# Assets', groups='account.group_account_invoice')
+
+    @api.depends('asset_ids')
+    def _compute_asset_count(self):
+        for move in self:
+            move.asset_count = len(move.asset_ids)
+
+    def action_view_assets(self):
+        self.ensure_one()
+        return self.asset_ids._get_assets_action(_('Assets of %s', self.name))
 
     def button_draft(self):
         for move in self:

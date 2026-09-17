@@ -33,7 +33,7 @@ class AccountPayment(models.Model):
             pages.append({
                 'values': check_format._get_field_values(
                     self.partner_id.name, self.amount, self.currency_id, self.date, self.memo, self.check_number,
-                    self.company_id, void=index > 0),
+                    self.company_id, void=index > 0, bank_account=self.journal_id.bank_account_id),
                 'stub_lines': stub_lines or [],
                 'partner_name': self.partner_id.name,
             })

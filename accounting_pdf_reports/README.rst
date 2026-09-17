@@ -67,7 +67,7 @@ The module installs a default Balance Sheet and Profit and Loss structure, so
 the reports can be printed right after the installation.
 
 If you want to change what a financial report contains, edit the report lines
-in Accounting > Configuration > Financial Reports > Account Reports.
+in Accounting > Configuration > Accounting > Financial Reports.
 
 If an account has to appear in another section of the cash flow statement than
 the one of its account type, set the Cash Flow Activity field on the account
@@ -79,16 +79,18 @@ Usage
 
 Go to Accounting > Reporting and pick the report you need:
 
-* Financial Reports: Balance Sheet, Profit and Loss, Cash Flow Statement
+* Statement Reports: Balance Sheet, Profit and Loss, Cash Flow Statement
 * Partner Reports: Partner Ledger, Aged Partner Balance, Aged Receivable,
   Aged Payable
-* Audit Reports: General Ledger, Trial Balance, Tax Report, Journals Audit
+* Taxes & Fiscal: Tax Report
+* Audit Reports: General Ledger, Trial Balance, Journals Audit
 
 Fill in the dates, the journals and the other options of the wizard, then
 click the print button to get the PDF.
 
 The journal items of the General Ledger and of the Partner Ledger can also be
-browsed on screen from Accounting > Accounting > Ledgers.
+browsed on screen from Accounting > Accounting > Ledgers > General Ledger Items
+and Partner Ledger Items.
 
 
 Credits

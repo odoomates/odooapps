@@ -571,3 +571,48 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
         self.assertIn(b'Depreciation Schedule', html)
         self.assertIn(b'Movement by Category', html)
         self.assertIn(b'Asset Register', html)
+
+    def test_smart_buttons_of_the_bill_and_the_category(self):
+        self.category.write({'create_from_bill': True, 'asset_per_unit': True})
+        other_asset = self._create_asset(validate_on=False)
+        bill = self._create_bill(quantity=2.0, price_unit=500.0)
+        self.assertEqual(bill.asset_count, 0)
+        with freeze_time('2025-01-15'):
+            bill.action_post()
+
+        self.assertEqual(bill.asset_count, 2)
+        action = bill.action_view_assets()
+        self.assertEqual(action['res_model'], 'account.asset.asset')
+        self.assertEqual(self.env['account.asset.asset'].search(action['domain']), bill.asset_ids)
+        self.assertEqual(action['view_mode'], 'list,kanban,form')
+
+        self.assertEqual(self.category.asset_count, 3, 'the assets of the bill and the one created by hand')
+        action = self.category.action_view_assets()
+        self.assertEqual(self.env['account.asset.asset'].search(action['domain']), bill.asset_ids | other_asset)
+        self.assertEqual(action['context']['default_category_id'], self.category.id)
+
+        single_bill = self._create_bill(price_unit=700.0)
+        with freeze_time('2025-01-15'):
+            single_bill.action_post()
+        action = single_bill.action_view_assets()
+        self.assertEqual((action['view_mode'], action['res_id']), ('form', single_bill.asset_ids.id),
+                         'a single asset opens in its form')
+
+        empty_category = self.category.copy({'create_from_bill': False})
+        self.assertEqual(empty_category.asset_count, 0)
+
+        # the billing users see the button, as they can read the assets
+        billing_user = new_test_user(
+            self.env, login='asset_buttons', groups='account.group_account_invoice',
+            company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
+        self.assertEqual(bill.with_user(billing_user).asset_count, 2)
+        self.assertEqual(self.category.with_user(billing_user).asset_count, 4)
+
+    def test_depreciation_expense_account_differs(self):
+        with self.assertRaises(ValidationError):
+            self.category.account_depreciation_expense_id = self.accumulated_account
+        with self.assertRaises(ValidationError):
+            self.category.account_depreciation_expense_id = self.asset_account
+        # depreciating directly on the asset account stays possible
+        self.category.account_depreciation_id = self.asset_account
+        self.assertEqual(self.category.account_depreciation_expense_id, self.expense_account)

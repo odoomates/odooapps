@@ -74,8 +74,9 @@ a budget are blocked for the users who are not accounting managers. Both
 settings are per company.
 
 Then create the budgetary positions you want to plan on in Accounting >
-Configuration > Accounting > Budgetary Positions, and attach the accounts they
-cover.
+Configuration > Accounting > Budgetary Positions (Configuration > Management
+when Odoo 20 Accounting (om_account_accountant) is installed), and attach the
+accounts they cover.
 
 
 Usage

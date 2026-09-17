@@ -23,9 +23,12 @@
         <t t-set="check_size" t-value="check_format._get_page_size()"/>
         <div t-foreach="pages" t-as="page" class="page o_om_check_page"
              t-att-style="'position: relative; width: %.1fmm; height: %.1fmm; overflow: hidden; page-break-after: always; font-size: %.1fpt;' % (check_size[0] - 1, check_size[1] - 1, check_format.font_size)">
+            <style t-if="check_format.print_micr" t-out="check_format._get_micr_font_face()"/>
             <t t-foreach="check_format.line_ids" t-as="line">
                 <div t-att-style="line._get_style()"><span t-out="line._get_text(page['values'])"/> <span t-if="line._get_fill(page['values'])" style="word-break: break-all;" t-out="line._get_fill(page['values'])"/></div>
             </t>
+            <div t-if="check_format.print_micr and page['values'].get('micr')" class="o_om_check_micr"
+                 t-att-style="check_format._get_micr_style()" t-out="page['values']['micr']"/>
             <t t-if="check_format.print_stub">
                 <t t-foreach="[top for top in (check_format.stub_top, check_format.stub_2_top) if top]" t-as="stub_top">
                     <div t-att-style="'position: absolute; left: %.1fmm; top: %.1fmm; width: %.1fmm;' % (10 + check_format.offset_x, stub_top + check_format.offset_y, check_size[0] - 20)">

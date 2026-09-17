@@ -13,7 +13,7 @@ RECURRENCE_STEPS = {
 
 class AccountCashForecastItem(models.Model):
     _name = 'account.cash.forecast.item'
-    _description = 'Expected Cash Item'
+    _description = 'Cash Forecast Item'
     _order = 'date, id'
     _check_company_auto = True
 

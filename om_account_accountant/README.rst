@@ -26,7 +26,14 @@ Features
 * Adds a Bank and Cash menu with the bank statements and the cash registers.
 * Adds an Account Tags menu to the accounting configuration.
 * Adds a Payment Methods menu, in read-only, for users in developer mode.
-* Adds a Templates menu to the configuration, for users in developer mode.
+* Arranges the menus of the accounting apps: the daily work under Accounting,
+  the reports under Reporting and the settings under Configuration, with a
+  Management section for the assets, budgets, recurring payments and closing.
+* Lets journals be created from their list; the accounting dashboard only
+  shows them.
+* Installs the accounting dashboards of the Dashboards app: the overview, profit
+  and loss, balance sheet, receivables and payables, bank and cash, assets,
+  budgets, and follow-ups and cash forecast dashboards.
 * Makes the Journal Items menu available to every accounting user and moves it
   to the top of its menu.
 * Adds a Reconcile action on the journal items list, for accountants.

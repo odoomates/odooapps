@@ -76,16 +76,17 @@ exactly one year or if you want to manage them one by one.
 The same settings page holds the lock dates of the company.
 
 Review the closing tasks in Accounting > Configuration > Accounting > Closing
-Tasks and add, edit or archive them so that the checklist matches your own
-closing procedure. The tasks installed by the module are left as they are by
-the module updates.
+Tasks (Configuration > Management when Odoo 20 Accounting
+(om_account_accountant) is installed) and add, edit or archive them so that the
+checklist matches your own closing procedure. The tasks installed by the module
+are left as they are by the module updates.
 
 
 Usage
 =====
 
 Create your fiscal years in Accounting > Configuration > Accounting > Fiscal
-Year.
+Years.
 
 To close a year, go to Accounting > Accounting > Closing > Year-End Closing,
 open the fiscal year, click the closing button, check the figures, pick the
@@ -94,8 +95,8 @@ journal and the retained earnings account and confirm.
 To close a month, go to Accounting > Accounting > Closing > Period Closing,
 create the closing of the period, work through the checklist and close it.
 
-Lock dates can also be changed directly from Accounting > Accounting > Lock
-Dates.
+Lock dates can also be changed directly from Accounting > Accounting > Closing >
+Lock Dates.
 
 
 Credits

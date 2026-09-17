@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <menuitem id="menu_finance_legal_statement"
-              name="Financial Reports"
-              sequence="10"
-              parent="account.menu_finance_reports"/>
+    <!-- the financial statements, the partner and the tax reports go into the folders of the account module:
+         Statement Reports, Partner Reports, Taxes & Fiscal -->
 
-    <menuitem id="menu_finance_partner_reports"
-              name="Partner Reports"
-              sequence="20"
-              parent="account.menu_finance_reports"/>
+    <!-- the administrators run the financial statements, but only imply the invoicing group -->
+    <record id="account.account_reports_legal_statements_menu" model="ir.ui.menu">
+        <field name="group_ids" eval="[(4, ref('account.group_account_manager'))]"/>
+    </record>
 
     <menuitem id="menu_finance_audit_reports"
               name="Audit Reports"

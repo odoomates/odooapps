@@ -12,13 +12,33 @@
                 </t>
                 <t t-set-slot="control-panel-actions">
                     <div class="d-flex flex-wrap align-items-center gap-2">
+                        <div class="btn-group" role="group">
+                            <button t-foreach="[['bank', 'Bank'], ['open_items', 'Open Items']]"
+                                    t-as="mode" t-key="mode[0]"
+                                    t-att-class="'btn btn-secondary' + (this.state.mode === mode[0] ? ' active' : '')"
+                                    t-att-data-mode="mode[0]"
+                                    t-on-click="() => this.setMode(mode[0])" t-out="mode[1]"/>
+                        </div>
+                        <t t-if="this.state.mode === 'open_items'">
+                            <div class="btn-group" role="group">
+                                <button t-foreach="[['receivable', 'Customers'], ['payable', 'Vendors']]"
+                                        t-as="kind" t-key="kind[0]"
+                                        t-att-class="'btn btn-secondary' + (this.state.accountType === kind[0] ? ' active' : '')"
+                                        t-on-click="() => this.setAccountType(kind[0])" t-out="kind[1]"/>
+                            </div>
+                            <input type="search" class="form-control w-auto o_om_open_items_search"
+                                   placeholder="Search partner, entry or amount"
+                                   t-att-value="this.state.search"
+                                   t-on-input="(ev) => this.onOpenItemsSearchInput(ev)"/>
+                        </t>
+                        <t t-else="">
                         <select class="form-select w-auto o_om_bank_rec_journal" t-on-change="(ev) => this.onJournalChange(ev)">
                             <option t-foreach="this.state.journals" t-as="journal" t-key="journal.id"
                                     t-att-value="journal.id" t-att-selected="journal.id === this.state.journalId"
                                     t-out="journal.display_name"/>
                         </select>
                         <div class="btn-group" role="group">
-                            <button t-foreach="[['to_reconcile', 'To Reconcile'], ['reconciled', 'Reconciled'], ['all', 'All']]"
+                            <button t-foreach="[['to_reconcile', 'To Reconcile'], ['to_review', 'To Check'], ['reconciled', 'Reconciled'], ['all', 'All']]"
                                     t-as="filter" t-key="filter[0]"
                                     t-att-class="'btn btn-secondary' + (this.state.filter === filter[0] ? ' active' : '')"
                                     t-att-data-filter="filter[0]"
@@ -27,14 +47,38 @@
                         <input type="search" class="form-control w-auto o_om_bank_rec_search"
                                placeholder="Search label, partner or amount"
                                t-att-value="this.state.search" t-on-input="(ev) => this.onSearchInput(ev)"/>
+                        </t>
                     </div>
                 </t>
             </ControlPanel>
 
-            <div class="o_content o_om_bank_rec_content">
+            <t t-if="this.state.mode === 'open_items'"
+               t-call="om_account_reconcile.BankReconciliation.OpenItems"/>
+            <div t-else="" class="o_content o_om_bank_rec_content">
                 <div class="o_om_bank_rec_list">
                     <div t-if="!this.state.transactions.length" class="o_om_bank_rec_empty text-muted p-4">
-                        No transaction to show.
+                        <t t-if="this.state.search">
+                            No transaction matches your search.
+                        </t>
+                        <t t-elif="this.state.filter === 'reconciled'">
+                            Nothing is reconciled on this journal yet.
+                        </t>
+                        <t t-elif="this.state.filter === 'to_review'">
+                            No transaction of this journal is marked to check.
+                        </t>
+                        <t t-else="">
+                            <p class="mb-2">Nothing left to reconcile on this journal.</p>
+                            <p class="mb-0 small">
+                                What is reconciled here are the transactions of your bank: import a bank
+                                statement, or add a transaction on the journal, and it shows up in this list.
+                                A payment registered on an invoice waits on the outstanding account until the
+                                transaction of the bank confirms it.
+                            </p>
+                            <button t-if="this.state.journalId" class="btn btn-link px-0 mt-1"
+                                    t-on-click="() => this.openJournal()">
+                                Go to the transactions of the journal
+                            </button>
+                        </t>
                     </div>
                     <div t-foreach="this.state.transactions" t-as="tr" t-key="tr.id"
                          t-att-class="'o_om_bank_rec_transaction' + (tr.id === this.state.selectedId ? ' o_selected' : '') + (tr.is_reconciled ? ' o_reconciled' : '')"
@@ -292,6 +336,150 @@
                         t-on-click="() => this.applyModel(model)" t-out="model.name"/>
             </div>
         </t>
+    </t>
+
+    <!-- What the customers and the vendors have left to clear, without any transaction of the bank:
+         a cash payment against its invoice, a credit note against an invoice, an invoice against a refund. -->
+    <t t-name="om_account_reconcile.BankReconciliation.OpenItems">
+        <div class="o_content o_om_bank_rec_content">
+            <div class="o_om_bank_rec_list">
+                <div t-if="!this.state.groups.length" class="o_om_bank_rec_empty text-muted p-4">
+                    <t t-if="this.state.search">No partner matches your search.</t>
+                    <t t-else="">Nothing left to clear here.</t>
+                </div>
+                <div t-foreach="this.state.groups" t-as="group" t-key="group.partner_id + '-' + group.account_id"
+                     t-att-class="'o_om_bank_rec_transaction' + (this.state.selectedGroup and this.sameGroup(group, this.state.selectedGroup) ? ' o_selected' : '')"
+                     t-on-click="() => this.selectGroup(group)">
+                    <div class="d-flex justify-content-between gap-2">
+                        <span class="text-truncate fw-bold" t-out="group.partner_name"/>
+                        <span t-att-class="'fw-bold text-nowrap ' + (group.residual &lt; 0 ? 'text-danger' : '')"
+                              t-out="this.format(group.residual, group.currency_id)"/>
+                    </div>
+                    <div class="d-flex justify-content-between gap-2 small text-muted">
+                        <span class="text-truncate" t-out="group.account_display"/>
+                        <span><t t-out="group.count"/> items</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="o_om_bank_rec_panel">
+                <div t-if="!this.state.selectedGroup" class="o_om_bank_rec_empty text-muted p-4">
+                    Select a customer or a vendor to clear what is open.
+                </div>
+                <t t-else="">
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3">
+                        <h5 class="mb-0" t-out="this.state.selectedGroup.partner_name"/>
+                        <span class="text-muted small" t-out="this.state.selectedGroup.account_display"/>
+                    </div>
+
+                    <table class="table table-sm o_om_open_items_table">
+                        <thead>
+                            <tr>
+                                <th/>
+                                <th>Date</th>
+                                <th>Entry</th>
+                                <th>Label</th>
+                                <th class="text-end">Amount Left</th>
+                                <th/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="this.state.openItems" t-as="item" t-key="item.id"
+                                t-att-class="this.isPicked(item.id) ? 'table-active' : ''">
+                                <td>
+                                    <input type="checkbox" class="form-check-input o_om_open_item_pick"
+                                           t-att-checked="this.isPicked(item.id)"
+                                           t-on-change="() => this.toggleItem(item.id)"/>
+                                </td>
+                                <td class="text-nowrap" t-out="item.date_display"/>
+                                <td class="text-nowrap" t-out="item.move_name"/>
+                                <td class="text-truncate" t-out="item.label"/>
+                                <td t-att-class="'text-end text-nowrap ' + (item.amount_residual &lt; 0 ? 'text-danger' : '')"
+                                    t-out="this.format(item.amount_residual, item.company_currency_id)"/>
+                                <td>
+                                    <button class="btn btn-link btn-sm px-0" title="Open the entry"
+                                            t-on-click="() => this.openItemMove(item)">
+                                        <i class="oi" data-icon="open_in_new"/>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- Closing the rest of a partial settlement: a discount given, a bad debt, a rounding. -->
+                    <div t-if="this.canWriteOffItems" class="card o_om_open_items_writeoff mt-3">
+                        <div class="card-body py-2">
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input o_om_open_items_writeoff_toggle"
+                                       id="om_open_items_writeoff"
+                                       t-att-checked="this.state.itemWriteoff.enabled"
+                                       t-on-change="() => this.toggleItemWriteoff()"/>
+                                <label class="form-check-label" for="om_open_items_writeoff">
+                                    Write the rest off instead of leaving it open
+                                </label>
+                            </div>
+                            <div t-if="this.state.itemWriteoff.enabled" class="row g-2 mt-1">
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-0">Account</label>
+                                    <RecordSelector resModel="'account.account'"
+                                                    resId="this.state.itemWriteoff.account_id"
+                                                    domain="this.accountDomain"
+                                                    update.bind="this.setItemWriteoffAccount"
+                                                    placeholder="'e.g. Discount given'"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-0">Journal</label>
+                                    <RecordSelector resModel="'account.journal'"
+                                                    resId="this.state.itemWriteoff.journal_id"
+                                                    update.bind="this.setItemWriteoffJournal"
+                                                    placeholder="'Journal'"/>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small mb-0">Label</label>
+                                    <input type="text" class="o_input w-100 o_om_open_items_writeoff_label"
+                                           t-att-value="this.state.itemWriteoff.label"
+                                           placeholder="e.g. Early payment discount"
+                                           t-on-change="(ev) => this.setItemWriteoffLabel(ev)"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-3">
+                        <div class="small text-muted">
+                            <div>To receive or to pay: <t t-out="this.format(this.state.openItemTotals.debit, this.state.selectedGroup.currency_id)"/></div>
+                            <div>Already settled on the other side: <t t-out="this.format(this.state.openItemTotals.credit, this.state.selectedGroup.currency_id)"/></div>
+                        </div>
+                        <div class="text-end">
+                            <div t-if="!this.pickedItems.length" class="text-muted">
+                                Pick what is owed together with what settles it
+                            </div>
+                            <t t-elif="!this.canReconcileItems">
+                                <div class="text-danger">
+                                    These are all on the same side: add what settles them
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <div t-if="this.stillOpenAfter" class="fw-bold">
+                                    <t t-if="this.state.itemWriteoff.enabled">Written off: </t>
+                                    <t t-else="">Stays open: </t>
+                                    <t t-out="this.format(this.stillOpenAfter, this.state.selectedGroup.currency_id)"/>
+                                </div>
+                                <div t-else="" class="fw-bold text-success">
+                                    Settles in full
+                                </div>
+                            </t>
+                            <button class="btn btn-primary mt-2 o_om_open_items_reconcile"
+                                    t-att-disabled="!this.canReconcileItems"
+                                    t-on-click="() => this.reconcileItems()">
+                                <t t-if="this.state.itemWriteoff.enabled">Reconcile and write off</t>
+                                <t t-else="">Reconcile</t>
+                            </button>
+                        </div>
+                    </div>
+                </t>
+            </div>
+        </div>
     </t>
 
 </templates>

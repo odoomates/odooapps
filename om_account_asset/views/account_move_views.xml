@@ -42,8 +42,14 @@
         <field name="model">account.move</field>
         <field name="inherit_id" ref="account.view_move_form"/>
         <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button class="oe_stat_button" name="action_view_assets" type="object" icon="inventory_2"
+                        invisible="asset_count == 0" groups="account.group_account_invoice">
+                    <field string="Assets" name="asset_count" widget="statinfo"/>
+                </button>
+            </div>
             <xpath expr="//field[@name='invoice_line_ids']/list/field[@name='account_id']" position="before">
-                <field string="Asset Category" name="asset_category_id"
+                <field string="Asset Category" name="asset_category_id" optional="hide"
                        force_save="1" column_invisible="parent.move_type != 'in_invoice'"
                        domain="[('type','=','purchase')]" context="{'default_type':'purchase'}"/>
             </xpath>

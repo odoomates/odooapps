@@ -62,7 +62,7 @@ clicking on the upgrade button.
 Configuration
 =============
 
-Go to Accounting > Configuration > Follow-up > Follow-up Levels and define the
+Go to Accounting > Configuration > Invoicing > Follow-up Levels and define the
 levels of the plan of your company: the due days, the message to print, and
 what has to happen at that level (email, letter, manual action).
 
