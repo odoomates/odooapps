@@ -12,7 +12,7 @@ class AccountCommonReport(models.TransientModel):
         comodel_name='account.journal',
         string='Journals',
         required=True,
-        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.company_id.id)]),
+        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.env.company.id)]),
         domain="[('company_id', '=', company_id)]",
     )
     date_from = fields.Date(string='Start Date')

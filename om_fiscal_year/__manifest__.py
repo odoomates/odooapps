@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Fiscal Year & Lock Date',
-    'version': '1.2.1',
+    'version': '1.2.2',
     'category': 'Accounting',
     'summary': 'Odoo 20 Fiscal Year, Year-End Closing, Lock Date in Odoo 20',
     'description': 'Odoo 20 Fiscal Year, Fiscal Year in Odoo 20',

@@ -25,7 +25,9 @@ class AccountAgedTrialBalance(models.TransientModel):
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length - 1)
             res[str(i)] = {
-                'name': (i != 0 and (str((5 - (i + 1)) * period_length) + '-' + str((5 - i) * period_length)) or (
+                # must match the buckets actually computed in report_aged_partner.py
+                # (1-30, 31-60, ... - the lower bound is inclusive)
+                'name': (i != 0 and (str((5 - (i + 1)) * period_length + 1) + '-' + str((5 - i) * period_length)) or (
                             '+' + str(4 * period_length))),
                 'stop': start.strftime('%Y-%m-%d'),
                 'start': (i != 0 and stop.strftime('%Y-%m-%d') or False),

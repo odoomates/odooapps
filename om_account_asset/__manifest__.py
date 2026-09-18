@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Assets Management',
-    'version': '2.0.3',
+    'version': '2.0.4',
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['account'],
     'description': """Manage assets owned by a company or a person. 

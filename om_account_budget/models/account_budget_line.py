@@ -167,6 +167,20 @@ class AccountBudgetLine(models.Model):
     # GROUPED AMOUNTS
     # -------------------------------------------------------------------------
 
+    @api.model
+    def fields_get(self, allfields=None, attributes=None):
+        res = super().fields_get(allfields=allfields, attributes=attributes)
+        # These amounts are computed and not stored, so the ORM does not advertise a
+        # real aggregator for them. The pivot and graph views refuse a measure whose
+        # aggregator is undefined, and they are only tolerated today because the ORM
+        # happens to answer False rather than nothing. They are aggregated by hand in
+        # formatted_read_group below, so state explicitly that they can be summed.
+        if attributes is None or 'aggregator' in attributes:
+            for fname in COMPUTED_AMOUNT_FIELDS:
+                if fname in res:
+                    res[fname]['aggregator'] = 'sum'
+        return res
+
     def _split_computed_aggregates(self, aggregates):
         """ Split the aggregates on the non-stored computed amount fields, which
         cannot be aggregated in SQL, from the other ones.

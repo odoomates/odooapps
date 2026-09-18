@@ -129,7 +129,8 @@ class ReportFinancial(models.AbstractModel):
                         'name': ' '.join(part for part in (account.code, account.name) if part),
                         'balance': value['balance'] * float(report.sign) or 0.0,
                         'type': 'account',
-                        'level': report.display_detail == 'detail_with_hierarchy' and 4,
+                        # must never be False: the template skips rows whose level is 0/False
+                        'level': 4 if report.display_detail == 'detail_with_hierarchy' else report.level + 1,
                         'account_type': account.account_type,
                     }
                     if data['debit_credit']:

@@ -51,6 +51,10 @@ class ChangeLockDate(models.TransientModel):
         has_manager_group = self.env.user.has_group('account.group_account_manager')
         if not (has_manager_group or self.env.uid == SUPERUSER_ID):
             raise UserError(_("You Are Not Allowed To Perform This Operation"))
+        if self.env.uid != SUPERUSER_ID and self.company_id not in self.env.user.company_ids:
+            raise UserError(_("You cannot change the lock dates of another company."))
+        # sudo() is required because setting lock dates writes on res.company,
+        # which accounting managers are not allowed to write on.
         self.company_id.sudo().write({
             'hard_lock_date': self.hard_lock_date,
             'fiscalyear_lock_date': self.fiscalyear_lock_date,

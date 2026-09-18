@@ -41,7 +41,8 @@ class ReportTax(models.AbstractModel):
         results = self.env.cr.fetchall()
         for result in results:
             if result[0] in taxes:
-                taxes[result[0]]['tax'] = abs(result[1])
+                # no abs(): a net-negative period (refunds > invoices) must stay negative
+                taxes[result[0]]['tax'] = result[1] or 0.0
 
         #compute the net amount
         sql2 = self._sql_from_amls_two()
@@ -50,7 +51,7 @@ class ReportTax(models.AbstractModel):
         results = self.env.cr.fetchall()
         for result in results:
             if result[0] in taxes:
-                taxes[result[0]]['net'] = abs(result[1])
+                taxes[result[0]]['net'] = result[1] or 0.0
 
     @api.model
     def get_lines(self, options):
@@ -63,11 +64,19 @@ class ReportTax(models.AbstractModel):
                     taxes[child.id] = {'tax': 0, 'net': 0, 'name': child.name, 'type': tax.type_tax_use}
             else:
                 taxes[tax.id] = {'tax': 0, 'net': 0, 'name': tax.name, 'type': tax.type_tax_use}
-        self.with_context(date_from=options['date_from'], date_to=options['date_to'],
-                          state=options['target_move'],
-                          strict_range=True)._compute_from_amls(options, taxes)
+        # used_context carries company_id and journal_ids as well; building a fresh
+        # context here would make the report span every company of the switcher.
+        report_context = dict(options.get('used_context') or {})
+        report_context.update(
+            date_from=options['date_from'],
+            date_to=options['date_to'],
+            state=options['target_move'],
+            strict_range=True,
+        )
+        self.with_context(**report_context)._compute_from_amls(options, taxes)
         groups = dict((tp, []) for tp in ['sale', 'purchase'])
         for tax in taxes.values():
-            if tax['tax']:
+            # keep 0%-rated taxes: they have no tax amount but a real base amount
+            if tax['tax'] or tax['net']:
                 groups[tax['type']].append(tax)
         return groups
