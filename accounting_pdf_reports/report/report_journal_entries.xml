@@ -38,7 +38,7 @@
                                     <th class="text-start">Account</th>
                                     <th class="text-start">Partner</th>
                                     <th class="text-start">Label</th>
-                                    <th class="text-start">Analytic Account</th>
+                                    <th class="text-start">Analytic Distribution</th>
                                     <th class="text-end">Debit</th>
                                     <th class="text-end">Credit</th>
                                 </tr>
@@ -48,7 +48,11 @@
                                     <td><span t-field="line.account_id"/></td>
                                     <td><span t-field="line.partner_id"/></td>
                                     <td><span t-field="line.name"/></td>
-                                    <td><span t-out="', '.join(line.distribution_analytic_account_ids.mapped('display_name'))"/></td>
+                                    <td>
+                                        <div t-foreach="line.format_analytic_distribution(line.analytic_distribution)" t-as="entry">
+                                            <t t-out="entry"/>
+                                        </div>
+                                    </td>
                                     <td class="text-end text-nowrap">
                                         <span t-field="line.debit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
                                     </td>

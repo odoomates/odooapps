@@ -77,3 +77,26 @@ class AccountMoveLine(models.Model):
             where_clause, where_params, _to_flush = query.where_clause._sql_tuple
             where_clause_params = list(from_params) + list(where_params)
         return tables, where_clause, where_clause_params
+
+    def format_analytic_distribution(self, distribution):
+        """ Render an analytic distribution as "Account A, Account B: 40.0%" lines.
+
+        The keys of the distribution hold one id per analytic plan, comma
+        separated, so a single entry may name several accounts.
+        """
+        self.ensure_one()
+        if not distribution:
+            return []
+        result = []
+        for key, percentage in distribution.items():
+            accounts = self.env["account.analytic.account"].browse(
+                int(account_id) for account_id in key.split(",")
+            ).exists()
+            if not accounts:
+                continue
+            names = [
+                "%s - %s" % (account.name, account.partner_id.name) if account.partner_id else account.name
+                for account in accounts
+            ]
+            result.append("%s: %s%%" % (", ".join(names), percentage))
+        return result
