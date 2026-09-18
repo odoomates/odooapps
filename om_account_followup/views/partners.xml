@@ -16,6 +16,8 @@
                                 class="btn-primary"
                                 groups="account.group_account_user,account.group_account_manager"/>
                         <button name="action_followup_print_statement" type="object" string="Print Statements"/>
+                        <button name="action_send_customer_statement" type="object" string="Send Statements"/>
+                        <button name="action_customer_statement_xlsx" type="object" string="Statements in Excel"/>
                         <button name="action_followup_exclude" type="object" string="Exclude"
                                 groups="account.group_account_user,account.group_account_manager"/>
                     </header>
@@ -205,10 +207,28 @@
                             <button name="action_followup_print_statement" type="object"
                                     string="Print Statement" class="btn btn-secondary"
                                     invisible="payment_amount_due == 0.0"/>
+                            <button name="action_send_customer_statement" type="object"
+                                    string="Send Statement" class="btn btn-secondary"
+                                    invisible="payment_amount_due == 0.0"/>
+                            <button name="action_customer_statement_xlsx" type="object"
+                                    string="Statement in Excel" class="btn btn-secondary"
+                                    invisible="payment_amount_due == 0.0"/>
                             <button name="action_followup_log_call" type="object" string="Log a Call"
                                     class="btn btn-secondary"/>
                             <button name="action_followup_open_items" type="object" string="Open Items"
                                     class="btn btn-secondary" invisible="payment_amount_due == 0.0"/>
+                        </div>
+                        <!-- what is owed to the partner as a vendor -->
+                        <div class="d-flex flex-wrap align-items-center gap-2 mb-3" name="vendor_statement_button"
+                             invisible="not debit">
+                            <field name="debit" invisible="1"/>
+                            <span class="fw-bold me-1">Vendor Statement</span>
+                            <button name="action_print_vendor_statement" type="object" string="Print"
+                                    class="btn btn-secondary"/>
+                            <button name="action_send_vendor_statement" type="object" string="Send"
+                                    class="btn btn-secondary"/>
+                            <button name="action_vendor_statement_xlsx" type="object" string="Excel"
+                                    class="btn btn-secondary"/>
                         </div>
                         <group>
                             <group string="Follow-up" name="followup_status_group">

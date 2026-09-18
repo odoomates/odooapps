@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="mail_activity_type_budget_exceeded" model="mail.activity.type">
+            <field name="name">Budget Exceeded</field>
+            <field name="summary">Review the lines over budget</field>
+            <field name="icon">warning</field>
+            <field name="res_model">account.budget</field>
+            <field name="delay_count">0</field>
+            <field name="sequence">70</field>
+        </record>
+
+        <record id="mail_template_budget_exceeded" model="mail.template">
+            <field name="name">Budget: lines over budget</field>
+            <field name="model_id" ref="model_account_budget"/>
+            <field name="subject">{{ object.name }}: over budget</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="use_default_to" eval="False"/>
+            <field name="partner_to">{{ object._get_budget_alert_user().partner_id.id }}</field>
+            <field name="description">Sent to the responsible of a validated budget when expense lines go over their planned amount</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object._get_budget_alert_user().name or ''">Marc Demo</t>,
+        <br/><br/>
+        These lines of the budget <strong t-out="object.name or ''">Budget 2026</strong> spent more than planned:
+    </p>
+    <t t-out="object._get_budget_exceeded_table()"/>
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        <br/>
+        Review the spending, or revise the planned amounts of the budget.
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object._get_budget_alert_user().lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

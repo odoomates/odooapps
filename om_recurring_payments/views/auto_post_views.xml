@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the entries, invoices and bills posted automatically: once on their date or on a recurrence -->
+
+    <record id="view_move_auto_post_list" model="ir.ui.view">
+        <field name="name">account.move.list.auto.post</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_tree"/>
+        <field name="mode">primary</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//list" position="attributes">
+                <attribute name="create">0</attribute>
+            </xpath>
+            <xpath expr="//list" position="inside">
+                <header>
+                    <button name="action_stop_auto_post" type="object" string="Stop Auto-post"
+                            confirm="The selected draft entries will not be posted automatically any more, and their recurrence ends. Continue?"/>
+                </header>
+            </xpath>
+            <field name="journal_id" position="after">
+                <field name="move_type" optional="show"/>
+                <field name="auto_post" optional="show"/>
+                <field name="auto_post_until" optional="show"/>
+                <field name="auto_post_origin_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_move_auto_post_search" model="ir.ui.view">
+        <field name="name">account.move.search.auto.post</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="mode">primary</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="To Post" name="auto_post_draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Posted" name="auto_post_posted" domain="[('state', '=', 'posted')]"/>
+                <separator/>
+                <filter string="Recurring" name="auto_post_recurring"
+                        domain="[('auto_post', 'in', ('monthly', 'quarterly', 'yearly'))]"/>
+                <filter string="Once on Date" name="auto_post_at_date" domain="[('auto_post', '=', 'at_date')]"/>
+                <separator/>
+                <filter string="Journal Entries" name="auto_post_entries" domain="[('move_type', '=', 'entry')]"/>
+                <filter string="Invoices" name="auto_post_invoices"
+                        domain="[('move_type', 'in', ('out_invoice', 'out_refund'))]"/>
+                <filter string="Bills" name="auto_post_bills"
+                        domain="[('move_type', 'in', ('in_invoice', 'in_refund'))]"/>
+                <group>
+                    <filter string="Auto-post" name="group_auto_post" context="{'group_by': 'auto_post'}"/>
+                    <filter string="First Recurring Entry" name="group_auto_post_origin"
+                            context="{'group_by': 'auto_post_origin_id'}"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_move_auto_post" model="ir.actions.act_window">
+        <field name="name">Auto-Post Entries</field>
+        <field name="res_model">account.move</field>
+        <field name="path">auto-post-entries</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">['|', ('auto_post', '!=', 'no'), ('auto_post_origin_id', '!=', False)]</field>
+        <field name="context">{'search_default_auto_post_draft': 1}</field>
+        <field name="view_id" ref="view_move_auto_post_list"/>
+        <field name="search_view_id" ref="view_move_auto_post_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No entry is waiting to be posted automatically
+            </p>
+            <p>
+                On a draft journal entry, invoice or bill, set Auto-post to post it on its date, or every month,
+                quarter or year: the next entry is created each time one is posted. They are all listed here.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_move_auto_post"
+              name="Auto-Post Entries"
+              sequence="41"
+              action="action_move_auto_post"
+              groups="account.group_account_user,account.group_account_manager"
+              parent="account.menu_finance_entries"/>
+
+</odoo>

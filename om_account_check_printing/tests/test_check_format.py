@@ -2,8 +2,9 @@ import base64
 import re
 from datetime import date
 
+from odoo import fields
 from odoo.exceptions import RedirectWarning, UserError, ValidationError
-from odoo.tests import tagged
+from odoo.tests import Form, tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -90,6 +91,31 @@ class TestCheckFormat(AccountTestInvoicingCommon):
         html = report.with_context(om_check_format_id=check_format.id)._render_qweb_html(
             report.report_name, check_format.ids)[0].decode()
         self.assertIn('Sample Supplier Ltd', html)
+
+    def test_preview(self):
+        for check_format in (self.a4_format, self.leaf_format):
+            with self.subTest(check_format=check_format.name):
+                preview = str(check_format.preview_html)
+                self.assertIn('o_om_check_preview', preview)
+                self.assertIn('Sample Supplier Ltd', preview)
+                words = check_format._format_words(12345.67, self.env.company.currency_id)
+                self.assertIn(words, preview)
+                self.assertIn(check_format._format_date(fields.Date.context_today(check_format)), preview)
+
+        # the preview follows the changes of the format, saved or not
+        with Form(self.leaf_format.copy({'name': 'Preview'})) as form:
+            form.words_suffix = 'Only Please'
+            with form.line_ids.new() as line:
+                line.field = 'text'
+                line.text = 'A/C PAYEE ONLY'
+                line.x = 10.0
+                line.y = 5.0
+            self.assertIn('ONLY PLEASE', str(form.preview_html))
+            self.assertIn('A/C PAYEE ONLY', str(form.preview_html))
+
+        new_format = self.env['account.check.format'].new({'name': 'New', 'line_ids': [
+            (0, 0, {'field': 'payee', 'x': 10.0, 'y': 10.0})]})
+        self.assertIn('Sample Supplier Ltd', str(new_format.preview_html))
 
     def test_no_format(self):
         self.env['account.check.format'].search([]).action_archive()

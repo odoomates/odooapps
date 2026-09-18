@@ -1,5 +1,6 @@
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools import format_date
 
 
 class HrRuleParameter(models.Model):
@@ -10,22 +11,23 @@ class HrRuleParameter(models.Model):
     still computed with the value of that period.
     """
     _name = 'hr.rule.parameter'
+    _inherit = ['mail.thread']
     _description = 'Salary Rule Parameter'
     _order = 'code'
 
-    name = fields.Char(required=True, translate=True)
+    name = fields.Char(required=True, translate=True, tracking=True)
     code = fields.Char(
         required=True,
-        help='The name the salary rules read the parameter by, e.g. SS_RATE for parameters.SS_RATE.')
+        help='The name the salary rules read the parameter by, e.g. SS_RATE for parameters.SS_RATE.', tracking=True)
     value_type = fields.Selection([
         ('number', 'Number'),
         ('text', 'Text'),
-    ], required=True, default='number')
+    ], required=True, default='number', tracking=True)
     value_ids = fields.One2many('hr.rule.parameter.value', 'parameter_id', string='Values')
     company_id = fields.Many2one(
         'res.company', string='Company',
-        help='Leave empty for a parameter shared by every company.')
-    active = fields.Boolean(default=True)
+        help='Leave empty for a parameter shared by every company.', tracking=True)
+    active = fields.Boolean(default=True, tracking=True)
     note = fields.Text(string='Description')
 
     _code_company_uniq = models.Constraint(
@@ -97,6 +99,31 @@ class HrRuleParameterValue(models.Model):
         'unique(parameter_id, date_from)',
         'A rule parameter can only have one value per date.',
     )
+
+    def _log_label(self):
+        value = self.value_number if self.value_type == 'number' else self.value_text
+        return _('%(value)s from %(date)s', value=value, date=format_date(self.env, self.date_from))
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        values = super().create(vals_list)
+        for value in values:
+            value.parameter_id._message_log(body=_('Value added: %s', value._log_label()))
+        return values
+
+    def write(self, vals):
+        before = {value.id: value._log_label() for value in self}
+        res = super().write(vals)
+        for value in self:
+            if before[value.id] != value._log_label():
+                value.parameter_id._message_log(body=_(
+                    'Value changed: %(old)s → %(new)s', old=before[value.id], new=value._log_label()))
+        return res
+
+    def unlink(self):
+        for value in self:
+            value.parameter_id._message_log(body=_('Value removed: %s', value._log_label()))
+        return super().unlink()
 
 
 class RuleParameters:

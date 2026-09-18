@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 19.5a1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-15 13:58+0000\n"
-"PO-Revision-Date: 2026-09-15 13:58+0000\n"
+"POT-Creation-Date: 2026-09-17 11:31+0000\n"
+"PO-Revision-Date: 2026-09-17 11:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -34,12 +34,6 @@ msgstr ""
 #. module: om_account_budget
 #. odoo-python
 #: code:addons/om_account_budget/models/account_budget.py:0
-msgid "%(line)s is over budget: %(practical)s spent for %(planned)s planned."
-msgstr ""
-
-#. module: om_account_budget
-#. odoo-python
-#: code:addons/om_account_budget/models/account_budget.py:0
 msgid ""
 "%(line)s reached %(percent)s%% of its planned amount (%(practical)s of "
 "%(planned)s)."
@@ -57,6 +51,12 @@ msgstr ""
 #. module: om_account_budget
 #. odoo-python
 #: code:addons/om_account_budget/models/account_budget.py:0
+msgid "%(user)s was emailed: some lines spent more than planned."
+msgstr ""
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
 #: code:addons/om_account_budget/wizard/account_budget_copy.py:0
 msgid "%s (copy)"
 msgstr ""
@@ -67,8 +67,33 @@ msgid "'Budget vs Actual - %s' % object.name"
 msgstr ""
 
 #. module: om_account_budget
+#: model:mail.template,body_html:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Hello <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        These lines of the budget <strong t-out=\"object.name or ''\">Budget 2026</strong> spent more than planned:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Review the spending, or revise the planned amounts of the budget.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+
+#. module: om_account_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_kanban
-msgid "<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Period\" title=\"Period\"/>"
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+msgstr ""
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "<span class=\"text-muted\"> of </span>"
 msgstr ""
 
 #. module: om_account_budget
@@ -87,6 +112,13 @@ msgid "<strong>Status:</strong>"
 msgstr ""
 
 #. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid ""
+"A budgetary position groups the accounts a budget line follows, such as the "
+"travel or the salary expenses."
+msgstr ""
+
+#. module: om_account_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
 msgid ""
 "A draft copy of the budget is created, its lines are moved to the new "
@@ -101,6 +133,7 @@ msgstr ""
 
 #. module: om_account_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
 msgid "Achieved"
@@ -154,7 +187,6 @@ msgstr ""
 
 #. module: om_account_budget
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__practical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Actual Amount"
 msgstr ""
@@ -172,6 +204,13 @@ msgstr ""
 #. module: om_account_budget
 #: model:ir.model.fields,help:om_account_budget.field_account_budget_line__achievement
 msgid "Actual amount compared with the theoretical amount."
+msgstr ""
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid ""
+"Add this analytic account to the lines of a budget to follow its spending "
+"here."
 msgstr ""
 
 #. module: om_account_budget
@@ -241,11 +280,22 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__budget_id
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_id
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__budget_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budget"
+msgstr ""
+
+#. module: om_account_budget
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_line_analysis
+msgid "Budget Analysis"
+msgstr ""
+
+#. module: om_account_budget
+#: model:mail.activity.type,name:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Budget Exceeded"
 msgstr ""
 
 #. module: om_account_budget
@@ -281,7 +331,6 @@ msgstr ""
 
 #. module: om_account_budget
 #: model:ir.actions.act_window,name:om_account_budget.action_account_budget_line_analysis
-#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_line_analysis
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Budget Report"
 msgstr ""
@@ -329,6 +378,11 @@ msgstr ""
 #. module: om_account_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
 msgid "Budget warnings"
+msgstr ""
+
+#. module: om_account_budget
+#: model:mail.template,name:om_account_budget.mail_template_budget_exceeded
+msgid "Budget: lines over budget"
 msgstr ""
 
 #. module: om_account_budget
@@ -388,6 +442,13 @@ msgid "Company"
 msgstr ""
 
 #. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid ""
+"Compare what was planned with what was achieved, by budget, budgetary "
+"position, analytic account or period."
+msgstr ""
+
+#. module: om_account_budget
 #: model:ir.model,name:om_account_budget.model_res_config_settings
 msgid "Config Settings"
 msgstr ""
@@ -418,6 +479,11 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Copy to Next Period"
+msgstr ""
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid "Create a budgetary position"
 msgstr ""
 
 #. module: om_account_budget
@@ -480,6 +546,17 @@ msgstr ""
 msgid ""
 "Each line covering several periods is replaced by one line per period, its planned amount\n"
 "                    shared according to the days of each period."
+msgstr ""
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid "Email the Budget Responsible"
+msgstr ""
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Email the responsible when a budget is exceeded"
 msgstr ""
 
 #. module: om_account_budget
@@ -630,6 +707,12 @@ msgid "Leave empty to split every line of the budget."
 msgstr ""
 
 #. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Line"
+msgstr ""
+
+#. module: om_account_budget
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__line_ids
 msgid "Lines to Split"
 msgstr ""
@@ -696,6 +779,16 @@ msgid "Next Activity Type"
 msgstr ""
 
 #. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid "No budget line for this analytic account"
+msgstr ""
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid "No budget line yet"
+msgstr ""
+
+#. module: om_account_budget
 #: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__none
 msgid "None"
 msgstr ""
@@ -709,7 +802,8 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
 msgid ""
 "Notify the responsible of a validated budget when an expense line reaches "
-"this share of its planned amount, then when it goes over it."
+"this share of its planned amount. Going over it also assigns a To-Do "
+"activity."
 msgstr ""
 
 #. module: om_account_budget
@@ -776,8 +870,21 @@ msgid "Over Budget"
 msgstr ""
 
 #. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over budget: %s"
+msgstr ""
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over by"
+msgstr ""
+
+#. module: om_account_budget
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__period
 #: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
@@ -792,6 +899,8 @@ msgid "Plan"
 msgstr ""
 
 #. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
 #: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
 msgid "Planned"
 msgstr ""
@@ -869,8 +978,20 @@ msgid "Revenues Achievement"
 msgstr ""
 
 #. module: om_account_budget
+#: model:mail.activity.type,summary:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Review the lines over budget"
+msgstr ""
+
+#. module: om_account_budget
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_sms_error
 msgid "SMS Delivery error"
+msgstr ""
+
+#. module: om_account_budget
+#: model:mail.template,description:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"Sent to the responsible of a validated budget when expense lines go over "
+"their planned amount"
 msgstr ""
 
 #. module: om_account_budget
@@ -882,6 +1003,18 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid "Set a planned date within the period of the line \"%s\"."
+msgstr ""
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Some lines spent more than planned."
+msgstr ""
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Spent"
 msgstr ""
 
 #. module: om_account_budget
@@ -1004,13 +1137,13 @@ msgid ""
 msgstr ""
 
 #. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Theoretical"
 msgstr ""
 
 #. module: om_account_budget
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__theoretical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Theoretical Amount"
 msgstr ""
@@ -1023,6 +1156,12 @@ msgstr ""
 #. module: om_account_budget
 #: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_theoretical_amount
 msgid "Theoretical Revenues"
+msgstr ""
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "These lines spent more than planned:"
 msgstr ""
 
 #. module: om_account_budget
@@ -1088,6 +1227,14 @@ msgid "Warning Level"
 msgstr ""
 
 #. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid ""
+"When an expense line of a validated budget goes over its planned amount, its"
+" responsible gets an email besides the To-Do activity."
+msgstr ""
+
+#. module: om_account_budget
 #. odoo-python
 #: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
@@ -1098,4 +1245,9 @@ msgstr ""
 #. module: om_account_budget
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "e.g. Budget 2026"
+msgstr ""
+
+#. module: om_account_budget
+#: model:mail.template,subject:om_account_budget.mail_template_budget_exceeded
+msgid "{{ object.name }}: over budget"
 msgstr ""

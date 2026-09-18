@@ -71,6 +71,7 @@ REMOVAL_MODELS = {
     'account': [
         'payment.transaction',
         'account.bank.statement.line',
+        'account.bank.statement',
         'account.payment',
         'account.analytic.line',
         'account.analytic.account',
@@ -267,13 +268,24 @@ class ResConfigSettings(models.TransientModel):
             'pos.',
         ]
         res = self._remove_data(to_removes, seqs)
-        try:
-            statement = self.env['account.bank.statement'].sudo().search([])
-            for s in statement:
-                s._end_balance()
-        except Exception as e:
-            _logger.error('reset sequence data error: %s', e)
+        self._recompute_bank_statement_balances()
         return res
+
+    def _recompute_bank_statement_balances(self):
+        """ The rows are deleted in SQL, behind the ORM: the stored balances of the bank statements left are
+        computed again from the lines they still have. """
+        try:
+            statements = self.env['account.bank.statement'].sudo().search([])
+            if not statements:
+                return
+            statements.invalidate_recordset()
+            for name in ('balance_start', 'balance_end', 'balance_end_real'):
+                field = statements._fields.get(name)
+                if field and field.store and field.compute:
+                    self.env.add_to_compute(field, statements)
+            statements.flush_recordset()
+        except Exception as e:
+            _logger.error('bank statement balance error: %s', e)
 
     def _remove_purchase(self):
         if not self.env.user.has_group('base.group_system'):

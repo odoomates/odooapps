@@ -15,6 +15,64 @@
             <button name="action_payslip_cancel" position="attributes">
                 <attribute name="confirm">The accounting entry of the payslip is deleted. Continue?</attribute>
             </button>
+            <button name="action_send_email" position="before">
+                <button string="Register Payment" name="action_register_payment" type="object" class="btn-primary"
+                        groups="account.group_account_invoice"
+                        invisible="state != 'done' or credit_note or payment_state not in ('not_paid', 'partial')"/>
+            </button>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_payments" type="object" class="oe_stat_button" icon="payments"
+                        invisible="not payment_count"
+                        groups="account.group_account_invoice,account.group_account_readonly">
+                    <field name="payment_count" widget="statinfo" string="Payments"/>
+                </button>
+            </xpath>
+            <xpath expr="//widget[@name='web_ribbon']" position="before">
+                <widget name="web_ribbon" title="Paid" bg_color="text-bg-success" invisible="payment_state != 'paid'"/>
+                <widget name="web_ribbon" title="In Payment" bg_color="text-bg-info"
+                        invisible="payment_state != 'in_payment'"/>
+                <widget name="web_ribbon" title="Partially Paid" bg_color="text-bg-info"
+                        invisible="payment_state != 'partial'"/>
+                <widget name="web_ribbon" title="Reversed" bg_color="text-bg-secondary"
+                        invisible="payment_state != 'reversed' or credit_note"/>
+            </xpath>
+            <field name="paid" position="before">
+                <field name="payment_state" invisible="state != 'done' or credit_note"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_hr_payslip_tree_inherit_payment" model="ir.ui.view">
+        <field name="name">hr.payslip.list.inherit.payment</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="om_hr_payroll.view_hr_payslip_tree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="after">
+                <field name="credit_note" column_invisible="1"/>
+                <field name="payment_state" widget="badge" optional="show"
+                       invisible="state != 'done' or credit_note"
+                       decoration-info="payment_state in ('not_paid', 'in_payment')"
+                       decoration-warning="payment_state == 'partial'"
+                       decoration-success="payment_state == 'paid'"
+                       decoration-muted="payment_state == 'reversed'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_hr_payslip_filter_inherit_payment" model="ir.ui.view">
+        <field name="name">hr.payslip.select.inherit.payment</field>
+        <field name="model">hr.payslip</field>
+        <field name="inherit_id" ref="om_hr_payroll.view_hr_payslip_filter"/>
+        <field name="arch" type="xml">
+            <filter name="done" position="after">
+                <separator/>
+                <filter string="To Pay" name="to_pay"
+                        domain="[('state', '=', 'done'), ('credit_note', '=', False), ('payment_state', 'in', ('not_paid', 'partial'))]"/>
+                <filter string="Paid" name="paid_filter" domain="[('payment_state', 'in', ('in_payment', 'paid'))]"/>
+            </filter>
+            <filter name="state" position="after">
+                <filter string="Payment Status" name="group_payment_state" context="{'group_by': 'payment_state'}"/>
+            </filter>
         </field>
     </record>
 
@@ -87,6 +145,17 @@
             <field name="credit_note" position="before">
                 <field name="journal_id"/>
             </field>
+            <button name="action_send_payslips" position="before">
+                <button name="action_register_payment" type="object" string="Register Payments" class="btn-primary"
+                        groups="account.group_account_invoice" invisible="not has_payslips_to_pay"/>
+            </button>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_payments" type="object" class="oe_stat_button" icon="payments"
+                        invisible="not payment_count"
+                        groups="account.group_account_invoice,account.group_account_readonly">
+                    <field name="payment_count" widget="statinfo" string="Payments"/>
+                </button>
+            </xpath>
         </field>
     </record>
 

@@ -11,21 +11,22 @@ class HrPayrollStructure(models.Model):
     - Deductions
     """
     _name = 'hr.payroll.structure'
+    _inherit = ['mail.thread']
     _description = 'Salary Structure'
 
     @api.model
     def _get_parent(self):
         return self.env.ref('om_hr_payroll.structure_base', False)
 
-    name = fields.Char(required=True)
-    code = fields.Char(string='Reference', required=True)
+    name = fields.Char(required=True, tracking=True)
+    code = fields.Char(string='Reference', required=True, tracking=True)
     company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company,
-                                 help="Leave empty to share the structure with all the companies.")
+                                 help="Leave empty to share the structure with all the companies.", tracking=True)
     note = fields.Text(string='Description')
-    parent_id = fields.Many2one('hr.payroll.structure', string='Parent', default=_get_parent)
+    parent_id = fields.Many2one('hr.payroll.structure', string='Parent', default=_get_parent, tracking=True)
     children_ids = fields.One2many('hr.payroll.structure', 'parent_id', string='Children', copy=True)
     rule_ids = fields.Many2many('hr.salary.rule', 'hr_structure_salary_rule_rel', 'struct_id', 'rule_id',
-                                string='Salary Rules')
+                                string='Salary Rules', tracking=True)
 
     @api.constrains('parent_id')
     def _check_parent_id(self):
@@ -88,36 +89,37 @@ class HrSalaryRuleCategory(models.Model):
 
 class HrSalaryRule(models.Model):
     _name = 'hr.salary.rule'
+    _inherit = ['mail.thread']
     _order = 'sequence, id'
     _description = 'Salary Rule'
 
-    name = fields.Char(required=True, translate=True)
+    name = fields.Char(required=True, translate=True, tracking=True)
     code = fields.Char(required=True,
         help="The code of salary rules can be used as reference in computation of other rules. "
-             "In that case, it is case sensitive.")
+             "In that case, it is case sensitive.", tracking=True)
     sequence = fields.Integer(required=True, index=True, default=5,
-        help='Use to arrange calculation sequence')
+        help='Use to arrange calculation sequence', tracking=True)
     quantity = fields.Char(default='1.0',
         help="It is used in computation for percentage and fixed amount. "
              "For e.g. A rule for Meal Voucher having fixed amount of "
              u"1€ per worked day can have its quantity defined in expression "
-             "like worked_days.WORK100.number_of_days.")
-    category_id = fields.Many2one('hr.salary.rule.category', string='Category', required=True)
+             "like worked_days.WORK100.number_of_days.", tracking=True)
+    category_id = fields.Many2one('hr.salary.rule.category', string='Category', required=True, tracking=True)
     active = fields.Boolean(default=True,
-        help="If the active field is set to false, it will allow you to hide the salary rule without removing it.")
+        help="If the active field is set to false, it will allow you to hide the salary rule without removing it.", tracking=True)
     appears_on_payslip = fields.Boolean(string='Appears on Payslip', default=True,
-        help="Used to display the salary rule on payslip.")
-    parent_rule_id = fields.Many2one('hr.salary.rule', string='Parent Salary Rule', index=True)
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+        help="Used to display the salary rule on payslip.", tracking=True)
+    parent_rule_id = fields.Many2one('hr.salary.rule', string='Parent Salary Rule', index=True, tracking=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company, tracking=True)
     condition_select = fields.Selection([
         ('none', 'Always True'),
         ('range', 'Range'),
         ('python', 'Python Expression')
-    ], string="Condition Based on", default='none', required=True)
+    ], string="Condition Based on", default='none', required=True, tracking=True)
     condition_range = fields.Char(string='Range Based on', default='contract.wage',
         help='This will be used to compute the % fields values; in general it is on basic, '
              'but you can also use categories code fields in lowercase as a variable names '
-             '(hra, ma, lta, etc.) and the variable basic.')
+             '(hra, ma, lta, etc.) and the variable basic.', tracking=True)
     condition_python = fields.Text(string='Python Condition', required=True,
         default='''
                     # Available variables:
@@ -134,18 +136,18 @@ class HrSalaryRule(models.Model):
                     # Note: returned value have to be set in the variable 'result'
 
                     result = rules.NET > categories.NET * 0.10''',
-        help='Applied this rule for calculation if condition is true. You can specify condition like basic > 1000.')
-    condition_range_min = fields.Float(string='Minimum Range', help="The minimum amount, applied for this rule.")
-    condition_range_max = fields.Float(string='Maximum Range', help="The maximum amount, applied for this rule.")
+        help='Applied this rule for calculation if condition is true. You can specify condition like basic > 1000.', tracking=True)
+    condition_range_min = fields.Float(string='Minimum Range', help="The minimum amount, applied for this rule.", tracking=True)
+    condition_range_max = fields.Float(string='Maximum Range', help="The maximum amount, applied for this rule.", tracking=True)
     amount_select = fields.Selection([
         ('percentage', 'Percentage (%)'),
         ('fix', 'Fixed Amount'),
         ('code', 'Python Code'),
     ], string='Amount Type', index=True, required=True, default='fix',
-       help="The computation method for the rule amount.")
-    amount_fix = fields.Float(string='Fixed Amount')
+       help="The computation method for the rule amount.", tracking=True)
+    amount_fix = fields.Float(string='Fixed Amount', tracking=True)
     amount_percentage = fields.Float(string='Percentage (%)',
-        help='For example, enter 50.0 to apply a percentage of 50%')
+        help='For example, enter 50.0 to apply a percentage of 50%', tracking=True)
     amount_python_compute = fields.Text(string='Python Code',
         default='''
                     # Available variables:
@@ -161,11 +163,11 @@ class HrSalaryRule(models.Model):
 
                     # Note: returned value have to be set in the variable 'result'
 
-                    result = contract.wage * 0.10''')
-    amount_percentage_base = fields.Char(string='Percentage based on', help='result will be affected to a variable')
+                    result = contract.wage * 0.10''', tracking=True)
+    amount_percentage_base = fields.Char(string='Percentage based on', help='result will be affected to a variable', tracking=True)
     child_ids = fields.One2many('hr.salary.rule', 'parent_rule_id', string='Child Salary Rule', copy=True)
     register_id = fields.Many2one('hr.contribution.register', string='Contribution Register',
-        help="Eventual third party involved in the salary payment of the employees.")
+        help="Eventual third party involved in the salary payment of the employees.", tracking=True)
     input_ids = fields.One2many('hr.rule.input', 'input_id', string='Inputs', copy=True)
     note = fields.Text(string='Description')
 

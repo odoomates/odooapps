@@ -1,7 +1,7 @@
 {
     'name': 'Odoo 20 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '2.0.0',
+    'version': '2.1.0',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 20 Community Edition',

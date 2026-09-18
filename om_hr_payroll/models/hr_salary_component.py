@@ -9,28 +9,29 @@ class HrSalaryComponent(models.Model):
     describes its own pay structure without a field for each allowance.
     """
     _name = 'hr.salary.component'
+    _inherit = ['mail.thread']
     _description = 'Salary Component'
     _order = 'sequence, code'
 
-    name = fields.Char(required=True, translate=True)
+    name = fields.Char(required=True, translate=True, tracking=True)
     code = fields.Char(
         required=True,
-        help='The name under which the salary rules read the component, e.g. HOUSING for components.HOUSING.')
+        help='The name under which the salary rules read the component, e.g. HOUSING for components.HOUSING.', tracking=True)
     sequence = fields.Integer(default=10)
     category_id = fields.Many2one(
         'hr.salary.rule.category', string='Category',
         default=lambda self: self.env.ref('om_hr_payroll.ALW', raise_if_not_found=False),
         help='The category of the salary rule paying the component. It only documents the component: '
-             'the rules decide what is computed.')
+             'the rules decide what is computed.', tracking=True)
     default_amount = fields.Monetary(
         string='Default Amount',
-        help='Proposed on the versions where the component is added. The amount of each version can be changed.')
-    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+        help='Proposed on the versions where the component is added. The amount of each version can be changed.', tracking=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company, tracking=True)
     currency_id = fields.Many2one(
         'res.currency', string='Currency',
         default=lambda self: self.env.company.currency_id,
         compute='_compute_currency_id', store=True, readonly=False)
-    active = fields.Boolean(default=True)
+    active = fields.Boolean(default=True, tracking=True)
     note = fields.Text(string='Description')
 
     _code_company_uniq = models.Constraint(

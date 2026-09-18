@@ -1,7 +1,9 @@
 from dateutil.relativedelta import relativedelta
+from markupsafe import Markup
 
 from odoo import api, fields, models, _
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.tools.misc import formatLang
 
 from .account_budget_position import BUDGET_TYPES
 
@@ -172,6 +174,7 @@ class AccountBudget(models.Model):
         ])
         # the actual amounts depend on journal items which are not dependencies of the field
         lines.invalidate_recordset(['practical_amount'])
+        exceeded_budgets = self.browse()
         for line in lines:
             consumed = line.practical_amount / line.planned_amount
             if consumed > 1:
@@ -180,17 +183,72 @@ class AccountBudget(models.Model):
                 level = 'threshold'
             else:
                 level = 'none'
-            if WARNING_LEVELS[level] > WARNING_LEVELS[line.warning_level or 'none'] and line.budget_id.user_id:
+            if WARNING_LEVELS[level] > WARNING_LEVELS[line.warning_level or 'none']:
                 if level == 'exceeded':
-                    body = _('%(line)s is over budget: %(practical)s spent for %(planned)s planned.',
-                             line=line.name, practical=line.practical_amount, planned=line.planned_amount)
-                else:
-                    body = _('%(line)s reached %(percent)s%% of its planned amount (%(practical)s of %(planned)s).',
-                             line=line.name, percent=round(consumed * 100), practical=line.practical_amount,
-                             planned=line.planned_amount)
-                line.budget_id.message_post(
-                    body=body, partner_ids=line.budget_id.user_id.partner_id.ids,
-                    message_type='notification', subtype_xmlid='mail.mt_comment',
-                )
+                    exceeded_budgets |= line.budget_id
+                elif line.budget_id.user_id:
+                    line.budget_id.message_post(
+                        body=_('%(line)s reached %(percent)s%% of its planned amount (%(practical)s of %(planned)s).',
+                               line=line.name, percent=round(consumed * 100), practical=line.practical_amount,
+                               planned=line.planned_amount),
+                        partner_ids=line.budget_id.user_id.partner_id.ids,
+                        message_type='notification', subtype_xmlid='mail.mt_comment',
+                    )
             if level != line.warning_level:
                 line.with_context(budget_force_edit=True).warning_level = level
+        for budget in exceeded_budgets:
+            budget._alert_budget_exceeded()
+
+    def _get_budget_alert_user(self):
+        self.ensure_one()
+        return self.user_id or self.create_uid
+
+    def _get_budget_exceeded_lines(self):
+        self.ensure_one()
+        return self.line_ids.filtered(lambda line: line.warning_level == 'exceeded')
+
+    def _get_budget_exceeded_table(self):
+        """ The lines over budget, as an HTML table for the activity and the email. """
+        self.ensure_one()
+        rows = Markup().join(
+            Markup('<tr><td>%s</td><td style="text-align: right;">%s</td><td style="text-align: right;">%s</td>'
+                   '<td style="text-align: right;"><strong>%s</strong></td></tr>') % (
+                line.position_id.name or line.analytic_account_id.name or line.name,
+                formatLang(self.env, line.planned_amount, currency_obj=self.currency_id),
+                formatLang(self.env, line.practical_amount, currency_obj=self.currency_id),
+                formatLang(self.env, line.practical_amount - line.planned_amount, currency_obj=self.currency_id),
+            )
+            for line in self._get_budget_exceeded_lines()
+        )
+        header = Markup('<tr><th>%s</th><th style="text-align: right;">%s</th><th style="text-align: right;">%s</th>'
+                        '<th style="text-align: right;">%s</th></tr>') % (
+            _('Line'), _('Planned'), _('Spent'), _('Over by'))
+        return Markup('<table class="table table-sm o_budget_exceeded_table"><thead>%s</thead><tbody>%s</tbody></table>') % (
+            header, rows)
+
+    def _alert_budget_exceeded(self):
+        """ Assign a To-Do activity listing the lines over budget to the responsible (updating the open one, if
+        any), log it in the chatter and, when the company asks for it, email the responsible. """
+        self.ensure_one()
+        user = self._get_budget_alert_user()
+        table = self._get_budget_exceeded_table()
+        activity_type = self.env.ref('om_account_budget.mail_activity_type_budget_exceeded')
+        activity = self.activity_ids.filtered(lambda activity: activity.activity_type_id == activity_type)[:1]
+        note = Markup('<p>%s</p>%s') % (_('These lines spent more than planned:'), table)
+        if activity:
+            activity.note = note
+        else:
+            self.activity_schedule(
+                'om_account_budget.mail_activity_type_budget_exceeded',
+                summary=_('Over budget: %s', self.name), note=note, user_id=user.id,
+            )
+        if self.company_id.budget_exceeded_email and user.partner_id.email:
+            template = self.env.ref('om_account_budget.mail_template_budget_exceeded')
+            template.send_mail(self.id, email_layout_xmlid='mail.mail_notification_light')
+            body = _('%(user)s was emailed: some lines spent more than planned.', user=user.name)
+        else:
+            body = _('Some lines spent more than planned.')
+        self.message_post(
+            body=Markup('<p>%s</p>%s') % (body, table),
+            message_type='notification', subtype_xmlid='mail.mt_note',
+        )

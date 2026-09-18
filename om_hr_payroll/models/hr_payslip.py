@@ -63,14 +63,14 @@ class HrPayslip(models.Model):
 
     struct_id = fields.Many2one('hr.payroll.structure', string='Structure',
                                 help='Defines the rules that have to be applied to this payslip, accordingly '
-                                     'to the version/contract chosen.')
+                                     'to the version/contract chosen.', tracking=True)
     name = fields.Char(string='Payslip Name')
-    number = fields.Char(string='Reference', copy=False)
-    employee_id = fields.Many2one('hr.employee', string='Employee', required=True)
+    number = fields.Char(string='Reference', copy=False, tracking=True)
+    employee_id = fields.Many2one('hr.employee', string='Employee', required=True, tracking=True)
     date_from = fields.Date(string='Date From', required=True,
-                            default=lambda self: fields.Date.context_today(self).replace(day=1))
+                            default=lambda self: fields.Date.context_today(self).replace(day=1), tracking=True)
     date_to = fields.Date(string='Date To', required=True,
-                          default=lambda self: fields.Date.context_today(self) + relativedelta(day=31))
+                          default=lambda self: fields.Date.context_today(self) + relativedelta(day=31), tracking=True)
 
     state = fields.Selection([
         ('draft', 'Draft'),
@@ -81,7 +81,7 @@ class HrPayslip(models.Model):
         help="""* When the payslip is created the status is \'Draft\'
                 \n* If the payslip is under verification, the status is \'Waiting\'.
                 \n* If the payslip is confirmed then status is set to \'Done\'.
-                \n* When user cancel payslip the status is \'Rejected\'.""")
+                \n* When user cancel payslip the status is \'Rejected\'.""", tracking=True)
 
     line_ids = fields.One2many('hr.payslip.line', 'slip_id', string='Payslip Lines')
     company_id = fields.Many2one(
@@ -96,17 +96,17 @@ class HrPayslip(models.Model):
         'hr.payslip.input', 'payslip_id',
         string='Payslip Inputs', copy=True
     )
-    paid = fields.Boolean(string='Made Payment Order ? ', copy=False)
+    paid = fields.Boolean(string='Made Payment Order ? ', copy=False, tracking=True)
     note = fields.Text(string='Internal Note')
 
-    version_id = fields.Many2one('hr.version', string='Employment Version/Contract')
+    version_id = fields.Many2one('hr.version', string='Employment Version/Contract', tracking=True)
 
     details_by_salary_rule_category = fields.One2many('hr.payslip.line',
                                                       compute='_compute_details_by_salary_rule_category',
                                                       string='Details by Salary Rule Category')
     credit_note = fields.Boolean(string='Credit Note',
-                                 help="Indicates this payslip has a refund of another")
-    payslip_run_id = fields.Many2one('hr.payslip.run', string='Payslip Batches', copy=False)
+                                 help="Indicates this payslip has a refund of another", tracking=True)
+    payslip_run_id = fields.Many2one('hr.payslip.run', string='Payslip Batches', copy=False, tracking=True)
     payslip_count = fields.Integer(compute='_compute_payslip_count', string="Payslip Computation Details")
 
     def _compute_details_by_salary_rule_category(self):
@@ -173,6 +173,32 @@ class HrPayslip(models.Model):
             'views': [(list_view_ref and list_view_ref.id or False, 'list'),
                       (form_view_ref and form_view_ref.id or False, 'form')],
             'context': {}
+        }
+
+    def action_send_payslips(self):
+        """ Email their payslip to the employees, with the payslip attached: only the confirmed payslips are sent. """
+        template = self.env.ref('om_hr_payroll.mail_template_payslip')
+        payslips = self.filtered(lambda payslip: payslip.state == 'done')
+        not_done = self - payslips
+        without_email = payslips.filtered(lambda payslip: not payslip.employee_id.work_email)
+        to_send = payslips - without_email
+        if to_send:
+            to_send.message_post_with_source(template, message_type='comment', subtype_xmlid='mail.mt_comment')
+        message = _('%s payslip(s) sent.', len(to_send))
+        if without_email:
+            message += ' ' + _('Not sent, the employee has no work email: %s.',
+                               ', '.join(without_email.mapped('employee_id.name')))
+        if not_done:
+            message += ' ' + _('Not sent, the payslip is not confirmed: %s.',
+                               ', '.join(not_done.mapped(lambda payslip: payslip.number or payslip.name or '')))
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'type': 'warning' if without_email or not_done or not to_send else 'success',
+                'message': message,
+                'sticky': bool(without_email or not_done),
+            },
         }
 
     def action_send_email(self):
@@ -702,13 +728,17 @@ class HrPayslipLine(models.Model):
                 payslip = self.env['hr.payslip'].browse(values.get('slip_id'))
                 values['employee_id'] = values.get('employee_id') or payslip.employee_id.id
                 values['version_id'] = values.get('version_id') or payslip.version_id.id
-        lines = super().create(vals_list)
+        # the lines copy the salary rules, chatter included: they keep no followers, messages nor tracking
+        lines = super(HrPayslipLine, self.with_context(tracking_disable=True)).create(vals_list)
         lines._check_payslip_open()
-        return lines
+        return lines.with_env(self.env)
 
     def write(self, vals):
         self._check_payslip_open()
-        return super().write(vals)
+        return super(HrPayslipLine, self.with_context(tracking_disable=True)).write(vals)
+
+    def _track_get_fields(self):
+        return set()
 
     def unlink(self):
         self._check_payslip_open()
@@ -760,26 +790,29 @@ class HrPayslipInput(models.Model):
 
 class HrPayslipRun(models.Model):
     _name = 'hr.payslip.run'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Payslip Batches'
 
-    name = fields.Char(required=True)
+    name = fields.Char(required=True, tracking=True)
     slip_ids = fields.One2many('hr.payslip', 'payslip_run_id', string='Payslips')
     state = fields.Selection([
         ('draft', 'Draft'),
         ('done', 'Done'),
         ('close', 'Close'),
-    ], string='Status', index=True, readonly=True, copy=False, default='draft')
+    ], string='Status', index=True, readonly=True, copy=False, default='draft', tracking=True)
     date_start = fields.Date(
         string='Date From', required=True,
-        default=lambda self: fields.Date.context_today(self).replace(day=1)
+        default=lambda self: fields.Date.context_today(self).replace(day=1),
+        tracking=True
     )
     date_end = fields.Date(
         string='Date To', required=True,
-        default=lambda self: fields.Date.context_today(self) + relativedelta(day=31)
+        default=lambda self: fields.Date.context_today(self) + relativedelta(day=31),
+        tracking=True
     )
     credit_note = fields.Boolean(string='Credit Note',
                                  help="If its checked, indicates that all payslips generated from here are refund "
-                                      "payslips.")
+                                      "payslips.", tracking=True)
     company_id = fields.Many2one('res.company', string='Company', required=True, default=lambda self: self.env.company)
 
     def draft_payslip_run(self):
@@ -791,25 +824,21 @@ class HrPayslipRun(models.Model):
     def action_send_payslips(self):
         """ Email their confirmed payslip to the employees of the batch, with the payslip attached. """
         self.ensure_one()
-        template = self.env.ref('om_hr_payroll.mail_template_payslip')
-        payslips = self.slip_ids.filtered(lambda payslip: payslip.state == 'done')
-        without_email = payslips.filtered(lambda payslip: not payslip.employee_id.work_email)
-        to_send = payslips - without_email
-        if to_send:
-            to_send.message_post_with_source(template, message_type='comment', subtype_xmlid='mail.mt_comment')
-        message = _('%s payslip(s) sent.', len(to_send))
-        if without_email:
-            message += ' ' + _('Not sent, the employee has no work email: %s.',
-                               ', '.join(without_email.mapped('employee_id.name')))
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'type': 'warning' if without_email or not to_send else 'success',
-                'message': message,
-                'sticky': bool(without_email),
-            },
+        return self.slip_ids.filtered(lambda payslip: payslip.state == 'done').action_send_payslips()
+
+    def action_open_payroll_analysis(self):
+        """ The amounts of the payslips of the batch, by employee and by category of rule. """
+        self.ensure_one()
+        action = self.env['ir.actions.act_window']._for_xml_id('om_hr_payroll.action_hr_payslip_analysis')
+        action['display_name'] = _('Payroll Analysis: %s', self.name)
+        action['domain'] = [('payslip_run_id', '=', self.id)]
+        action['context'] = {
+            'search_default_not_cancelled': 1,
+            'pivot_row_groupby': ['employee_id'],
+            'pivot_column_groupby': ['category_id'],
+            'graph_groupbys': ['employee_id', 'category_id'],
         }
+        return action
 
     def done_payslip_run(self):
         # the payslips already confirmed or rejected keep their status and their amounts

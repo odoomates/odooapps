@@ -131,6 +131,55 @@ class AccountCheckFormat(models.Model):
         help="Distance from the right edge of the cheque to the end of the MICR line: 5/16 inch in the standards.")
     micr_font_size = fields.Float(string='MICR Font Size (pt)', default=12.0, digits=(16, 1))
     paperformat_id = fields.Many2one('report.paperformat', string='Paper Format', readonly=True, copy=False)
+    preview_html = fields.Html(
+        string='Preview', compute='_compute_preview_html', sanitize=False,
+        help="The test print, with sample values, as it is laid out on the page.")
+
+    @api.depends(
+        'paper_size', 'page_width', 'page_height', 'offset_x', 'offset_y', 'font_size', 'date_format',
+        'amount_with_currency', 'amount_stars', 'words_uppercase', 'words_suffix', 'words_lang', 'words_lang_2',
+        'words_cents', 'words_fill', 'print_stub', 'stub_top', 'stub_2_top', 'print_micr', 'micr_style', 'micr_font',
+        'micr_bottom', 'micr_right', 'micr_font_size', 'company_id',
+        'line_ids.sequence', 'line_ids.field', 'line_ids.text', 'line_ids.x', 'line_ids.y', 'line_ids.width',
+        'line_ids.height', 'line_ids.line_height', 'line_ids.font_size', 'line_ids.bold', 'line_ids.align',
+        'line_ids.letter_spacing', 'line_ids.rotation', 'line_ids.border',
+    )
+    @api.depends_context('lang')
+    def _compute_preview_html(self):
+        for check_format in self:
+            check_format.preview_html = check_format._render_preview()
+
+    def _get_preview_height(self):
+        """ :return: the height of the page shown by the preview: down to the last printed thing """
+        self.ensure_one()
+        width, height = self._get_page_size()
+        bottom = max([line.y + max(line.height, line.line_height) for line in self.line_ids] or [0.0])
+        if self.print_micr:
+            bottom = max(bottom, self.micr_bottom or height)
+        if self.print_stub:
+            # a stub is a title and a few lines
+            bottom = max(bottom, max(self.stub_top, self.stub_2_top) + 60.0)
+        return min(height, bottom + max(self.offset_y, 0.0) + 10.0)
+
+    def _render_preview(self):
+        """ :return: the test print rendered on a sheet, scaled to the width of the form """
+        self.ensure_one()
+        try:
+            page = self.env['ir.qweb']._render('om_account_check_printing.check_pages', {
+                'check_format': self,
+                'pages': self._get_sample_pages(),
+            })
+        except (UserError, ValueError) as error:
+            return Markup('<div class="alert alert-warning" role="alert">%s</div>') % (
+                _('The preview cannot be shown: %s', error))
+        width = self._get_page_size()[0]
+        # 1 mm is 96 / 25.4 pixels; the sheet fits in 760 pixels
+        scale = min(1.0, 760.0 / (width * 96 / 25.4))
+        return Markup(
+            '<div class="o_om_check_preview" style="overflow: hidden; height: %.1fmm; max-width: 100%%;">'
+            '<div style="zoom: %.3f; width: %.1fmm; height: %.1fmm; overflow: hidden; background: #fff; color: #000; '
+            'border: 1px solid #ccc; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);">%s</div></div>'
+        ) % (self._get_preview_height() * scale + 1, scale, width, self._get_preview_height(), page)
 
     @api.constrains('print_micr', 'micr_font')
     def _check_micr_font(self):
@@ -282,8 +331,12 @@ class AccountCheckFormat(models.Model):
         if not (self.print_micr and self.micr_font):
             return ''
         return Markup(
-            "@font-face { font-family: 'OmCheckMicr%d'; src: url(data:font/ttf;base64,%s) format('truetype'); }"
-        ) % (self.id, Markup(self.micr_font.to_base64()))
+            "@font-face { font-family: '%s'; src: url(data:font/ttf;base64,%s) format('truetype'); }"
+        ) % (self._get_micr_font_family(), Markup(self.micr_font.to_base64()))
+
+    def _get_micr_font_family(self):
+        self.ensure_one()
+        return 'OmCheckMicr%s' % (self._origin.id or 'New')
 
     def _get_micr_style(self):
         self.ensure_one()
@@ -300,7 +353,7 @@ class AccountCheckFormat(models.Model):
             'height: %.2fmm' % (font_height + 1),
             'text-align: right',
             'white-space: nowrap',
-            "font-family: 'OmCheckMicr%d'" % self.id,
+            "font-family: '%s', monospace" % self._get_micr_font_family(),
             'font-size: %.1fpt' % self.micr_font_size,
         ])
 

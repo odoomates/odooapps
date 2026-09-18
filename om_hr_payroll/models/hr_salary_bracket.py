@@ -9,13 +9,14 @@ class HrSalaryBracket(models.Model):
     pay frequency, so that a rule stays one line whatever the country asks for.
     """
     _name = 'hr.salary.bracket'
+    _inherit = ['mail.thread']
     _description = 'Salary Bracket'
     _order = 'code'
 
-    name = fields.Char(required=True, translate=True)
+    name = fields.Char(required=True, translate=True, tracking=True)
     code = fields.Char(
         required=True,
-        help='The name the salary rules read the bracket by, e.g. INCOME_TAX for brackets.INCOME_TAX.')
+        help='The name the salary rules read the bracket by, e.g. INCOME_TAX for brackets.INCOME_TAX.', tracking=True)
     computation = fields.Selection([
         ('marginal', 'Marginal: each band on its own slice'),
         ('excess', 'Excess: the fixed amount of the band, plus its rate on what exceeds it'),
@@ -24,12 +25,12 @@ class HrSalaryBracket(models.Model):
         'Marginal taxes each slice at the rate of its band, as the income tax of most countries does.\n'
         'Excess takes the fixed amount of the band the amount falls in, plus the rate of that band on what '
         'exceeds its floor.\n'
-        'Flat applies the rate of the band the amount falls in to the whole amount.'))
+        'Flat applies the rate of the band the amount falls in to the whole amount.'), tracking=True)
     version_ids = fields.One2many('hr.salary.bracket.version', 'bracket_id', string='Tables')
     company_id = fields.Many2one(
         'res.company', string='Company',
-        help='Leave empty for a bracket shared by every company.')
-    active = fields.Boolean(default=True)
+        help='Leave empty for a bracket shared by every company.', tracking=True)
+    active = fields.Boolean(default=True, tracking=True)
     note = fields.Text(string='Description')
 
     _code_company_uniq = models.Constraint(
@@ -100,6 +101,27 @@ class HrSalaryBracketVersion(models.Model):
         'A salary bracket can only have one table per date and key.',
     )
 
+    @api.model_create_multi
+    def create(self, vals_list):
+        versions = super().create(vals_list)
+        for version in versions:
+            version.bracket_id._message_log(body=_('Table added: %s', version.display_name))
+        return versions
+
+    def write(self, vals):
+        before = {version.id: version.display_name for version in self}
+        res = super().write(vals)
+        for version in self:
+            if before[version.id] != version.display_name:
+                version.bracket_id._message_log(body=_(
+                    'Table changed: %(old)s → %(new)s', old=before[version.id], new=version.display_name))
+        return res
+
+    def unlink(self):
+        for version in self:
+            version.bracket_id._message_log(body=_('Table removed: %s', version.display_name))
+        return super().unlink()
+
     @api.depends('date_from', 'key')
     def _compute_display_name(self):
         for version in self:
@@ -148,6 +170,32 @@ class HrSalaryBracketLine(models.Model):
     rate = fields.Float(string='Rate (%)', digits='Payroll Rate')
     fixed_amount = fields.Float(string='Fixed Amount', digits='Payroll')
     company_id = fields.Many2one(related='version_id.company_id', store=True)
+
+    def _log_label(self):
+        return _('%(table)s: from %(lower)s to %(upper)s, %(rate)s%% + %(fixed)s',
+                 table=self.version_id.display_name, lower=self.lower, upper=self.upper or '∞',
+                 rate=self.rate, fixed=self.fixed_amount)
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        bands = super().create(vals_list)
+        for band in bands:
+            band.version_id.bracket_id._message_log(body=_('Band added: %s', band._log_label()))
+        return bands
+
+    def write(self, vals):
+        before = {band.id: band._log_label() for band in self}
+        res = super().write(vals)
+        for band in self:
+            if before[band.id] != band._log_label():
+                band.version_id.bracket_id._message_log(body=_(
+                    'Band changed: %(old)s → %(new)s', old=before[band.id], new=band._log_label()))
+        return res
+
+    def unlink(self):
+        for band in self:
+            band.version_id.bracket_id._message_log(body=_('Band removed: %s', band._log_label()))
+        return super().unlink()
 
     @api.constrains('lower', 'upper')
     def _check_bounds(self):

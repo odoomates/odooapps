@@ -15,6 +15,9 @@
                             type="object"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,done"/>
                 </header>
+                <div class="alert alert-danger mb-0" role="alert" invisible="not has_error">
+                    A payment could not be created: see the lines in error below.
+                </div>
                 <sheet>
                     <div class="oe_title" invisible="not name">
                         <h1>
@@ -31,6 +34,7 @@
                             <field name="journal_id"/>
                         </group>
                         <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
                             <field name="date_begin" widget="daterange"
                                    options="{'related_end_date': 'date_end'}"/>
                             <field name="date_end" widget="daterange"
@@ -45,12 +49,13 @@
                         <page string="Recurring Entries" name="entries">
                             <field name="line_ids">
                                 <list create="0" delete="0" edit="0" decoration-success="state == 'done'"
-                                      decoration-muted="state == 'cancel'">
+                                      decoration-muted="state == 'cancel'" decoration-danger="error_message">
                                     <field name="date"/>
                                     <field name="amount"/>
                                     <field name="journal_id"/>
                                     <field name="currency_id" groups="base.group_multi_currency"/>
                                     <field name="payment_id" optional="hide"/>
+                                    <field name="error_message" optional="show"/>
                                     <field name="state" widget="badge" decoration-success="state == 'done'"/>
                                     <button name="action_create_payment" type="object"
                                             string="Create Payment"
@@ -73,12 +78,16 @@
                                             <field name="payment_id"/>
                                         </group>
                                     </group>
+                                    <group invisible="not error_message">
+                                        <field name="error_message"/>
+                                    </group>
                                 </form>
                             </field>
                         </page>
                     </notebook>
                     <field name="description" placeholder="Description..."/>
                 </sheet>
+                <chatter/>
             </form>
         </field>
     </record>
@@ -98,8 +107,11 @@
                 <field name="date_end" optional="show"/>
                 <field name="journal_id"/>
                 <field name="company_id" groups="base.group_multi_company" optional="show"/>
-                <field name="state" widget="badge" decoration-success="state == 'done'"
-                       decoration-muted="state == 'cancel'"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="has_error" column_invisible="True"/>
+                <field name="state" widget="badge" decoration-success="state == 'done' and not has_error"
+                       decoration-muted="state == 'cancel'" decoration-danger="has_error"/>
             </list>
         </field>
     </record>
@@ -118,12 +130,16 @@
                 <filter string="Running" name="done" domain="[('state', '=', 'done')]"/>
                 <filter string="Stopped" name="cancel" domain="[('state', '=', 'cancel')]"/>
                 <separator/>
+                <filter string="Payment Failed" name="has_error" domain="[('has_error', '=', True)]"/>
+                <filter string="My Recurring Payments" name="my" domain="[('user_id', '=', uid)]"/>
+                <separator/>
                 <filter string="Send Money" name="outbound" domain="[('payment_type', '=', 'outbound')]"/>
                 <filter string="Receive Money" name="inbound" domain="[('payment_type', '=', 'inbound')]"/>
                 <group>
                     <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
                     <filter string="Template" name="group_template" context="{'group_by': 'template_id'}"/>
                     <filter string="Journal" name="group_journal" context="{'group_by': 'journal_id'}"/>
+                    <filter string="Responsible" name="group_user" context="{'group_by': 'user_id'}"/>
                     <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
                 </group>
             </search>

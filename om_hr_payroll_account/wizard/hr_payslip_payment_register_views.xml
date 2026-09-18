@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_hr_payslip_payment_register_form" model="ir.ui.view">
+        <field name="name">hr.payslip.payment.register.form</field>
+        <field name="model">hr.payslip.payment.register</field>
+        <field name="arch" type="xml">
+            <form string="Pay Salaries">
+                <field name="company_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="can_edit_amount" invisible="1"/>
+                <field name="available_payment_method_line_ids" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="can_edit_amount">
+                    <field name="employee_count" class="oe_inline fw-bold"/> employee(s) are paid their net salary,
+                    one payment per employee, for a total of
+                    <field name="total_amount" class="oe_inline fw-bold"/>.
+                </div>
+                <group>
+                    <group>
+                        <field name="journal_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="payment_method_line_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="payment_date"/>
+                    </group>
+                    <group>
+                        <field name="amount" invisible="not can_edit_amount"/>
+                        <field name="total_amount" string="Left to Pay" invisible="not can_edit_amount"/>
+                        <field name="memo" placeholder="The reference of the payslips"/>
+                    </group>
+                </group>
+                <field name="payslip_ids" readonly="1">
+                    <list>
+                        <field name="number"/>
+                        <field name="employee_id" widget="many2one_avatar_employee"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                        <field name="payment_state" widget="badge"
+                               decoration-info="payment_state == 'not_paid'"
+                               decoration-warning="payment_state == 'partial'"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_create_payments" string="Create Payments" type="object" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_hr_payslip_register_payment" model="ir.actions.server">
+        <field name="name">Pay Salaries</field>
+        <field name="model_id" ref="om_hr_payroll.model_hr_payslip"/>
+        <field name="binding_model_id" ref="om_hr_payroll.model_hr_payslip"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('account.group_account_invoice'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_register_payment()</field>
+    </record>
+
+</odoo>

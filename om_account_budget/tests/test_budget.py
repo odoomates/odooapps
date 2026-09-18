@@ -290,6 +290,67 @@ class TestBudget(AccountTestInvoicingCommon):
         self.assertEqual(line.warning_level, 'exceeded')
         self.assertEqual(len(warnings()), 2)
 
+    def test_exceeded_alert(self):
+        activity_type = self.env.ref('om_account_budget.mail_activity_type_budget_exceeded')
+        line = self._create_line(position_id=self.position.id)
+        self.budget.action_budget_confirm()
+        self.budget.action_budget_validate()
+        cron = self.env['account.budget']._cron_warn_budget_responsibles
+
+        def alerts():
+            return self.budget.activity_ids.filtered(lambda activity: activity.activity_type_id == activity_type)
+
+        def logs():
+            # the alerts logged in the chatter, not the feedback of the activities
+            return self.budget.message_ids.filtered(
+                lambda m: 'o_budget_exceeded_table' in (m.body or '') and not m.mail_activity_type_id)
+
+        self._create_bill(1100.0)
+        cron()
+        self.assertEqual(line.warning_level, 'exceeded')
+        self.assertEqual(len(alerts()), 1)
+        self.assertEqual(alerts().user_id, self.budget.user_id)
+        self.assertIn(self.position.name, alerts().note)
+        self.assertIn('100.00', alerts().note, "the activity says by how much the line is over budget")
+        self.assertEqual(len(logs()), 1)
+
+        cron()
+        self.assertEqual((len(alerts()), len(logs())), (1, 1), "no second alert for the same overrun")
+
+        # back under budget, then over again while the activity is still open: the activity is updated
+        self._create_move('in_refund', 600.0, self.expense_account)
+        cron()
+        self.assertEqual(line.warning_level, 'none')
+        self._create_bill(700.0)
+        cron()
+        self.assertEqual((len(alerts()), len(logs())), (1, 2))
+        self.assertIn('200.00', alerts().note)
+
+        # once the activity is done, a new overrun assigns a new one
+        alerts().action_feedback(feedback='Checked')
+        self._create_move('in_refund', 600.0, self.expense_account)
+        cron()
+        self._create_bill(700.0)
+        cron()
+        self.assertEqual(len(alerts()), 1)
+        self.assertEqual(len(logs()), 3)
+        self.assertFalse(self.env['mail.mail'].search([('model', '=', 'account.budget'), ('res_id', '=', self.budget.id)]))
+
+    def test_exceeded_alert_email(self):
+        self.env.company.budget_exceeded_email = True
+        self.budget.user_id.partner_id.email = 'budget.owner@example.com'
+        self._create_line(position_id=self.position.id)
+        self.budget.action_budget_confirm()
+        self.budget.action_budget_validate()
+        self._create_bill(1100.0)
+        self.env['account.budget']._cron_warn_budget_responsibles()
+        mail = self.env['mail.mail'].search([('model', '=', 'account.budget'), ('res_id', '=', self.budget.id)])
+        self.assertEqual(len(mail), 1)
+        self.assertEqual(mail.recipient_ids, self.budget.user_id.partner_id)
+        self.assertIn('over budget', mail.subject)
+        self.assertIn(self.position.name, str(mail.body_html))
+        self.assertIn('was emailed', self.budget.message_ids[0].body)
+
     # -------------------------------------------------------------------------
     # Control of the expenses
     # -------------------------------------------------------------------------

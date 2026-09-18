@@ -152,6 +152,26 @@ class TestPayroll(TransactionCase):
         self.assertEqual(refund.state, 'done')
         self.assertEqual(self._totals(refund)['NET'], self._totals(payslip)['NET'])
 
+    def test_changes_are_tracked(self):
+        rule = self.structure.rule_ids.filtered(lambda rule: rule.code == 'TAX')
+        rule.amount_percentage = -12
+        payslip = self._new_payslip(self.employee)
+        payslip.compute_sheet()
+        # the changes made in the transaction creating a record are not tracked
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        payslip.action_payslip_done()
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        self.env.invalidate_all()
+        self.assertIn('-10.00 → <b>-12.00</b> <i>(Percentage (%))</i>', ''.join(rule.message_ids.mapped('body')))
+        self.assertIn('<b>Done</b>', ''.join(payslip.message_ids.mapped('body')))
+
+        # the payslip lines copy the rules, not their chatter
+        lines = payslip.line_ids
+        self.assertFalse(lines.message_follower_ids)
+        self.assertFalse(self.env['mail.message'].search_count([('model', '=', 'hr.payslip.line')]))
+
     def test_payroll_analysis(self):
         department = self.env['hr.department'].create({'name': 'Payroll Analysis Dept'})
         employee = self._create_employee('Analysed Employee', department_id=department.id)
@@ -218,6 +238,36 @@ class TestPayroll(TransactionCase):
         self.assertEqual(message.subject, f'Payslip: {sent.number}')
         self.assertTrue(message.attachment_ids)
         self.assertFalse((run.slip_ids - sent).message_ids.filtered(lambda message: message.message_type == 'comment'))
+
+    def test_send_selected_payslips_by_email(self):
+        self.employee.work_email = 'payroll.employee@example.com'
+        done = self._new_payslip(self.employee)
+        done.compute_sheet()
+        done.action_payslip_done()
+        draft = self._new_payslip(self.employee)
+        action = self.env.ref('om_hr_payroll.action_send_selected_payslips').with_context(
+            active_model='hr.payslip', active_ids=(done | draft).ids).run()
+        self.assertEqual(action['params']['type'], 'warning')
+        self.assertIn('not confirmed', action['params']['message'])
+        comments = (done | draft).message_ids.filtered(lambda message: message.message_type == 'comment')
+        self.assertEqual(comments.model, 'hr.payslip')
+        self.assertEqual(comments.res_id, done.id)
+        self.assertEqual(len(comments), 1)
+
+    def test_batch_payroll_analysis(self):
+        run = self.env['hr.payslip.run'].create({
+            'name': 'August', 'date_start': date(2026, 8, 1), 'date_end': date(2026, 8, 31)})
+        wizard = self.env['hr.payslip.employees'].create({'employee_ids': [Command.set(self.employee.ids)]})
+        wizard.with_context(active_id=run.id).compute_sheet()
+        action = run.action_open_payroll_analysis()
+        self.assertEqual(action['res_model'], 'hr.payslip.analysis')
+        lines = self.env['hr.payslip.analysis'].search(action['domain'])
+        # the batch is not confirmed yet: its draft payslips are analysed too
+        self.assertEqual(lines.slip_id, run.slip_ids)
+        self.assertEqual(
+            sum(lines.filtered(lambda line: line.category_id.code == 'NET').mapped('total')),
+            sum(run.slip_ids.line_ids.filtered(lambda line: line.category_id.code == 'NET').mapped('total')),
+        )
 
     # -------------------------------------------------------------------------
     # Security

@@ -3,43 +3,61 @@ import logging
 from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api, _
 from odoo.exceptions import LockError, UserError, ValidationError
+from odoo.tools import format_date
 
 _logger = logging.getLogger(__name__)
 
 
 class RecurringPayment(models.Model):
     _name = 'recurring.payment'
+    _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Recurring Payment'
     _rec_name = 'name'
     _check_company_auto = True
 
     name = fields.Char('Name', readonly=True)
-    partner_id = fields.Many2one('res.partner', string="Partner", required=True, check_company=True)
+    partner_id = fields.Many2one('res.partner', string="Partner", required=True, check_company=True, tracking=True)
+    user_id = fields.Many2one('res.users', string='Responsible', default=lambda self: self.env.user,
+                              domain="[('share', '=', False)]", tracking=True,
+                              help="Warned when a payment of this recurring payment cannot be created.")
     company_id = fields.Many2one('res.company', string='Company',
                                  compute='_compute_company_id', store=True, readonly=False, precompute=True)
     currency_id = fields.Many2one('res.currency', string='Currency', required=True,
                                   compute='_compute_currency_id', store=True, readonly=False, precompute=True)
-    amount = fields.Monetary(string="Amount", currency_field='currency_id')
+    amount = fields.Monetary(string="Amount", currency_field='currency_id', tracking=True)
     journal_id = fields.Many2one('account.journal', 'Journal', required=True, check_company=True,
-                                 domain=[('type', 'in', ('bank', 'cash'))],
+                                 domain=[('type', 'in', ('bank', 'cash'))], tracking=True,
                                  compute='_compute_journal_id', store=True, readonly=False, precompute=True)
     payment_type = fields.Selection([
         ('outbound', 'Send Money'),
         ('inbound', 'Receive Money'),
-    ], string='Payment Type', required=True, default='inbound')
+    ], string='Payment Type', required=True, default='inbound', tracking=True)
     state = fields.Selection(selection=[('draft', 'Draft'),
                                         ('done', 'Done'),
-                                        ('cancel', 'Stopped')], default='draft', string='Status')
-    date_begin = fields.Date(string='Start Date', required=True)
-    date_end = fields.Date(string='End Date', required=True)
+                                        ('cancel', 'Stopped')], default='draft', string='Status', tracking=True)
+    date_begin = fields.Date(string='Start Date', required=True, tracking=True)
+    date_end = fields.Date(string='End Date', required=True, tracking=True)
     template_id = fields.Many2one('account.recurring.template', 'Recurring Template',
-                                  domain=[('state', '=', 'done')], required=True, check_company=True)
+                                  domain=[('state', '=', 'done')], required=True, check_company=True, tracking=True)
     recurring_period = fields.Selection(related='template_id.recurring_period')
     recurring_interval = fields.Integer('Recurring Interval', related='template_id.recurring_interval')
     journal_state = fields.Selection(string='Generate Journal As', related='template_id.journal_state')
 
     description = fields.Text('Description')
     line_ids = fields.One2many('recurring.payment.line', 'recurring_payment_id', string='Recurring Lines')
+    has_error = fields.Boolean('Payment Failed', compute='_compute_has_error', search='_search_has_error')
+
+    @api.depends('line_ids.error_message')
+    def _compute_has_error(self):
+        for rec in self:
+            rec.has_error = any(rec.line_ids.mapped('error_message'))
+
+    def _search_has_error(self, operator, value):
+        if operator not in ('in', 'not in'):
+            return NotImplemented
+        failed = self.env['recurring.payment.line']._search([('error_message', '!=', False)])
+        domain = [('line_ids', 'any', failed)]
+        return domain if (operator == 'in') == (True in value) else ['!'] + domain
 
     @api.depends('template_id')
     def _compute_company_id(self):
@@ -106,8 +124,9 @@ class RecurringPayment(models.Model):
     def action_stop(self):
         """ End the recurring payment early: the lines not paid yet are skipped. """
         for rec in self:
-            rec.line_ids.filtered(lambda line: line.state == 'draft').state = 'cancel'
+            rec.line_ids.filtered(lambda line: line.state == 'draft').write({'state': 'cancel', 'error_message': False})
             rec.state = 'cancel'
+        self._close_failure_activities()
 
     def action_generate_payment(self):
         line_ids = self.env['recurring.payment.line'].search([
@@ -122,6 +141,21 @@ class RecurringPayment(models.Model):
             except Exception as error:
                 _logger.warning("Recurring payment line %s (%s) could not be paid: %s",
                                 line.id, line.recurring_payment_id.name, error)
+                line._notify_payment_error(error)
+
+    def _failure_activity_type(self):
+        return self.env.ref('om_recurring_payments.mail_activity_type_recurring_payment_failed',
+                            raise_if_not_found=False)
+
+    def _close_failure_activities(self):
+        """ The warnings of the recurring payments with nothing failing any more are done """
+        activity_type = self._failure_activity_type()
+        if not activity_type:
+            return
+        solved = self.filtered(lambda rec: not rec.has_error)
+        activities = solved.activity_ids.filtered(lambda activity: activity.activity_type_id == activity_type)
+        if activities:
+            activities.action_feedback(feedback=_('The payments are created again.'))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -170,6 +204,8 @@ class RecurringPaymentLine(models.Model):
     state = fields.Selection(selection=[('draft', 'Draft'),
                                         ('done', 'Done'),
                                         ('cancel', 'Skipped')], default='draft', string='Status')
+    error_message = fields.Text('Error', readonly=True, copy=False,
+                                help="Why the payment of this line could not be created on its date.")
 
     @api.depends('recurring_payment_id')
     def _compute_company_id(self):
@@ -205,13 +241,37 @@ class RecurringPaymentLine(models.Model):
             payment = self.env['account.payment'].create(vals)
             if line.recurring_payment_id.journal_state == 'posted':
                 payment.action_post()
-            line.write({'state': 'done', 'payment_id': payment.id})
+            line.write({'state': 'done', 'payment_id': payment.id, 'error_message': False})
+        self.recurring_payment_id._close_failure_activities()
+
+    def _notify_payment_error(self, error):
+        """ Keep why the payment failed on the line and warn the responsible of the recurring payment, once
+        per new error. """
+        self.ensure_one()
+        message = str(error.args[0] if isinstance(error, (UserError, ValidationError)) and error.args else error)
+        if self.error_message == message:
+            return
+        self.error_message = message
+        recurring = self.recurring_payment_id
+        body = _("The payment of %(date)s could not be created: %(error)s",
+                 date=format_date(self.env, self.date), error=message)
+        recurring.message_post(body=body)
+        activity_type = recurring._failure_activity_type()
+        if activity_type and not recurring.activity_ids.filtered(
+                lambda activity: activity.activity_type_id == activity_type):
+            recurring.activity_schedule(
+                activity_type_id=activity_type.id,
+                summary=_('Payment failed'),
+                note=body,
+                user_id=(recurring.user_id or recurring.create_uid).id,
+            )
 
     def action_skip(self):
         for line in self:
             if line.state != 'draft':
                 raise UserError(_('Only the lines not paid yet can be skipped.'))
-            line.state = 'cancel'
+            line.write({'state': 'cancel', 'error_message': False})
+        self.recurring_payment_id._close_failure_activities()
 
     def action_reset(self):
         for line in self:

@@ -9,6 +9,11 @@ class ResCompany(models.Model):
         help="The responsible of a budget is warned when an expense line reaches this percentage of "
              "its planned amount, and again when it goes over it.",
     )
+    budget_exceeded_email = fields.Boolean(
+        string='Email the Budget Responsible',
+        help="When an expense line of a validated budget goes over its planned amount, its responsible gets an "
+             "email besides the To-Do activity.",
+    )
     budget_block_documents = fields.Boolean(
         string='Block Documents Over Budget',
         help="Only the accounting managers can post the vendor bills (and confirm the purchase orders) going over "
@@ -20,4 +25,5 @@ class ResConfigSettings(models.TransientModel):
     _inherit = 'res.config.settings'
 
     budget_warning_threshold = fields.Float(related='company_id.budget_warning_threshold', readonly=False)
+    budget_exceeded_email = fields.Boolean(related='company_id.budget_exceeded_email', readonly=False)
     budget_block_documents = fields.Boolean(related='company_id.budget_block_documents', readonly=False)

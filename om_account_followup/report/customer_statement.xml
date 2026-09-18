@@ -12,7 +12,19 @@
         <field name="group_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
     </record>
 
+    <record id="action_report_vendor_statement" model="ir.actions.report">
+        <field name="name">Vendor Statement</field>
+        <field name="model">res.partner</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_followup.report_vendor_statement</field>
+        <field name="print_report_name">'Vendor Statement - %s' % (object.name or '')</field>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="binding_type">report</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_invoice'))]"/>
+    </record>
+
     <template id="report_customer_statement_document">
+        <t t-set="is_vendor" t-value="statement_type == 'vendor'"/>
         <t t-call="web.external_layout">
             <t t-set="address">
                 <address t-field="partner.self"
@@ -22,20 +34,23 @@
                 </div>
             </t>
             <div class="page">
-                <h2>Customer Statement</h2>
+                <h2 t-if="is_vendor">Vendor Statement</h2>
+                <h2 t-else="">Customer Statement</h2>
                 <table class="table table-borderless table-sm w-auto mb-3">
                     <tr>
                         <td class="pe-5"><strong>Date</strong><br/><span t-out="today_label"/></td>
                         <td class="pe-5" t-if="partner.ref">
-                            <strong>Customer Reference</strong><br/><span t-field="partner.ref"/>
+                            <strong t-if="is_vendor">Vendor Reference</strong>
+                            <strong t-else="">Customer Reference</strong>
+                            <br/><span t-field="partner.ref"/>
                         </td>
-                        <td t-if="partner.latest_followup_level_id">
+                        <td t-if="not is_vendor and partner.latest_followup_level_id">
                             <strong>Reminder</strong><br/><span t-field="partner.latest_followup_level_id.name"/>
                         </td>
                     </tr>
                 </table>
 
-                <p t-if="level_text(partner)" style="white-space: pre-line;" t-out="level_text(partner)"/>
+                <p t-if="not is_vendor and level_text(partner)" style="white-space: pre-line;" t-out="level_text(partner)"/>
 
                 <t t-foreach="statement(partner)" t-as="group">
                     <t t-set="currency" t-value="group['currency']"/>
@@ -111,13 +126,17 @@
                 </t>
                 <p t-if="not statement(partner)">Nothing is open on this account.</p>
 
-                <div t-if="bank_accounts" class="mt-4">
+                <div t-if="bank_accounts and not is_vendor" class="mt-4">
                     <strong>Payment Details</strong>
                     <p class="m-0" t-foreach="bank_accounts" t-as="bank">
                         <span t-out="bank.display_name"/>
                     </p>
                 </div>
-                <p class="mt-3 text-muted">
+                <p t-if="is_vendor" class="mt-3 text-muted">
+                    Please check these open amounts against your records and let our accounting department know
+                    of any difference.
+                </p>
+                <p t-else="" class="mt-3 text-muted">
                     If you have already paid, please ignore the overdue amounts. For any question about this
                     statement, contact our accounting department.
                 </p>
@@ -132,6 +151,10 @@
                 <t t-call="om_account_followup.report_customer_statement_document" t-lang="partner.lang"/>
             </t>
         </t>
+    </template>
+
+    <template id="report_vendor_statement">
+        <t t-call="om_account_followup.report_customer_statement"/>
     </template>
 
 </odoo>

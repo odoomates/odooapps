@@ -122,3 +122,47 @@ class TestPayrollAccount(AccountTestInvoicingCommon):
         payslip.action_payslip_cancel()
         self.assertEqual(payslip.state, 'cancel')
         self.assertTrue(move.exists())
+
+    def test_shared_rules_use_the_accounts_of_the_payslip_company(self):
+        company_2_data = self.setup_other_company(name='Payroll Company 2')
+        company_2 = company_2_data['company']
+        self.env.user.company_ids = [Command.link(company_2.id)]
+        # the rules and the structure are shared: each company sets its own accounts on the rules
+        structure = self.employee.version_id.struct_id
+        structure.company_id = False
+        basic = structure.rule_ids.filtered(lambda rule: rule.code == 'BASIC')
+        basic.company_id = False
+        payable_2 = self.env['account.account'].with_company(company_2).create({
+            'name': 'Salaries Payable 2', 'code': 'SALPAY2', 'account_type': 'liability_current',
+        })
+        basic.with_company(company_2).write({
+            'account_debit': company_2_data['default_account_expense'].id,
+            'account_credit': payable_2.id,
+        })
+        self.assertEqual(basic.account_debit, self.expense_account)
+
+        calendar = self.env['resource.calendar'].create({'name': 'Payroll 40h 2', 'company_id': company_2.id})
+        employee_2 = self.env['hr.employee'].with_company(company_2).create({
+            'name': 'Employee of Company 2', 'resource_calendar_id': calendar.id, 'tz': 'UTC',
+            'company_id': company_2.id,
+            'date_version': date(2026, 1, 1), 'contract_date_start': date(2026, 1, 1), 'wage': 3000.0,
+            'struct_id': structure.id,
+        })
+        # the payslips of both companies are confirmed together, from the first company
+        payslips = self.env['hr.payslip'].create([{
+            'employee_id': employee.id, 'company_id': employee.company_id.id, 'version_id': employee.version_id.id,
+            'struct_id': structure.id, 'date_from': date(2026, 8, 1), 'date_to': date(2026, 8, 31),
+        } for employee in self.employee | employee_2])
+        self.assertEqual(payslips[1].journal_id.company_id, company_2)
+        payslips.compute_sheet()
+        payslips.action_payslip_done()
+
+        move_1, move_2 = payslips.move_id
+        self.assertEqual(move_1.company_id, self.env.company)
+        self.assertEqual(self._expense_balance(move_1), 4000.0)
+        self.assertEqual(move_2.company_id, company_2)
+        self.assertEqual(move_2.journal_id.company_id, company_2)
+        self.assertEqual(move_2.line_ids.account_id,
+                         company_2_data['default_account_expense'] | payable_2)
+        self.assertEqual(sum(move_2.line_ids.filtered(lambda line: line.account_id == payable_2).mapped('balance')),
+                         -3000.0)

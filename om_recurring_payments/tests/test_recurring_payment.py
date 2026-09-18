@@ -106,6 +106,44 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
         self.assertEqual(working.line_ids.state, 'done')
         self.assertTrue(working.line_ids.payment_id)
 
+    def test_failed_payment_warns_the_responsible(self):
+        responsible = new_test_user(self.env, login='recurring_responsible', groups='account.group_account_user')
+        failing = self._create_recurring_payment(date_end='2026-01-01', user_id=responsible.id)
+        failing.action_done()
+        failing.line_ids.journal_id = self.company_data['default_journal_sale']
+        activity_type = self.env.ref('om_recurring_payments.mail_activity_type_recurring_payment_failed')
+        messages = failing.message_ids
+
+        for _run in range(2):
+            with self.assertLogs('odoo.addons.om_recurring_payments.models.recurring_payment', 'WARNING'):
+                self.env['recurring.payment'].action_generate_payment()
+        line = failing.line_ids
+        self.assertTrue(line.error_message)
+        self.assertTrue(failing.has_error)
+        self.assertIn(failing, self.env['recurring.payment'].search([('has_error', '=', True)]))
+        self.assertEqual(len(failing.message_ids - messages), 1, "the same error is told once")
+        activity = failing.activity_ids
+        self.assertEqual((activity.activity_type_id, activity.user_id), (activity_type, responsible))
+
+        line.journal_id = self.bank_journal
+        self.env['recurring.payment'].action_generate_payment()
+        self.assertEqual(line.state, 'done')
+        self.assertFalse(line.error_message)
+        self.assertFalse(failing.has_error)
+        self.assertFalse(failing.activity_ids)
+
+    def test_changes_are_tracked(self):
+        recurring_payment = self._create_recurring_payment().with_context(tracking_disable=False, mail_notrack=False)
+        self.assertEqual(recurring_payment.user_id, self.env.user)
+        # the changes made in the transaction creating a record are not tracked
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        recurring_payment.amount = 250.0
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        self.env.invalidate_all()
+        self.assertIn('<i>(Amount)</i>', ''.join(recurring_payment.message_ids.mapped('body')))
+
     def test_write_amount_on_several_records(self):
         recurring_payments = self._create_recurring_payment() | self._create_recurring_payment()
         recurring_payments.write({'amount': 50.0})

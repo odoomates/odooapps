@@ -1,3 +1,4 @@
+import io
 from collections import defaultdict
 from datetime import timedelta
 
@@ -14,6 +15,12 @@ FOLLOWUP_STATUSES = [
     ('excluded', 'Excluded'),
     ('no_action_needed', 'No Overdue'),
 ]
+
+# the account type of the open items of each kind of statement
+STATEMENT_ACCOUNT_TYPES = {
+    'customer': 'asset_receivable',
+    'vendor': 'liability_payable',
+}
 
 # the ageing of the open items, in days overdue
 AGEING_BUCKETS = [
@@ -358,19 +365,22 @@ class ResPartner(models.Model):
     # Open items
     # -------------------------------------------------------------------------
 
-    def _followup_statement_lines(self, date=None, overdue_only=False):
-        """ The open items of the customer in the current company, as printed and emailed.
+    def _followup_statement_lines(self, date=None, overdue_only=False, statement_type='customer'):
+        """ The open items of the partner in the current company, as printed and emailed.
 
+        :param statement_type: 'customer' for what the partner owes, 'vendor' for what is owed to the partner;
+            the amounts are positive when owed
         :return: list of {'currency', 'lines': [...], 'total', 'total_overdue'}
         """
         self.ensure_one()
         date = date or fields.Date.context_today(self)
         company = self.env.company
         partner = self.commercial_partner_id
+        sign = -1 if statement_type == 'vendor' else 1
         domain = [
             ('partner_id', '=', partner.id),
             ('company_id', '=', company.id),
-            ('account_id.account_type', '=', 'asset_receivable'),
+            ('account_id.account_type', '=', STATEMENT_ACCOUNT_TYPES[statement_type]),
             ('parent_state', '=', 'posted'),
             ('reconciled', '=', False),
             ('amount_residual', '!=', 0),
@@ -392,8 +402,8 @@ class ResPartner(models.Model):
                 'date': line.date,
                 'date_maturity': line._followup_due_date(),
                 'days_overdue': max(line._followup_age(date), 0),
-                'amount': line.amount_currency if foreign else line.balance,
-                'residual': line.amount_residual_currency if foreign else line.amount_residual,
+                'amount': sign * (line.amount_currency if foreign else line.balance),
+                'residual': sign * (line.amount_residual_currency if foreign else line.amount_residual),
                 'overdue': overdue,
                 'disputed': move.followup_disputed,
                 'portal_url': move.get_portal_url() if move.is_invoice(include_receipts=True) else False,
@@ -681,23 +691,146 @@ class ResPartner(models.Model):
     # Actions
     # -------------------------------------------------------------------------
 
-    def _followup_statement_action(self):
-        return self.env.ref('om_account_followup.action_report_customer_statement').report_action(self)
+    def _followup_statement_action(self, statement_type='customer'):
+        return self.env.ref(f'om_account_followup.action_report_{statement_type}_statement').report_action(self)
 
-    def action_followup_print_statement(self):
+    def _statement_partners(self, statement_type):
+        """ :return: the commercial partners with something open in the statement of the current company """
         partners = self.commercial_partner_id
-        company = self.env.company
         if not self.env['account.move.line'].search_count([
             ('partner_id', 'in', partners.ids),
-            ('account_id.account_type', '=', 'asset_receivable'),
+            ('account_id.account_type', '=', STATEMENT_ACCOUNT_TYPES[statement_type]),
             ('parent_state', '=', 'posted'),
             ('reconciled', '=', False),
-            ('company_id', '=', company.id),
+            ('company_id', '=', self.env.company.id),
         ], limit=1):
             raise UserError(_("There is nothing open to print in the statement of the current company."))
+        return partners
+
+    def action_followup_print_statement(self):
+        partners = self._statement_partners('customer')
         for partner in partners:
             partner.message_post(body=_('Customer statement printed'))
         return partners._followup_statement_action()
+
+    def action_print_vendor_statement(self):
+        partners = self._statement_partners('vendor')
+        for partner in partners:
+            partner.message_post(body=_('Vendor statement printed'))
+        return partners._followup_statement_action('vendor')
+
+    def action_send_customer_statement(self):
+        return self._statement_partners('customer')._statement_composer('customer')
+
+    def action_send_vendor_statement(self):
+        return self._statement_partners('vendor')._statement_composer('vendor')
+
+    def _statement_composer(self, statement_type):
+        """ The email of the statement, with the statement attached, to review before sending """
+        template = self.env.ref(f'om_account_followup.email_template_{statement_type}_statement')
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Send Customer Statement') if statement_type == 'customer' else _('Send Vendor Statement'),
+            'res_model': 'mail.compose.message',
+            'view_mode': 'form',
+            'views': [(False, 'form')],
+            'target': 'new',
+            'context': {
+                'default_model': 'res.partner',
+                'default_res_ids': self.ids,
+                'default_template_id': template.id,
+                'default_composition_mode': 'comment' if len(self) == 1 else 'mass_mail',
+            },
+        }
+
+    def action_customer_statement_xlsx(self):
+        return self._statement_partners('customer')._statement_xlsx_action('customer')
+
+    def action_vendor_statement_xlsx(self):
+        return self._statement_partners('vendor')._statement_xlsx_action('vendor')
+
+    def _statement_xlsx_action(self, statement_type):
+        return {
+            'type': 'ir.actions.act_url',
+            'url': f'/om_account_followup/statement/{statement_type}/xlsx?partner_ids='
+                   + ','.join(str(partner_id) for partner_id in self.ids),
+            'target': 'download',
+        }
+
+    def _statement_xlsx_filename(self, statement_type):
+        title = _('Customer Statement') if statement_type == 'customer' else _('Vendor Statement')
+        name = self.name if len(self) == 1 else self.env.company.name
+        return f'{title} - {name} - {fields.Date.context_today(self)}.xlsx'
+
+    def _statement_xlsx(self, statement_type):
+        """ :return: the statements of the partners as an Excel workbook, one sheet per partner """
+        import xlsxwriter  # noqa: PLC0415
+
+        today = fields.Date.context_today(self)
+        company = self.env.company
+        buffer = io.BytesIO()
+        workbook = xlsxwriter.Workbook(buffer, {'in_memory': True})
+        bold = workbook.add_format({'bold': True})
+        title_format = workbook.add_format({'bold': True, 'font_size': 14})
+        header = workbook.add_format({'bold': True, 'bottom': 1, 'bg_color': '#EEEEEE'})
+        date_format = workbook.add_format({'num_format': 'yyyy-mm-dd', 'align': 'left'})
+        title = _('Customer Statement') if statement_type == 'customer' else _('Vendor Statement')
+        used_names = set()
+        for partner in self.commercial_partner_id:
+            # the sheet names are unique, of 31 characters at most and without []:*?/\
+            base_name = ''.join(c for c in partner.name or str(partner.id) if c not in '[]:*?/\\')[:28] or 'Sheet'
+            sheet_name, index = base_name, 1
+            while sheet_name.lower() in used_names:
+                index += 1
+                sheet_name = f'{base_name[:31 - len(str(index)) - 1]} {index}'
+            used_names.add(sheet_name.lower())
+            sheet = workbook.add_worksheet(sheet_name)
+            sheet.set_column(0, 0, 12)
+            sheet.set_column(1, 2, 22)
+            sheet.set_column(3, 3, 12)
+            sheet.set_column(4, 7, 15)
+            sheet.write(0, 0, title, title_format)
+            sheet.write(1, 0, partner.name, bold)
+            sheet.write(2, 0, company.name)
+            sheet.write(3, 0, _('Date'))
+            sheet.write_datetime(3, 1, fields.Datetime.to_datetime(today), date_format)
+            row = 5
+            groups = partner.with_company(company)._followup_statement_lines(today, statement_type=statement_type)
+            if not groups:
+                sheet.write(row, 0, _('Nothing is open on this account.'))
+            for group in groups:
+                currency = group['currency']
+                number_format = '#,##0' + ('.' + '0' * currency.decimal_places if currency.decimal_places else '')
+                money = workbook.add_format({'num_format': number_format})
+                money_bold = workbook.add_format({'bold': True, 'num_format': number_format})
+                sheet.write_row(row, 0, [
+                    _('Date'), _('Document'), _('Reference'), _('Due Date'), _('Days Overdue'),
+                    _('Amount (%s)', currency.name), _('Open Amount (%s)', currency.name), _('Disputed'),
+                ], header)
+                row += 1
+                for item in group['lines']:
+                    sheet.write_datetime(row, 0, fields.Datetime.to_datetime(item['date']), date_format)
+                    sheet.write(row, 1, item['name'] or '')
+                    sheet.write(row, 2, item['ref'] or '')
+                    sheet.write_datetime(row, 3, fields.Datetime.to_datetime(item['date_maturity']), date_format)
+                    sheet.write_number(row, 4, item['days_overdue'])
+                    sheet.write_number(row, 5, item['amount'], money)
+                    sheet.write_number(row, 6, item['residual'], money)
+                    sheet.write(row, 7, _('Yes') if item['disputed'] else '')
+                    row += 1
+                sheet.write(row, 5, _('Total Open'), bold)
+                sheet.write_number(row, 6, group['total'], money_bold)
+                row += 1
+                sheet.write(row, 5, _('Overdue'), bold)
+                sheet.write_number(row, 6, group['total_overdue'], money_bold)
+                row += 2
+                for col, (label, amount) in enumerate(group['ageing']):
+                    sheet.write(row, col + 1, label, header)
+                    sheet.write_number(row + 1, col + 1, amount, money)
+                sheet.write(row + 1, 0, _('Ageing'), bold)
+                row += 3
+        workbook.close()
+        return buffer.getvalue()
 
     def action_followup_send(self):
         return {

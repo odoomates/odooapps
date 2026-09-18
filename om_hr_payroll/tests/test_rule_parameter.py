@@ -50,6 +50,22 @@ class TestRuleParameter(TransactionCase):
         })
         self.assertEqual(parameter._value_at(date(2026, 6, 30)), 'SINGLE')
 
+    def test_value_changes_are_logged(self):
+        value = self.parameter.value_ids.filtered(lambda value: value.value_number == 10.0)
+        value.value_number = 11.0
+        self.parameter.value_ids = [Command.create({'date_from': date(2027, 1, 1), 'value_number': 12.0})]
+        value.unlink()
+        bodies = ' '.join(self.parameter.message_ids.mapped('body'))
+        self.assertIn('Value changed', bodies)
+        self.assertIn('Value added', bodies)
+        self.assertIn('Value removed', bodies)
+
+        self.parameter.code = 'SS_RATE_2'
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        self.env.invalidate_all()
+        self.assertIn('SS_RATE → <b>SS_RATE_2</b>', ''.join(self.parameter.message_ids.mapped('body')))
+
     def test_company_value_wins(self):
         company = self.env['res.company'].create({'name': 'Payroll Params Co'})
         self.env['hr.rule.parameter'].create({
