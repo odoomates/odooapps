@@ -7,5 +7,12 @@
             <field name="user_ids" eval="[Command.link(ref('base.user_root')), Command.link(ref('base.user_admin'))]"/>
         </record>
 
+        <record id="account_fiscal_year_comp_rule" model="ir.rule">
+            <field name="name">Fiscal Year multi-company</field>
+            <field name="model_id" ref="model_account_fiscal_year"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id','in',company_ids)]</field>
+        </record>
+
     </data>
 </odoo>

@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 19 Accounting Community',
-    'version': '1.0.3',
+    'version': '1.0.5',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '

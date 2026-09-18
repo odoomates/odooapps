@@ -1,7 +1,7 @@
 import datetime
 import time
 from odoo import api, fields, models, _
-from markupsafe import Markup
+from markupsafe import Markup, escape
 
 
 class FollowupPrint(models.TransientModel):
@@ -12,7 +12,7 @@ class FollowupPrint(models.TransientModel):
         if self.env.context.get('active_model',
                                 'ir.ui.menu') == 'followup.followup':
             return self.env.context.get('active_id', False)
-        company_id = self.env.user.company_id.id
+        company_id = self.env.company.id
         followp_id = self.env['followup.followup'].search(
             [('company_id', '=', company_id)], limit=1)
         return followp_id or False
@@ -31,7 +31,7 @@ class FollowupPrint(models.TransientModel):
                                  related='followup_id.company_id')
     email_conf = fields.Boolean('Send Email Confirmation')
     email_subject = fields.Char('Email Subject', size=64,
-                                default=_('Invoices Reminder'))
+                                default=lambda *a: _('Invoices Reminder'))
     partner_lang = fields.Boolean(
         'Send Email in Partner Language', default=True,
         help='Do not change message text, if you want to send email in '
@@ -70,10 +70,15 @@ class FollowupPrint(models.TransientModel):
                 nbprints += 1
                 followup_without_lit = \
                     partner.partner_id.latest_followup_level_id_without_lit
-                message = "%s<I> %s </I>%s" % (_("Follow-up letter of "),
-                                               followup_without_lit.name,
-                                               _(" will be sent"))
-                partner.partner_id.message_post(body=message)
+                message_html = Markup(_(
+                    "Follow-up letter of <i>{followup}</i> will be sent"
+                )).format(
+                    followup=escape(followup_without_lit.name)
+                )
+                partner.partner_id.message_post(
+                    body=message_html,
+                    message_type='comment'
+                )
         if nbunknownmails == 0:
             resulttext += str(nbmails) + _(" email(s) sent")
         else:
@@ -87,15 +92,15 @@ class FollowupPrint(models.TransientModel):
         needprinting = False
         if nbprints > 0:
             needprinting = True
-        resulttext += "<p align=\"center\">"
-        for item in manuals:
-            resulttext = resulttext + "<li>" + item + ":" + str(
-                manuals[item]) + "\n </li>"
-        resulttext += "</p>"
+        resulttext = Markup(resulttext)
+        resulttext += Markup("<p align='center'>")
+        for item, count in manuals.items():
+            resulttext += Markup("<li>%s:%s</li>") % (escape(item), count)
+        resulttext += Markup("</p>")
         result = {}
         action = partner_obj.do_partner_print(partner_ids_to_print, data)
         result['needprinting'] = needprinting
-        result['resulttext'] = Markup(resulttext)
+        result['resulttext'] = resulttext
         result['action'] = action or {}
         return result
 
@@ -157,7 +162,7 @@ class FollowupPrint(models.TransientModel):
         }
 
     def _get_msg(self):
-        return self.env.user.company_id.follow_up_msg
+        return self.env.company.follow_up_msg
 
     def _get_partners_followp(self):
         data = self
@@ -177,7 +182,8 @@ class FollowupPrint(models.TransientModel):
                 AND (l.partner_id is NOT NULL)
                 AND (l.debit > 0)
                 AND (l.company_id = %s)
-                ORDER BY l.date''' % (company_id))
+                ORDER BY l.date''',
+            (company_id,))
         move_lines = self.env.cr.fetchall()
         old = None
         fups = {}
@@ -186,11 +192,14 @@ class FollowupPrint(models.TransientModel):
         date = 'date' in context and context['date'] or data.date
         date = fields.Date.to_string(date)
         current_date = datetime.date(*time.strptime(date, '%Y-%m-%d')[:3])
+        # fup_id may come straight from the caller's context: never interpolate it
+        fup_id = int(fup_id)
         self.env.cr.execute(
-            '''SELECT *
+            """SELECT *
             FROM followup_line
-            WHERE followup_id=%s
-            ORDER BY delay''' % (fup_id,))
+            WHERE followup_id = %s
+            ORDER BY delay""",
+            (fup_id,))
 
         for result in self.env.cr.dictfetchall():
             delay = datetime.timedelta(days=result['delay'])

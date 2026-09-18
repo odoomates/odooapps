@@ -56,6 +56,10 @@ class ReportFollowup(models.AbstractModel):
                 'ref': line.ref,
                 'date': format_date(self.env, line.date),
                 'date_maturity': format_date(self.env, line.date_maturity),
+                # keep the raw dates: the formatted ones are localized and cannot
+                # be parsed back with a fixed format
+                'date_raw': line.date,
+                'date_maturity_raw': line.date_maturity,
                 'balance': balance,
                 'currency_id': currency,
             }

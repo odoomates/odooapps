@@ -28,6 +28,10 @@ class ResConfigSettings(models.TransientModel):
                 self._cr.execute(sql)
                 self._cr.commit()
             except Exception as e:
+                # a failed statement leaves the transaction aborted: without this
+                # rollback every later statement of the loop fails too, and the
+                # removal silently stops after the first error
+                self._cr.rollback()
                 _logger.warning('remove data error: %s,%s', line, e)
         for line in s:
             domain = ['|', ('code', '=ilike', line + '%'), ('prefix', '=ilike', line + '%')]
@@ -248,6 +252,8 @@ class ResConfigSettings(models.TransientModel):
 
             self._cr.commit()
         except Exception as e:
+            # reset the aborted transaction, see above
+            self._cr.rollback()
             _logger.error('remove data error: %s,%s', 'account_chart: set tax and account_journal', e)
         if self.env['ir.model']._get('pos.config'):
             self.env['pos.config'].write({

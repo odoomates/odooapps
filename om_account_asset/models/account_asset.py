@@ -7,6 +7,14 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tools import float_compare, float_is_zero
 from markupsafe import Markup
 
+# only these fields change the depreciation board: writing anything else (a note, a
+# partner, active, ...) must not throw away the unposted lines of the board
+BOARD_FIELDS = {
+    'value', 'salvage_value', 'date', 'currency_id', 'method', 'method_number',
+    'method_period', 'method_end', 'method_time', 'method_progress_factor',
+    'prorata', 'date_first_depreciation', 'first_depreciation_manual_date',
+}
+
 
 class AccountAssetCategory(models.Model):
     _name = 'account.asset.category'
@@ -245,8 +253,10 @@ class AccountAssetAsset(models.Model):
             amount = residual_amount
         else:
             if self.method == 'linear':
+                # amount_to_depr is the *residual* value, i.e. already net of the posted
+                # lines, so it must always be spread over the *remaining* periods.
                 amount = amount_to_depr / (undone_dotation_number - len(posted_depreciation_line_ids))
-                if self.prorata:
+                if self.prorata and not posted_depreciation_line_ids:
                     amount = amount_to_depr / self.method_number
                     if sequence == 1:
                         date = self.date
@@ -284,6 +294,23 @@ class AccountAssetAsset(models.Model):
             undone_dotation_number += 1
         return undone_dotation_number
 
+    def _next_depreciation_date(self, depreciation_date, month_day):
+        """ Advance the board cursor by one period, keeping the day of the month. """
+        depreciation_date = depreciation_date + relativedelta(months=+self.method_period)
+
+        if month_day > 28 and self.date_first_depreciation == 'manual':
+            max_day_in_month = calendar.monthrange(depreciation_date.year, depreciation_date.month)[1]
+            depreciation_date = depreciation_date.replace(day=min(max_day_in_month, month_day))
+
+        # datetime doesn't take into account that the number of days is not the same
+        # for each month: without this, relativedelta clamps 31-Jan to 28-Feb and the
+        # whole board then stays on the 28th (this must apply with prorata too)
+        if self.method_period % 12 != 0 and self.date_first_depreciation == 'last_day_period':
+            max_day_in_month = calendar.monthrange(depreciation_date.year, depreciation_date.month)[1]
+            depreciation_date = depreciation_date.replace(day=max_day_in_month)
+
+        return depreciation_date
+
     def compute_depreciation_board(self):
         self.ensure_one()
 
@@ -315,9 +342,14 @@ class AccountAssetAsset(models.Model):
                 elif self.first_depreciation_manual_date and self.first_depreciation_manual_date != self.date:
                     # depreciation_date set manually from the 'first_depreciation_manual_date' field
                     depreciation_date = self.first_depreciation_manual_date
-            total_days = (depreciation_date.year % 4) and 365 or 366
+            total_days = calendar.isleap(depreciation_date.year) and 366 or 365
             month_day = depreciation_date.day
             undone_dotation_number = self._compute_board_undone_dotation_nb(depreciation_date, total_days)
+            if self.method_time == 'end':
+                # the helper counts periods from the *next* depreciation date, so with
+                # posted lines it returns the remaining count while the loop below
+                # indexes over the whole board
+                undone_dotation_number += len(posted_depreciation_line_ids)
 
             for x in range(len(posted_depreciation_line_ids), undone_dotation_number):
                 sequence = x + 1
@@ -326,6 +358,9 @@ class AccountAssetAsset(models.Model):
                                                     total_days, depreciation_date)
                 amount = self.currency_id.round(amount)
                 if float_is_zero(amount, precision_rounding=self.currency_id.rounding):
+                    # skip the line but still move on to the next period, otherwise the
+                    # following lines would all be dated on the same day
+                    depreciation_date = self._next_depreciation_date(depreciation_date, month_day)
                     continue
                 residual_amount -= amount
                 vals = {
@@ -339,16 +374,7 @@ class AccountAssetAsset(models.Model):
                 }
                 commands.append((0, False, vals))
 
-                depreciation_date = depreciation_date + relativedelta(months=+self.method_period)
-
-                if month_day > 28 and self.date_first_depreciation == 'manual':
-                    max_day_in_month = calendar.monthrange(depreciation_date.year, depreciation_date.month)[1]
-                    depreciation_date = depreciation_date.replace(day=min(max_day_in_month, month_day))
-
-                # datetime doesn't take into account that the number of days is not the same for each month
-                if not self.prorata and self.method_period % 12 != 0 and self.date_first_depreciation == 'last_day_period':
-                    max_day_in_month = calendar.monthrange(depreciation_date.year, depreciation_date.month)[1]
-                    depreciation_date = depreciation_date.replace(day=max_day_in_month)
+                depreciation_date = self._next_depreciation_date(depreciation_date, month_day)
 
         self.write({'depreciation_line_ids': commands})
 
@@ -383,7 +409,7 @@ class AccountAssetAsset(models.Model):
         view_mode = 'form'
         if len(move_ids) > 1:
             name = _('Disposal Moves')
-            view_mode = 'tree,form'
+            view_mode = 'list,form'
         return {
             'name': name,
             'view_mode': view_mode,
@@ -408,7 +434,7 @@ class AccountAssetAsset(models.Model):
 
                 # Create a new depr. line with the residual amount and post it
                 sequence = len(asset.depreciation_line_ids) - len(unposted_depreciation_line_ids) + 1
-                today = fields.Datetime.today()
+                today = fields.Date.context_today(self)
                 vals = {
                     'amount': asset.value_residual,
                     'asset_id': asset.id,
@@ -465,8 +491,10 @@ class AccountAssetAsset(models.Model):
 
     @api.constrains('prorata', 'method_time')
     def _check_prorata(self):
-        if self.prorata and self.method_time != 'number':
-            raise ValidationError(_('Prorata temporis can be applied only for the "number of depreciations" time method.'))
+        # constraints are called with the whole recordset: never touch a field on self
+        for asset in self:
+            if asset.prorata and asset.method_time != 'number':
+                raise ValidationError(_('Prorata temporis can be applied only for the "number of depreciations" time method.'))
 
     @api.onchange('category_id')
     def onchange_category_id(self):
@@ -522,8 +550,10 @@ class AccountAssetAsset(models.Model):
 
     def write(self, vals):
         res = super(AccountAssetAsset, self).write(vals)
-        if 'depreciation_line_ids' not in vals and 'state' not in vals:
-            for rec in self:
+        if BOARD_FIELDS.intersection(vals) and 'depreciation_line_ids' not in vals:
+            # never recompute a closed asset, and never on an unrelated write; a write
+            # that already sets the board itself (disposal) must be left alone too
+            for rec in self.filtered(lambda asset: asset.state in ('draft', 'open')):
                 rec.compute_depreciation_board()
         return res
 
@@ -643,7 +673,11 @@ class AccountAssetDepreciationLine(models.Model):
             company_currency = line.asset_id.company_id.currency_id
             current_currency = line.asset_id.currency_id
             company = line.asset_id.company_id
-            amount += current_currency._convert(line.amount, company_currency, company, fields.Date.today())
+            # convert at the rate of the depreciation date, like _prepare_move does,
+            # not at today's rate
+            amount += current_currency._convert(
+                line.amount, company_currency, company,
+                line.depreciation_date or depreciation_date)
 
         name = category_id.name + _(' (grouped)')
         move_line_1 = {
@@ -689,7 +723,12 @@ class AccountAssetDepreciationLine(models.Model):
         for line in self:
             line.log_message_when_posted()
             asset = line.asset_id
-            if asset.currency_id.is_zero(asset.value_residual):
+            # value_residual only counts lines that have a move, draft ones included, so
+            # an asset whose board has been fully generated but not posted would be
+            # closed here while its entries are still draft
+            pending = asset.depreciation_line_ids.filtered(
+                lambda l: l.move_id and l.move_id.state != 'posted')
+            if not pending and asset.currency_id.is_zero(asset.value_residual):
                 asset.message_post(body=_("Document closed."))
                 asset.write({'state': 'close'})
 

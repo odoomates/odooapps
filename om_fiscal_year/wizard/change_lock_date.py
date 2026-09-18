@@ -9,7 +9,7 @@ class ChangeLockDate(models.TransientModel):
     @api.model
     def default_get(self, vals):
         res = super(ChangeLockDate, self).default_get(vals)
-        company_rec = self.env.user.company_id
+        company_rec = self.env.company
         res.update({
             'company_id': company_rec.id,
             'hard_lock_date': company_rec.hard_lock_date,
@@ -22,7 +22,7 @@ class ChangeLockDate(models.TransientModel):
 
     company_id = fields.Many2one(
         'res.company', string="Company",
-        required=True, default=lambda self: self.env.user.company_id
+        required=True, default=lambda self: self.env.company
     )
     tax_lock_date = fields.Date(
         string="Tax Return Lock Date",
@@ -41,7 +41,7 @@ class ChangeLockDate(models.TransientModel):
     )
     fiscalyear_lock_date = fields.Date(
         string='Lock Date for All Users',
-        default=lambda self: self.env.user.company_id.fiscalyear_lock_date,
+        default=lambda self: self.env.company.fiscalyear_lock_date,
         help='No users, including Advisers, can edit accounts prior to and inclusive of '
              'this date. Use it for fiscal year locking.'
     )
@@ -51,6 +51,10 @@ class ChangeLockDate(models.TransientModel):
         has_manager_group = self.env.user.has_group('account.group_account_manager')
         if not (has_manager_group or self.env.uid == SUPERUSER_ID):
             raise UserError(_("You Are Not Allowed To Perform This Operation"))
+        if self.env.uid != SUPERUSER_ID and self.company_id not in self.env.user.company_ids:
+            raise UserError(_("You cannot change the lock dates of another company."))
+        # sudo() is required because setting lock dates writes on res.company,
+        # which accounting managers are not allowed to write on.
         self.company_id.sudo().write({
             'hard_lock_date': self.hard_lock_date,
             'fiscalyear_lock_date': self.fiscalyear_lock_date,
