@@ -326,7 +326,9 @@ class AccountBudgetLine(models.Model):
     # CONSTRAINTS AND LOCK
     # -------------------------------------------------------------------------
 
-    @api.constrains('position_id', 'analytic_account_id')
+    # budget_id is in the values of every line, so the check also runs on a line
+    # created with neither a position nor an analytic account
+    @api.constrains('position_id', 'analytic_account_id', 'budget_id')
     def _check_position_or_analytic_account(self):
         for line in self:
             if not line.analytic_account_id and not line.position_id:

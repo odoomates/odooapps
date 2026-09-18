@@ -177,6 +177,15 @@ class TestBudget(AccountTestInvoicingCommon):
                  'planned_amount': 1.0},
             ])
 
+    def test_a_line_alone_still_needs_a_position_or_an_analytic_account(self):
+        # a create that mentions neither field must be refused too: a constraint only runs on
+        # the fields it is given, so one written alone is the case that can slip through
+        with self.assertRaises(ValidationError):
+            self.env['account.budget.line'].create({
+                'budget_id': self.budget.id, 'date_from': '2026-01-01', 'date_to': '2026-12-31',
+                'planned_amount': 1.0,
+            })
+
     def test_dates_constraints(self):
         with self.assertRaises(ValidationError):
             self.env['account.budget'].create({'name': 'Wrong', 'date_from': '2026-12-31', 'date_to': '2026-01-01'})
