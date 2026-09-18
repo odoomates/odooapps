@@ -2,7 +2,7 @@
     'name': 'Odoo 18 HR Payroll Accounting',
     'category': 'Generic Modules/Human Resources',
     'author': 'Odoo Mates, Odoo SA',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'sequence': 1,
     'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
