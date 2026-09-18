@@ -203,8 +203,9 @@ class CrossoveredBudgetLines(models.Model):
                 if acc_ids:
                     domain += [('general_account_id', 'in', acc_ids)]
 
-                result = analytic_line_obj.read_group(domain, ['amount:sum'], [])
-                line.practical_amount = result[0]['amount'] if result and result[0]['amount'] is not None else 0.0
+                # read_group is deprecated since 19.0: _read_group returns tuples
+                result = analytic_line_obj._read_group(domain, aggregates=['amount:sum'])
+                line.practical_amount = (result[0][0] or 0.0) if result else 0.0
 
             else:
                 aml_obj = self.env['account.move.line']
@@ -217,11 +218,10 @@ class CrossoveredBudgetLines(models.Model):
                           ('company_id', '=', line.company_id.id),
                           ('parent_state', '=', 'posted'),
                           ]
-                result = aml_obj.read_group(domain, ['credit:sum', 'debit:sum'], [])
+                result = aml_obj._read_group(domain, aggregates=['credit:sum', 'debit:sum'])
                 if result:
-                    credit = result[0].get('credit') or 0.0
-                    debit = result[0].get('debit') or 0.0
-                    line.practical_amount = credit - debit
+                    credit, debit = result[0]
+                    line.practical_amount = (credit or 0.0) - (debit or 0.0)
                 else:
                     line.practical_amount = 0.0
 
