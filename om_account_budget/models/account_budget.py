@@ -156,9 +156,11 @@ class CrossoveredBudgetLines(models.Model):
 
                     if 'percentage' in fields:
                         if group_line['theoritical_amount']:
-                            # use a weighted average
+                            # weighted average, as a ratio like _compute_percentage:
+                            # the views render it with widget="percentage", which is
+                            # what turns it into a percentage
                             group_line['percentage'] = float(
-                                (group_line['practical_amount'] or 0.0) / group_line['theoritical_amount']) * 100
+                                (group_line['practical_amount'] or 0.0) / group_line['theoritical_amount'])
 
         return result
 
