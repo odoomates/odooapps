@@ -3,6 +3,14 @@ from odoo import api, models, _
 from odoo.exceptions import UserError
 
 
+# the amounts the report sums, as the template asks for them, qualified with their table
+SUMMED_FIELDS = {
+    'debit': '"account_move_line".debit',
+    'credit': '"account_move_line".credit',
+    'debit - credit': '"account_move_line".debit - "account_move_line".credit',
+}
+
+
 class ReportPartnerLedger(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_partnerledger'
     _description = 'Partner Ledger Report'
@@ -56,12 +64,18 @@ class ReportPartnerLedger(models.AbstractModel):
 
         params = ([partner.id, tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])]
                   + query_get_data[2])
-        query = """SELECT sum(""" + field + """)
+        # the columns are qualified: the domain may join a table holding the same ones,
+        # which PostgreSQL then refuses as an ambiguous reference
+        try:
+            summed = SUMMED_FIELDS[field]
+        except KeyError:
+            raise ValueError(f'The partner ledger cannot sum {field!r}.') from None
+        query = """SELECT sum(""" + summed + """)
                 FROM """ + query_get_data[0] + """, account_move AS m
                 WHERE "account_move_line".partner_id = %s
                     AND m.id = "account_move_line".move_id
                     AND m.state IN %s
-                    AND account_id IN %s
+                    AND "account_move_line".account_id IN %s
                     AND """ + query_get_data[1] + reconcile_clause
         self.env.cr.execute(query, tuple(params))
 
