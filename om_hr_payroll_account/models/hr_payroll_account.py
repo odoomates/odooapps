@@ -261,8 +261,11 @@ class HrPayslip(models.Model):
                 'company_id': slip.company_id.id,
                 'date': date,
             }
-            if not any(line.salary_rule_id.account_debit and line.salary_rule_id.account_credit
-                       for line in slip.details_by_salary_rule_category):
+            # the debit and the credit side may legitimately come from two different
+            # salary rules, so require the accounts across the whole payslip rather
+            # than on any single rule (see PR #135)
+            payslip_rules = slip.details_by_salary_rule_category.salary_rule_id
+            if not (payslip_rules.account_debit and payslip_rules.account_credit):
                 raise UserError(_('Missing Debit Or Credit Account in Salary Rule'))
             for line in slip.details_by_salary_rule_category:
                 amount = currency.round(slip.credit_note and -line.total or line.total)
