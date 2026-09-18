@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
 
@@ -236,109 +238,179 @@ class HrPayslip(models.Model):
                 )) from error
         return super().action_payslip_cancel()
 
+    def _check_salary_journal(self):
+        """ :return: the salary journal of the payslip, read as superuser because the
+        payroll users may have no accounting rights. """
+        self.ensure_one()
+        journal = self.journal_id.sudo()
+        if journal.company_id != self.company_id:
+            raise UserError(_('The salary journal %(journal)s does not belong to the company of the '
+                              'payslip %(payslip)s.',
+                              journal=journal.name, payslip=self.number or self.name or ''))
+        return journal
+
+    def _prepare_payslip_move_lines(self, date):
+        """ :return: the journal items of this payslip, as a list of values. Shared by the
+        entry of a single payslip and by the consolidated entry of a batch, so that the
+        two can never drift apart. """
+        self.ensure_one()
+        # the accounts of the rules are the ones of the company of the payslip
+        slip = self.with_company(self.company_id)
+        currency = slip.company_id.currency_id
+        # the debit and the credit side may legitimately come from two different
+        # salary rules, so require the accounts across the whole payslip rather
+        # than on any single rule (see PR #135)
+        payslip_rules = slip.details_by_salary_rule_category.salary_rule_id
+        if not (payslip_rules.account_debit and payslip_rules.account_credit):
+            raise UserError(_('Missing Debit Or Credit Account in Salary Rule'))
+
+        values = []
+        for line in slip.details_by_salary_rule_category:
+            amount = currency.round(slip.credit_note and -line.total or line.total)
+            if currency.is_zero(amount):
+                continue
+            analytic_distribution = ({line.salary_rule_id.analytic_account_id.id: 100}
+                                     if line.salary_rule_id.analytic_account_id else {})
+            if line.salary_rule_id.account_debit:
+                values.append({
+                    'name': line.name,
+                    'partner_id': line._get_partner_id(credit_account=False),
+                    'account_id': line.salary_rule_id.account_debit.id,
+                    'journal_id': slip.journal_id.id,
+                    'date': date,
+                    'debit': amount > 0.0 and amount or 0.0,
+                    'credit': amount < 0.0 and -amount or 0.0,
+                    'analytic_distribution': analytic_distribution,
+                    'tax_line_id': line.salary_rule_id.account_tax_id.id,
+                })
+            if line.salary_rule_id.account_credit:
+                values.append({
+                    'name': line.name,
+                    'partner_id': line._get_partner_id(credit_account=True),
+                    'account_id': line.salary_rule_id.account_credit.id,
+                    'journal_id': slip.journal_id.id,
+                    'date': date,
+                    'debit': amount < 0.0 and -amount or 0.0,
+                    'credit': amount > 0.0 and amount or 0.0,
+                    'analytic_distribution': analytic_distribution,
+                    'tax_line_id': line.salary_rule_id.account_tax_id.id,
+                })
+        return values
+
+    @api.model
+    def _prepare_adjustment_move_line(self, journal, date, values, currency):
+        """ :return: the values of the line balancing the entry, or None if it balances. """
+        balance = currency.round(sum(vals['debit'] - vals['credit'] for vals in values))
+        if currency.is_zero(balance):
+            return None
+        if not journal.default_account_id:
+            raise UserError(
+                _('The Expense Journal "%s" has not properly configured the Credit Account!') % journal.name
+                if balance > 0.0 else
+                _('The Expense Journal "%s" has not properly configured the Debit Account!') % journal.name)
+        return {
+            'name': _('Adjustment Entry'),
+            'partner_id': False,
+            'account_id': journal.default_account_id.id,
+            'journal_id': journal.id,
+            'date': date,
+            'debit': balance < 0.0 and -balance or 0.0,
+            'credit': balance > 0.0 and balance or 0.0,
+        }
+
+    @api.model
+    def _merge_move_lines(self, values):
+        """ Merge the journal items that are interchangeable: same label, account, partner,
+        analytic distribution and tax. The partner is part of the key on purpose, so what is
+        owed to each employee stays on its own line and can still be reconciled against the
+        payment of that employee. """
+        merged = {}
+        for vals in values:
+            key = (
+                vals['name'],
+                vals['account_id'],
+                vals['partner_id'],
+                tuple(sorted((vals['analytic_distribution'] or {}).items())),
+                vals['tax_line_id'],
+            )
+            if key in merged:
+                merged[key]['debit'] += vals['debit']
+                merged[key]['credit'] += vals['credit']
+            else:
+                merged[key] = dict(vals)
+        result = []
+        for vals in merged.values():
+            # a journal item carries one side only
+            balance = vals['debit'] - vals['credit']
+            vals['debit'] = balance > 0.0 and balance or 0.0
+            vals['credit'] = balance < 0.0 and -balance or 0.0
+            result.append(vals)
+        return result
+
+    def _create_consolidated_move(self):
+        """ Post one accounting entry for the whole set of payslips, instead of one per
+        payslip. The payslips are grouped by company and by salary journal, because an
+        entry belongs to a single company and a single journal. """
+        groups = defaultdict(lambda: self.browse())
+        for slip in self:
+            slip._check_salary_journal()
+            groups[(slip.company_id, slip.journal_id)] |= slip
+
+        for (company, journal), slips in groups.items():
+            currency = company.currency_id
+            # the latest date of the group: an entry must not predate the payslips it posts
+            date = max(slip.date or slip.date_to for slip in slips)
+            values = []
+            for slip in slips:
+                values += slip._prepare_payslip_move_lines(date)
+            values = self._merge_move_lines(values)
+            if not values:
+                continue
+            adjustment = self._prepare_adjustment_move_line(journal.sudo(), date, values, currency)
+            if adjustment:
+                values.append(adjustment)
+
+            batch = slips.payslip_run_id[:1]
+            move_dict = {
+                'narration': _('Consolidated payslip entry of %s', batch.name) if batch
+                             else _('Consolidated payslip entry'),
+                'ref': batch.name or ', '.join(slips.mapped('number')),
+                'journal_id': journal.id,
+                'company_id': company.id,
+                'date': date,
+                'line_ids': [(0, 0, vals) for vals in values],
+            }
+            # the payroll users may have no accounting rights: the entry follows the
+            # configuration of the rules
+            move = self.env['account.move'].sudo().with_company(company).create(move_dict)
+            for slip in slips:
+                slip.write({'move_id': move.id, 'date': slip.date or slip.date_to})
+            move.action_post()
+
     def action_payslip_done(self):
         res = super().action_payslip_done()
+        if self.env.context.get('hr_payroll_consolidated_move'):
+            # the batch posts one entry for all its payslips once they are all done
+            return res
 
         for slip in self:
-            # the accounts of the rules are the ones of the company of the payslip
-            slip = slip.with_company(slip.company_id)
-            line_ids = []
-            debit_sum = 0.0
-            credit_sum = 0.0
+            journal = slip._check_salary_journal()
             date = slip.date or slip.date_to
             currency = slip.company_id.currency_id
-
-            name = _('Payslip of %s') % (slip.employee_id.name)
-            journal = slip.journal_id.sudo()
-            if journal.company_id != slip.company_id:
-                raise UserError(_('The salary journal %(journal)s does not belong to the company of the '
-                                  'payslip %(payslip)s.',
-                                  journal=journal.name, payslip=slip.number or slip.name or ''))
+            values = slip._prepare_payslip_move_lines(date)
+            adjustment = self._prepare_adjustment_move_line(journal, date, values, currency)
+            if adjustment:
+                values.append(adjustment)
             move_dict = {
-                'narration': name,
+                'narration': _('Payslip of %s') % (slip.employee_id.name),
                 'ref': slip.number,
                 'journal_id': slip.journal_id.id,
                 'company_id': slip.company_id.id,
                 'date': date,
+                'line_ids': [(0, 0, vals) for vals in values],
             }
-            # the debit and the credit side may legitimately come from two different
-            # salary rules, so require the accounts across the whole payslip rather
-            # than on any single rule (see PR #135)
-            payslip_rules = slip.details_by_salary_rule_category.salary_rule_id
-            if not (payslip_rules.account_debit and payslip_rules.account_credit):
-                raise UserError(_('Missing Debit Or Credit Account in Salary Rule'))
-            for line in slip.details_by_salary_rule_category:
-                amount = currency.round(slip.credit_note and -line.total or line.total)
-                if currency.is_zero(amount):
-                    continue
-
-                debit_account_id = line.salary_rule_id.account_debit.id
-                credit_account_id = line.salary_rule_id.account_credit.id
-                if debit_account_id:
-                    debit_line = (0, 0, {
-                        'name': line.name,
-                        'partner_id': line._get_partner_id(credit_account=False),
-                        'account_id': debit_account_id,
-                        'journal_id': slip.journal_id.id,
-                        'date': date,
-                        'debit': amount > 0.0 and amount or 0.0,
-                        'credit': amount < 0.0 and -amount or 0.0,
-                        'analytic_distribution': ({line.salary_rule_id.analytic_account_id.id: 100}
-                                                  if line.salary_rule_id.analytic_account_id else {}),
-                        'tax_line_id': line.salary_rule_id.account_tax_id.id,
-                    })
-                    line_ids.append(debit_line)
-                    debit_sum += debit_line[2]['debit'] - debit_line[2]['credit']
-
-                if credit_account_id:
-                    credit_line = (0, 0, {
-                        'name': line.name,
-                        'partner_id': line._get_partner_id(credit_account=True),
-                        'account_id': credit_account_id,
-                        'journal_id': slip.journal_id.id,
-                        'date': date,
-                        'debit': amount < 0.0 and -amount or 0.0,
-                        'credit': amount > 0.0 and amount or 0.0,
-                        'analytic_distribution': ({line.salary_rule_id.analytic_account_id.id: 100}
-                                                  if line.salary_rule_id.analytic_account_id else {}),
-                        'tax_line_id': line.salary_rule_id.account_tax_id.id,
-                    })
-                    line_ids.append(credit_line)
-                    credit_sum += credit_line[2]['credit'] - credit_line[2]['debit']
-
-            if currency.compare_amounts(credit_sum, debit_sum) == -1:
-                acc_id = slip.journal_id.default_account_id.id
-                if not acc_id:
-                    raise UserError(_('The Expense Journal "%s" has not properly configured the Credit Account!')
-                                    % (slip.journal_id.name))
-                adjust_credit = (0, 0, {
-                    'name': _('Adjustment Entry'),
-                    'partner_id': False,
-                    'account_id': acc_id,
-                    'journal_id': slip.journal_id.id,
-                    'date': date,
-                    'debit': 0.0,
-                    'credit': currency.round(debit_sum - credit_sum),
-                })
-                line_ids.append(adjust_credit)
-
-            elif currency.compare_amounts(debit_sum, credit_sum) == -1:
-                acc_id = slip.journal_id.default_account_id.id
-                if not acc_id:
-                    raise UserError(_('The Expense Journal "%s" has not properly configured the Debit Account!')
-                                    % (slip.journal_id.name))
-                adjust_debit = (0, 0, {
-                    'name': _('Adjustment Entry'),
-                    'partner_id': False,
-                    'account_id': acc_id,
-                    'journal_id': slip.journal_id.id,
-                    'date': date,
-                    'debit': currency.round(credit_sum - debit_sum),
-                    'credit': 0.0,
-                })
-                line_ids.append(adjust_debit)
-            move_dict['line_ids'] = line_ids
-            # the payroll users may have no accounting rights: the entry follows the configuration of the rules
+            # the payroll users may have no accounting rights: the entry follows the
+            # configuration of the rules
             move = self.env['account.move'].sudo().with_company(slip.company_id).create(move_dict)
             slip.write({'move_id': move.id, 'date': date})
             move.action_post()
@@ -370,6 +442,13 @@ class HrPayslipRun(models.Model):
         'account.journal', 'Salary Journal', required=True, default=_default_salary_journal,
         domain="[('company_id', '=', company_id)]",
     )
+    consolidated_move = fields.Boolean(
+        'Consolidated Entry', copy=False,
+        help="Post a single accounting entry for the whole batch instead of one entry per "
+             "payslip. The journal items of the same salary rule are added up, while what is "
+             "owed to each employee stays on its own line so that it can still be reconciled "
+             "with the payment of that employee.",
+    )
     has_payslips_to_pay = fields.Boolean(compute='_compute_payments')
     payment_count = fields.Integer(
         compute='_compute_payments', groups='account.group_account_invoice,account.group_account_readonly',
@@ -381,6 +460,18 @@ class HrPayslipRun(models.Model):
             run.has_payslips_to_pay = any(slip._can_register_payment() for slip in run.slip_ids)
             run.payment_count = len(run.sudo().slip_ids.payment_ids) if run.env.user.has_groups(
                 'account.group_account_invoice,account.group_account_readonly') else 0
+
+    def done_payslip_run(self):
+        for run in self:
+            slips = run.slip_ids.filtered(lambda slip: slip.state in ('draft', 'verify'))
+            if not (run.consolidated_move and slips):
+                super(HrPayslipRun, run).done_payslip_run()
+                continue
+            # let the payslips reach the done state without an entry of their own,
+            # then post one entry for all of them
+            super(HrPayslipRun, run.with_context(hr_payroll_consolidated_move=True)).done_payslip_run()
+            slips._create_consolidated_move()
+        return True
 
     def action_register_payment(self):
         self.ensure_one()
