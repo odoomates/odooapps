@@ -4,7 +4,7 @@
 import os
 
 from odoo.tools import config, test_reports
-from odoo.addons.om_om_hr_payroll.tests.common import TestPayslipBase
+from .common import TestPayslipBase
 
 
 class TestPayslipFlow(TestPayslipBase):
