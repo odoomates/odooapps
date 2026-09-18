@@ -10,16 +10,14 @@ class ReportDayBook(models.AbstractModel):
 
     def _get_account_move_entry(self, accounts, form_data, date):
         cr = self.env.cr
-        MoveLine = self.env['account.move.line']
-        init_wheres = [""]
+        if not accounts or not form_data.get('journal_ids'):
+            return {'debit': 0.0, 'credit': 0.0, 'balance': 0.0, 'lines': []}
 
-        init_tables, init_where_clause, init_where_params =MoveLine._query_get()
-        if init_where_clause.strip():
-            init_wheres.append(init_where_clause.strip())
         if form_data['target_move'] == 'posted':
             target_move = "AND m.state = 'posted'"
         else:
-            target_move = ''
+            # "All Entries" means draft + posted, never cancelled ones
+            target_move = "AND m.state != 'cancel'"
 
         sql = ("""
                     SELECT 0 AS lid, 
@@ -37,11 +35,13 @@ class ReportDayBook(models.AbstractModel):
                               LEFT JOIN res_partner p ON (l.partner_id = p.id) 
                               JOIN account_journal j ON (l.journal_id = j.id) 
                               JOIN account_account acc ON (l.account_id = acc.id) 
-                            WHERE 
-                              l.account_id IN %s 
-                              AND l.journal_id IN %s """ + target_move + """ 
-                              AND l.date = %s 
-                            GROUP BY 
+                            WHERE
+                              l.account_id IN %s
+                              AND l.journal_id IN %s """ + target_move + """
+                              AND l.company_id IN %s
+                              AND l.display_type NOT IN ('line_section', 'line_note')
+                              AND l.date = %s
+                            GROUP BY
                               l.id, 
                               l.account_id, 
                               l.date, 
@@ -55,7 +55,8 @@ class ReportDayBook(models.AbstractModel):
                               l.date DESC
                      """)
 
-        where_params = (tuple(accounts.ids), tuple(form_data['journal_ids']), date)
+        where_params = (tuple(accounts.ids), tuple(form_data['journal_ids']),
+                        tuple(self.env.companies.ids), date)
         cr.execute(sql, where_params)
         data = cr.dictfetchall()
         res = {}

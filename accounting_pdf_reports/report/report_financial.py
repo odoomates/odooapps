@@ -100,7 +100,9 @@ class ReportFinancial(models.AbstractModel):
                 'name': report.name,
                 'balance': res[report.id]['balance'] * float(report.sign),
                 'type': 'report',
-                'level': bool(report.style_overwrite) and report.style_overwrite or report.level,
+                # style_overwrite defaults to the *string* '0' (automatic formatting),
+                # which is truthy: int() it so that we really fall back on report.level
+                'level': int(report.style_overwrite or 0) or report.level,
                 'account_type': report.type or False, #used to underline the financial report balances
             }
             if data['debit_credit']:
@@ -126,7 +128,8 @@ class ReportFinancial(models.AbstractModel):
                         'name': account.code + ' ' + account.name,
                         'balance': value['balance'] * float(report.sign) or 0.0,
                         'type': 'account',
-                        'level': report.display_detail == 'detail_with_hierarchy' and 4,
+                        # must never be False: the template skips rows whose level is 0/False
+                        'level': 4 if report.display_detail == 'detail_with_hierarchy' else report.level + 1,
                         'account_type': account.account_type,
                     }
                     if data['debit_credit']:

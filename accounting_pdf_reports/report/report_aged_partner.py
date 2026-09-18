@@ -42,12 +42,14 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         res = []
         total = []
         cr = self.env.cr
-        user_company = self.env.user.company_id
+        # the company selected in the wizard, falling back on the active company
+        # (NOT self.env.user.company_id, which ignores the company switcher)
+        company = self.env['res.company'].browse(self._context.get('company_id')) or self.env.company
+        user_company = company
         user_currency = user_company.currency_id
         company_ids = self._context.get('company_ids') or [user_company.id]
         move_state = ['draft', 'posted']
         date = self._context.get('date') or fields.Date.today()
-        company = self.env['res.company'].browse(self._context.get('company_id')) or self.env.company
 
         if target_move == 'posted':
             move_state = ['posted']

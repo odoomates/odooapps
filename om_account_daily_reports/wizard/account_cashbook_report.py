@@ -7,7 +7,7 @@ class AccountCashBookReport(models.TransientModel):
     _description = "Cash Book Report"
 
     def _get_default_account_ids(self):
-        journals = self.env['account.journal'].search([('type', '=', 'cash')])
+        journals = self.env['account.journal'].search([('type', '=', 'cash'), ('company_id', '=', self.env.company.id)])
         accounts = self.env['account.account']
         for journal in journals:
             if journal.default_account_id.id:
@@ -20,13 +20,13 @@ class AccountCashBookReport(models.TransientModel):
                     accounts += acc_in.payment_account_id
         return accounts
 
-    date_from = fields.Date(string='Start Date', default=date.today(), required=True)
-    date_to = fields.Date(string='End Date', default=date.today(), required=True)
+    date_from = fields.Date(string='Start Date', default=fields.Date.context_today, required=True)
+    date_to = fields.Date(string='End Date', default=fields.Date.context_today, required=True)
     target_move = fields.Selection([('posted', 'Posted Entries'),
                                     ('all', 'All Entries')], string='Target Moves', required=True,
                                    default='posted')
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True,
-                                   default=lambda self: self.env['account.journal'].search([]))
+                                   default=lambda self: self.env['account.journal'].search([('company_id', '=', self.env.company.id)]))
     account_ids = fields.Many2many('account.account', 'account_account_cashbook_report', 'report_line_id',
                                    'account_id', 'Accounts', default=_get_default_account_ids)
 

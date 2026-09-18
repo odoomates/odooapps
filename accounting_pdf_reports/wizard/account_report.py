@@ -33,6 +33,9 @@ class AccountingReport(models.TransientModel):
         result = {}
         result['journal_ids'] = 'journal_ids' in data['form'] and data['form']['journal_ids'] or False
         result['state'] = 'target_move' in data['form'] and data['form']['target_move'] or ''
+        # the comparison context replaces the main one, so it must carry the company
+        # too, otherwise the comparison column spans every company of the switcher
+        result['company_id'] = self.company_id.id or False
         if data['form']['filter_cmp'] == 'filter_date':
             result['date_from'] = data['form']['date_from_cmp']
             result['date_to'] = data['form']['date_to_cmp']
