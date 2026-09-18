@@ -75,7 +75,7 @@
                                     <field name="amount" widget="monetary" string="Depreciation"/>
                                     <field name="depreciated_value" readonly="1"/>
                                     <field name="remaining_value" readonly="1" widget="monetary" string="Residual"/>
-                                    <field name="move_check" widget="deprec_lines_toggler"
+                                    <field name="move_check" readonly="1"
                                            invisible="parent_state != 'open'"/>
                                     <field name="move_posted_check" invisible="1"/>
                                     <field name="parent_state" invisible="1"/>
@@ -124,8 +124,8 @@
                                 <field name="method_period" readonly="state != 'draft'"/>
                                 <field name="method_end"
                                        readonly="state != 'draft'"
-                                       invisible="method_time == 'end'"
-                                       required="method_time == 'number'"/>
+                                       invisible="method_time != 'end'"
+                                       required="method_time == 'end'"/>
                             </group>
                         </page>
                     </notebook>
@@ -145,7 +145,7 @@
                 <field name="date"/>
                 <field name="state"/>
                 <templates>
-                    <t t-name="kanban-box">
+                    <t t-name="card">
                         <div t-attf-class="oe_kanban_global_click">
                             <div class="row mb4">
                                 <div class="col-6">
@@ -169,7 +169,7 @@
                                 </div>
                                 <div class="col-6">
                                     <span class="float-right text-end">
-                                        <field name="state" widget="kanban_label_selection"
+                                        <field name="state" widget="label_selection"
                                                options="{'classes': {'draft': 'primary', 'open': 'success', 'close': 'default'}}"/>
                                     </span>
                                 </div>
