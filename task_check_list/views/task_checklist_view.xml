@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<odoo>
+    <record id="view_task_checklist_list" model="ir.ui.view">
+        <field name="name">task.checklist.list</field>
+        <field name="model">task.checklist</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle" optional="show" />
+                <field name="name" />
+                <field name="project_id" />
+                <field name="description" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_task_checklist_form" model="ir.ui.view">
+        <field name="name">task.checklist.form</field>
+        <field name="model">task.checklist</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="name" />
+                    <field name="project_id" />
+                    <field name="description" />
+                    <field name="sequence" />
+                </group>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_task_checklist" model="ir.actions.act_window">
+        <field name="name">Task Checklist</field>
+        <field name="res_model">task.checklist</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{"group_by": ["project_id"]}</field>
+        <field name="help" type="html">
+            <p class="oe_view_nocontent_create">Click to create a new checklist item.</p>
+        </field>
+    </record>
+
+    <menuitem
+        id="task_check_list_menu"
+        name="Task Checklist"
+        parent="project.menu_project_config"
+        sequence="3"
+        action="action_task_checklist"
+    />
+</odoo>
