@@ -265,7 +265,8 @@ class CurrencyRevaluationLine(models.TransientModel):
     _order = 'currency_id, account_id, partner_id'
 
     revaluation_id = fields.Many2one('currency.revaluation', required=True, ondelete='cascade')
-    company_currency_id = fields.Many2one(related='revaluation_id.company_currency_id')
+    company_currency_id = fields.Many2one(
+        related='revaluation_id.company_currency_id', string='Company Currency')
     account_id = fields.Many2one('account.account', string='Account', readonly=True)
     partner_id = fields.Many2one('res.partner', string='Partner', readonly=True)
     currency_id = fields.Many2one('res.currency', string='Currency', readonly=True)

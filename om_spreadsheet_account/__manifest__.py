@@ -28,5 +28,5 @@ bank and cash movements, all computed from the account types so that they work w
             ),
         ],
     },
-    'images': ['static/description/icon.png'],
+    'images': ['static/description/dashboard_overview.png'],
 }

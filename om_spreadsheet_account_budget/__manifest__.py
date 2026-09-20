@@ -20,5 +20,5 @@ of the confirmed budgets, the share of the plan used, and the budget by budgetar
         'data/dashboards.xml',
     ],
     'auto_install': True,
-    'images': ['static/description/icon.png'],
+    'images': ['static/description/budgets_dashboard.png'],
 }

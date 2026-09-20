@@ -20,5 +20,5 @@ the book value of the running assets, and the depreciation posted and to post by
         'data/dashboards.xml',
     ],
     'auto_install': True,
-    'images': ['static/description/icon.png'],
+    'images': ['static/description/assets_dashboard.png'],
 }

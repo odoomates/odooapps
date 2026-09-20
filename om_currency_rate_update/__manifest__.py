@@ -20,5 +20,5 @@ backup source for the currencies the main one does not quote.
         'views/res_config_settings_views.xml',
         'views/res_currency_views.xml',
     ],
-    'images': ['static/description/icon.png'],
+    'images': ['static/description/currency_settings.png'],
 }

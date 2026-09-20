@@ -23,4 +23,5 @@ the file stays attached to the statement. The statements are then reconciled as 
         'views/account_journal_views.xml',
         'views/account_bank_statement_views.xml',
     ],
+    'images': ['static/description/statement_import.png'],
 }

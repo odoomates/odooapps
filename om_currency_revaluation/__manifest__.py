@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Currency Revaluation',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Accounting',
     'summary': 'Revalue the open foreign currency balances at the closing rate, with unrealized gains and losses',
     'description': """
@@ -23,4 +23,5 @@ are paid. Required by IAS 21 and by most local rules at the closing of a period.
         'wizard/currency_revaluation_views.xml',
         'views/account_move_views.xml',
     ],
+    'images': ['static/description/currency_revaluation.png'],
 }

@@ -23,5 +23,5 @@ the cash forecast items.
         'data/dashboards.xml',
     ],
     'auto_install': True,
-    'images': ['static/description/icon.png'],
+    'images': ['static/description/followup_dashboard.png'],
 }

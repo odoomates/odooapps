@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The Review menu of Odoo 20 Community holds a single entry, Control > Journal Items. The suite fills it
+         with what an accountant actually opens when reviewing a period: the entries still to check, the items
+         left to reconcile, the regularisation of the foreign currency balances and the journals audit. -->
+
+    <!-- ============ actions of our own ============ -->
+
+    <record id="action_moves_to_review" model="ir.actions.act_window">
+        <field name="name">Entries to Review</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('move_type', '=', 'entry')]</field>
+        <field name="context">{'search_default_to_check': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing waiting to be reviewed</p>
+            <p>The posted entries someone has marked to review appear here until they are checked.</p>
+        </field>
+    </record>
+
+    <record id="action_moves_unposted" model="ir.actions.act_window">
+        <field name="name">Draft Entries</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_unposted': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No draft entry</p>
+            <p>Everything is posted. Draft entries are not in the reports and not in the balances, so a period
+                should not be closed while any are left here.</p>
+        </field>
+    </record>
+
+    <!-- a transaction is marked to check through the review state of its entry, so the reconciliation
+         screen filtered on to_review is the right screen for it -->
+    <record id="action_bank_rec_to_review" model="ir.actions.client">
+        <field name="name">Transactions to Review</field>
+        <field name="tag">om_bank_reconciliation</field>
+        <field name="params" eval="{'filter': 'to_review'}"/>
+    </record>
+
+    <!-- ============ the menu ============ -->
+
+    <!-- like the Enterprise layout: the journals audit sits at the top of Review -->
+    <menuitem id="menu_review_journal_audit"
+              name="Journal Audit"
+              action="accounting_pdf_reports.action_account_print_journal_menu"
+              parent="account.account_audit_menu"
+              groups="account.group_account_readonly"
+              sequence="1"/>
+
+    <!-- Control: the core Journal Items, plus what is still waiting -->
+    <menuitem id="menu_review_moves_to_review"
+              action="action_moves_to_review"
+              parent="account.account_audit_control_menu"
+              groups="account.group_account_readonly"
+              sequence="10"/>
+
+    <menuitem id="menu_review_moves_unposted"
+              action="action_moves_unposted"
+              parent="account.account_audit_control_menu"
+              groups="account.group_account_readonly"
+              sequence="12"/>
+
+    <!-- Reconciliation: what is left open -->
+    <menuitem id="menu_review_reconciliation"
+              name="Reconciliation"
+              parent="account.account_audit_menu"
+              groups="account.group_account_readonly"
+              sequence="30"/>
+
+    <menuitem id="menu_review_bank_reconciliation"
+              action="om_account_reconcile.action_bank_reconciliation"
+              parent="menu_review_reconciliation"
+              groups="account.group_account_user"
+              sequence="10"/>
+
+    <menuitem id="menu_review_open_items"
+              action="om_account_reconcile.action_open_items_reconciliation"
+              parent="menu_review_reconciliation"
+              groups="account.group_account_user"
+              sequence="20"/>
+
+    <menuitem id="menu_review_match_journal_items"
+              action="om_account_reconcile.action_move_line_match"
+              parent="menu_review_reconciliation"
+              groups="account.group_account_user"
+              sequence="30"/>
+
+    <menuitem id="menu_review_bank_rec_to_review"
+              action="action_bank_rec_to_review"
+              parent="menu_review_reconciliation"
+              groups="account.group_account_user"
+              sequence="40"/>
+
+    <!-- Regularization Entries: the same place Enterprise puts the unrealized currency gains and losses -->
+    <menuitem id="menu_review_regularization"
+              name="Regularization Entries"
+              parent="account.account_audit_menu"
+              groups="account.group_account_manager"
+              sequence="40"/>
+
+    <menuitem id="menu_review_unrealized_currencies"
+              name="Unrealized Currencies"
+              action="om_currency_revaluation.action_currency_revaluation"
+              parent="menu_review_regularization"
+              groups="account.group_account_manager"
+              sequence="10"/>
+
+</odoo>
