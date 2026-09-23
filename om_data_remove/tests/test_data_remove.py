@@ -1,223 +1,206 @@
-from unittest import SkipTest
 from unittest.mock import patch
 
-from odoo import Command
 from odoo.exceptions import AccessError, UserError
-from odoo.modules.registry import Registry
 from odoo.tests import TransactionCase, new_test_user, tagged
-from odoo.tests.common import get_db_name
 
-from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.om_data_remove.models import model
 
-# This module deletes with raw SQL and commits at once: TestDataRemove removes nothing, the other classes patch the
-# commit so that the deletions stay in the test transaction.
+# The clearing deletes in the current transaction and never commits, so every test runs a real clearing and
+# the test transaction rolls it back afterwards.
+
+MASTER_MODELS = ['res.partner', 'res.company', 'res.users', 'res.currency', 'product.template', 'account.account',
+                 'account.journal', 'account.tax', 'hr.employee', 'mrp.bom', 'project.project', 'stock.location',
+                 'stock.warehouse', 'crm.team']
 
 
 @tagged('post_install', '-at_install')
 class TestDataRemove(TransactionCase):
 
-    def setUp(self):
-        super().setUp()
-        self.settings = self.env['res.config.settings'].create({})
-
-    def test_only_the_settings_administrators_may_remove(self):
-        user = new_test_user(self.env, login='data_remove_user', groups='base.group_user')
-        as_user = self.settings.with_user(user)
-        self.assertFalse(as_user._remove_sales())
-        self.assertFalse(as_user._remove_data(['res.partner']))
-        # nothing was deleted
-        self.assertTrue(self.env['res.partner'].search_count([]))
-
-    def test_an_unknown_model_is_skipped(self):
-        # a model that is not installed must not stop the removal, and must not delete anything either
-        self.assertTrue(self.settings._remove_data(['no.such.model.here']))
-        self.assertTrue(self.env['res.partner'].search_count([]))
-
-    def test_the_sequences_are_reset(self):
-        sequence = self.env['ir.sequence'].create({
-            'name': 'Data Remove Test', 'code': 'data.remove.test', 'prefix': 'DRT/', 'number_next': 42,
-        })
-        self.assertTrue(self.settings._remove_data([], ['DRT']))
-        self.assertEqual(sequence.number_next, 1)
-
-    def test_every_button_of_the_wizard_exists(self):
-        for name in ('_remove_sales', '_remove_product', '_remove_data'):
-            self.assertTrue(callable(getattr(self.settings, name, None)), name)
-
-    def test_the_screen_counts_and_asks_for_confirmation(self):
-        from unittest.mock import patch
-        from odoo.addons.om_data_remove.models import model
-        # a table present on every database stands for the messages
-        patcher = patch.dict(model.REMOVAL_MODELS, {'message': ['res.partner']})
-        patcher.start()
-        self.addCleanup(patcher.stop)
-        settings = self.env['res.config.settings'].create({})
-        self.assertEqual(settings.om_remove_count_message, settings._om_removal_count('message'))
-        self.assertGreater(settings.om_remove_count_message, 0)
-        self.assertGreaterEqual(settings.om_remove_count_all, settings.om_remove_count_message)
-
-        action = settings.with_context(om_removal='message').action_om_open_removal()
-        wizard = self.env[action['res_model']].with_context(action['context']).create({})
-        self.assertEqual(wizard.record_count, settings.om_remove_count_message)
-        self.assertIn('Contact', wizard.model_names)
-        # nothing is deleted without the confirmation word, and nothing is deleted here at all
-        with patch.object(type(settings), 'action_remove_message') as remove:
-            wizard.confirmation = 'yes'
-            with self.assertRaises(UserError):
-                wizard.action_remove()
-            remove.assert_not_called()
-            wizard.confirmation = ' delete '
-            wizard.action_remove()
-            remove.assert_called_once()
-
-        user = new_test_user(self.env, login='data_remove_viewer', groups='base.group_user')
-        with self.assertRaises(AccessError):
-            wizard.with_user(user).action_remove()
-
-
-@tagged('post_install', '-at_install')
-class TestDataRemoveActions(TransactionCase):
-
-    def setUp(self):
-        super().setUp()
-        commit_patcher = patch.object(self.env.cr, 'commit')
-        commit_patcher.start()
-        self.addCleanup(commit_patcher.stop)
-
-    def _removal_wizard(self, key, user=None):
-        settings = self.env['res.config.settings'].with_user(user or self.env.user)
-        action = settings.create({}).with_context(om_removal=key).action_om_open_removal()
-        return settings.env[action['res_model']].with_context(action['context']).create({})
-
-    def test_the_wizard_deletes_the_chosen_tables_and_keeps_the_rest(self):
-        # a base table stands for the product attributes, which may not be installed
-        self.enterContext(patch.dict(model.REMOVAL_MODELS, {'product_attribute': ['res.partner.industry']}))
-        industry = self.env['res.partner.industry'].create({'name': 'Data Remove Industry'})
-        archived = self.env['res.partner.industry'].create({'name': 'Archived Industry', 'active': False})
-        partner = self.env['res.partner'].create({'name': 'Data Remove Partner', 'industry_id': industry.id})
-        wizard = self._removal_wizard('product_attribute')
-        self.assertEqual(wizard.record_count,
-                         self.env['res.partner.industry'].with_context(active_test=False).search_count([]))
-
-        wizard.confirmation = 'DELETE'
-        action = wizard.action_remove()
-        self.assertEqual(action['params']['type'], 'success')
-        self.env.invalidate_all()
-        self.assertFalse(industry.exists())
-        self.assertFalse(archived.exists())
-        self.assertTrue(partner.exists())
-        self.assertFalse(partner.industry_id)
-        self.assertEqual(self._removal_wizard('product_attribute').record_count, 0)
-
-    def test_a_removal_resets_only_its_own_sequences(self):
-        self.enterContext(patch.dict(model.REMOVAL_MODELS, {'sales': [], 'purchase': []}))
-        Sequence = self.env['ir.sequence']
-        sale_by_code = Sequence.create({'name': 'Sale', 'code': 'sale.remove.test', 'number_next': 7})
-        sale_by_prefix = Sequence.create({'name': 'Sale prefix', 'prefix': 'SALE/', 'number_next': 8})
-        purchase = Sequence.create({'name': 'Purchase', 'code': 'purchase.remove.test', 'number_next': 9})
-        other = Sequence.create({'name': 'Other', 'code': 'other.remove.test', 'prefix': 'OT/', 'number_next': 10})
-        settings = self.env['res.config.settings'].create({})
-
-        settings.action_remove_sales()
-        self.assertEqual((sale_by_code.number_next, sale_by_prefix.number_next), (1, 1))
-        self.assertEqual((purchase.number_next, other.number_next), (9, 10))
-        settings.action_remove_purchase()
-        self.assertEqual((purchase.number_next, other.number_next), (1, 10))
-
-    def test_delete_all_keeps_the_master_data(self):
-        settings = self.env['res.config.settings'].create({})
-        removals = settings._om_removal_models('all')
-        self.assertTrue(all(name in self.env for name in removals), 'the uninstalled models are left out')
-        for kept in ('product.product', 'product.template', 'product.attribute', 'res.partner', 'res.users',
-                     'res.company'):
-            self.assertNotIn(kept, removals)
-
-        with patch.object(type(settings), '_remove_data', autospec=True, return_value=True) as remove:
-            self.assertTrue(settings._remove_all())
-        removed = {name for call in remove.call_args_list for name in call.args[1]}
-        expected = {name for group in model.ALL_GROUPS for name in model.REMOVAL_MODELS[group]}
-        self.assertEqual(removed, expected)
-        self.assertFalse(removed & set(model.REMOVAL_MODELS['product'] + model.REMOVAL_MODELS['product_attribute']))
-
-    def test_only_the_administrators_reach_the_removals(self):
-        self.enterContext(patch.dict(model.REMOVAL_MODELS, {'message': ['res.partner']}))
-        rights_manager = new_test_user(self.env, login='data_remove_rights', groups='base.group_erp_manager')
-        admin = new_test_user(self.env, login='data_remove_admin', groups='base.group_system')
-
-        # the screen and the confirmation are for the settings administrators only
-        with self.assertRaises(AccessError):
-            self.env['res.config.settings'].with_user(rights_manager).create({})
-        with self.assertRaises(AccessError):
-            self.env['om.data.remove.wizard'].with_user(rights_manager).create({'removal': 'message'})
-        self.assertEqual(self.env['res.config.settings'].with_user(rights_manager).new({}).om_remove_count_message, 0)
-
-        # none of the buttons deletes anything for somebody else
-        settings = self.env['res.config.settings'].create({}).with_user(rights_manager)
-        with patch.object(type(settings), '_remove_data', autospec=True) as remove:
-            for key, _section, _label in model.REMOVAL_GROUPS:
-                getattr(settings, 'action_remove_%s' % key)()
-            self.assertFalse(settings._remove_all())
-            remove.assert_not_called()
-
-        # a settings administrator sees the counts and deletes
-        wizard = self._removal_wizard('message', user=admin)
-        self.assertGreater(wizard.record_count, 0)
-        wizard.confirmation = 'delete'
-        with patch.object(type(self.env['res.config.settings']), 'action_remove_message') as remove:
-            wizard.action_remove()
-            remove.assert_called_once()
-
-
-@tagged('post_install', '-at_install')
-class TestDataRemoveAccounting(AccountTestInvoicingCommon):
-
     @classmethod
     def setUpClass(cls):
-        if 'account.move' not in Registry(get_db_name()):
-            raise SkipTest('the accounting is not installed')
         super().setUpClass()
+        cls.admin = new_test_user(cls.env, 'data_remove_admin', groups='base.group_system')
+        cls.employee = new_test_user(cls.env, 'data_remove_employee', groups='base.group_user')
+        cls.Cleaning = cls.env['om.data.remove'].with_user(cls.admin)
 
-    def _new_statement(self):
-        journal = self.company_data['default_journal_bank']
-        return self.env['account.bank.statement'].create({
-            'name': 'Week 7',
-            'line_ids': [Command.create({
-                'journal_id': journal.id, 'date': '2026-02-12', 'payment_ref': 'Deposit', 'amount': 250.0,
-            })],
-        })
+    def _count(self, table):
+        return self.Cleaning._om_count(table)
 
-    def test_removal_recomputes_the_bank_statement_balances(self):
-        statement = self._new_statement()
-        self.assertEqual(statement.balance_end, 250.0)
-        # the lines are deleted in SQL, as the removals do
-        self.env.cr.execute('DELETE FROM account_bank_statement_line')
-        self.env['res.config.settings']._recompute_bank_statement_balances()
-        self.assertEqual(statement.balance_end, 0.0)
-        self.assertFalse(statement.line_ids)
+    def _master_counts(self):
+        return {name: self.env[name].with_context(active_test=False).search_count([])
+                for name in MASTER_MODELS if name in self.env}
 
-    def test_account_removal_deletes_the_entries_and_keeps_the_setup(self):
-        statement = self._new_statement()
-        invoice = self.init_invoice('out_invoice', amounts=[100.0], invoice_date='2026-02-10', post=True)
-        self.env['account.payment.register'].with_context(
-            active_model='account.move', active_ids=invoice.ids,
-        ).create({'payment_date': '2026-02-11'})._create_payments()
-        self.assertTrue(invoice.matched_payment_ids or invoice.line_ids.matched_credit_ids)
-        kept_records = [(record._name, record.id) for record in (
-            self.partner_a, self.company_data['default_account_revenue'], self.company_data['default_journal_sale'],
-            self.company_data['default_tax_sale'], self.product_a)]
+    # -- access ------------------------------------------------------------
 
-        with patch.object(self.env.cr, 'commit'):
-            wizard = self.env['res.config.settings'].create({}).with_context(
-                om_removal='account').action_om_open_removal()
-            wizard = self.env['om.data.remove.wizard'].with_context(wizard['context']).create({})
-            self.assertGreaterEqual(wizard.record_count, 4)  # the invoice, the payment and their lines at least
-            wizard.confirmation = 'DELETE'
+    def test_only_the_administrators_can_clear(self):
+        Cleaning = self.env['om.data.remove'].with_user(self.employee)
+        with self.assertRaises(AccessError):
+            Cleaning._om_clear_all()
+        with self.assertRaises(AccessError):
+            Cleaning.action_open_clear()
+        with self.assertRaises(AccessError):
+            self.env['om.data.remove.report'].with_user(self.employee)._om_create_report(False)
+
+    def test_nothing_is_deleted_without_the_confirmation_word(self):
+        wizard = self.env['om.data.remove.wizard'].with_user(self.admin).create({'confirmation': 'yes'})
+        before = {m._table: self._count(m._table) for _k, _l, m in self.Cleaning._om_models()}
+        with self.assertRaises(UserError):
             wizard.action_remove()
-        self.env.invalidate_all()
+        self.assertEqual(before, {table: self._count(table) for table in before})
 
-        self.assertFalse(statement.exists())
-        for name in ('account.move', 'account.move.line', 'account.payment', 'account.partial.reconcile'):
-            self.assertFalse(self.env[name].sudo().with_context(active_test=False).search_count([]), name)
-        for name, record_id in kept_records:
-            self.assertTrue(self.env[name].browse(record_id).exists(), name)
+    # -- the screen ------------------------------------------------------------
+
+    def test_the_screen_counts_the_transactions_of_the_installed_applications(self):
+        screen = self.Cleaning.create({})
+        counts = self.Cleaning._om_counts()
+        self.assertEqual(screen.total_count, sum(count for _k, _l, _m, count in counts))
+        for _key, label, _model in self.Cleaning._om_models():
+            self.assertIn(label, screen.summary)
+        # an application that is not installed is not listed
+        for _key, label, names in model.TRANSACTION_GROUPS:
+            if not any(name in self.env for name in names):
+                self.assertNotIn(label, screen.summary)
+
+    def test_every_listed_model_is_a_real_table(self):
+        for _key, _label, record in self.Cleaning._om_models():
+            self.assertTrue(self.Cleaning._om_table_exists(record._table), record._name)
+
+    # -- clearing --------------------------------------------------------------
+
+    def test_clear_all_empties_the_transactions_and_keeps_the_master_data(self):
+        partner = self.env['res.partner'].create({'name': 'Kept Partner'})
+        has_mail = 'mail.message' in self.env
+        if has_mail:
+            partner.message_post(body='A note on a kept record')
+        masters = self._master_counts()
+        transactions = [m for _k, _l, m in self.Cleaning._om_models()]
+        if not transactions:
+            self.skipTest('no application with transactions is installed')
+        before = sum(self._count(m._table) for m in transactions)
+
+        wizard = self.env['om.data.remove.wizard'].with_user(self.admin).create({'confirmation': 'delete'})
+        self.assertEqual(wizard.record_count, before)
+        action = wizard.action_remove()
+
+        report = self.env['om.data.remove.report'].browse(action['res_id'])
+        self.assertTrue(report.cleared)
+        self.assertFalse(report.blocked_count, report.outcome)
+        for record in transactions:
+            self.assertEqual(self._count(record._table), 0, record._name)
+        self.assertEqual(self._master_counts(), masters)
+        cleared_names = [m._name for m in transactions]
+        if has_mail:
+            # every message and activity goes, on the kept records too
+            self.assertEqual(self._count('mail_message'), 0)
+            self.assertEqual(self._count('mail_activity'), 0)
+            self.assertTrue(partner.exists())
+        self.assertFalse(self.env['ir.attachment'].search_count([('res_model', 'in', cleared_names)]))
+        self.assertFalse(self.env['ir.model.data'].search_count([('model', 'in', cleared_names)]))
+
+    def test_the_numbering_starts_again(self):
+        sequence = self.env['ir.sequence'].create({
+            'name': 'Sales test', 'code': 'sale.order', 'prefix': 'TST', 'number_next': 42, 'padding': 3,
+        })
+        other = self.env['ir.sequence'].create({'name': 'Not cleared', 'code': 'om.not.cleared', 'number_next': 42})
+        self.Cleaning._om_clear_all()
+        self.assertEqual(sequence.number_next_actual, 1)
+        self.assertEqual(other.number_next_actual, 42)
+
+    def test_a_table_the_database_refuses_to_empty_is_reported(self):
+        # the currencies are referenced by the companies: the database refuses to delete them
+        groups = [('test', 'Test', ['res.currency'])] + model.TRANSACTION_GROUPS
+        with patch.object(model, 'TRANSACTION_GROUPS', groups):
+            currencies = self._count('res_currency')
+            result = self.Cleaning._om_clear_all()
+            self.assertIn('res_currency', result['errors'])
+            self.assertEqual(self._count('res_currency'), currencies)
+            report = self.env['om.data.remove.report'].with_user(self.admin)._om_create_report(result)
+        self.assertEqual(report.blocked_count, 1)
+        self.assertIn('res_currency', report.outcome)
+        line = report.line_ids.filtered(lambda l: l.table_name == 'res_currency')
+        self.assertTrue(line.error)
+
+    # -- the table report ------------------------------------------------------
+
+    def test_the_report_lists_every_table_the_most_rows_first(self):
+        report = self.env['om.data.remove.report'].with_user(self.admin)._om_create_report(False)
+        self.assertFalse(report.cleared)
+        self.env.cr.execute("SELECT count(*) FROM information_schema.tables "
+                            "WHERE table_schema = current_schema() AND table_type = 'BASE TABLE'")
+        all_tables = self.env.cr.fetchone()[0]
+        self.assertEqual(len(report.line_ids), all_tables)
+        self.assertEqual(report.table_count + report.hidden_count, all_tables)
+        lines = report.nonempty_line_ids
+        # the framework, the configuration and the relation tables are not listed
+        self.assertFalse(lines.filtered(lambda l: l.kind in ('framework', 'technical')))
+        for table in ('ir_model', 'ir_model_fields', 'ir_ui_view', 'ir_ui_menu', 'ir_act_window', 'ir_attachment',
+                      'ir_config_parameter', 'ir_cron', 'res_lang', 'res_country', 'res_groups'):
+            self.assertNotIn(table, lines.mapped('table_name'), table)
+            line = report.line_ids.filtered(lambda l, t=table: l.table_name == t)
+            if line:
+                self.assertEqual(line.kind, 'framework', table)
+        self.assertEqual(lines.mapped('row_count'), sorted(lines.mapped('row_count'), reverse=True))
+        self.assertTrue(all(lines.mapped('row_count')))
+        partner_line = report.line_ids.filtered(lambda l: l.table_name == 'res_partner')
+        self.assertEqual(partner_line.row_count, self._count('res_partner'))
+        self.assertEqual(partner_line.kind, 'kept')
+        self.assertEqual(partner_line.model, 'res.partner')
+        if 'account.move' in self.env:
+            self.assertEqual(report.line_ids.filtered(lambda l: l.table_name == 'account_move').kind, 'transaction')
+        action = report.action_view_tables()
+        self.assertEqual(action['domain'], [('report_id', '=', report.id)])
+
+    def test_the_report_opens_from_the_screen(self):
+        action = self.Cleaning.create({}).action_table_report()
+        self.assertEqual(action['res_model'], 'om.data.remove.report')
+
+    # -- emptying the tables that are left -------------------------------------
+
+    def _report(self):
+        return self.env['om.data.remove.report'].with_user(self.admin)._om_create_report(False)
+
+    def _line(self, report, table):
+        return report.line_ids.filtered(lambda l: l.table_name == table)
+
+    def test_a_table_left_can_be_emptied(self):
+        self.env['res.partner.category'].create({'name': 'Tag to delete'})
+        report = self._report()
+        line = self._line(report, 'res_partner_category')
+        self.assertTrue(line.can_delete)
+        action = line.with_user(self.admin).action_delete_rows()
+        wizard = self.env['om.data.remove.table.wizard'].with_user(self.admin).with_context(action['context']).create({})
+        self.assertEqual(wizard.record_count, self._count('res_partner_category'))
+        with self.assertRaises(UserError):
+            wizard.action_remove()
+        wizard.confirmation = 'DELETE'
+        result = wizard.action_remove()
+        self.assertEqual(self._count('res_partner_category'), 0)
+        after = self.env['om.data.remove.report'].browse(result['res_id'])
+        self.assertEqual(after.action, 'tables')
+        self.assertTrue(after.deleted_count)
+        self.assertEqual(self._line(after, 'res_partner_category').row_count, 0)
+
+    def test_the_framework_tables_are_never_offered(self):
+        report = self._report()
+        for table in ('res_users', 'res_company', 'ir_model', 'ir_attachment', 'res_groups', 'res_currency'):
+            line = self._line(report, table)
+            if line:
+                self.assertFalse(line.can_delete, table)
+        with self.assertRaises(UserError):
+            self._line(report, 'res_users').with_user(self.admin).action_delete_rows()
+        # a relation table goes with the records it links
+        relation = report.line_ids.filtered(lambda l: l.kind == 'technical')[:1]
+        self.assertFalse(relation.can_delete)
+
+    def test_a_table_kept_records_still_need_is_reported(self):
+        # the partners of the users and of the companies cannot go: the database refuses the whole statement
+        report = self._report()
+        line = self._line(report, 'res_partner')
+        self.assertTrue(line.can_delete)
+        partners = self._count('res_partner')
+        wizard = self.env['om.data.remove.table.wizard'].with_user(self.admin).create(
+            {'line_ids': [(6, 0, line.ids)], 'confirmation': 'DELETE'})
+        after = self.env['om.data.remove.report'].browse(wizard.action_remove()['res_id'])
+        self.assertEqual(self._count('res_partner'), partners)
+        self.assertEqual(after.blocked_count, 1)
+        self.assertIn('res_partner', after.outcome)

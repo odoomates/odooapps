@@ -1,169 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_remove_data" model="ir.ui.view">
-        <field name="name">Remove Data</field>
-        <field name="model">res.config.settings</field>
-        <field name="priority">20</field>
+    <!-- the Data Cleaning screen: what would be deleted, and one button -->
+    <record id="view_om_data_remove_form" model="ir.ui.view">
+        <field name="name">om.data.remove.form</field>
+        <field name="model">om.data.remove</field>
         <field name="arch" type="xml">
-            <form string="Data Cleaning" create="false">
+            <form string="Data Cleaning" create="0" class="o_om_data_remove">
                 <sheet>
                     <div class="alert alert-danger" role="alert">
-                        <strong>The data are deleted for good.</strong>
-                        They are removed from the database tables directly, for all the companies, and nothing can
-                        restore them. Make a backup of the database first.
+                        <strong>The transactions are deleted for good.</strong>
+                        They are removed from the database tables directly, for all the companies and whatever their
+                        state, posted entries included, and nothing can restore them. Make a backup of the database
+                        first, and never do it on a database holding real data.
                     </div>
-                    <h4 class="mt-4 mb-2">Everything</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">All the transactions, the master data kept</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_all" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-danger"
-                                context="{'om_removal': 'all'}" invisible="not om_remove_count_all"/>
+                    <p class="text-muted">
+                        <b>Clear All Transactions</b> deletes the documents below with their followers and attachments,
+                        every message and activity of the database, and starts the numbering of the documents again
+                        from 1. The master data stays:
+                        partners, products, chart of accounts, journals, taxes, employees, bills of materials, projects
+                        and the configuration.
+                    </p>
+                    <field name="summary" nolabel="1" readonly="1"/>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                        <button name="action_open_clear" type="object" string="Clear All Transactions" icon="delete"
+                                class="btn-danger" invisible="not total_count"/>
+                        <span class="text-muted" invisible="total_count">There is no transaction left to delete.</span>
+                        <button name="action_table_report" type="object" string="Database Tables" icon="database"
+                                class="btn-secondary ms-auto"/>
                     </div>
-                    <h4 class="mt-4 mb-2">Sales</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Sales orders</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_sales" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'sales'}" invisible="not om_remove_count_sales"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Point of Sale orders and sessions</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_pos" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'pos'}" invisible="not om_remove_count_pos"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Purchases and Expenses</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Purchase orders and requisitions</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_purchase" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'purchase'}" invisible="not om_remove_count_purchase"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Expenses and expense reports</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_expense" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'expense'}" invisible="not om_remove_count_expense"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Manufacturing</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Manufacturing orders</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_mrp" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'mrp'}" invisible="not om_remove_count_mrp"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Bills of materials</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_mrp_bom" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'mrp_bom'}" invisible="not om_remove_count_mrp_bom"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Inventory</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Moves, transfers, packages and lots</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_inventory" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'inventory'}" invisible="not om_remove_count_inventory"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Accounting</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Journal entries, invoices, bills and payments</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_account" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'account'}" invisible="not om_remove_count_account"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Chart of accounts, taxes and journals</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_account_chart" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'account_chart'}" invisible="not om_remove_count_account_chart"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Projects</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Projects and tasks</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_project" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'project'}" invisible="not om_remove_count_project"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Quality</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Quality checks and alerts</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_quality" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'quality'}" invisible="not om_remove_count_quality"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Quality control points</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_quality_setting" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'quality_setting'}" invisible="not om_remove_count_quality_setting"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Website</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Website pages and blog posts</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_website" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'website'}" invisible="not om_remove_count_website"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Master Data</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Products</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_product" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'product'}" invisible="not om_remove_count_product"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Product attributes</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_product_attribute" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'product_attribute'}" invisible="not om_remove_count_product_attribute"/>
-                    </div>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Messages, followers and activities</div>
-                        <div class="text-muted text-nowrap">
-                            <field name="om_remove_count_message" class="oe_inline"/> records
-                        </div>
-                        <button name="action_om_open_removal" type="object" string="Delete" class="btn btn-sm btn-outline-danger"
-                                context="{'om_removal': 'message'}" invisible="not om_remove_count_message"/>
-                    </div>
-                    <h4 class="mt-4 mb-2">Tools</h4>
-                    <div class="d-flex align-items-center border-bottom py-2 gap-3">
-                        <div class="flex-grow-1">Recompute the full names of the product categories and locations</div>
-                        <button name="reset_cat_loc_name" type="object" string="Recompute" class="btn btn-sm btn-secondary"/>
-                    </div>
+                    <field name="total_count" invisible="1"/>
                 </sheet>
             </form>
         </field>
@@ -173,29 +39,164 @@
         <field name="name">om.data.remove.wizard.form</field>
         <field name="model">om.data.remove.wizard</field>
         <field name="arch" type="xml">
-            <form string="Delete Data">
+            <form string="Clear All Transactions">
                 <div class="alert alert-danger" role="alert">
                     <strong><field name="record_count" class="oe_inline"/> records</strong> will be deleted for good,
                     for all the companies. This cannot be undone.
                 </div>
                 <group>
-                    <field name="removal"/>
                     <field name="model_names"/>
                     <field name="confirmation" placeholder="Type DELETE to confirm"/>
                 </group>
                 <footer>
-                    <button name="action_remove" type="object" string="Delete" class="btn-danger" data-hotkey="q"/>
+                    <button name="action_remove" type="object" string="Clear All Transactions" class="btn-danger"
+                            data-hotkey="q"/>
                     <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
                 </footer>
             </form>
         </field>
     </record>
 
+    <record id="view_om_data_remove_table_wizard_form" model="ir.ui.view">
+        <field name="name">om.data.remove.table.wizard.form</field>
+        <field name="model">om.data.remove.table.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Delete Rows">
+                <div class="alert alert-danger" role="alert">
+                    <strong><field name="record_count" class="oe_inline"/> rows</strong> will be deleted for good,
+                    for all the companies, with the messages, followers, attachments and XML ids of these records.
+                    This cannot be undone.
+                </div>
+                <group>
+                    <field name="table_names"/>
+                    <field name="confirmation" placeholder="Type DELETE to confirm"/>
+                    <field name="line_ids" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_remove" type="object" string="Delete Rows" class="btn-danger" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- the tables of the database, the most rows first -->
+    <record id="view_om_data_remove_report_form" model="ir.ui.view">
+        <field name="name">om.data.remove.report.form</field>
+        <field name="model">om.data.remove.report</field>
+        <field name="arch" type="xml">
+            <form string="Database Tables" create="0" edit="0">
+                <sheet>
+                    <field name="cleared" invisible="1"/>
+                    <field name="action" invisible="1"/>
+                    <div class="alert alert-success" role="alert" invisible="not cleared or blocked_count">
+                        <strong invisible="action != 'clear'">The transactions were cleared.</strong>
+                        <strong invisible="action != 'tables'">The selected tables were emptied.</strong>
+                        <field name="deleted_count" class="oe_inline"/> rows deleted<span invisible="action != 'clear'">,
+                        <field name="sequence_count" class="oe_inline"/> sequences started again from 1</span>.
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not cleared or not blocked_count">
+                        <strong><field name="deleted_count" class="oe_inline"/> rows deleted, but
+                            <field name="blocked_count" class="oe_inline"/> table(s) could not be emptied</strong>,
+                        because records that are kept still point to them:
+                        <field name="outcome" nolabel="1" readonly="1"/>
+                    </div>
+                    <p class="text-muted small">
+                        A table still holding rows you do not want? Click <b>Delete Rows</b> on its line to empty it too.
+                        The tables of the framework are protected, and relation tables are emptied with the records they link.
+                    </p>
+                    <group>
+                        <group>
+                            <field name="table_count"/>
+                            <field name="nonempty_count"/>
+                        </group>
+                        <group>
+                            <field name="row_count"/>
+                            <field name="transaction_row_count"/>
+                            <field name="hidden_count"/>
+                        </group>
+                    </group>
+                    <div class="d-flex align-items-center mb-2">
+                        <h4 class="mb-0">What is left, table by table</h4>
+                        <button name="action_view_tables" type="object" string="Search the Tables" icon="search"
+                                class="btn-secondary ms-auto"/>
+                    </div>
+                    <field name="nonempty_line_ids" nolabel="1" readonly="1">
+                        <list decoration-danger="kind == 'transaction' and row_count" decoration-muted="kind in ('technical', 'framework')"
+                              limit="200">
+                            <field name="table_name"/>
+                            <field name="model_label"/>
+                            <field name="model" optional="hide"/>
+                            <field name="kind" widget="badge" decoration-danger="kind == 'transaction'"
+                                   decoration-warning="kind == 'linked'" decoration-success="kind == 'kept'"/>
+                            <field name="row_count" sum="Rows"/>
+                            <field name="deleted_count" optional="show" column_invisible="not parent.cleared"/>
+                            <field name="error" optional="show" column_invisible="not parent.cleared"/>
+                            <field name="can_delete" column_invisible="1"/>
+                            <button name="action_delete_rows" type="object" string="Delete Rows" icon="delete"
+                                    class="btn-link text-danger" invisible="not can_delete"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_data_remove_table_search" model="ir.ui.view">
+        <field name="name">om.data.remove.table.search</field>
+        <field name="model">om.data.remove.table</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="table_name"/>
+                <field name="model"/>
+                <field name="model_label"/>
+                <filter name="with_rows" string="With Rows" domain="[('row_count', '>', 0)]"/>
+                <filter name="not_emptied" string="Not Emptied" domain="[('error', '!=', False)]"/>
+                <filter name="deletable" string="Can Be Emptied" domain="[('can_delete', '=', True)]"/>
+                <separator/>
+                <filter name="data" string="Data" domain="[('kind', 'in', ('transaction', 'linked', 'kept'))]"/>
+                <filter name="framework" string="Framework and Relation" domain="[('kind', 'in', ('framework', 'technical'))]"/>
+                <separator/>
+                <filter name="transaction" string="Transactions" domain="[('kind', '=', 'transaction')]"/>
+                <filter name="kept" string="Kept Records" domain="[('kind', '=', 'kept')]"/>
+                <filter name="technical" string="Relation or Technical" domain="[('kind', '=', 'technical')]"/>
+                <group>
+                    <filter name="group_kind" string="Kind" context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_data_remove_table_list" model="ir.ui.view">
+        <field name="name">om.data.remove.table.list</field>
+        <field name="model">om.data.remove.table</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" decoration-danger="kind == 'transaction' and row_count"
+                  decoration-muted="kind in ('technical', 'framework')">
+                <header>
+                    <button name="action_delete_rows" type="object" string="Delete Rows" icon="delete"
+                            class="btn-danger"/>
+                </header>
+                <field name="table_name"/>
+                <field name="model_label"/>
+                <field name="model" optional="show"/>
+                <field name="kind" widget="badge" decoration-danger="kind == 'transaction'"
+                       decoration-warning="kind == 'linked'" decoration-success="kind == 'kept'"/>
+                <field name="row_count" sum="Rows"/>
+                <field name="deleted_count" optional="show"/>
+                <field name="error" optional="hide"/>
+                <field name="can_delete" column_invisible="1"/>
+                <button name="action_delete_rows" type="object" string="Delete Rows" icon="delete"
+                        class="btn-link text-danger" invisible="not can_delete"/>
+            </list>
+        </field>
+    </record>
+
     <record id="action_remove_data" model="ir.actions.act_window">
         <field name="name">Data Cleaning</field>
-        <field name="res_model">res.config.settings</field>
+        <field name="res_model">om.data.remove</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="view_remove_data"/>
+        <field name="target">current</field>
     </record>
 
     <menuitem

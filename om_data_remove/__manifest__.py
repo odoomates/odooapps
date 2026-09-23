@@ -1,7 +1,7 @@
 {
     'name': 'Odoo 20 Remove Data',
     'version': '1.6',
-    'author': 'Odoo Mates, Sunpop.cn',
+    'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
     'summary': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
@@ -13,5 +13,5 @@
         'security/ir.access.csv',
         'views/view.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }
