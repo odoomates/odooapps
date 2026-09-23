@@ -38,6 +38,6 @@
     'demo': [
         'demo/hr_payroll_demo.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'application': True,
 }
