@@ -26,6 +26,6 @@
             'om_account_reconcile/static/tests/tours/**/*',
         ],
     },
-    'images': ['static/description/bank_reconciliation.png'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
 }

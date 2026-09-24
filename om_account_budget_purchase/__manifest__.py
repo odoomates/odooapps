@@ -14,6 +14,6 @@
         'views/purchase_order_views.xml',
     ],
     'auto_install': True,
-    'images': ['static/description/budget_settings.png'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
 }

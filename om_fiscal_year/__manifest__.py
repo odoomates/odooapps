@@ -21,5 +21,5 @@
         'views/period_closing.xml',
         'views/settings.xml',
     ],
-    'images': ['static/description/fiscal_year.png'],
+    'images': ['static/description/banner.gif'],
 }

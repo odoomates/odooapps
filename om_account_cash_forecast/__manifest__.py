@@ -20,5 +20,5 @@ the recurring payments and the expected items entered by hand (salaries, rent, l
         'wizard/cash_forecast_report_views.xml',
         'report/report_cash_forecast.xml',
     ],
-    'images': ['static/description/cash_forecast.png'],
+    'images': ['static/description/banner.gif'],
 }

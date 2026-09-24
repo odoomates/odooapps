@@ -17,5 +17,5 @@
         'views/recurring_payment_view.xml',
         'views/auto_post_views.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }

@@ -21,5 +21,5 @@ optional payment stubs and a test print to calibrate the positions on a real che
         'views/check_format_views.xml',
         'views/account_journal_views.xml',
     ],
-    'images': ['static/description/cheque_print.png'],
+    'images': ['static/description/banner.gif'],
 }

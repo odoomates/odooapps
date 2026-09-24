@@ -23,5 +23,5 @@ are paid. Required by IAS 21 and by most local rules at the closing of a period.
         'wizard/currency_revaluation_views.xml',
         'views/account_move_views.xml',
     ],
-    'images': ['static/description/currency_revaluation.png'],
+    'images': ['static/description/banner.gif'],
 }

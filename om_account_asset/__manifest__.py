@@ -9,7 +9,7 @@
     'category': 'Accounting',
     'sequence': 10,
     'license': 'LGPL-3',
-    'images': ['static/description/assets.gif'],
+    'images': ['static/description/banner.gif'],
     'data': [
         'security/ir.access.csv',
         'wizard/asset_modify_views.xml',
