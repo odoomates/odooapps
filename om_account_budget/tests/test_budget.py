@@ -359,6 +359,11 @@ class TestBudget(AccountTestInvoicingCommon):
         self.assertIn('over budget', mail.subject)
         self.assertIn(self.position.name, str(mail.body_html))
         self.assertIn('was emailed', self.budget.message_ids[0].body)
+        # the figures have to survive the trip: a mail client loads no stylesheet, so a
+        # table styled by class alone would arrive as a bare list of numbers
+        body = str(mail.body_html)
+        self.assertIn('border-bottom: 1px solid', body)
+        self.assertNotIn('class="table', body)
 
     # -------------------------------------------------------------------------
     # Control of the expenses

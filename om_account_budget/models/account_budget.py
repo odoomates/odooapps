@@ -208,23 +208,34 @@ class AccountBudget(models.Model):
         return self.line_ids.filtered(lambda line: line.warning_level == 'exceeded')
 
     def _get_budget_exceeded_table(self):
-        """ The lines over budget, as an HTML table for the activity and the email. """
+        """ The lines over budget, as an HTML table for the activity and the email.
+
+        Styled inline rather than with classes: this table is sent by email, and no mail
+        client loads the stylesheet that would give a Bootstrap class any meaning.
+        """
         self.ensure_one()
+        cell = Markup('<td style="padding: 4px 8px; border-bottom: 1px solid #eee;">%s</td>')
+        amount = Markup(
+            '<td style="padding: 4px 8px; border-bottom: 1px solid #eee; text-align: right;">%s</td>')
+        over_by = Markup('<td style="padding: 4px 8px; border-bottom: 1px solid #eee; '
+                         'text-align: right;"><strong>%s</strong></td>')
         rows = Markup().join(
-            Markup('<tr><td>%s</td><td style="text-align: right;">%s</td><td style="text-align: right;">%s</td>'
-                   '<td style="text-align: right;"><strong>%s</strong></td></tr>') % (
-                line.position_id.name or line.analytic_account_id.name or line.name,
-                formatLang(self.env, line.planned_amount, currency_obj=self.currency_id),
-                formatLang(self.env, line.practical_amount, currency_obj=self.currency_id),
-                formatLang(self.env, line.practical_amount - line.planned_amount, currency_obj=self.currency_id),
+            Markup('<tr>%s%s%s%s</tr>') % (
+                cell % (line.position_id.name or line.analytic_account_id.name or line.name),
+                amount % formatLang(self.env, line.planned_amount, currency_obj=self.currency_id),
+                amount % formatLang(self.env, line.practical_amount, currency_obj=self.currency_id),
+                over_by % formatLang(self.env, line.practical_amount - line.planned_amount,
+                                     currency_obj=self.currency_id),
             )
             for line in self._get_budget_exceeded_lines()
         )
-        header = Markup('<tr><th>%s</th><th style="text-align: right;">%s</th><th style="text-align: right;">%s</th>'
-                        '<th style="text-align: right;">%s</th></tr>') % (
-            _('Line'), _('Planned'), _('Spent'), _('Over by'))
-        return Markup('<table class="table table-sm o_budget_exceeded_table"><thead>%s</thead><tbody>%s</tbody></table>') % (
-            header, rows)
+        header = Markup('<th style="padding: 4px 8px; text-align: %s; '
+                        'border-bottom: 2px solid #ccc;">%s</th>')
+        return Markup(
+            '<table class="o_budget_exceeded_table" border="0" cellpadding="0" cellspacing="0"'
+            ' width="100%%" style="border-collapse: collapse;"><tr>%s%s%s%s</tr>%s</table>') % (
+            header % ('left', _('Line')), header % ('right', _('Planned')),
+            header % ('right', _('Spent')), header % ('right', _('Over by')), rows)
 
     def _alert_budget_exceeded(self):
         """ Assign a To-Do activity listing the lines over budget to the responsible (updating the open one, if
