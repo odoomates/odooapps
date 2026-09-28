@@ -3,11 +3,10 @@
 
     <template id="report_general_ledger">
         <t t-call="web.html_container"
-            data_report_margin_top="12"
-            data_report_header_spacing="9"
             data_report_dpi="110">
             <t t-call="web.internal_layout">
-                <div class="page">
+                <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
                     <h2>General Ledger</h2>
 
                     <div id="informations" class="row mb-4">
@@ -36,7 +35,7 @@
                             <div t-if="data['display_account'] == 'not_zero'">With balance not equal to zero</div>
                         </div>
                     </div>
-                    <div class="row mb-4">
+                    <div class="o_om_info row mb-4">
                         <div class="col">
                             <strong>Journals:</strong>
                             <div t-out="', '.join([journal or '' for journal in print_journal])"/>
@@ -89,7 +88,7 @@
                                     <td groups="base.group_multi_currency"/>
                                 </tr>
                                 <tr t-foreach="account['move_lines']" t-as="line">
-                                    <td><span t-out="line['ldate']"/></td>
+                                    <td class="o_om_date"><span t-out="line['ldate']"/></td>
                                     <td><span t-out="line['lcode']"/></td>
                                     <td><span t-out="line['partner_name']"/></td>
                                     <td><span t-if="line['lref']" t-out="line['lref']"/></td>
@@ -108,7 +107,7 @@
                                         <span t-out="line['balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
                                     <td class="text-end" groups="base.group_multi_currency">
-                                        <span t-out="line['amount_currency'] if line['amount_currency'] else ''"/>
+                                        <span t-if="line['amount_currency']" t-out="line['amount_currency']" t-options="{'widget': 'float', 'precision': 2}"/>
                                         <span t-out="line['currency_code'] if line['amount_currency'] else ''"/>
                                     </td>
                                 </tr>

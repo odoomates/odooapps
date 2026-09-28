@@ -3,12 +3,11 @@
 
     <template id="report_journal">
         <t t-call="web.html_container"
-            data_report_margin_top="12"
-            data_report_header_spacing="9"
             data_report_dpi="110">
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
-                    <div class="page">
+                    <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
                         <h2>Journal Audit: <t t-out="o.name"/></h2>
 
                         <div id="informations" class="row mb-4">
@@ -46,8 +45,8 @@
                                     <td><span t-out="aml.move_id.name != '/' and aml.move_id.name or ('*'+str(aml.move_id.id))"/></td>
                                     <td><span t-field="aml.date"/></td>
                                     <td><span t-field="aml.account_id.code"/></td>
-                                    <td><span t-out="aml.sudo().partner_id and aml.sudo().partner_id.name and aml.sudo().partner_id.name[:23] or ''"/></td>
-                                    <td><span t-out="aml.name and aml.name[:35]"/></td>
+                                    <td><span t-out="aml.sudo().partner_id.name or ''"/></td>
+                                    <td><span t-out="aml.name or ''"/></td>
                                     <td class="text-end text-nowrap"><span t-out="aml.debit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                                     <td class="text-end text-nowrap"><span t-out="aml.credit" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                                     <td class="text-end" t-if="data['form']['amount_currency']">
@@ -57,7 +56,7 @@
                             </tbody>
 
                             <tfoot>
-                                <tr class="o_journal_audit_total fw-bold border-top border-dark">
+                                <tr class="o_journal_audit_total o_om_total">
                                     <td colspan="5"><strong>Total</strong></td>
                                     <td class="text-end text-nowrap">
                                         <strong><span t-out="sum_debit(data, o)" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></strong>

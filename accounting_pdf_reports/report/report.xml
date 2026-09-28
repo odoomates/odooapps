@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- The A4 default is sized for the invoice letterhead: 52mm of margin above the
+         page and the same again of header spacing. These reports carry a one-line
+         header, so that reserves a third of the first page for nothing. -->
+    <record id="paperformat_om_report" model="report.paperformat">
+        <field name="name">A4 - Accounting Report</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">22</field>
+        <field name="margin_bottom">16</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+
     <record id="action_report_general_ledger" model="ir.actions.report">
         <field name="name">General Ledger</field>
         <field name="model">account.report.general.ledger</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_general_ledger</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_partnerledger" model="ir.actions.report">
@@ -13,6 +31,7 @@
         <field name="model">account.report.partner.ledger</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_partnerledger</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
 
@@ -21,6 +40,7 @@
         <field name="model">account.balance.report</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_trialbalance</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_cash_flow" model="ir.actions.report">
@@ -28,6 +48,15 @@
         <field name="model">account.cash.flow.report</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_cash_flow</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
+    </record>
+
+    <record id="action_report_annual" model="ir.actions.report">
+        <field name="name">Annual Report</field>
+        <field name="model">account.annual.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">accounting_pdf_reports.report_annual</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_financial" model="ir.actions.report">
@@ -35,6 +64,7 @@
         <field name="model">account.financial.report</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_financial</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_account_tax" model="ir.actions.report">
@@ -42,6 +72,7 @@
         <field name="model">account.tax.report.wizard</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_tax</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_aged_partner_balance" model="ir.actions.report">
@@ -49,6 +80,7 @@
         <field name="model">res.partner</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_agedpartnerbalance</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_journal" model="ir.actions.report">
@@ -56,6 +88,7 @@
         <field name="model">account.common.journal.report</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_journal</field>
+        <field name="paperformat_id" ref="paperformat_om_report"/>
     </record>
 
     <record id="action_report_journal_entries" model="ir.actions.report">
@@ -63,6 +96,10 @@
         <field name="model">account.move</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">accounting_pdf_reports.report_journal_entries</field>
+        <!-- the only report here printed on the company letterhead, so it keeps the A4
+             default: the tighter format above leaves no room for the address block.
+             Set explicitly, because clearing a field in XML does not reset it on update -->
+        <field name="paperformat_id" eval="False"/>
         <field name="binding_model_id" ref="account.model_account_move"/>
         <field name="binding_type">report</field>
     </record>

@@ -8,7 +8,12 @@
                     <span>Journal Entry</span> <span t-field="o.name"/>
                 </t>
                 <t t-call="web.external_layout">
-                    <div class="page">
+                    <!-- Analytic accounting is a feature a company turns on; with it off
+                         the column would be an empty stripe down every page -->
+                    <t t-set="show_analytic"
+                       t-value="env.user.has_group('analytic.group_analytic_accounting')"/>
+                    <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
                         <div id="informations" class="row mb-4">
                             <div class="col">
                                 <strong>Journal</strong>
@@ -38,7 +43,7 @@
                                     <th class="text-start">Account</th>
                                     <th class="text-start">Partner</th>
                                     <th class="text-start">Label</th>
-                                    <th class="text-start">Analytic Distribution</th>
+                                    <th t-if="show_analytic" class="text-start">Analytic Distribution</th>
                                     <th class="text-end">Debit</th>
                                     <th class="text-end">Credit</th>
                                 </tr>
@@ -48,7 +53,7 @@
                                     <td><span t-field="line.account_id"/></td>
                                     <td><span t-field="line.partner_id"/></td>
                                     <td><span t-field="line.name"/></td>
-                                    <td>
+                                    <td t-if="show_analytic">
                                         <div t-foreach="line.format_analytic_distribution(line.analytic_distribution)" t-as="entry">
                                             <t t-out="entry"/>
                                         </div>
@@ -63,7 +68,7 @@
                             </tbody>
                             <tfoot>
                                 <tr class="fw-bold border-top border-dark">
-                                    <td colspan="4">Total</td>
+                                    <td t-att-colspan="show_analytic and 4 or 3">Total</td>
                                     <td class="text-end text-nowrap">
                                         <span t-out="sum(o.line_ids.mapped('debit'))"
                                               t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>

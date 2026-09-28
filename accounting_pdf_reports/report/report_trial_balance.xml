@@ -3,11 +3,10 @@
 
     <template id="report_trialbalance">
         <t t-call="web.html_container"
-            data_report_margin_top="12"
-            data_report_header_spacing="9"
             data_report_dpi="110">
             <t t-call="web.internal_layout">
-                <div class="page">
+                <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
                     <h2>Trial Balance</h2>
 
                     <div id="informations" class="row mb-4">
@@ -31,12 +30,13 @@
                             <div t-if="data['display_account'] == 'not_zero'">With balance not equal to zero</div>
                         </div>
                     </div>
-                    <div class="row mb-4">
+                    <div class="o_om_info row mb-4">
                         <div class="col">
                             <strong>Journals:</strong>
                             <div t-out="', '.join([journal or '' for journal in print_journal])"/>
                         </div>
-                        <div class="col" t-if="analytic_accounts">
+                        <div class="col" t-if="analytic_accounts"
+                             groups="analytic.group_analytic_accounting">
                             <strong>Analytic Accounts:</strong>
                             <div t-out="', '.join([analytic_account or '' for analytic_account in analytic_accounts])"/>
                         </div>
@@ -68,6 +68,24 @@
                                 </td>
                                 <td class="text-end text-nowrap">
                                     <span t-att-style="style" t-out="account['balance']" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                            </tr>
+                            <!-- A trial balance exists to show the two columns agree,
+                                 so it has to add them up. -->
+                            <tr t-if="Accounts" class="o_om_total">
+                                <td/>
+                                <td><strong>Total</strong></td>
+                                <td class="text-end text-nowrap">
+                                    <strong t-out="sum(account['debit'] for account in Accounts)"
+                                            t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <strong t-out="sum(account['credit'] for account in Accounts)"
+                                            t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <strong t-out="sum(account['balance'] for account in Accounts)"
+                                            t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                 </td>
                             </tr>
                         </tbody>

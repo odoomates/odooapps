@@ -45,10 +45,17 @@ class ReportPartnerLedger(models.AbstractModel):
         date_format = lang_id.date_format
         for r in res:
             r['date'] = r['date']
-            r['displayed_name'] = '-'.join(
-                r[field_name] for field_name in ('move_name', 'ref', 'name')
-                if r[field_name] not in (None, '', '/')
-            )
+            # move name, reference and label often repeat each other - the label
+            # frequently ends with the move name - so anything a part already says is
+            # dropped rather than printed twice
+            parts = []
+            for field_name in ('move_name', 'ref', 'name'):
+                value = (r[field_name] or '').strip()
+                if value in ('', '/') or any(value in kept for kept in parts):
+                    continue
+                parts = [kept for kept in parts if kept not in value]
+                parts.append(value)
+            r['displayed_name'] = ' - '.join(parts)
             sum += r['debit'] - r['credit']
             r['progress'] = sum
             r['currency_id'] = currency.browse(r.get('currency_id'))

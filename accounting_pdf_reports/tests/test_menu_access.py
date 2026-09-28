@@ -10,6 +10,7 @@ FINANCIAL_MENUS = (
     'accounting_pdf_reports.menu_general_balance_report',
     'accounting_pdf_reports.menu_account_report',
     'accounting_pdf_reports.menu_print_journal',
+    'accounting_pdf_reports.menu_account_report_annual',
 )
 PARTNER_MENUS = (
     'accounting_pdf_reports.menu_partner_ledger',

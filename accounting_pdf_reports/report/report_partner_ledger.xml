@@ -4,10 +4,9 @@
     <template id="report_partnerledger">
         <t t-call="web.html_container">
             <t t-call="web.internal_layout"
-                data_report_margin_top="12"
-                data_report_header_spacing="9"
                 data_report_dpi="110">
-                <div class="page">
+                <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
                     <h2>Partner Ledger</h2>
 
                     <div id="informations" class="row mb-4">
@@ -49,8 +48,8 @@
                             <tbody>
                                 <tr>
                                     <td colspan="4">
-                                        <strong t-out="o.ref"/>
-                                        -
+                                        <strong t-if="o.ref" t-out="o.ref"/>
+                                        <t t-if="o.ref"> - </t>
                                         <strong t-out="o.name"/>
                                     </td>
                                     <td class="text-end text-nowrap">
@@ -65,16 +64,19 @@
                                         <strong t-out="sum_partner(data, o, 'debit - credit')"
                                                 t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
                                     </td>
+                                    <td t-if="data['form']['amount_currency']"/>
                                 </tr>
-                                <tr t-foreach="lines(data, o)" t-as="line">
+                                <t t-set="rows" t-value="lines(data, o)"/>
+                                <tr t-foreach="rows" t-as="line">
                                     <td>
-                                        <span t-out="line['date']"/>
+                                        <span class="o_om_date" t-out="line['date']"/>
                                     </td>
                                     <td>
                                         <span t-out="line['code']"/>
                                     </td>
                                     <td>
-                                        <span t-out="line['a_name']"/>
+                                        <span t-if="line_index == 0 or rows[line_index - 1]['a_name'] != line['a_name']"
+                                              t-out="line['a_name']"/>
                                     </td>
                                     <td>
                                         <span t-out="line['displayed_name']"/>
@@ -100,6 +102,24 @@
                                 </tr>
                             </tbody>
                         </t>
+                        <tfoot t-if="docs">
+                            <tr class="o_om_total">
+                                <td colspan="4"><strong>Total</strong></td>
+                                <td class="text-end text-nowrap">
+                                    <strong t-out="sum(sum_partner(data, partner, 'debit') for partner in docs)"
+                                            t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <strong t-out="sum(sum_partner(data, partner, 'credit') for partner in docs)"
+                                            t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td class="text-end text-nowrap">
+                                    <strong t-out="sum(sum_partner(data, partner, 'debit - credit') for partner in docs)"
+                                            t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                </td>
+                                <td t-if="data['form']['amount_currency']"/>
+                            </tr>
+                        </tfoot>
                     </table>
                 </div>
             </t>
