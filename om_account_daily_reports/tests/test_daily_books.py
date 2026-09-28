@@ -162,3 +162,28 @@ class TestDailyBooks(AccountTestInvoicingCommon):
         self.assertIn(paid.name, html)
         self.assertNotIn(before.name, html)
         self.assertNotIn(cash_sale.name, html)
+
+    def test_the_currency_column_is_formatted_money(self):
+        """ It used to print the raw float, so 1234.5 landed on the page as ``1234.5``. """
+        self.env.user.group_ids += self.env.ref('base.group_multi_currency')
+        bank_journal = self.company_data['default_journal_bank']
+        bank = bank_journal.default_account_id
+        revenue = self.company_data['default_account_revenue']
+        expense = self.company_data['default_account_expense']
+        self._entry(bank_journal, '2026-06-03', 1234.5, bank, revenue)
+        self._entry(bank_journal, '2026-06-05', 1234.5, expense, bank)
+        wizard = self.env['account.bankbook.report'].create({
+            'date_from': '2026-06-01', 'date_to': '2026-06-30',
+        })
+
+        __, html = self._book_values(
+            wizard, ['target_move', 'date_from', 'date_to', 'journal_ids', 'account_ids', 'sortby',
+                     'initial_balance', 'display_account'],
+            'om_account_daily_reports.report_bankbook')
+
+        # the float widget separates a minus sign from its figure with a zero-width space
+        printed = html.replace('\ufeff', '')
+        self.assertIn('1,234.50', printed)
+        self.assertNotIn('1234.5', printed)
+        # a line that took money out is shown too, not dropped for being negative
+        self.assertIn('-1,234.50', printed)

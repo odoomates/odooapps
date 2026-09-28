@@ -62,5 +62,5 @@ class AccountCashBookReport(models.TransientModel):
         data['form']['comparison_context'] = comparison_context
         return self.env.ref(
             'om_account_daily_reports.action_report_cash_book').report_action(self,
-                                                                     data=data)
+                                                                     data=data, config=False)
 
