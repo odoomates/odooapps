@@ -33,22 +33,25 @@
                     <t t-out="company.account_fiscal_country_id.vat_label or 'Tax ID'"/>: <span t-field="partner.vat"/>
                 </div>
             </t>
-            <div class="page">
+            <div class="page o_om_report">
+                <t t-call="om_account_followup.report_style"/>
                 <h2 t-if="is_vendor">Vendor Statement</h2>
                 <h2 t-else="">Customer Statement</h2>
-                <table class="table table-borderless table-sm w-auto mb-3">
-                    <tr>
-                        <td class="pe-5"><strong>Date</strong><br/><span t-out="today_label"/></td>
-                        <td class="pe-5" t-if="partner.ref">
-                            <strong t-if="is_vendor">Vendor Reference</strong>
-                            <strong t-else="">Customer Reference</strong>
-                            <br/><span t-field="partner.ref"/>
-                        </td>
-                        <td t-if="not is_vendor and partner.latest_followup_level_id">
-                            <strong>Reminder</strong><br/><span t-field="partner.latest_followup_level_id.name"/>
-                        </td>
-                    </tr>
-                </table>
+                <div id="informations" class="row mb-4">
+                    <div class="col">
+                        <strong>Date</strong>
+                        <div t-out="today_label"/>
+                    </div>
+                    <div class="col" t-if="partner.ref">
+                        <strong t-if="is_vendor">Vendor Reference</strong>
+                        <strong t-else="">Customer Reference</strong>
+                        <div t-field="partner.ref"/>
+                    </div>
+                    <div class="col" t-if="not is_vendor and partner.latest_followup_level_id">
+                        <strong>Reminder</strong>
+                        <div t-field="partner.latest_followup_level_id.name"/>
+                    </div>
+                </div>
 
                 <p t-if="not is_vendor and level_text(partner)" style="white-space: pre-line;" t-out="level_text(partner)"/>
 
@@ -69,13 +72,13 @@
                         <tbody>
                             <tr t-foreach="group['lines']" t-as="item"
                                 t-att-class="'text-muted' if item['disputed'] else ('fw-bold' if item['overdue'] and item['residual'] &gt; 0 else '')">
-                                <td><span t-out="format_date(item['date'])"/></td>
+                                <td class="o_om_date"><span t-out="format_date(item['date'])"/></td>
                                 <td>
                                     <span t-out="item['name']"/>
                                     <span t-if="item['disputed']" class="badge text-bg-secondary ms-1">Disputed</span>
                                 </td>
                                 <td><span t-out="item['ref']"/></td>
-                                <td><span t-out="format_date(item['date_maturity'])"/></td>
+                                <td class="o_om_date"><span t-out="format_date(item['date_maturity'])"/></td>
                                 <td class="text-end"><span t-if="item['days_overdue']" t-out="item['days_overdue']"/></td>
                                 <td class="text-end">
                                     <span t-out="item['amount']"
@@ -87,28 +90,26 @@
                                 </td>
                             </tr>
                         </tbody>
+                        <tbody>
+                            <tr class="o_om_total">
+                                <td colspan="6">Total Open</td>
+                                <td class="text-end">
+                                    <span t-out="group['total']"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                            <tr class="o_om_total">
+                                <td colspan="6">Overdue</td>
+                                <td class="text-end">
+                                    <span t-out="group['total_overdue']"
+                                          t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                </td>
+                            </tr>
+                        </tbody>
                     </table>
-                    <div class="row justify-content-end">
-                        <div class="col-6">
-                            <table class="table table-sm">
-                                <tr>
-                                    <td><strong>Total Open</strong></td>
-                                    <td class="text-end">
-                                        <strong t-out="group['total']"
-                                                t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><strong>Overdue</strong></td>
-                                    <td class="text-end">
-                                        <strong t-out="group['total_overdue']"
-                                                t-options="{'widget': 'monetary', 'display_currency': currency}"/>
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-                    </div>
-                    <table class="table table-sm table-bordered text-center">
+
+                    <h4>Ageing</h4>
+                    <table class="table table-sm text-center">
                         <thead>
                             <tr>
                                 <th t-foreach="group['ageing']" t-as="bucket" t-out="bucket[0]"/>

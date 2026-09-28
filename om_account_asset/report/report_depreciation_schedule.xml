@@ -26,17 +26,17 @@
         <t t-call="web.html_container">
             <t t-foreach="docs" t-as="o">
                 <t t-call="web.internal_layout">
-                    <div class="page o_asset_schedule" style="font-size: 11px;">
-                        <div class="d-flex justify-content-between align-items-end mb-3">
-                            <div>
-                                <h2 class="mb-0">Depreciation Schedule</h2>
+                    <div class="page o_asset_schedule o_om_report">
+                        <t t-call="om_account_asset.report_style"/>
+                        <h2>Depreciation Schedule</h2>
+                        <div id="informations" class="row mb-4">
+                            <div class="col">
+                                <strong>Period:</strong>
+                                <div class="o_om_date"><span t-field="o.date_from"/> - <span t-field="o.date_to"/></div>
                             </div>
-                            <div class="text-end">
-                                <div>
-                                    <strong>Period:</strong>
-                                    <span t-field="o.date_from"/> - <span t-field="o.date_to"/>
-                                </div>
-                                <div><strong>Currency:</strong> <span t-out="currency.name"/></div>
+                            <div class="col">
+                                <strong>Currency:</strong>
+                                <div t-out="currency.name"/>
                             </div>
                         </div>
 
@@ -66,7 +66,7 @@
                                             </tr>
                                             <t t-set="previous_section" t-value="row[0]"/>
                                             <t t-set="is_closing" t-value="row[2] in ('cost_closing', 'depreciation_closing', 'nbv_closing')"/>
-                                            <tr t-att-class="'fw-bold border-top' if is_closing else ''">
+                                            <tr t-att-class="'o_om_total' if is_closing else ''">
                                                 <td class="ps-3"><span t-out="row[1]"/></td>
                                                 <td t-foreach="columns" t-as="column" class="text-end">
                                                     <t t-set="amount" t-value="row[3] * column[1][row[2]]"/>
@@ -110,7 +110,7 @@
                                                 <span t-if="line['is_disposed']" class="text-muted"> (disposed)</span>
                                                 <span t-if="line['is_partly_disposed']" class="text-muted"> (partly disposed)</span>
                                             </td>
-                                            <td><span t-field="line['asset'].date"/></td>
+                                            <td class="o_om_date"><span t-field="line['asset'].date"/></td>
                                             <td><span t-out="line['life']"/></td>
                                             <td class="text-end"><span t-out="line['cost']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
                                             <td class="text-end"><span t-out="line['salvage_value']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
@@ -120,7 +120,7 @@
                                             <td class="text-end"><span t-out="line['nbv_closing']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
                                             <td class="text-end"><span t-out="line['depreciated_percent']"/>%</td>
                                         </tr>
-                                        <tr t-if="o.group_by_category" class="fw-bold border-top">
+                                        <tr t-if="o.group_by_category" class="o_om_total">
                                             <td colspan="4" class="text-end">Subtotal <span t-out="group['name']"/></td>
                                             <t t-set="totals" t-value="group['totals']"/>
                                             <td class="text-end"><span t-out="totals['cost']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>
@@ -132,7 +132,7 @@
                                             <td/>
                                         </tr>
                                     </t>
-                                    <tr class="fw-bold" style="border-top: 2px solid;">
+                                    <tr class="o_om_total">
                                         <td colspan="4" class="text-end">Total</td>
                                         <t t-set="totals" t-value="schedule['total']"/>
                                         <td class="text-end"><span t-out="totals['cost']" t-options="{'widget': 'float', 'precision': currency.decimal_places}"/></td>

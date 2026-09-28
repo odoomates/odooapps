@@ -35,12 +35,17 @@
                 <t t-call="web.internal_layout">
                     <t t-set="forecast" t-value="forecasts[o.id]"/>
                     <t t-set="currency" t-value="forecast['currency']"/>
-                    <div class="page" style="font-size: 10px;">
-                        <div class="d-flex justify-content-between align-items-end mb-3">
-                            <h2 class="mb-0">Cash Forecast</h2>
-                            <div class="text-end">
-                                <div><strong>From:</strong> <span t-field="o.date_from"/>, by <span t-field="o.period_type"/></div>
-                                <div><strong>Currency:</strong> <span t-out="currency.name"/></div>
+                    <div class="page o_om_report" style="font-size: 10px;">
+                        <t t-call="om_account_cash_forecast.report_style"/>
+                        <h2>Cash Forecast</h2>
+                        <div id="informations" class="row mb-4">
+                            <div class="col">
+                                <strong>From:</strong>
+                                <div class="o_om_date"><span t-field="o.date_from"/>, by <span t-field="o.period_type"/></div>
+                            </div>
+                            <div class="col">
+                                <strong>Currency:</strong>
+                                <div t-out="currency.name"/>
                             </div>
                         </div>
                         <table class="table table-sm">
@@ -85,7 +90,7 @@
                                             </tr>
                                         </t>
                                     </t>
-                                    <tr class="fw-bold border-top">
+                                    <tr class="o_om_total">
                                         <td class="ps-3">Total <span t-out="section['name'].lower()"/></td>
                                         <t t-foreach="section['totals']" t-as="amount">
                                             <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
@@ -94,7 +99,7 @@
                                         <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>
                                     </tr>
                                 </t>
-                                <tr class="fw-bold" style="border-top: 2px solid;">
+                                <tr class="o_om_total">
                                     <td>Net cash flow</td>
                                     <t t-foreach="forecast['net']" t-as="amount">
                                         <t t-call="om_account_cash_forecast.report_cash_forecast_amount"/>

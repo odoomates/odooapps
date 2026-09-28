@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <!-- The A4 default is sized for the invoice letterhead: 52mm of margin above the
+         page and the same again of header spacing. This report carries a one-line
+         header, so that reserves a third of the first page for nothing. -->
+    <record id="paperformat_budget_report" model="report.paperformat">
+        <field name="name">A4 - Budget Report</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">22</field>
+        <field name="margin_bottom">16</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+
     <record id="action_report_budget_vs_actual" model="ir.actions.report">
         <field name="name">Budget vs Actual</field>
         <field name="model">account.budget</field>
         <field name="report_type">qweb-pdf</field>
         <field name="report_name">om_account_budget.report_budget_vs_actual</field>
+        <field name="paperformat_id" ref="paperformat_budget_report"/>
         <field name="print_report_name">'Budget vs Actual - %s' % object.name</field>
         <field name="binding_model_id" ref="model_account_budget"/>
         <field name="binding_type">report</field>
@@ -17,13 +35,21 @@
                 <t t-call="web.internal_layout">
                     <t t-set="currency" t-value="budget.currency_id"/>
                     <t t-set="has_committed" t-value="'committed_amount' in budget.line_ids._fields"/>
-                    <div class="page" style="font-size: 11px;">
-                        <div class="d-flex justify-content-between align-items-end mb-3">
-                            <h2 class="mb-0">Budget vs Actual: <span t-field="budget.name"/></h2>
-                            <div class="text-end">
-                                <div><strong>Period:</strong> <span t-field="budget.date_from"/> - <span t-field="budget.date_to"/></div>
-                                <div><strong>Status:</strong> <span t-field="budget.state"/></div>
-                                <div t-if="budget.user_id"><strong>Responsible:</strong> <span t-field="budget.user_id"/></div>
+                    <div class="page o_om_report">
+                        <t t-call="om_account_budget.report_style"/>
+                        <h2>Budget vs Actual: <span t-field="budget.name"/></h2>
+                        <div id="informations" class="row mb-4">
+                            <div class="col">
+                                <strong>Period:</strong>
+                                <div class="o_om_date"><span t-field="budget.date_from"/> - <span t-field="budget.date_to"/></div>
+                            </div>
+                            <div class="col">
+                                <strong>Status:</strong>
+                                <div t-field="budget.state"/>
+                            </div>
+                            <div class="col" t-if="budget.user_id">
+                                <strong>Responsible:</strong>
+                                <div t-field="budget.user_id"/>
                             </div>
                         </div>
                         <t t-foreach="[('revenue', 'Revenues'), ('expense', 'Expenses')]" t-as="section">
@@ -48,7 +74,7 @@
                                             <t t-set="committed" t-value="line.committed_amount if has_committed and section[0] == 'expense' else 0.0"/>
                                             <t t-set="remaining" t-value="line.planned_amount - line.practical_amount - committed"/>
                                             <td><span t-field="line.name"/></td>
-                                            <td><span t-field="line.date_from"/> - <span t-field="line.date_to"/></td>
+                                            <td class="o_om_date"><span t-field="line.date_from"/> - <span t-field="line.date_to"/></td>
                                             <td class="text-end"><span t-field="line.planned_amount"/></td>
                                             <td class="text-end"><span t-field="line.theoretical_amount"/></td>
                                             <td class="text-end"><span t-field="line.practical_amount"/></td>
@@ -65,7 +91,7 @@
                                         <t t-set="planned" t-value="sum(lines.mapped('planned_amount'))"/>
                                         <t t-set="actual" t-value="sum(lines.mapped('practical_amount'))"/>
                                         <t t-set="committed_total" t-value="sum(lines.mapped('committed_amount')) if has_committed and section[0] == 'expense' else 0.0"/>
-                                        <tr class="fw-bold border-top">
+                                        <tr class="o_om_total">
                                             <td colspan="2">Total <t t-out="section[1]"/></td>
                                             <td class="text-end"><span t-out="planned" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
                                             <td class="text-end"><span t-out="sum(lines.mapped('theoretical_amount'))" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
