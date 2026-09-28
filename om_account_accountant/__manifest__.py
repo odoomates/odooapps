@@ -1,8 +1,9 @@
 {
     'name': 'Odoo 20 Accounting Community',
-    'version': '1.1.0',
+    'version': '1.3.0',
     'category': 'Accounting',
-    'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
+    'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
+               'Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Period Closing, Accounting Dashboard, Financial Reports, '
                'Cash Flow Statement, Cash Forecast, Customer Follow up Management, Bank Reconciliation, '
                'Cheque Printing, Automatic Currency Rates, Currency Revaluation, Bank Statement Import',
