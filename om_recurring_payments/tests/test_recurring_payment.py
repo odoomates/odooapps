@@ -106,6 +106,46 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
         self.assertEqual(working.line_ids.state, 'done')
         self.assertTrue(working.line_ids.payment_id)
 
+    def test_failed_payment_warns_the_responsible(self):
+        responsible = new_test_user(self.env, login='recurring_responsible', groups='account.group_account_user')
+        failing = self._create_recurring_payment(date_end='2026-01-01', user_id=responsible.id)
+        failing.action_done()
+        failing.line_ids.journal_id = self.company_data['default_journal_sale']
+        activity_type = self.env.ref('om_recurring_payments.mail_activity_type_recurring_payment_failed')
+        messages = failing.message_ids
+
+        for _run in range(2):
+            with self.assertLogs('odoo.addons.om_recurring_payments.models.recurring_payment', 'WARNING'):
+                self.env['recurring.payment'].action_generate_payment()
+        line = failing.line_ids
+        self.assertTrue(line.error_message)
+        self.assertTrue(failing.has_error)
+        self.assertIn(failing, self.env['recurring.payment'].search([('has_error', '=', True)]))
+        self.assertEqual(len(failing.message_ids - messages), 1, "the same error is told once")
+        activity = failing.activity_ids
+        self.assertEqual((activity.activity_type_id, activity.user_id), (activity_type, responsible))
+
+        line.journal_id = self.bank_journal
+        self.env['recurring.payment'].action_generate_payment()
+        self.assertEqual(line.state, 'done')
+        self.assertFalse(line.error_message)
+        self.assertFalse(failing.has_error)
+        self.assertFalse(failing.activity_ids)
+
+    def test_changes_are_tracked(self):
+        recurring_payment = self._create_recurring_payment().with_context(tracking_disable=False, mail_notrack=False)
+        self.assertEqual(recurring_payment.user_id, self.env.user)
+        # the changes made in the transaction creating a record are not tracked
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        recurring_payment.amount = 250.0
+        self.env.flush_all()
+        self.env.cr.precommit.run()
+        self.env.invalidate_all()
+        tracked = recurring_payment.message_ids.tracking_value_ids
+        self.assertEqual(tracked.field_id.name, 'amount')
+        self.assertEqual((tracked.old_value_float, tracked.new_value_float), (100.0, 250.0))
+
     def test_write_amount_on_several_records(self):
         recurring_payments = self._create_recurring_payment() | self._create_recurring_payment()
         recurring_payments.write({'amount': 50.0})
@@ -125,6 +165,32 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
 
         with self.assertRaises(ValidationError):
             self._create_recurring_payment(date_begin='2026-12-31', date_end='2026-01-01')
+
+    def test_access_rights(self):
+        models = ('account.recurring.template', 'recurring.payment', 'recurring.payment.line')
+        administrator = new_test_user(self.env, login='recurring_admin', groups='account.group_account_manager')
+        for model in models:
+            self.assertTrue(self.env[model].with_user(administrator).has_access('create'), model)
+
+        billing_user = new_test_user(self.env, login='recurring_billing', groups='account.group_account_invoice')
+        for model in models:
+            self.assertFalse(self.env[model].with_user(billing_user).has_access('read'), model)
+
+    def test_deleted_payment_makes_the_line_due_again(self):
+        self.template.journal_state = 'draft'
+        recurring_payment = self._create_recurring_payment(date_end='2026-01-01')
+        recurring_payment.action_done()
+        line = recurring_payment.line_ids
+        line.action_create_payment()
+        self.assertEqual(line.state, 'done')
+
+        line.payment_id.unlink()
+        self.assertEqual(line.state, 'draft')
+        self.assertFalse(line.payment_id)
+
+        self.env['recurring.payment'].action_generate_payment()
+        self.assertEqual(line.state, 'done')
+        self.assertTrue(line.payment_id)
 
     def test_multi_company(self):
         company_2 = self.company_data_2['company']
@@ -168,6 +234,32 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
         self.assertEqual(payment.currency_id, other_currency)
         self.assertEqual(payment.amount, 100.0)
 
+    def test_skip_reset_and_stop(self):
+        recurring_payment = self._create_recurring_payment()
+        recurring_payment.action_done()
+        first, second, third = recurring_payment.line_ids.sorted('date')
+
+        first.action_skip()
+        self.assertEqual(first.state, 'cancel')
+        second.action_create_payment()
+        with self.assertRaises(UserError):
+            second.action_skip()
+
+        first.action_reset()
+        self.assertEqual(first.state, 'draft')
+        first.action_skip()
+
+        recurring_payment.action_stop()
+        self.assertEqual(recurring_payment.state, 'cancel')
+        self.assertEqual((first + second + third).mapped('state'), ['cancel', 'done', 'cancel'])
+        with self.assertRaises(UserError):
+            third.action_reset()
+
+        self.env['recurring.payment'].action_generate_payment()
+        self.assertFalse((first + third).payment_id)
+        with self.assertRaises(ValidationError):
+            recurring_payment.unlink()
+
     def test_payment_created_once(self):
         recurring_payment = self._create_recurring_payment(date_end='2026-01-01')
         recurring_payment.action_done()
@@ -178,3 +270,11 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
         self.env['recurring.payment'].action_generate_payment()
         self.assertEqual(line.payment_id, payment)
         self.assertEqual(self.env['account.payment'].search_count([('memo', '=', recurring_payment.name)]), 1)
+
+    def test_translations_are_loaded(self):
+        self.env['res.lang']._activate_lang('es_MX')
+        recurring_payment = self._create_recurring_payment(date_end='2026-01-01')
+        recurring_payment.action_done()
+        recurring_payment.line_ids.action_create_payment()
+        with self.assertRaisesRegex(UserError, 'Solo se pueden omitir las líneas que aún no se han pagado.'):
+            recurring_payment.line_ids.with_context(lang='es_MX').action_skip()
