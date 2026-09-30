@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 18 Accounting Community',
-    'version': '1.0.5',
+    'version': '1.1.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '
@@ -29,6 +29,7 @@
     'data': [
         'security/group.xml',
         'views/menu.xml',
+        'views/review_menu.xml',
         'views/settings.xml',
         'views/account_group.xml',
         'views/account_tag.xml',

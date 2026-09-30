@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The Review menu of Odoo 19 Community holds a single entry, Control > Journal Items. The suite fills it
+         with what an accountant actually opens when reviewing a period: the journals audit, the entries still to
+         check and the draft entries. -->
+
+    <!-- the search of the journal entries has no To Review filter: it is the one of the invoices -->
+    <record id="view_account_move_filter_to_check" model="ir.ui.view">
+        <field name="name">account.move.search.to.check</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_move_filter"/>
+        <field name="arch" type="xml">
+            <filter name="unposted" position="before">
+                <filter string="To Review" name="to_check" domain="[('checked', '=', False), ('state', '!=', 'draft')]"/>
+            </filter>
+        </field>
+    </record>
+
+    <!-- ============ actions of our own ============ -->
+
+    <record id="action_moves_to_review" model="ir.actions.act_window">
+        <field name="name">Entries to Review</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('move_type', '=', 'entry')]</field>
+        <field name="context">{'search_default_to_check': 1}</field>
+        <!-- the search of the journal entries: the default search view is the one of the invoices -->
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing waiting to be reviewed</p>
+            <p>The posted entries not checked yet appear here until they are marked as checked.</p>
+        </field>
+    </record>
+
+    <record id="action_moves_unposted" model="ir.actions.act_window">
+        <field name="name">Draft Entries</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_unposted': 1}</field>
+        <!-- the search of the journal entries: the default search view is the one of the invoices -->
+        <field name="search_view_id" ref="account.view_account_move_filter"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No draft entry</p>
+            <p>Everything is posted. Draft entries are not in the reports and not in the balances, so a period
+                should not be closed while any are left here.</p>
+        </field>
+    </record>
+
+    <!-- ============ the menu ============ -->
+
+    <!-- Odoo 18 has no Review menu in the account module: the same Review and Control folders, here.
+         The core Journal Entries stay under Accounting, where 18 puts them. -->
+    <menuitem id="menu_review"
+              name="Review"
+              parent="account.menu_finance"
+              groups="account.group_account_readonly"
+              sequence="7"/>
+
+    <menuitem id="menu_review_control"
+              name="Control"
+              parent="menu_review"
+              groups="account.group_account_readonly"
+              sequence="20"/>
+
+    <!-- like the Enterprise layout: the journals audit sits at the top of Review -->
+    <menuitem id="menu_review_journal_audit"
+              name="Journal Audit"
+              action="accounting_pdf_reports.action_account_print_journal_menu"
+              parent="menu_review"
+              groups="account.group_account_readonly"
+              sequence="1"/>
+
+    <!-- Control: the core Journal Items, plus what is still waiting -->
+    <menuitem id="menu_review_moves_to_review"
+              action="action_moves_to_review"
+              parent="menu_review_control"
+              groups="account.group_account_readonly"
+              sequence="10"/>
+
+    <menuitem id="menu_review_moves_unposted"
+              action="action_moves_unposted"
+              parent="menu_review_control"
+              groups="account.group_account_readonly"
+              sequence="12"/>
+
+</odoo>
