@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<!--
+  The user guide of Odoo 18 Accounting for Community Edition.
+
+  This file is the source. Edit it, then rebuild the PDF that ships in the app:
+
+      python3 doc/build_user_guide.py
+
+  The build needs wkhtmltopdf and pypdf, and reads the Lato fonts from the Odoo
+  source tree. Paths are resolved by the build script, not hard-coded here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Odoo 18 Accounting for Community Edition - User Guide</title>
+<style>
+/* wkhtmltopdf 0.12.x runs an old WebKit: no CSS variables, no flexbox, no `gap`.
+   Everything below is written for it, on purpose. */
+@font-face { font-family: 'GuideSans'; font-weight: 400; src: url('LATO_REGULAR'); }
+@font-face { font-family: 'GuideSans'; font-weight: 700; src: url('LATO_BOLD'); }
+@font-face { font-family: 'GuideSans'; font-weight: 900; src: url('LATO_BLACK'); }
+
+html, body {
+    margin: 0; padding: 0;
+    font-family: 'GuideSans', 'Lato', sans-serif;
+    font-size: 11pt; line-height: 1.66; color: #333340;
+    background: #ffffff;
+}
+figure, figcaption { display: block; margin: 0; }
+
+/* ------------------------------------------------------------------ cover */
+.cover {
+    position: relative; overflow: hidden;
+    -webkit-box-sizing: border-box; box-sizing: border-box;
+    height: 297mm; width: 100%; margin: 0; padding: 26mm 20mm 0 20mm;
+    background: #3B1CA0;
+    background: -webkit-linear-gradient(300deg, #1B0A4E 0%, #3B1CA0 48%, #6B4BE8 100%);
+    color: #ffffff; page-break-after: always;
+}
+.cover .ring { position: absolute; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; }
+.cover .ring-1 { width: 520px; height: 520px; top: -110px; right: -120px; }
+.cover .ring-2 { width: 330px; height: 330px; top: 55px; right: 10px; }
+.cover .ring-3 { width: 300px; height: 300px; bottom: 90px; left: -160px; }
+.cover-badges { margin-bottom: 52mm; }
+.cover-badges img {
+    width: 54px; height: auto; background: #fff; border-radius: 7px; padding: 7px 9px;
+    vertical-align: middle; margin-right: 14px;
+}
+.cover-kicker {
+    display: inline-block; vertical-align: middle;
+    border: 1px solid rgba(255,255,255,.45); border-radius: 30px;
+    padding: 7px 18px; font-size: 9pt; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; white-space: nowrap;
+}
+.cover h1 { font-size: 46pt; font-weight: 900; margin: 0; letter-spacing: -1px; line-height: 1.05; }
+.cover h2 { font-size: 20pt; font-weight: 400; margin: 6px 0 0 0; color: #ece8fb; }
+.cover p.lead { margin: 22px 0 0 0; width: 120mm; font-size: 11pt; color: #ddd6f7; }
+.cover-foot {
+    position: absolute; left: 20mm; right: 20mm; bottom: 20mm;
+    border-top: 1px solid rgba(255,255,255,.3); padding-top: 17px; font-size: 9pt;
+}
+.cover-foot div { display: inline-block; vertical-align: top; width: 52mm; }
+.cover-foot strong { display: block; font-weight: 700; color: #ffffff; }
+.cover-foot span { color: #cec6ee; }
+
+/* --------------------------------------------------------------- contents */
+.contents { page-break-after: always; }
+.contents h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 24px 0 6px 0; }
+.contents .lead { color: #8A8A9E; margin: 0 0 28px 0; }
+.toc-part {
+    margin: 20px 0 8px 0; padding-bottom: 7px; border-bottom: 1px solid #E7E3F5;
+}
+.toc-part .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-weight: 700; font-size: 9pt; padding: 2px 7px; margin-right: 12px;
+}
+.toc-part .t { font-weight: 700; font-size: 12.5pt; color: #1E0B57; }
+.toc-part .rule { display: none; }
+.toc-line { padding: 3px 0 3px 40px; }
+.toc-line .n { display: inline-block; width: 34px; color: #5B34D6; font-weight: 700; }
+
+/* ------------------------------------------------------------------ parts */
+.part { page-break-before: always; }
+.part-mark { width: 62px; border-top: 4px solid #5B34D6; margin-bottom: 24px; }
+.part-kicker {
+    font-size: 9pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    color: #8A8A9E; margin: 0 0 2px 0;
+}
+.part h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 0 0 24px 0; letter-spacing: -.5px; }
+
+h2 { font-size: 13pt; font-weight: 700; color: #1E0B57; margin: 26px 0 11px 0; page-break-after: avoid; }
+h2 .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-size: 8.5pt; font-weight: 700; padding: 2px 7px; margin-right: 11px;
+    vertical-align: 2px;
+}
+h3 { font-size: 11pt; font-weight: 700; color: #1E0B57; margin: 18px 0 6px 0; page-break-after: avoid; }
+
+p { margin: 0 0 10px 0; }
+strong { font-weight: 700; color: #22222e; }
+code {
+    font-family: 'DejaVu Sans Mono', monospace; font-size: 8.5pt;
+    background: #F4F1FD; color: #4b3a86; padding: 1px 5px; border-radius: 4px;
+}
+.path { font-weight: 700; color: #1E0B57; }
+
+ul, ol { margin: 0 0 10px 0; padding-left: 20px; }
+li { margin: 0 0 6px 0; }
+ul.plain { list-style: none; padding-left: 4px; }
+ul.plain > li { position: relative; padding-left: 15px; }
+ul.plain > li:before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 5px; height: 5px; border-radius: 50%; background: #5B34D6;
+}
+ul.tick { list-style: none; padding-left: 2px; }
+ul.tick > li { position: relative; padding-left: 19px; margin-bottom: 4px; }
+ul.tick > li:before { content: '\2713'; position: absolute; left: 0; color: #5B34D6; font-weight: 700; }
+.two-col { -webkit-column-count: 2; -webkit-column-gap: 32px; column-count: 2; column-gap: 32px; }
+.two-col li { -webkit-column-break-inside: avoid; }
+
+/* ----------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; margin: 4px 0 15px 0; font-size: 10pt; }
+thead th {
+    background: #5B34D6; color: #ffffff; text-align: left; vertical-align: bottom;
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 8px 12px;
+}
+tbody td { padding: 8px 12px; border-bottom: 1px solid #E7E3F5; vertical-align: top; }
+tbody tr { page-break-inside: avoid; }
+td .sub { display: block; color: #8A8A9E; font-size: 8.5pt; font-family: 'DejaVu Sans Mono', monospace; }
+
+/* --------------------------------------------------------------- callouts */
+.note {
+    border-left: 3px solid #5B34D6; background: #F7F5FE;
+    padding: 12px 16px; margin: 13px 0 15px 0; page-break-inside: avoid;
+}
+.note .label {
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: #5B34D6; margin: 0 0 4px 0;
+}
+.note p:last-child { margin-bottom: 0; }
+.note.warn { border-left-color: #D9534F; background: #FDF3F2; }
+.note.warn .label { color: #C9302C; }
+
+/* ---------------------------------------------------------------- figures */
+figure { margin: 15px 0 19px 0; page-break-inside: avoid; }
+figure img { width: 100%; border: 1px solid #E7E3F5; border-radius: 6px; }
+figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
+</style>
+</head>
+<body>
+
+<!-- ==================================================================== -->
+<div class="cover">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <div class="cover-badges">
+        <img src="img/logo.png" alt="Odoo Mates"/>
+        <span class="cover-kicker">User Guide</span>
+    </div>
+    <h1>Accounting</h1>
+    <h2>for Odoo 18 Community Edition</h2>
+    <p class="lead">Setting the books up, recording the daily work, reconciling the
+        bank, running the reports and closing the period &mdash; with the complete
+        Odoo Mates accounting suite.</p>
+    <div class="cover-foot">
+        <div><strong>Odoo 18</strong><span>Community Edition</span></div>
+        <div><strong>LGPL-3</strong><span>Free and open source</span></div>
+        <div><strong>odoomates@gmail.com</strong><span>Odoo Mates</span></div>
+    </div>
+</div>
+
+<!-- ==================================================================== -->
+<div class="contents">
+    <h1>Contents</h1>
+    <p class="lead">Fifteen parts, from an empty database to a closed period.</p>
+
+    <div class="toc-part"><span class="n">1</span><span class="t">Before you start</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">1.1</span><span>What this app installs</span></div>
+    <div class="toc-line"><span class="n">1.2</span><span>Who can do what</span></div>
+    <div class="toc-line"><span class="n">1.3</span><span>Finding your way around</span></div>
+
+    <div class="toc-part"><span class="n">2</span><span class="t">The settings, one screen at a time</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">2.1</span><span>Do this before the first entry</span></div>
+    <div class="toc-line"><span class="n">2.2</span><span>The fiscal localisation, and the chart it installs</span></div>
+    <div class="toc-line"><span class="n">2.3</span><span>Taxes: the defaults, and how they are rounded</span></div>
+    <div class="toc-line"><span class="n">2.4</span><span>Rounding the total of a document</span></div>
+    <div class="toc-line"><span class="n">2.5</span><span>Anglo-Saxon accounting</span></div>
+    <div class="toc-line"><span class="n">2.6</span><span>Analytic accounting</span></div>
+    <div class="toc-line"><span class="n">2.7</span><span>More than one currency</span></div>
+    <div class="toc-line"><span class="n">2.8</span><span>Where the rates come from</span></div>
+    <div class="toc-line"><span class="n">2.9</span><span>The revaluation accounts</span></div>
+    <div class="toc-line"><span class="n">2.10</span><span>Cheque printing, and its layout</span></div>
+    <div class="toc-line"><span class="n">2.11</span><span>The Gulf states</span></div>
+    <div class="toc-line"><span class="n">2.12</span><span>Fiscal years, and the dates you lock</span></div>
+    <div class="toc-line"><span class="n">2.13</span><span>What this suite adds to the screen</span></div>
+    <div class="toc-line"><span class="n">2.14</span><span>The checklist</span></div>
+
+    <div class="toc-part"><span class="n">3</span><span class="t">Setting the books up</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">3.1</span><span>The order to do it in</span></div>
+    <div class="toc-line"><span class="n">3.2</span><span>Chart of accounts</span></div>
+    <div class="toc-line"><span class="n">3.3</span><span>Journals</span></div>
+    <div class="toc-line"><span class="n">3.4</span><span>Outstanding accounts, and the In Payment state</span></div>
+    <div class="toc-line"><span class="n">3.5</span><span>Fiscal years and periods</span></div>
+
+    <div class="toc-part"><span class="n">4</span><span class="t">Opening balances</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">4.1</span><span>What you need before you start</span></div>
+    <div class="toc-line"><span class="n">4.2</span><span>Posting the opening entry</span></div>
+    <div class="toc-line"><span class="n">4.3</span><span>Opening the bank</span></div>
+    <div class="toc-line"><span class="n">4.4</span><span>Opening the assets</span></div>
+
+    <div class="toc-part"><span class="n">5</span><span class="t">The daily work</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">5.1</span><span>Customer invoices</span></div>
+    <div class="toc-line"><span class="n">5.2</span><span>Vendor bills</span></div>
+    <div class="toc-line"><span class="n">5.3</span><span>Journal entries by hand</span></div>
+    <div class="toc-line"><span class="n">5.4</span><span>Payments</span></div>
+    <div class="toc-line"><span class="n">5.5</span><span>Post-dated cheques</span></div>
+    <div class="toc-line"><span class="n">5.6</span><span>Recurring payments</span></div>
+    <div class="toc-line"><span class="n">5.7</span><span>Printing cheques</span></div>
+
+    <div class="toc-part"><span class="n">6</span><span class="t">Bank and cash</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">6.1</span><span>Importing the statement</span></div>
+    <div class="toc-line"><span class="n">6.2</span><span>Building a file map for your bank</span></div>
+    <div class="toc-line"><span class="n">6.3</span><span>Reconciling the bank</span></div>
+    <div class="toc-line"><span class="n">6.4</span><span>Match Journal Items</span></div>
+    <div class="toc-line"><span class="n">6.5</span><span>Cash</span></div>
+
+    <div class="toc-part"><span class="n">7</span><span class="t">Assets</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">7.1</span><span>Asset categories</span></div>
+    <div class="toc-line"><span class="n">7.2</span><span>Creating an asset</span></div>
+    <div class="toc-line"><span class="n">7.3</span><span>Posting depreciation</span></div>
+    <div class="toc-line"><span class="n">7.4</span><span>Assets that already existed</span></div>
+    <div class="toc-line"><span class="n">7.5</span><span>Asset reports</span></div>
+
+    <div class="toc-part"><span class="n">8</span><span class="t">Budgets</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">8.1</span><span>Budgetary positions</span></div>
+    <div class="toc-line"><span class="n">8.2</span><span>Creating a budget</span></div>
+    <div class="toc-line"><span class="n">8.3</span><span>Following a budget</span></div>
+
+    <div class="toc-part"><span class="n">9</span><span class="t">Getting paid: follow-ups</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">9.1</span><span>Follow-up plans</span></div>
+    <div class="toc-line"><span class="n">9.2</span><span>Working the list</span></div>
+    <div class="toc-line"><span class="n">9.3</span><span>Customer statements</span></div>
+
+    <div class="toc-part"><span class="n">10</span><span class="t">Cash forecast</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">10.1</span><span>Expected items</span></div>
+    <div class="toc-line"><span class="n">10.2</span><span>Running the forecast</span></div>
+
+    <div class="toc-part"><span class="n">11</span><span class="t">Currencies</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">11.1</span><span>Multi-currency basics</span></div>
+    <div class="toc-line"><span class="n">11.2</span><span>Rates that update themselves</span></div>
+    <div class="toc-line"><span class="n">11.3</span><span>Revaluing at the closing rate</span></div>
+
+    <div class="toc-part"><span class="n">12</span><span class="t">Closing the books</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">12.1</span><span>Lock dates</span></div>
+    <div class="toc-line"><span class="n">12.2</span><span>Closing a period</span></div>
+    <div class="toc-line"><span class="n">12.3</span><span>Closing a year</span></div>
+
+    <div class="toc-part"><span class="n">13</span><span class="t">The reports</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">13.1</span><span>Where they are</span></div>
+    <div class="toc-line"><span class="n">13.2</span><span>Statement reports</span></div>
+    <div class="toc-line"><span class="n">13.3</span><span>The annual report</span></div>
+    <div class="toc-line"><span class="n">13.4</span><span>Partner and audit reports</span></div>
+    <div class="toc-line"><span class="n">13.5</span><span>The bank reconciliation statement</span></div>
+    <div class="toc-line"><span class="n">13.6</span><span>Daily reports</span></div>
+    <div class="toc-line"><span class="n">13.7</span><span>Printing one journal entry</span></div>
+    <div class="toc-line"><span class="n">13.8</span><span>Dashboards</span></div>
+
+    <div class="toc-part"><span class="n">14</span><span class="t">Routines</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">14.1</span><span>Every day</span></div>
+    <div class="toc-line"><span class="n">14.2</span><span>Every month</span></div>
+    <div class="toc-line"><span class="n">14.3</span><span>Every year</span></div>
+
+    <div class="toc-part"><span class="n">15</span><span class="t">When something looks wrong</span><span class="rule"></span></div>
+    <div class="toc-line"><span class="n">15.1</span><span>The usual suspects</span></div>
+    <div class="toc-line"><span class="n">15.2</span><span>Getting help</span></div>
+</div>
+
+<!-- ============================================================ PART 1 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 1</p>
+    <h1>Before you start</h1>
+
+    <h2><span class="n">1.1</span> What this app installs</h2>
+    <p>Installing <strong>Odoo 18 Accounting Community</strong> turns the Invoicing
+        application of Odoo 18 Community Edition into a full accounting application. It
+        installs seventeen modules and arranges their menus, groups and dashboards so that
+        they work as one:</p>
+    <ul class="plain two-col">
+        <li>Financial reports (Balance Sheet, Profit and Loss, Cash Flow Statement, the
+            annual report, ledgers, aged balances, tax report)</li>
+        <li>Day Book, Cash Book and Bank Book</li>
+        <li>Asset management with depreciation boards</li>
+        <li>Budgets, with actual and theoretical amounts</li>
+        <li>Bank reconciliation, the reconciliation statement and Match Journal Items</li>
+        <li>Bank statement import (CAMT, MT940, OFX, QIF, CSV, Excel)</li>
+        <li>Customer follow-ups and statements</li>
+        <li>Cash forecast</li>
+        <li>Cheque printing</li>
+        <li>Automatic currency rates and currency revaluation</li>
+        <li>Fiscal years, period closing and lock dates</li>
+        <li>Recurring payments</li>
+        <li>Eight spreadsheet dashboards</li>
+    </ul>
+
+    <h2><span class="n">1.2</span> Who can do what</h2>
+    <p>Accounting in Odoo is driven by two groups. Set them on each user under
+        <span class="path">Settings &rsaquo; Users &amp; Companies &rsaquo; Users</span>, in the
+        <strong>Accounting</strong> section.</p>
+    <table>
+        <thead><tr><th style="width:34%">Group</th><th>What it allows</th></tr></thead>
+        <tbody>
+            <tr>
+                <td><strong>Accountant</strong><span class="sub">group_account_user</span></td>
+                <td>Daily work: invoices, bills, payments, journal entries, reconciliation,
+                    the reports, assets and budgets.</td>
+            </tr>
+            <tr>
+                <td><strong>Accounting Manager</strong><span class="sub">group_account_manager</span></td>
+                <td>Everything above, plus the configuration: journals, chart of accounts,
+                    fiscal years, lock dates, period closing, currency revaluation, and the
+                    right to post an invoice over the credit limit of the customer.</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>Give the bookkeeper <strong>Accountant</strong> and keep <strong>Accounting
+            Manager</strong> for whoever owns the period close. Several safeguards in this
+            suite (lock dates, over-budget blocking, revaluation) exist precisely so that the
+            two roles differ.</p>
+    </div>
+
+    <h2><span class="n">1.3</span> Finding your way around</h2>
+    <p>Everything lives in the Accounting application. Its top menus are:</p>
+    <table>
+        <thead><tr><th style="width:28%">Menu</th><th>What is in it</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Dashboard</strong></td><td>The journal cards: bank, cash, sales, purchases, with what is left to reconcile.</td></tr>
+            <tr><td><strong>Customers</strong></td><td>Invoices, credit notes, payments, customers, products.</td></tr>
+            <tr><td><strong>Vendors</strong></td><td>Bills, refunds, payments, vendors.</td></tr>
+            <tr><td><strong>Accounting</strong></td><td>Journal entries, the journals, bank and cash statements, reconciliation, ledgers, assets, budgets, recurring payments and cash forecast items.</td></tr>
+            <tr><td><strong>Review</strong></td><td>What needs attention before closing.</td></tr>
+            <tr><td><strong>Follow-Ups</strong></td><td>The customers to chase, their plans and the analysis.</td></tr>
+            <tr><td><strong>Reporting</strong></td><td>Statement reports, partner reports, tax, audit reports, daily reports, management.</td></tr>
+            <tr><td><strong>Configuration</strong></td><td>Settings, journals, chart of accounts, fiscal years, closing, cheque formats, follow-up plans, statement file maps.</td></tr>
+        </tbody>
+    </table>
+    <figure>
+        <img src="img/accounting-menu.jpg" alt="The Accounting menu"/>
+        <figcaption>The Accounting menu, with the transactions, the journals, the
+            reconciliation screens and the ledgers.</figcaption>
+    </figure>
+</div>
+
+<!-- ============================================================ PART 2 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 2</p>
+    <h1>The settings, one screen at a time</h1>
+
+    <h2><span class="n">2.1</span> Do this before the first entry</h2>
+    <p>Almost everything on <span class="path">Configuration &rsaquo; Settings</span> can be
+        changed later. A few things cannot, or cost a day of corrections if you change them
+        once entries exist. Work down this part before you post anything, tick what applies
+        to you in section 2.14, and leave the rest alone &mdash; a setting you do not need is
+        a feature you do not have to understand.</p>
+    <div class="note warn">
+        <p class="label">Watch out</p>
+        <p>The three that are hard to undo: the <strong>fiscal localisation</strong> (it
+            cannot be changed once a journal entry is posted), <strong>Anglo-Saxon
+            accounting</strong>, and the <strong>currency of the company</strong>. Decide
+            those first.</p>
+    </div>
+
+    <h2><span class="n">2.2</span> The fiscal localisation, and the chart it installs</h2>
+    <p><span class="path">Configuration &rsaquo; Settings &rsaquo; Fiscal Localization</span>.
+        The package is your country's accounting kit: a chart of accounts, its taxes, the
+        default journals, the fiscal positions and the tax report of that country. Odoo
+        Community ships one for most countries, and installing it is the single biggest
+        saving of the whole setup.</p>
+    <ol>
+        <li>Set the <strong>country of the company</strong> first, under
+            <span class="path">Settings &rsaquo; Users &amp; Companies &rsaquo; Companies</span>.
+            The list of packages follows it.</li>
+        <li>Choose the <strong>Package</strong> and save. Odoo installs the localisation
+            module and loads the accounts, the taxes and the journals.</li>
+        <li>If no package fits, take the generic chart and build on it. Do not start from an
+            empty chart unless you enjoy typing account types.</li>
+    </ol>
+    <div class="note warn">
+        <p class="label">Watch out</p>
+        <p>The package can only be selected while <strong>no journal entry has been
+            posted</strong>. On a database that has been used, the field is closed &mdash;
+            changing the chart then means a new database or a manual chart. This is the one
+            setting to get right on day one.</p>
+    </div>
+    <p>What to do with the chart once it is installed is section 3.2.</p>
+
+    <h2><span class="n">2.3</span> Taxes: the defaults, and how they are rounded</h2>
+    <p><span class="path">Configuration &rsaquo; Settings &rsaquo; Taxes</span>.</p>
+    <table>
+        <thead><tr><th style="width:34%">Setting</th><th>What to do with it</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Default Sale Tax</strong><br/><strong>Default Purchase Tax</strong></td>
+                <td>The tax put on a new product, and on an invoice line that has no product.
+                    The localisation sets these; change them only if your standard rate is not
+                    the one it chose. A product with its own taxes ignores them.</td></tr>
+            <tr><td><strong>Default Sales Price Include</strong></td>
+                <td>Whether the prices you type already include the tax. Retail and most of the
+                    Gulf work tax-included; business-to-business usually does not. It decides
+                    how every price on a document is read, so set it before you load products.</td></tr>
+            <tr><td><strong>Rounding Method</strong></td>
+                <td><em>Round per Tax</em> adds the lines up first and rounds the tax once, on
+                    the total. <em>Round per Line</em> rounds the tax of each line and adds the
+                    rounded amounts. See below.</td></tr>
+            <tr><td><strong>Cash Basis</strong></td>
+                <td>Declare the tax when the invoice is paid rather than when it is issued.
+                    Turn it on only if your tax office works that way, and give it its own
+                    journal and base account &mdash; it posts a second set of tax entries.</td></tr>
+            <tr><td><strong>Rounding of Tax Return</strong>, <strong>periodicity</strong></td>
+                <td>How the tax report is rounded and how often you file. Set them with your
+                    tax return, not before.</td></tr>
+        </tbody>
+    </table>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p><strong>The rounding method is not a matter of taste.</strong> On a hundred lines of
+            0.15 at 5&nbsp;%, rounding per line and rounding per tax differ by a few cents, and
+            the difference lands in the tax account. Most tax administrations tell you which
+            one they expect; if yours does not, keep Odoo's default &mdash; <em>Round per
+            Tax</em> &mdash; and keep it for good. Changing it later makes old and new
+            documents disagree.</p>
+    </div>
+
+    <h2><span class="n">2.4</span> Rounding the total of a document</h2>
+    <p>This is a different thing from the tax rounding above: it rounds the <em>total</em> of
+        the invoice, for countries whose smallest coin is bigger than a cent.</p>
+    <ol>
+        <li>Turn on <strong>Total Rounding</strong> in <span class="path">Configuration &rsaquo;
+            Settings &rsaquo; Taxes</span>, and set the profit and loss accounts the rounding
+            difference is posted to.</li>
+        <li>Open <span class="path">Configuration &rsaquo; Accounting &rsaquo; Cash Roundings</span> and create a
+            method: the <strong>Precision</strong> (0.05 for a five-cent coin, 100 for a
+            currency with no small change), the <strong>Method</strong> &mdash; Up, Down or
+            Nearest &mdash; and the <strong>Strategy</strong>: add a rounding line to the
+            invoice, or modify the tax amount.</li>
+        <li>Put the method on the invoices that need it, or on the customer.</li>
+    </ol>
+    <p>Leave the whole thing off if your currency rounds to the cent, which is most of them.</p>
+
+    <h2><span class="n">2.5</span> Anglo-Saxon accounting</h2>
+    <p><span class="path">Configuration &rsaquo; Settings &rsaquo; Stock Valuation</span>, on a
+        database that holds stock.</p>
+    <p>With Anglo-Saxon accounting on, the cost of a good is recorded as an expense when it is
+        <strong>invoiced to the customer</strong>, against a stock interim account, so that the
+        cost sits in the same period as the revenue it earned. With it off &mdash; Continental
+        accounting &mdash; the cost is recorded when the goods are <strong>received</strong>.</p>
+    <p>Which one you use is decided by your accounting tradition, not by preference: the
+        English-speaking world and most international groups use Anglo-Saxon, much of
+        continental Europe does not.</p>
+    <div class="note warn">
+        <p class="label">Watch out</p>
+        <p>Change this only on an empty database. Switching it once stock has moved leaves the
+            interim accounts holding balances that belong to the other method, and they have to
+            be cleared by hand.</p>
+    </div>
+
+    <h2><span class="n">2.6</span> Analytic accounting</h2>
+    <p><span class="path">Configuration &rsaquo; Settings &rsaquo; Analytics</span>. Analytic
+        accounting is the second dimension of your books: the same expense is posted once to
+        an account for the financial statements, and once to a project, a department, a branch
+        or a vehicle for management.</p>
+    <p>Turn it on if you need to answer &ldquo;what did this cost us?&rdquo; about something
+        that is not a general ledger account. Then create the plans and the analytic accounts
+        under <span class="path">Configuration &rsaquo; Analytic Accounting &rsaquo; Analytic Accounts</span>, and fill the
+        <strong>Analytic Distribution</strong> column on invoice lines, journal entries,
+        recurring templates, budget lines and reconciliation counterparts.</p>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>Leave it off and the reports drop the column rather than printing an empty stripe:
+            the analytic column of the General Ledger and of the journal entry print, and the
+            analytic filters of the report wizards, appear only when the feature is on. Budget
+            lines can still be measured by budgetary position without it (section 8.1).</p>
+    </div>
+
+    <h2><span class="n">2.7</span> More than one currency</h2>
+    <p><span class="path">Configuration &rsaquo; Settings &rsaquo; Currencies</span>.</p>
+    <ol>
+        <li>Check the <strong>currency of the company</strong> first. It is the currency your
+            books are kept in and every report is printed in, and changing it once entries
+            exist does not re-convert them.</li>
+        <li>Turn on <strong>Multi-Currencies</strong>, then activate the currencies you trade
+            in under <span class="path">Configuration &rsaquo; Accounting &rsaquo; Currencies</span>. A currency
+            that is not active cannot be chosen anywhere.</li>
+        <li>Set the <strong>Exchange Gain or Loss Journal</strong> and the gain and loss
+            accounts. This is what Odoo posts the difference to when an invoice is paid at a
+            rate other than the one it was issued at, and it will fail at the worst moment if
+            it is empty.</li>
+    </ol>
+    <p>How to work with foreign currency documents is part 11.</p>
+
+    <h2><span class="n">2.8</span> Where the rates come from</h2>
+    <p>A rate typed by hand once a month is a rate that is wrong for twenty-nine days. This
+        suite fetches them for you, from <span class="path">Configuration &rsaquo; Settings
+        &rsaquo; Automatic Currency Rates</span>.</p>
+    <table>
+        <thead><tr><th style="width:30%">Source</th><th>What you need</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Frankfurter</strong><br/><strong>European Central Bank</strong></td>
+                <td>Nothing. About thirty major currencies, published on working days. Start here.</td></tr>
+            <tr><td><strong>Open Exchange Rates</strong></td>
+                <td>An App ID from their site. Every currency, including the ones the banks do not quote.</td></tr>
+            <tr><td><strong>ExchangeRate-API</strong></td>
+                <td>A key. A good second source.</td></tr>
+        </tbody>
+    </table>
+    <p>Set how often &mdash; manually, daily, weekly or monthly &mdash; the currencies to
+        update, and a <strong>Maximum Change</strong> so a source having a bad day is reported
+        instead of saved. Add a <strong>backup source</strong> for the currencies the main one
+        does not quote. The detail of all of this is section 11.2.</p>
+
+    <h2><span class="n">2.9</span> The revaluation accounts</h2>
+    <p>What you are owed in a foreign currency is worth something different at the end of the
+        period than it was when you invoiced it. Revaluation books that difference, and it
+        needs three settings filled in once, in the <strong>Currency Revaluation</strong>
+        block:</p>
+    <ul class="plain">
+        <li>The <strong>journal</strong> the adjustment is posted in &mdash; the miscellaneous
+            one is the usual choice.</li>
+        <li>The <strong>unrealized gain</strong> and <strong>unrealized loss</strong> accounts.
+            Unrealized, because the money has not moved yet: keep them apart from the realized
+            exchange accounts of section 2.7.</li>
+        <li>Whether the entry is <strong>reversed</strong> at the start of the next period.
+            Leave it on unless your accountant asks otherwise.</li>
+    </ul>
+    <p>Running it is section 11.3.</p>
+    <figure>
+        <img src="img/currency-rates-settings.jpg" alt="Currency settings"/>
+        <figcaption>The automatic rates and the revaluation accounts, in the accounting
+            settings.</figcaption>
+    </figure>
+
+    <h2><span class="n">2.10</span> Cheque printing, and its layout</h2>
+    <p>Two screens, and people miss the first one. <span class="path">Configuration &rsaquo;
+        Settings &rsaquo; Checks</span> holds how a cheque is printed:</p>
+    <table>
+        <thead><tr><th style="width:34%">Setting</th><th>What it does</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Check Layout</strong></td>
+                <td>Where the cheque sits on the page: top, middle or bottom of an A4 or Letter
+                    sheet. Match it to the stationery your bank gives you.</td></tr>
+            <tr><td><strong>Top, Left and Right Margin</strong></td>
+                <td>The nudge in millimetres that makes the print land inside the boxes. Print
+                    one on plain paper and hold it against a real cheque.</td></tr>
+            <tr><td><strong>Print Date Label</strong></td>
+                <td>Off when the word <em>Date</em> is already printed on your cheques.</td></tr>
+            <tr><td><strong>Multi-Pages Check Stub</strong></td>
+                <td>On when a payment settles more invoices than fit on one stub.</td></tr>
+        </tbody>
+    </table>
+    <p>The second screen is <span class="path">Configuration &rsaquo; Invoicing &rsaquo; Cheque
+        Formats</span>, where this suite lets you position every printed field to the
+        millimetre and watch a live preview &mdash; the Gulf, UK and Irish, Australian and New
+        Zealand leaves are there, and you can build your own. Set the finished format on the
+        bank journal, under <strong>Cheque Format</strong>. That is section 5.7.</p>
+
+    <h2><span class="n">2.11</span> The Gulf states</h2>
+    <p>Set the company's country to Bahrain, Kuwait, Oman, Qatar, Saudi Arabia or the United
+        Arab Emirates and pick that country's fiscal localisation (section 2.2). You get its
+        chart of accounts, its VAT rates &mdash; 5&nbsp;% in most of the six, 15&nbsp;% in
+        Saudi Arabia &mdash; and its tax report.</p>
+    <p>One setting appears only for those six, in <span class="path">Configuration &rsaquo;
+        Settings &rsaquo; Invoicing</span>:</p>
+    <ul class="plain">
+        <li><strong>Gulf Cooperation Council Format</strong> &mdash; prints invoices, credit
+            notes, debit notes, vendor bills and refunds in Arabic <em>and</em> English, side
+            by side, which is what the tax authorities of the region require.</li>
+    </ul>
+    <p>Two more things worth setting in the region: the company's <strong>VAT number</strong>
+        on the company record, so it prints on every document, and a cheque format from the
+        Gulf leaves (section 2.10) &mdash; cheques are still ordinary practice there.</p>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>The Arabic invoice needs the Arabic language installed:
+            <span class="path">Settings &rsaquo; Translations &rsaquo; Languages</span>. Install
+            it before you turn the dual language format on, or the second column prints in
+            English twice.</p>
+    </div>
+
+    <h2><span class="n">2.12</span> Fiscal years, and the dates you lock</h2>
+    <p>Turn on <strong>Fiscal Years</strong> in the settings if your year does not run from
+        January to December, or if you want to close month by month. Then set the last day of
+        the financial year, and create the years and their periods as in section 3.5.</p>
+    <p>The <strong>lock dates</strong> live in the same area and are the strongest control in
+        the suite; they are worth a section of their own, 12.1. Do not set them now &mdash; set
+        them the first time you close a period.</p>
+
+    <h2><span class="n">2.13</span> What this suite adds to the screen</h2>
+    <p>Beyond the settings Odoo ships, these appear once this app is installed:</p>
+    <table>
+        <thead><tr><th style="width:34%">Option</th><th>What it does</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Reconcile New Transactions Automatically</strong></td>
+                <td>Lets the reconciliation models work on imported transactions without being
+                    asked. Section 6.3.</td></tr>
+            <tr><td><strong>Automatic Currency Rates</strong></td>
+                <td>The source, the frequency and the currencies. Sections 2.8 and 11.2.</td></tr>
+            <tr><td><strong>Currency Revaluation</strong></td>
+                <td>The journal and the unrealized gain and loss accounts. Sections 2.9 and 11.3.</td></tr>
+            <tr><td><strong>Refuse to post an invoice going over the limit</strong></td>
+                <td>Under the customer credit limit: a customer invoice that goes over the limit of the
+                    customer is refused, except for the accounting managers, and the override is logged.</td></tr>
+            <tr><td><strong>Enhanced Financial Reports</strong></td>
+                <td>Preview the financial reports on screen instead of downloading them.</td></tr>
+        </tbody>
+    </table>
+    <h2><span class="n">2.14</span> The checklist</h2>
+    <p>Walk down this once. Everything marked <em>always</em> has to be right before the first
+        entry; the rest depends on how you work.</p>
+    <table>
+        <thead><tr><th style="width:30%">Setting</th><th style="width:12%">When</th><th>Where</th></tr></thead>
+        <tbody>
+            <tr><td>Company: country, currency, VAT number, address</td><td>Always</td><td>Settings &rsaquo; Users &amp; Companies &rsaquo; Companies</td></tr>
+            <tr><td>Fiscal localisation package</td><td>Always</td><td>Settings &rsaquo; Fiscal Localization</td></tr>
+            <tr><td>Chart of accounts: types and Allow Reconciliation</td><td>Always</td><td>Configuration &rsaquo; Chart of Accounts</td></tr>
+            <tr><td>Journals, one per bank account</td><td>Always</td><td>Configuration &rsaquo; Accounting &rsaquo; Journals</td></tr>
+            <tr><td>Outstanding accounts on every payment method</td><td>Always</td><td>The journal, Incoming and Outgoing Payments tabs</td></tr>
+            <tr><td>Default sale and purchase tax, prices tax-included or not</td><td>Always</td><td>Settings &rsaquo; Taxes</td></tr>
+            <tr><td>Tax rounding method</td><td>Always</td><td>Settings &rsaquo; Taxes</td></tr>
+            <tr><td>Exchange gain and loss journal and accounts</td><td>Always</td><td>Settings &rsaquo; Currencies</td></tr>
+            <tr><td>Cash basis taxes</td><td>If you file that way</td><td>Settings &rsaquo; Taxes</td></tr>
+            <tr><td>Total rounding, and a cash rounding method</td><td>If your coins are big</td><td>Settings &rsaquo; Taxes, Configuration &rsaquo; Accounting &rsaquo; Cash Roundings</td></tr>
+            <tr><td>Anglo-Saxon accounting</td><td>If you hold stock</td><td>Settings &rsaquo; Stock Valuation</td></tr>
+            <tr><td>Analytic accounting</td><td>If you cost projects</td><td>Settings &rsaquo; Analytics</td></tr>
+            <tr><td>Multi-currencies, and the currencies activated</td><td>If you trade abroad</td><td>Settings &rsaquo; Currencies</td></tr>
+            <tr><td>Automatic rates: source, frequency, maximum change</td><td>If you trade abroad</td><td>Settings &rsaquo; Automatic Currency Rates</td></tr>
+            <tr><td>Revaluation journal and unrealized accounts</td><td>If you trade abroad</td><td>Settings &rsaquo; Currency Revaluation</td></tr>
+            <tr><td>Cheque layout and margins, then a cheque format</td><td>If you pay by cheque</td><td>Settings &rsaquo; Checks, Configuration &rsaquo; Cheque Formats</td></tr>
+            <tr><td>Gulf Cooperation Council format, Arabic installed</td><td>In the Gulf</td><td>Settings &rsaquo; Invoicing</td></tr>
+            <tr><td>Fiscal years and periods</td><td>If your year is not the calendar</td><td>Settings, then Configuration &rsaquo; Fiscal Years</td></tr>
+            <tr><td>Automatic reconciliation</td><td>If you import statements</td><td>Settings &rsaquo; Accounting</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- ============================================================ PART 3 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 3</p>
+    <h1>Setting the books up</h1>
+
+    <h2><span class="n">3.1</span> The order to do it in</h2>
+    <p>Work through this once, in this order. Each step depends on the one before it.</p>
+    <ol>
+        <li><strong>The settings</strong> &mdash; part 2, and the fiscal localisation first of all.</li>
+        <li><strong>Chart of accounts</strong> &mdash; the accounts you will post to.</li>
+        <li><strong>Journals</strong> &mdash; sales, purchase, bank, cash, miscellaneous.</li>
+        <li><strong>Outstanding accounts</strong> &mdash; on every payment method of every bank and cash journal.</li>
+        <li><strong>Taxes</strong> &mdash; the rates you charge and pay.</li>
+        <li><strong>Fiscal years and periods</strong> &mdash; the calendar your books close on.</li>
+        <li><strong>Opening balances</strong> &mdash; what you owned and owed on day one.</li>
+    </ol>
+
+    <h2><span class="n">3.2</span> Chart of accounts</h2>
+    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; Chart of Accounts</span>.</p>
+    <p>Odoo installs a chart for your country when you pick the fiscal localisation in the
+        settings (section 2.2). Do that first, then adjust it &mdash; it is far less work than
+        building a chart by hand.</p>
+    <ol>
+        <li>Go through the accounts and set the <strong>Type</strong> correctly. The type, not
+            the code, is what drives the reports: a Balance Sheet is built from the receivable,
+            payable, bank, fixed asset, current asset, current liability and equity types, and a
+            Profit and Loss from the income and expense types.</li>
+        <li>Mark the accounts that must be reconciled &mdash; receivable, payable, and any
+            suspense or transit account &mdash; with <strong>Allow Reconciliation</strong>.
+            Without it, those accounts will not appear in Match Journal Items.</li>
+        <li>Deprecate rather than delete the accounts you will not use: an account with entries
+            cannot be deleted.</li>
+        <li>Keep the codes unique, and keep them in the ranges your localisation uses. The code
+            is what an auditor reads first.</li>
+    </ol>
+    <div class="note warn">
+        <p class="label">Watch out</p>
+        <p><strong>Account types matter more than you think.</strong> Every report in this
+            suite &mdash; and every dashboard &mdash; is computed from account types so that it
+            works with any chart of accounts. An expense account typed as a current asset will
+            quietly disappear from the Profit and Loss.</p>
+    </div>
+
+    <h2><span class="n">3.3</span> Journals</h2>
+    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; Journals</span>. A journal groups entries of
+        one kind and gives them their numbering.</p>
+    <table>
+        <thead><tr><th style="width:18%">Type</th><th style="width:44%">Use it for</th><th>Set on it</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Sales</strong></td><td>Customer invoices and credit notes.</td><td>Default income account, sequence prefix.</td></tr>
+            <tr><td><strong>Purchase</strong></td><td>Vendor bills and refunds.</td><td>Default expense account, sequence prefix.</td></tr>
+            <tr><td><strong>Bank</strong></td><td>One per bank account.</td><td>Account number, default account, suspense account, cheque format, statement file map.</td></tr>
+            <tr><td><strong>Cash</strong></td><td>The till, petty cash.</td><td>Default account, suspense account.</td></tr>
+            <tr><td><strong>Miscellaneous</strong></td><td>Manual entries, payroll, depreciation, revaluation, opening balance.</td><td>Nothing in particular; keep one general journal for adjustments.</td></tr>
+        </tbody>
+    </table>
+    <ol>
+        <li>Create one bank journal per real bank account and write the account number on it.
+            The statement import uses that number to find the right journal by itself.</li>
+        <li>Check the suspense account of each bank and cash journal. Reconciliation puts
+            whatever is not yet matched there, so it should be an account you can see and
+            empty.</li>
+        <li>Give each journal a short, distinctive code: it is what appears in the Day Book and
+            the ledgers.</li>
+    </ol>
+
+    <h2><span class="n">3.4</span> Outstanding accounts, and the In Payment state</h2>
+    <p>Every bank and cash journal carries two tabs, <strong>Incoming Payments</strong> and
+        <strong>Outgoing Payments</strong>. Each holds a payment method with an
+        <strong>Outstanding Account</strong>, and that one setting decides whether an invoice
+        becomes Paid when you register the payment, or waits in In Payment until the bank
+        confirms it.</p>
+    <table>
+        <thead><tr><th style="width:24%">How you work</th><th style="width:28%">Set the outstanding account to</th><th>What happens</th></tr></thead>
+        <tbody>
+            <tr>
+                <td>You import and reconcile bank statements</td>
+                <td>A separate <strong>Outstanding Receipts</strong> and <strong>Outstanding Payments</strong> account.</td>
+                <td>Registering a payment puts the invoice <em>In Payment</em>; reconciling the
+                    bank transaction with it moves the invoice to <em>Paid</em>. The bank account
+                    in Odoo only ever shows what the bank has confirmed.</td>
+            </tr>
+            <tr>
+                <td>You do not reconcile statements</td>
+                <td>The account of the journal itself &mdash; the bank account on the bank journal, the cash account on the cash journal.</td>
+                <td>The payment lands directly on the bank or cash account and the invoice goes
+                    straight to <em>Paid</em>. Nothing waits in an intermediate account, and there
+                    is no In Payment step.</td>
+            </tr>
+        </tbody>
+    </table>
+    <ol>
+        <li>Open <span class="path">Configuration &rsaquo; Accounting &rsaquo; Journals</span> and the bank journal.</li>
+        <li>On the <strong>Incoming Payments</strong> tab, set the Outstanding Account of each payment method.</li>
+        <li>Do the same on the <strong>Outgoing Payments</strong> tab.</li>
+        <li>Repeat on the cash journal, using the cash account.</li>
+    </ol>
+    <div class="note warn">
+        <p class="label">Watch out</p>
+        <p><strong>Never leave the outstanding account empty.</strong> A payment registered on
+            a journal whose payment method has no outstanding account is recorded and settles
+            the invoice, but writes no journal entry at all: nothing reaches the books, and
+            nothing appears in the ledgers or the open items. Whichever of the two setups you
+            choose, the account must be filled in.</p>
+    </div>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>The first setup is the safer one, and it is why the In Payment state exists: it
+            separates the money you have recorded from the money the bank has confirmed. Take
+            the second only when you genuinely do not reconcile &mdash; a cash till that is
+            counted rather than reconciled is the usual case. The Bank Reconciliation Statement
+            (section 13.5) is the report that explains the gap between the two.</p>
+    </div>
+
+    <h2><span class="n">3.5</span> Fiscal years and periods</h2>
+    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; Fiscal Years</span>.</p>
+    <ol>
+        <li>Create the fiscal year with its start and end date. Most companies use the calendar
+            year; if yours ends in March or June, set it here and every report that offers
+            &ldquo;this financial year&rdquo; follows it.</li>
+        <li>Generate the periods &mdash; usually monthly. Periods are what you close one at a
+            time during the year.</li>
+        <li>Leave the year open until everything is posted and reconciled; closing it is
+            section 12.3.</li>
+    </ol>
+    <figure>
+        <img src="img/fiscal-year.jpg" alt="Fiscal year"/>
+        <figcaption>A fiscal year and the periods generated inside it.</figcaption>
+    </figure>
+</div>
+
+<!-- ============================================================ PART 4 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 4</p>
+    <h1>Opening balances</h1>
+
+    <h2><span class="n">4.1</span> What you need before you start</h2>
+    <p>Opening balances are how the books you kept before Odoo become the books you keep in
+        Odoo. Get them from your previous system or your accountant, dated the day before your
+        first day in Odoo.</p>
+    <ul class="plain">
+        <li>A trial balance at that date: every account with its debit or credit balance.</li>
+        <li>The list of unpaid customer invoices, one line per invoice.</li>
+        <li>The list of unpaid vendor bills, one line per bill.</li>
+        <li>The bank and cash balances, and the statement number you stopped at.</li>
+        <li>The assets still being depreciated, with their purchase value and depreciation already posted.</li>
+    </ul>
+
+    <h2><span class="n">4.2</span> Posting the opening entry</h2>
+    <ol>
+        <li>Create a dedicated <strong>Opening Balance</strong> account of type Equity, or use
+            the one your chart provides.</li>
+        <li>Go to <span class="path">Accounting &rsaquo; Transactions &rsaquo; Journal Entries</span>, create an entry
+            in the Miscellaneous journal dated the day before you go live.</li>
+        <li>Enter one line per account from your trial balance, debit or credit as it stands. Do
+            not enter a single lump line for receivables and payables &mdash; see the next
+            step.</li>
+        <li>For the receivable and payable accounts, enter one line per open invoice or bill,
+            each with its partner and, in the <strong>Due Date</strong> column, the real due
+            date. This is what makes the aged balances, the follow-ups and the cash forecast
+            correct from day one.</li>
+        <li>Check that the entry balances, then post it.</li>
+    </ol>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>Enter the open invoices as separate lines with their due dates even though it is
+            more work. A single lump receivable line gives you a correct balance sheet and a
+            useless aged balance, follow-up and forecast.</p>
+    </div>
+
+    <h2><span class="n">4.3</span> Opening the bank</h2>
+    <p>Set the opening balance of each bank journal by entering the closing balance of your
+        last paper statement as the starting balance of your first statement in Odoo. The bank
+        line of the opening entry above and that starting balance must agree.</p>
+
+    <h2><span class="n">4.4</span> Opening the assets</h2>
+    <p>Assets bought before you went live are entered in the Assets screen with their original
+        purchase value and the depreciation already posted, so that only what is left
+        depreciates in Odoo. See section 7.4.</p>
+</div>
+
+<!-- ============================================================ PART 5 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 5</p>
+    <h1>The daily work</h1>
+
+    <h2><span class="n">5.1</span> Customer invoices</h2>
+    <p><span class="path">Customers &rsaquo; Invoices</span>. The cycle is always the same:
+        draft, confirm, get paid, reconcile.</p>
+    <ol>
+        <li><strong>New</strong>, pick the customer; the payment terms and the receivable
+            account come from their record.</li>
+        <li>Add the lines. The income account comes from the product, or from the journal if the
+            line has no product.</li>
+        <li>Check the taxes and the <strong>Due Date</strong>, then <strong>Confirm</strong>.
+            The invoice takes its number from the sales journal and the entry is posted.</li>
+        <li>Send it by email or print it.</li>
+        <li>When the money arrives, <strong>Register Payment</strong> (section 5.4) or match it
+            on the bank reconciliation screen (section 6.3).</li>
+    </ol>
+
+    <h2><span class="n">5.2</span> Vendor bills</h2>
+    <p><span class="path">Vendors &rsaquo; Bills</span>. Same cycle, and two things worth
+        watching:</p>
+    <ul class="plain">
+        <li>Put the vendor's own document number in <strong>Bill Reference</strong>. Odoo warns
+            you if the same reference comes in twice from the same vendor, which catches most
+            duplicate payments.</li>
+    </ul>
+
+    <h2><span class="n">5.3</span> Journal entries by hand</h2>
+    <p><span class="path">Accounting &rsaquo; Transactions &rsaquo; Journal Entries</span>. For payroll, depreciation
+        entered manually, accruals, corrections and anything that is not an invoice, a bill or
+        a payment.</p>
+    <ol>
+        <li><strong>New</strong>, choose the journal and the date. The date decides the period,
+            so check it against your lock dates.</li>
+        <li>Enter the lines with their accounts, partners where relevant, and analytic
+            distribution if you use analytics (section 2.6).</li>
+        <li>The entry must balance to the cent before it can be posted.</li>
+        <li>Post it. A posted entry can no longer be edited; correct it with a reversal instead
+            (<strong>Reverse Entry</strong>), which keeps the audit trail intact.</li>
+    </ol>
+    <figure>
+        <img src="img/journal-items.jpg" alt="Journal items"/>
+        <figcaption>The journal items, with the filters every accountant needs.</figcaption>
+    </figure>
+
+    <h2><span class="n">5.4</span> Payments</h2>
+    <p>There are three ways to record money moving, and they end up in the same place.</p>
+    <table>
+        <thead><tr><th style="width:34%">Way</th><th>When to use it</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Register Payment</strong> on an invoice or bill</td><td>You know which document is being paid. The payment is created and matched with the invoice at once.</td></tr>
+            <tr><td><strong>Customers / Vendors &rsaquo; Payments</strong></td><td>A payment on account, a deposit, or several invoices paid at once.</td></tr>
+            <tr><td><strong>Bank reconciliation</strong></td><td>You are working from the bank statement rather than from the document. Section 6.3.</td></tr>
+        </tbody>
+    </table>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>A payment sits on the outstanding receipts or outstanding payments account until it
+            is reconciled with the bank statement. That is deliberate: it is money you have
+            recorded but the bank has not confirmed. The cash forecast counts it separately for
+            the same reason, and the Bank Reconciliation Statement (section 13.5) is the report
+            that sets the two side by side.</p>
+    </div>
+
+    <h2><span class="n">5.5</span> Post-dated cheques</h2>
+    <p>A cheque dated next month is not money in the bank yet. It should not sit in the bank
+        account, and the invoice it settles should not stay open either. A journal of its own
+        solves both.</p>
+    <h3>Setting it up, once</h3>
+    <ol>
+        <li>Create two accounts with <strong>Allow Reconciliation</strong> ticked: Post-dated
+            cheques received (a current asset) and Post-dated cheques issued (a current
+            liability).</li>
+        <li>Create two journals of type <strong>Bank</strong>: PDC Received and PDC Issued, each
+            with the matching account as its own account.</li>
+        <li>On both journals, set the outstanding account of the payment methods to that same
+            account, so nothing lands in an intermediate account on the way (section 3.4).</li>
+    </ol>
+    <h3>A customer pays you with a post-dated cheque</h3>
+    <ol>
+        <li><strong>Register Payment</strong> on the invoice with the journal PDC Received,
+            dated the day you received it.</li>
+        <li>Write the cheque number and its due date in the memo &mdash; that is what makes the
+            account readable later.</li>
+        <li>The invoice is settled and the amount sits in Post-dated cheques received, not in
+            the bank.</li>
+        <li>On the due date, when the bank credits the cheque, record the receipt in the real
+            bank journal, then settle the two against each other with an entry: debit the bank,
+            credit Post-dated cheques received. If you import statements, match the incoming
+            transaction against the open cheque line on the reconciliation screen instead
+            (section 6.3) &mdash; same result, less typing.</li>
+    </ol>
+    <p>You pay a vendor with a post-dated cheque: the mirror image. Register the payment with
+        PDC Issued, print the cheque itself with the cheque formats (section 5.7), and when it
+        is presented, debit Post-dated cheques issued and credit the bank.</p>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>The balance of each PDC account is then exactly the cheques in hand that have not
+            cleared, and the General Ledger on that account is your cheque register. A cheque
+            that bounces is handled by reversing the settlement entry, which puts the amount
+            back on the PDC account &mdash; or by reopening the invoice if the customer has to
+            pay again.</p>
+    </div>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>One journal per direction is usually enough. Create one PDC journal per bank only if
+            you need the cheques of each bank kept apart.</p>
+    </div>
+
+    <h2><span class="n">5.6</span> Recurring payments</h2>
+    <p><span class="path">Accounting &rsaquo; Recurring Payments</span>, templates under
+        <span class="path">Configuration &rsaquo; Management &rsaquo; Recurring Templates</span>.
+        For rent, leases, subscriptions and loan instalments &mdash; anything with the same
+        amount on the same day each period.</p>
+    <ol>
+        <li>Create a template with the lines of the entry: accounts, partner, amounts, analytic distribution.</li>
+        <li>Create the recurring payment from it: the journal, the start date, how often it repeats and until when.</li>
+        <li>Odoo generates the entries on schedule. With <strong>Auto-Post Entries</strong> they
+            are posted as well; without it they wait in draft for you to check.</li>
+    </ol>
+    <figure>
+        <img src="img/recurring-payment.jpg" alt="Recurring payment"/>
+        <figcaption>A recurring payment and the entries it has generated.</figcaption>
+    </figure>
+
+    <h2><span class="n">5.7</span> Printing cheques</h2>
+    <p><span class="path">Configuration &rsaquo; Invoicing &rsaquo; Cheque Formats</span>, then
+        print from the vendor payment. The page layout and the margins live in the settings
+        (section 2.10).</p>
+    <ol>
+        <li>Pick the shipped format closest to your cheque &mdash; cheque on top, in the middle
+            or at the bottom of an A4 or Letter page, or one of the cheque leaves (US, Canada,
+            UK and Ireland, the Gulf, Australia and New Zealand).</li>
+        <li>Duplicate it and set the paper size and the position of every printed field in
+            millimetres. The preview on the form shows a test print with sample values and
+            follows every change.</li>
+        <li>Print the test page on plain paper, hold it against a real cheque, and correct with
+            <strong>Move Right</strong> and <strong>Move Down</strong> until it lines up.</li>
+        <li>Set the finished format on the bank journal, under <strong>Cheque Format</strong>.</li>
+        <li>Pay a vendor with the <strong>Checks</strong> payment method, then <strong>Print
+            Checks</strong>.</li>
+    </ol>
+    <figure>
+        <img src="img/cheque-format.jpg" alt="Cheque format"/>
+        <figcaption>A cheque format: every field positioned in millimetres, with a live
+            preview.</figcaption>
+    </figure>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>Leave <strong>Print the MICR Line</strong> off when you print on the pre-printed
+            cheques of your bank &mdash; the magnetic line is already on the paper. Turn it on
+            only for blank cheque stock, and upload an E-13B font.</p>
+    </div>
+</div>
+
+<!-- ============================================================ PART 6 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 6</p>
+    <h1>Bank and cash</h1>
+
+    <h2><span class="n">6.1</span> Importing the statement</h2>
+    <p><span class="path">Accounting &rsaquo; Bank and Cash &rsaquo; Bank Statements &rsaquo;
+        Import Statement</span>, or the <strong>Import Statement</strong> action on the bank
+        card of the dashboard.</p>
+    <ol>
+        <li>Drop in the files your bank gives you. Each file is handed to the parsers in turn
+            and read by the first one that recognises it, so you never have to say which format
+            it is: CAMT.053, MT940, OFX/QFX, QIF, or CSV and Excel.</li>
+        <li>Leave the <strong>Journal</strong> empty if the file carries the bank account
+            number: the right journal is found from it. A file imported into the journal of
+            another account is refused.</li>
+        <li>For CSV and Excel, choose a <strong>File Map</strong>. Once it is set on the journal
+            it is filled in automatically at every later import.</li>
+        <li>Import. Transactions already imported are skipped &mdash; the identifier the bank
+            gives each transaction is kept &mdash; and the message tells you how many were new
+            and how many were already there.</li>
+    </ol>
+    <figure>
+        <img src="img/statement-import.jpg" alt="Import wizard"/>
+        <figcaption>The import wizard: the files, the journal and the file map.</figcaption>
+    </figure>
+
+    <h2><span class="n">6.2</span> Building a file map for your bank</h2>
+    <p><span class="path">Configuration &rsaquo; Bank Statement File Maps</span>. A map
+        describes one bank's CSV or Excel export, once.</p>
+    <table>
+        <thead><tr><th style="width:36%">Setting</th><th>What to put in it</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Encoding, Delimiter, Text Delimiter</strong></td><td>utf-8 and a comma for most banks; write <code>tab</code> for a TSV.</td></tr>
+            <tr><td><strong>Decimal / Thousands Separator</strong></td><td>Match how your bank writes 1,234.56 or 1.234,56 or 1 234,56.</td></tr>
+            <tr><td><strong>Date Format</strong></td><td>Python notation: <code>%d/%m/%Y</code>, <code>%m/%d/%y</code>, <code>%Y-%m-%d</code>.</td></tr>
+            <tr><td><strong>Rows to Skip, Has a Header Row, Sheet</strong></td><td>Skip the preamble many banks put above the table.</td></tr>
+            <tr><td><strong>Amount, or Debit and Credit</strong></td><td>One signed column, or two. <strong>Debit is Positive</strong> if your bank does not use a minus sign.</td></tr>
+            <tr><td><strong>Label, Reference, Partner, Account Number, Currency, Notes, Unique ID</strong></td><td>Name the columns by their header, or by their number when the file has none. The Unique ID column is what stops a re-import duplicating transactions.</td></tr>
+        </tbody>
+    </table>
+
+    <h2><span class="n">6.3</span> Reconciling the bank</h2>
+    <p><span class="path">Accounting &rsaquo; Reconciliation &rsaquo; Bank Reconciliation</span>,
+        or the <strong>Reconcile</strong> button on the bank card of the dashboard.</p>
+    <ol>
+        <li>Pick the journal and filter on <strong>To Reconcile</strong>. For the selected
+            transaction, Odoo lists the open journal items most likely to be its counterpart,
+            ranked by amount, reference, partner and direction.</li>
+        <li>If a suggestion is right, select it and <strong>Validate</strong>. You can match one
+            item, several, or only part of an amount.</li>
+        <li>If nothing fits, search the open items yourself, or add a counterpart by hand with
+            its account, label, partner, taxes and analytic distribution &mdash; bank charges
+            and interest are done this way.</li>
+        <li>Apply a <strong>reconciliation model</strong> to fill the counterparts in from its
+            lines for anything you do repeatedly.</li>
+        <li>Whatever is not covered stays on the suspense account, so nothing is ever lost.</li>
+        <li>Mark a transaction <strong>to check</strong> when you are unsure; it stays visible
+            for a colleague.</li>
+    </ol>
+    <figure>
+        <img src="img/bank-reconciliation.jpg" alt="Reconciliation screen"/>
+        <figcaption>The reconciliation screen: the transaction, its counterparts and the
+            suggestions.</figcaption>
+    </figure>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>Let the automatic reconciliation do the repetitive part: reconciliation models with
+            an automatic trigger, partner mapping models that fill in the partner of a new
+            transaction, and the rule that reconciles a transaction matching exactly one open
+            item by amount and reference. A scheduled action treats new transactions daily and
+            runs again as soon as more are imported.</p>
+    </div>
+
+    <h2><span class="n">6.4</span> Match Journal Items</h2>
+    <p><span class="path">Accounting &rsaquo; Reconciliation &rsaquo; Match Journal Items</span>.
+        For everything that is not a bank transaction: an invoice paid by a credit note, an
+        advance applied to a bill, two entries that cancel out.</p>
+    <ol>
+        <li>The open items of the reconcilable accounts are listed, grouped by account and partner.</li>
+        <li>Select the items that belong together and press <strong>Match</strong>. The wizard
+            shows the debit, the credit and the difference.</li>
+        <li>Write the difference off on a journal, account, date and label of your choice &mdash;
+            or leave it, and the items are matched partially.</li>
+        <li><strong>Match Suggestions</strong> reconciles, in one go, every group of items of the
+            same account and partner whose amounts cancel each other.</li>
+    </ol>
+    <figure>
+        <img src="img/match-journal-items.jpg" alt="Match journal items"/>
+        <figcaption>Match Journal Items, grouped by account and partner.</figcaption>
+    </figure>
+
+    <h2><span class="n">6.5</span> Cash</h2>
+    <p>A cash journal works the same way with two differences: <strong>New Transaction</strong>
+        types the movements in by hand, and <strong>New Statement</strong> records the cash
+        counted at the end of the day. Reconcile the counted amount against the movements so
+        the till agrees with the books, then print the Cash Book (section 13.6).</p>
+</div>
+
+<!-- ============================================================ PART 7 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 7</p>
+    <h1>Assets</h1>
+
+    <h2><span class="n">7.1</span> Asset categories</h2>
+    <p><span class="path">Configuration &rsaquo; Management &rsaquo; Asset Category</span>. A
+        category is a template: set it up once and every asset of that kind inherits it.</p>
+    <ul class="plain">
+        <li><strong>Asset account</strong> &mdash; where the gross value sits.</li>
+        <li><strong>Depreciation account</strong> &mdash; the accumulated depreciation, on the balance sheet.</li>
+        <li><strong>Expense account</strong> &mdash; where the periodic charge is posted.</li>
+        <li><strong>Journal</strong> &mdash; usually the miscellaneous one.</li>
+        <li><strong>Method</strong> &mdash; linear or degressive, the number of depreciations and their period.</li>
+        <li><strong>Prorata temporis</strong> &mdash; start depreciating on the purchase date rather than the first of the period.</li>
+    </ul>
+    <figure>
+        <img src="img/asset-category.jpg" alt="Asset category"/>
+        <figcaption>An asset category: the accounts, the journal and the method every asset of
+            that kind inherits.</figcaption>
+    </figure>
+
+    <h2><span class="n">7.2</span> Creating an asset</h2>
+    <ol>
+        <li><span class="path">Configuration &rsaquo; Accounting &rsaquo; Assets &rsaquo; New</span>: name, category,
+            purchase value and date. The board is computed as you type.</li>
+        <li>Or let the vendor bill do it: put the asset category on the bill line and confirm the
+            bill &mdash; the asset is created and linked to it.</li>
+        <li>Check the depreciation board: one line per period with its date, amount and remaining
+            value.</li>
+        <li>Confirm the asset to put it in service.</li>
+    </ol>
+    <figure>
+        <img src="img/asset-board.jpg" alt="Asset board"/>
+        <figcaption>An asset with its depreciation board.</figcaption>
+    </figure>
+
+    <h2><span class="n">7.3</span> Posting depreciation</h2>
+    <p>Each board line is posted in its period, either by the scheduled action or with
+        <strong>Create Move</strong> on the line. The entry debits the expense account and
+        credits the accumulated depreciation.</p>
+    <p>When an asset is sold or scrapped, use <strong>Sell or Dispose</strong>: the remaining
+        value is depreciated in one last entry and the asset is closed. Invoice the sale itself to
+        the buyer as usual. <strong>Modify Depreciation</strong> changes the number or the length
+        of the periods still to come, from the next one.</p>
+
+    <h2><span class="n">7.4</span> Assets that already existed</h2>
+    <p>For an asset bought before you went live, create it with the value still to depreciate
+        &mdash; the purchase value less the depreciation already booked &mdash; and the number of
+        depreciations left, so that only the remaining value depreciates in Odoo. The opening entry (section 4.2) carries the gross value and the
+        accumulated depreciation on the balance sheet; the asset record only drives what
+        happens from now on.</p>
+
+    <h2><span class="n">7.5</span> Asset reports</h2>
+    <p><span class="path">Reporting &rsaquo; Management &rsaquo; Assets</span> gives
+        the gross value, the depreciation posted and the depreciation still to post, by asset,
+        category and date, in pivot and graph form. The <strong>Assets</strong> dashboard of the
+        Dashboards app shows the same figures at a glance.</p>
+    <figure>
+        <img src="img/asset-analysis.jpg" alt="Assets analysis"/>
+        <figcaption>The Assets Analysis: the depreciation posted and to post.</figcaption>
+    </figure>
+</div>
+
+<!-- ============================================================ PART 8 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 8</p>
+    <h1>Budgets</h1>
+
+    <h2><span class="n">8.1</span> Budgetary positions</h2>
+    <p>A budgetary position is a named group of accounts &mdash; &ldquo;Operating
+        expenses&rdquo;, &ldquo;Product sales&rdquo; &mdash; and it is what a budget line is
+        measured against. Create them first, under <span class="path">Configuration &rsaquo;
+        Management &rsaquo; Budgetary Positions</span>, and put the relevant accounts in each.</p>
+
+    <h2><span class="n">8.2</span> Creating a budget</h2>
+    <ol>
+        <li><span class="path">Configuration &rsaquo; Accounting &rsaquo; Budgets &rsaquo; New</span>: a name, the
+            responsible, and the period the budget covers.</li>
+        <li>Add the lines: a budgetary position, an analytic account if you budget that way
+            (section 2.6), and the planned amount.</li>
+        <li>Enter the expenses as negative amounts and the revenues as positive ones, as Odoo
+            reads them in the books.</li>
+        <li>Leave the <strong>Paid Date</strong> empty to spread the line over its period, or set it
+            when the amount is expected in full on one day &mdash; this is what makes the
+            theoretical amount meaningful.</li>
+        <li><strong>Confirm</strong> the budget, then <strong>Approve</strong> it; the figures
+            fill in as the entries are posted.</li>
+    </ol>
+    <p>Each line then shows the planned amount, the theoretical amount expected by today, the
+        actual amount posted, and the achievement as a percentage.</p>
+    <figure>
+        <img src="img/budget.jpg" alt="A budget"/>
+        <figcaption>A budget with its lines, the amounts achieved and the totals of the
+            period.</figcaption>
+    </figure>
+
+    <h2><span class="n">8.3</span> Following a budget</h2>
+    <ul class="plain">
+        <li><span class="path">Reporting &rsaquo; Management &rsaquo; Budgets Analysis</span>
+            gives every line in pivot, list and graph, grouped by budget, position or analytic
+            account.</li>
+        <li>The <strong>Budgets</strong> dashboard of the Dashboards app compares the actual
+            expenses and revenues with what the budgets expected at this date.</li>
+        <li>Open the entries behind a line from the line itself, to see what made its actual
+            amount.</li>
+    </ul>
+    <figure>
+        <img src="img/budget-analysis.jpg" alt="Budget analysis"/>
+        <figcaption>The Budgets Analysis.</figcaption>
+    </figure>
+</div>
+
+<!-- ============================================================ PART 9 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 9</p>
+    <h1>Getting paid: follow-ups</h1>
+
+    <h2><span class="n">9.1</span> Follow-up plans</h2>
+    <p><span class="path">Configuration &rsaquo; Invoicing &rsaquo; Follow-up Plans</span>. A
+        plan is a ladder of levels, each triggered a number of days after the due date.</p>
+    <ol>
+        <li>Create the levels: 7 days &mdash; a reminder email; 21 days &mdash; a firmer letter;
+            45 days &mdash; a phone call activity; 60 days &mdash; send to legal.</li>
+        <li>For each level choose what happens: send an email, print a letter, raise an activity,
+            or simply mark the customer.</li>
+        <li>Write the message on the level. The customer statement can be attached so the
+            customer sees exactly what is open.</li>
+    </ol>
+    <figure>
+        <img src="img/followup-plan.jpg" alt="Follow-up plan"/>
+        <figcaption>A follow-up plan and its levels.</figcaption>
+    </figure>
+
+    <h2><span class="n">9.2</span> Working the list</h2>
+    <p><span class="path">Follow-Ups &rsaquo; Follow-ups</span>. One line per customer with
+        something overdue.</p>
+    <ol>
+        <li>Open a customer to see every open invoice, how late each one is, and the total owed.</li>
+        <li>Act on the level Odoo proposes, or override it.</li>
+        <li>Record a <strong>promise to pay</strong> with a date: the customer drops off the list
+            until that date.</li>
+        <li>Mark an invoice <strong>disputed</strong> so it stops driving reminders while it is
+            argued about.</li>
+        <li><strong>Exclude</strong> a customer you never want chased automatically.</li>
+        <li><strong>Send All Reminders</strong> processes the whole list in one go.</li>
+    </ol>
+    <figure>
+        <img src="img/followup-list.jpg" alt="Follow-up list"/>
+        <figcaption>The follow-up list: who is late, by how much, and what to do next.</figcaption>
+    </figure>
+
+    <h2><span class="n">9.3</span> Customer statements</h2>
+    <p>Print or email a statement of account from the customer or from the follow-up screen:
+        every open invoice, what has been paid, and the ageing of the balance. There is a vendor
+        statement too, for the accounts your suppliers send you.
+        <span class="path">Follow-Ups &rsaquo; Follow-Up Analysis</span>
+        shows how the overdue balance is spread across the levels.</p>
+    <figure>
+        <img src="img/customer-statement.jpg" alt="Customer statement"/>
+        <figcaption>A customer statement.</figcaption>
+    </figure>
+</div>
+
+<!-- =========================================================== PART 10 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 10</p>
+    <h1>Cash forecast</h1>
+
+    <h2><span class="n">10.1</span> Expected items</h2>
+    <p><span class="path">Accounting &rsaquo; Cash Forecast Items</span>. Everything you know is
+        coming but that no document holds yet: salaries, rent, loan instalments, taxes, a
+        subsidy on its way.</p>
+    <ul class="plain">
+        <li>A receipt or a payment, with its amount, currency, date and partner.</li>
+        <li>Once, or every week, month, quarter or year, until a date or without end.</li>
+        <li>A monthly item dated the 31st stays at the end of each month, whatever its length.</li>
+        <li>Archive an item that no longer applies rather than deleting it.</li>
+    </ul>
+
+    <h2><span class="n">10.2</span> Running the forecast</h2>
+    <p><span class="path">Reporting &rsaquo; Management &rsaquo; Cash Forecast</span>.</p>
+    <ol>
+        <li>Choose the start date, by weeks or by months, and how many periods (up to 60).</li>
+        <li>Decide what to do with invoices and bills that are already due: give them their own
+            <strong>Overdue</strong> column, or leave them out.</li>
+        <li>Include the draft invoices and bills for the worst case, and detail the rows by
+            partner if you want to see who owes what.</li>
+        <li>Print it as a PDF, or export it to Excel with the Accounting Excel Reports module.</li>
+    </ol>
+    <p>The forecast starts from the bank and cash balance of today and adds, period by period,
+        the customer invoices, the recurring receipts and the expected receipts, less the vendor
+        bills, the recurring payments and the expected payments, to a closing balance.</p>
+    <figure>
+        <img src="img/cash-forecast.jpg" alt="Cash forecast"/>
+        <figcaption>The cash forecast: opening balance, receipts, payments and closing balance
+            by month.</figcaption>
+    </figure>
+</div>
+
+<!-- =========================================================== PART 11 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 11</p>
+    <h1>Currencies</h1>
+
+    <h2><span class="n">11.1</span> Multi-currency basics</h2>
+    <p>Turn on <strong>Multi-Currencies</strong> in the settings and activate the currencies you
+        trade in (section 2.7). Every foreign currency document keeps its own amount and its
+        value in the currency of the company at the rate of its date.</p>
+
+    <h2><span class="n">11.2</span> Rates that update themselves</h2>
+    <p><span class="path">Configuration &rsaquo; Settings &rsaquo; Automatic Currency
+        Rates</span>.</p>
+    <ol>
+        <li>Choose how often: manually, daily, weekly or monthly.</li>
+        <li>Choose the source: <strong>Frankfurter</strong> or the <strong>European Central
+            Bank</strong> (about thirty major currencies, no key), <strong>Open Exchange
+            Rates</strong> (every currency, with an App ID) or
+            <strong>ExchangeRate-API</strong> (with a key).</li>
+        <li>Add a backup source for the currencies the main one does not quote, or for the days
+            it does not answer.</li>
+        <li>Limit it to the currencies you care about, and set a <strong>Maximum Change</strong>
+            so an absurd rate is reported instead of saved.</li>
+        <li><strong>Test Connection</strong> checks the source and shows a few rates without
+            saving anything; <strong>Update Now</strong> fetches them at once.</li>
+    </ol>
+    <p>Each rate keeps the name of the source it came from; the ones you type in yourself stay
+        blank. After three failures in a row the accounting managers are notified.</p>
+
+    <h2><span class="n">11.3</span> Revaluing at the closing rate</h2>
+    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Currency Revaluation</span>, at
+        the end of each period.</p>
+    <ol>
+        <li>Set the journal and the unrealized gain and loss accounts once, in the settings
+            (section 2.9).</li>
+        <li>Open the wizard, choose the date &mdash; usually the last day of the period &mdash;
+            and the currencies, or leave them empty for all of them.</li>
+        <li>The lines are computed as you type: for each account, partner and currency, what is
+            open in the foreign currency, what it is worth in the books, what it is worth at the
+            rate of that date, and the difference.</li>
+        <li><strong>Post Adjustment</strong> writes one entry for the whole difference, and
+            reverses it at the start of the next period unless you say otherwise.</li>
+    </ol>
+    <p>Receivable and payable accounts are revalued on what is left open on them, invoice by
+        invoice; accounts held in a foreign currency, such as a foreign bank account, on the
+        balance they hold. A date can be revalued only once.</p>
+    <figure>
+        <img src="img/currency-revaluation.jpg" alt="Currency revaluation"/>
+        <figcaption>The revaluation, account by account, with the adjustment of each
+            line.</figcaption>
+    </figure>
+</div>
+
+<!-- =========================================================== PART 12 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 12</p>
+    <h1>Closing the books</h1>
+
+    <h2><span class="n">12.1</span> Lock dates</h2>
+    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Lock Dates</span>. The simplest
+        and strongest control in the suite.</p>
+    <table>
+        <thead><tr><th style="width:36%">Lock</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Journal Entries Lock Date</strong></td><td>Nobody but an accounting manager can post or change anything on or before this date.</td></tr>
+            <tr><td><strong>All Users Lock Date</strong></td><td>Nobody at all, managers included. Use it once a period is filed.</td></tr>
+            <tr><td><strong>Tax Return Lock Date</strong></td><td>Nothing that would change a filed tax return can be touched.</td></tr>
+        </tbody>
+    </table>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>Move the lock date forward every month as soon as the period is reconciled and
+            reported. It costs nothing and it is the difference between a set of books that
+            stays correct and one that quietly changes underneath you.</p>
+    </div>
+    <figure>
+        <img src="img/lock-dates.jpg" alt="Lock dates"/>
+        <figcaption>The lock dates.</figcaption>
+    </figure>
+
+    <h2><span class="n">12.2</span> Closing a period</h2>
+    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Period Closing</span>. The
+        monthly routine:</p>
+    <ol>
+        <li>Post everything: invoices, bills, payments, payroll, depreciation, recurring entries.</li>
+        <li>Import and reconcile every bank and cash statement to the last day of the period.</li>
+        <li>Print the Bank Reconciliation Statement and agree it to the bank (section 13.5).</li>
+        <li>Revalue the foreign currency balances (section 11.3).</li>
+        <li>Check the suspense accounts are empty and the open items make sense.</li>
+        <li>Run the Trial Balance and the Balance Sheet and compare them with last period.</li>
+        <li>File the tax report and set the tax lock date.</li>
+        <li>Close the period and move the lock date forward.</li>
+    </ol>
+    <figure>
+        <img src="img/period-closing.jpg" alt="Period closing"/>
+        <figcaption>Period closing.</figcaption>
+    </figure>
+
+    <h2><span class="n">12.3</span> Closing a year</h2>
+    <p><span class="path">Accounting &rsaquo; Closing &rsaquo; Year-End Closing</span>. After
+        the last period of the year is closed and your accountant's adjustments are posted, the
+        year-end entry carries the result of the year to the retained earnings account and opens
+        the next year. <strong>Closing Tasks</strong> keeps the checklist of what remains, and
+        the annual report (section 13.3) is the pack to hand over when it is done.</p>
+</div>
+
+<!-- =========================================================== PART 13 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 13</p>
+    <h1>The reports</h1>
+
+    <h2><span class="n">13.1</span> Where they are</h2>
+    <p>Every report of this suite is under <strong>Reporting</strong>, grouped the way an
+        accountant thinks:</p>
+    <figure>
+        <img src="img/reporting-menu.jpg" alt="Reporting menu"/>
+        <figcaption>The Reporting menu: statement reports, partner reports, tax, audit reports,
+            daily reports and management.</figcaption>
+    </figure>
+    <p>Each one opens a wizard with the same three questions &mdash; which period, which
+        journals or accounts, and posted entries only or all entries &mdash; then prints a PDF.
+        With <strong>Enhanced Financial Reports</strong> on, you can preview them on screen
+        instead of downloading.</p>
+
+    <h2><span class="n">13.2</span> Statement reports</h2>
+    <table>
+        <thead><tr><th style="width:34%">Report</th><th>What it answers</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Balance Sheet</strong></td><td>What the company owns and owes at a date, with comparison.</td></tr>
+            <tr><td><strong>Profit and Loss</strong></td><td>What it earned and spent over a period.</td></tr>
+            <tr><td><strong>Cash Flow Statement</strong></td><td>Where the cash came from and went, operating, investing and financing.</td></tr>
+        </tbody>
+    </table>
+    <figure>
+        <img src="img/balance-sheet-profit-loss.jpg" alt="Balance sheet and profit and loss"/>
+        <figcaption>The Balance Sheet and the Profit and Loss.</figcaption>
+    </figure>
+
+    <h2><span class="n">13.3</span> The annual report</h2>
+    <p><span class="path">Reporting &rsaquo; Statement Reports &rsaquo; Annual Report</span>. One
+        PDF for the whole year end: a cover page, a table of contents, and the statements in the
+        order an accountant expects them. It is the document you hand to an auditor, a bank or a
+        board, instead of three separate printouts.</p>
+    <p>Choose in the wizard what goes in it:</p>
+    <table>
+        <thead><tr><th style="width:34%">Option</th><th>What it adds</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Balance Sheet, Profit and Loss, Cash Flow Statement</strong></td><td>Any or all three, each starting on its own page and paginated so the contents page is right.</td></tr>
+            <tr><td><strong>Compare with the previous year</strong></td><td>A second column holding the same period one year earlier.</td></tr>
+            <tr><td><strong>Show the variance</strong></td><td>Two more columns: the movement against last year, in amount and in per cent.</td></tr>
+            <tr><td><strong>Key figures</strong></td><td>A page of the headline numbers &mdash; revenue, expenses, result, assets, liabilities, equity and cash &mdash; before the statements.</td></tr>
+            <tr><td><strong>Notes</strong></td><td>Your own text, printed at the end: the accounting policies, the events after the year end, whatever the reader needs.</td></tr>
+            <tr><td><strong>Approval page</strong></td><td>A closing page with space for the signatures of whoever approves the accounts.</td></tr>
+        </tbody>
+    </table>
+    <p>The figures come from the same engines as the individual reports, so the annual report and
+        the Balance Sheet can never disagree.</p>
+    <figure>
+        <img src="img/annual-report.jpg" alt="Annual report"/>
+        <figcaption>The annual report: the cover, and a balance sheet with last year and the
+            variance beside it.</figcaption>
+    </figure>
+
+    <h2><span class="n">13.4</span> Partner and audit reports</h2>
+    <table>
+        <thead><tr><th style="width:34%">Report</th><th>What it answers</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Partner Ledger</strong></td><td>Every movement on one customer or vendor, with the running balance.</td></tr>
+            <tr><td><strong>Aged Partner Balance</strong>, Aged Receivable, Aged Payable</td><td>How old the open balances are, in buckets.</td></tr>
+            <tr><td><strong>General Ledger</strong></td><td>Every entry of every account for the period.</td></tr>
+            <tr><td><strong>Trial Balance</strong></td><td>Opening, movements and closing per account &mdash; the first thing to run when something does not add up.</td></tr>
+            <tr><td><strong>Journals Audit</strong></td><td>The entries of each journal in posting order, with the tax detail.</td></tr>
+            <tr><td><strong>Tax Report</strong></td><td>The tax collected and paid for the period, ready for the return.</td></tr>
+        </tbody>
+    </table>
+    <figure>
+        <img src="img/general-partner-ledger.jpg" alt="General ledger and partner ledger"/>
+        <figcaption>The General Ledger and the Partner Ledger.</figcaption>
+    </figure>
+
+    <h2><span class="n">13.5</span> The bank reconciliation statement</h2>
+    <p><span class="path">Accounting &rsaquo; Reconciliation &rsaquo; Bank Reconciliation
+        Statement</span>. The report that explains the difference between what your bank says
+        you have and what your books say you have &mdash; the one an auditor asks for at every
+        year end.</p>
+    <p>It prints one section per bank journal, as at a date you choose:</p>
+    <table>
+        <thead><tr><th style="width:44%">Line</th><th>Where it comes from</th></tr></thead>
+        <tbody>
+            <tr><td>Balance per bank statement</td><td>The last statement on or before the date. With no statements it falls back to the ledger balance and says so.</td></tr>
+            <tr><td><em>Add</em> uncleared receipts</td><td>The payments sitting on the outstanding receipts account that the bank has not confirmed yet.</td></tr>
+            <tr><td><em>Less</em> uncleared payments</td><td>The same for money going out: cheques written and not presented.</td></tr>
+            <tr><td><em>Add</em> items not yet matched</td><td>What the bank has reported and nothing has been matched to &mdash; the suspense account.</td></tr>
+            <tr><td><strong>Cash position per books</strong></td><td>The result, and what the books should be showing.</td></tr>
+        </tbody>
+    </table>
+    <p>Turn on <strong>Detail the Uncleared Items</strong> and each total is followed by the
+        schedule behind it: date, reference, partner and amount, item by item. That schedule is
+        the evidence for the figure above it.</p>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>The wizard offers the <strong>bank</strong> journals. A cash journal has no third
+            party to reconcile against &mdash; cash in hand is counted, not matched to a
+            statement &mdash; so its section would only restate the ledger balance back at you.
+            It stays selectable for the setups that do run a cash account against a statement,
+            and the report says clearly when a section is a cash one.</p>
+    </div>
+    <div class="note warn">
+        <p class="label">Watch out</p>
+        <p>If a journal has no outstanding account on its payment methods, the report says so
+            on that journal's section instead of printing a total. Payments made through such a
+            journal never reach the ledger at all (section 3.4), so any figure would be a lie.</p>
+    </div>
+    <figure>
+        <img src="img/bank-reconciliation-statement.jpg" alt="Bank reconciliation statement"/>
+        <figcaption>The bank reconciliation statement, with the schedule of what has not
+            cleared.</figcaption>
+    </figure>
+
+    <h2><span class="n">13.6</span> Daily reports</h2>
+    <p><span class="path">Reporting &rsaquo; Daily Reports</span>. The three books a bookkeeper
+        prints every day.</p>
+    <ul class="plain">
+        <li><strong>Day Book</strong> &mdash; every journal item of the period, grouped under the
+            date it was posted on, with a total per day.</li>
+        <li><strong>Cash Book</strong> &mdash; the movements of the cash accounts with a running
+            balance; the accounts of the cash journals are preselected.</li>
+        <li><strong>Bank Book</strong> &mdash; the same for the bank accounts, to hold against the
+            statement.</li>
+    </ul>
+    <p>Cash Book and Bank Book can carry an initial balance row, sort by date or by journal and
+        partner, and show all accounts, only those that moved, or only those with a balance.</p>
+    <figure>
+        <img src="img/day-book.jpg" alt="Day book"/>
+        <figcaption>The Day Book, with the total of each day.</figcaption>
+    </figure>
+
+    <h2><span class="n">13.7</span> Printing one journal entry</h2>
+    <p>Open any journal entry, invoice or payment and use <strong>Print &rsaquo; Journals
+        Entries</strong>: one page per entry with its journal, date, partner, reference and
+        status, every line with its account, label and analytic distribution, and the debit and
+        credit totals. It is the voucher to file, or to staple to the paperwork behind an
+        entry.</p>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>The analytic column appears only when analytic accounting is on (section 2.6). With
+            it off the report drops the column rather than printing an empty stripe down every
+            page.</p>
+    </div>
+    <figure>
+        <img src="img/journal-entry.jpg" alt="Journal entry print"/>
+        <figcaption>One journal entry, printed on the company letterhead.</figcaption>
+    </figure>
+
+    <h2><span class="n">13.8</span> Dashboards</h2>
+    <p>The Dashboards application carries eight accounting dashboards in its Finance section:
+        Accounting Overview, Profit and Loss, Balance Sheet, Receivables and Payables, Bank and
+        Cash, Assets, Budgets, and Follow-ups and Cash Forecast.</p>
+    <p>They work over the period you choose, compare it with the same period last year or the
+        one before, and add up the companies picked in the switcher. All of them are computed
+        from account types, so they work with any chart of accounts. The formula
+        <code>OM.ACCOUNT.BALANCE</code> gives you the same figures in any spreadsheet of your
+        own.</p>
+    <figure>
+        <img src="img/dashboard-overview.jpg" alt="Accounting overview dashboard"/>
+        <figcaption>The Accounting Overview dashboard.</figcaption>
+    </figure>
+</div>
+
+<!-- =========================================================== PART 14 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 14</p>
+    <h1>Routines</h1>
+
+    <h2><span class="n">14.1</span> Every day</h2>
+    <ul class="tick">
+        <li>Enter and confirm the customer invoices and the vendor bills of the day.</li>
+        <li>Register the payments you know about.</li>
+        <li>Import the bank statement and reconcile what the suggestions get right.</li>
+        <li>Count the till, record the cash statement, reconcile it.</li>
+        <li>Print the Day Book if your bookkeeping requires a daily record.</li>
+    </ul>
+
+    <h2><span class="n">14.2</span> Every month</h2>
+    <ul class="tick">
+        <li>Post payroll, depreciation and any accruals.</li>
+        <li>Check the recurring payments generated what they should have.</li>
+        <li>Reconcile every bank and cash journal to the last day of the month.</li>
+        <li>Print the Bank Reconciliation Statement and agree it to the bank.</li>
+        <li>Empty the suspense accounts.</li>
+        <li>Revalue the foreign currency balances.</li>
+        <li>Run the Trial Balance, the Balance Sheet and the Profit and Loss; compare with last month.</li>
+        <li>Review the aged receivable and send the follow-ups.</li>
+        <li>Check the budgets for lines going over.</li>
+        <li>File the tax return, set the tax lock date.</li>
+        <li>Close the period and move the lock date forward.</li>
+    </ul>
+
+    <h2><span class="n">14.3</span> Every year</h2>
+    <ul class="tick">
+        <li>Close all twelve periods.</li>
+        <li>Post your accountant's adjustments.</li>
+        <li>Check the assets analysis against the asset accounts.</li>
+        <li>Confirm the physical inventory and the stock valuation if you hold stock.</li>
+        <li>Run the year-end closing entry and open the new year.</li>
+        <li>Print the annual report for the file and for whoever signs the accounts.</li>
+        <li>Set the All Users Lock Date on the closed year.</li>
+    </ul>
+</div>
+
+<!-- =========================================================== PART 15 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 15</p>
+    <h1>When something looks wrong</h1>
+
+    <h2><span class="n">15.1</span> The usual suspects</h2>
+    <table>
+        <thead><tr><th style="width:38%">Symptom</th><th>Where to look</th></tr></thead>
+        <tbody>
+            <tr><td>A report is empty or missing accounts</td><td>The account type is wrong. Every report here is built from types, not codes.</td></tr>
+            <tr><td>The balance sheet does not balance</td><td>Run the Trial Balance for the same dates. An unbalanced result almost always means an entry posted to a period you are not printing, or an opening entry that was never balanced.</td></tr>
+            <tr><td>An account will not appear in Match Journal Items</td><td><strong>Allow Reconciliation</strong> is off on the account.</td></tr>
+            <tr><td>A bank transaction cannot be reconciled</td><td>It is already reconciled, or another user has it open: a transaction being reconciled is locked so two people cannot match it twice.</td></tr>
+            <tr><td>The suspense account keeps growing</td><td>Transactions were validated without a full counterpart. Filter the journal items on the suspense account and finish them.</td></tr>
+            <tr><td>A statement file is refused</td><td>The format is not one of the six supported, or &mdash; for CSV and Excel &mdash; the file map does not match the file. Check the date format and the decimal separator first.</td></tr>
+            <tr><td>Importing the same file brings nothing in</td><td>Correct: the transactions were already imported. The message says how many were skipped.</td></tr>
+            <tr><td>A payment settles the invoice but nothing reaches the ledger</td><td>The payment method of that journal has no outstanding account. Section 3.4.</td></tr>
+            <tr><td>The bank reconciliation statement will not add up</td><td>Read the warning on the section. A journal with no outstanding accounts cannot be reconciled until they are set.</td></tr>
+            <tr><td>A payslip, invoice or entry cannot be posted</td><td>A lock date covers its date. Only an accounting manager can post before the journal entries lock date, and nobody before the all users lock date.</td></tr>
+            <tr><td>The rates stopped updating</td><td>Open the settings and read <strong>Last Update Result</strong>, then press <strong>Test Connection</strong>. A paying source with an expired key fails silently otherwise.</td></tr>
+            <tr><td>A revaluation is refused</td><td>That date is already revalued. Reverse or delete the existing adjustment entry first.</td></tr>
+            <tr><td>The taxes are a cent out against the invoice</td><td>The rounding method. Section 2.3, and it has to be decided once and left alone.</td></tr>
+            <tr><td>The fiscal localisation cannot be changed</td><td>An entry has been posted. Section 2.2 &mdash; this one is decided on day one.</td></tr>
+        </tbody>
+    </table>
+
+    <h2><span class="n">15.2</span> Getting help</h2>
+    <p>Every module in this suite is free and open source under LGPL-3. If something is wrong,
+        or you need a feature that is not here, write to
+        <strong>odoomates@gmail.com</strong> &mdash; and if you can, contribute the fix back so
+        the next person gets it too.</p>
+</div>
+
+</body>
+</html>

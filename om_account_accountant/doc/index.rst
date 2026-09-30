@@ -3,7 +3,7 @@ Odoo 18 Accounting
 ==================
 
 This Module will adds following accounting features to Odoo 18 community edition:
-Financial Reports, Asset Management, Budget Management, Bank Statement Import,
+Financial Reports, Asset Management, Budget Management, Bank Reconciliation,
 Daily Reports, Customer Follow Ups and Recurring Payments
 
 Common FAQ
@@ -45,7 +45,6 @@ Contributors
 ------------
 
 * Odoo Mates <odoomates@gmail.com>
-* Walnut Software Solutions <info@walnutit.com>
 
 
 Author & Maintainer
