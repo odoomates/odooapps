@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_statement_import_view_form" model="ir.ui.view">
+        <field name="name">account.statement.import.form</field>
+        <field name="model">account.statement.import</field>
+        <field name="arch" type="xml">
+            <form string="Import Bank Statement">
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        Upload the statements of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or Excel.
+                        The transactions already imported are left out.
+                    </div>
+                    <group>
+                        <field name="company_id" invisible="1"/>
+                        <field name="attachment_ids" widget="many2many_binary" nolabel="1" colspan="2"/>
+                    </group>
+                    <group>
+                        <group>
+                            <field name="journal_id" options="{'no_create': True}"
+                                   placeholder="From the account number in the file"/>
+                        </group>
+                        <group>
+                            <field name="map_id" options="{'no_create_edit': True}"
+                                   placeholder="For CSV and Excel files"/>
+                            <field name="date_format" placeholder="e.g. %d/%m/%Y, for QIF files"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"
+                            data-hotkey="q" invisible="not attachment_ids"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_statement_import" model="ir.actions.act_window">
+        <field name="name">Import Statement</field>
+        <field name="res_model">account.statement.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

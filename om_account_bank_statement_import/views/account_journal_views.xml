@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.inherit.statement.import</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='action_card_statements']" position="inside">
+                <a t-if="journal_type == 'bank' || journal_type == 'cash'" role="menuitem" type="object"
+                   name="action_import_statement">Import Statement</a>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_journal_form" model="ir.ui.view">
+        <field name="name">account.journal.form.inherit.statement.import</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <field name="currency_id" position="after">
+                <field name="statement_import_map_id" invisible="type not in ('bank', 'cash')"
+                       options="{'no_create_edit': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
