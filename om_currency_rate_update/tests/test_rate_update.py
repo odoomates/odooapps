@@ -6,7 +6,7 @@ from freezegun import freeze_time
 import requests
 
 from odoo import Command
-from odoo.tests import tagged
+from odoo.tests import TransactionCase, tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -164,3 +164,16 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         self.company.rate_interval = 'manual'
         with patch(GET, side_effect=AssertionError('no request expected')):
             self.env['res.company']._cron_update_currency_rates()
+
+
+@tagged('post_install', '-at_install')
+class TestRateSettingsLeftEmpty(TransactionCase):
+
+    def test_a_company_without_the_settings_is_updated_manually(self):
+        """ The settings are not NOT NULL: a company created by a module loaded before this one has none. """
+        company = self.env['res.company'].create({'name': 'Created Early'})
+        self.env.cr.execute("UPDATE res_company SET rate_interval = NULL, rate_provider = NULL, "
+                            "rate_date_policy = NULL WHERE id = %s", [company.id])
+        company.invalidate_recordset()
+        self.env['res.company']._cron_update_currency_rates()
+        self.assertFalse(company.rate_last_update, 'nothing is fetched for a company updated manually')
