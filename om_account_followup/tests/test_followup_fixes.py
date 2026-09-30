@@ -103,3 +103,23 @@ class TestFollowupFixes(AccountTestInvoicingCommon):
         employee = new_test_user(self.env, login='followup_employee', groups='base.group_user')
         with self.assertRaises(AccessError):
             self.env['followup.print'].with_user(employee).create({'followup_id': self.followup.id})
+
+    def test_an_accountant_who_cannot_edit_contacts_sends_reminders(self):
+        """ Posting on a contact in 19.0 asks for the right to edit it: the reminders only ask to read it. """
+        self._invoice(100.0)
+        self.partner_a.email = 'partner_a@example.com'
+        accountant = new_test_user(self.env, login='followup_accountant', groups='account.group_account_user',
+                                   company_id=self.env.company.id)
+        partner = self.partner_a.with_user(accountant)
+        self.assertFalse(partner.has_access('write'))
+
+        self.assertTrue(partner._followup_send_email())
+        message = self.partner_a.message_ids[:1]
+        self.assertEqual(message.author_id, accountant.partner_id)
+        activity = partner._followup_schedule_action(self.second_level)
+        self.assertEqual(activity.res_id, self.partner_a.id)
+
+    def test_the_old_folder_is_kept_but_not_shown(self):
+        menu = self.env.ref('om_account_followup.om_account_followup_main_menu')
+        self.assertFalse(menu.child_id)
+        self.assertNotIn(menu.id, self.env['ir.ui.menu']._visible_menu_ids())
