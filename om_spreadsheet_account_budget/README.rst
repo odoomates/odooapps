@@ -12,7 +12,8 @@ Features
 * Actual expenses and revenues compared with what the budgets expected at this date, and the planned
   amounts.
 * Gauges of the share of the planned expenses spent and of the planned revenues earned.
-* The planned, theoretical and actual amounts by budget type and budgetary position.
+* The planned, theoretical and actual amounts by budgetary position: the expenses and the revenues are
+  told apart by the sign of their planned amount, as Odoo 19 budgets plan them.
 * Period and Budget filters.
 
 Installation
