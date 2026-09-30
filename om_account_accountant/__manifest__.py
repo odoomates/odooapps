@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 19 Accounting Community',
-    'version': '1.0.5',
+    'version': '1.1.0',
     'category': 'Accounting',
     'summary': 'Accounting Reports, Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Accounting Dashboard, Financial Reports, '
@@ -10,7 +10,6 @@
                    'Bank Statement Import, Customer Follow Up Management,'
                    'Account Lock Date, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
-    'sequence': '1',
     'sequence': '1',
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
@@ -28,6 +27,7 @@
     'data': [
         'security/group.xml',
         'views/menu.xml',
+        'views/review_menu.xml',
         'views/settings.xml',
         'views/account_group.xml',
         'views/account_tag.xml',
