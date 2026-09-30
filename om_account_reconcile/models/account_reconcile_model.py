@@ -9,19 +9,21 @@ class AccountReconcileModel(models.Model):
 
     # the matching rules of Odoo 20.0, which 19.0 does not have: the models proposing the open items of the
     # transactions, instead of counterpart lines. The existing models are reconciliation models.
+    # Not required: the charts of accounts of the modules loaded before this one create models too, and a
+    # NOT NULL column they know nothing about refuses them. Empty is read as the default.
     rule_type = fields.Selection(selection=[
         ('matching_rule', "Matching rule"),
         ('reco_model', "Reconciliation model"),
-    ], default='reco_model', required=True)
-    payment_tolerance = fields.Float(string="Payment Tolerance", required=True, default=0.0, tracking=True)
+    ], default='reco_model')
+    payment_tolerance = fields.Float(string="Payment Tolerance", default=0.0, tracking=True)
     payment_tolerance_type = fields.Selection(selection=[
         ('amount', "In amount"),
         ('percentage', "In percentage"),
-    ], required=True, default='percentage', tracking=True)
+    ], default='percentage', tracking=True)
     matching_order = fields.Selection(selection=[
         ('new_first', "Newest first"),
         ('old_first', "Oldest first"),
-    ], required=True, default='old_first', tracking=True)
+    ], default='old_first', tracking=True)
 
     @api.constrains('payment_tolerance', 'payment_tolerance_type', 'rule_type', 'trigger')
     def _check_matching_rules(self):
@@ -169,7 +171,7 @@ class AccountReconcileModel(models.Model):
                  ('asset_receivable', 'liability_payable', 'asset_current', 'liability_current')),
             ],
             order='date_maturity %s, date %s, id' % (
-                ('asc', 'asc') if self.matching_order == 'old_first' else ('desc', 'desc')
+                ('desc', 'desc') if self.matching_order == 'new_first' else ('asc', 'asc')
             ),
         )
         amls = amls.filtered(lambda aml: (aml.amount_residual > 0) == (residual > 0))

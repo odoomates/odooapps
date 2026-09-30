@@ -125,7 +125,7 @@ class AccountBankStatementLine(models.Model):
         }
         models = self.env['account.reconcile.model'].search([
             ('company_id', '=', self.company_id.id),
-            ('rule_type', '=', 'reco_model'),
+            ('rule_type', '!=', 'matching_rule'),
             ('mapped_partner_id', '=', False),
         ])
         data['models'] = [
