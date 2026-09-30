@@ -1,3 +1,5 @@
+from collections import defaultdict
+
 from odoo import api, fields, models, _
 from odoo.exceptions import ValidationError
 from odoo.fields import Domain
@@ -185,45 +187,58 @@ class CrossoveredBudgetLines(models.Model):
                 computed_name += ' - ' + line.analytic_account_id.name
             line.name = computed_name
 
+    def _get_practical_amount_key(self):
+        """ Lines with the same key are computed by a single query. """
+        self.ensure_one()
+        accounts = tuple(sorted(self.general_budget_id.account_ids.ids))
+        period = (self.date_from, self.date_to, self.company_id.id)
+        if self.analytic_account_id:
+            # since the analytic plans, each root plan stores its accounts in its own column:
+            # account_id only holds the default plan's ones
+            return ('analytic', self.analytic_account_id.plan_id._column_name(), accounts, *period)
+        return ('journal', accounts, *period)
+
     def _compute_practical_amount(self):
+        lines_by_key = defaultdict(lambda: self.browse())
+        amounts = {}
         for line in self:
-            acc_ids = line.general_budget_id.account_ids.ids
-            date_to = line.date_to
-            date_from = line.date_from
-            if line.analytic_account_id:
-                analytic_line_obj = self.env['account.analytic.line']
-                # since the analytic plans, each root plan stores its accounts in
-                # its own column: account_id only holds the default plan's ones
-                analytic_column = line.analytic_account_id.plan_id._column_name()
-                domain = [(analytic_column, '=', line.analytic_account_id.id),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          ('company_id', 'in', [line.company_id.id, False]),
-                          ]
-                if acc_ids:
-                    domain += [('general_account_id', 'in', acc_ids)]
+            amounts[line] = 0.0
+            if line.date_from and line.date_to and (line.analytic_account_id or line.general_budget_id):
+                lines_by_key[line._get_practical_amount_key()] |= line
 
-                # read_group is deprecated since 19.0: _read_group returns tuples
-                result = analytic_line_obj._read_group(domain, aggregates=['amount:sum'])
-                line.practical_amount = (result[0][0] or 0.0) if result else 0.0
-
+        for key, lines in lines_by_key.items():
+            if key[0] == 'analytic':
+                dummy, column, accounts, date_from, date_to, company_id = key
+                domain = [
+                    (column, 'in', lines.analytic_account_id.ids),
+                    ('date', '>=', date_from),
+                    ('date', '<=', date_to),
+                    ('company_id', 'in', [company_id, False]),
+                ]
+                if accounts:
+                    domain.append(('general_account_id', 'in', list(accounts)))
+                totals = dict(self.env['account.analytic.line']._read_group(
+                    domain, groupby=[column], aggregates=['amount:sum']))
+                for line in lines:
+                    amounts[line] = totals.get(line.analytic_account_id, 0.0)
             else:
-                aml_obj = self.env['account.move.line']
-                domain = [('account_id', 'in',
-                           line.general_budget_id.account_ids.ids),
-                          ('date', '>=', date_from),
-                          ('date', '<=', date_to),
-                          # the budget belongs to one company and only posted
-                          # entries have actually been spent/earned
-                          ('company_id', '=', line.company_id.id),
-                          ('parent_state', '=', 'posted'),
-                          ]
-                result = aml_obj._read_group(domain, aggregates=['credit:sum', 'debit:sum'])
-                if result:
-                    credit, debit = result[0]
-                    line.practical_amount = (credit or 0.0) - (debit or 0.0)
-                else:
-                    line.practical_amount = 0.0
+                dummy, accounts, date_from, date_to, company_id = key
+                if not accounts:
+                    continue
+                # the budget belongs to one company and only posted entries have actually
+                # been spent/earned
+                [(credit, debit)] = self.env['account.move.line']._read_group([
+                    ('account_id', 'in', list(accounts)),
+                    ('date', '>=', date_from),
+                    ('date', '<=', date_to),
+                    ('company_id', '=', company_id),
+                    ('parent_state', '=', 'posted'),
+                ], aggregates=['credit:sum', 'debit:sum'])
+                for line in lines:
+                    amounts[line] = (credit or 0.0) - (debit or 0.0)
+
+        for line, amount in amounts.items():
+            line.practical_amount = amount
 
     def _compute_theoritical_amount(self):
         # beware: 'today' variable is mocked in the python tests and thus, its implementation matter
