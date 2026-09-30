@@ -257,7 +257,10 @@ class CrossoveredBudgetLines(models.Model):
             else:
                 line.percentage = 0.00
 
-    @api.constrains('general_budget_id', 'analytic_account_id')
+    # crossovered_budget_id is in the tuple so the check runs on create: a constraint
+    # only fires for the fields the values carry, and a line created with neither a
+    # position nor an analytic account carries neither of them
+    @api.constrains('general_budget_id', 'analytic_account_id', 'crossovered_budget_id')
     def _must_have_analytical_or_budgetary_or_both(self):
         # constraints are called with the whole recordset: never touch a field on self
         for line in self:
