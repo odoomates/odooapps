@@ -10,3 +10,4 @@ from . import account_trial_balance
 from . import account_tax_report
 from . import aged_partner
 from . import account_journal_audit
+from . import account_cash_flow

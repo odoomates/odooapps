@@ -38,6 +38,8 @@ class TestReportTemplates(AccountTestInvoicingCommon):
             ('accounting.report', dict(period, account_report_id=profit_loss.id, enable_filter=True,
                                        date_from_cmp='2025-01-01', date_to_cmp='2025-12-31')),
             ('accounting.report', dict(period, account_report_id=profit_loss.id, debit_credit=True)),
+            ('account.cash.flow.report', period),
+            ('account.cash.flow.report', dict(period, display_detail='accounts')),
         ]
         for model, values in reports:
             with self.subTest(model=model, values=values):
