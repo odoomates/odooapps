@@ -8,7 +8,7 @@ class ChangeLockDate(models.TransientModel):
 
     @api.model
     def default_get(self, vals):
-        res = super(ChangeLockDate, self).default_get(vals)
+        res = super().default_get(vals)
         company_rec = self.env.company
         res.update({
             'company_id': company_rec.id,

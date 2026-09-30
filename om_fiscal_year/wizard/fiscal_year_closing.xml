@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_fiscal_year_closing_form" model="ir.ui.view">
+        <field name="name">account.fiscal.year.closing.form</field>
+        <field name="model">account.fiscal.year.closing</field>
+        <field name="arch" type="xml">
+            <form string="Close Fiscal Year">
+                <field name="currency_id" invisible="1"/>
+                <div class="alert alert-danger" role="alert" invisible="not blocking_issues">
+                    <field name="blocking_issues"/>
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="not open_previous_year_count">
+                    <field name="open_previous_year_count" class="oe_inline"/> earlier fiscal year(s) are still open:
+                    their earnings not transferred yet are included in this closing.
+                </div>
+                <group>
+                    <group string="Closing Entry">
+                        <field name="fiscal_year_id"/>
+                        <field name="earnings"/>
+                        <field name="unaffected_earnings_account_id" options="{'no_create': True}"/>
+                        <field name="retained_earnings_account_id"/>
+                        <field name="journal_id" options="{'no_create': True}"/>
+                        <field name="date"/>
+                    </group>
+                    <group string="Checklist">
+                        <label for="draft_move_count" string="Draft entries"/>
+                        <div>
+                            <field name="draft_move_count" class="oe_inline"/>
+                            <button name="action_view_draft_moves" type="object" string="View" class="btn-link"
+                                    invisible="not draft_move_count"/>
+                        </div>
+                        <label for="unreconciled_statement_line_count" string="Unreconciled bank transactions"/>
+                        <div>
+                            <field name="unreconciled_statement_line_count" class="oe_inline"/>
+                            <button name="action_view_unreconciled_statement_lines" type="object" string="View"
+                                    class="btn-link" invisible="not unreconciled_statement_line_count"/>
+                        </div>
+                        <field name="lock"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_close" string="Close Fiscal Year" type="object" class="btn-primary"
+                            invisible="blocking_issues"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
