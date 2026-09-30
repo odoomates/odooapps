@@ -53,7 +53,8 @@ class ReportTrialBalance(models.AbstractModel):
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
                 account_res.append(res)
-            if display_account == 'movement' and (not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
+            if display_account == 'movement' and (
+                    not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
                 account_res.append(res)
         return account_res
 
@@ -61,6 +62,8 @@ class ReportTrialBalance(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
 
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))

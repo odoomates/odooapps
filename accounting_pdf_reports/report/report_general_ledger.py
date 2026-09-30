@@ -139,6 +139,8 @@ class ReportGeneralLedger(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         init_balance = data['form'].get('initial_balance', True)

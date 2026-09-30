@@ -10,6 +10,8 @@ class ReportTax(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         return {
             'data': data['form'],
             'lines': self.get_lines(data.get('form')),

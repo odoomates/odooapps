@@ -1,5 +1,4 @@
 from odoo import models, api, fields
-from datetime import date
 
 
 class AccountTaxReport(models.TransientModel):
@@ -9,11 +8,11 @@ class AccountTaxReport(models.TransientModel):
 
     date_from = fields.Date(
         string='Date From', required=True,
-        default=lambda self: fields.Date.to_string(date.today().replace(day=1))
+        default=lambda self: fields.Date.context_today(self).replace(day=1)
     )
     date_to = fields.Date(
         string='Date To', required=True,
-        default=lambda self: fields.Date.to_string(date.today())
+        default=fields.Date.context_today
     )
 
     def _print_report(self, data):
