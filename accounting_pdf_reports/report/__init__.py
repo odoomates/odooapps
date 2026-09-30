@@ -5,6 +5,7 @@ from . import report_tax
 from . import report_aged_partner
 from . import report_journal
 from . import report_financial
+from . import report_cash_flow
 
 
 

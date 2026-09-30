@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_cash_flow">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <t t-set="currency" t-value="cash_flow['currency']"/>
+                <t t-set="by_account" t-value="data.get('display_detail') == 'accounts'"/>
+                <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
+                    <h2>Cash Flow Statement</h2>
+
+                    <div id="informations" class="row mb-4">
+                        <div class="col" t-if="data['date_from'] or data['date_to']">
+                            <strong>Period:</strong>
+                            <div>
+                                <t t-if="data['date_from'] and data['date_to']"><span t-out="data['date_from']" t-options="{'widget': 'date'}"/> - <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                                <t t-elif="data['date_from']">From <span t-out="data['date_from']" t-options="{'widget': 'date'}"/></t>
+                                <t t-else="">Until <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></t>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <strong>Target Moves:</strong>
+                            <div t-if="data['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['target_move'] == 'posted'">All Posted Entries</div>
+                        </div>
+                        <div class="col">
+                            <strong>Journals:</strong>
+                            <div t-out="', '.join([journal or '' for journal in print_journal])"/>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-reports">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th class="text-end">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="fw-bold">
+                                <td>Cash and cash equivalents at the beginning of the period</td>
+                                <td class="text-end text-nowrap"><span t-out="cash_flow['opening']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                            </tr>
+                            <t t-foreach="cash_flow['sections']" t-as="section">
+                                <tr class="fw-bold">
+                                    <td colspan="2" class="pt-3"><span t-out="section['name']"/></td>
+                                </tr>
+                                <tr t-if="not section['lines']">
+                                    <td class="ps-4 text-muted">No cash movement</td>
+                                    <td/>
+                                </tr>
+                                <t t-foreach="section['lines']" t-as="line">
+                                    <tr>
+                                        <td class="ps-4"><span t-out="line['name']"/></td>
+                                        <td class="text-end text-nowrap"><span t-out="line['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                    </tr>
+                                    <t t-if="by_account">
+                                        <tr t-foreach="line['accounts']" t-as="account" class="text-muted">
+                                            <td class="ps-5"><span t-out="account['code']"/> <span t-out="account['name']"/></td>
+                                            <td class="text-end text-nowrap"><span t-out="account['amount']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                        </tr>
+                                    </t>
+                                </t>
+                                <tr class="fw-bold border-top">
+                                    <td class="ps-4">Net cash from <span t-out="section['name'].lower()"/></td>
+                                    <td class="text-end text-nowrap"><span t-out="section['total']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                                </tr>
+                            </t>
+                            <tr class="fw-bold border-top border-dark">
+                                <td>Net increase (decrease) in cash and cash equivalents</td>
+                                <td class="text-end text-nowrap"><span t-out="cash_flow['net_change']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td>Cash and cash equivalents at the end of the period</td>
+                                <td class="text-end text-nowrap"><span t-out="cash_flow['closing']" t-options="{'widget': 'monetary', 'display_currency': currency}"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted small">
+                        Cash and cash equivalents are the Bank and Cash accounts. The cash paid or received is classified
+                        by what it was paid for, following the payments to the invoices and bills they settle.
+                    </p>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
