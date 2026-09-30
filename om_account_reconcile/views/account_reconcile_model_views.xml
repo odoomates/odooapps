@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The matching rules of Odoo 20.0 on the reconciliation models of 19.0: a rule proposes the open items of
+         the transaction, with a payment tolerance, instead of counterpart lines -->
+    <record id="view_account_reconcile_model_form" model="ir.ui.view">
+        <field name="name">account.reconcile.model.form.om.account.reconcile</field>
+        <field name="model">account.reconcile.model</field>
+        <field name="inherit_id" ref="account.view_account_reconcile_model_form"/>
+        <field name="arch" type="xml">
+            <header position="attributes">
+                <attribute name="invisible">rule_type == 'matching_rule'</attribute>
+            </header>
+            <field name="active" position="after">
+                <field name="rule_type" invisible="1"/>
+            </field>
+            <xpath expr="//field[@name='match_label_param']/.." position="after">
+                <label for="payment_tolerance" invisible="rule_type != 'matching_rule'"/>
+                <div class="d-flex gap-3" invisible="rule_type != 'matching_rule'">
+                    <field name="payment_tolerance"/>
+                    <field name="payment_tolerance_type"/>
+                </div>
+                <field name="matching_order" invisible="rule_type != 'matching_rule'"/>
+            </xpath>
+            <page id="counterpart_items_tab" position="attributes">
+                <attribute name="invisible">rule_type == 'matching_rule' and payment_tolerance == 0</attribute>
+            </page>
+        </field>
+    </record>
+
+    <record id="account.action_account_reconcile_model" model="ir.actions.act_window">
+        <field name="domain">[('rule_type', '=', 'reco_model')]</field>
+        <field name="context">{'default_rule_type': 'reco_model'}</field>
+    </record>
+
+    <record id="action_account_matching_rules" model="ir.actions.act_window">
+        <field name="name">Matching Rules</field>
+        <field name="res_model">account.reconcile.model</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('rule_type', '=', 'matching_rule')]</field>
+        <field name="context">{'default_rule_type': 'matching_rule'}</field>
+        <field name="search_view_id" ref="account.view_account_reconcile_model_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new matching rule
+            </p><p>
+                Those can be used to automatically match journal items with your statement lines.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_account_reconcile_model"
+              name="Reconciliation Models"
+              action="account.action_account_reconcile_model"
+              parent="account.account_account_menu"
+              sequence="75"
+              groups="account.group_account_manager"/>
+
+    <menuitem id="menu_account_matching_rules"
+              name="Matching Rules"
+              action="action_account_matching_rules"
+              parent="account.account_account_menu"
+              sequence="76"
+              groups="account.group_account_manager"/>
+
+</odoo>

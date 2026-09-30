@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The A4 default is sized for the invoice letterhead: 52mm of margin above the
+         page and the same again of header spacing. This report carries a one-line
+         header, so that reserves a third of the first page for nothing. -->
+    <record id="paperformat_bank_reconciliation" model="report.paperformat">
+        <field name="name">A4 - Bank Reconciliation</field>
+        <field name="default" eval="False"/>
+        <field name="format">A4</field>
+        <field name="orientation">Portrait</field>
+        <field name="margin_top">22</field>
+        <field name="margin_bottom">16</field>
+        <field name="margin_left">7</field>
+        <field name="margin_right">7</field>
+        <field name="header_line" eval="False"/>
+        <field name="header_spacing">10</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_bank_reconciliation" model="ir.actions.report">
+        <field name="name">Bank Reconciliation Statement</field>
+        <field name="model">om.bank.reconciliation.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_reconcile.report_bank_reconciliation</field>
+        <field name="paperformat_id" ref="paperformat_bank_reconciliation"/>
+    </record>
+
+</odoo>

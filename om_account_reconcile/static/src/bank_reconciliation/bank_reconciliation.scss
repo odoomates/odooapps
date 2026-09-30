@@ -1,0 +1,65 @@
+.o_om_bank_rec {
+    .o_om_bank_rec_content {
+        display: flex;
+        min-height: 0;
+        overflow: hidden;
+    }
+
+    .o_om_bank_rec_list {
+        flex: 0 0 22rem;
+        max-width: 40%;
+        overflow-y: auto;
+        border-right: 1px solid $border-color;
+        background-color: $o-view-background-color;
+    }
+
+    .o_om_bank_rec_transaction {
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid $border-color;
+        cursor: pointer;
+
+        &:hover {
+            background-color: rgba($o-action, 0.05);
+        }
+
+        &.o_selected {
+            background-color: rgba($o-action, 0.12);
+            box-shadow: inset 3px 0 0 $o-action;
+        }
+
+        &.o_reconciled {
+            opacity: 0.7;
+        }
+    }
+
+    .o_om_bank_rec_panel {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-y: auto;
+        padding: 1rem;
+    }
+
+    .o_om_bank_rec_candidate {
+        cursor: pointer;
+    }
+
+    .o_om_bank_rec_match_amount,
+    .o_om_bank_rec_writeoff_amount {
+        min-width: 7rem;
+    }
+}
+
+@include media-breakpoint-down(md) {
+    .o_om_bank_rec .o_om_bank_rec_content {
+        flex-direction: column;
+        overflow: visible;
+
+        .o_om_bank_rec_list {
+            flex-basis: auto;
+            max-width: none;
+            max-height: 40vh;
+            border-right: 0;
+            border-bottom: 1px solid $border-color;
+        }
+    }
+}
