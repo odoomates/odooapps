@@ -10,15 +10,18 @@ class ReportTax(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         return {
             'data': data['form'],
             'lines': self.get_lines(data.get('form')),
         }
 
     def _sql_from_amls_one(self):
-        sql = """SELECT "account_move_line".tax_line_id, COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
+        sql = ("""SELECT "account_move_line".tax_line_id, """
+               """COALESCE(SUM("account_move_line".debit-"account_move_line".credit), 0)
                     FROM %s
-                    WHERE %s GROUP BY "account_move_line".tax_line_id"""
+                    WHERE %s GROUP BY "account_move_line".tax_line_id""")
         return sql
 
     def _sql_from_amls_two(self):
