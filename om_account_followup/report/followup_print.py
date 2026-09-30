@@ -41,6 +41,7 @@ class ReportFollowup(models.AbstractModel):
             [('partner_id', '=', partner.id),
              ('account_id.account_type', '=', 'asset_receivable'),
              ('full_reconcile_id', '=', False),
+             ('parent_state', '=', 'posted'),
              ('company_id', '=', company_id),
              '|', ('date_maturity', '=', False),
              ('date_maturity', '<=', fields.Date.today())])
@@ -85,6 +86,7 @@ class ReportFollowup(models.AbstractModel):
         partner_line_ids = self.env['account.move.line'].search(
             [('partner_id', '=', stat_line.partner_id.id),
              ('full_reconcile_id', '=', False),
+             ('parent_state', '=', 'posted'),
              ('company_id', '=', stat_line.company_id.id),
              ('debit', '!=', False),
              ('account_id.account_type', '=', 'asset_receivable'),

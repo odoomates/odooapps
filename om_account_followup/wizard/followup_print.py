@@ -180,6 +180,7 @@ class FollowupPrint(models.TransientModel):
                 LEFT JOIN account_account AS a
                 ON (l.account_id=a.id)
                 WHERE (l.full_reconcile_id IS NULL)
+                AND l.parent_state = 'posted'
                 AND a.account_type = 'asset_receivable'
                 AND (l.partner_id is NOT NULL)
                 AND (l.debit > 0)
@@ -220,7 +221,7 @@ class FollowupPrint(models.TransientModel):
                 continue
             if followup_line_id not in fups:
                 continue
-            stat_line_id = partner_id * 10000 + company_id
+            stat_line_id = self.env['followup.stat.by.partner']._get_stat_id(partner_id, company_id)
             if date_maturity:
                 # date_maturity = fields.Date.to_string(date_maturity)
                 if date_maturity <= fups[followup_line_id][0]:

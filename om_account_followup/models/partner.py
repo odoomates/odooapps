@@ -3,7 +3,8 @@ from markupsafe import Markup, escape
 from lxml import etree
 from odoo import api, fields, models, _
 from datetime import datetime
-from odoo.exceptions import ValidationError
+from odoo.exceptions import UserError, ValidationError
+from odoo.tools import SQL
 from odoo.tools.misc import formatLang
 
 
@@ -23,6 +24,7 @@ class ResPartner(models.Model):
             res['arch'] = etree.tostring(doc, encoding="utf-8")
         return res
 
+    @api.depends_context('company')
     def _get_latest(self):
         company = self.env.company
         for partner in self:
@@ -231,16 +233,16 @@ class ResPartner(models.Model):
                 [('partner_id', '=', self.id),
                  ('account_id.account_type', '=', 'asset_receivable'),
                  ('full_reconcile_id', '=', False),
+                 ('parent_state', '=', 'posted'),
                  ('company_id', '=', company_id),
                  '|', ('date_maturity', '=', False),
-                 ('date_maturity', '<=', fields.Date.today())]):
+                 ('date_maturity', '<=', fields.Date.context_today(self))]):
             raise ValidationError(
                 _("The partner does not have any accounting entries to "
                   "print in the overdue report for the current company."))
         self.message_post(body=_('Printed overdue payments report'))
-        self.message_post(body=_('Printed overdue payments report'))
 
-        wizard_partner_ids = [self.id * 10000 + company_id]
+        wizard_partner_ids = [self.env['followup.stat.by.partner']._get_stat_id(self.id, company_id)]
         followup_ids = self.env['followup.followup'].search(
             [('company_id', '=', company_id)])
         if not followup_ids:
@@ -252,9 +254,10 @@ class ResPartner(models.Model):
         }
         return self.do_partner_print(wizard_partner_ids, data)
 
+    @api.depends_context('company')
     def _get_amounts_and_date(self):
         company = self.env.company
-        current_date = fields.Date.today()
+        current_date = fields.Date.context_today(self)
         for partner in self:
             worst_due_date = False
             amount_due = amount_overdue = 0.0
@@ -270,83 +273,105 @@ class ResPartner(models.Model):
             partner.payment_amount_overdue = amount_overdue
             partner.payment_earliest_due_date = worst_due_date
 
-    def _get_followup_overdue_query(self, args, overdue_only=False):
-        company_id = self.env.company.id
-        having_clauses = []
-        having_values = []
+    def _followup_search(self, operator, operand, search):
+        """ Odoo 18 gives the search methods the operator as written: bring '=', '!='
+        and 'not in' down to 'in' and negate the result, as the ORM of 19 does. """
+        negate = operator in ('!=', 'not in')
+        if operator in ('=', '!='):
+            operand = [operand]
+        if operator in ('=', '!=', 'not in'):
+            operator = 'in'
+        domain = search(operator, operand)
+        if domain is NotImplemented:
+            raise UserError(_('Operator %s is not supported for this search.', operator))
+        return ['!', *domain] if negate else domain
 
-        for field, operator, value in args:
-            if operator in ['=', '!=', '>', '>=', '<', '<=']:
-                having_clauses.append(f'SUM(bal2) {operator} %s')
-                having_values.append(value)
-            else:
-                raise ValueError(f"Unsupported operator: {operator}")
+    def _followup_having_condition(self, expression, operator, value):
+        """ SQL condition comparing the aggregate `expression` to `value`, or
+        NotImplemented for operators the ORM can derive (e.g. 'not in'). """
+        if operator in ('>', '>=', '<', '<='):
+            return SQL("%s %s %s", expression, SQL(operator), value)
+        if operator == 'in':
+            values = [v for v in value if v is not None and v is not False]
+            conditions = []
+            if values:
+                conditions.append(SQL("%s IN %s", expression, tuple(values)))
+            if len(values) != len(value):
+                conditions.append(SQL("%s IS NULL", expression))
+            if not conditions:
+                return SQL("FALSE")
+            return SQL("(%s)", SQL(" OR ").join(conditions))
+        return NotImplemented
 
-        having_where_clause = ' AND '.join(having_clauses)
-        overdue_only_str = 'AND date_maturity <= NOW()' if overdue_only else ''
-
-        query = ('''
+    def _followup_amount_search(self, operator, value, overdue_only):
+        if operator == 'in':
+            # partners without receivable lines have a zero balance
+            value = [v or 0.0 for v in value]
+        having = self._followup_having_condition(SQL("SUM(bal2)"), operator, value)
+        if having is NotImplemented:
+            return NotImplemented
+        query = SQL("""
             SELECT pid AS partner_id, SUM(bal2) FROM (
-                SELECT 
-                    CASE WHEN bal IS NOT NULL THEN bal ELSE 0.0 END AS bal2, 
-                    p.id as pid 
+                SELECT
+                    CASE WHEN bal IS NOT NULL THEN bal ELSE 0.0 END AS bal2,
+                    p.id as pid
                 FROM (
-                    SELECT 
-                        (debit - credit) AS bal, 
-                        partner_id 
+                    SELECT
+                        (l.debit - l.credit) AS bal,
+                        l.partner_id
                     FROM account_move_line l
                     LEFT JOIN account_account a ON a.id = l.account_id
                     WHERE a.account_type = 'asset_receivable'
-                    %s AND full_reconcile_id IS NULL
-                    AND l.company_id = %%s
+                    %s AND l.full_reconcile_id IS NULL
+                    AND l.parent_state = 'posted'
+                    AND l.company_id = %s
                 ) AS l
-                RIGHT JOIN res_partner p ON p.id = partner_id 
+                RIGHT JOIN res_partner p ON p.id = partner_id
             ) AS pl
             GROUP BY pid HAVING %s
-        ''') % (overdue_only_str, having_where_clause)
-
-        params = [company_id] + having_values
-        return query, params
+        """,
+            (SQL("AND COALESCE(l.date_maturity, l.date) <= %s", fields.Date.context_today(self))
+             if overdue_only else SQL()),
+            self.env.company.id,
+            having,
+        )
+        self.env.flush_all()
+        self.env.cr.execute(query)
+        return [('id', 'in', [x[0] for x in self.env.cr.fetchall()])]
 
     def _payment_overdue_search(self, operator, operand):
-        args = [('payment_amount_overdue', operator, operand)]
-        query, params = self._get_followup_overdue_query(args, overdue_only=True)
-        self._cr.execute(query, params)
-        res = self._cr.fetchall()
-        if not res:
-            return [('id', '=', '0')]
-        return [('id', 'in', [x[0] for x in res])]
+        return self._followup_search(
+            operator, operand, lambda op, value: self._followup_amount_search(op, value, overdue_only=True))
 
     def _payment_earliest_date_search(self, operator, operand):
-        args = [('payment_earliest_due_date', operator, operand)]
-        company_id = self.env.company.id
-        having_where_clause = ' AND '.join(
-            map(lambda x: "(MIN(l.date_maturity) %s '%%s')" % (x[1]), args))
-        having_values = [x[2] for x in args]
-        having_where_clause = having_where_clause % (having_values[0])
-        query = """SELECT partner_id FROM account_move_line l
-                LEFT JOIN account_account a ON a.id = l.account_id
-                WHERE a.account_type = 'asset_receivable' 
-                AND l.company_id = %s 
-                AND l.full_reconcile_id IS NULL 
-                AND partner_id IS NOT NULL GROUP BY partner_id"""
-        query = query % company_id
-        if having_where_clause:
-            query += ' HAVING %s ' % (having_where_clause)
-        self._cr.execute(query)
-        res = self._cr.fetchall()
-        if not res:
-            return [('id', '=', '0')]
-        return [('id', 'in', [x[0] for x in res])]
+        return self._followup_search(operator, operand, self._followup_earliest_date_search)
+
+    def _followup_earliest_date_search(self, operator, operand):
+        having = self._followup_having_condition(
+            SQL("MIN(COALESCE(l.date_maturity, l.date))"), operator, operand)
+        if having is NotImplemented:
+            return NotImplemented
+        self.env.flush_all()
+        self.env.cr.execute(SQL("""
+            SELECT l.partner_id, %s FROM account_move_line l
+            LEFT JOIN account_account a ON a.id = l.account_id
+            WHERE a.account_type = 'asset_receivable'
+            AND l.company_id = %s
+            AND l.full_reconcile_id IS NULL
+            AND l.parent_state = 'posted'
+            AND l.partner_id IS NOT NULL
+            GROUP BY l.partner_id
+        """, having, self.env.company.id))
+        rows = self.env.cr.fetchall()
+        domain = [('id', 'in', [partner_id for partner_id, matches in rows if matches])]
+        if operator == 'in' and any(v is None or v is False for v in operand):
+            # partners without open receivable lines have no due date either
+            domain = ['|', ('id', 'not in', [partner_id for partner_id, __ in rows])] + domain
+        return domain
 
     def _payment_due_search(self, operator, operand):
-        args = [('payment_amount_due', operator, operand)]
-        query, params = self._get_followup_overdue_query(args, overdue_only=False)
-        self._cr.execute(query, params)
-        res = self._cr.fetchall()
-        if not res:
-            return [('id', '=', '0')]
-        return [('id', 'in', [x[0] for x in res])]
+        return self._followup_search(
+            operator, operand, lambda op, value: self._followup_amount_search(op, value, overdue_only=False))
 
     def _get_partners(self):
         partners = set()
@@ -377,7 +402,8 @@ class ResPartner(models.Model):
     )
     unreconciled_aml_ids = fields.One2many(
         'account.move.line', 'partner_id',
-        domain=[('full_reconcile_id', '=', False), ('account_id.account_type', '=', 'asset_receivable')]
+        domain=[('full_reconcile_id', '=', False), ('account_id.account_type', '=', 'asset_receivable'),
+                ('parent_state', '=', 'posted')]
     )
     latest_followup_date = fields.Date(
         compute='_get_latest', string="Latest Follow-up Date", compute_sudo=True,
