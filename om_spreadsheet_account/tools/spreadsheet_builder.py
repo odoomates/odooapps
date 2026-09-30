@@ -358,11 +358,10 @@ class Workbook:
         self.link_references[figure_id] = menu_xmlid
 
     def list_table(self, sheet, col, row, list_id, rows, header_style=None):
-        """ The records of a list, a header then one line per record: the list functions of 19.0 return one value
-        each, ODOO.LIST(list, position, field) and ODOO.LIST.HEADER(list, field). """
+        """ The records of a list, a header then one line per record: ODOO.LIST(list, position, field) returns one
+        value. ODOO.LIST.HEADER of Odoo 18.0 takes no header text: the header is the label of the column. """
         for offset, (field_name, text) in enumerate(self._list_columns[list_id]):
-            sheet.set(col + offset, row, '=ODOO.LIST.HEADER(%s,"%s","%s")' % (list_id, field_name, text),
-                      header_style)
+            sheet.set(col + offset, row, label(text), header_style)
             for index in range(1, rows + 1):
                 sheet.set(col + offset, row + index, '=ODOO.LIST(%s,%s,"%s")' % (list_id, index, field_name))
 
