@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 18 Accounting Community',
-    'version': '1.2.0',
+    'version': '1.3.0',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, '
@@ -34,6 +34,10 @@
         'om_currency_rate_update',
         'om_currency_revaluation',
         'om_account_bank_statement_import',
+        'om_spreadsheet_account',
+        'om_spreadsheet_account_asset',
+        'om_spreadsheet_account_budget',
+        'om_spreadsheet_account_followup',
     ],
     'data': [
         'security/group.xml',
