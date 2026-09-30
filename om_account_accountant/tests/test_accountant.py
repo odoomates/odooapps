@@ -10,7 +10,8 @@ class TestAccountantBundle(TransactionCase):
             'accounting_pdf_reports', 'om_account_asset', 'om_account_budget', 'om_fiscal_year',
             'om_recurring_payments', 'om_account_daily_reports', 'om_account_followup', 'om_account_reconcile',
             'om_account_cash_forecast', 'om_account_check_printing', 'om_currency_rate_update',
-            'om_currency_revaluation', 'om_account_bank_statement_import',
+            'om_currency_revaluation', 'om_account_bank_statement_import', 'om_spreadsheet_account',
+            'om_spreadsheet_account_asset', 'om_spreadsheet_account_budget', 'om_spreadsheet_account_followup',
         }
         installed = set(self.env['ir.module.module'].search([
             ('name', 'in', list(expected)), ('state', '=', 'installed'),
