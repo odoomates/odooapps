@@ -3,6 +3,14 @@ from odoo.tests import TransactionCase, new_test_user, tagged
 
 # where each menu of the accounting apps stands: daily work, reports, settings
 PARENTS = {
+    'om_account_reconcile.menu_bank_reconciliation': 'om_account_reconcile.menu_reconciliation',
+    'om_account_reconcile.menu_open_items_reconciliation': 'om_account_reconcile.menu_reconciliation',
+    'om_account_reconcile.menu_move_line_match': 'om_account_reconcile.menu_reconciliation',
+    'om_account_reconcile.menu_reconciliation': 'account.menu_finance_entries',
+    'om_account_cash_forecast.menu_cash_forecast_item': 'account.menu_finance_entries',
+    'om_account_check_printing.menu_check_format': 'account.account_invoicing_menu',
+    'om_account_accountant.menu_review_bank_reconciliation': 'om_account_accountant.menu_review_reconciliation',
+    'om_account_accountant.menu_review_unrealized_currencies': 'om_account_accountant.menu_review_regularization',
     'om_recurring_payments.menu_recurring_payment': 'account.menu_finance_entries',
     'om_recurring_payments.menu_move_auto_post': 'account.menu_finance_entries',
     'om_fiscal_year.menu_action_change_lock_date': 'om_fiscal_year.menu_account_closing',
@@ -58,7 +66,12 @@ class TestMenus(TransactionCase):
             self.env, login='menu_accountant', groups='account.group_account_user',
             company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
         visible = self.env['ir.ui.menu'].with_user(accountant)._visible_menu_ids()
-        for xmlid in ('om_recurring_payments.menu_recurring_payment',
+        for xmlid in ('om_account_reconcile.menu_bank_reconciliation',
+                      'om_account_reconcile.menu_open_items_reconciliation',
+                      'om_account_reconcile.menu_move_line_match',
+                      'om_account_cash_forecast.menu_cash_forecast_item',
+                      'om_account_accountant.menu_review_bank_reconciliation',
+                      'om_recurring_payments.menu_recurring_payment',
                       'om_recurring_payments.menu_move_auto_post',
                       'accounting_pdf_reports.menu_action_account_moves_ledger_general',
                       'accounting_pdf_reports.menu_account_report_bs',
