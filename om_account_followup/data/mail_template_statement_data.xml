@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+
+        <record id="email_template_customer_statement" model="mail.template">
+            <field name="name">Customer Statement</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="email_from">{{ (user.email_formatted or '') }}</field>
+            <field name="partner_to">{{ object.id }}</field>
+            <field name="subject">{{ env.company.name }} Statement of Account</field>
+            <field name="lang">{{ object.lang }}</field>
+            <field name="report_template_ids" eval="[(4, ref('om_account_followup.action_report_customer_statement'))]"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="margin: 0; padding: 0; font-size: 14px;">
+    <p style="margin: 0 0 12px 0;">Dear <t t-out="object.name or ''"/>,</p>
+    <p style="margin: 0 0 12px 0;">Please find attached the statement of your account with <t t-out="env.company.name or ''"/>, with the invoices and payments still open.</p>
+    <p style="margin: 0 0 12px 0;">If anything does not match your records, please let us know.</p>
+    <p style="margin: 12px 0 0 0;">
+        Best regards,<br/>
+        <t t-out="user.name or ''"/><br/>
+        <t t-out="env.company.name or ''"/>
+    </p>
+</div>
+            ]]></field>
+        </record>
+
+        <record id="email_template_vendor_statement" model="mail.template">
+            <field name="name">Vendor Statement</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="email_from">{{ (user.email_formatted or '') }}</field>
+            <field name="partner_to">{{ object.id }}</field>
+            <field name="subject">{{ env.company.name }} Statement of Account</field>
+            <field name="lang">{{ object.lang }}</field>
+            <field name="report_template_ids" eval="[(4, ref('om_account_followup.action_report_vendor_statement'))]"/>
+            <field name="auto_delete" eval="True"/>
+            <field name="body_html"><![CDATA[
+<div style="margin: 0; padding: 0; font-size: 14px;">
+    <p style="margin: 0 0 12px 0;">Dear <t t-out="object.name or ''"/>,</p>
+    <p style="margin: 0 0 12px 0;">Please find attached the bills and payments still open in our records for your account.</p>
+    <p style="margin: 0 0 12px 0;">Could you check them against your own statement and let us know of any difference?</p>
+    <p style="margin: 12px 0 0 0;">
+        Best regards,<br/>
+        <t t-out="user.name or ''"/><br/>
+        <t t-out="env.company.name or ''"/>
+    </p>
+</div>
+            ]]></field>
+        </record>
+
+    </data>
+
+</odoo>

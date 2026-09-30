@@ -1,4 +1,4 @@
-from odoo import api, fields, models, _
+from odoo import api, fields, models
 from odoo import tools
 from odoo.tools import SQL
 
@@ -13,9 +13,10 @@ class FollowupStatByPartner(models.Model):
     _auto = False
     _depends = {
         'account.move.line': [
-            'account_id', 'company_id', 'credit', 'date', 'debit', 'parent_state',
+            'account_id', 'company_id', 'credit', 'date', 'debit', 'parent_state', 'move_id',
             'followup_date', 'followup_line_id', 'full_reconcile_id', 'partner_id',
         ],
+        'account.move': ['followup_disputed'],
         'account.account': ['account_type'],
         'followup.line': ['delay'],
     }
@@ -56,14 +57,14 @@ class FollowupStatByPartner(models.Model):
                 FROM
                     account_move_line l
                     LEFT JOIN account_account a ON (l.account_id = a.id)
+                    JOIN account_move m ON (m.id = l.move_id)
                     LEFT JOIN followup_line fl ON (l.followup_line_id = fl.id)
                 WHERE
                     a.account_type = 'asset_receivable' AND
                     l.full_reconcile_id is NULL AND
                     l.parent_state = 'posted' AND
+                    NOT COALESCE(m.followup_disputed, FALSE) AND
                     l.partner_id IS NOT NULL
                     GROUP BY
                     l.partner_id, l.company_id
             )""", STAT_ID_COMPANY_OFFSET))
-
-

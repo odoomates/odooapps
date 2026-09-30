@@ -1,7 +1,5 @@
-import datetime
-import time
 from odoo import api, fields, models, _
-from markupsafe import Markup, escape
+from markupsafe import Markup
 
 
 class FollowupPrint(models.TransientModel):
@@ -12,35 +10,19 @@ class FollowupPrint(models.TransientModel):
         if self.env.context.get('active_model',
                                 'ir.ui.menu') == 'followup.followup':
             return self.env.context.get('active_id', False)
-        company_id = self.env.company.id
-        followp_id = self.env['followup.followup'].search(
-            [('company_id', '=', company_id)], limit=1)
-        return followp_id or False
+        return self.env['followup.followup']._get_default_plan() or False
 
     date = fields.Date('Follow-up Sending Date', required=True,
                        help="This field allow you to select a forecast date "
                             "to plan your follow-ups",
-                       default=lambda *a: time.strftime('%Y-%m-%d'))
-    followup_id = fields.Many2one('followup.followup', 'Follow-Up',
-                                  required=True, readonly=True,
-                                  default=_get_followup)
+                       default=fields.Date.context_today)
+    followup_id = fields.Many2one('followup.followup', 'Plan', required=True, default=_get_followup,
+                                  domain="[('company_id', 'in', allowed_company_ids)]")
     partner_ids = fields.Many2many('followup.stat.by.partner',
                                    'partner_stat_rel', 'osv_memory_id',
                                    'partner_id', 'Partners', required=True)
     company_id = fields.Many2one('res.company', readonly=True,
                                  related='followup_id.company_id')
-    email_conf = fields.Boolean('Send Email Confirmation')
-    email_subject = fields.Char('Email Subject', size=64,
-                                default=lambda *a: _('Invoices Reminder'))
-    partner_lang = fields.Boolean(
-        'Send Email in Partner Language', default=True,
-        help='Do not change message text, if you want to send email in '
-             'partner language, or configure from company')
-    email_body = fields.Text('Email Body', default='')
-    summary = fields.Text('Summary', readonly=True)
-    test_print = fields.Boolean(
-        'Test Print', help='Check if you want to print follow-ups without '
-                           'changing follow-up level.')
 
     def process_partners(self, partner_ids, data):
         partner_obj = self.env['res.partner']
@@ -50,7 +32,6 @@ class FollowupPrint(models.TransientModel):
         nbmails = 0
         nbunknownmails = 0
         nbprints = 0
-        resulttext = " "
         for partner in self.env['followup.stat.by.partner'].browse(
                 partner_ids):
             if partner.max_followup_id.manual_action:
@@ -65,38 +46,26 @@ class FollowupPrint(models.TransientModel):
             if partner.max_followup_id.send_email:
                 nbunknownmails += partner.partner_id.do_partner_mail()
                 nbmails += 1
-            if partner.max_followup_id.send_letter:
+            if partner.max_followup_id.send_letter and not self.env.context.get('followup_automatic'):
                 partner_ids_to_print.append(partner.id)
                 nbprints += 1
-                followup_without_lit = \
-                    partner.partner_id.latest_followup_level_id_without_lit
-                message_html = Markup(_(
-                    "Follow-up letter of <i>{followup}</i> will be sent"
-                )).format(
-                    followup=escape(followup_without_lit.name)
-                )
-                partner.partner_id.message_post(
-                    body=message_html,
-                    message_type='comment'
-                )
+                message = _("Follow-up letter of %s will be sent",
+                            Markup("<i>%s</i>") % partner.partner_id.latest_followup_level_id.name)
+                partner.partner_id._followup_chatter().message_post(body=message)
+        paragraph = Markup("<p>%s</p>")
         if nbunknownmails == 0:
-            resulttext += str(nbmails) + _(" email(s) sent")
+            resulttext = paragraph % _("%s email(s) sent", nbmails)
         else:
-            resulttext += str(nbmails) + _(
-                " email(s) should have been sent, but ") + str(
-                nbunknownmails) + _(
-                " had unknown email address(es)") + "\n <BR/> "
-        resulttext += "<BR/>" + str(nbprints) + _(
-            " letter(s) in report") + " \n <BR/>" + str(nbmanuals) + _(
-            " manual action(s) assigned:")
-        needprinting = False
-        if nbprints > 0:
-            needprinting = True
-        resulttext = Markup(resulttext)
-        resulttext += Markup("<p align='center'>")
-        for item, count in manuals.items():
-            resulttext += Markup("<li>%s:%s</li>") % (escape(item), count)
-        resulttext += Markup("</p>")
+            resulttext = paragraph % _(
+                "%(count)s email(s) should have been sent, but %(unknown)s had unknown email address(es)",
+                count=nbmails, unknown=nbunknownmails)
+        resulttext += paragraph % _("%s letter(s) in report", nbprints)
+        resulttext += paragraph % _("%s manual action(s) assigned:", nbmanuals)
+        if manuals:
+            resulttext += Markup("<ul>%s</ul>") % Markup().join(
+                Markup("<li>%s: %s</li>") % (responsible, count)
+                for responsible, count in manuals.items())
+        needprinting = nbprints > 0
         result = {}
         action = partner_obj.do_partner_print(partner_ids_to_print, data)
         result['needprinting'] = needprinting
@@ -112,21 +81,23 @@ class FollowupPrint(models.TransientModel):
                      'followup_date': date})
 
     def clear_manual_actions(self, partner_list):
-        partner_list_ids = [partner.partner_id.id for partner in self.env[
-            'followup.stat.by.partner'].browse(partner_list)]
-        ids = self.env['res.partner'].search(
-            ['&', ('id', 'not in', partner_list_ids), '|',
-             ('payment_responsible_id', '!=', False),
-             ('payment_next_action_date', '!=', False)])
-
-        partners_to_clear = []
-        for part in ids:
-            if not part.unreconciled_aml_ids:
-                partners_to_clear.append(part.id)
-                part.action_done()
-        return len(partners_to_clear)
+        """ The follow-up activities of the customers who have paid everything are done """
+        partner_list_ids = self.env['followup.stat.by.partner'].browse(partner_list).partner_id.ids
+        activity_type = self.env.ref('om_account_followup.mail_activity_type_followup')
+        activities = self.env['mail.activity'].search([
+            ('res_model', '=', 'res.partner'),
+            ('activity_type_id', '=', activity_type.id),
+            ('res_id', 'not in', partner_list_ids),
+        ])
+        partners = self.env['res.partner'].browse(activities.mapped('res_id')).exists()
+        paid = partners.filtered(lambda partner: partner.payment_amount_due <= 0)
+        done = activities.filtered(lambda activity: activity.res_id in paid.ids)
+        if done:
+            done.sudo().action_feedback(feedback=_('Nothing is due any more.'))
+        return len(paid)
 
     def do_process(self):
+        self = self.with_company(self.company_id)
         context = dict(self.env.context or {})
 
         tmp = self._get_partners_followp()
@@ -143,9 +114,9 @@ class FollowupPrint(models.TransientModel):
         context.update(restot_context)
         nbactionscleared = self.clear_manual_actions(partner_list)
         if nbactionscleared > 0:
-            restot['resulttext'] = restot['resulttext'] + "<li>" + _(
+            restot['resulttext'] += Markup("<p>%s</p>") % _(
                 "%s partners have no credits and as such the "
-                "action is cleared") % (str(nbactionscleared)) + "</li>"
+                "action is cleared", nbactionscleared)
         resource_id = self.env.ref(
             'om_account_followup.view_om_account_followup_sending_results')
         context.update({'description': restot['resulttext'],
@@ -161,73 +132,30 @@ class FollowupPrint(models.TransientModel):
             'target': 'new',
         }
 
-    def _get_msg(self):
-        return self.env.company.follow_up_msg
-
     def _get_partners_followp(self):
-        data = self
-        company_id = data.company_id.id
-        context = self.env.context
-        self.env.cr.execute(
-            '''SELECT
-                    l.partner_id,
-                    l.followup_line_id,
-                    l.date_maturity,
-                    l.date, l.id
-                FROM account_move_line AS l
-                LEFT JOIN account_account AS a
-                ON (l.account_id=a.id)
-                WHERE (l.full_reconcile_id IS NULL)
-                AND l.parent_state = 'posted'
-                AND a.account_type = 'asset_receivable'
-                AND (l.partner_id is NOT NULL)
-                AND (l.debit > 0)
-                AND (l.company_id = %s)
-                ORDER BY l.date''',
-            (company_id,))
-        move_lines = self.env.cr.fetchall()
-        old = None
-        fups = {}
-        fup_id = 'followup_id' in context and context[
-            'followup_id'] or data.followup_id.id
-        date = 'date' in context and context['date'] or data.date
-        date = fields.Date.to_string(date)
-        current_date = datetime.date(*time.strptime(date, '%Y-%m-%d')[:3])
-        # fup_id may come straight from the caller's context: never interpolate it
-        fup_id = int(fup_id)
-        self.env.cr.execute(
-            """SELECT *
-            FROM followup_line
-            WHERE followup_id = %s
-            ORDER BY delay""",
-            (fup_id,))
+        """ The customers of the plan whose reminders are due, and the level each open item reaches.
 
-        for result in self.env.cr.dictfetchall():
-            delay = datetime.timedelta(days=result['delay'])
-            fups[old] = (current_date - delay, result['id'])
-            old = result['id']
-
+        The excluded customers and the ones who promised to pay later are left alone.
+        """
+        company = self.company_id
+        date = fields.Date.to_date(self.env.context.get('date') or self.date)
+        plan = self.env['followup.followup'].browse(self.env.context.get('followup_id')) or self.followup_id
+        Partner = self.env['res.partner'].with_company(company)
+        lines = self.env['account.move.line'].sudo().search(
+            self.env['account.move.line']._followup_open_domain(company))
+        partners = Partner.browse(lines.partner_id.ids).filtered(
+            lambda partner: partner._followup_plan() == plan
+            and not partner.followup_excluded
+            and not (partner.followup_promise_date and partner.followup_promise_date >= date))
+        state = partners._followup_state(date)
+        stat = self.env['followup.stat.by.partner']
         partner_list = []
         to_update = {}
-
-        for partner_id, followup_line_id, date_maturity, date, id in \
-                move_lines:
-            if not partner_id:
+        for partner, values in state.items():
+            if not values['lines_due']:
                 continue
-            if followup_line_id not in fups:
-                continue
-            stat_line_id = self.env['followup.stat.by.partner']._get_stat_id(partner_id, company_id)
-            if date_maturity:
-                date_maturity = fields.Date.to_string(date_maturity)
-                if date_maturity <= fups[followup_line_id][0].strftime(
-                        '%Y-%m-%d'):
-                    if stat_line_id not in partner_list:
-                        partner_list.append(stat_line_id)
-                    to_update[str(id)] = {'level': fups[followup_line_id][1],
-                                          'partner_id': stat_line_id}
-            elif date and date <= fups[followup_line_id][0]:
-                if stat_line_id not in partner_list:
-                    partner_list.append(stat_line_id)
-                to_update[str(id)] = {'level': fups[followup_line_id][1],
-                                      'partner_id': stat_line_id}
+            stat_line_id = stat._get_stat_id(partner.id, company.id)
+            partner_list.append(stat_line_id)
+            for line, level in values['lines_due'].items():
+                to_update[str(line.id)] = {'level': level.id, 'partner_id': stat_line_id}
         return {'partner_ids': partner_list, 'to_update': to_update}
