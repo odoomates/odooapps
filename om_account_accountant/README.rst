@@ -133,9 +133,12 @@ the others, so upgrade the suite as a whole:
    ``om_currency_revaluation`` and the four ``om_spreadsheet_account*``
    dashboards) must be in the addons path too, or the upgrade stops.
 3. Restart Odoo and update the apps list in developer mode.
-4. Upgrade *Odoo 19 Accounting Community*: the new modules install themselves
-   and the others are upgraded with it. From the command line:
-   ``-u om_account_accountant``.
+4. Upgrade all the modules of the suite that are installed, together: Odoo
+   upgrades a module and the ones depending on it, not the modules it depends
+   on, so upgrading *Odoo 19 Accounting Community* alone is not enough. The new
+   modules install themselves with it. From the command line:
+   ``-u accounting_pdf_reports,om_account_accountant,om_account_asset,om_account_budget,om_account_daily_reports,om_account_followup,om_fiscal_year,om_recurring_payments``
+   (or ``-u all``).
 
 The data is kept: the upgrade only adds to it. Nothing new switches itself on:
 the automatic currency rates, the automatic reconciliation and the blocking over
