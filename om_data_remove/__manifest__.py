@@ -1,7 +1,7 @@
 {
     'name': 'Odoo 18 Remove Data',
-    'version': '1.4',
-    'author': 'Odoo Mates, Sunpop.cn',
+    'version': '1.6',
+    'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
     'summary': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
@@ -10,7 +10,8 @@
     'license': 'LGPL-3',
     'depends': ['base'],
     'data': [
+        'security/ir.model.access.csv',
         'views/view.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }

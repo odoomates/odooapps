@@ -1,117 +1,207 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <record id="view_remove_data" model="ir.ui.view">
-        <field name="name">Remove Data</field>
-        <field name="model">res.config.settings</field>
-        <field name="priority">20</field>
+    <!-- the Data Cleaning screen: what would be deleted, and one button -->
+    <record id="view_om_data_remove_form" model="ir.ui.view">
+        <field name="name">om.data.remove.form</field>
+        <field name="model">om.data.remove</field>
         <field name="arch" type="xml">
-            <form string="odooApp Customize Settings" class="oe_form_configuration">
-                <div class="mt16 o_settings_container" name="data-clean">
-                    <span>
-                        <h2>Data Cleaning (Be careful to do that!)</h2>
-                        <h2>
-                            Data is deleted direcly from the database table using queries, once you done, it is not
-                            reversible !
-                        </h2>
-                    </span>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Remove All</span>
-                        <button string="Delete All Transactions Except Master Data" type="object" name="action_remove_all" confirm="Please confirm to delete the data?" class="oe_highlight"/>
+            <form string="Data Cleaning" create="0" class="o_om_data_remove">
+                <sheet>
+                    <div class="alert alert-danger" role="alert">
+                        <strong>The transactions are deleted for good.</strong>
+                        They are removed from the database tables directly, for all the companies and whatever their
+                        state, posted entries included, and nothing can restore them. Make a backup of the database
+                        first, and never do it on a database holding real data.
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Sale</span>
-                        <button string="Delete All Sales Order" type="object" name="action_remove_sales"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
+                    <p class="text-muted">
+                        <b>Clear All Transactions</b> deletes the documents below with their followers and attachments,
+                        every message and activity of the database, and starts the numbering of the documents again
+                        from 1. The master data stays:
+                        partners, products, chart of accounts, journals, taxes, employees, bills of materials, projects
+                        and the configuration.
+                    </p>
+                    <field name="summary" nolabel="1" readonly="1"/>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mt-3">
+                        <button name="action_open_clear" type="object" string="Clear All Transactions" icon="fa-trash"
+                                class="btn-danger" invisible="not total_count"/>
+                        <span class="text-muted" invisible="total_count">There is no transaction left to delete.</span>
+                        <button name="action_table_report" type="object" string="Database Tables" icon="fa-database"
+                                class="btn-secondary ms-auto"/>
                     </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">POS</span>
-                        <button string="Delete All POS Order" type="object" name="action_remove_pos"
-                                confirm="Please confirm to delete the select data?"
-                                class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Purchase</span>
-                        <button string="Delete All Purchase Order and Requisition" type="object" name="action_remove_purchase"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Expense</span>
-                        <button string="Delete All Expense and Sheet" type="object" name="action_remove_expense"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">MRP</span>
-                        <button string="Delete All Manufacturing Order" type="object" name="action_remove_mrp"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All BOM" type="object" name="action_remove_mrp_bom"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Inventory</span>
-                        <button string="Delete All Move/Picking/Package/Lot" type="object" name="action_remove_inventory"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">
-                            Accounting
-                            <span title="Values set here are company-specific." groups="base.group_multi_company"/>
-                        </span>
-                        <button string="Delete All Voucher/Invoice/Bill" type="object" name="action_remove_account"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Clean and reset Account Chart" type="object" name="action_remove_account_chart"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Project</span>
-                        <button string="Delete All Project/Task/Forecast" type="object" name="action_remove_project"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Quality</span>
-                        <button string="Delete All Quality" type="object" name="action_remove_quality"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All Quality Setting" type="object" name="action_remove_quality_setting"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Website And Blog</span>
-                        <button string="Delete All Website/Blog" type="object" name="action_remove_website"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                    </div>
-                    <div class="col-12 col-lg-12 mb4">
-                        <span class="col-3 col-lg-2 text-start">Base Models</span>
-                        <button string="Delete All Product" type="object" name="action_remove_product"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All Product Attribute" type="object" name="action_remove_product_attribute"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Delete All Message" type="object" name="action_remove_message"
-                                confirm="Please confirm to delete the select data?" class="oe_highlight"/>
-                        |
-                        <button string="Reset Category And Location Complete Name" type="object"
-                                name="reset_cat_loc_name" class="oe_highlight"/>
-                    </div>
-                </div>
+                    <field name="total_count" invisible="1"/>
+                </sheet>
             </form>
         </field>
     </record>
 
+    <record id="view_om_data_remove_wizard_form" model="ir.ui.view">
+        <field name="name">om.data.remove.wizard.form</field>
+        <field name="model">om.data.remove.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Clear All Transactions">
+                <div class="alert alert-danger" role="alert">
+                    <strong><field name="record_count" class="oe_inline"/> records</strong> will be deleted for good,
+                    for all the companies. This cannot be undone.
+                </div>
+                <group>
+                    <field name="model_names"/>
+                    <field name="confirmation" placeholder="Type DELETE to confirm"/>
+                </group>
+                <footer>
+                    <button name="action_remove" type="object" string="Clear All Transactions" class="btn-danger"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_data_remove_table_wizard_form" model="ir.ui.view">
+        <field name="name">om.data.remove.table.wizard.form</field>
+        <field name="model">om.data.remove.table.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Delete Rows">
+                <div class="alert alert-danger" role="alert">
+                    <strong><field name="record_count" class="oe_inline"/> rows</strong> will be deleted for good,
+                    for all the companies, with the messages, followers, attachments and XML ids of these records.
+                    This cannot be undone.
+                </div>
+                <group>
+                    <field name="table_names"/>
+                    <field name="confirmation" placeholder="Type DELETE to confirm"/>
+                    <field name="line_ids" invisible="1"/>
+                </group>
+                <footer>
+                    <button name="action_remove" type="object" string="Delete Rows" class="btn-danger" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- the tables of the database, the most rows first -->
+    <record id="view_om_data_remove_report_form" model="ir.ui.view">
+        <field name="name">om.data.remove.report.form</field>
+        <field name="model">om.data.remove.report</field>
+        <field name="arch" type="xml">
+            <form string="Database Tables" create="0" edit="0">
+                <sheet>
+                    <field name="cleared" invisible="1"/>
+                    <field name="action" invisible="1"/>
+                    <div class="alert alert-success" role="alert" invisible="not cleared or blocked_count">
+                        <strong invisible="action != 'clear'">The transactions were cleared.</strong>
+                        <strong invisible="action != 'tables'">The selected tables were emptied.</strong>
+                        <field name="deleted_count" class="oe_inline"/> rows deleted<span invisible="action != 'clear'">,
+                        <field name="sequence_count" class="oe_inline"/> sequences started again from 1</span>.
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not cleared or not blocked_count">
+                        <strong><field name="deleted_count" class="oe_inline"/> rows deleted, but
+                            <field name="blocked_count" class="oe_inline"/> table(s) could not be emptied</strong>,
+                        because records that are kept still point to them:
+                        <field name="outcome" nolabel="1" readonly="1"/>
+                    </div>
+                    <p class="text-muted small">
+                        A table still holding rows you do not want? Click <b>Delete Rows</b> on its line to empty it too.
+                        The tables of the framework are protected, and relation tables are emptied with the records they link.
+                    </p>
+                    <group>
+                        <group>
+                            <field name="table_count"/>
+                            <field name="nonempty_count"/>
+                        </group>
+                        <group>
+                            <field name="row_count"/>
+                            <field name="transaction_row_count"/>
+                            <field name="hidden_count"/>
+                        </group>
+                    </group>
+                    <div class="d-flex align-items-center mb-2">
+                        <h4 class="mb-0">What is left, table by table</h4>
+                        <button name="action_view_tables" type="object" string="Search the Tables" icon="fa-search"
+                                class="btn-secondary ms-auto"/>
+                    </div>
+                    <field name="nonempty_line_ids" nolabel="1" readonly="1">
+                        <list decoration-danger="kind == 'transaction' and row_count" decoration-muted="kind in ('technical', 'framework')"
+                              limit="200">
+                            <field name="table_name"/>
+                            <field name="model_label"/>
+                            <field name="model" optional="hide"/>
+                            <field name="kind" widget="badge" decoration-danger="kind == 'transaction'"
+                                   decoration-warning="kind == 'linked'" decoration-success="kind == 'kept'"/>
+                            <field name="row_count" sum="Rows"/>
+                            <field name="deleted_count" optional="show" column_invisible="not parent.cleared"/>
+                            <field name="error" optional="show" column_invisible="not parent.cleared"/>
+                            <field name="can_delete" column_invisible="1"/>
+                            <button name="action_delete_rows" type="object" string="Delete Rows" icon="fa-trash"
+                                    class="btn-link text-danger" invisible="not can_delete"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_data_remove_table_search" model="ir.ui.view">
+        <field name="name">om.data.remove.table.search</field>
+        <field name="model">om.data.remove.table</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="table_name"/>
+                <field name="model"/>
+                <field name="model_label"/>
+                <filter name="with_rows" string="With Rows" domain="[('row_count', '>', 0)]"/>
+                <filter name="not_emptied" string="Not Emptied" domain="[('error', '!=', False)]"/>
+                <filter name="deletable" string="Can Be Emptied" domain="[('can_delete', '=', True)]"/>
+                <separator/>
+                <filter name="data" string="Data" domain="[('kind', 'in', ('transaction', 'linked', 'kept'))]"/>
+                <filter name="framework" string="Framework and Relation" domain="[('kind', 'in', ('framework', 'technical'))]"/>
+                <separator/>
+                <filter name="transaction" string="Transactions" domain="[('kind', '=', 'transaction')]"/>
+                <filter name="kept" string="Kept Records" domain="[('kind', '=', 'kept')]"/>
+                <filter name="technical" string="Relation or Technical" domain="[('kind', '=', 'technical')]"/>
+                <group>
+                    <filter name="group_kind" string="Kind" context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_data_remove_table_list" model="ir.ui.view">
+        <field name="name">om.data.remove.table.list</field>
+        <field name="model">om.data.remove.table</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" decoration-danger="kind == 'transaction' and row_count"
+                  decoration-muted="kind in ('technical', 'framework')">
+                <header>
+                    <button name="action_delete_rows" type="object" string="Delete Rows" icon="fa-trash"
+                            class="btn-danger"/>
+                </header>
+                <field name="table_name"/>
+                <field name="model_label"/>
+                <field name="model" optional="show"/>
+                <field name="kind" widget="badge" decoration-danger="kind == 'transaction'"
+                       decoration-warning="kind == 'linked'" decoration-success="kind == 'kept'"/>
+                <field name="row_count" sum="Rows"/>
+                <field name="deleted_count" optional="show"/>
+                <field name="error" optional="hide"/>
+                <field name="can_delete" column_invisible="1"/>
+                <button name="action_delete_rows" type="object" string="Delete Rows" icon="fa-trash"
+                        class="btn-link text-danger" invisible="not can_delete"/>
+            </list>
+        </field>
+    </record>
+
     <record id="action_remove_data" model="ir.actions.act_window">
-        <field name="name">Remove Data</field>
-        <field name="type">ir.actions.act_window</field>
-        <field name="res_model">res.config.settings</field>
+        <field name="name">Data Cleaning</field>
+        <field name="res_model">om.data.remove</field>
         <field name="view_mode">form</field>
-        <field name="view_id" ref="view_remove_data"/>
+        <field name="target">current</field>
     </record>
 
     <menuitem
             id="menu_remove_data"
-            name="Remove Data"
+            name="Data Cleaning"
             action="action_remove_data"
             parent="base.menu_administration"
             sequence="1"
