@@ -32,6 +32,10 @@ class ReportTax(models.AbstractModel):
                  WHERE %s GROUP BY r.account_tax_id"""
         return sql
 
+    def _tax_sign(self, tax):
+        # the balances are debit - credit: sales are credits, printed as positive figures like the purchases
+        return -1 if tax['type'] == 'sale' else 1
+
     def _compute_from_amls(self, options, taxes):
         #compute the tax amount
         sql = self._sql_from_amls_one()
@@ -42,7 +46,7 @@ class ReportTax(models.AbstractModel):
         for result in results:
             if result[0] in taxes:
                 # no abs(): a net-negative period (refunds > invoices) must stay negative
-                taxes[result[0]]['tax'] = result[1] or 0.0
+                taxes[result[0]]['tax'] = self._tax_sign(taxes[result[0]]) * (result[1] or 0.0)
 
         #compute the net amount
         sql2 = self._sql_from_amls_two()
@@ -51,7 +55,7 @@ class ReportTax(models.AbstractModel):
         results = self.env.cr.fetchall()
         for result in results:
             if result[0] in taxes:
-                taxes[result[0]]['net'] = result[1] or 0.0
+                taxes[result[0]]['net'] = self._tax_sign(taxes[result[0]]) * (result[1] or 0.0)
 
     @api.model
     def get_lines(self, options):
