@@ -151,3 +151,17 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
         })
         self.assertEqual(next(line['level'] for line in lines if line['name'] == 'Equity'), 1,
                          'a style chosen on the line wins over its depth')
+
+    def test_the_sections_keep_their_order(self):
+        """ The sections without a sequence print in the order they were created (Assets before the
+        liabilities, Income before Expense), not in the order the database happens to return them. """
+        for xmlid in ('accounting_pdf_reports.account_financial_report_balancesheet0',
+                      'accounting_pdf_reports.account_financial_report_profitandloss0'):
+            report = self.env.ref(xmlid)
+            sections = report.children_ids.sorted(lambda section: (section.sequence, section.id))
+            # an update writes the row anew at the end of the table, where a scan finds it last
+            # (the ORM skips a write of the same value: the update is made in SQL)
+            self.env.cr.execute("UPDATE account_financial_report SET name = name WHERE id = %s", [sections[0].id])
+            printed = report._get_children_by_order().filtered(lambda line: line.parent_id == report)
+            # the ids, in order: two recordsets compare equal whatever their order
+            self.assertEqual(printed.ids, sections.ids, xmlid)
