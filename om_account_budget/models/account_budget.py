@@ -127,43 +127,38 @@ class CrossoveredBudgetLines(models.Model):
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
-        # overrides the default read_group in order to compute the computed fields manually for the group
-        fields_list = set(COMPUTED_AMOUNT_FIELDS)
-        fields = {field.split(':', 1)[0] if field.split(':', 1)[0] in fields_list else field for field in fields}
-        result = super(CrossoveredBudgetLines, self).read_group(domain, fields, groupby, offset=offset, limit=limit,
+        # overrides the default read_group in order to compute the computed fields manually for the group.
+        # A field is asked as `field`, `field:agg` or, by the spreadsheets, `name:agg(field)`: the value of a
+        # computed one is returned under its name.
+        computed = {}
+        stored = []
+        for spec in fields:
+            name, __, aggregate = spec.partition(':')
+            field_name = aggregate[aggregate.index('(') + 1:-1] if '(' in aggregate else name
+            if field_name in COMPUTED_AMOUNT_FIELDS:
+                computed[name] = field_name
+            else:
+                stored.append(spec)
+        result = super(CrossoveredBudgetLines, self).read_group(domain, stored, groupby, offset=offset, limit=limit,
                                                                 orderby=orderby, lazy=lazy)
-        if any(x in fields for x in fields_list):
+        if computed:
             for group_line in result:
-
-                # initialise fields to compute to 0 if they are requested
-                if 'practical_amount' in fields:
-                    group_line['practical_amount'] = 0
-                if 'theoritical_amount' in fields:
-                    group_line['theoritical_amount'] = 0
-                if 'percentage' in fields:
-                    group_line['percentage'] = 0
-                    group_line['practical_amount'] = 0
-                    group_line['theoritical_amount'] = 0
-
-                if group_line.get('__domain'):
-                    all_budget_lines_that_compose_group = self.search(group_line['__domain'])
-                else:
-                    all_budget_lines_that_compose_group = self.search([])
-                for budget_line_of_group in all_budget_lines_that_compose_group:
-                    if 'practical_amount' in fields or 'percentage' in fields:
-                        group_line['practical_amount'] += budget_line_of_group.practical_amount
-
-                    if 'theoritical_amount' in fields or 'percentage' in fields:
-                        group_line['theoritical_amount'] += budget_line_of_group.theoritical_amount
-
-                    if 'percentage' in fields:
-                        if group_line['theoritical_amount']:
-                            # weighted average, as a ratio like _compute_percentage:
-                            # the views render it with widget="percentage", which is
-                            # what turns it into a percentage
-                            group_line['percentage'] = float(
-                                (group_line['practical_amount'] or 0.0) / group_line['theoritical_amount'])
-
+                lines = self.search(group_line['__domain'] if '__domain' in group_line else domain)
+                practical = sum(lines.mapped('practical_amount'))
+                theoritical = sum(lines.mapped('theoritical_amount'))
+                values = {
+                    'practical_amount': practical,
+                    'theoritical_amount': theoritical,
+                    # weighted average, as a ratio like _compute_percentage: the views render it with
+                    # widget="percentage", which is what turns it into a percentage
+                    'percentage': float(practical / theoritical) if theoritical else 0,
+                }
+                for name, field_name in computed.items():
+                    group_line[name] = values[field_name]
+                if 'percentage' in computed.values():
+                    # the amounts the percentage is made of, as before
+                    group_line.setdefault('practical_amount', practical)
+                    group_line.setdefault('theoritical_amount', theoritical)
         return result
 
     def _is_above_budget(self):

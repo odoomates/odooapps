@@ -335,3 +335,28 @@ class TestAccountBudget(TransactionCase):
 
         self.env.invalidate_all()
         self.assertEqual(lines.mapped('practical_amount'), [-500.0, -500.0, -70.0, -100.0, -30.0])
+
+    def test_09_read_group_of_the_computed_amounts(self):
+        """ The computed amounts are summed by group whatever the form they are asked in: `field`, `field:sum`, or
+        `name:sum(field)` as the spreadsheet pivots ask them. """
+        budget_post = self.budget_post_model.create({'name': 'Group Post', 'account_ids': [(4, self.test_account.id)]})
+        budget = self.budget_model.create({
+            'name': 'Group Budget', 'date_from': '2025-01-01', 'date_to': '2025-12-31',
+            'crossovered_budget_line': [
+                (0, 0, {'general_budget_id': budget_post.id, 'date_from': '2025-01-01', 'date_to': '2025-12-31',
+                        'planned_amount': amount})
+                for amount in (1000.0, 500.0)
+            ],
+        })
+        lines = budget.crossovered_budget_line
+        domain = [('crossovered_budget_id', '=', budget.id)]
+        expected = sum(lines.mapped('theoritical_amount'))
+        self.assertEqual(expected, 1500.0, 'the year is over: the whole planned amount')
+        for spec, key in (('theoritical_amount', 'theoritical_amount'),
+                          ('theoritical_amount:sum', 'theoritical_amount'),
+                          ('theoritical_amount_sum_id:sum(theoritical_amount)', 'theoritical_amount_sum_id')):
+            with self.subTest(spec=spec):
+                [group] = self.env['crossovered.budget.lines'].read_group(
+                    domain, ['planned_amount', spec], [], lazy=False)
+                self.assertEqual(group[key], expected)
+                self.assertEqual(group['planned_amount'], 1500.0)
