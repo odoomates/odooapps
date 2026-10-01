@@ -39,6 +39,22 @@ class TestAgedBalance(AccountTestInvoicingCommon):
                 self.assertEqual(row.days_overdue, max(days_ago, 0))
                 self.assertAlmostEqual(row.amount_residual, 100.0)
 
+    def test_today_is_the_one_of_odoo_whatever_the_time_zone_of_the_database(self):
+        """ The age counts from the date of today of Odoo (UTC), not from CURRENT_DATE of the database server: in
+        a time zone a day ahead or behind, an item due today stays not due and is not a day overdue. """
+        move = self._invoice('out_invoice', 100.0, 0)
+        self.env.cr.execute("SELECT EXTRACT(HOUR FROM now() AT TIME ZONE 'UTC')")
+        [hour] = self.env.cr.fetchone()
+        # a zone whose date differs from the one of UTC at this hour: a day behind in the morning, ahead after
+        zone = 'Etc/GMT+12' if hour < 12 else 'Etc/GMT-14'
+        self.env.cr.execute("SET LOCAL TIME ZONE %s", [zone])
+        self.env.cr.execute("SELECT CURRENT_DATE")
+        self.assertNotEqual(self.env.cr.fetchone()[0], self.today, 'the database is on another day')
+        self.env.invalidate_all()
+        row = self._rows(move)
+        self.assertEqual(row.bucket, 'not_due')
+        self.assertEqual(row.days_overdue, 0)
+
     def test_vendors_owed_are_positive(self):
         row = self._rows(self._invoice('in_invoice', 250.0, 45, partner=self.partner_b))
         self.assertEqual((row.partner_type, row.bucket), ('vendor', '31_60'))
