@@ -58,12 +58,12 @@ class OmSpreadsheetAgedBalance(models.Model):
                        COALESCE(line.date_maturity, line.date) AS date_maturity,
                        CASE WHEN account.account_type = 'asset_receivable' THEN 'customer' ELSE 'vendor' END
                            AS partner_type,
-                       GREATEST(CURRENT_DATE - COALESCE(line.date_maturity, line.date), 0) AS days_overdue,
+                       GREATEST(reference.today - COALESCE(line.date_maturity, line.date), 0) AS days_overdue,
                        CASE
-                           WHEN COALESCE(line.date_maturity, line.date) >= CURRENT_DATE THEN 'not_due'
-                           WHEN CURRENT_DATE - COALESCE(line.date_maturity, line.date) <= 30 THEN '1_30'
-                           WHEN CURRENT_DATE - COALESCE(line.date_maturity, line.date) <= 60 THEN '31_60'
-                           WHEN CURRENT_DATE - COALESCE(line.date_maturity, line.date) <= 90 THEN '61_90'
+                           WHEN COALESCE(line.date_maturity, line.date) >= reference.today THEN 'not_due'
+                           WHEN reference.today - COALESCE(line.date_maturity, line.date) <= 30 THEN '1_30'
+                           WHEN reference.today - COALESCE(line.date_maturity, line.date) <= 60 THEN '31_60'
+                           WHEN reference.today - COALESCE(line.date_maturity, line.date) <= 90 THEN '61_90'
                            ELSE 'over_90'
                        END AS bucket,
                        CASE WHEN account.account_type = 'asset_receivable'
@@ -71,6 +71,8 @@ class OmSpreadsheetAgedBalance(models.Model):
                   FROM account_move_line line
                   JOIN account_account account ON account.id = line.account_id
                   JOIN res_company company ON company.id = line.company_id
+                  -- the date of today of Odoo, in UTC: CURRENT_DATE follows the time zone of the database server
+                  CROSS JOIN (SELECT (now() AT TIME ZONE 'UTC')::date AS today) AS reference
                  WHERE line.parent_state = 'posted'
                    AND account.account_type IN ('asset_receivable', 'liability_payable')
                    AND NOT line.reconciled
