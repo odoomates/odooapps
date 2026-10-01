@@ -22,5 +22,5 @@
         'views/period_closing.xml',
         'views/settings.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }
