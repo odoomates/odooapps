@@ -119,17 +119,30 @@ Installing this module installs the seventeen modules listed above, so make
 sure they are all present in your addons folder before you start.
 
 
-Upgrade
-=======
+Upgrading from an earlier 18 release
+====================================
 
-To upgrade this module, you need to:
+This is release 1.3.0 (October 2026). It adds modules and changes several of
+the others, so upgrade the suite as a whole:
 
-Download the module and add it to your Odoo addons folder. Restart the server
-and log on to your Odoo server. Select the Apps menu and upgrade the module by
-clicking on the upgrade button.
+1. Back up the database.
+2. Replace all the Odoo Mates accounting modules with this release, not only
+   this one. The new modules (``om_account_reconcile``,
+   ``om_account_bank_statement_import``, ``om_account_check_printing``,
+   ``om_account_cash_forecast``, ``om_currency_rate_update``,
+   ``om_currency_revaluation`` and the four ``om_spreadsheet_account*``
+   dashboards) must be in the addons path too, or the upgrade stops.
+3. Restart Odoo and update the apps list in developer mode.
+4. Upgrade all the modules of the suite that are installed, together: Odoo
+   upgrades a module and the ones depending on it, not the modules it depends
+   on, so upgrading *Odoo 18 Accounting Community* alone is not enough. The new
+   modules install themselves with it. From the command line:
+   ``-u accounting_pdf_reports,om_account_accountant,om_account_asset,om_account_budget,om_account_daily_reports,om_account_followup,om_fiscal_year,om_recurring_payments``
+   (or ``-u all``).
 
-Upgrade the modules it installs at the same time, so the menus and the groups
-stay consistent.
+The data is kept: the upgrade only adds to it. Nothing new switches itself on:
+the automatic currency rates, the automatic reconciliation and the blocking over
+the credit limit stay off until they are set up.
 
 
 Configuration

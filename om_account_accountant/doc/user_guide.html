@@ -180,6 +180,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">1.1</span><span>What this app installs</span></div>
     <div class="toc-line"><span class="n">1.2</span><span>Who can do what</span></div>
     <div class="toc-line"><span class="n">1.3</span><span>Finding your way around</span></div>
+    <div class="toc-line"><span class="n">1.4</span><span>Upgrading from an earlier 18 release</span></div>
 
     <div class="toc-part"><span class="n">2</span><span class="t">The settings, one screen at a time</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">2.1</span><span>Do this before the first entry</span></div>
@@ -341,11 +342,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td><strong>Dashboard</strong></td><td>The journal cards: bank, cash, sales, purchases, with what is left to reconcile.</td></tr>
             <tr><td><strong>Customers</strong></td><td>Invoices, credit notes, payments, customers, products.</td></tr>
             <tr><td><strong>Vendors</strong></td><td>Bills, refunds, payments, vendors.</td></tr>
-            <tr><td><strong>Accounting</strong></td><td>Journal entries, the journals, bank and cash statements, reconciliation, ledgers, assets, budgets, recurring payments and cash forecast items.</td></tr>
+            <tr><td><strong>Accounting</strong></td><td>Journal entries, the journals, bank and cash statements, reconciliation, ledgers, recurring payments, cash forecast items and the closing.</td></tr>
             <tr><td><strong>Review</strong></td><td>What needs attention before closing.</td></tr>
             <tr><td><strong>Follow-Ups</strong></td><td>The customers to chase, their plans and the analysis.</td></tr>
             <tr><td><strong>Reporting</strong></td><td>Statement reports, partner reports, tax, audit reports, daily reports, management.</td></tr>
-            <tr><td><strong>Configuration</strong></td><td>Settings, journals, chart of accounts, fiscal years, closing, cheque formats, follow-up plans, statement file maps.</td></tr>
+            <tr><td><strong>Configuration</strong></td><td>Settings, journals, chart of accounts, fiscal years, assets, budgets, cheque formats, follow-up plans, statement file maps, and the management settings: asset categories, budgetary positions, recurring templates and closing tasks.</td></tr>
         </tbody>
     </table>
     <figure>
@@ -353,6 +354,26 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <figcaption>The Accounting menu, with the transactions, the journals, the
             reconciliation screens and the ledgers.</figcaption>
     </figure>
+    <h2><span class="n">1.4</span> Upgrading from an earlier 18 release</h2>
+    <p>This guide describes release 1.3.0 of October 2026. If an earlier release of the suite already runs on your
+        Odoo 18, upgrade it as a whole: this release adds modules and changes several of the others.</p>
+    <ol>
+        <li><strong>Back up the database</strong> before anything else.</li>
+        <li>Replace <strong>all the Odoo Mates accounting modules</strong> with this release, not only this app. The
+            new ones &mdash; reconciliation, statement import, cheque printing, cash forecast, currency rates and
+            revaluation, and the dashboards &mdash; must be in your addons path too, or the upgrade stops.</li>
+        <li>Restart Odoo, then <span class="path">Apps &rsaquo; Update Apps List</span>, in developer mode.</li>
+        <li>Upgrade all the modules of the suite that are installed, together: Odoo upgrades a module and the ones
+            depending on it, not the modules it depends on, so upgrading <strong>Odoo 18 Accounting Community</strong>
+            alone is not enough. The new modules install themselves with it. From the command line,
+            <code>-u accounting_pdf_reports,<wbr>om_account_accountant,<wbr>om_account_asset,<wbr>om_account_budget,<wbr>om_account_daily_reports,<wbr>om_account_followup,<wbr>om_fiscal_year,<wbr>om_recurring_payments</code> (or <code>-u all</code>).</li>
+    </ol>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>Your data is kept: the upgrade only adds to it. Nothing new switches itself on either &mdash; the
+            automatic currency rates, the automatic reconciliation and the blocking over the credit limit stay off
+            until you set them up (sections 2.13 and 11).</p>
+    </div>
 </div>
 
 <!-- ============================================================ PART 2 -->
