@@ -10,6 +10,11 @@ class TestAccountBudget(TransactionCase):
         cls.budget_post_model = cls.env['account.budget.post']
         cls.budget_model = cls.env['crossovered.budget']
         
+        # the journal entries of the tests go to a miscellaneous journal: a database without a chart of
+        # accounts has none
+        if not cls.env['account.journal'].search([('type', '=', 'general'), ('company_id', '=', cls.env.company.id)], limit=1):
+            cls.env['account.journal'].create({'name': 'Budget Tests', 'code': 'BTST', 'type': 'general'})
+
         # Create a test account
         cls.test_account = cls.account_model.create({
             'name': 'Test Account',
