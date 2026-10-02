@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 18 Accounting Financial Reports',
-    'version': '1.1.0',
+    'version': '1.1.1',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 18, Accounting Financial Reports, '
                    'Odoo 18 Financial Reports',
@@ -29,6 +29,7 @@
         'wizard/balance_sheet.xml',
         'wizard/profit_and_loss.xml',
         'wizard/tax_report.xml',
+        'wizard/tax_closing.xml',
         'wizard/aged_partner.xml',
         'wizard/journal_audit.xml',
         'wizard/cash_flow.xml',
