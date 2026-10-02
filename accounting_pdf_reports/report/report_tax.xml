@@ -60,7 +60,21 @@
                                 <td class="text-end text-nowrap"><span t-out="sum(line.get('net', 0.0) for line in lines['purchase'])" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                                 <td class="text-end text-nowrap"><span t-out="sum(line.get('tax', 0.0) for line in lines['purchase'])" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
                             </tr>
-                            <tr t-if="not lines['sale'] and not lines['purchase']">
+                            <!-- the taxes withheld on the payments (l10n_account_withholding_tax) -->
+                            <tr t-if="lines.get('withholding')">
+                                <td colspan="3"><strong>Withholding</strong></td>
+                            </tr>
+                            <tr t-foreach="lines.get('withholding', [])" t-as="line">
+                                <td class="ps-4"><span t-out="line.get('name')"/></td>
+                                <td class="text-end text-nowrap"><span t-out="line.get('net')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                <td class="text-end text-nowrap"><span t-out="line.get('tax')" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                            </tr>
+                            <tr t-if="lines.get('withholding')" class="fw-bold border-top">
+                                <td class="ps-4">Total Withholding</td>
+                                <td class="text-end text-nowrap"><span t-out="sum(line.get('net', 0.0) for line in lines['withholding'])" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                                <td class="text-end text-nowrap"><span t-out="sum(line.get('tax', 0.0) for line in lines['withholding'])" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></td>
+                            </tr>
+                            <tr t-if="not lines['sale'] and not lines['purchase'] and not lines.get('withholding')">
                                 <td colspan="3" class="text-muted">No tax on this period.</td>
                             </tr>
                         </tbody>

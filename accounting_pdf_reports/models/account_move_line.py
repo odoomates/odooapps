@@ -1,5 +1,6 @@
 import ast
 from odoo import api, models
+from odoo.fields import Domain
 
 
 class AccountMoveLine(models.Model):
@@ -68,6 +69,9 @@ class AccountMoveLine(models.Model):
         if domain:
             domain.append(('display_type', 'not in', ('line_section', 'line_note')))
             domain.append(('parent_state', '!=', 'cancel'))
+            if context.get('tax_exigible'):
+                # the tax report: a cash basis tax is due when it is paid, on its cash basis entry
+                domain = Domain(domain) & self._get_tax_exigible_domain()
 
             query = self._search(domain)
             from_clause = query.from_clause
