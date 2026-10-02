@@ -1,3 +1,4 @@
+from odoo import fields
 from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -64,5 +65,7 @@ class TestReportFixes(AccountTestInvoicingCommon):
         self.assertEqual([line['displayed_name'] for line in report._lines(data, self.partner_a)], [invoice.name])
 
     def test_the_wizards_default_to_the_local_day(self):
-        today = self.env['account.tax.report.wizard'].default_get(['date_to'])['date_to']
-        self.assertEqual(str(today), str(self.env['account.aged.trial.balance'].default_get(['date_from'])['date_from']))
+        today = fields.Date.to_date(self.env['account.aged.trial.balance'].default_get(['date_from'])['date_from'])
+        # the tax report opens on the month of the local day
+        month_start = self.env['account.tax.report.wizard'].default_get(['date_from'])['date_from']
+        self.assertEqual(str(month_start), str(today.replace(day=1)))
