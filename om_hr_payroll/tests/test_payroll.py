@@ -95,6 +95,21 @@ class TestPayroll(TransactionCase):
             'BASIC': 5000.0, 'HOUSING': 1000.0, 'BONUS': 250.0, 'GROSS': 6250.0, 'TAX': -500.0, 'NET': 5750.0,
         })
 
+    def test_a_code_without_line_reads_zero(self):
+        """ A rule reading the worked days or the input of a code the payslip has none of (no unpaid time off,
+        no such input) gets 0, not an error (issue #91). """
+        rule = self.env['hr.salary.rule'].create({
+            'name': 'Unpaid Leave', 'code': 'ULV', 'sequence': 5, 'category_id': self.env.ref('om_hr_payroll.DED').id,
+            'amount_select': 'code',
+            'amount_python_compute': 'result = -(contract.wage / worked_days.WORK100.number_of_days)'
+                                     ' * worked_days.Unpaid.number_of_days + inputs.NOSUCH.amount'
+                                     ' + (1 if worked_days.Unpaid else 0)',
+        })
+        self.structure.rule_ids |= rule
+        payslip = self._new_payslip(self.employee)
+        payslip.compute_sheet()
+        self.assertEqual(self._totals(payslip)['ULV'], 0.0)
+
     def test_time_off_in_worked_days(self):
         work_entry_type = self.env['hr.work.entry.type'].create({
             'name': 'Unpaid Test', 'code': 'TESTUNPAID', 'count_as': 'absence',
