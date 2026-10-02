@@ -166,6 +166,12 @@ No. Everything here runs on Community Edition.
 Under Accounting > Reporting. The PDF financial reports, the ledgers, the day,
 bank and cash books, the tax report and the ageing reports are all there.
 
+**Does it handle withholding taxes?**
+
+Yes, with the Community module ``l10n_account_withholding_tax`` from the
+Apps menu: it withholds the tax on the payment, and the Tax Report prints it in
+a Withholding section of its own.
+
 
 Bug Tracker
 ===========
