@@ -341,7 +341,21 @@ class HrPayslip(models.Model):
             def __getattr__(self, attr):
                 return attr in self.dict and self.dict.__getitem__(attr) or 0.0
 
-        class InputLine(BrowsableObject):
+        class EmptyLine(object):
+            """ The worked days or the input of a code the payslip has none of: every value of it is 0, and it
+            is false, so that worked_days.Unpaid.number_of_days is 0 instead of an error. """
+
+            def __getattr__(self, attr):
+                return 0.0
+
+            def __bool__(self):
+                return False
+
+        class LinesByCode(BrowsableObject):
+            def __getattr__(self, attr):
+                return self.dict[attr] if attr in self.dict else EmptyLine()
+
+        class InputLine(LinesByCode):
             """a class that will be used into the python code, mainly for usability purposes"""
 
             def sum(self, code, from_date, to_date=None):
@@ -355,7 +369,7 @@ class HrPayslip(models.Model):
                                     (self.employee_id, from_date, to_date, code))
                 return self.env.cr.fetchone()[0] or 0.0
 
-        class WorkedDays(BrowsableObject):
+        class WorkedDays(LinesByCode):
             """a class that will be used into the python code, mainly for usability purposes"""
 
             def _sum(self, code, from_date, to_date=None):
