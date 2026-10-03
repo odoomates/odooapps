@@ -1,0 +1,89 @@
+name: Bug report
+description: Something does not work as it should in one of the modules.
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Before you go on:
+        - search the [open and closed issues](https://github.com/odoomates/odooapps/issues?q=is%3Aissue): it may be known already;
+        - update to the latest commit of your branch and upgrade the module;
+        - questions on how to use a module go to [Discussions](https://github.com/odoomates/odooapps/discussions);
+        - **security problems are never reported here**: see [SECURITY.md](https://github.com/odoomates/odooapps/blob/20.0/SECURITY.md).
+
+        Remove any customer data, password or token from what you paste.
+  - type: input
+    id: module
+    attributes:
+      label: Module
+      description: The technical name of the module, as in its folder.
+      placeholder: om_account_followup
+    validations:
+      required: true
+  - type: dropdown
+    id: version
+    attributes:
+      label: Odoo version
+      description: Bugs are fixed on 18.0, 19.0 and 20.0 only.
+      options:
+        - "20.0"
+        - "19.0"
+        - "18.0"
+        - Other (not supported)
+    validations:
+      required: true
+  - type: dropdown
+    id: edition
+    attributes:
+      label: Odoo edition
+      options:
+        - Community
+        - Enterprise
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: What happens
+      description: A clear description of the problem.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: From a fresh database if you can. Say whether it has demo data.
+      placeholder: |
+        1. Install om_account_followup on a new database with demo data
+        2. Go to Accounting > Customers > Follow-up Reports
+        3. Click on ...
+        4. See the error
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behaviour
+      description: What you expected to happen instead.
+    validations:
+      required: true
+  - type: textarea
+    id: traceback
+    attributes:
+      label: Error and traceback
+      description: The full error, as text. In the error dialog, use "Copy the full error to clipboard", or copy it from the server log.
+      render: shell
+  - type: textarea
+    id: context
+    attributes:
+      label: Other information
+      description: Screenshots, the other modules installed, the Python version, a multi-company setup, the language of the user…
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checks
+      options:
+        - label: I searched the existing issues and did not find this bug.
+          required: true
+        - label: It still happens on the latest commit of the branch, after upgrading the module.
+          required: true
