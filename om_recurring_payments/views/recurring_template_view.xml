@@ -6,44 +6,74 @@
         <field name="model">account.recurring.template</field>
         <field name="arch" type="xml">
             <form string="Recurring Template">
+                <field name="company_id" invisible="1"/>
                 <header>
-                    <button name="action_done" states="draft" string="Confirm" type="object" class="oe_highlight"/>
-                    <button name="action_draft" states="done" string="Set To Draft" type="object"/>
+                    <button name="action_done" string="Confirm" type="object" class="btn-primary" attrs="{'invisible': [('state', '!=', 'draft')]}"/>
+                    <button name="action_draft" string="Set To Draft" type="object" attrs="{'invisible': [('state', '!=', 'done')]}"/>
                     <field name="state" widget="statusbar"/>
                 </header>
                 <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="e.g. Monthly Rent"/>
+                        </h1>
+                    </div>
                     <group>
                         <group>
-                            <field name="name"/>
-                            <field name="journal_id" domain="[('type', 'in', ('bank', 'cash'))]"/>
+                            <field name="journal_id"/>
                             <field name="recurring_period"/>
                         </group>
                         <group>
                             <field name="recurring_interval"/>
                             <field name="journal_state"/>
-                            <field name="company_id"/>
-                        </group>
-                        <group>
-                            <field name="description" placeholder="Description..." nolabel="1" colspan="4"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
                         </group>
                     </group>
+                    <field name="description" placeholder="Description..."/>
                 </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
             </form>
         </field>
     </record>
 
     <record id="view_account_recurring_template_tree" model="ir.ui.view">
-        <field name="name">account.recurring.template.tree</field>
+        <field name="name">account.recurring.template.list</field>
         <field name="model">account.recurring.template</field>
         <field name="arch" type="xml">
             <tree string="Recurring Template">
+                <field name="company_id" invisible="1"/>
                 <field name="name"/>
                 <field name="journal_id"/>
-                <field name="state"/>
+                <field name="recurring_period"/>
+                <field name="recurring_interval"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"/>
             </tree>
         </field>
     </record>
 
+    <record id="view_account_recurring_template_search" model="ir.ui.view">
+        <field name="name">account.recurring.template.search</field>
+        <field name="model">account.recurring.template</field>
+        <field name="arch" type="xml">
+            <search string="Recurring Template">
+                <field name="name"/>
+                <field name="journal_id"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter string="Draft" name="draft" domain="[('state', '=', 'draft')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <group>
+                    <filter string="Journal" name="group_journal" context="{'group_by': 'journal_id'}"/>
+                    <filter string="Period" name="group_period" context="{'group_by': 'recurring_period'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
 
     <record id="action_account_recurring_template" model="ir.actions.act_window">
         <field name="name">Recurring Template</field>
@@ -51,8 +81,19 @@
         <field name="res_model">account.recurring.template</field>
         <field name="view_mode">tree,form</field>
         <field name="view_id" ref="view_account_recurring_template_tree"/>
+        <field name="search_view_id" ref="view_account_recurring_template_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a recurring template
+            </p>
+            <p>
+                A template gives the journal and the frequency shared by several recurring payments.
+            </p>
+        </field>
     </record>
 
+    <!-- the folder the recurring payments used to be in, empty now and so not shown: kept for the
+         modules that put their own menus in it -->
     <menuitem id="menu_recurring_payments"
               name="Recurring Payment"
               sequence="10"
@@ -60,10 +101,10 @@
               parent="account.menu_finance_configuration"/>
 
     <menuitem id="menu_recurring_template"
-              name="Recurring Template"
-              sequence="20"
+              name="Recurring Templates"
+              sequence="140"
               action="action_account_recurring_template"
               groups="account.group_account_user,account.group_account_manager"
-              parent="menu_recurring_payments"/>
+              parent="account.account_account_menu"/>
 
 </odoo>
