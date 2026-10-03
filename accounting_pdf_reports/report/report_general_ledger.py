@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -120,7 +118,7 @@ class ReportGeneralLedger(models.AbstractModel):
         # Calculate the debit, credit and balance for Accounts
         account_res = []
         for account in accounts:
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            currency = account.currency_id and account.currency_id or self.env.company.currency_id
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             res['code'] = account.code
             res['name'] = account.name
@@ -141,6 +139,8 @@ class ReportGeneralLedger(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         init_balance = data['form'].get('initial_balance', True)

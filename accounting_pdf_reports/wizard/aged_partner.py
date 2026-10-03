@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-import time
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
@@ -13,7 +10,7 @@ class AccountAgedTrialBalance(models.TransientModel):
 
     period_length = fields.Integer(string='Period Length (days)', required=True, default=30)
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True)
-    date_from = fields.Date(default=lambda *a: time.strftime('%Y-%m-%d'))
+    date_from = fields.Date(string='As of Date', default=fields.Date.context_today)
 
     def _get_report_data(self, data):
         res = {}
@@ -28,7 +25,9 @@ class AccountAgedTrialBalance(models.TransientModel):
         for i in range(5)[::-1]:
             stop = start - relativedelta(days=period_length - 1)
             res[str(i)] = {
-                'name': (i != 0 and (str((5 - (i + 1)) * period_length) + '-' + str((5 - i) * period_length)) or (
+                # must match the buckets actually computed in report_aged_partner.py
+                # (1-30, 31-60, ... - the lower bound is inclusive)
+                'name': (i != 0 and (str((5 - (i + 1)) * period_length + 1) + '-' + str((5 - i) * period_length)) or (
                             '+' + str(4 * period_length))),
                 'stop': start.strftime('%Y-%m-%d'),
                 'start': (i != 0 and stop.strftime('%Y-%m-%d') or False),

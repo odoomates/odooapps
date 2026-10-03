@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -8,32 +6,6 @@ from odoo.exceptions import UserError
 class ReportTrialBalance(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_trialbalance'
     _description = 'Trial Balance Report'
-
-    def _get_initial_balance(self, accounts):
-        if not self.env.context.get('date_from'):
-            return {}
-        initial_balance = {}
-
-        context = {
-            'date_to': self.env.context['date_from'],
-        }
-        tables, where_clause, where_params = self.env['account.move.line'].with_context(context)._query_get()
-        tables = tables.replace('"', '') if tables else 'account_move_line'
-
-        wheres = [""]
-        if where_clause.strip():
-            wheres.append(where_clause.strip())
-        filters = " AND ".join(wheres)
-
-        request = (f"SELECT account_id AS id, SUM(debit) AS debit, SUM(credit) AS credit, "
-                   f"(SUM(debit) - SUM(credit)) AS balance "
-                   f"FROM {tables} WHERE account_id IN %s {filters} GROUP BY account_id")
-
-        params = (tuple(accounts.ids),) + tuple(where_params)
-        self.env.cr.execute(request, params)
-        for row in self.env.cr.dictfetchall():
-            initial_balance[row.pop('id')] = row
-        return initial_balance
 
     def _get_accounts(self, accounts, display_account):
         """ compute the balance, debit and credit for the provided accounts
@@ -67,28 +39,22 @@ class ReportTrialBalance(models.AbstractModel):
         for row in self.env.cr.dictfetchall():
             account_result[row.pop('id')] = row
 
-        initial_balance = self._get_initial_balance(accounts)
         account_res = []
         for account in accounts:
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            currency = account.currency_id and account.currency_id or self.env.company.currency_id
             res['code'] = account.code
             res['name'] = account.name
-            if initial_balance.get(account.id):
-                res['initial_balance'] = initial_balance[account.id]['balance']
-            else:
-                res['initial_balance'] = 0
             if account.id in account_result:
                 res['debit'] = account_result[account.id].get('debit')
                 res['credit'] = account_result[account.id].get('credit')
-                res['balance'] = res['initial_balance'] + account_result[account.id].get('balance')
-            else:
-                res['balance'] = res['initial_balance']
+                res['balance'] = account_result[account.id].get('balance')
             if display_account == 'all':
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
                 account_res.append(res)
-            if display_account == 'movement' and (not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
+            if display_account == 'movement' and (
+                    not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
                 account_res.append(res)
         return account_res
 
@@ -96,6 +62,8 @@ class ReportTrialBalance(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
 
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))

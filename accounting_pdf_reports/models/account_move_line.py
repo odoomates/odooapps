@@ -1,7 +1,6 @@
-# -*- coding: utf-8 -*-
-
 import ast
 from odoo import api, models, fields
+from odoo.osv import expression
 
 
 class AccountMoveLine(models.Model):
@@ -35,6 +34,9 @@ class AccountMoveLine(models.Model):
         state = context.get('state')
         if state and state.lower() != 'all':
             domain += [('parent_state', '=', state)]
+        else:
+            # "All Entries" are the draft and posted ones: cancelled entries never count
+            domain += [('parent_state', '!=', 'cancel')]
 
         if context.get('company_id'):
             domain += [('company_id', '=', context['company_id'])]
@@ -70,11 +72,34 @@ class AccountMoveLine(models.Model):
         if domain:
             domain.append(('display_type', 'not in', ('line_section', 'line_note')))
             domain.append(('parent_state', '!=', 'cancel'))
+            if context.get('tax_exigible'):
+                # the tax report: a cash basis tax is due when it is paid, on its cash basis entry
+                domain = expression.AND([domain, self._get_tax_exigible_domain()])
 
             query = self._where_calc(domain)
-
-            # Wrap the query with 'company_id IN (...)' to avoid bypassing company access rights.
             self._apply_ir_rules(query)
-
             tables, where_clause, where_clause_params = query.get_sql()
         return tables, where_clause, where_clause_params
+
+    def format_analytic_distribution(self, distribution):
+        """ Render an analytic distribution as "Account A, Account B: 40.0%" lines.
+
+        The keys of the distribution hold one id per analytic plan, comma
+        separated, so a single entry may name several accounts.
+        """
+        self.ensure_one()
+        if not distribution:
+            return []
+        result = []
+        for key, percentage in distribution.items():
+            accounts = self.env["account.analytic.account"].browse(
+                int(account_id) for account_id in key.split(",")
+            ).exists()
+            if not accounts:
+                continue
+            names = [
+                "%s - %s" % (account.name, account.partner_id.name) if account.partner_id else account.name
+                for account in accounts
+            ]
+            result.append("%s: %s%%" % (", ".join(names), percentage))
+        return result

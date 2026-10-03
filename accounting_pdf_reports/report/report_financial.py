@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -22,6 +20,8 @@ class ReportFinancial(models.AbstractModel):
         for account in accounts:
             res[account.id] = dict.fromkeys(mapping, 0.0)
         if accounts:
+            # the query below reads the journal items from the database
+            self.env['account.move.line'].flush_model()
             tables, where_clause, where_params = self.env['account.move.line']._query_get()
             tables = tables.replace('"', '') if tables else "account_move_line"
             wheres = [""]
@@ -102,7 +102,9 @@ class ReportFinancial(models.AbstractModel):
                 'name': report.name,
                 'balance': res[report.id]['balance'] * float(report.sign),
                 'type': 'report',
-                'level': bool(report.style_overwrite) and report.style_overwrite or report.level,
+                # style_overwrite defaults to the *string* '0' (automatic formatting),
+                # which is truthy: int() it so that we really fall back on report.level
+                'level': int(report.style_overwrite or 0) or report.level,
                 'account_type': report.type or False, #used to underline the financial report balances
             }
             if data['debit_credit']:
@@ -128,19 +130,20 @@ class ReportFinancial(models.AbstractModel):
                         'name': account.code + ' ' + account.name,
                         'balance': value['balance'] * float(report.sign) or 0.0,
                         'type': 'account',
-                        'level': report.display_detail == 'detail_with_hierarchy' and 4,
+                        # must never be False: the template skips rows whose level is 0/False
+                        'level': 4 if report.display_detail == 'detail_with_hierarchy' else report.level + 1,
                         'account_type': account.account_type,
                     }
                     if data['debit_credit']:
                         vals['debit'] = value['debit']
                         vals['credit'] = value['credit']
-                        if not account.company_id.currency_id.is_zero(vals['debit']) or not account.company_id.currency_id.is_zero(vals['credit']):
+                        if not self.env.company.currency_id.is_zero(vals['debit']) or not self.env.company.currency_id.is_zero(vals['credit']):
                             flag = True
-                    if not account.company_id.currency_id.is_zero(vals['balance']):
+                    if not self.env.company.currency_id.is_zero(vals['balance']):
                         flag = True
                     if data['enable_filter']:
                         vals['balance_cmp'] = value['comp_bal'] * float(report.sign)
-                        if not account.company_id.currency_id.is_zero(vals['balance_cmp']):
+                        if not self.env.company.currency_id.is_zero(vals['balance_cmp']):
                             flag = True
                     if flag:
                         sub_lines.append(vals)

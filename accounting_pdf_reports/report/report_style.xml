@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The look of every report in this module, in one place.
+
+         Kept as a template the reports t-call rather than an entry in an asset bundle:
+         these styles are for printed pages only, and a bundle entry would be loaded by
+         every screen in Odoo to serve nine PDFs. -->
+    <template id="report_style">
+        <style>
+            /* wkhtmltopdf knows the old flexbox only: Odoo 16 gives it the width of the .col-auto columns, not
+               of the .col ones, which then overflow the page and shrink it. The rule of Odoo 17 and later. */
+            .o_om_report .col { -webkit-box-flex: 1; flex: 1 0 0%; }
+
+            /* ---------------------------------------------------------- headings */
+            .o_om_report h2 {
+                font-size: 20px; font-weight: 600; margin: 0 0 4px 0;
+                padding-bottom: 6px; border-bottom: 2px solid #2b2b2b;
+            }
+            .o_om_report h3 { font-size: 15px; font-weight: 600; margin: 20px 0 8px 0; }
+            .o_om_report h4 { font-size: 13px; font-weight: 600; margin: 18px 0 6px 0; }
+
+            /* The period / target moves / journals block every report opens with. The
+               labels become quiet small-caps so the figures beneath them lead. */
+            .o_om_report #informations,
+            .o_om_report .o_om_info { font-size: 12px; margin: 14px 0 20px 0; }
+            .o_om_report #informations strong,
+            .o_om_report .o_om_info strong {
+                display: block; font-size: 9px; font-weight: 600; letter-spacing: .08em;
+                text-transform: uppercase; color: #6b7280;
+            }
+
+            /* ---------------------------------------------------------- tables */
+            /* Horizontal rules only. Boxing every cell is what makes a report look
+               like a spreadsheet printout. */
+            .o_om_report table { width: 100%; border-collapse: collapse; font-size: 12px; }
+            .o_om_report table th,
+            .o_om_report table td {
+                border: 0 !important;
+                border-bottom: 1px solid #ececec !important;
+                padding: 5px 8px;
+                vertical-align: top;
+            }
+            .o_om_report table thead th {
+                border-bottom: 1.5px solid #2b2b2b !important;
+                font-size: 9.5px; font-weight: 600; letter-spacing: .06em;
+                text-transform: uppercase; color: #4b5563; white-space: nowrap;
+                vertical-align: bottom;
+            }
+            .o_om_report table tbody tr:nth-child(even) td { background-color: #fbfbfb; }
+
+            /* Figures: aligned digits, and never broken across two lines. */
+            .o_om_report table th.text-end,
+            .o_om_report table td.text-end {
+                font-variant-numeric: tabular-nums; white-space: nowrap;
+            }
+
+            /* A total that closes a table reads as a total. */
+            .o_om_report table tbody tr.o_om_total td {
+                border-top: 1.5px solid #2b2b2b !important;
+                border-bottom: 0 !important;
+                font-weight: 600; background-color: transparent !important;
+            }
+            /* One rule above the totals, not one between each of them. */
+            .o_om_report table tbody tr.o_om_total + tr.o_om_total td { border-top: 0 !important; }
+
+            /* A date broken across two lines is never what anyone wants. */
+            .o_om_report .o_om_date, .o_om_report td.o_om_date { white-space: nowrap; }
+
+            .o_om_report .text-muted { color: #6b7280 !important; }
+        </style>
+    </template>
+
+</odoo>
