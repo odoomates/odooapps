@@ -1,0 +1,434 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_access_profile_view_search" model="ir.ui.view">
+        <field name="name">om.access.profile.search</field>
+        <field name="model">om.access.profile</field>
+        <field name="arch" type="xml">
+            <search string="Access Profiles">
+                <field name="name"/>
+                <field name="user_ids"/>
+                <filter name="filter_additive" string="Additive" domain="[('strictness', '=', 'additive')]"/>
+                <filter name="filter_override" string="Override" domain="[('strictness', '=', 'override')]"/>
+                <separator/>
+                <filter name="filter_block_login" string="Login Blocked" domain="[('block_login', '=', True)]"/>
+                <separator/>
+                <filter name="filter_inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <group name="group_by">
+                    <filter name="group_strictness" string="Combines as" context="{'group_by': 'strictness'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_access_profile_view_list" model="ir.ui.view">
+        <field name="name">om.access.profile.list</field>
+        <field name="model">om.access.profile</field>
+        <field name="arch" type="xml">
+            <list string="Access Profiles">
+                <header>
+                    <button name="%(om_access_manager.om_access_template_wizard_action)d" type="action"
+                            string="New from Template" class="btn-secondary" display="always"/>
+                    <button name="%(om_access_manager.om_access_import_action)d" type="action"
+                            string="Import" class="btn-secondary" display="always"/>
+                </header>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="strictness"/>
+                <field name="user_count" string="# Users"/>
+                <field name="global_readonly" string="Read Only" optional="show"/>
+                <field name="hide_chatter_all" string="No Chatter" optional="hide"/>
+                <field name="block_export" string="No Export" optional="hide"/>
+                <field name="block_login" string="Login Blocked" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_access_profile_model_view_form" model="ir.ui.view">
+        <field name="name">om.access.profile.model.form</field>
+        <field name="model">om.access.profile.model</field>
+        <field name="arch" type="xml">
+            <form string="Data Rule">
+                <sheet>
+                    <field name="model" invisible="1"/>
+                    <field name="available_presets" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="model_id" readonly="1" options="{'no_open': True}"/>
+                            <field name="profile_id" readonly="1" options="{'no_open': True}"/>
+                        </group>
+                        <group string="Rights">
+                            <field name="perm_read"/>
+                            <field name="perm_create"/>
+                            <field name="perm_write"/>
+                            <field name="perm_unlink"/>
+                        </group>
+                    </group>
+                    <separator string="Which records"/>
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+                        <button name="action_clear_filters" type="object" string="All Records"
+                                class="btn-secondary" icon="public"/>
+                        <button name="action_preset_own" type="object" string="Their Own Records"
+                                class="btn-secondary" icon="person"
+                                invisible="'own' not in (available_presets or '')"/>
+                        <button name="action_preset_team" type="object" string="Their Sales Team"
+                                class="btn-secondary" icon="group"
+                                invisible="'team' not in (available_presets or '')"/>
+                        <button name="action_preset_company" type="object" string="Their Companies"
+                                class="btn-secondary" icon="business"
+                                invisible="'company' not in (available_presets or '')"/>
+                        <button name="action_preset_warehouse" type="object" string="Their Warehouse"
+                                class="btn-secondary" icon="inventory_2"
+                                invisible="'warehouse' not in (available_presets or '')"/>
+                        <button name="action_preset_draft" type="object" string="Edit Drafts Only"
+                                class="btn-secondary" icon="edit"
+                                invisible="'draft' not in (available_presets or '')"/>
+                    </div>
+                    <group>
+                        <field name="domain" string="Every Operation" widget="domain"
+                               options="{'model': 'model', 'allow_expressions': True}"/>
+                    </group>
+                    <group string="One operation only" col="1">
+                        <div class="text-muted">
+                            Narrow one operation further, on top of the filter above: for
+                            instance read everything but edit only the drafts.
+                        </div>
+                        <group>
+                            <field name="domain_read" string="Read" widget="domain"
+                                   options="{'model': 'model', 'allow_expressions': True}"/>
+                            <field name="domain_write" string="Edit" widget="domain"
+                                   options="{'model': 'model', 'allow_expressions': True}"/>
+                            <field name="domain_create" string="Create" widget="domain"
+                                   options="{'model': 'model', 'allow_expressions': True}"/>
+                            <field name="domain_unlink" string="Delete" widget="domain"
+                                   options="{'model': 'model', 'allow_expressions': True}"/>
+                        </group>
+                    </group>
+                    <group string="Screen">
+                        <group>
+                            <field name="hide_chatter"/>
+                            <field name="hide_export"/>
+                            <field name="hide_import"/>
+                        </group>
+                        <group>
+                            <field name="hide_archive"/>
+                            <field name="hide_duplicate"/>
+                            <field name="hide_print"/>
+                            <field name="hide_action_menu"/>
+                        </group>
+                    </group>
+                    <group string="Chatter">
+                        <group>
+                            <field name="hide_send_message"/>
+                            <field name="hide_followers"/>
+                            <field name="hide_attachments"/>
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button string="Save" special="save" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_profile_view_form" model="ir.ui.view">
+        <field name="name">om.access.profile.form</field>
+        <field name="model">om.access.profile</field>
+        <field name="arch" type="xml">
+            <form string="Access Profile">
+                <header>
+                    <button name="action_restrict_app" type="object" string="Restrict an App"
+                            class="btn-primary"/>
+                    <button name="action_test_user" type="object" string="Test as User"
+                            class="btn-secondary" invisible="not user_ids"/>
+                    <button name="action_copy_restrictions" type="object"
+                            string="Copy Restrictions" class="btn-secondary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_users" type="object"
+                                class="oe_stat_button" icon="group">
+                            <field name="user_count" widget="statinfo" string="Users"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
+                            invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Warehouse Staff"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="strictness"/>
+                            <field name="apply_to_admin"/>
+                            <field name="for_new_users"/>
+                            <field name="home_action_id" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="sequence"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="group_id" groups="base.group_no_one" readonly="1"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-warning" role="alert" invisible="not block_login">
+                        The users of this profile cannot sign in, and their open
+                        sessions are ended. Their records are kept: take a user out
+                        of the profile to let them back in.
+                    </div>
+                    <div class="alert alert-info" role="alert" invisible="strictness != 'additive'">
+                        This profile combines permissively with the other additive profiles
+                        of its users: a restriction only applies when every additive profile
+                        of the user carries it. Use an override profile for a blanket that
+                        must always win.
+                    </div>
+                    <group string="Users">
+                        <field name="user_ids" widget="many2many_tags" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook>
+                        <page string="Switches" name="switches">
+                            <group>
+                                <group string="Records">
+                                    <field name="global_readonly"/>
+                                    <field name="block_archive"/>
+                                    <field name="block_duplicate"/>
+                                    <field name="block_export"/>
+                                    <field name="block_import"/>
+                                </group>
+                                <group string="Prices">
+                                    <field name="hide_costs"/>
+                                    <field name="hide_sale_prices"/>
+                                </group>
+                                <group string="Menus and Chatter">
+                                    <field name="hide_print_all"/>
+                                    <field name="hide_action_menu_all"/>
+                                    <field name="hide_send_message_all"/>
+                                    <field name="hide_followers_all"/>
+                                    <field name="hide_attachments_all"/>
+                                </group>
+                                <group string="Screen">
+                                    <field name="hide_chatter_all"/>
+                                    <field name="hide_activities"/>
+                                    <field name="lock_statusbar"/>
+                                    <field name="hide_settings_menu"/>
+                                </group>
+                                <group string="Sign-in">
+                                    <field name="block_login"/>
+                                    <field name="block_rpc"/>
+                                    <field name="block_developer_mode"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Menus &amp; Apps" name="menus">
+                            <button name="action_restrict_app" type="object" string="Restrict an App"
+                                    class="btn-link" icon="apps"/>
+                            <div class="text-muted mb-2">
+                                Untick a menu to hide it, with everything below it. This is what the user
+                                sees, not what they may reach: use the Models tab to actually
+                                refuse the data.
+                            </div>
+                            <field name="hidden_menu_ids" nolabel="1" widget="om_access_menu_tree"/>
+                        </page>
+                        <page string="Sign-in" name="sign_in">
+                            <div class="text-muted mb-2">
+                                Checked when the users sign in and on every request afterwards: a
+                                session ends once the working hours are over, or when it is used
+                                from a network that is not allowed. Administrators are never
+                                restricted unless the profile applies to Settings users.
+                            </div>
+                            <group>
+                                <group string="Working Hours">
+                                    <field name="login_tz"/>
+                                    <field name="login_slot_ids" nolabel="1" colspan="2">
+                                        <list editable="bottom">
+                                            <field name="dayofweek"/>
+                                            <field name="hour_from" widget="float_time"/>
+                                            <field name="hour_to" widget="float_time"/>
+                                        </list>
+                                    </field>
+                                    <div colspan="2" class="text-muted" invisible="login_slot_ids">
+                                        No working hours: the users may sign in at any time.
+                                    </div>
+                                </group>
+                                <group string="Networks and Sessions">
+                                    <field name="allowed_ips" placeholder="192.168.1.0/24&#10;10.0.0.5"/>
+                                    <field name="single_session"/>
+                                    <field name="block_login"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Allowed Records" name="allowed">
+                            <div class="text-muted mb-2">
+                                Only these journals, points of sale, warehouses, locations, sales
+                                teams or dashboards, and only what belongs to them: allowing two journals also
+                                filters their entries, journal items and payments. Tick
+                                <strong>Each User's Own</strong> instead of picking a record to use
+                                the records set on each user's form (Access Profiles tab), so one
+                                profile serves every cashier, each on their own point of sale.
+                            </div>
+                            <field name="allowed_ids" nolabel="1">
+                                <list string="Allowed Records" editable="bottom">
+                                    <field name="kind"/>
+                                    <field name="res_model" column_invisible="1"/>
+                                    <field name="per_user"/>
+                                    <field name="res_id" widget="many2one_reference"
+                                           invisible="per_user" required="not per_user"
+                                           options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Models" name="models">
+                            <button name="action_load_models" type="object" string="Load Models"
+                                    class="btn-link" icon="download"/>
+                            <div class="text-muted mb-2">
+                                Click the <i class="oi" data-icon="filter_alt"/> of a line to pick its records
+                                in one click (their own, their team, their companies...) or with
+                                the filter editor. The Record Filter applies to all four operations. The per
+                                operation filters narrow one of them further, which is how
+                                you allow editing only draft records without hiding the
+                                others. They are optional columns of this list.
+                            </div>
+                            <field name="model_ids" nolabel="1">
+                                <list string="Models" editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}"/>
+                                    <button name="action_open_rule" type="object" icon="filter_alt"
+                                            title="Records, filters and presets"/>
+                                    <field name="model" optional="hide"/>
+                                    <field name="perm_read" string="Read"/>
+                                    <field name="perm_write" string="Edit"/>
+                                    <field name="perm_create" string="Create"/>
+                                    <field name="perm_unlink" string="Delete"/>
+                                    <field name="domain" string="Record Filter" optional="show"/>
+                                    <field name="domain_read" string="Read Filter" optional="hide"/>
+                                    <field name="domain_write" string="Edit Filter" optional="hide"/>
+                                    <field name="domain_create" string="Create Filter" optional="hide"/>
+                                    <field name="domain_unlink" string="Delete Filter" optional="hide"/>
+                                    <field name="hide_chatter" optional="show"/>
+                                    <field name="hide_export" optional="hide"/>
+                                    <field name="hide_import" optional="hide"/>
+                                    <field name="hide_archive" optional="hide"/>
+                                    <field name="hide_duplicate" optional="hide"/>
+                                    <field name="hide_print" optional="hide"/>
+                                    <field name="hide_action_menu" optional="hide"/>
+                                    <field name="hide_send_message" optional="hide"/>
+                                    <field name="hide_followers" optional="hide"/>
+                                    <field name="hide_attachments" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Buttons" name="buttons">
+                            <button name="action_scan_buttons" type="object" string="Scan Buttons"
+                                    class="btn-link" icon="search"/>
+                            <div class="text-muted mb-2">
+                                Blocking refuses the call on the server and ignores the view and
+                                the button id, because the server only learns which method was
+                                called.
+                            </div>
+                            <field name="button_ids" nolabel="1">
+                                <list string="Buttons" editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}"/>
+                                    <field name="button_label" string="Label"/>
+                                    <field name="button_type" string="Type"/>
+                                    <field name="button_name" string="Method / Action"/>
+                                    <field name="button_id" string="Button Id" optional="hide"/>
+                                    <field name="view_type" string="View"/>
+                                    <field name="mode"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Fields" name="fields">
+                            <div class="text-muted mb-2">
+                                A hidden field is removed from the screen and is not fetched with
+                                the record, but this is not a guarantee that its value cannot be
+                                read: use a record filter for data that must not leak.
+                            </div>
+                            <field name="field_ids" nolabel="1">
+                                <list string="Fields" editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}"/>
+                                    <field name="field_id" options="{'no_create': True}"/>
+                                    <field name="mode"/>
+                                    <field name="no_open" optional="show"/>
+                                    <field name="no_create" optional="show"/>
+                                    <field name="field_domain" string="Value Filter" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Tabs, Filters &amp; Views" name="elements">
+                            <button name="action_scan_buttons" type="object" string="Scan Views"
+                                    class="btn-link" icon="search"/>
+                            <div class="text-muted mb-2">
+                                Notebook tabs and search filters are removed from the screen.
+                                A hidden view type is removed from the action before the
+                                client asks for it; the last remaining one is always kept.
+                            </div>
+                            <field name="element_ids" nolabel="1">
+                                <list string="View Elements" editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}"/>
+                                    <field name="element_type"/>
+                                    <field name="element_name"/>
+                                    <field name="element_label" string="Label" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Reports &amp; Actions" name="reports">
+                            <div class="text-muted mb-2">
+                                The reports leave the Print menu and the actions leave the Action
+                                menu; both are also refused when reached another way. The quickest
+                                way to pick them app by app is <strong>Restrict an App</strong>.
+                            </div>
+                            <separator string="Hidden Reports"/>
+                            <field name="hidden_report_ids" nolabel="1" options="{'no_create': True}">
+                                <list string="Hidden Reports">
+                                    <field name="name" string="Report"/>
+                                    <field name="model" string="Printed from"/>
+                                    <field name="report_type" optional="hide"/>
+                                </list>
+                            </field>
+                            <separator string="Hidden Actions"/>
+                            <field name="hidden_action_ids" nolabel="1" options="{'no_create': True}"
+                                   domain="[('binding_model_id', '!=', False)]">
+                                <list string="Hidden Server Actions">
+                                    <field name="name" string="Action"/>
+                                    <field name="binding_model_id" string="Action menu of"/>
+                                </list>
+                            </field>
+                            <field name="hidden_window_action_ids" nolabel="1" options="{'no_create': True}">
+                                <list string="Hidden Window Actions">
+                                    <field name="name" string="Action"/>
+                                    <field name="binding_model_id" string="Action menu of"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Why this profile exists..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_profile_action" model="ir.actions.act_window">
+        <field name="name">Access Profiles</field>
+        <field name="res_model">om.access.profile</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first access profile</p>
+            <p>
+                Start from a ready-made one with <strong>New from Template</strong>: a
+                salesperson, an accountant, an auditor, a cashier... Only the templates of the
+                apps installed are offered.
+            </p>
+            <p>
+                Group users into a profile and decide from one screen which menus they see,
+                which models they may read or change, which buttons they may press and which
+                reports they may print.
+            </p>
+        </field>
+    </record>
+
+</odoo>

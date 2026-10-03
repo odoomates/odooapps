@@ -1,0 +1,124 @@
+# The profiles a user carries, and the export group this module hides on purpose.
+from odoo import _, api, fields, models
+from odoo.exceptions import AccessDenied
+from odoo.http import request
+
+from .login_tools import client_address, utc_now
+
+EXPORT_GROUP = 'base.group_allow_export'
+LOGIN_REFUSALS = {
+    'hours': lambda: _("Your access profile only allows signing in during your working hours."),
+    'network': lambda: _("Your access profile does not allow signing in from this network."),
+}
+# session key holding the sign-in moment (One Session per User)
+LOGIN_STAMP_KEY = 'om_access_login_stamp'
+USER_FIELDS_IN_FILTERS = ('company_ids', 'property_warehouse_id')
+
+
+class ResUsers(models.Model):
+    _inherit = 'res.users'
+
+    access_allowed_ids = fields.One2many(
+        'om.access.allowed', 'user_id', string='Allowed Records', groups='base.group_system',
+        help="The records of this user, for the profiles whose allowed records are "
+             "'each user's own': their point of sale, their warehouse...")
+    om_access_login_stamp = fields.Float(
+        copy=False, groups='base.group_system',
+        help="When the user last signed in, for One Session per User.")
+    access_effective = fields.Html(
+        string='Effective Access', compute='_compute_access_effective', sanitize=False,
+        groups='base.group_system',
+        help="What this user really ends up with, all of their profiles combined.")
+    access_profile_ids = fields.Many2many(
+        'om.access.profile', 'om_access_profile_users_rel', 'uid', 'profile_id',
+        string='Access Profiles', groups='base.group_system',
+        help="A user may carry several profiles. Additive profiles combine "
+             "permissively, override profiles always subtract.")
+
+    def _login(self, credential, user_agent_env):
+        auth_info = super()._login(credential, user_agent_env)
+        uid = auth_info.get('uid')
+        if uid and request:
+            rules = self.env['om.access.profile']._resolve(uid)
+            if rules.enabled and rules.has_flag('single_session'):
+                # an older session than the user's stamp ends on its next
+                # request (ir_http.py)
+                stamp = utc_now().timestamp()
+                request.session[LOGIN_STAMP_KEY] = stamp
+                self.env['res.users'].sudo().browse(uid).om_access_login_stamp = stamp
+        return auth_info
+
+    @api.depends('access_profile_ids', 'access_allowed_ids')
+    def _compute_access_effective(self):
+        Report = self.env['om.access.test.user']
+        for user in self:
+            user.access_effective = Report.new({'user_id': user.id}).report if user.id else False
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        users = super().create(vals_list)
+        internal = users.filtered(lambda user: not user.share)
+        if internal:
+            profiles = self.env['om.access.profile'].sudo().search([('for_new_users', '=', True)])
+            if profiles:
+                internal.sudo().write({'access_profile_ids': [(4, profile.id) for profile in profiles]})
+        return users
+
+    def write(self, vals):
+        result = super().write(vals)
+        if 'access_profile_ids' in vals:
+            self.access_profile_ids._sync_group()
+            # the guard against locking every administrator out applies here too
+            self.sudo().access_profile_ids._check_last_administrator()
+            self.env.transaction.invalidate_ormcache('default')
+        elif any(name in vals for name in USER_FIELDS_IN_FILTERS):
+            # _resolve() depends on the user's companies, and record filters
+            # read the default warehouse
+            self.env.transaction.invalidate_ormcache('default')
+        return result
+
+    def has_group(self, group_ext_id):
+        result = super().has_group(group_ext_id)
+        if not result or group_ext_id != EXPORT_GROUP:
+            return result
+        if self.id != self.env.uid:
+            return result
+        # The Export menu, export_data() and the export controller all check this
+        # group. env.user is sudo, so the rules are resolved for self.id.
+        rules = self.env['om.access.profile']._resolve(self.id)
+        if rules.enabled and rules.has_flag('block_export'):
+            return False
+        return result
+
+    def _check_credentials(self, credential, env):
+        result = super()._check_credentials(credential, env)
+        for user in self:
+            rules = self.env['om.access.profile']._resolve(user.id)
+            if not rules.enabled:
+                continue
+            # after super(), so it covers every kind of credential once accepted
+            if rules.has_flag('block_login'):
+                raise AccessDenied(_("Your access profile does not allow you to sign in."))
+            reason = rules.login_refusal(utc_now(), client_address())
+            if reason:
+                raise AccessDenied(LOGIN_REFUSALS[reason]())
+            # 'interactive' is False for XML-RPC/JSON-RPC sign-ins, True for the browser
+            if not env.get('interactive', True) and rules.has_flag('block_rpc'):
+                raise AccessDenied(_(
+                    "Your access profile does not allow signing in through "
+                    "the external API."))
+        return result
+
+    def _session_token_get_values(self):
+        # The session token is checked on every request, so changing it while
+        # the login is blocked ends the sessions already open.
+        values = super()._session_token_get_values()
+        if values:
+            rules = self.env['om.access.profile']._resolve(self.id)
+            if rules.enabled and rules.has_flag('block_login'):
+                values += (('om_access_block_login', True),)
+        return values
+
+    @api.model
+    def _get_access_profile_action(self):
+        return self.env.ref('om_access_manager.om_access_profile_action').sudo().read()[0]

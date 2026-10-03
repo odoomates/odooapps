@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_users_form_access_profile" model="ir.ui.view">
+        <field name="name">res.users.form.access.profile</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook" position="inside">
+                <page string="Access Profiles" name="access_profiles" groups="base.group_system">
+                    <field name="access_profile_ids" widget="many2many_tags"
+                           options="{'no_create': True}" nolabel="1"/>
+                    <div class="text-muted mt-2">
+                        Additive profiles combine permissively; an override profile always wins.
+                        A user with no profile is not restricted by this module.
+                    </div>
+                    <separator string="Effective Access"/>
+                    <field name="access_effective" nolabel="1" readonly="1"/>
+                    <separator string="Allowed Records"/>
+                    <div class="text-muted mb-2">
+                        Used by the profiles whose allowed records are "Each User's Own": this
+                        user's points of sale, warehouses, journals...
+                    </div>
+                    <field name="access_allowed_ids" nolabel="1">
+                        <list string="Allowed Records" editable="bottom">
+                            <field name="kind"/>
+                            <field name="res_model" column_invisible="1"/>
+                            <field name="res_id" widget="many2one_reference" required="1"
+                                   options="{'no_create': True}"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_tree_access_profile" model="ir.ui.view">
+        <field name="name">res.users.list.access.profile</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_tree"/>
+        <field name="arch" type="xml">
+            <field name="login" position="after">
+                <field name="access_profile_ids" widget="many2many_tags" optional="show"
+                       groups="base.group_system" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_users_search_access_profile" model="ir.ui.view">
+        <field name="name">res.users.search.access.profile</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_search"/>
+        <field name="arch" type="xml">
+            <field name="share" position="after">
+                <field name="access_profile_ids" groups="base.group_system"/>
+            </field>
+            <filter name="Inactive" position="before">
+                <filter name="filter_with_profile" string="With an Access Profile"
+                        domain="[('access_profile_ids', '!=', False)]" groups="base.group_system"/>
+                <filter name="filter_without_profile" string="Without an Access Profile"
+                        domain="[('access_profile_ids', '=', False)]" groups="base.group_system"/>
+                <separator/>
+            </filter>
+            <filter name="group_by_language" position="after">
+                <filter name="group_by_access_profile" string="Access Profile"
+                        context="{'group_by': 'access_profile_ids'}" groups="base.group_system"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

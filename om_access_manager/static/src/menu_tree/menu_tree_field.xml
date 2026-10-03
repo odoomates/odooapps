@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_access_manager.MenuTreeField">
+        <div class="o_om_menu_tree">
+            <input type="search" class="form-control mb-2 o_om_menu_tree_search"
+                   placeholder="Search a menu..." t-att-value="this.state.search"
+                   t-on-input="this.onSearch"/>
+            <div t-foreach="this.rows" t-as="row" t-key="row.id"
+                 class="d-flex align-items-center o_om_menu_tree_row"
+                 t-att-class="{'o_om_menu_tree_app': row.depth === 0}"
+                 t-att-style="'padding-left: ' + (row.depth * 1.5) + 'rem'"
+                 t-att-data-menu-id="row.id">
+                <button t-if="row.hasChildren and !this.state.search" type="button"
+                        class="btn btn-link p-0 me-1 o_om_menu_tree_caret"
+                        t-on-click="() => this.toggleExpand(row.id)">
+                    <i class="oi oi-fw" t-att-data-icon="row.expanded ? 'arrow_drop_down' : 'arrow_right'"/>
+                </button>
+                <span t-else="" class="oi oi-fw me-1"/>
+                <CheckBox value="!row.hidden" indeterminate="row.partial"
+                          disabled="this.props.readonly or row.parentHidden"
+                          onChange="(shown) => this.toggle(row.id, shown)">
+                    <span t-att-class="{'fw-bold': row.depth === 0, 'text-muted text-decoration-line-through': row.hidden}"
+                          t-out="row.name"/>
+                </CheckBox>
+                <span t-if="row.depth === 0 and !row.hidden and row.hiddenCount"
+                      class="badge rounded-pill text-bg-warning ms-2" t-out="this.hiddenLabel(row.hiddenCount)"/>
+            </div>
+        </div>
+    </t>
+
+</templates>
