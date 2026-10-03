@@ -6,19 +6,13 @@
             <field name="name">followup.sending.results.form</field>
             <field name="model">followup.sending.results</field>
             <field name="arch" type="xml">
-                <form string="Summary of actions">
-                    <field name="description" widget="html"
-                           class="oe_view_only"/>
+                <form string="Summary of Actions">
+                    <field name="needprinting" invisible="1"/>
+                    <field name="description" readonly="1" nolabel="1"/>
                     <footer>
-                        <field name="needprinting" invisible="1"/>
-                        <div attrs="{'invisible':[('needprinting','=', False)]}">
-                            <button name="do_report" string="Download Letters"
-                                    type="object" class="oe_highlight"/>
-                        </div>
-                        <div attrs="{'invisible':[('needprinting','!=', False)]}">
-                            <button name="do_done" string="Close" type="object"
-                                    class="oe_highlight"/>
-                        </div>
+                        <button name="do_report" string="Download Letters" type="object" class="btn-primary" data-hotkey="q" attrs="{'invisible': [('needprinting', '=', False)]}"/>
+                        <button name="do_done" string="Close" type="object" class="btn-primary" data-hotkey="q" attrs="{'invisible': [('needprinting', '!=', False)]}"/>
+                        <button string="Close" special="cancel" class="btn-secondary" attrs="{'invisible': [('needprinting', '=', False)]}"/>
                     </footer>
                 </form>
             </field>
