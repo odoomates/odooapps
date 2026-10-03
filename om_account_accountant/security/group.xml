@@ -17,6 +17,16 @@
 		<field name="name">Advisor</field>
 	</record>			
 	
+	<record id="group_credit_limit_override" model="res.groups">
+		<field name="name">Override the Credit Limit</field>
+		<!-- no category on 18: one in Accounting would turn its user selection into separate boxes -->
+		<field name="comment">Post the customer invoices going over the credit limit of the customer.</field>
+	</record>
+
+	<record id="account.group_account_manager" model="res.groups">
+		<field name="implied_ids" eval="[(4, ref('om_account_accountant.group_credit_limit_override'))]"/>
+	</record>
+
 	<record id="account.group_account_readonly" model="res.groups">	
 		<field name="name">Auditor</field>
 		<field name="category_id" ref="base.module_category_accounting_accounting" />
