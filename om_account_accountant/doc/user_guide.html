@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
-  The user guide of Odoo 18 Accounting for Community Edition.
+  The user guide of Odoo 16 Accounting for Community Edition.
 
   This file is the source. Edit it, then rebuild the PDF that ships in the app:
 
@@ -12,7 +12,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/>
-<title>Odoo 18 Accounting for Community Edition - User Guide</title>
+<title>Odoo 16 Accounting for Community Edition - User Guide</title>
 <style>
 /* wkhtmltopdf 0.12.x runs an old WebKit: no CSS variables, no flexbox, no `gap`.
    Everything below is written for it, on purpose. */
@@ -160,12 +160,12 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <span class="cover-kicker">User Guide</span>
     </div>
     <h1>Accounting</h1>
-    <h2>for Odoo 18 Community Edition</h2>
+    <h2>for Odoo 16 Community Edition</h2>
     <p class="lead">Setting the books up, recording the daily work, reconciling the
         bank, running the reports and closing the period &mdash; with the complete
         Odoo Mates accounting suite.</p>
     <div class="cover-foot">
-        <div><strong>Odoo 18</strong><span>Community Edition</span></div>
+        <div><strong>Odoo 16</strong><span>Community Edition</span></div>
         <div><strong>LGPL-3</strong><span>Free and open source</span></div>
         <div><strong>odoomates@gmail.com</strong><span>Odoo Mates</span></div>
     </div>
@@ -285,8 +285,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <h1>Before you start</h1>
 
     <h2><span class="n">1.1</span> What this app installs</h2>
-    <p>Installing <strong>Odoo 18 Accounting Community</strong> turns the Invoicing
-        application of Odoo 18 Community Edition into a full accounting application. It
+    <p>Installing <strong>Odoo 16 Accounting Community</strong> turns the Invoicing
+        application of Odoo 16 Community Edition into a full accounting application. It
         installs seventeen modules and arranges their menus, groups and dashboards so that
         they work as one:</p>
     <ul class="plain two-col">
@@ -356,7 +356,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     </figure>
     <h2><span class="n">1.4</span> Upgrading from an earlier 18 release</h2>
     <p>This guide describes release 1.3.0 of October 2026. If an earlier release of the suite already runs on your
-        Odoo 18, upgrade it as a whole: this release adds modules and changes several of the others.</p>
+        Odoo 16, upgrade it as a whole: this release adds modules and changes several of the others.</p>
     <ol>
         <li><strong>Back up the database</strong> before anything else.</li>
         <li>Replace <strong>all the Odoo Mates accounting modules</strong> with this release, not only this app. The
@@ -364,7 +364,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             revaluation, and the dashboards &mdash; must be in your addons path too, or the upgrade stops.</li>
         <li>Restart Odoo, then <span class="path">Apps &rsaquo; Update Apps List</span>, in developer mode.</li>
         <li>Upgrade all the modules of the suite that are installed, together: Odoo upgrades a module and the ones
-            depending on it, not the modules it depends on, so upgrading <strong>Odoo 18 Accounting Community</strong>
+            depending on it, not the modules it depends on, so upgrading <strong>Odoo 16 Accounting Community</strong>
             alone is not enough. The new modules install themselves with it. From the command line,
             <code>-u accounting_pdf_reports,<wbr>om_account_accountant,<wbr>om_account_asset,<wbr>om_account_budget,<wbr>om_account_daily_reports,<wbr>om_account_followup,<wbr>om_fiscal_year,<wbr>om_recurring_payments</code> (or <code>-u all</code>).</li>
     </ol>
@@ -587,7 +587,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         Formats</span>, where this suite lets you position every printed field to the
         millimetre and watch a live preview &mdash; the Gulf, UK and Irish, Australian and New
         Zealand leaves are there, and you can build your own. Set the finished format on the
-        bank journal, under <strong>Cheque Format</strong>. That is section 5.7.</p>
+        bank journal, under <strong>Cheque Format</strong>, and choose <strong>Configurable Cheque
+        Format</strong> as the <strong>Check Layout</strong> of the company. That is section 5.7.</p>
 
     <h2><span class="n">2.11</span> The Gulf states</h2>
     <p>Set the company's country to Bahrain, Kuwait, Oman, Qatar, Saudi Arabia or the United
@@ -992,7 +993,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             follows every change.</li>
         <li>Print the test page on plain paper, hold it against a real cheque, and correct with
             <strong>Move Right</strong> and <strong>Move Down</strong> until it lines up.</li>
-        <li>Set the finished format on the bank journal, under <strong>Cheque Format</strong>.</li>
+        <li>Set the finished format on the bank journal, under <strong>Cheque Format</strong>, and
+            choose <strong>Configurable Cheque Format</strong> as the <strong>Check Layout</strong> in
+            <span class="path">Settings &rsaquo; Checks</span>.</li>
         <li>Pay a vendor with the <strong>Checks</strong> payment method, then <strong>Print
             Checks</strong>.</li>
     </ol>
@@ -1016,9 +1019,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <h1>Bank and cash</h1>
 
     <h2><span class="n">6.1</span> Importing the statement</h2>
-    <p><span class="path">Accounting &rsaquo; Bank and Cash &rsaquo; Bank Statements &rsaquo;
-        Import Statement</span>, or the <strong>Import Statement</strong> action on the bank
-        card of the dashboard.</p>
+    <p>The <strong>Import Statement</strong> action on the bank card of the
+        <span class="path">Accounting &rsaquo; Dashboard</span>.</p>
     <ol>
         <li>Drop in the files your bank gives you. Each file is handed to the parsers in turn
             and read by the first one that recognises it, so you never have to say which format
@@ -1027,7 +1029,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             number: the right journal is found from it. A file imported into the journal of
             another account is refused.</li>
         <li>For CSV and Excel, choose a <strong>File Map</strong>. Once it is set on the journal
-            it is filled in automatically at every later import.</li>
+            it is filled in automatically at every later import. Without one, the map
+            <em>Date, Label, Reference, Partner, Amount, Currency</em> reads the files of the
+            earlier versions of this module for 16.0, as they were.</li>
         <li>Import. Transactions already imported are skipped &mdash; the identifier the bank
             gives each transaction is kept &mdash; and the message tells you how many were new
             and how many were already there.</li>
@@ -1496,10 +1500,6 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         and type the dates. The report prints the base and the tax of each tax, sales and
         purchases apart. A cash basis tax counts in the period it is paid, not the period it
         is invoiced.</p>
-    <p><strong>Withholding taxes.</strong> Install <em>Withholding Tax on Payment</em>
-        (<code>l10n_account_withholding_tax</code>, Community) from the Apps menu to withhold a
-        tax when you register a payment. The tax withheld prints in a <em>Withholding</em>
-        section of its own, its base counted once, on the payment.</p>
     <p><strong>Closing the tax period.</strong> An accounting manager clicks <em>Close Tax
         Period</em> on the Tax Report, picks the journal and the tax payable and receivable
         accounts, and confirms. Odoo drafts an entry on the last day of the period that empties

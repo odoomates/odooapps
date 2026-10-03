@@ -16,8 +16,8 @@ HERE = pathlib.Path(__file__).resolve().parent
 SOURCE = HERE / 'user_guide.html'
 TARGET = HERE.parent / 'static' / 'description' / 'user_guide.pdf'
 
-TITLE = 'Odoo 18 Accounting for Community Edition - User Guide'
-SUBJECT = 'User guide for the Odoo Mates accounting suite on Odoo 18'
+TITLE = 'Odoo 16 Accounting for Community Edition - User Guide'
+SUBJECT = 'User guide for the Odoo Mates accounting suite on Odoo 16'
 AUTHOR = 'Odoo Mates'
 
 # Lato is the font Odoo itself uses; it is not usually installed system-wide, so it
@@ -37,7 +37,7 @@ FOOTER = """<!DOCTYPE html>
 </style></head>
 <body>
   <div class="bar"><span class="page" id="page"></span>
-  <span>Odoo 18 Accounting for Community Edition &nbsp;&middot;&nbsp; User Guide</span></div>
+  <span>Odoo 16 Accounting for Community Edition &nbsp;&middot;&nbsp; User Guide</span></div>
   <script>
     // old WebKit: no URLSearchParams
     var page = 0, parts = location.search.substring(1).split('&');
@@ -54,7 +54,7 @@ FOOTER = """<!DOCTYPE html>
 def font_directory(argv):
     if len(argv) > 1:
         return pathlib.Path(argv[1])
-    for candidate in (HERE.parents[3] / 'odoo', pathlib.Path.home() / 'odoo' / '18.0' / 'odoo' / 'odoo'):
+    for candidate in (HERE.parents[3] / 'odoo', pathlib.Path.home() / 'odoo' / '16.0' / 'odoo' / 'odoo'):
         fonts = candidate / 'addons' / 'web' / 'static' / 'fonts' / 'lato'
         if fonts.is_dir():
             return fonts
