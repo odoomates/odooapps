@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The account module has no list nor form for the transactions and the statements: the generated ones cannot
+         be used to type a transaction in, e.g. the petty cash spent during the day. -->
+
+    <record id="view_bank_statement_line_list" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.list.om.account.reconcile</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <tree string="Transactions" decoration-muted="is_reconciled" default_order="date desc, id desc">
+                <field name="company_id" invisible="1"/>
+                <field name="date"/>
+                <field name="payment_ref"/>
+                <field name="partner_id"/>
+                <field name="statement_id" optional="show"/>
+                <field name="suitable_journal_ids" invisible="1"/>
+                <field name="journal_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="amount" sum="Total"/>
+                <field name="running_balance" optional="hide"/>
+                <field name="to_check" string="To Check" widget="boolean" optional="show" readonly="1"/>
+                <field name="is_reconciled" string="Reconciled" widget="boolean" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_bank_statement_line_search" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.search.om.account.reconcile</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <search string="Transactions">
+                <field name="payment_ref"/>
+                <field name="partner_id"/>
+                <field name="amount"/>
+                <field name="journal_id"/>
+                <field name="statement_id"/>
+                <filter name="to_reconcile" string="To Reconcile" domain="[('is_reconciled', '=', False)]"/>
+                <filter name="reconciled" string="Reconciled" domain="[('is_reconciled', '=', True)]"/>
+                <separator/>
+                <filter name="to_review" string="To Check"
+                        domain="[('move_id.state', '=', 'posted'), ('move_id.to_check', '=', True)]"/>
+                <separator/>
+                <filter name="date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_by_journal" string="Journal" context="{'group_by': 'journal_id'}"/>
+                    <filter name="group_by_statement" string="Statement" context="{'group_by': 'statement_id'}"/>
+                    <filter name="group_by_date" string="Date" context="{'group_by': 'date'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_bank_statement_line_form" model="ir.ui.view">
+        <field name="name">account.bank.statement.line.form.om.account.reconcile</field>
+        <field name="model">account.bank.statement.line</field>
+        <field name="arch" type="xml">
+            <form string="Transaction">
+                <field name="foreign_currency_id" invisible="1"/>
+                <field name="id" invisible="1"/>
+                <header>
+                    <button name="om_action_reconcile" type="object" string="Reconcile" class="btn-primary" groups="account.group_account_user" attrs="{'invisible': ['|', ('id', '=', False), ('is_reconciled', '!=', False)]}"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Reconciled" attrs="{'invisible': [('is_reconciled', '=', False)]}"/>
+                    <field name="is_reconciled" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="currency_id" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="suitable_journal_ids" invisible="1"/>
+                            <field name="journal_id" options="{'no_create': True}"
+                                   domain="[('type', 'in', ('bank', 'cash', 'credit'))]" attrs="{'readonly': [('id', '!=', False)]}"/>
+                            <field name="date" attrs="{'readonly': [('is_reconciled', '!=', False)]}"/>
+                            <field name="payment_ref" string="Label" required="1" placeholder="e.g. Office supplies"/>
+                            <field name="partner_id" attrs="{'readonly': [('is_reconciled', '!=', False)]}"/>
+                        </group>
+                        <group>
+                            <field name="amount"
+                                   help="Positive for money received, negative for money spent." attrs="{'readonly': [('is_reconciled', '!=', False)]}"/>
+                            <field name="foreign_currency_id" groups="base.group_multi_currency" options="{'no_create': True}" attrs="{'readonly': [('is_reconciled', '!=', False)]}"/>
+                            <field name="amount_currency" groups="base.group_multi_currency" attrs="{'invisible': [('foreign_currency_id', '=', False)], 'readonly': [('is_reconciled', '!=', False)]}"/>
+                            <field name="statement_id" domain="[('journal_id', '=', journal_id)]"
+                                   options="{'no_create': True}"/>
+                            <field name="ref" string="Reference"/>
+                        </group>
+                    </group>
+                    <field name="narration" placeholder="Notes"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bank_statement_line" model="ir.actions.act_window">
+        <field name="name">Transactions</field>
+        <field name="res_model">account.bank.statement.line</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_bank_statement_line_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a transaction</p>
+            <p>The money received and spent on the account, as the bank statement or the cash count shows it.</p>
+        </field>
+    </record>
+
+    <record id="view_bank_statement_form" model="ir.ui.view">
+        <field name="name">account.bank.statement.form.om.account.reconcile</field>
+        <field name="model">account.bank.statement</field>
+        <field name="arch" type="xml">
+            <form string="Statement">
+                <field name="id" invisible="1"/>
+                <sheet>
+                    <field name="currency_id" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="is_valid" invisible="1"/>
+                    <div class="alert alert-warning" role="alert" attrs="{'invisible': ['|', ('is_complete', '!=', False), ('line_ids', '=', False)]}">
+                        The closing balance does not match the opening balance and the transactions: check the
+                        amounts, or a transaction is missing.
+                    </div>
+                    <div class="alert alert-danger" role="alert" attrs="{'invisible': ['|', ('is_valid', '!=', False), ('id', '=', False)]}">
+                        The opening balance differs from the closing balance of the previous statement.
+                    </div>
+                    <div class="oe_title">
+                        <label for="name" string="Statement"/>
+                        <h1><field name="name" placeholder="e.g. Cash of 16 September"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="journal_id" readonly="1" force_save="1"/>
+                            <field name="date"/>
+                            <field name="reference"/>
+                        </group>
+                        <group>
+                            <field name="balance_start"/>
+                            <field name="balance_end" string="Computed Balance"/>
+                            <field name="balance_end_real" string="Closing Balance"/>
+                            <field name="is_complete" invisible="1"/>
+                        </group>
+                    </group>
+                    <!-- the date of a statement of 19.0 is the one of its lines: the date of the day until then -->
+                    <field name="line_ids" context="{'default_journal_id': journal_id or context.get('default_journal_id'), 'default_date': date or context.get('default_date')}">
+                        <tree editable="bottom" decoration-muted="is_reconciled">
+                            <!-- read by the readonly of the fields of the entries on Odoo 16 -->
+                            <field name="state" invisible="1"/>
+                            <field name="suitable_journal_ids" invisible="1"/>
+                            <field name="journal_id" invisible="1"/>
+                            <field name="date"/>
+                            <field name="payment_ref" string="Label" required="1"/>
+                            <field name="partner_id" attrs="{'readonly': [('is_reconciled', '!=', False)]}"/>
+                            <field name="ref" string="Reference" optional="hide"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="amount" sum="Total" attrs="{'readonly': [('is_reconciled', '!=', False)]}"/>
+                            <field name="is_reconciled" string="Reconciled" widget="boolean" optional="show"/>
+                        </tree>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+</odoo>

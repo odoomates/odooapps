@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_account_reconcile.RecordSelector" owl="1">
+        <div class="o_record_selector o_om_record_selector">
+            <AutoComplete value="value" sources="sources" placeholder="props.placeholder || ''"
+                          onSelect.bind="onSelect" onChange.bind="onChange" autoSelect="true"/>
+        </div>
+    </t>
+
+    <t t-name="om_account_reconcile.MultiRecordSelector" owl="1">
+        <div class="o_record_selector o_om_record_selector d-flex flex-wrap align-items-center gap-1">
+            <span t-foreach="ids(props)" t-as="id" t-key="id" class="badge rounded-pill text-bg-light border">
+                <t t-out="names[id] or ''"/>
+                <a href="#" class="ms-1 text-muted" title="Remove" t-on-click.prevent="() => this.remove(id)">×</a>
+            </span>
+            <div class="flex-grow-1">
+                <AutoComplete value="''" sources="sources" placeholder="props.placeholder || ''"
+                              onSelect.bind="onSelect" autoSelect="true" resetOnSelect="true"/>
+            </div>
+        </div>
+    </t>
+
+</templates>
