@@ -1,24 +1,17 @@
-# -*- coding: utf-8 -*-
-
 {
     'name': 'Odoo 16 Remove Data',
-    'version': '16.0.1.0.1',
-    'author': 'Odoo Mates, Sunpop.cn',
+    'version': '16.0.1.1.0',
+    'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
     'summary': 'Data Clean up, Remove Data, Database Clean UP, Reset Database',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'license': 'LGPL-3',
-    'sequence': 20,
-    'live_test_url': '',
-    'summary': """""",
-    'depends': ['base',],
+    'depends': ['base'],
     'data': [
+        'security/ir.model.access.csv',
         'views/view.xml',
     ],
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }
