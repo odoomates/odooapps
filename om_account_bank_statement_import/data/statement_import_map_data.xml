@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- The layout the import of this module read on Odoo 16 before the column maps: Date, Label, Reference,
+             Partner, Amount, Currency, by position, under a header row; the amounts in the currency of the
+             journal, as that import recorded them whatever the currency column said. The default of the journals without a
+             map of their own, so that these files import as they did. -->
+        <record id="map_odoo16_layout" model="account.statement.import.map">
+            <field name="name">Date, Label, Reference, Partner, Amount, Currency</field>
+            <field name="company_id" eval="False"/>
+            <field name="delimiter">,</field>
+            <field name="has_header" eval="True"/>
+            <field name="date_format">%Y-%m-%d</field>
+            <field name="column_date">1</field>
+            <field name="column_label">2</field>
+            <field name="column_ref">3</field>
+            <field name="column_partner">4</field>
+            <field name="column_amount">5</field>
+            <field name="note">The columns by their position: the date (2020-12-01), the label, the reference, the name of the partner and the amount (negative when the money leaves the account), under a header row. The sixth column, the currency, is not read: the amounts are in the currency of the journal, as the import of 16.0 recorded them.</field>
+        </record>
+
+    </data>
+</odoo>
