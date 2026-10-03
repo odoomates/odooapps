@@ -1,11 +1,8 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 {
     'name': 'Odoo 16 Fiscal Year & Lock Date',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Accounting',
-    'summary': 'Odoo 16 Fiscal Year, Fiscal Year in Odoo 16, Lock Date in Odoo 16',
+    'summary': 'Odoo 16 Fiscal Year, Year-End Closing, Period Closing, Lock Date in Odoo 16',
     'description': 'Odoo 16 Fiscal Year, Fiscal Year in Odoo 16',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
     'sequence': '1',
@@ -14,17 +11,17 @@
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
     'support': 'odoomates@gmail.com',
-    'depends': ['account'],
-    'demo': [],
+    'depends': ['account', 'mail'],
     'data': [
+        'security/security.xml',
         'security/ir.model.access.csv',
-        'security/account_security.xml',
+        'data/period_closing_task_data.xml',
+        'views/menu.xml',
         'wizard/change_lock_date.xml',
+        'wizard/fiscal_year_closing.xml',
         'views/fiscal_year.xml',
+        'views/period_closing.xml',
         'views/settings.xml',
     ],
-    'installable': True,
-    'application': False,
-    'auto_install': False,
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }
