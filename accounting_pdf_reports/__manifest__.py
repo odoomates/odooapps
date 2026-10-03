@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Financial Reports',
-    'version': '2.0.5',
+    'version': '2.0.6',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 20, Annual Report, Accounting Financial '
                    'Reports, Odoo 20 Financial Reports',
@@ -42,6 +42,7 @@
         'report/report_financial.xml',
         'report/report_annual.xml',
         'report/report_tax.xml',
+        'report/report_tax_grid.xml',
         'report/report_aged_partner.xml',
         'report/report_journal_audit.xml',
         'report/report_journal_entries.xml',

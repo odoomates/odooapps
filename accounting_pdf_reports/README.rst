@@ -30,6 +30,11 @@ Features
 * Print the taxes withheld on payments (Community's
   ``l10n_account_withholding_tax``) in a Withholding section of their own,
   their base counted once.
+* Print the Tax Report By Tax Grid: the tax return of your country as its
+  fiscal localization lays it out, grid by grid, with its totals, ready to
+  copy into the tax office's portal. Some 95 localizations ship one, among
+  them Belgium, France, Germany, the Netherlands, Spain, the United Kingdom,
+  India, Saudi Arabia, the United Arab Emirates, Mexico and Australia.
 * Close a tax period: a draft entry that clears the tax accounts of the period
   against a tax payable or receivable account.
 * Print a Journals Audit report with the entries sorted by date or by journal

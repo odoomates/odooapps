@@ -6,3 +6,4 @@ from . import test_annual_report
 from . import test_optional_columns
 from . import test_tax_report
 from . import test_tax_closing
+from . import test_tax_grid

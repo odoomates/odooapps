@@ -1,6 +1,7 @@
 from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 PERIODS = [
     ('this_month', 'This Month'),
@@ -28,6 +29,24 @@ class AccountTaxReport(models.TransientModel):
         default=lambda self: fields.Date.context_today(self).replace(day=1) + relativedelta(months=1, days=-1)
     )
 
+    report_kind = fields.Selection(
+        [('tax', 'By Tax'), ('grid', 'By Tax Grid')], string='Report', default='tax', required=True,
+        help="By Tax Grid prints the tax return of the country as its localization lays it out, grid by grid.")
+    tax_grid_report_id = fields.Many2one(
+        'account.report', string='Tax Return', default=lambda self: self._default_tax_grid_report(),
+        domain=lambda self: self._tax_grid_report_domain())
+
+    def _tax_grid_report_domain(self):
+        # the tax returns of the localizations, not the sections of one
+        generic = self.env.ref('account.generic_tax_report', raise_if_not_found=False)
+        return [('root_report_id', '=', generic.id if generic else False), ('country_id', '!=', False),
+                ('section_main_report_ids', '=', False)]
+
+    def _default_tax_grid_report(self):
+        country = self.env.company.account_fiscal_country_id
+        return self.env['account.report'].search(
+            self._tax_grid_report_domain() + [('country_id', '=', country.id)], order='sequence, id', limit=1)
+
     def _period_dates(self, period):
         """ :return: (first day, last day) of the period, the years being the fiscal years of the company """
         today = fields.Date.context_today(self)
@@ -51,6 +70,12 @@ class AccountTaxReport(models.TransientModel):
             self.date_from, self.date_to = self._period_dates(self.period)
 
     def _print_report(self, data):
+        if self.report_kind == 'grid':
+            if not self.tax_grid_report_id:
+                raise UserError(_("Pick the tax return to print. The tax returns come with the fiscal localization "
+                                  "of the country (the l10n modules)."))
+            data['form']['tax_grid_report_id'] = self.tax_grid_report_id.id
+            return self.env.ref('accounting_pdf_reports.action_report_account_tax_grid').report_action(self, data=data)
         return self.env.ref('accounting_pdf_reports.action_report_account_tax').report_action(self, data=data)
 
     def action_open_tax_closing(self):
