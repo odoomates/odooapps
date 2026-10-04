@@ -10,3 +10,8 @@ from . import test_menus_chatter
 from . import test_history_transfer
 from . import test_sign_in
 from . import test_review
+from . import test_conditions
+from . import test_membership
+from . import test_menu_rules
+from . import test_more_switches
+from . import test_access_group

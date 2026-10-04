@@ -17,7 +17,8 @@ PROFILE_FIELDS = (
     'block_export', 'block_import', 'block_archive', 'block_duplicate', 'hide_activities',
     'hide_settings_menu', 'lock_statusbar', 'block_rpc', 'block_developer_mode', 'block_login',
     'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_followers_all',
-    'hide_attachments_all', 'hide_costs', 'hide_sale_prices', 'note',
+    'hide_attachments_all', 'hide_costs', 'hide_sale_prices', 'note', 'block_custom_filter',
+    'block_custom_group', 'block_favorites', 'block_properties', 'block_apps',
 )
 MODEL_LINE_FIELDS = (
     'perm_read', 'perm_write', 'perm_create', 'perm_unlink', 'domain', 'domain_read',
@@ -25,9 +26,10 @@ MODEL_LINE_FIELDS = (
     'hide_archive', 'hide_duplicate', 'hide_print', 'hide_action_menu', 'hide_send_message',
     'hide_followers', 'hide_attachments',
 )
-FIELD_LINE_FIELDS = ('mode', 'no_open', 'no_create', 'field_domain')
-BUTTON_LINE_FIELDS = ('view_type', 'button_type', 'button_id', 'button_label', 'mode')
-ELEMENT_LINE_FIELDS = ('element_type', 'element_name', 'element_label')
+MENU_LINE_FIELDS = MODEL_LINE_FIELDS[:4] + MODEL_LINE_FIELDS[9:] + ('records', 'edit_draft_only', 'include_shared')
+FIELD_LINE_FIELDS = ('mode', 'no_open', 'no_create', 'no_export', 'field_domain', 'condition')
+BUTTON_LINE_FIELDS = ('view_type', 'button_type', 'button_id', 'button_label', 'mode', 'condition')
+ELEMENT_LINE_FIELDS = ('element_type', 'element_name', 'element_label', 'condition')
 
 
 class OmAccessProfile(models.Model):
@@ -90,6 +92,8 @@ class OmAccessProfile(models.Model):
         data = {'name': profile.name}
         data.update({name: profile[name] or False for name in PROFILE_FIELDS})
         data['home_action'] = self._om_ref(profile.home_action_id)
+        data['groups'] = [self._om_ref(group) for group in profile.group_ids]
+        data['granted_groups'] = [self._om_ref(group) for group in profile.granted_group_ids]
         data['hidden_menus'] = [self._om_ref(menu) for menu in profile.hidden_menu_ids]
         data['hidden_reports'] = [self._om_ref(report) for report in profile.hidden_report_ids]
         data['hidden_server_actions'] = [self._om_ref(action) for action in profile.hidden_action_ids]
@@ -97,6 +101,10 @@ class OmAccessProfile(models.Model):
         data['models'] = [
             dict({name: line[name] or False for name in MODEL_LINE_FIELDS}, model=line.model_id.model)
             for line in profile.model_ids
+        ]
+        data['menu_rules'] = [
+            dict({name: line[name] or False for name in MENU_LINE_FIELDS}, menu=self._om_ref(line.menu_id))
+            for line in profile.menu_rule_ids
         ]
         data['fields'] = [
             dict({name: line[name] or False for name in FIELD_LINE_FIELDS},
@@ -180,8 +188,8 @@ class OmAccessProfile(models.Model):
         existing = self.with_context(active_test=False).search([('name', '=', name)], limit=1)
         if existing and replace:
             existing.write({
-                'model_ids': [(5,)], 'field_ids': [(5,)], 'button_ids': [(5,)], 'element_ids': [(5,)],
-                'allowed_ids': [(5,)], 'hidden_menu_ids': [(5,)], 'hidden_report_ids': [(5,)],
+                'model_ids': [(5,)], 'menu_rule_ids': [(5,)], 'field_ids': [(5,)], 'button_ids': [(5,)], 'element_ids': [(5,)],
+                'allowed_ids': [(5,)], 'group_ids': [(5,)], 'granted_group_ids': [(5,)], 'hidden_menu_ids': [(5,)], 'hidden_report_ids': [(5,)],
                 'hidden_action_ids': [(5,)], 'hidden_window_action_ids': [(5,)],
             })
             profile = existing
@@ -205,6 +213,8 @@ class OmAccessProfile(models.Model):
                                    ref=ref.get('xmlid') or ref.get('path') or ref.get('name')))
             return found
 
+        values['group_ids'] = [(6, 0, records(data.get('groups'), 'res.groups', _("Group")).ids)]
+        values['granted_group_ids'] = [(6, 0, records(data.get('granted_groups'), 'res.groups', _("Group")).ids)]
         values['hidden_menu_ids'] = [(6, 0, records(data.get('hidden_menus'), 'ir.ui.menu', _("Menu")).ids)]
         values['hidden_report_ids'] = [(6, 0, records(
             data.get('hidden_reports'), 'ir.actions.report', _("Report")).ids)]
@@ -223,6 +233,14 @@ class OmAccessProfile(models.Model):
             model_lines.append((0, 0, dict(
                 {key: line[key] for key in MODEL_LINE_FIELDS if key in line}, model_id=ir_model.id)))
         values['model_ids'] = model_lines
+
+        menu_lines = []
+        for line in data.get('menu_rules', []):
+            menu = records([line['menu']] if line.get('menu') else [], 'ir.ui.menu', _("Menu"))
+            if menu:
+                menu_lines.append((0, 0, dict(
+                    {key: line[key] for key in MENU_LINE_FIELDS if key in line}, menu_id=menu.id)))
+        values['menu_rule_ids'] = menu_lines
 
         field_lines = []
         for line in data.get('fields', []):

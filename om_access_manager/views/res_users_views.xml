@@ -7,13 +7,27 @@
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
             <xpath expr="//notebook" position="inside">
-                <page string="Access Profiles" name="access_profiles" groups="base.group_system">
+                <page string="Access Profiles" name="access_profiles" groups="om_access_manager.group_access_manager">
                     <field name="access_profile_ids" widget="many2many_tags"
                            options="{'no_create': True}" nolabel="1"/>
+                    <button name="%(om_access_manager.om_access_copy_access_action)d" type="action"
+                            string="Copy Access to..." class="btn-link" icon="content_copy"
+                            context="{'active_model': 'res.users', 'active_id': id}"/>
                     <div class="text-muted mt-2">
                         Additive profiles combine permissively; an override profile always wins.
                         A user with no profile is not restricted by this module.
                     </div>
+                    <separator string="Temporary Profiles" invisible="not access_assignment_ids"/>
+                    <field name="access_assignment_ids" nolabel="1" readonly="1"
+                           invisible="not access_assignment_ids">
+                        <list string="Temporary Profiles">
+                            <field name="profile_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="note"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
                     <separator string="Effective Access"/>
                     <field name="access_effective" nolabel="1" readonly="1"/>
                     <separator string="Allowed Records"/>
@@ -41,7 +55,7 @@
         <field name="arch" type="xml">
             <field name="login" position="after">
                 <field name="access_profile_ids" widget="many2many_tags" optional="show"
-                       groups="base.group_system" readonly="1"/>
+                       groups="om_access_manager.group_access_manager" readonly="1"/>
             </field>
         </field>
     </record>
@@ -52,18 +66,18 @@
         <field name="inherit_id" ref="base.view_users_search"/>
         <field name="arch" type="xml">
             <field name="share" position="after">
-                <field name="access_profile_ids" groups="base.group_system"/>
+                <field name="access_profile_ids" groups="om_access_manager.group_access_manager"/>
             </field>
             <filter name="Inactive" position="before">
                 <filter name="filter_with_profile" string="With an Access Profile"
-                        domain="[('access_profile_ids', '!=', False)]" groups="base.group_system"/>
+                        domain="[('access_profile_ids', '!=', False)]" groups="om_access_manager.group_access_manager"/>
                 <filter name="filter_without_profile" string="Without an Access Profile"
-                        domain="[('access_profile_ids', '=', False)]" groups="base.group_system"/>
+                        domain="[('access_profile_ids', '=', False)]" groups="om_access_manager.group_access_manager"/>
                 <separator/>
             </filter>
             <filter name="group_by_language" position="after">
                 <filter name="group_by_access_profile" string="Access Profile"
-                        context="{'group_by': 'access_profile_ids'}" groups="base.group_system"/>
+                        context="{'group_by': 'access_profile_ids'}" groups="om_access_manager.group_access_manager"/>
             </filter>
         </field>
     </record>

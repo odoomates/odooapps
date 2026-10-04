@@ -5,8 +5,6 @@ from odoo.http import request
 
 from odoo.addons.web.controllers.dataset import DataSet
 
-from ..models.field_guard import mark_rpc_entry
-
 # Not button checked: denying these is Base._access_domain()'s job.
 PROTECTED_METHODS = frozenset({
     'create', 'write', 'unlink', 'web_save', 'web_read', 'web_search_read',
@@ -14,18 +12,25 @@ PROTECTED_METHODS = frozenset({
 })
 
 
+def _record_ids(args):
+    ids = args[0] if args else None
+    if isinstance(ids, int) and not isinstance(ids, bool):
+        return [ids]
+    if isinstance(ids, (list, tuple)) and all(isinstance(i, int) and not isinstance(i, bool) for i in ids):
+        return list(ids)
+    return None
+
+
 class DataSetAccess(DataSet):
 
     @http.route()
     def call_kw(self, model, method, args, kwargs, path=None):
         if method not in PROTECTED_METHODS:
-            request.env['om.access.profile']._check_button(model, 'object', method)
-        mark_rpc_entry(model, method)
+            request.env['om.access.profile']._check_button(model, 'object', method, _record_ids(args))
         return super().call_kw(model, method, args, kwargs, path=path)
 
     @http.route()
     def call_button(self, model, method, args, kwargs, path=None):
         if method not in PROTECTED_METHODS:
-            request.env['om.access.profile']._check_button(model, 'object', method)
-        mark_rpc_entry(model, method)
+            request.env['om.access.profile']._check_button(model, 'object', method, _record_ids(args))
         return super().call_button(model, method, args, kwargs, path=path)

@@ -18,7 +18,7 @@ VIEW_TYPES = (
 
 class OmAccessProfileElement(models.Model):
     _name = 'om.access.profile.element'
-    _inherit = ['om.access.history.mixin']
+    _inherit = ['om.access.history.mixin', 'om.access.condition.mixin']
     _description = 'Access Profile View Element Rule'
 
     def _om_history_kind(self):
@@ -45,6 +45,12 @@ class OmAccessProfileElement(models.Model):
         'UNIQUE(profile_id, model_id, element_type, element_name)',
         'A profile can only carry one rule per view element.',
     )
+
+    @api.constrains('element_type', 'condition')
+    def _check_condition_type(self):
+        for line in self:
+            if (line.condition or '').strip() and line.element_type != 'page':
+                raise ValidationError(_("Only a tab can be hidden under a condition."))
 
     @api.constrains('element_type', 'element_name')
     def _check_element_name(self):

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record model="res.groups.privilege" id="res_groups_privilege_access_management">
+        <field name="name">Access Management</field>
+        <field name="sequence">30</field>
+        <field name="category_id" ref="base.module_category_administration"/>
+    </record>
+
+    <!-- who manages the access profiles: the Access Manager app is theirs -->
+    <record id="group_access_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_access_management"/>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="comment">Creates and changes the access profiles, and gives them to users.</field>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+</odoo>

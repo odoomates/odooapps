@@ -6,7 +6,7 @@ from odoo import _, api, fields, models
 
 class OmAccessProfileButton(models.Model):
     _name = 'om.access.profile.button'
-    _inherit = ['om.access.history.mixin']
+    _inherit = ['om.access.history.mixin', 'om.access.condition.mixin']
     _description = 'Access Profile Button Rule'
 
     def _om_history_kind(self):

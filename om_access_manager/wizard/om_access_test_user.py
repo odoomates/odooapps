@@ -43,11 +43,12 @@ class OmAccessTestUser(models.TransientModel):
 
     def _render_report(self, rules):
         self.ensure_one()
+        granted = self._render_granted()
         if not rules.enabled:
-            return Markup('<p>%s</p>') % _(
-                "No access profile applies to this user: nothing is restricted.")
+            return granted + Markup('<p>%s</p>') % _(
+                "No access profile restricts this user: nothing is taken away.")
 
-        parts = [self._render_profiles(rules)]
+        parts = [granted, self._render_profiles(rules)]
         models_part = self._render_models(rules)
         if models_part:
             parts.append(models_part)
@@ -60,6 +61,19 @@ class OmAccessTestUser(models.TransientModel):
             ('read', _("Read")), ('write', _("Edit")),
             ('create', _("Create")), ('unlink', _("Delete")),
         )
+
+    def _render_granted(self):
+        """ The Odoo groups the user gets from their profiles. """
+        profiles = self.env['om.access.profile'].sudo()._om_profiles_of(self.user_id.sudo()).filtered('active')
+        rows = [
+            Markup('<tr><td>%s</td><td>%s</td></tr>') % (group.full_name, profile.name)
+            for profile in profiles for group in profile.granted_group_ids
+        ]
+        if not rows:
+            return Markup('')
+        return Markup(
+            '<h4>%s</h4><table class="table table-sm"><tr><th>%s</th><th>%s</th></tr>%s</table>'
+        ) % (_("Access granted"), _("Group"), _("By the profile"), Markup('').join(rows))
 
     def _render_profiles(self, rules):
         rows = []
@@ -106,7 +120,8 @@ class OmAccessTestUser(models.TransientModel):
                 if terms:
                     domains.append('%s: %s' % (label, ' OR '.join(terms)))
             authors = ', '.join(
-                profile.name
+                self.env._("%(profile)s, from %(menus)s", profile=profile.name, menus=' / '.join(profile.sources[model_name]))
+                if model_name in profile.sources else profile.name
                 for profile in rules.additive + rules.override
                 if model_name in profile.perms
                 or any(model == model_name for model, _operation in profile.domains)

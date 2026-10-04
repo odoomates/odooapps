@@ -97,6 +97,10 @@ class Base(models.AbstractModel):
         return result
 
     def write(self, vals):
+        if self._name == 'hr.employee' and any(
+                name.startswith('employee') for name in self.env['om.access.profile']._om_user_fields_in_filters()):
+            # a filter reads the user's employee (user.employee_id.department_id...)
+            self.env.transaction.invalidate_ormcache('default')
         # Odoo does not enforce read-only on write, so fields_get() only hides
         # Archive/Unarchive; this is what refuses them.
         if not ARCHIVE_FIELDS.isdisjoint(vals):
@@ -105,7 +109,28 @@ class Base(models.AbstractModel):
                 raise UserError(_(
                     "Your access profile does not allow archiving '%s'.",
                     self.env['ir.model']._get(self._name).name or self._name))
+        if self._om_changes_properties(vals):
+            rules = self.env['om.access.profile']._current_rules()
+            if rules.enabled and rules.has_flag('block_properties'):
+                raise self.env['om.access.profile']._om_refusal(
+                    _("Your access profile does not allow changing the properties of a form."),
+                    model=self._name, record_ids=self.ids)
         return super().write(vals)
+
+    def _om_changes_properties(self, vals):
+        """ Whether ``vals`` changes the definition of properties: written on the
+        definition itself, or carried by the values of a properties field. """
+        for name, value in vals.items():
+            field = self._fields.get(name)
+            if field is None:
+                continue
+            if field.type == 'properties_definition':
+                return True
+            if field.type == 'properties' and isinstance(value, list) and any(
+                    isinstance(item, dict) and (item.get('definition_changed') or item.get('definition_deleted'))
+                    for item in value):
+                return True
+        return False
 
     def copy(self, default=None):
         # copy() goes through create(), so neither the button check nor

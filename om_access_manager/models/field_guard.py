@@ -2,23 +2,16 @@
 # calls itself, never from Python: Odoo 20 checks field access on every Python
 # read, so denying them in _has_field_access() would break business code.
 # Hidden values are blanked, not removed, so views referring to them keep working.
-import threading
-
+# Which call a client made (_om_rpc_entry) is told by om_user_audit.
 from odoo import _, api, models
-from odoo.exceptions import AccessError
 from odoo.fields import Domain
-from odoo.http import request
+
+from .conditions import condition_domain
 
 AGGREGATE_SEPARATOR = ':'
 # the summary of extra totals lines of a quotation (sale.order)
 EXTRA_TOTALS = 'extra_total_fields'
 DOMAIN_SUBQUERY_OPERATORS = ('any', 'not any', 'any!', 'not any!')
-
-
-def mark_rpc_entry(model_name, method):
-    """ Record, on the current request, the method a client called. """
-    if request:
-        request.om_rpc_entry = (model_name, method)
 
 
 class Base(models.AbstractModel):
@@ -27,16 +20,6 @@ class Base(models.AbstractModel):
     #
     # what the guard needs
     #
-
-    def _om_rpc_entry(self, method):
-        """ Whether ``method`` of this model is the call the client or the script made. """
-        if self.env.su:
-            return False
-        if request:
-            entry = getattr(request, 'om_rpc_entry', None)
-            return bool(entry) and entry[0] == self._name and entry[1] in (method, '*')
-        marker = getattr(threading.current_thread(), 'rpc_model_method', None)
-        return marker == f'{self._name}.{method}'
 
     def _om_field_rules(self):
         rules = self.env['om.access.profile']._current_rules()
@@ -53,10 +36,22 @@ class Base(models.AbstractModel):
     def _om_refuse(self, model_name, field_name):
         model = self.env[model_name]
         field = model._fields.get(field_name)
-        raise AccessError(_(
+        raise self.env['om.access.profile']._om_refusal(_(
             "Your access profile does not allow using the field '%(field)s' of '%(model)s'.",
             field=field.string if field else field_name,
-            model=self.env['ir.model']._get(model_name).name or model_name))
+            model=self.env['ir.model']._get(model_name).name or model_name), model=model_name)
+
+    def _om_hidden_any(self, rules):
+        """ Hidden always or under a condition: filtering, grouping or exporting on
+        it would tell the hidden values apart, so both are refused there. """
+        return self._om_hidden(rules, self._name) | set(rules.conditional_fields(self._name, ('hide',)))
+
+    def _om_matching(self, condition, ids):
+        """ The ids among ``ids`` whose record matches a rule's condition. """
+        if not ids:
+            return set()
+        domain = condition_domain(condition, self, self.env.uid)
+        return set(self.browse(ids).sudo().exists().filtered_domain(domain).ids)
 
     def _om_check_path(self, rules, path):
         """ Refuse a dotted path (``partner_id.user_id.name``) that crosses a hidden field.
@@ -65,7 +60,7 @@ class Base(models.AbstractModel):
         path = path.split(':')[0]
         for name in path.split('.'):
             name = name.split('@')[0]
-            if name in self._om_hidden(rules, model._name):
+            if name in model._om_hidden_any(rules):
                 self._om_refuse(model._name, name)
             field = model._fields.get(name)
             if field is None or not field.relational:
@@ -125,6 +120,15 @@ class Base(models.AbstractModel):
         """ Blank the hidden fields of ``rows`` (dicts of values), and of the
         records nested in them along ``specification``, in place. """
         hidden = self._om_hidden(rules, self._name)
+        # hidden under a condition: blanked on the records matching it
+        for name, condition in rules.conditional_fields(self._name, ('hide',)).items():
+            ids = [row['id'] for row in rows if isinstance(row, dict) and isinstance(row.get('id'), int)
+                   and name in row]
+            matching = self._om_matching(condition, ids)
+            for row in rows:
+                if isinstance(row, dict) and row.get('id') in matching:
+                    field = self._fields.get(name)
+                    row[name] = [] if field is not None and field.type in ('one2many', 'many2many') else False
         for row in rows:
             if not isinstance(row, dict):
                 continue
@@ -174,12 +178,19 @@ class Base(models.AbstractModel):
                         or any(str(line.get('label') or '').startswith(label) for label in labels if label)))
                 ]
 
-    def _om_drop_locked(self, rules, vals):
+    def _om_drop_locked(self, rules, vals, record=None):
         """ ``vals`` without the read-only and hidden fields, at every level:
-        the lines written through a one2many are checked too. """
+        the lines written through a one2many are checked too. A field locked
+        under a condition is dropped when ``record`` (the record written)
+        matches it. """
         if not isinstance(vals, dict):
             return vals
-        locked = self._om_locked(rules, self._name)
+        locked = set(self._om_locked(rules, self._name))
+        if record:
+            locked |= {
+                name for name, condition in rules.conditional_fields(self._name, ('hide', 'readonly')).items()
+                if name in vals and self._om_matching(condition, record.ids)
+            }
         result = {}
         for name, value in vals.items():
             if name in locked:
@@ -188,7 +199,11 @@ class Base(models.AbstractModel):
             if field is not None and field.type in ('one2many', 'many2many') and isinstance(value, (list, tuple)):
                 comodel = self.env[field.comodel_name]
                 value = [
-                    (command[0], command[1], comodel._om_drop_locked(rules, command[2]), *command[3:])
+                    (command[0], command[1],
+                     comodel._om_drop_locked(
+                         rules, command[2],
+                         comodel.browse(command[1]) if command[0] == 1 and isinstance(command[1], int) else None),
+                     *command[3:])
                     if isinstance(command, (list, tuple)) and len(command) > 2 and isinstance(command[2], dict)
                     else command
                     for command in value
@@ -319,7 +334,24 @@ class Base(models.AbstractModel):
         if rules:
             for path in fields_to_export:
                 self._om_check_path(rules, path.replace('/', '.').removesuffix('.id'))
+                self._om_check_export_path(rules, path.replace('/', '.').removesuffix('.id'))
         return super().export_data(fields_to_export)
+
+    def _om_check_export_path(self, rules, path):
+        """ Refuse a path crossing a field kept out of the exports. """
+        model = self
+        for name in path.split('.'):
+            name = name.split('@')[0]
+            if name in rules.not_exported(model._name):
+                field = model._fields.get(name)
+                raise self.env['om.access.profile']._om_refusal(_(
+                    "Your access profile does not allow exporting the field '%(field)s' of '%(model)s'.",
+                    field=field.string if field else name,
+                    model=self.env['ir.model']._get(model._name).name or model._name), model=model._name)
+            field = model._fields.get(name)
+            if field is None or not field.relational:
+                return
+            model = self.env[field.comodel_name]
 
     @api.model
     def read_progress_bar(self, domain, group_by, progress_bar):
@@ -434,8 +466,12 @@ class Base(models.AbstractModel):
         result = super().fields_get(allfields=allfields, attributes=attributes)
         rules = self._om_rpc_entry('fields_get') and self._om_field_rules()
         if rules:
-            for name in self._om_hidden(rules, self._name):
+            for name in self._om_hidden_any(rules):
                 result.pop(name, None)
+            # the Export dialog leaves out what is not exportable
+            for name in rules.not_exported(self._name):
+                if name in result:
+                    result[name]['exportable'] = False
         return result
 
     #
@@ -452,13 +488,19 @@ class Base(models.AbstractModel):
     def web_save(self, vals, specification, next_id=None):
         rules = self._om_rpc_entry('web_save') and self._om_field_rules()
         if rules:
-            vals = self._om_drop_locked(rules, vals)
+            vals = self._om_drop_locked(rules, vals, self[:1] or None)
         result = super().web_save(vals, specification, next_id=next_id)
         return self._om_blank(rules, result, specification) if rules else result
 
     def write(self, vals):
         rules = self._om_rpc_entry('write') and self._om_field_rules()
         if rules:
+            conditional = rules.conditional_fields(self._name, ('hide', 'readonly'))
+            if conditional and not conditional.keys().isdisjoint(vals):
+                # what may be written differs from a record to another
+                for record in self:
+                    super(Base, record).write(self._om_drop_locked(rules, vals, record))
+                return True
             vals = self._om_drop_locked(rules, vals)
         return super().write(vals)
 

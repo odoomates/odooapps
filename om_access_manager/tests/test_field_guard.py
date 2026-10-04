@@ -5,6 +5,8 @@ from datetime import datetime, timedelta
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
 
+from .audit import lines_after_transaction
+
 
 @tagged('post_install', '-at_install')
 class TestFieldGuard(HttpCase):
@@ -105,9 +107,13 @@ class TestFieldGuard(HttpCase):
             [('email', '=', 'secret@example.com')], ['email'])[0])
 
     def test_blocked_button_cannot_be_called_by_hand(self):
-        with self.assertRaises(JsonRpcException):
+        with lines_after_transaction(self.env) as lines, self.assertRaises(JsonRpcException):
             self._call('res.partner', 'action_archive', [self.partner.ids])
         self.assertTrue(self.partner.active)
+        # the refusal goes to the audit log, after the rollback of the request
+        self.assertEqual([(line['event'], line['user_id'], line['model'], line['method'], line['record_ids'])
+                          for line in lines],
+                         [('refused', self.user.id, 'res.partner', 'action_archive', str(self.partner.id))])
 
     def test_xmlrpc(self):
         uid = self.user.id

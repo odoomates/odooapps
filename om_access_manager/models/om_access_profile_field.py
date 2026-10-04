@@ -5,7 +5,7 @@ from odoo import _, api, fields, models
 
 class OmAccessProfileField(models.Model):
     _name = 'om.access.profile.field'
-    _inherit = ['om.access.history.mixin']
+    _inherit = ['om.access.history.mixin', 'om.access.condition.mixin']
     _description = 'Access Profile Field Rule'
 
     def _om_history_kind(self):
@@ -42,6 +42,10 @@ class OmAccessProfileField(models.Model):
         string='No Create from Here',
         help="Removes 'Create' and 'Create and edit' from the dropdown. "
              "Relational fields only.")
+    no_export = fields.Boolean(
+        string='Not Exported',
+        help="Left out of the Export dialog and refused in an export, while still "
+             "shown on the screens.")
     field_domain = fields.Char(
         string='Value Filter',
         help="Restricts the values the dropdown offers. Relational fields "

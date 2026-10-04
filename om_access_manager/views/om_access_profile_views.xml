@@ -143,7 +143,7 @@
                     <button name="action_restrict_app" type="object" string="Restrict an App"
                             class="btn-primary"/>
                     <button name="action_test_user" type="object" string="Test as User"
-                            class="btn-secondary" invisible="not user_ids"/>
+                            class="btn-secondary" invisible="not user_count"/>
                     <button name="action_copy_restrictions" type="object"
                             string="Copy Restrictions" class="btn-secondary"/>
                 </header>
@@ -187,8 +187,24 @@
                     </div>
                     <group string="Users">
                         <field name="user_ids" widget="many2many_tags" nolabel="1" colspan="2"/>
+                        <field name="group_ids" widget="many2many_tags" string="And the members of"
+                               options="{'no_create': True}" placeholder="Odoo groups, e.g. Sales / User"/>
+                        <field name="granted_group_ids" widget="many2many_tags" string="Grants Them"
+                               options="{'no_create': True}" placeholder="Opens an app, e.g. Purchase / User"/>
                     </group>
                     <notebook>
+                        <page string="Menus &amp; Apps" name="menus">
+                            <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                <span class="text-muted">
+                                    The menus of the database. Untick a menu to hide it with
+                                    everything below it; click a menu to decide what its users may
+                                    do there. The other tabs list the same rules in full.
+                                </span>
+                                <button name="action_restrict_app" type="object" string="Restrict an App"
+                                        class="btn-link" icon="apps"/>
+                            </div>
+                            <field name="hidden_menu_ids" nolabel="1" widget="om_access_menu_tree"/>
+                        </page>
                         <page string="Switches" name="switches">
                             <group>
                                 <group string="Records">
@@ -220,17 +236,14 @@
                                     <field name="block_rpc"/>
                                     <field name="block_developer_mode"/>
                                 </group>
+                                <group string="Search Bar and Forms">
+                                    <field name="block_custom_filter"/>
+                                    <field name="block_custom_group"/>
+                                    <field name="block_favorites"/>
+                                    <field name="block_properties"/>
+                                    <field name="block_apps"/>
+                                </group>
                             </group>
-                        </page>
-                        <page string="Menus &amp; Apps" name="menus">
-                            <button name="action_restrict_app" type="object" string="Restrict an App"
-                                    class="btn-link" icon="apps"/>
-                            <div class="text-muted mb-2">
-                                Untick a menu to hide it, with everything below it. This is what the user
-                                sees, not what they may reach: use the Models tab to actually
-                                refuse the data.
-                            </div>
-                            <field name="hidden_menu_ids" nolabel="1" widget="om_access_menu_tree"/>
                         </page>
                         <page string="Sign-in" name="sign_in">
                             <div class="text-muted mb-2">
@@ -318,6 +331,33 @@
                                     <field name="hide_attachments" optional="hide"/>
                                 </list>
                             </field>
+                            <div class="mt-3 mb-1 fw-bold">Rights set on menus</div>
+                            <div class="text-muted mb-2">
+                                For all the data below each menu, set from the Menus &amp; Apps tab.
+                                A line above, on the data itself, comes first.
+                            </div>
+                            <field name="menu_rule_ids" nolabel="1">
+                                <list string="Rights set on menus" editable="bottom">
+                                    <field name="menu_id" options="{'no_create': True}"/>
+                                    <field name="perm_read" string="Read"/>
+                                    <field name="perm_write" string="Edit"/>
+                                    <field name="perm_create" string="Create"/>
+                                    <field name="perm_unlink" string="Delete"/>
+                                    <field name="records"/>
+                                    <field name="edit_draft_only" optional="show"/>
+                                    <field name="include_shared" optional="show"/>
+                                    <field name="hide_chatter" optional="hide"/>
+                                    <field name="hide_export" optional="hide"/>
+                                    <field name="hide_import" optional="hide"/>
+                                    <field name="hide_archive" optional="hide"/>
+                                    <field name="hide_duplicate" optional="hide"/>
+                                    <field name="hide_print" optional="hide"/>
+                                    <field name="hide_action_menu" optional="hide"/>
+                                    <field name="hide_send_message" optional="hide"/>
+                                    <field name="hide_followers" optional="hide"/>
+                                    <field name="hide_attachments" optional="hide"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Buttons" name="buttons">
                             <button name="action_scan_buttons" type="object" string="Scan Buttons"
@@ -325,7 +365,8 @@
                             <div class="text-muted mb-2">
                                 Blocking refuses the call on the server and ignores the view and
                                 the button id, because the server only learns which method was
-                                called.
+                                called. With a condition, the button is hidden and refused only
+                                on the records that match it.
                             </div>
                             <field name="button_ids" nolabel="1">
                                 <list string="Buttons" editable="bottom">
@@ -336,6 +377,7 @@
                                     <field name="button_id" string="Button Id" optional="hide"/>
                                     <field name="view_type" string="View"/>
                                     <field name="mode"/>
+                                    <field name="condition" optional="show" placeholder="state == 'sale'"/>
                                 </list>
                             </field>
                         </page>
@@ -344,42 +386,75 @@
                                 A hidden field is removed from the screen and is not fetched with
                                 the record, but this is not a guarantee that its value cannot be
                                 read: use a record filter for data that must not leak.
+                                With a condition (<code>state == 'done'</code>,
+                                <code>amount_total &gt; 1000</code>), the rule applies only to
+                                the records that match it.
                             </div>
                             <field name="field_ids" nolabel="1">
                                 <list string="Fields" editable="bottom">
                                     <field name="model_id" options="{'no_create': True}"/>
                                     <field name="field_id" options="{'no_create': True}"/>
                                     <field name="mode"/>
+                                    <field name="condition" optional="show" placeholder="state == 'done'"/>
                                     <field name="no_open" optional="show"/>
                                     <field name="no_create" optional="show"/>
+                                    <field name="no_export" optional="show"/>
                                     <field name="field_domain" string="Value Filter" optional="hide"/>
                                 </list>
                             </field>
                         </page>
-                        <page string="Tabs, Filters &amp; Views" name="elements">
+                        <page string="Pages" name="pages">
                             <button name="action_scan_buttons" type="object" string="Scan Views"
                                     class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
-                                Notebook tabs and search filters are removed from the screen.
-                                A hidden view type is removed from the action before the
-                                client asks for it; the last remaining one is always kept.
+                                The pages (tabs) of the forms, removed from the screen, always or
+                                only for the records matching a condition.
                             </div>
-                            <field name="element_ids" nolabel="1">
-                                <list string="View Elements" editable="bottom">
+                            <field name="page_element_ids" nolabel="1" context="{'default_element_type': 'page'}">
+                                <list string="Pages" editable="bottom">
                                     <field name="model_id" options="{'no_create': True}"/>
-                                    <field name="element_type"/>
-                                    <field name="element_name"/>
+                                    <field name="element_name" string="Page"/>
+                                    <field name="element_label" string="Label" optional="show"/>
+                                    <field name="condition" optional="show"/>
+                                    <field name="element_type" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Filters" name="filters">
+                            <button name="action_scan_buttons" type="object" string="Scan Views"
+                                    class="btn-link" icon="search"/>
+                            <div class="text-muted mb-2">
+                                The filters and group-bys of the search bar, and the search panel,
+                                removed from the screen.
+                            </div>
+                            <field name="filter_element_ids" nolabel="1" context="{'default_element_type': 'filter'}">
+                                <list string="Filters" editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}"/>
+                                    <field name="element_type" string="Kind"/>
+                                    <field name="element_name" string="Filter"/>
                                     <field name="element_label" string="Label" optional="show"/>
                                 </list>
                             </field>
                         </page>
-                        <page string="Reports &amp; Actions" name="reports">
+                        <page string="Views" name="views">
                             <div class="text-muted mb-2">
-                                The reports leave the Print menu and the actions leave the Action
-                                menu; both are also refused when reached another way. The quickest
-                                way to pick them app by app is <strong>Restrict an App</strong>.
+                                The view types (kanban, calendar, pivot...) removed from the actions
+                                before the client asks for them; the last remaining one is always kept.
                             </div>
-                            <separator string="Hidden Reports"/>
+                            <field name="view_element_ids" nolabel="1" context="{'default_element_type': 'view'}">
+                                <list string="Views" editable="bottom">
+                                    <field name="model_id" options="{'no_create': True}"/>
+                                    <field name="element_name" string="View Type"/>
+                                    <field name="element_label" string="Label" optional="show"/>
+                                    <field name="element_type" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Reports" name="reports">
+                            <div class="text-muted mb-2">
+                                The reports leave the Print menu, and are refused when reached
+                                another way.
+                            </div>
                             <field name="hidden_report_ids" nolabel="1" options="{'no_create': True}">
                                 <list string="Hidden Reports">
                                     <field name="name" string="Report"/>
@@ -387,7 +462,12 @@
                                     <field name="report_type" optional="hide"/>
                                 </list>
                             </field>
-                            <separator string="Hidden Actions"/>
+                        </page>
+                        <page string="Action Menu" name="actions">
+                            <div class="text-muted mb-2">
+                                The entries leave the Action menu, and are refused when reached
+                                another way.
+                            </div>
                             <field name="hidden_action_ids" nolabel="1" options="{'no_create': True}"
                                    domain="[('binding_model_id', '!=', False)]">
                                 <list string="Hidden Server Actions">
@@ -399,6 +479,26 @@
                                 <list string="Hidden Window Actions">
                                     <field name="name" string="Action"/>
                                     <field name="binding_model_id" string="Action menu of"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Temporary Users" name="assignments">
+                            <div class="text-muted mb-2">
+                                Users who carry the profile only between two dates: a replacement
+                                during a leave, a temporary job. The dates follow each user's time
+                                zone; ended assignments are archived and kept here.
+                            </div>
+                            <field name="assignment_ids" nolabel="1">
+                                <list string="Temporary Users" editable="bottom"
+                                      decoration-muted="state == 'ended'" decoration-info="state == 'planned'">
+                                    <field name="user_id" options="{'no_create': True}"/>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="note"/>
+                                    <field name="state" widget="badge"
+                                           decoration-success="state == 'active'"
+                                           decoration-info="state == 'planned'"/>
+                                    <field name="active" column_invisible="1"/>
                                 </list>
                             </field>
                         </page>

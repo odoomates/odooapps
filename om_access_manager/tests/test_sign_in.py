@@ -9,6 +9,8 @@ import requests
 from odoo.exceptions import ValidationError
 from odoo.tests import HttpCase, new_test_user, tagged
 
+from .audit import lines_after_transaction
+
 # a Monday
 OFFICE_HOURS = datetime(2026, 10, 5, 10, 0, tzinfo=timezone.utc)
 EVENING = datetime(2026, 10, 5, 20, 0, tzinfo=timezone.utc)
@@ -49,6 +51,10 @@ class TestSignIn(HttpCase):
             }, timeout=30)
         return browser
 
+    def _audit(self, event):
+        self.env.invalidate_all()
+        return self.env['om.user.audit.log'].sudo().search([('user_id', '=', self.user.id), ('event', '=', event)])
+
     def _signed_in(self, browser):
         with self.allow_requests(all_requests=True):
             response = browser.post(f'{self.base_url()}/web/session/check', json={
@@ -59,6 +65,8 @@ class TestSignIn(HttpCase):
         self._profile(login_tz='UTC', login_slot_ids=[(0, 0, {'dayofweek': '0', 'hour_from': 8, 'hour_to': 17})])
         self._at(EVENING)
         self.assertFalse(self._signed_in(self._sign_in()))
+        # the audit log keeps the refused sign-in and its reason
+        self.assertIn('working hours', self._audit('login_failed').detail)
         # signed in during the day, the session ends with the working hours
         patch.stopall()
         self._at(OFFICE_HOURS)
@@ -94,8 +102,12 @@ class TestSignIn(HttpCase):
         self.assertTrue(self._signed_in(first))
         second = self._sign_in()
         self.assertTrue(self._signed_in(second))
-        self.assertFalse(self._signed_in(first))
+        with lines_after_transaction(self.env) as lines:
+            self.assertFalse(self._signed_in(first))
         self.assertTrue(self._signed_in(second))
+        # the audit log is told why the session ended
+        self.assertEqual([(line['event'], line['user_id'], line['detail']) for line in lines],
+                         [('session_end', self.user.id, 'Signed in elsewhere (One Session per User)')])
 
     def test_without_the_switch_sessions_coexist(self):
         self._profile()

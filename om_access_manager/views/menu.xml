@@ -1,32 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+    <menuitem id="om_access_root_menu"
+              name="Access Manager"
+              web_icon="om_access_manager,static/description/icon.png"
+              groups="group_access_manager"
+              sequence="92"/>
+
     <menuitem id="om_access_profile_menu"
               name="Access Profiles"
-              parent="base.menu_users"
+              parent="om_access_root_menu"
               action="om_access_profile_action"
-              groups="base.group_system"
-              sequence="25"/>
+              sequence="10"/>
 
     <menuitem id="om_access_template_menu"
-              name="New Profile from Template"
-              parent="base.menu_users"
+              name="New from Template"
+              parent="om_access_root_menu"
               action="om_access_template_wizard_action"
-              groups="base.group_system"
-              sequence="26"/>
-
-    <menuitem id="om_access_import_menu"
-              name="Import Access Profiles"
-              parent="base.menu_users"
-              action="om_access_import_action"
-              groups="base.group_system"
-              sequence="28"/>
+              sequence="20"/>
 
     <menuitem id="om_access_test_user_menu"
               name="Effective Access"
-              parent="base.menu_users"
+              parent="om_access_root_menu"
               action="om_access_test_user_action"
-              groups="base.group_system"
-              sequence="27"/>
+              sequence="30"/>
+
+    <menuitem id="om_access_import_menu"
+              name="Import"
+              parent="om_access_root_menu"
+              action="om_access_import_action"
+              sequence="40"/>
 
 </odoo>

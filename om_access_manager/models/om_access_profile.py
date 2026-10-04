@@ -7,15 +7,17 @@ import json
 import logging
 
 import pytz
+from lxml import etree
 
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, ValidationError
 from odoo.tools import frozendict
 
 from .om_access_allowed import ALLOWED_KINDS
+from .conditions import condition_fields
 from .login_tools import parse_networks
 
-from .om_access_profile_model import DOMAIN_FIELD_OF_OPERATION
+from .om_access_profile_model import DOMAIN_FIELD_OF_OPERATION, DOMAIN_FIELDS
 
 _logger = logging.getLogger(__name__)
 
@@ -51,12 +53,27 @@ GLOBAL_FLAGS = (
     'block_archive', 'block_duplicate', 'hide_activities', 'hide_settings_menu',
     'lock_statusbar', 'block_rpc', 'block_developer_mode', 'block_login',
     'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_followers_all',
-    'hide_attachments_all', 'single_session',
+    'hide_attachments_all', 'single_session', 'block_custom_filter', 'block_custom_group',
+    'block_favorites', 'block_properties', 'block_apps',
 )
+# switches of the search bar and the forms, hidden in the web client by a class
+# on the body (static/src/search) and, where it writes, refused on the server
+BODY_CLASSES = {
+    'block_custom_filter': 'o_om_no_custom_filter',
+    'block_custom_group': 'o_om_no_custom_group',
+    'block_favorites': 'o_om_no_favorites',
+    'block_properties': 'o_om_no_properties',
+}
 
 FIELD_MODES = (None, 'required', 'readonly', 'hide')  # ordered by severity
+HIDE_MODES = ('hide', 'hide_block')
+BLOCK_MODES = ('block', 'hide_block')
 # what the hidden group of a profile carries (_group_values)
-GROUP_FIELDS = frozenset({'name', 'user_ids', 'active', 'company_id'})
+GROUP_FIELDS = frozenset({'name', 'user_ids', 'active', 'company_id', 'granted_group_ids'})
+# never granted by a profile: they would make its users administrators, or
+# access managers, beyond what the profile itself can undo
+UNGRANTABLE_GROUPS = ('base.group_system', 'base.group_erp_manager', 'om_access_manager.group_access_manager',
+                      'base.group_portal', 'base.group_public')
 
 # Fields hidden by two switches; those of apps not installed are skipped. The
 # values still appear in reports (a quotation PDF): hide those reports too.
@@ -108,7 +125,7 @@ VIEW_ROOTS = frozenset({
     'cohort', 'map', 'activity', 'hierarchy',
 })
 REMOVED_IN_VIEWS = frozenset({'search', 'graph', 'pivot', 'cohort', 'gantt', 'map'})
-FIELD_OPTIONS = ('no_open', 'no_create')
+FIELD_OPTIONS = ('no_open', 'no_create', 'no_export')
 
 ACTIVITY_FIELDS = frozenset({'activity_ids', 'activity_state', 'activity_date_deadline'})
 ACTIVITY_WIDGETS = frozenset({'list_activity', 'mail_activity'})
@@ -121,6 +138,25 @@ VIEW_FLAGS = frozenset({
 })
 
 
+def or_conditions(conditions):
+    """ Join conditions ('True', 'False' or an expression) with or. """
+    if 'True' in conditions:
+        return 'True'
+    conditions = [condition for condition in conditions if condition != 'False']
+    if not conditions:
+        return 'False'
+    return conditions[0] if len(conditions) == 1 else ' or '.join('(%s)' % c for c in conditions)
+
+
+def and_conditions(conditions):
+    if 'False' in conditions:
+        return 'False'
+    conditions = [condition for condition in conditions if condition != 'True']
+    if not conditions:
+        return 'True'
+    return conditions[0] if len(conditions) == 1 else ' and '.join('(%s)' % c for c in conditions)
+
+
 class ProfileRules:
     """ The rules of one profile, frozen and free of any recordset.
 
@@ -130,12 +166,14 @@ class ProfileRules:
     __slots__ = ('id', 'name', 'flags', 'perms', 'domains', 'menus', 'buttons',
                  'field_modes', 'field_options', 'field_domains', 'elements',
                  'reports', 'actions', 'model_flags', 'home_action',
-                 'login_slots', 'login_tz', 'networks')
+                 'login_slots', 'login_tz', 'networks', 'field_conditions', 'element_conditions',
+                 'sources')
 
     def __init__(self, id, name, flags, perms, domains, menus, buttons,
                  field_modes, field_options, field_domains, elements,
                  reports, actions, model_flags, home_action=None,
-                 login_slots=(), login_tz='UTC', networks=()):
+                 login_slots=(), login_tz='UTC', networks=(), field_conditions=None,
+                 element_conditions=None, sources=None):
         self.id = id
         self.name = name
         self.flags = flags                # frozenset of global flag names
@@ -154,6 +192,10 @@ class ProfileRules:
         self.login_slots = login_slots    # ((weekday, hour_from, hour_to), ...)
         self.login_tz = login_tz
         self.networks = networks          # (ipaddress network, ...)
+        # the rules that only apply when a condition holds
+        self.field_conditions = field_conditions or {}      # {(model, field): ((mode, condition), ...)}
+        self.element_conditions = element_conditions or {}  # {(model, 'page', name): condition}
+        self.sources = sources or {}      # {model: names of the menus its rights come from}
 
     def login_refusal(self, now, address):
         """ Why this profile refuses a sign-in at ``now`` (aware, UTC) from
@@ -203,6 +245,7 @@ class ProfileRules:
         return (model_name, element_type, element_name or '') in self.elements
 
     def _matching_buttons(self, model_name, button_type, name, view_type=None, button_id=None):
+        """ (mode, condition) of the button rules matching. """
         for rule in self.buttons:
             if rule[0] != model_name or rule[2] != button_type or rule[3] != name:
                 continue
@@ -210,30 +253,48 @@ class ProfileRules:
                 continue
             if button_id is not None and rule[4] and rule[4] != button_id:
                 continue
-            yield rule[5]
+            yield rule[5], rule[6]
+
+    def button_condition(self, modes, model_name, button_type, name, view_type=None, button_id=None):
+        """ 'True', 'False' or the condition under which a rule of ``modes`` applies.
+        The controllers do not know the view nor the button id: they pass None. """
+        return or_conditions([
+            condition or 'True'
+            for mode, condition in self._matching_buttons(model_name, button_type, name, view_type, button_id)
+            if mode in modes
+        ])
 
     def hides_button(self, model_name, view_type, button_type, name, button_id):
-        return any(
-            mode in ('hide', 'hide_block')
-            for mode in self._matching_buttons(model_name, button_type, name, view_type, button_id)
-        )
+        return self.button_condition(HIDE_MODES, model_name, button_type, name, view_type, button_id) == 'True'
 
     def blocks_button(self, model_name, button_type, name):
-        # The controller only knows the model and method, so view_type and
-        # button_id are deliberately ignored here.
-        return any(
-            mode in ('block', 'hide_block')
-            for mode in self._matching_buttons(model_name, button_type, name)
-        )
+        return self.button_condition(BLOCK_MODES, model_name, button_type, name) == 'True'
+
+    def field_condition(self, model_name, field_name, mode):
+        """ 'True', 'False' or the condition under which the field is at least in ``mode``. """
+        severity = FIELD_MODES.index(mode)
+        if FIELD_MODES.index(self.field_mode(model_name, field_name)) >= severity:
+            return 'True'
+        return or_conditions([
+            condition for line_mode, condition in self.field_conditions.get((model_name, field_name), ())
+            if FIELD_MODES.index(line_mode) >= severity
+        ])
+
+    def page_condition(self, model_name, name):
+        if self.hides_element(model_name, 'page', name):
+            return 'True'
+        return self.element_conditions.get((model_name, 'page', name or ''), 'False')
 
     def blocks_action(self, action_id):
         """ Whether a rule blocks the action button opening ``action_id``.
 
         /web/action/load only carries the id, so the rule's model is not matched.
         """
+        # loading an action names no record: a rule under a condition cannot be
+        # checked there, it only hides the button
         key = str(action_id)
         return any(
-            rule[5] in ('block', 'hide_block')
+            rule[5] in BLOCK_MODES and not rule[6]
             for rule in self.buttons
             if rule[2] == 'action' and rule[3] == key
         )
@@ -260,8 +321,10 @@ class AccessRules:
             for name in (
                 *profile.model_flags,
                 *(model for model, _field in profile.field_modes),
+                *(model for model, _field in profile.field_conditions),
                 *(rule[0] for rule in profile.buttons),
                 *(element[0] for element in profile.elements),
+                *(element[0] for element in profile.element_conditions),
             )
         )
 
@@ -273,6 +336,44 @@ class AccessRules:
         if any(predicate(profile) for profile in self.override):
             return True
         return bool(self.additive) and all(predicate(profile) for profile in self.additive)
+
+    def _combined_condition(self, condition_of):
+        """ True, None or the combined condition of a rule: every override
+        profile applies it, the additive ones only when all of them do. """
+        conditions = [condition_of(profile) for profile in self.override]
+        if self.additive:
+            conditions.append(and_conditions([condition_of(profile) for profile in self.additive]))
+        combined = or_conditions(conditions)
+        return True if combined == 'True' else None if combined == 'False' else combined
+
+    def field_condition(self, model_name, field_name, mode):
+        return self._combined_condition(lambda profile: profile.field_condition(model_name, field_name, mode))
+
+    def conditional_fields(self, model_name, modes=('hide', 'readonly', 'required')):
+        """ {field: condition} of the fields that are in one of ``modes`` only under a
+        condition (the strongest mode wins: hidden, then read only, then required). """
+        key = ('conditional', model_name, modes)
+        if key not in self._memo:
+            result = {}
+            names = {field for profile in self.additive + self.override
+                     for model, field in profile.field_conditions if model == model_name}
+            for name in names:
+                for mode in modes:
+                    condition = self.field_condition(model_name, name, mode)
+                    if isinstance(condition, str):
+                        result[name] = condition
+                        break
+                    if condition is True:
+                        break
+            self._memo[key] = result
+        return self._memo[key]
+
+    def button_condition(self, modes, model_name, button_type, name, view_type=None, button_id=None):
+        return self._combined_condition(
+            lambda profile: profile.button_condition(modes, model_name, button_type, name, view_type, button_id))
+
+    def page_condition(self, model_name, name):
+        return self._combined_condition(lambda profile: profile.page_condition(model_name, name))
 
     def allows(self, model_name, operation):
         if not all(profile.allows(model_name, operation) for profile in self.override):
@@ -440,19 +541,38 @@ class AccessRules:
         return memo[key]
 
     def restricts_fields(self):
-        """ Whether any profile hides a field or makes one read only. """
+        """ Whether any profile hides a field, makes one read only or keeps one
+        out of the exports. """
         return any(
             mode in ('hide', 'readonly')
             for profile in self.additive + self.override
-            for mode in profile.field_modes.values()
+            for mode in (*profile.field_modes.values(),
+                         *(line_mode for lines in profile.field_conditions.values() for line_mode, _c in lines))
+        ) or any(
+            'no_export' in options
+            for profile in self.additive + self.override
+            for options in profile.field_options.values()
         )
+
+    def not_exported(self, model_name):
+        """ The fields of a model kept out of the exports. """
+        names = {
+            field_name
+            for profile in self.additive + self.override
+            for (model, field_name), options in profile.field_options.items()
+            if model == model_name and 'no_export' in options
+        }
+        return {name for name in names if self.field_option(model_name, name, 'no_export')}
+
+    def body_classes(self):
+        return [css for flag, css in BODY_CLASSES.items() if self.has_flag(flag)]
 
     def restricted_fields(self, model_name):
         """ The field names this model has a rule for, whichever profile set it. """
         return {
             field_name
             for profile in self.additive + self.override
-            for model, field_name in profile.field_modes
+            for model, field_name in (*profile.field_modes, *profile.field_conditions)
             if model == model_name
         }
 
@@ -556,7 +676,31 @@ class OmAccessProfile(models.Model):
         string='Block Developer Mode',
         help="Clears the debug flag on every request, so these users cannot "
              "turn the developer tools on, by the menu or by the URL.", tracking=True)
+    block_custom_filter = fields.Boolean(
+        string='No Custom Filters',
+        help="Hides 'Custom Filter...' and 'Custom Date...' in the search bar: only "
+             "the filters of the screens remain.", tracking=True)
+    block_custom_group = fields.Boolean(
+        string='No Custom Group By',
+        help="Hides 'Add Custom Group' in the search bar.", tracking=True)
+    block_favorites = fields.Boolean(
+        string='No Saved Searches',
+        help="Hides 'Save current search' and refuses saving a favorite.", tracking=True)
+    block_properties = fields.Boolean(
+        string='No New Properties',
+        help="Hides 'Add Property' and refuses changing the properties of any form.",
+        tracking=True)
+    block_apps = fields.Boolean(
+        string='Block Installing Apps',
+        help="Refuses installing, upgrading and uninstalling modules. Meaningful for "
+             "Settings users, with 'Apply to Settings Users'.", tracking=True)
 
+    granted_group_ids = fields.Many2many(
+        'res.groups', 'om_access_profile_granted_group_rel', 'profile_id', 'group_id',
+        string='Granted Access',
+        help="Odoo groups the users of this profile get, on top of their own: open "
+             "an app (Purchase / User) to users whose form leaves it empty. Taken "
+             "away with the profile.", tracking=True)
     hidden_menu_ids = fields.Many2many(
         'ir.ui.menu', 'om_access_profile_menu_rel', 'profile_id', 'menu_id',
         string='Hidden Menus',
@@ -574,18 +718,31 @@ class OmAccessProfile(models.Model):
         string='Hidden Window Actions', domain=[('binding_model_id', '!=', False)], tracking=True)
 
     model_ids = fields.One2many('om.access.profile.model', 'profile_id', string='Models')
+    menu_rule_ids = fields.One2many(
+        'om.access.profile.menu', 'profile_id', string='Menu Rules',
+        help="Rights set on a menu, for the data of its whole branch.")
     allowed_ids = fields.One2many('om.access.allowed', 'profile_id', string='Allowed Records')
     field_ids = fields.One2many('om.access.profile.field', 'profile_id', string='Fields')
     button_ids = fields.One2many('om.access.profile.button', 'profile_id', string='Buttons')
     element_ids = fields.One2many(
         'om.access.profile.element', 'profile_id', string='View Elements')
+    # the same lines, one tab each
+    page_element_ids = fields.One2many(
+        'om.access.profile.element', 'profile_id', string='Pages',
+        domain=[('element_type', '=', 'page')])
+    filter_element_ids = fields.One2many(
+        'om.access.profile.element', 'profile_id', string='Filters',
+        domain=[('element_type', 'in', ('filter', 'searchpanel'))])
+    view_element_ids = fields.One2many(
+        'om.access.profile.element', 'profile_id', string='Views',
+        domain=[('element_type', '=', 'view')])
 
     user_count = fields.Integer(compute='_compute_user_count', string='# Users')
 
-    @api.depends('user_ids')
+    @api.depends('user_ids', 'group_ids', 'assignment_ids.state')
     def _compute_user_count(self):
         for profile in self:
-            profile.user_count = len(profile.user_ids)
+            profile.user_count = len(profile._om_members())
 
     #
     # the technical group
@@ -595,7 +752,10 @@ class OmAccessProfile(models.Model):
         self.ensure_one()
         return {
             'name': _('Access Profile: %s', self.name),
-            'user_ids': [(6, 0, self.user_ids.ids)],
+            'user_ids': [(6, 0, self._om_direct_users().ids)],
+            # what the profile grants comes with its group; an archived group
+            # still implies its groups, so an archived profile grants nothing
+            'implied_ids': [(6, 0, self.granted_group_ids.ids if self.active else [])],
             'comment': _("Maintained by the access profile of the same name. "
                          "Do not assign it by hand."),
         }
@@ -642,33 +802,89 @@ class OmAccessProfile(models.Model):
             vals.setdefault('name', _('%s (copy)', profile.name))
         return vals_list
 
-    @api.constrains('hide_settings_menu', 'block_login', 'login_slot_ids', 'allowed_ips',
-                    'user_ids', 'apply_to_admin', 'active')
-    def _check_last_administrator(self):
-        """ Refuse to hide the Settings app from, or to block the login of, the
-        last user who can undo it. """
-        settings_group = self.env.ref('base.group_system', raise_if_not_found=False)
-        if not settings_group:
-            return
-        exempt = self._exempt_user_ids()
+    @api.constrains('granted_group_ids')
+    def _check_granted_groups(self):
+        forbidden = self.env['res.groups']
+        for xmlid in UNGRANTABLE_GROUPS:
+            forbidden |= self.env.ref(xmlid, raise_if_not_found=False) or self.env['res.groups']
         for profile in self:
-            limits_sign_in = profile.block_login or profile.login_slot_ids or profile.allowed_ips
-            if not (profile.active and profile.apply_to_admin
-                    and (profile.hide_settings_menu or limits_sign_in)):
-                continue
-            remaining = settings_group.sudo().all_user_ids.filtered(
-                lambda user: user.id in exempt or user not in profile.user_ids
-            )
-            if not remaining:
-                if limits_sign_in:
+            for group in profile.sudo().granted_group_ids:
+                if (group | group.all_implied_ids) & forbidden:
                     raise ValidationError(_(
-                        "Profile %s would block the login of every user who "
-                        "could undo it. Leave at least one Settings user out of "
-                        "it.", profile.name))
+                        "A profile cannot grant %s: it would make its users administrators, "
+                        "or access managers. Give it on the user form instead.", group.full_name))
+                if group.id in profile.sudo().group_id.ids:
+                    raise ValidationError(_("A profile cannot grant its own group."))
+
+    @api.constrains('hide_settings_menu', 'block_login', 'login_slot_ids', 'allowed_ips',
+                    'user_ids', 'group_ids', 'apply_to_admin', 'active', 'hidden_menu_ids')
+    def _check_last_administrator(self):
+        """ Refuse a change leaving no access manager able to undo it: every one
+        locked out of signing in, of the Access Manager app or of the access
+        profiles, by all their profiles combined. """
+        managers_group = self.env.ref('om_access_manager.group_access_manager', raise_if_not_found=False)
+        if not managers_group or not self:
+            return
+        # the rules as they are now, not as cached before this change
+        self.env.transaction.invalidate_ormcache('default')
+        managers = managers_group.sudo().all_user_ids.filtered('active')
+        # no active access manager left at all is the worst lock out
+        reasons = [self._om_lockout(manager) for manager in managers] or ['login']
+        if all(reasons):
+            names = ', '.join(self.mapped('name')[:3]) + (', ...' if len(self) > 3 else '')
+            if reasons[0] == 'login':
                 raise ValidationError(_(
-                    "Profile %s would hide the Settings app from every user who "
-                    "could put it back. Leave at least one Settings user out of "
-                    "it.", profile.name))
+                    "Profile %s would block the login of every user who "
+                    "could undo it. Leave at least one access manager (Access "
+                    "Management group) out of it.", names))
+            if reasons[0] == 'app':
+                raise ValidationError(_(
+                    "Profile %s would hide the Access Manager app from every user who "
+                    "could put it back. Leave at least one access manager (Access "
+                    "Management group) out of it.", names))
+            raise ValidationError(_(
+                "Profile %s would take the access profiles away from every user who "
+                "could give them back. Leave at least one access manager (Access "
+                "Management group) out of it.", names))
+
+    @api.model
+    def _om_lockout(self, user):
+        """ Why ``user`` could not undo a profile, all their profiles combined:
+        'login', 'app' or 'profiles'; False when they could. """
+        if user.id in self._exempt_user_ids():
+            return False
+        rules = self._resolve(user.id)
+        if not rules.enabled:
+            return False
+        if rules.has_flag('block_login'):
+            return 'login'
+        # working hours and networks: refused at some moment or from some place
+        limits = [bool(profile.login_slots or profile.networks) for profile in rules.override]
+        if any(limits) or (rules.additive and all(
+                profile.login_slots or profile.networks for profile in rules.additive)):
+            return 'login'
+        app = self.env.ref('om_access_manager.om_access_root_menu', raise_if_not_found=False)
+        if app and app.id in rules.menu_blacklist():
+            return 'app'
+        if not (rules.allows(self._name, 'read') and rules.allows(self._name, 'write')):
+            return 'profiles'
+        return False
+        rules = self._resolve(user.id)
+        if not rules.enabled:
+            return False
+        if rules.has_flag('block_login'):
+            return 'login'
+        # working hours and networks: refused at some moment or from some place
+        limits = [bool(profile.login_slots or profile.networks) for profile in rules.override]
+        if any(limits) or (rules.additive and all(
+                profile.login_slots or profile.networks for profile in rules.additive)):
+            return 'login'
+        settings_menu = self.env.ref('base.menu_administration', raise_if_not_found=False)
+        if rules.has_flag('hide_settings_menu') or (settings_menu and settings_menu.id in rules.menu_blacklist()):
+            return 'settings'
+        if not (rules.allows(self._name, 'read') and rules.allows(self._name, 'write')):
+            return 'profiles'
+        return False
 
     #
     # actions of the single screen
@@ -681,7 +897,7 @@ class OmAccessProfile(models.Model):
             'name': _('Users'),
             'res_model': 'res.users',
             'view_mode': 'list,form',
-            'domain': [('id', 'in', self.user_ids.ids)],
+            'domain': [('id', 'in', self._om_members().ids)],
         }
 
     def _open_wizard(self, res_model, name):
@@ -697,22 +913,21 @@ class OmAccessProfile(models.Model):
         }
 
     @api.model
+    @api.ormcache()
+    def _om_user_fields_in_filters(self):
+        """ The fields of the user the record filters read (``user.employee_id``):
+        a change of one of them must reach the cached filters. """
+        names = set()
+        lines = self.env['om.access.profile.model'].sudo().search([])
+        for line in lines:
+            for field_name in DOMAIN_FIELDS:
+                names.update(re.findall(r'\buser\.(\w+)', line[field_name] or ''))
+        return frozenset(names)
+
+    @api.model
     def _om_eval_context(self):
         """ The record filter eval context: a standard access domain's, plus uid. """
         return dict(self.env['ir.access']._eval_context(), uid=self.env.uid)
-
-    @api.model
-    def om_menu_tree(self):
-        """ Every menu, for the menu tree of the Menus & Apps tab. Read with
-        sudo: a menu the administrator cannot see may still need hiding. """
-        if not self.env.user.has_group('base.group_system'):
-            raise AccessError(_("Only the administrators can edit access profiles."))
-        menus = self.env['ir.ui.menu'].sudo().search([])
-        return [{
-            'id': menu.id,
-            'name': menu.name,
-            'parent_id': menu.parent_id.id,
-        } for menu in menus]
 
     def action_load_models(self):
         return self._open_wizard('om.access.load.models', _('Load Models'))
@@ -731,7 +946,7 @@ class OmAccessProfile(models.Model):
             'res_model': 'om.access.test.user',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_user_id': self.user_ids[:1].id},
+            'context': {'default_user_id': self._om_members()[:1].id},
         }
 
     def action_copy_restrictions(self):
@@ -799,18 +1014,33 @@ class OmAccessProfile(models.Model):
             if present:
                 model_flags[model_name] = present
 
+        # rights set on menus, for the data without a line of its own
+        sources = {}
+        for model_name, (rights, by_operation, present, menus) in profile.menu_rule_ids._om_rights_by_model().items():
+            if model_name in perms:
+                continue
+            sources[model_name] = menus
+            perms[model_name] = rights
+            for operation, terms in by_operation.items():
+                domains[(model_name, operation)] = terms
+            if present:
+                model_flags[model_name] = present
+
         # the allowed records: one more filter on every model of their kind
         for model_name, domain in profile._allowed_filters(user).items():
             for operation in OPERATIONS:
                 domains[(model_name, operation)] = domains.get((model_name, operation), ()) + (domain,)
 
-        field_modes, field_options, field_domains = {}, {}, {}
+        field_modes, field_options, field_domains, field_conditions = {}, {}, {}, {}
         for line in profile.field_ids:
             model_name, field_name = line.model_id.model, line.field_id.name
             if not (model_name and field_name):
                 continue
             key = (model_name, field_name)
-            if line.mode != 'keep':
+            condition = (line.condition or '').strip()
+            if line.mode != 'keep' and condition:
+                field_conditions[key] = field_conditions.get(key, ()) + ((line.mode, condition),)
+            elif line.mode != 'keep':
                 field_modes[key] = line.mode
             options = frozenset(option for option in FIELD_OPTIONS if line[option])
             if options:
@@ -829,12 +1059,17 @@ class OmAccessProfile(models.Model):
         elements = frozenset(
             (line.model_id.model, line.element_type, line.element_name or '')
             for line in profile.element_ids
-            if line.model_id.model
+            if line.model_id.model and not (line.condition or '').strip()
         )
+        element_conditions = {
+            (line.model_id.model, line.element_type, line.element_name or ''): line.condition.strip()
+            for line in profile.element_ids
+            if line.model_id.model and (line.condition or '').strip()
+        }
 
         buttons = tuple(
             (line.model_id.model, line.view_type, line.button_type,
-             line.button_name, line.button_id or '', line.mode)
+             line.button_name, line.button_id or '', line.mode, (line.condition or '').strip())
             for line in profile.button_ids
             if line.model_id.model and line.button_name
         )
@@ -865,6 +1100,9 @@ class OmAccessProfile(models.Model):
                 (int(slot.dayofweek), slot.hour_from, slot.hour_to) for slot in profile.login_slot_ids),
             login_tz=profile.login_tz or 'UTC',
             networks=parse_networks(profile.allowed_ips),
+            field_conditions=frozendict(field_conditions),
+            element_conditions=frozendict(element_conditions),
+            sources=frozendict(sources),
         )
 
     @api.model
@@ -876,7 +1114,7 @@ class OmAccessProfile(models.Model):
         user = self.env['res.users'].sudo().browse(uid)
         if not user.exists():
             return NO_RULES
-        profiles = user.access_profile_ids.sudo().filtered('active')
+        profiles = self._om_profiles_of(user).filtered('active')
         if profiles:
             # Follows the user's companies, not the company switcher: core
             # caches menus per user without the company in the key.
@@ -904,13 +1142,28 @@ class OmAccessProfile(models.Model):
     #
 
     @api.model
-    def _check_button(self, model_name, button_type, name):
+    def _om_refusal(self, message, **values):
+        """ The error refusing an operation, logged in the audit log first (the
+        line survives the rollback the error causes). """
+        self.env['om.user.audit.log']._om_log('refused', separate=True, detail=message, **values)
+        return AccessError(message)
+
+    def _check_button(self, model_name, button_type, name, ids=None):
+        """ Refuse a blocked button; one blocked under a condition only on the
+        records ``ids`` matching it. """
         rules = self._current_rules()
-        if rules.enabled and rules.blocks_button(model_name, button_type, name):
-            raise AccessError(_(
-                "You are not allowed to use this button.\n\n"
-                "Your access profile blocks '%(button)s' on '%(model)s'.",
-                button=name, model=model_name))
+        if not rules.enabled:
+            return
+        condition = rules.button_condition(BLOCK_MODES, model_name, button_type, name)
+        if condition is None:
+            return
+        if condition is not True and not (
+                ids and model_name in self.env and self.env[model_name]._om_matching(condition, ids)):
+            return
+        raise self._om_refusal(_(
+            "You are not allowed to use this button.\n\n"
+            "Your access profile blocks '%(button)s' on '%(model)s'.",
+            button=name, model=model_name), model=model_name, method=name, record_ids=ids or [])
 
     @api.model
     def _check_action(self, action_id):
@@ -921,9 +1174,10 @@ class OmAccessProfile(models.Model):
                 or rules.hides_action(action_id)
                 or rules.blocks_action(action_id)
                 or self._hides_menu_of(rules, action_id)):
-            raise AccessError(_(
+            action = self.env['ir.actions.actions'].sudo().browse(action_id).exists()
+            raise self._om_refusal(_(
                 "You are not allowed to run this action.\n\n"
-                "Your access profile hides it."))
+                "Your access profile hides it."), method=action.name or str(action_id))
 
     @api.model
     def _hides_menu_of(self, rules, action_id):
@@ -1010,6 +1264,43 @@ class OmAccessProfile(models.Model):
             return None
         return repr(left + right)
 
+    def _apply_field_conditions(self, rules, node, model_name, field_name, view_type, needed):
+        """ The rules of a field that apply only under a condition. """
+        condition = rules.field_condition(model_name, field_name, 'hide')
+        if isinstance(condition, str):
+            self._add_condition(node, 'invisible', condition, model_name, view_type, needed)
+            self._add_condition(node, 'readonly', condition, model_name, view_type, needed)
+            return
+        for mode, attribute in (('readonly', 'readonly'), ('required', 'required')):
+            condition = rules.field_condition(model_name, field_name, mode)
+            if isinstance(condition, str):
+                self._add_condition(node, attribute, condition, model_name, view_type, needed)
+
+    @classmethod
+    def _add_condition(cls, node, attribute, condition, model_name, view_type, needed):
+        """ OR a profile's condition into an attribute of the view. """
+        existing = (node.get(attribute) or '').strip()
+        if existing in ('1', 'True', 'true'):
+            return
+        if existing and existing not in ('0', 'False', 'false'):
+            condition = '(%s) or (%s)' % (existing, condition)
+        node.set(attribute, condition)
+        root = next((ancestor for ancestor in node.iterancestors() if ancestor.tag in VIEW_ROOTS), None)
+        if root is not None:
+            needed.setdefault(root, (model_name, set()))[1].update(condition_fields(condition))
+
+    @classmethod
+    def _add_needed_fields(cls, needed):
+        """ Add, invisible, the fields a condition reads and its view lacks. """
+        for root, (model_name, names) in needed.items():
+            present = {
+                field.get('name') for field in root.iter('field')
+                if next((a for a in field.iterancestors() if a.tag in VIEW_ROOTS), None) is root
+            }
+            for name in sorted(names - present):
+                attribute = 'column_invisible' if root.tag in ('list', 'tree') else 'invisible'
+                root.append(etree.Element('field', {'name': name, attribute: '1'}))
+
     @classmethod
     def _hide_field(cls, node, view_type):
         """ Hide a field without removing it, as other parts of the view may
@@ -1071,6 +1362,9 @@ class OmAccessProfile(models.Model):
         lock_statusbar = rules.has_flag('lock_statusbar')
         hide_activities = rules.has_flag('hide_activities')
         chatter_hidden = {}
+        # the fields a condition reads, per view (the root of a view or of the
+        # sub-view of an x2many): they must be in it for the client to evaluate it
+        needed = {}
 
         for node, node_model in list(self._iter_nodes(tree, model_name)):
             tag = node.tag
@@ -1093,6 +1387,7 @@ class OmAccessProfile(models.Model):
                 # the field guard would refuse a filter on a hidden field
                 hidden = {name for name in rules.restricted_fields(node_model)
                           if rules.field_mode(node_model, name) == 'hide'}
+                hidden |= set(rules.conditional_fields(node_model, ('hide',)))
                 text = (node.get('domain') or '') + (node.get('context') or '')
                 if hidden and any(re.search(r'''['"]%s[.'"]''' % re.escape(name), text) for name in hidden):
                     self._drop(node)
@@ -1114,6 +1409,7 @@ class OmAccessProfile(models.Model):
                         node.set('readonly', '1')
                     elif mode == 'required':
                         node.set('required', '1')
+                    self._apply_field_conditions(rules, node, node_model, field_name, view_type, needed)
                     if rules.field_option(node_model, field_name, 'no_open'):
                         self._set_option(node, 'no_open', True)
                     if rules.field_option(node_model, field_name, 'no_create'):
@@ -1130,14 +1426,21 @@ class OmAccessProfile(models.Model):
                 continue
 
             if tag == 'button' and node.get('name') and not node.get('special') and node_model:
-                if rules.hides_button(node_model, view_type, node.get('type') or 'object',
-                                      node.get('name'), node.get('id') or ''):
+                condition = rules.button_condition(
+                    HIDE_MODES, node_model, node.get('type') or 'object', node.get('name'), view_type,
+                    node.get('id') or '')
+                if condition is True:
                     self._drop(node)
+                elif condition:
+                    self._add_condition(node, 'invisible', condition, node_model, view_type, needed)
                 continue
 
             if tag == 'page' and node_model:
-                if rules.hides_element(node_model, 'page', node.get('name') or ''):
+                condition = rules.page_condition(node_model, node.get('name') or '')
+                if condition is True:
                     self._drop(node)
+                elif condition:
+                    self._add_condition(node, 'invisible', condition, node_model, view_type, needed)
                 continue
 
             if tag == 'filter' and node_model:
@@ -1149,6 +1452,8 @@ class OmAccessProfile(models.Model):
             if tag == 'searchpanel' and node_model:
                 if rules.hides_element(node_model, 'searchpanel'):
                     self._drop(node)
+
+        self._add_needed_fields(needed)
 
         if tree.tag in ('form', 'list', 'kanban'):
             if rules.model_flag(model_name, 'hide_export'):

@@ -1,7 +1,6 @@
 # get_bindings() is per user and uncached, so hidden reports and actions leave
 # the menus there. Enforcement is in controllers/action.py and the renders below.
 from odoo import _, api, models
-from odoo.exceptions import AccessError
 
 
 class IrActionsActions(models.Model):
@@ -37,9 +36,9 @@ class IrActionsReport(models.Model):
             return
         report = self._get_report(report_ref)
         if rules.hides_report(report.id) or rules.model_flag(report.model, 'hide_print'):
-            raise AccessError(_(
+            raise self.env['om.access.profile']._om_refusal(_(
                 "Your access profile does not allow printing '%s'.",
-                report.name))
+                report.name), model=report.model, method=report.report_name)
 
     # The report routes call _render_qweb_pdf() directly, bypassing _render(),
     # so each entry point carries its own check.

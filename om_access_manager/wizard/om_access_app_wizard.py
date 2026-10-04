@@ -1,6 +1,6 @@
 # Restrict an App: the menus, data, reports and actions of an app on one
 # screen, written back as ordinary lines of the profile.
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.fields import Command
 
 from ..models.om_access_profile_model import OWNER_FIELDS, own_domain
@@ -76,7 +76,7 @@ class OmAccessAppWizard(models.TransientModel):
             profile = wizard.profile_id
             wizard.other_additive = profile.strictness == 'additive' and any(
                 other != profile and other.strictness == 'additive'
-                for other in profile.user_ids.access_profile_ids
+                for user in profile._om_members() for other in profile._om_profiles_of(user)
             )
 
     #

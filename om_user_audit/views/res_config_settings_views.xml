@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.user.audit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="User Audit" string="User Audit" name="om_user_audit"
+                     logo="/om_user_audit/static/description/icon.png">
+                    <block title="Logs" name="om_user_audit_logs">
+                        <setting id="om_audit_keep" string="Retention"
+                                 help="Older lines are deleted every night (0 keeps them).">
+                            <div class="content-group mt-2">
+                                <div class="row">
+                                    <label for="om_audit_keep_days" class="col-lg-5 o_light_label"/>
+                                    <field name="om_audit_keep_days"/>
+                                </div>
+                                <div class="row">
+                                    <label for="om_audit_keep_sign_in_days" class="col-lg-5 o_light_label"/>
+                                    <field name="om_audit_keep_sign_in_days"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="om_audit_reads" help="Turn the most frequent event off everywhere at once.">
+                            <field name="om_audit_log_reads"/>
+                            <div class="mt-2 text-muted">
+                                <field name="om_audit_lines_today" class="w-auto fw-bold"/> lines in the
+                                last 24 hours.
+                            </div>
+                        </setting>
+                        <setting id="om_audit_rules" string="What to Log"
+                                 help="With no rule, everything but the technical data below.">
+                            <button name="%(om_user_audit.om_user_audit_rule_action)d" type="action"
+                                    string="Rules" icon="east" class="btn-link"/>
+                            <div class="mt-2">
+                                <label for="om_audit_excluded_models" class="o_light_label"/>
+                                <field name="om_audit_excluded_models" class="w-100"/>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Sessions" name="om_user_audit_sessions">
+                        <setting id="om_audit_sign_in_mail" string="Sign-in Emails"
+                                 help="An email on every sign-in in the browser.">
+                            <field name="om_audit_sign_in_mail" widget="radio"/>
+                            <div invisible="om_audit_sign_in_mail == 'none'">
+                                <field name="om_audit_sign_in_mail_new_only"/>
+                                <label for="om_audit_sign_in_mail_new_only" class="o_light_label"/>
+                            </div>
+                        </setting>
+                        <setting id="om_audit_idle" string="Idle Sessions"
+                                 help="Sign out a user who has done nothing for this long (0: never).">
+                            <field name="om_audit_idle_minutes"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_user_audit_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'om_user_audit', 'bin_size': False}</field>
+    </record>
+
+</odoo>

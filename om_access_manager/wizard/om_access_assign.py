@@ -32,5 +32,6 @@ class OmAccessAssign(models.TransientModel):
             command = [(3, profile.id) for profile in self.profile_ids]
         else:
             command = [(6, 0, self.profile_ids.ids)]
-        self.user_ids.write({'access_profile_ids': command})
+        # users are written as the superuser: the wizard is for the access managers only
+        self.user_ids.sudo().write({'access_profile_ids': command})
         return {'type': 'ir.actions.act_window_close'}

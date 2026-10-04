@@ -1,7 +1,6 @@
 # Refuses Send message from the chatter when a profile hides it; Log note
 # (the note subtype) stays allowed.
 from odoo import _, http
-from odoo.exceptions import AccessError
 from odoo.http import request
 
 from odoo.addons.mail.controllers.thread import ThreadController
@@ -19,6 +18,7 @@ class ThreadAccess(ThreadController):
         if request.env.uid and sends:
             rules = request.env['om.access.profile']._current_rules()
             if rules.enabled and rules.model_flag(thread_model, 'hide_send_message'):
-                raise AccessError(_("Your access profile does not allow sending messages here. "
-                                    "Log a note instead."))
+                raise request.env['om.access.profile']._om_refusal(
+                    _("Your access profile does not allow sending messages here. Log a note instead."),
+                    model=thread_model, method='message_post', record_ids=[thread_id])
         return super().mail_message_post(thread_model, thread_id, post_data, context=context, **kwargs)

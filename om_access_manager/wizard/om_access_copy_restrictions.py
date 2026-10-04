@@ -5,6 +5,7 @@ from odoo.exceptions import UserError
 
 COPIED = (
     ('model_ids', 'om.access.profile.model', ('model_id',)),
+    ('menu_rule_ids', 'om.access.profile.menu', ('menu_id',)),
     ('field_ids', 'om.access.profile.field', ('field_id',)),
     ('button_ids', 'om.access.profile.button',
      ('model_id', 'view_type', 'button_type', 'button_name', 'button_id')),
@@ -25,7 +26,8 @@ class OmAccessCopyRestrictions(models.TransientModel):
     copy_fields = fields.Boolean(string='Fields', default=True)
     copy_buttons = fields.Boolean(string='Buttons', default=True)
     copy_elements = fields.Boolean(string='Tabs, Filters and Views', default=True)
-    copy_menus = fields.Boolean(string='Hidden Menus', default=True)
+    copy_menus = fields.Boolean(string='Menus', default=True,
+                                help="The hidden menus and the rights set on menus.")
 
     @api.model
     def default_get(self, fields_list):
@@ -44,6 +46,7 @@ class OmAccessCopyRestrictions(models.TransientModel):
         self.ensure_one()
         wanted = {
             'model_ids': self.copy_models,
+            'menu_rule_ids': self.copy_menus,
             'field_ids': self.copy_fields,
             'button_ids': self.copy_buttons,
             'element_ids': self.copy_elements,

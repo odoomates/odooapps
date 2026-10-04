@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_user_audit_report_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.user.audit.report.wizard.form</field>
+        <field name="model">om.user.audit.report.wizard</field>
+        <field name="arch" type="xml">
+            <form string="User Activity Report">
+                <group>
+                    <group>
+                        <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"
+                               placeholder="Every user"/>
+                        <field name="events" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print" type="object" string="Print" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_user_audit_report_wizard_action" model="ir.actions.act_window">
+        <field name="name">User Activity Report</field>
+        <field name="res_model">om.user.audit.report.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
+
+</odoo>

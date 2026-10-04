@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_users_form_om_user_audit" model="ir.ui.view">
+        <field name="name">res.users.form.om.user.audit</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_om_audit_logs" type="object" class="oe_stat_button"
+                        icon="history" groups="base.group_system">
+                    <field name="om_audit_log_count" widget="statinfo" string="Activity"/>
+                </button>
+                <button name="action_om_sessions" type="object" class="oe_stat_button"
+                        icon="devices" groups="base.group_system">
+                    <field name="om_session_count" widget="statinfo" string="Sessions"/>
+                </button>
+            </div>
+            <header position="inside">
+                <button name="action_om_end_sessions" type="object" string="End All Sessions"
+                        groups="base.group_system" invisible="not om_session_count"
+                        confirm="Sign this user out of every browser and device?"/>
+            </header>
+        </field>
+    </record>
+
+</odoo>

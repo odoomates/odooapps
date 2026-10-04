@@ -26,9 +26,32 @@ DOMAIN_FIELD_OF_OPERATION = {
 }
 
 
+class OmAccessRightsMixin(models.AbstractModel):
+    """ The four rights and the switches of some data: a model line sets them on
+    one model, a menu line on the data of its whole branch. """
+    _name = 'om.access.rights.mixin'
+    _description = 'Access Rights and Switches'
+
+    perm_read = fields.Boolean(string='Read', default=True)
+    perm_write = fields.Boolean(string='Edit', default=True)
+    perm_create = fields.Boolean(string='Create', default=True)
+    perm_unlink = fields.Boolean(string='Delete', default=True)
+
+    hide_chatter = fields.Boolean(string='Hide Chatter')
+    hide_export = fields.Boolean(string='Block Export')
+    hide_import = fields.Boolean(string='Block Import')
+    hide_archive = fields.Boolean(string='Block Archiving')
+    hide_duplicate = fields.Boolean(string='Block Duplication')
+    hide_print = fields.Boolean(string='Hide Print Menu')
+    hide_action_menu = fields.Boolean(string='Hide Action Menu')
+    hide_send_message = fields.Boolean(string='Hide Send Message')
+    hide_followers = fields.Boolean(string='Hide Followers')
+    hide_attachments = fields.Boolean(string='Hide Attachments')
+
+
 class OmAccessProfileModel(models.Model):
     _name = 'om.access.profile.model'
-    _inherit = ['om.access.history.mixin']
+    _inherit = ['om.access.history.mixin', 'om.access.rights.mixin']
     _description = 'Access Profile Model Rule'
     _order = 'profile_id, model, id'
 
@@ -39,11 +62,6 @@ class OmAccessProfileModel(models.Model):
     model_id = fields.Many2one('ir.model', string='Model', required=True, ondelete='cascade')
     model = fields.Char(
         string='Technical Name', related='model_id.model', store=True, index=True)
-
-    perm_read = fields.Boolean(string='Read', default=True)
-    perm_write = fields.Boolean(string='Edit', default=True)
-    perm_create = fields.Boolean(string='Create', default=True)
-    perm_unlink = fields.Boolean(string='Delete', default=True)
 
     domain = fields.Char(
         string='Record Filter',
@@ -67,21 +85,22 @@ class OmAccessProfileModel(models.Model):
 
     available_presets = fields.Char(compute='_compute_available_presets')
 
-    hide_chatter = fields.Boolean(string='Hide Chatter')
-    hide_export = fields.Boolean(string='Block Export')
-    hide_import = fields.Boolean(string='Block Import')
-    hide_archive = fields.Boolean(string='Block Archiving')
-    hide_duplicate = fields.Boolean(string='Block Duplication')
-    hide_print = fields.Boolean(string='Hide Print Menu')
-    hide_action_menu = fields.Boolean(string='Hide Action Menu')
-    hide_send_message = fields.Boolean(string='Hide Send Message')
-    hide_followers = fields.Boolean(string='Hide Followers')
-    hide_attachments = fields.Boolean(string='Hide Attachments')
-
     _unique_model = models.Constraint(
         'UNIQUE(profile_id, model_id)',
         'A profile can only carry one rule per model.',
     )
+
+    # a rule can take the access profiles away from the last administrator
+    @api.model_create_multi
+    def create(self, vals_list):
+        lines = super().create(vals_list)
+        lines.profile_id._check_last_administrator()
+        return lines
+
+    def write(self, vals):
+        result = super().write(vals)
+        self.profile_id._check_last_administrator()
+        return result
 
     @api.constrains('domain', 'domain_read', 'domain_write', 'domain_create',
                     'domain_unlink', 'model_id')
@@ -127,6 +146,22 @@ class OmAccessProfileModel(models.Model):
         if (relation('warehouse_id') == 'stock.warehouse'
                 and 'property_warehouse_id' in self.env['res.users']._fields):
             presets['warehouse'] = ('domain', "[('warehouse_id', '=', user.property_warehouse_id.id)]")
+        if 'hr.employee' in self.env:
+            # theirs and those of the employees under them, three levels down,
+            # through the org chart in SQL: never stale
+            if owner:
+                chain = [f"{owner}.employee_ids" + '.parent_id' * level + '.user_id' for level in range(1, 4)]
+                presets['hierarchy'] = ('domain', "['|', '|', '|', ('%s', '=', uid), %s]" % (
+                    owner, ', '.join("('%s', '=', uid)" % path for path in chain)))
+            elif relation('employee_id') == 'hr.employee':
+                chain = ['employee_id' + '.parent_id' * level + '.user_id' for level in range(4)]
+                presets['hierarchy'] = ('domain', "['|', '|', '|', %s]" % ', '.join(
+                    "('%s', '=', uid)" % path for path in chain))
+        # relative dates, resolved by each query: the cached access domain does not go stale
+        if 'create_date' in model._fields:
+            for key, start in (('today', 'today'), ('week', 'today =week_start'),
+                               ('month', 'today =1d'), ('year', 'today =1m =1d')):
+                presets[key] = ('domain', "[('create_date', '>=', '%s')]" % start)
         state = model._fields.get('state')
         if state is not None and state.type == 'selection' and 'draft' in dict(
                 state._description_selection(self.env)):

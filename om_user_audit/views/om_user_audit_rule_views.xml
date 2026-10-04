@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_user_audit_rule_view_list" model="ir.ui.view">
+        <field name="name">om.user.audit.rule.list</field>
+        <field name="model">om.user.audit.rule</field>
+        <field name="arch" type="xml">
+            <list string="What to Log">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_ids" widget="many2many_tags" placeholder="All data"/>
+                <field name="user_ids" widget="many2many_tags" optional="show"/>
+                <field name="group_ids" widget="many2many_tags" optional="show"/>
+                <field name="log_read"/>
+                <field name="log_create"/>
+                <field name="log_write"/>
+                <field name="log_unlink"/>
+                <field name="log_export"/>
+                <field name="log_import"/>
+                <field name="log_print"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_user_audit_rule_view_form" model="ir.ui.view">
+        <field name="name">om.user.audit.rule.form</field>
+        <field name="model">om.user.audit.rule</field>
+        <field name="arch" type="xml">
+            <form string="What to Log">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Invoices, every change"/></h1>
+                    </div>
+                    <group>
+                        <group string="What">
+                            <field name="model_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="All data but the technical"/>
+                        </group>
+                        <group string="Who">
+                            <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="Everyone"/>
+                            <field name="group_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <group string="Operations">
+                        <group>
+                            <field name="log_read"/>
+                            <field name="log_create"/>
+                            <field name="log_write"/>
+                            <field name="log_unlink"/>
+                        </group>
+                        <group>
+                            <field name="log_export"/>
+                            <field name="log_import"/>
+                            <field name="log_print"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        With no rule, everything is logged but the technical data listed in the
+                        settings. As soon as one rule exists, only what the rules name is logged.
+                        Sign-ins are always logged.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_user_audit_rule_action" model="ir.actions.act_window">
+        <field name="name">What to Log</field>
+        <field name="res_model">om.user.audit.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Everything is logged</p>
+            <p>With no rule, every read, change, export, import and print of every business data
+               is logged. Add a rule to log only what it names: some data, some users, some
+               operations.</p>
+        </field>
+    </record>
+
+</odoo>

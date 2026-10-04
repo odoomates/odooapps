@@ -109,7 +109,7 @@ class TestReview(HttpCase):
                                           headers=headers).status_code, 200)
 
     def test_xmlrpc_and_the_allowed_networks(self):
-        from odoo.addons.om_access_manager.models.login_tools import RPC_ADDRESS
+        from odoo.addons.om_user_audit.models.client_call import RPC_ADDRESS
         from odoo.exceptions import AccessDenied
         credential = {'login': self.user.login, 'password': self.password, 'type': 'password'}
         user = self.user.with_user(self.user)
@@ -123,7 +123,9 @@ class TestReview(HttpCase):
         # an address Odoo does not know is refused, never let through
         with self.assertRaises(AccessDenied):
             user._check_credentials(credential, {'interactive': False})
-        # end to end: from a network that is not allowed
+        # end to end, the address read from the request
+        self.assertEqual(self.xmlrpc_common.authenticate(self.env.cr.dbname, self.user.login, self.password, {}),
+                         self.user.id)
         self.profile.allowed_ips = '10.0.0.0/8'
         self.assertFalse(self.xmlrpc_common.authenticate(self.env.cr.dbname, self.user.login, self.password, {}))
 

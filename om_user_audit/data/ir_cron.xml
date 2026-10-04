@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="ir_cron_clean_logs" model="ir.cron">
+        <field name="name">User Audit: Delete Old Logs</field>
+        <field name="model_id" ref="model_om_user_audit_log"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_clean()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+
+    <record id="ir_cron_end_idle_sessions" model="ir.cron">
+        <field name="name">User Audit: End Idle Sessions</field>
+        <field name="model_id" ref="base.model_res_session"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_end_idle()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+    </record>
+
+</odoo>

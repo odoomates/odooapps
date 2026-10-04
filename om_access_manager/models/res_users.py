@@ -2,13 +2,17 @@
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessDenied
 from odoo.http import request
+from odoo.tools import LazyTranslate
 
-from .login_tools import client_address, utc_now
+from odoo.addons.om_user_audit.models.client_call import client_address
+
+from .login_tools import utc_now
 
 EXPORT_GROUP = 'base.group_allow_export'
+_lt = LazyTranslate(__name__)
 LOGIN_REFUSALS = {
-    'hours': lambda: _("Your access profile only allows signing in during your working hours."),
-    'network': lambda: _("Your access profile does not allow signing in from this network."),
+    'hours': _lt("Your access profile only allows signing in during your working hours."),
+    'network': _lt("Your access profile does not allow signing in from this network."),
 }
 # session key holding the sign-in moment (One Session per User)
 LOGIN_STAMP_KEY = 'om_access_login_stamp'
@@ -19,19 +23,22 @@ class ResUsers(models.Model):
     _inherit = 'res.users'
 
     access_allowed_ids = fields.One2many(
-        'om.access.allowed', 'user_id', string='Allowed Records', groups='base.group_system',
+        'om.access.allowed', 'user_id', string='Allowed Records', groups='om_access_manager.group_access_manager',
         help="The records of this user, for the profiles whose allowed records are "
              "'each user's own': their point of sale, their warehouse...")
+    access_assignment_ids = fields.One2many(
+        'om.access.profile.assignment', 'user_id', string='Temporary Profiles',
+        groups='om_access_manager.group_access_manager')
     om_access_login_stamp = fields.Float(
-        copy=False, groups='base.group_system',
+        copy=False, groups='om_access_manager.group_access_manager',
         help="When the user last signed in, for One Session per User.")
     access_effective = fields.Html(
         string='Effective Access', compute='_compute_access_effective', sanitize=False,
-        groups='base.group_system',
+        groups='om_access_manager.group_access_manager',
         help="What this user really ends up with, all of their profiles combined.")
     access_profile_ids = fields.Many2many(
         'om.access.profile', 'om_access_profile_users_rel', 'uid', 'profile_id',
-        string='Access Profiles', groups='base.group_system',
+        string='Access Profiles', groups='om_access_manager.group_access_manager',
         help="A user may carry several profiles. Additive profiles combine "
              "permissively, override profiles always subtract.")
 
@@ -65,13 +72,19 @@ class ResUsers(models.Model):
         return users
 
     def write(self, vals):
+        before = self.sudo().access_profile_ids if 'access_profile_ids' in vals else None
         result = super().write(vals)
         if 'access_profile_ids' in vals:
-            self.access_profile_ids._sync_group()
+            (before | self.sudo().access_profile_ids)._sync_group()
             # the guard against locking every administrator out applies here too
             self.sudo().access_profile_ids._check_last_administrator()
             self.env.transaction.invalidate_ormcache('default')
-        elif any(name in vals for name in USER_FIELDS_IN_FILTERS):
+        elif vals.get('active') is False or 'group_ids' in vals:
+            # archiving, or taking out of Access Management, the last access
+            # manager the profiles leave able to undo them
+            self.env['om.access.profile'].sudo().search([])._check_last_administrator()
+        elif not set(vals).isdisjoint(USER_FIELDS_IN_FILTERS) or not set(vals).isdisjoint(
+                self.env['om.access.profile']._om_user_fields_in_filters()):
             # _resolve() depends on the user's companies, and record filters
             # read the default warehouse
             self.env.transaction.invalidate_ormcache('default')
@@ -101,7 +114,7 @@ class ResUsers(models.Model):
                 raise AccessDenied(_("Your access profile does not allow you to sign in."))
             reason = rules.login_refusal(utc_now(), client_address())
             if reason:
-                raise AccessDenied(LOGIN_REFUSALS[reason]())
+                raise AccessDenied(self.env._(LOGIN_REFUSALS[reason]))
             # 'interactive' is False for XML-RPC/JSON-RPC sign-ins, True for the browser
             if not env.get('interactive', True) and rules.has_flag('block_rpc'):
                 raise AccessDenied(_(

@@ -63,7 +63,7 @@
         <field name="model_id" ref="om_access_manager.model_om_access_profile"/>
         <field name="binding_model_id" ref="om_access_manager.model_om_access_profile"/>
         <field name="binding_view_types">list,form</field>
-        <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
         <field name="state">code</field>
         <field name="code">action = records.action_export_profiles()</field>
     </record>
@@ -140,9 +140,51 @@
         <field name="res_model">om.access.assign</field>
         <field name="view_mode">form</field>
         <field name="target">new</field>
-        <field name="group_ids" eval="[(4, ref('base.group_system'))]"/>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
         <field name="binding_model_id" ref="base.model_res_users"/>
         <field name="binding_view_types">list,form</field>
+    </record>
+
+    <record id="om_access_copy_access_view_form" model="ir.ui.view">
+        <field name="name">om.access.copy.access.form</field>
+        <field name="model">om.access.copy.access</field>
+        <field name="arch" type="xml">
+            <form string="Copy Access">
+                <group>
+                    <group>
+                        <field name="source_user_id" options="{'no_create': True}"/>
+                        <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="mode" widget="radio"/>
+                    </group>
+                    <group string="What">
+                        <field name="with_profiles"/>
+                        <field name="with_assignments"/>
+                        <field name="with_allowed"/>
+                    </group>
+                </group>
+                <field name="summary" nolabel="1" readonly="1"/>
+                <div class="text-muted" invisible="mode != 'move'">
+                    Moving takes the ticked access away from the first user, for a job change.
+                    Their Odoo groups are not touched.
+                </div>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_copy_access_action" model="ir.actions.act_window">
+        <field name="name">Copy Access</field>
+        <field name="res_model">om.access.copy.access</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">form</field>
     </record>
 
     <record id="om_access_app_wizard_view_form" model="ir.ui.view">

@@ -6,3 +6,4 @@ from . import om_access_app_wizard
 from . import om_access_assign
 from . import om_access_template_wizard
 from . import om_access_import
+from . import om_access_copy_access

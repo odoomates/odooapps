@@ -24,7 +24,8 @@ class TestPresets(TransactionCase):
         self.assertIn('own', presets)
         self.assertIn('company', presets)
         self.assertNotIn('draft', presets)
-        self.assertFalse(self._rule('res.lang').available_presets)
+        # a language has no owner, team, company nor status: only the dates
+        self.assertEqual(self._rule('res.lang').available_presets.split(), ['today', 'week', 'month', 'year'])
 
     def test_their_own_records(self):
         Partner = self.env['res.partner']
