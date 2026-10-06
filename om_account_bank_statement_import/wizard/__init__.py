@@ -1,2 +1,1 @@
-from . import journal_creation
-from . import setup_wizards
+from . import account_statement_import

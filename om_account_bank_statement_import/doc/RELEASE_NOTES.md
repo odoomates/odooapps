@@ -1,11 +1,9 @@
 ## Module <om_account_bank_statement_import>
 
-#### 27.01.2023
-#### Version 16.0.2.0.0
+#### 18.09.2026
+#### Version 1.0.0
 ##### ADD
-- statement views
-
-#### 22.07.2022
-#### Version 16.0.1.0.0
-##### ADD
-- initial release
+- initial release: import the bank statements in CAMT.053, MT940, OFX, QFX, QIF, CSV and Excel,
+  with a map of the columns for the CSV and Excel files of each bank
+- the journal is recognised from the account number in the file and the transactions already
+  imported are left out
