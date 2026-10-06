@@ -47,7 +47,10 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         # the company of the report (given by the wizard), not the default company of the user
         company = self.env['res.company'].browse(self.env.context.get('company_id')) or self.env.company
         user_currency = company.currency_id
-        company_ids = self.env.context.get('company_ids') or [company.id]
+        # a branch posts its entries in its own company: they belong to the report
+        # of the parent that consolidates it
+        company_ids = self.env.context.get('company_ids') or self.env['res.company'].search(
+            [('id', 'child_of', company.id)]).ids
         move_state = ['draft', 'posted']
         date = self.env.context.get('date') or fields.Date.context_today(self)
 
