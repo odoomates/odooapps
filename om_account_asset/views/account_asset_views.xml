@@ -10,7 +10,8 @@
                     <button name="validate" states="draft" string="Confirm" type="object" class="oe_highlight"/>
                     <button type="object" name="compute_depreciation_board" string="Compute Depreciation"
                             states="draft"/>
-                    <button name="set_to_close" states="open" string="Sell or Dispose" type="object"
+                    <button name="%(action_asset_sell)d" type="action" string="Sell or Dispose"
+                            attrs="{'invisible': ['|', ('state', 'not in', ('open', 'close')), ('disposal_date', '!=', False)]}"
                             class="oe_highlight"/>
                     <button name="set_to_draft" string="Set to Draft" type="object"
                             attrs="{'invisible': ['|', ('entry_count', '!=', 0), ('state', '!=', 'open')]}"/>
@@ -23,6 +24,9 @@
                             <field string="Items" name="entry_count" widget="statinfo"/>
                         </button>
                     </div>
+                    <field name="disposal_move_id" invisible="1"/>
+                    <widget name="web_ribbon" title="Disposed" bg_color="bg-secondary"
+                            attrs="{'invisible': [('disposal_date', '=', False)]}"/>
                     <div class="oe_title">
                         <label for="name" class="oe_edit_only"/>
                         <h1>
@@ -52,6 +56,11 @@
                                    options="{'currency_field': 'currency_id'}"
                                    attrs="{'invisible': [('type','=','sale')]}"/>
                             <field name="value_residual" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="book_value" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="disposal_date" attrs="{'invisible': [('disposal_date', '=', False)]}"/>
+                            <field name="disposal_result" widget="monetary"
+                                   options="{'currency_field': 'currency_id'}"
+                                   attrs="{'invisible': [('disposal_date', '=', False)]}"/>
                             <field name="partner_id" string="Vendor" widget="res_partner_many2one"
                                    context="{'res_partner_search_mode': 'supplier'}"/>
                             <field name="invoice_id" string="Invoice" options="{'no_create': True}"/>
