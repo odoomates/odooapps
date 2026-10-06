@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_access_manager.PreviewBanner">
+        <div class="o_om_preview_banner d-flex align-items-center gap-2 px-3 py-2 shadow" role="status">
+            <i class="fa fa-eye" aria-hidden="true"/>
+            <span>
+                Previewing as <strong t-out="this.preview.name"/>
+                <t t-if="this.preview.profiles.length">
+                    (<t t-out="this.preview.profiles.join(', ')"/>)
+                </t>
+                <t t-else=""> (no access profile)</t>
+                · read only
+            </span>
+            <button type="button" class="btn btn-sm btn-light ms-2" t-on-click="() => this.exit()">
+                Exit preview
+            </button>
+        </div>
+    </t>
+
+</templates>
