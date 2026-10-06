@@ -533,6 +533,58 @@
         <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">static/description/user_guide.pdf</code></div>
 </div>
 
+<!-- ================= install ================= -->
+<div class="om-band" style="padding:50px 32px;">
+    <h2 style="font-size:30px;font-weight:700;color:#2C0091;margin:0 0 18px 0;text-align:center;">How to install it</h2>
+    <p style="font-size:16px;color:#4C4C60;line-height:1.65;margin:0 auto 14px auto;max-width:900px;">The module is a folder that Odoo has to find. Put it in the
+        <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">addons_path</code> of your Odoo, restart the service and install it from the Apps
+        screen. Where the addons path lives depends on how your Odoo was installed.</p>
+
+    <h3 style="font-size:20px;font-weight:700;color:#1E0B57;margin:26px auto 10px auto;max-width:900px;">On premise, installed from the .deb or .rpm package</h3>
+    <ol style="font-size:16px;color:#4C4C60;line-height:1.65;margin:0 auto 14px auto;max-width:900px; padding-left:22px;">
+        <li style="margin-bottom:10px;">Keep your own modules apart from the ones of Odoo, for example in
+            <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">/opt/odoo/custom-addons</code>, and copy this module there.</li>
+        <li style="margin-bottom:10px;">Open <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">/etc/odoo/odoo.conf</code> and add that
+            directory to <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">addons_path</code>, separated from the others by a comma:<br/>
+            <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">addons_path = /usr/lib/python3/dist-packages/odoo/addons,/opt/odoo/custom-addons</code></li>
+        <li style="margin-bottom:10px;">Give the odoo user the right to read it:
+            <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">sudo chown -R odoo: /opt/odoo/custom-addons</code></li>
+        <li>Restart the service: <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">sudo service odoo restart</code></li>
+    </ol>
+
+    <h3 style="font-size:20px;font-weight:700;color:#1E0B57;margin:26px auto 10px auto;max-width:900px;">On a server or a local machine, running from the sources</h3>
+    <ol style="font-size:16px;color:#4C4C60;line-height:1.65;margin:0 auto 14px auto;max-width:900px; padding-left:22px;">
+        <li style="margin-bottom:10px;">Copy the module, or clone the repository, into the directory you keep your
+            modules in.</li>
+        <li style="margin-bottom:10px;">Name that directory in the
+            <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">addons_path</code> of your configuration file, or on the command line:<br/>
+            <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">./odoo-bin -c odoo.conf --addons-path=addons,/path/to/odooapps</code></li>
+        <li>Stop and start <code style="color:#1E0B57;border-radius:4px;padding:2px 7px;font-size:13px;">odoo-bin</code> again.</li>
+    </ol>
+
+    <h3 style="font-size:20px;font-weight:700;color:#1E0B57;margin:26px auto 10px auto;max-width:900px;">Then, in Odoo itself</h3>
+    <ol style="font-size:16px;color:#4C4C60;line-height:1.65;margin:0 auto 14px auto;max-width:900px; padding-left:22px;">
+        <li style="margin-bottom:10px;">Turn on the developer mode:
+            <b style="color:#2b2b3a;">Settings &#8594; General Settings</b>, at the bottom,
+            <b style="color:#2b2b3a;">Activate the developer mode</b>. Without it the next menu is not shown.</li>
+        <li style="margin-bottom:10px;">Open <b style="color:#2b2b3a;">Apps</b> and click
+            <b style="color:#2b2b3a;">Update Apps List</b>, so that Odoo reads the new directory.</li>
+        <li>Clear the <b style="color:#2b2b3a;">Apps</b> filter of the search box, look for
+            <b style="color:#2b2b3a;">Odoo 20 Accounting Community</b> and install it. It installs the modules it is made of
+            and arranges their menus.</li>
+    </ol>
+    <p style="font-size:16px;color:#4C4C60;line-height:1.65;margin:0 auto 14px auto;max-width:900px; margin-top:22px;">
+        <b style="color:#2b2b3a;">Please do not install it with Apps &#8594; Import Module.</b><br/>
+        That screen uploads a zip file and is meant for data modules, the ones that carry no Python. The modules on
+        this page carry Python, so an import leaves them half loaded and ends on an error about a missing field, a
+        view or a record &mdash; which reads like a bug in the module and is not one. Almost every installation
+        problem reported to us comes from this screen.</p>
+    <p style="font-size:16px;color:#4C4C60;line-height:1.65;margin:0 auto;max-width:900px;">
+        Something still failing? Write to
+        <a href="mailto:odoomates@gmail.com" style="color:#714B67;">odoomates@gmail.com</a> with the version of
+        Odoo and the error, and we will look at it.</p>
+</div>
+
 <!-- ================= FAQ ================= -->
 <div class="om-band" style="padding:50px 32px;">
     <h2 style="font-size:30px;font-weight:700;color:#2C0091;margin:0 0 18px 0;text-align:center;">Questions we get</h2>
