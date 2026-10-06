@@ -8,3 +8,4 @@ from . import test_report_fixes
 from . import test_report_templates
 from . import test_tax_report
 from . import test_tax_closing
+from . import test_branch_reports

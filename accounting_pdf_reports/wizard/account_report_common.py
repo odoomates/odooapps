@@ -11,8 +11,9 @@ class AccountCommonReport(models.TransientModel):
         comodel_name='account.journal',
         string='Journals',
         required=True,
-        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.env.company.id)]),
-        domain="[('company_id', '=', company_id)]",
+        # 'child_of': the journals of the company and of the branches it consolidates
+        default=lambda self: self.env['account.journal'].search([('company_id', 'child_of', self.env.company.id)]),
+        domain="[('company_id', 'child_of', company_id)]",
     )
     date_from = fields.Date(string='Start Date')
     date_to = fields.Date(string='End Date')
@@ -24,7 +25,7 @@ class AccountCommonReport(models.TransientModel):
     def _onchange_company_id(self):
         if self.company_id:
             self.journal_ids = self.env['account.journal'].search(
-                [('company_id', '=', self.company_id.id)])
+                [('company_id', 'child_of', self.company_id.id)])
         else:
             self.journal_ids = self.env['account.journal'].search([])
 
