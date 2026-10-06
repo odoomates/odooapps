@@ -12,8 +12,11 @@
                 <group>
                     <group>
                         <field name="asset_currency_id" invisible="1"/>
+                        <field name="asset_state" invisible="1"/>
                         <field name="action" widget="radio" options="{'horizontal': true}"/>
-                        <field name="scope" widget="radio" options="{'horizontal': true}"/>
+                        <!-- a share of a fully depreciated asset has nothing left to depreciate on -->
+                        <field name="scope" widget="radio" options="{'horizontal': true}"
+                               invisible="asset_state not in ('open', 'paused')"/>
                         <field name="disposed_percent" invisible="scope != 'partial'" required="scope == 'partial'"/>
                         <field name="disposed_value" invisible="scope != 'partial'"/>
                         <field name="date"/>

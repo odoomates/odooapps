@@ -709,6 +709,14 @@ class AccountAssetAsset(models.Model):
         resumed or disposed of. """
         return self | self.children_ids.filtered(lambda increase: increase.state in states)
 
+    def _in_books(self):
+        """ The assets still carried in the books: the running and paused ones, and the ones
+        closed by their last depreciation entry. A fully depreciated asset is only worth its
+        salvage value, and it stays on the books until it is sold or disposed of, which is what
+        `disposal_date` records. """
+        return self.filtered(lambda asset: asset.state in ('open', 'paused')
+                             or (asset.state == 'close' and not asset.disposal_date))
+
     @api.model
     def _links_markup(self, records):
         return Markup(' / ').join([record._get_html_link() for record in records])
@@ -816,9 +824,10 @@ class AccountAssetAsset(models.Model):
         self.ensure_one()
         sale_lines = sale_lines or self.env['account.move.line']
         disposal_date = disposal_date or fields.Date.context_today(self)
-        if self.state not in ('open', 'paused'):
-            raise UserError(_('Only running or paused assets can be sold or disposed of.'))
-        assets = self._with_running_increases(('open', 'paused'))
+        if not self._in_books():
+            raise UserError(_('"%s" is no longer in the books: only an asset that is running, paused '
+                              'or fully depreciated can be sold or disposed of.', self.name))
+        assets = self | self.children_ids._in_books()
         if sale_lines and assets != self:
             raise UserError(_('"%s" has running value increases: dispose of them before selling it.', self.name))
 
@@ -888,7 +897,7 @@ class AccountAssetAsset(models.Model):
         currency = self.currency_id
         sale_lines = sale_lines or self.env['account.move.line']
         if self.state not in ('open', 'paused'):
-            raise UserError(_('Only running or paused assets can be sold or disposed of.'))
+            raise UserError(_('"%s" is not depreciating: sell or dispose of the whole asset.', self.name))
         if not 0.0 < share < 1.0:
             raise UserError(_('The share of the asset disposed of must be between 0 and 100%.'))
         if self.children_ids.filtered(lambda increase: increase.state in ('open', 'paused')):

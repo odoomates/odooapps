@@ -311,6 +311,64 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
             self.loss_account: 948.39,
         })
 
+    def test_sell_fully_depreciated_asset(self):
+        """ A written down asset is still in the books: selling it books the price as a gain. """
+        asset = self._create_asset()
+        self._autopost('2025-12-31')
+        self.assertEqual(asset.state, 'close')
+        self.assertFalse(asset.disposal_date)
+
+        invoice = self.init_invoice('out_invoice', amounts=[150.0], invoice_date='2025-12-31', post=True)
+        revenue_line = invoice.invoice_line_ids
+        wizard = self.env['asset.sell'].with_context(active_model='account.asset.asset', active_id=asset.id).create({
+            'action': 'sell',
+            'date': date(2025, 12, 31),
+            'sale_invoice_ids': [Command.set(invoice.ids)],
+            'sale_line_ids': [Command.set(revenue_line.ids)],
+        })
+        with freeze_time('2025-12-31'):
+            wizard.action_confirm()
+
+        self.assertEqual(asset.disposal_date, date(2025, 12, 31))
+        self.assertEqual(asset.disposal_result, 150.0)
+        self.assertEqual(asset.disposal_move_id.asset_entry_type, 'sale')
+        self.assertEqual(self._balances(asset.disposal_move_id), {
+            self.asset_account: -1200.0,
+            self.accumulated_account: 1200.0,
+            revenue_line.account_id: 150.0,
+            self.gain_account: -150.0,
+        })
+
+    def test_dispose_fully_depreciated_asset(self):
+        """ Scrapping a written down asset cancels the gross value against the depreciation. """
+        asset = self._create_asset()
+        self._autopost('2025-12-31')
+        with freeze_time('2025-12-31'):
+            asset.set_to_close(disposal_date=date(2025, 12, 31))
+
+        self.assertEqual(asset.disposal_date, date(2025, 12, 31))
+        self.assertEqual(asset.disposal_result, 0.0)
+        self.assertEqual(asset.disposal_move_id.asset_entry_type, 'disposal')
+        self.assertEqual(self._balances(asset.disposal_move_id), {
+            self.asset_account: -1200.0,
+            self.accumulated_account: 1200.0,
+        })
+
+    def test_disposed_asset_cannot_be_disposed_again(self):
+        asset = self._create_asset()
+        self._autopost('2025-03-31')
+        with freeze_time('2025-03-31'):
+            asset.set_to_close(disposal_date=date(2025, 3, 31))
+            with self.assertRaises(UserError):
+                asset.set_to_close(disposal_date=date(2025, 3, 31))
+
+    def test_fully_depreciated_asset_refuses_partial_disposal(self):
+        """ A share of a written down asset has nothing left to depreciate on. """
+        asset = self._create_asset()
+        self._autopost('2025-12-31')
+        with freeze_time('2025-12-31'), self.assertRaises(UserError):
+            asset._dispose_partially(date(2025, 12, 31), 0.25)
+
     def test_sell_requires_disposed_gross_increases(self):
         asset = self._create_asset()
         self._autopost('2025-02-28')

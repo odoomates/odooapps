@@ -25,6 +25,7 @@ class AssetSell(models.TransientModel):
     disposed_value = fields.Monetary(
         string='Gross Value Disposed Of', compute='_compute_disposed_value', currency_field='asset_currency_id')
     asset_currency_id = fields.Many2one(related='asset_id.currency_id', string='Asset Currency')
+    asset_state = fields.Selection(related='asset_id.state', string='Asset Status')
     date = fields.Date(string='Date', required=True, default=fields.Date.context_today)
     note = fields.Text(string='Reason')
     sale_invoice_ids = fields.Many2many(
