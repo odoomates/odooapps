@@ -3,15 +3,52 @@
 # read, so denying them in _has_field_access() would break business code.
 # Hidden values are blanked, not removed, so views referring to them keep working.
 # Which call a client made (_om_rpc_entry) is told by om_user_audit.
-from odoo import _, api, models
-from odoo.fields import Domain
+import logging
+
+from dateutil.relativedelta import relativedelta
+
+from odoo import _, api, fields, models
+from odoo.fields import Command, Domain
+from odoo.tools.safe_eval import datetime, safe_eval, time
 
 from .conditions import condition_domain
+from .value_filters import names_read
+
+_logger = logging.getLogger(__name__)
 
 AGGREGATE_SEPARATOR = ':'
 # the summary of extra totals lines of a quotation (sale.order)
 EXTRA_TOTALS = 'extra_total_fields'
 DOMAIN_SUBQUERY_OPERATORS = ('any', 'not any', 'any!', 'not any!')
+
+
+class RecordValues:
+    """ The values of a record being saved, as the web client gives them to a
+    domain: what is written, else what the record holds, else the default;
+    ``parent.<field>`` in the lines of a one2many. """
+
+    def __init__(self, model, vals, record=None, parent=None):
+        self._model, self._vals, self._record, self._parent = model, vals, record, parent
+
+    def get(self, name):
+        field = self._model._fields.get(name)
+        if name in self._vals and not (field and field.type in ('one2many', 'many2many')):
+            value = self._vals[name]
+            return value.id if isinstance(value, models.BaseModel) else value
+        if self._record:
+            value = self._record.sudo()[name]
+        else:
+            value = self._model.default_get([name]).get(name, False)
+            if field and field.type in ('one2many', 'many2many'):
+                return []
+        if isinstance(value, models.BaseModel):
+            return value.ids if field.type in ('one2many', 'many2many') else value.id
+        return value
+
+    def __getattr__(self, name):
+        if name.startswith('_') or name not in self._model._fields:
+            raise AttributeError(name)
+        return self.get(name)
 
 
 class Base(models.AbstractModel):
@@ -210,6 +247,94 @@ class Base(models.AbstractModel):
                 ]
             result[name] = value
         return result
+
+    #
+    # value filters
+    #
+
+    def _om_value_rules(self):
+        rules = self.env['om.access.profile']._current_rules()
+        return rules if rules.enabled and rules.has_value_filters() else None
+
+    def _om_check_values(self, rules, vals, record=None, parent=None):
+        """ Refuse a value outside the value filter of its field, in ``vals``
+        and in the lines written through a one2many or a many2many. """
+        if not isinstance(vals, dict):
+            return
+        values = RecordValues(self, vals, record, parent)
+        for name, value in vals.items():
+            field = self._fields.get(name)
+            if field is None or not field.relational:
+                continue
+            domain = rules.field_domain(self._name, name)
+            if domain:
+                ids = self._om_new_ids(field, value, record)
+                if ids:
+                    self._om_check_value(name, domain, ids, values)
+            if field.type in ('one2many', 'many2many') and isinstance(value, (list, tuple)):
+                comodel = self.env[field.comodel_name]
+                for command in value:
+                    if isinstance(command, (list, tuple)) and len(command) > 2 and isinstance(command[2], dict):
+                        line = comodel.browse(command[1]) if command[0] == Command.UPDATE else None
+                        comodel._om_check_values(rules, command[2], line, values)
+
+    @api.model
+    def _om_new_ids(self, field, value, record=None):
+        """ The ids a value of a relational field links, leaving out the ones
+        the record already had: a filter only judges what changes. """
+        if field.type == 'many2one':
+            value = value.id if isinstance(value, models.BaseModel) else value
+            if not isinstance(value, int) or isinstance(value, bool) or not value:
+                return set()
+            if record and len(record) == 1 and record.sudo()[field.name].id == value:
+                return set()
+            return {value}
+        if not isinstance(value, (list, tuple)):
+            return set()
+        ids = set()
+        for command in value:
+            if isinstance(command, int) and not isinstance(command, bool):
+                ids.add(command)
+            elif isinstance(command, (list, tuple)) and command:
+                if command[0] == Command.LINK and len(command) > 1 and isinstance(command[1], int):
+                    ids.add(command[1])
+                elif command[0] == Command.SET and len(command) > 2 and isinstance(command[2], (list, tuple)):
+                    ids.update(i for i in command[2] if isinstance(i, int) and not isinstance(i, bool))
+        if ids and record:
+            for current in record.sudo():
+                ids -= set(current[field.name].ids)
+        return ids
+
+    def _om_check_value(self, name, domain, ids, values):
+        field = self._fields[name]
+        context = {
+            'context': dict(self.env.context),
+            'uid': self.env.uid,
+            'allowed_company_ids': self.env.companies.ids,
+            'current_company_id': self.env.company.id,
+            'datetime': datetime,
+            'time': time,
+            'relativedelta': relativedelta,
+            'context_today': lambda: fields.Date.context_today(self),
+            'parent': values._parent,
+        }
+        try:
+            for key in names_read(domain) - set(context):
+                if key in self._fields:
+                    context[key] = values.get(key)
+            filtered = Domain(safe_eval(domain, context))
+        except Exception:  # noqa: BLE001
+            # a filter the server cannot evaluate on its own stays a filter of the dropdown
+            _logger.debug("Value filter %r of %s.%s not checked", domain, self._name, name, exc_info=True)
+            return
+        comodel = self.env[field.comodel_name].sudo().with_context(active_test=False)
+        allowed = comodel.search(Domain('id', 'in', list(ids)) & filtered).ids
+        if set(allowed) != set(ids):
+            raise self.env['om.access.profile']._om_refusal(_(
+                "Your access profile does not allow this value for the field '%(field)s' of '%(model)s'.",
+                field=field._description_string(self.env),
+                model=self.env['ir.model']._get(self._name).name or self._name),
+                model=self._name, method=name)
 
     #
     # reading
@@ -486,6 +611,9 @@ class Base(models.AbstractModel):
         return result
 
     def web_save(self, vals, specification, next_id=None):
+        if self._om_rpc_entry('web_save') and (value_rules := self._om_value_rules()):
+            for record in self or [None]:
+                self._om_check_values(value_rules, vals, record)
         rules = self._om_rpc_entry('web_save') and self._om_field_rules()
         if rules:
             vals = self._om_drop_locked(rules, vals, self[:1] or None)
@@ -493,6 +621,9 @@ class Base(models.AbstractModel):
         return self._om_blank(rules, result, specification) if rules else result
 
     def write(self, vals):
+        if self._om_rpc_entry('write') and (value_rules := self._om_value_rules()):
+            for record in self:
+                self._om_check_values(value_rules, vals, record)
         rules = self._om_rpc_entry('write') and self._om_field_rules()
         if rules:
             conditional = rules.conditional_fields(self._name, ('hide', 'readonly'))
@@ -506,6 +637,9 @@ class Base(models.AbstractModel):
 
     @api.model_create_multi
     def create(self, vals_list):
+        if self._om_rpc_entry('create') and (value_rules := self._om_value_rules()):
+            for vals in vals_list:
+                self._om_check_values(value_rules, vals)
         rules = self._om_rpc_entry('create') and self._om_field_rules()
         if rules:
             vals_list = [self._om_drop_locked(rules, vals) for vals in vals_list]

@@ -6,7 +6,7 @@ User Access Manager
 
    **Beta.** Reviews and feedback are welcome. Every feature is covered by
    automated tests, but access rules touch every screen of Odoo: build and
-   check your profiles on a copy of your database first, with *Test as User*,
+   check your profiles on a copy of your database first, with *Preview as User*,
    before you give them to your users. Report what you find at
    odoomates@gmail.com or on GitHub.
 
@@ -24,11 +24,13 @@ Features
 * **An app of its own**: Access Manager, on the home screen of the members of
   the *Access Management* group (the Administrator by default). Managing the
   profiles needs no Settings rights.
-* **Grant an app** a user's form leaves out: on an app of the menu tree,
-  *Access to the app* gives the profile's users one of its groups (Purchase /
-  User...), then the profile restricts it as usual. Taken away with the
-  profile; groups that would make users administrators or access managers
-  are never granted.
+* **Grant an app** a user's form leaves out: **tick it in the menu tree.** An
+  app some user of the profile cannot open is shown unticked, marked *Not
+  given*; ticking it gives them its user level (Purchase / User), unticking
+  an app the profile gives takes it back and hides it. *Access to the app* in
+  the side panel picks another level (Administrator...). The profile then
+  restricts the app as usual. Taken away with the profile; groups that would
+  make users administrators or access managers are never granted.
 * **Configure everything from the menu tree.** The Menus & Apps tab shows the
   real menus of the database. Untick a menu to hide it with everything below
   it; click a menu to set, beside the tree, what its users may do there:
@@ -152,8 +154,15 @@ Features
   back in, e.g. at the end of a leave.
 * Block developer mode, and refuse XML-RPC and JSON-RPC sign-ins for the users
   of a profile while leaving the browser working.
-* An **Effective Access** wizard showing what a given user really ends up with
-  and which profile produced each line.
+* **Preview as User**: see Odoo exactly as a user sees it (their apps, menus,
+  records, fields and buttons), read only, from the profile or the user form,
+  without their password. A banner names the user and their profiles and
+  leads back. Nothing is saved in a preview: the database refuses it, and a
+  button says whether the user may use it instead of running it. What is
+  read is logged as read by the person previewing. Only access managers may
+  preview, and only users with no more rights than their own (Settings users
+  may preview anyone but the administrator). The same screen lists what the
+  user really ends up with and which profile produced each line.
 * A **Copy Restrictions** wizard, because under a permissive union a restriction
   only bites when every additive profile of the user carries it.
 
@@ -235,7 +244,7 @@ discount locked above an amount, the Cancel button refused once an order is
 confirmed. Fields compared with fixed values, ``uid``, ``and``, ``or`` and
 ``not`` are supported; anything else is refused when the rule is saved.
 
-Use *Test as User* on the profile, or Access Manager > Effective Access, to see what a user really ends up with before you rely on it, and
+Use *Preview as User* on the profile or the user form to see what a user really ends up with before you rely on it, and
 which profile, and which menu, each right comes from.
 
 Limits
@@ -258,18 +267,20 @@ Read this before you use the module to protect anything that matters.
   product cost must not stop a delivery from being validated. A report or a
   document Odoo builds itself (a PDF, an email) may therefore still show the
   value: hide that report too.
-* **A blocked button is refused from the web client and the JSON-2 API**,
-  clicked or called by hand. Scripts using the older XML-RPC or JSON-RPC are not
-  covered: tick *Block the External API* on the same profile.
+* **A blocked button is refused from every client**: the web client, JSON-2,
+  XML-RPC and JSON-RPC, clicked or called by hand.
 * **A company on a profile follows the users, not the company switcher.** The
   profile applies to everyone who has that company among theirs, whichever
   company they are working in. It cannot follow the switcher: core caches the
   menus per user with no company in the key, so a profile that changed with the
   active company would leave stale menus on screen.
-* **A field's value filter is a convenience, not a guarantee.** It narrows the
-  dropdown; it does not refuse a value that arrives by other means. When two
-  profiles set one on the same field they are combined only if both are plain
-  literals, otherwise the first is kept.
+* **A field's value filter is checked when a record is saved** from a client
+  (web client, JSON-2, XML-RPC, JSON-RPC), lines of a one2many included: a
+  value outside the filter is refused. A value the record already holds is
+  left alone. A filter the server cannot evaluate on its own (one reading a
+  value only the screen has) only narrows the dropdown. When several profiles
+  set one on the same field, they combine like the rest: one additive
+  profile's filter is enough, every override profile's filter applies.
 * **A hidden view type is dropped from the action, not forbidden.** The last
   remaining view type of an action is always kept, so an action can never end
   up with nothing to render.
@@ -313,6 +324,12 @@ Read this before you use the module to protect anything that matters.
 * **A permissive union only ever widens.** Adding an additive profile to a user
   can only give access back, never take it away. Use an override profile, or
   copy the restrictions into every profile the user carries.
+* **A preview covers the whole session.** Every tab of the browser shows the
+  previewed user until *Exit preview*, or for an hour at most. Sign-in rules
+  (working hours, networks, one session) are not simulated: the preview shows
+  the screens, the user form says when they could sign in. A page that writes
+  something just to be shown (some dashboards record a first visit) answers
+  with the preview's refusal.
 * **The superuser and the Administrator user are never restricted**, whatever
   the profiles say. A member of the Settings group is only restricted by a
   profile that ticks *Apply to Settings Users*. This is deliberate: without it,

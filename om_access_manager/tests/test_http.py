@@ -116,7 +116,7 @@ class TestAccessProfileHttp(HttpCase):
             console.log('test successful');
         })()"""
         self.browser_js(
-            f'/odoo/action-om_access_manager.om_access_profile_action/{profile.id}', code,
+            f'/odoo/action-om_access_manager.om_access_profile_action/{profile.id}?debug=1', code,
             login='admin', timeout=90)
         self.assertEqual(profile.model_ids.domain, "[('user_id', '=', uid)]")
 

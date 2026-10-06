@@ -73,16 +73,17 @@ class TestAccessGroup(TransactionCase):
 
     def test_pages_filters_and_views_tabs(self):
         """ The three tabs show their kind of view element, and a line added on
-        one of them is of that kind. """
-        from odoo.tests import Form
+        one of them is of that kind. They are developer mode tabs, which the
+        web client hides, so the view is read rather than driven. """
+        arch = self.env['om.access.profile'].get_view(view_type='form')['arch']
+        for kind in ('view', 'page', 'filter'):
+            self.assertIn(f"default_element_type': '{kind}'", arch)
         profile = self.env['om.access.profile'].create({'name': 'Tabs'})
-        with Form(profile) as form:
-            with form.view_element_ids.new() as line:
-                line.model_id = self.env['ir.model']._get('res.partner')
-                line.element_name = 'kanban'
-            with form.page_element_ids.new() as line:
-                line.model_id = self.env['ir.model']._get('res.partner')
-                line.element_name = 'internal_notes'
+        partner = self.env['ir.model']._get('res.partner')
+        profile.with_context(default_element_type='view').view_element_ids = [
+            (0, 0, {'model_id': partner.id, 'element_name': 'kanban'})]
+        profile.with_context(default_element_type='page').page_element_ids = [
+            (0, 0, {'model_id': partner.id, 'element_name': 'internal_notes'})]
         self.assertEqual(profile.view_element_ids.element_type, 'view')
         self.assertEqual(profile.page_element_ids.element_name, 'internal_notes')
         self.assertEqual(set(profile.element_ids.mapped('element_type')), {'view', 'page'})

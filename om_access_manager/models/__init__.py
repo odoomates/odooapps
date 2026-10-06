@@ -20,3 +20,4 @@ from . import ir_module
 from . import base_model
 from . import field_guard
 from . import mail_thread
+from . import om_access_preview

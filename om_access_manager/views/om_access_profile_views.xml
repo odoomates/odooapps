@@ -35,11 +35,9 @@
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="strictness"/>
-                <field name="user_count" string="# Users"/>
-                <field name="global_readonly" string="Read Only" optional="show"/>
+                <field name="user_ids" widget="many2many_tags"/>
                 <field name="hide_chatter_all" string="No Chatter" optional="hide"/>
                 <field name="block_export" string="No Export" optional="hide"/>
-                <field name="block_login" string="Login Blocked" optional="show"/>
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
             </list>
         </field>
@@ -140,55 +138,26 @@
         <field name="arch" type="xml">
             <form string="Access Profile">
                 <header>
-                    <button name="action_restrict_app" type="object" string="Restrict an App"
-                            class="btn-primary"/>
-                    <button name="action_test_user" type="object" string="Test as User"
-                            class="btn-secondary" invisible="not user_count"/>
-                    <button name="action_copy_restrictions" type="object"
-                            string="Copy Restrictions" class="btn-secondary"/>
+                    <button name="action_test_user" type="object" string="Preview as User"
+                            class="btn-primary" icon="visibility"/>
                 </header>
                 <sheet>
-                    <div class="oe_button_box" name="button_box">
-                        <button name="action_open_users" type="object"
-                                class="oe_stat_button" icon="group">
-                            <field name="user_count" widget="statinfo" string="Users"/>
-                        </button>
-                    </div>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
                             invisible="active"/>
+                    <field name="active" invisible="1"/>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1><field name="name" placeholder="e.g. Warehouse Staff"/></h1>
                     </div>
-                    <group>
-                        <group>
-                            <field name="strictness"/>
-                            <field name="apply_to_admin"/>
-                            <field name="for_new_users"/>
-                            <field name="home_action_id" options="{'no_create': True}"/>
-                            <field name="active" invisible="1"/>
-                        </group>
-                        <group>
-                            <field name="sequence"/>
-                            <field name="company_id" groups="base.group_multi_company"/>
-                            <field name="group_id" groups="base.group_no_one" readonly="1"/>
-                        </group>
-                    </group>
                     <div class="alert alert-warning" role="alert" invisible="not block_login">
                         The users of this profile cannot sign in, and their open
                         sessions are ended. Their records are kept: take a user out
                         of the profile to let them back in.
                     </div>
-                    <div class="alert alert-info" role="alert" invisible="strictness != 'additive'">
-                        This profile combines permissively with the other additive profiles
-                        of its users: a restriction only applies when every additive profile
-                        of the user carries it. Use an override profile for a blanket that
-                        must always win.
-                    </div>
                     <group string="Users">
-                        <field name="user_ids" widget="many2many_tags" nolabel="1" colspan="2"/>
-                        <field name="group_ids" widget="many2many_tags" string="And the members of"
-                               options="{'no_create': True}" placeholder="Odoo groups, e.g. Sales / User"/>
+                        <field name="user_ids" widget="many2many_tags" nolabel="1" colspan="2"
+                               domain="[('share', '=', False)]" options="{'no_create': True}"
+                               placeholder="Add users..."/>
                         <field name="granted_group_ids" widget="many2many_tags" string="Grants Them"
                                options="{'no_create': True}" placeholder="Opens an app, e.g. Purchase / User"/>
                     </group>
@@ -198,7 +167,7 @@
                                 <span class="text-muted">
                                     The menus of the database. Untick a menu to hide it with
                                     everything below it; click a menu to decide what its users may
-                                    do there. The other tabs list the same rules in full.
+                                    do there. In developer mode, more tabs list the same rules in full.
                                 </span>
                                 <button name="action_restrict_app" type="object" string="Restrict an App"
                                         class="btn-link" icon="apps"/>
@@ -230,11 +199,6 @@
                                     <field name="hide_activities"/>
                                     <field name="lock_statusbar"/>
                                     <field name="hide_settings_menu"/>
-                                </group>
-                                <group string="Sign-in">
-                                    <field name="block_login"/>
-                                    <field name="block_rpc"/>
-                                    <field name="block_developer_mode"/>
                                 </group>
                                 <group string="Search Bar and Forms">
                                     <field name="block_custom_filter"/>
@@ -270,10 +234,12 @@
                                     <field name="allowed_ips" placeholder="192.168.1.0/24&#10;10.0.0.5"/>
                                     <field name="single_session"/>
                                     <field name="block_login"/>
+                                    <field name="block_rpc"/>
+                                    <field name="block_developer_mode"/>
                                 </group>
                             </group>
                         </page>
-                        <page string="Allowed Records" name="allowed">
+                        <page string="Allowed Records" name="allowed" groups="base.group_no_one">
                             <div class="text-muted mb-2">
                                 Only these journals, points of sale, warehouses, locations, sales
                                 teams or dashboards, and only what belongs to them: allowing two journals also
@@ -293,7 +259,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Models" name="models">
+                        <page string="Models" name="models" groups="base.group_no_one">
                             <button name="action_load_models" type="object" string="Load Models"
                                     class="btn-link" icon="download"/>
                             <div class="text-muted mb-2">
@@ -359,7 +325,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Buttons" name="buttons">
+                        <page string="Buttons" name="buttons" groups="base.group_no_one">
                             <button name="action_scan_buttons" type="object" string="Scan Buttons"
                                     class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
@@ -381,7 +347,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Fields" name="fields">
+                        <page string="Fields" name="fields" groups="base.group_no_one">
                             <div class="text-muted mb-2">
                                 A hidden field is removed from the screen and is not fetched with
                                 the record, but this is not a guarantee that its value cannot be
@@ -403,7 +369,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Pages" name="pages">
+                        <page string="Pages" name="pages" groups="base.group_no_one">
                             <button name="action_scan_buttons" type="object" string="Scan Views"
                                     class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
@@ -420,7 +386,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Filters" name="filters">
+                        <page string="Filters" name="filters" groups="base.group_no_one">
                             <button name="action_scan_buttons" type="object" string="Scan Views"
                                     class="btn-link" icon="search"/>
                             <div class="text-muted mb-2">
@@ -436,7 +402,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Views" name="views">
+                        <page string="Views" name="views" groups="base.group_no_one">
                             <div class="text-muted mb-2">
                                 The view types (kanban, calendar, pivot...) removed from the actions
                                 before the client asks for them; the last remaining one is always kept.
@@ -450,7 +416,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Reports" name="reports">
+                        <page string="Reports" name="reports" groups="base.group_no_one">
                             <div class="text-muted mb-2">
                                 The reports leave the Print menu, and are refused when reached
                                 another way.
@@ -463,7 +429,7 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Action Menu" name="actions">
+                        <page string="Action Menu" name="actions" groups="base.group_no_one">
                             <div class="text-muted mb-2">
                                 The entries leave the Action menu, and are refused when reached
                                 another way.
@@ -502,7 +468,21 @@
                                 </list>
                             </field>
                         </page>
-                        <page string="Notes" name="notes">
+                        <page string="Options" name="options">
+                            <group>
+                                <group>
+                                    <field name="strictness"/>
+                                    <field name="apply_to_admin"/>
+                                    <field name="for_new_users" groups="base.group_no_one"/>
+                                    <field name="home_action_id" options="{'no_create': True}" groups="base.group_no_one"/>
+                                </group>
+                                <group>
+                                    <field name="group_ids" widget="many2many_tags" string="Also Given To"
+                                           options="{'no_create': True}" placeholder="Odoo groups, e.g. Sales / User"/>
+                                    <field name="company_id" groups="base.group_multi_company"/>
+                                    <field name="group_id" groups="base.group_no_one" readonly="1"/>
+                                </group>
+                            </group>
                             <field name="note" placeholder="Why this profile exists..."/>
                         </page>
                     </notebook>
@@ -510,6 +490,16 @@
                 <chatter/>
             </form>
         </field>
+    </record>
+
+    <record id="om_access_profile_copy_restrictions" model="ir.actions.server">
+        <field name="name">Copy Restrictions</field>
+        <field name="model_id" ref="model_om_access_profile"/>
+        <field name="binding_model_id" ref="model_om_access_profile"/>
+        <field name="binding_view_types">form</field>
+        <field name="group_ids" eval="[(4, ref('om_access_manager.group_access_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_copy_restrictions()</field>
     </record>
 
     <record id="om_access_profile_action" model="ir.actions.act_window">
@@ -527,6 +517,11 @@
                 Group users into a profile and decide from one screen which menus they see,
                 which models they may read or change, which buttons they may press and which
                 reports they may print.
+            </p>
+            <p class="text-muted">
+                This app is in beta: your feedback shapes version 1.0. Write to
+                <a href="mailto:odoomates@gmail.com">odoomates@gmail.com</a> or open an issue on
+                <a href="https://github.com/odoomates/odooapps/issues" target="_blank">GitHub</a>.
             </p>
         </field>
     </record>

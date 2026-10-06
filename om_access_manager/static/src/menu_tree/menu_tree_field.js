@@ -4,6 +4,7 @@ import { _t } from "@web/core/l10n/translation";
 import { x2ManyCommands } from "@web/core/orm_plugin";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { useRecordObserver } from "@web/model/relational_model/utils";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { MenuPanel } from "./menu_panel";
 
@@ -38,6 +39,17 @@ export class MenuTreeField extends Component {
             panel: null,
             tree: { menu_rules: {}, models: {}, apps: {}, hidden_prints: [] },
             busy: false,
+            appAccess: {},
+        });
+        // the apps the users of the profile can open follow its users, saved or not
+        this.membersKey = null;
+        useRecordObserver((record) => {
+            const users = record.data.user_ids;
+            const key = users ? users.currentIds.join(",") : "";
+            if (key !== this.membersKey) {
+                this.membersKey = key;
+                return this.loadAppAccess(users ? users.currentIds : []);
+            }
         });
         this.menus = {};
         this.children = {};
@@ -67,6 +79,27 @@ export class MenuTreeField extends Component {
         this.state.tree = resId
             ? await this.orm.call(MODEL, "om_tree_state", [[resId]])
             : { menu_rules: {}, models: {}, apps: {}, hidden_prints: [] };
+    }
+
+    async loadAppAccess(userIds) {
+        const ids = this.record.resId ? [this.record.resId] : [];
+        this.state.appAccess = await this.orm.call(MODEL, "om_app_access", [ids, userIds]);
+    }
+
+    get grantedIds() {
+        const granted = this.record.data.granted_group_ids;
+        return new Set(granted ? granted.currentIds : []);
+    }
+
+    /** An app that some user of the profile cannot open, and that the
+     * profile does not give: shown unticked, ticking it gives it. */
+    notGiven(menuId) {
+        const info = this.state.appAccess[menuId];
+        if (!info || info.open) {
+            return false;
+        }
+        const granted = this.grantedIds;
+        return !info.gate_ids.some((id) => granted.has(id));
     }
 
     ancestors(menuId) {
@@ -193,6 +226,8 @@ export class MenuTreeField extends Component {
                 shared: menu.shared,
                 depth,
                 hidden: isHidden,
+                notGiven: depth === 0 && !isHidden && this.notGiven(menuId),
+                grant: depth === 0 ? this.state.appAccess[menuId]?.grant : null,
                 parentHidden,
                 partial: !isHidden && descendants.some((id) => hidden.has(id)),
                 hiddenCount: descendants.filter((id) => hidden.has(id)).length,
@@ -239,7 +274,23 @@ export class MenuTreeField extends Component {
         this.state.onlyRestricted = value;
     }
 
-    toggle(menuId, shown) {
+    async toggle(menuId, shown) {
+        const info = this.state.appAccess[menuId];
+        const granted = this.record.data.granted_group_ids;
+        if (info && granted) {
+            if (shown && this.notGiven(menuId)) {
+                // ticking an app its users cannot open gives it to them
+                await granted.applyCommands([
+                    [x2ManyCommands.LINK, info.grant.id, { id: info.grant.id, display_name: info.grant.name }],
+                ]);
+            } else if (!shown) {
+                // unticking an app the profile gives takes it back
+                const given = info.group_ids.filter((id) => this.grantedIds.has(id));
+                if (given.length) {
+                    await granted.applyCommands(given.map((id) => [x2ManyCommands.UNLINK, id]));
+                }
+            }
+        }
         const hidden = this.hiddenIds;
         const commands = [];
         if (shown) {

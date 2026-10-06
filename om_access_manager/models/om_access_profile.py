@@ -10,11 +10,13 @@ import pytz
 from lxml import etree
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError, ValidationError
+from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.fields import Domain
 from odoo.tools import frozendict
 
 from .om_access_allowed import ALLOWED_KINDS
 from .conditions import condition_fields
+from .value_filters import and_domains, names_read, or_domains
 from .login_tools import parse_networks
 
 from .om_access_profile_model import DOMAIN_FIELD_OF_OPERATION, DOMAIN_FIELDS
@@ -322,6 +324,8 @@ class AccessRules:
                 *profile.model_flags,
                 *(model for model, _field in profile.field_modes),
                 *(model for model, _field in profile.field_conditions),
+                *(model for model, _field in profile.field_options),
+                *(model for model, _field in profile.field_domains),
                 *(rule[0] for rule in profile.buttons),
                 *(element[0] for element in profile.elements),
                 *(element[0] for element in profile.element_conditions),
@@ -492,29 +496,21 @@ class AccessRules:
             lambda profile: profile.field_option(model_name, field_name, option))
 
     def field_domain(self, model_name, field_name):
-        """ The AND of every value filter set for this field, whichever profile
-        set it: a value filter only narrows a dropdown, it refuses nothing. """
-        terms = [
-            domain
-            for profile in self.additive + self.override
-            if (domain := profile.field_domain(model_name, field_name))
-        ]
-        if not terms:
-            return None
-        if len(terms) == 1:
-            return terms[0]
-        # The client's domain evaluator is not full Python: merge only plain
-        # literals, else keep the first filter.
-        merged = []
-        for term in terms:
-            try:
-                value = ast.literal_eval(term)
-            except (ValueError, SyntaxError):
-                return terms[0]
-            if not isinstance(value, list):
-                return terms[0]
-            merged.extend(value)
-        return repr(merged)
+        """ The value filter of a field, combined like the rest: one additive
+        profile's filter is enough (OR), and none when an additive profile sets
+        none; every override profile's filter applies (AND). """
+        additive = None
+        if self.additive:
+            terms = [profile.field_domain(model_name, field_name) for profile in self.additive]
+            if all(terms):
+                additive = or_domains(terms)
+        return and_domains([
+            *(profile.field_domain(model_name, field_name) for profile in self.override),
+            additive,
+        ])
+
+    def has_value_filters(self):
+        return any(profile.field_domains for profile in self.additive + self.override)
 
     def hides_element(self, model_name, element_type, element_name=''):
         return self._hidden(
@@ -938,15 +934,30 @@ class OmAccessProfile(models.Model):
     def action_scan_buttons(self):
         return self._open_wizard('om.access.scan.buttons', _('Scan Buttons'))
 
+    def _om_preview_users(self):
+        """ The members of the profile the current user may preview. """
+        self.ensure_one()
+        viewer = self.env.user.sudo()
+        return self._om_members().filtered(lambda user: not user._om_preview_refusal(viewer))
+
     def action_test_user(self):
         self.ensure_one()
+        users = self._om_preview_users()
+        if not users:
+            raise UserError(_(
+                "No user has this profile yet.\n\n"
+                "Add users to the profile (Users), save, then preview it as one of them."))
         return {
             'type': 'ir.actions.act_window',
-            'name': _('Effective Access'),
+            'name': _('Preview as User'),
             'res_model': 'om.access.test.user',
             'view_mode': 'form',
             'target': 'new',
-            'context': {'default_user_id': self._om_members()[:1].id},
+            'context': {
+                'default_profile_id': self.id,
+                'default_user_id': users[:1].id,
+                'om_preview_back': f'/odoo/action-om_access_manager.om_access_profile_action/{self.id}',
+            },
         }
 
     def action_copy_restrictions(self):
@@ -1245,24 +1256,20 @@ class OmAccessProfile(models.Model):
         options[key] = value
         node.set('options', json.dumps(options))
 
+    @api.model
+    def _om_field_own_domain(self, model_name, field_name):
+        """ The domain of the field itself, which a domain set on the view
+        replaces in the web client. """
+        field = self.env[model_name]._fields.get(field_name) if model_name in self.env else None
+        domain = getattr(field, 'domain', None)
+        if isinstance(domain, (list, tuple, Domain)):
+            return repr(list(domain))
+        return domain if isinstance(domain, str) else None
+
     @staticmethod
     def _merge_domain(existing, extra):
-        """ AND a value filter into the domain a field node already carries.
-
-        Returns None unless both are plain literals, so the view keeps its own
-        domain, which usually carries business logic.
-        """
-        existing = (existing or '').strip()
-        if not existing:
-            return extra
-        try:
-            left = ast.literal_eval(existing)
-            right = ast.literal_eval(extra)
-        except (ValueError, SyntaxError):
-            return None
-        if not isinstance(left, list) or not isinstance(right, list):
-            return None
-        return repr(left + right)
+        """ AND a value filter into the domain a field node already carries. """
+        return and_domains([existing, extra])
 
     def _apply_field_conditions(self, rules, node, model_name, field_name, view_type, needed):
         """ The rules of a field that apply only under a condition. """
@@ -1288,6 +1295,13 @@ class OmAccessProfile(models.Model):
         root = next((ancestor for ancestor in node.iterancestors() if ancestor.tag in VIEW_ROOTS), None)
         if root is not None:
             needed.setdefault(root, (model_name, set()))[1].update(condition_fields(condition))
+
+    def _add_needed_names(self, node, model_name, names, needed):
+        """ Have the view load the fields of the record an expression reads. """
+        root = next((ancestor for ancestor in node.iterancestors() if ancestor.tag in VIEW_ROOTS), None)
+        names = names & set(self.env[model_name]._fields) if model_name in self.env else set()
+        if root is not None and names:
+            needed.setdefault(root, (model_name, set()))[1].update(names)
 
     @classmethod
     def _add_needed_fields(cls, needed):
@@ -1418,9 +1432,11 @@ class OmAccessProfile(models.Model):
                         self._set_option(node, 'no_create_edit', True)
                     value_filter = rules.field_domain(node_model, field_name)
                     if value_filter:
-                        merged = self._merge_domain(node.get('domain'), value_filter)
+                        merged = self._merge_domain(
+                            node.get('domain') or self._om_field_own_domain(node_model, field_name), value_filter)
                         if merged:
                             node.set('domain', merged)
+                            self._add_needed_names(node, node_model, names_read(merged), needed)
                 if lock_statusbar and node.get('widget') == 'statusbar':
                     self._set_option(node, 'clickable', False)
                 continue

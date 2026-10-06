@@ -5,6 +5,8 @@ from odoo.http import request
 
 from odoo.addons.web.controllers.dataset import DataSet
 
+from ..models.om_access_preview import preview_allowed, preview_of_request
+
 # Not button checked: denying these is Base._access_domain()'s job.
 PROTECTED_METHODS = frozenset({
     'create', 'write', 'unlink', 'web_save', 'web_read', 'web_search_read',
@@ -33,4 +35,6 @@ class DataSetAccess(DataSet):
     def call_button(self, model, method, args, kwargs, path=None):
         if method not in PROTECTED_METHODS:
             request.env['om.access.profile']._check_button(model, 'object', method, _record_ids(args))
+        if preview_of_request():
+            raise preview_allowed()
         return super().call_button(model, method, args, kwargs, path=path)

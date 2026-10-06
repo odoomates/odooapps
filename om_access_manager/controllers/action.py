@@ -7,6 +7,8 @@ from odoo.http import request
 
 from odoo.addons.web.controllers.action import Action
 
+from ..models.om_access_preview import preview_allowed, preview_of_request
+
 _logger = logging.getLogger(__name__)
 
 
@@ -40,4 +42,6 @@ class ActionAccess(Action):
     @http.route()
     def run(self, action_id, context=None):
         request.env['om.access.profile']._check_action(self._resolve_action_id(action_id))
+        if preview_of_request():
+            raise preview_allowed()
         return super().run(action_id, context=context)

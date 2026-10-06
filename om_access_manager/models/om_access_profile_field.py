@@ -48,9 +48,8 @@ class OmAccessProfileField(models.Model):
              "shown on the screens.")
     field_domain = fields.Char(
         string='Value Filter',
-        help="Restricts the values the dropdown offers. Relational fields "
-             "only, and a convenience rather than a guarantee: it filters the "
-             "list, it does not refuse a value sent by other means.")
+        help="Restricts the values the dropdown offers, and refuses another "
+             "value when the record is saved. Relational fields only.")
 
     _unique_field = models.Constraint(
         'UNIQUE(profile_id, field_id)',

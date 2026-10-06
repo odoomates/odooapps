@@ -3,6 +3,7 @@
 from markupsafe import Markup
 
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
 
 # Labels are translated inside the methods, not at module level: a lazy string
 # rendered by Markup loses the translation frame and logs a stack per row.
@@ -17,6 +18,9 @@ class OmAccessTestUser(models.TransientModel):
     _description = 'Test the Effective Access of a User'
 
     user_id = fields.Many2one('res.users', string='User', required=True)
+    # opened from a profile: only its members can be previewed
+    profile_id = fields.Many2one('om.access.profile', string='Profile')
+    preview_user_ids = fields.Many2many('res.users', compute='_compute_preview_user_ids')
     profile_ids = fields.Many2many(
         'om.access.profile', string='Profiles Applied', compute='_compute_result')
     report = fields.Html(string='Effective Access', compute='_compute_result', sanitize=False)
@@ -27,6 +31,18 @@ class OmAccessTestUser(models.TransientModel):
         if 'user_id' in fields_list and self.env.context.get('active_model') == 'res.users':
             values.setdefault('user_id', self.env.context.get('active_id'))
         return values
+
+    @api.depends('profile_id')
+    def _compute_preview_user_ids(self):
+        for wizard in self:
+            wizard.preview_user_ids = wizard.profile_id._om_preview_users() if wizard.profile_id else False
+
+    def action_open_preview(self):
+        self.ensure_one()
+        if self.profile_id and self.user_id not in self.profile_id._om_preview_users():
+            raise UserError(_("%(user)s does not have the profile %(profile)s: choose one of its users.",
+                              user=self.user_id.name, profile=self.profile_id.name))
+        return self.user_id.action_om_preview(back_url=self.env.context.get('om_preview_back'))
 
     @api.depends('user_id')
     def _compute_result(self):

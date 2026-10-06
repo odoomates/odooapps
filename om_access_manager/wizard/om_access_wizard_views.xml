@@ -367,13 +367,23 @@
         <field name="arch" type="xml">
             <form string="Effective Access">
                 <group>
-                    <field name="user_id" options="{'no_create': True}"/>
+                    <field name="profile_id" invisible="1"/>
+                    <field name="preview_user_ids" invisible="1"/>
+                    <field name="user_id" options="{'no_create': True}"
+                           domain="profile_id and [('id', 'in', preview_user_ids)] or [('share', '=', False)]"/>
                     <field name="profile_ids" widget="many2many_tags" readonly="1"
                            invisible="not profile_ids"/>
                 </group>
+                <div class="text-muted mb-2" invisible="not user_id">
+                    Open Preview shows Odoo as this user sees it, with their apps, menus,
+                    records, fields and buttons, read only. A banner lets you exit it.
+                </div>
                 <field name="report" nolabel="1" readonly="1"/>
                 <footer>
-                    <button string="Close" class="btn-primary" special="cancel"
+                    <button name="action_open_preview" type="object" string="Open Preview"
+                            class="btn-primary" icon="visibility" invisible="not user_id"
+                            data-hotkey="q"/>
+                    <button string="Close" class="btn-secondary" special="cancel"
                             data-hotkey="x"/>
                 </footer>
             </form>

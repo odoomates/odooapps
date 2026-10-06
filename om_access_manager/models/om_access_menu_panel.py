@@ -198,6 +198,39 @@ class OmAccessProfile(models.Model):
         return {'menu_rules': menu_rules, 'models': state, 'apps': apps, 'hidden_prints': hidden_prints,
                 'granted_apps': granted_apps}
 
+    def om_app_access(self, user_ids):
+        """ Per app (top menu) opened by groups: whether the users of the
+        profile can all open it, and what ticking it grants. ``user_ids`` are
+        the users on the form, saved or not. """
+        self._om_check_admin()
+        profile = self.sudo()[:1]
+        members = self.env['res.users'].sudo().browse(user_ids).exists()
+        if profile:
+            members |= profile.group_ids.all_user_ids | profile.assignment_ids.filtered(
+                lambda line: line.state == 'active').user_id
+        exempt = self.env['om.access.profile']._exempt_user_ids()
+        members = members.filtered(lambda user: user.active and not user.share and user.id not in exempt)
+        result = {}
+        Menu = self.env['ir.ui.menu'].sudo()
+        for root in Menu.search([('parent_id', '=', False)]):
+            gates = root.group_ids
+            if not gates:
+                continue
+            levels = (profile or self.env['om.access.profile'].sudo().new({}))._om_app_grants(root)
+            # the access level of the app itself (Purchase), its lowest group first
+            own = next((level for level in levels
+                        if gates.privilege_id.filtered(lambda p: p.id == level['privilege_id'])), None)
+            if not own:
+                continue
+            result[root.id] = {
+                'gate_ids': gates.ids,
+                'grant': {'id': own['groups'][0]['id'],
+                          'name': self.env['res.groups'].sudo().browse(own['groups'][0]['id']).display_name},
+                'group_ids': [group['id'] for level in levels for group in level['groups']],
+                'open': all(user.all_group_ids & gates for user in members),
+            }
+        return result
+
     #
     # reading
     #

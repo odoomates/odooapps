@@ -6,6 +6,11 @@
         <field name="model">res.users</field>
         <field name="inherit_id" ref="base.view_users_form"/>
         <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_om_preview" type="object" string="Preview as User"
+                        icon="visibility" groups="om_access_manager.group_access_manager"
+                        invisible="share or not active"/>
+            </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Access Profiles" name="access_profiles" groups="om_access_manager.group_access_manager">
                     <field name="access_profile_ids" widget="many2many_tags"

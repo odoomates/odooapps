@@ -1,5 +1,6 @@
 # Hidden and read-only fields and blocked buttons on client calls (call_kw,
 # XML-RPC, JSON-2); the same methods called from Python are left alone.
+import xmlrpc.client
 from datetime import datetime, timedelta
 
 from odoo.tests import HttpCase, new_test_user, tagged
@@ -121,6 +122,13 @@ class TestFieldGuard(HttpCase):
             self.env.cr.dbname, uid, self.password, 'res.partner', 'read',
             [self.partner.ids], {'fields': ['name', 'email']})
         self.assertIs(rows[0]['email'], False)
+
+    def test_blocked_button_through_xmlrpc(self):
+        with self.assertRaises(xmlrpc.client.Fault):
+            self.xmlrpc_object.execute_kw(
+                self.env.cr.dbname, self.user.id, self.password, 'res.partner', 'action_archive',
+                [self.partner.ids])
+        self.assertTrue(self.partner.active)
 
     def test_json2(self):
         key = self.env['res.users.apikeys'].with_user(self.user)._generate(

@@ -34,14 +34,18 @@
                         <i class="oi oi-fw" t-att-data-icon="row.expanded ? 'arrow_drop_down' : 'arrow_right'"/>
                     </button>
                     <span t-else="" class="oi oi-fw me-1"/>
-                    <CheckBox value="!row.hidden" indeterminate="row.partial"
+                    <CheckBox value="!row.hidden and !row.notGiven" indeterminate="row.partial and !row.notGiven"
                               disabled="this.props.readonly or row.parentHidden"
                               onChange="(shown) => this.toggle(row.id, shown)"/>
                     <button type="button" class="btn btn-link p-0 text-start text-reset o_om_menu_tree_name"
                             t-on-click="() => this.select(row.id)">
-                        <span t-att-class="{'fw-bold': row.depth === 0, 'text-muted text-decoration-line-through': row.hidden}"
+                        <span t-att-class="{'fw-bold': row.depth === 0, 'text-muted text-decoration-line-through': row.hidden, 'text-muted': row.notGiven}"
                               t-out="row.name"/>
                     </button>
+                    <span t-if="row.notGiven" class="badge text-bg-light border ms-2 o_om_not_given"
+                          t-att-title="'Its users cannot open this app. Tick it to give them ' + row.grant.name + '.'">
+                        Not given
+                    </span>
                     <span t-if="row.model" class="text-muted small ms-2 o_om_menu_tree_model" t-out="row.model"/>
                     <span t-if="row.shared" class="badge text-bg-light border ms-1"
                           title="Other apps open this data too">shared</span>
@@ -64,6 +68,11 @@
                         <li>its fields, buttons, tabs and filters, print and action entries;</li>
                         <li>on an app or a submenu, the same for everything below it.</li>
                     </ul>
+                    <p class="small mb-0 mt-3 o_om_beta_note">
+                        Beta: something missing or unclear? Tell us at
+                        <a href="mailto:odoomates@gmail.com">odoomates@gmail.com</a> or on
+                        <a href="https://github.com/odoomates/odooapps/issues" target="_blank">GitHub</a>.
+                    </p>
                 </div>
             </div>
         </div>
