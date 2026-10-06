@@ -19,5 +19,5 @@
     'demo': [
         'demo/partner_bank.xml',
     ],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }
