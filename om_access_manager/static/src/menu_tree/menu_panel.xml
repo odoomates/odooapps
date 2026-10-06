@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_access_manager.MenuPanel">
+        <div class="o_om_menu_panel">
+            <div class="o_om_menu_panel_head mb-2">
+                <div t-if="panel.menu.depth" class="text-muted small" t-out="panel.menu.path"/>
+                <h4 class="mb-1" t-out="panel.menu.name"/>
+                <div t-if="this.isData" class="small">
+                    <span class="badge text-bg-light border" t-out="panel.model_label"/>
+                    <t t-if="panel.also.length">
+                        <span class="text-muted ms-1">also opened by:</span>
+                        <span class="ms-1" t-att-title="panel.also.join('\n')"
+                              t-out="panel.also.length === 1 ? panel.also[0] : panel.also[0] + ' (+' + (panel.also.length - 1) + ')'"/>
+                    </t>
+                </div>
+                <div t-if="this.isData and panel.also.length" class="small text-muted mt-1">
+                    What is set here applies to this data wherever it opens: Odoo checks
+                    rights per data, not per menu.
+                </div>
+            </div>
+
+            <div t-if="panel.hidden" class="alert alert-warning py-2 small">
+                <strong>This menu is hidden.</strong>
+                Its data stays reachable from other menus, links and the API: untick
+                <em>Read</em> below to deny it.
+                <button t-if="!this.props.readonly" type="button" class="btn btn-link btn-sm p-0 ms-1"
+                        t-on-click="() => this.showMenu()">Show it again</button>
+            </div>
+
+            <!-- an app: the access it grants -->
+            <div t-if="panel.grants" class="o_om_panel_block mb-3 o_om_grants">
+                <h5 class="o_om_panel_title">Access to the app</h5>
+                <t t-if="panel.grants.length">
+                    <div t-foreach="panel.grants" t-as="grant" t-key="grant.privilege_id"
+                         class="d-flex flex-wrap align-items-center gap-2 mb-2 o_om_grant"
+                         t-att-data-privilege="grant.privilege_id">
+                        <span class="fw-bold" t-out="grant.name"/>
+                        <select class="form-select form-select-sm w-auto" t-att-disabled="this.props.readonly"
+                                t-on-change="(ev) => this.setGrant(grant, ev)">
+                            <option value="" t-att-selected="!grant.granted">Their own Odoo groups</option>
+                            <option t-foreach="grant.groups" t-as="group" t-key="group.id"
+                                    t-att-value="group.id" t-att-selected="group.id === grant.granted"
+                                    t-out="group.name"/>
+                        </select>
+                    </div>
+                    <div class="small text-muted">
+                        Users whose form gives them no access to this app do not see it: grant it
+                        here, then restrict it below and on its menus. Taken away with the profile.
+                    </div>
+                </t>
+                <div t-else="" class="small text-muted">Every internal user has this app: nothing to grant.</div>
+            </div>
+
+            <!-- a menu with children: what it passes down -->
+            <div t-if="this.isBranch" class="o_om_panel_block mb-3">
+                <h5 class="o_om_panel_title">Everything below</h5>
+                <div class="btn-group btn-group-sm flex-wrap mb-2" role="group">
+                    <button t-foreach="this.LEVELS" t-as="level" t-key="level[0]" type="button"
+                            class="btn o_om_level"
+                            t-att-class="panel.level === level[0] ? 'btn-primary' : 'btn-outline-secondary'"
+                            t-att-data-level="level[0]" t-att-disabled="this.props.readonly"
+                            t-on-click="() => this.setLevel(level[0])" t-out="level[1]"/>
+                </div>
+                <span t-if="!panel.level" class="badge text-bg-light border ms-2 align-top">Custom</span>
+                <t t-set="values" t-value="this.branchValues"/>
+                <div class="d-flex flex-wrap gap-3 align-items-center o_om_branch_rights">
+                    <CheckBox t-foreach="this.RIGHTS" t-as="right" t-key="right[0]"
+                              value="!!(values[right[0]])" disabled="this.props.readonly"
+                              name="right[0]"
+                              onChange="(value) => this.setBranchRight(right[0], value)">
+                        <t t-out="right[1]"/>
+                    </CheckBox>
+                </div>
+                <div class="d-flex flex-wrap gap-3 align-items-center mt-2">
+                    <label class="mb-0">Records
+                        <select class="form-select form-select-sm d-inline-block w-auto ms-1 o_om_branch_records"
+                                t-att-disabled="this.props.readonly" t-on-change="this.onBranchRecords">
+                            <option t-foreach="this.branchRecordChoices" t-as="choice" t-key="choice[0]"
+                                    t-att-value="choice[0]" t-att-selected="choice[0] === values.records"
+                                    t-out="choice[1]"/>
+                        </select>
+                    </label>
+                    <CheckBox value="!!(values.edit_draft_only)" disabled="this.props.readonly"
+                              onChange="(value) => this.setBranchRight('edit_draft_only', value)">
+                        Edit drafts only
+                    </CheckBox>
+                    <CheckBox value="!!(values.include_shared)" disabled="this.props.readonly"
+                              onChange="(value) => this.setBranchRight('include_shared', value)">
+                        Also shared data
+                    </CheckBox>
+                </div>
+                <div class="small text-muted mt-1">
+                    <t t-out="this.branchSource"/>
+                    <button t-if="panel.rule and !this.props.readonly" type="button"
+                            class="btn btn-link btn-sm p-0 ms-1 o_om_menu_reset"
+                            t-on-click="() => this.props.apply({kind: 'menu_reset'})">
+                        <t t-if="panel.inherited">Back to the settings of <t t-out="panel.inherited.menu"/></t>
+                        <t t-else="">Back to full access</t>
+                    </button>
+                </div>
+                <div class="small text-muted">
+                    The closest setting wins: a menu or a data below can be set apart.
+                    Shared data (opened by other apps too) is left alone unless
+                    <em>Also shared data</em> is ticked. The records choice leaves the data of
+                    the Configuration menus whole (a salesperson still sees every sales team).
+                </div>
+            </div>
+
+            <!-- an app: its allowed records -->
+            <div t-if="panel.allowed and panel.allowed.length" class="o_om_panel_block mb-3">
+                <h5 class="o_om_panel_title">Allowed records</h5>
+                <div t-foreach="panel.allowed" t-as="kind" t-key="kind.kind" class="mb-2 o_om_allowed"
+                     t-att-data-kind="kind.kind">
+                    <div class="fw-bold" t-out="kind.label"/>
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <span t-foreach="kind.records" t-as="record" t-key="record.line_id"
+                              class="badge rounded-pill text-bg-light border">
+                            <t t-out="record.name"/>
+                            <button t-if="!this.props.readonly" type="button" class="btn btn-link btn-sm p-0 ms-1"
+                                    t-on-click="() => this.removeAllowed(kind, record)" title="Remove">×</button>
+                        </span>
+                        <span t-if="!kind.records.length and !kind.per_user" class="text-muted small">All</span>
+                        <select t-if="!this.props.readonly" class="form-select form-select-sm w-auto"
+                                t-on-change="(ev) => this.onAddAllowed(kind, ev)">
+                            <option value="">Add...</option>
+                            <option t-foreach="this.allowedChoices(kind)" t-as="choice" t-key="choice.id"
+                                    t-att-value="choice.id" t-out="choice.display_name"/>
+                        </select>
+                        <CheckBox value="kind.per_user" disabled="this.props.readonly"
+                                  onChange="(value) => this.setPerUser(kind, value)">
+                            Each user's own
+                        </CheckBox>
+                    </div>
+                </div>
+            </div>
+
+            <!-- a menu opening data -->
+            <div t-if="this.isData" class="o_om_panel_block">
+                <h5 class="o_om_panel_title">Rights</h5>
+                <div class="d-flex flex-wrap gap-3 align-items-center o_om_data_rights">
+                    <CheckBox t-foreach="this.RIGHTS" t-as="right" t-key="right[0]"
+                              value="!!(panel.rights[right[0]])" disabled="this.props.readonly"
+                              name="right[0]"
+                              onChange="(value) => this.setDataRight(right[0], value)">
+                        <t t-out="right[1]"/>
+                    </CheckBox>
+                </div>
+                <div class="d-flex flex-wrap gap-3 align-items-center mt-2">
+                    <label class="mb-0">Records
+                        <select class="form-select form-select-sm d-inline-block w-auto ms-1 o_om_data_records"
+                                t-att-disabled="this.props.readonly" t-on-change="this.onDataRecords">
+                            <option t-foreach="this.recordChoices" t-as="choice" t-key="choice[0]"
+                                    t-att-value="choice[0]" t-att-selected="choice[0] === panel.rights.records"
+                                    t-out="choice[1]"/>
+                        </select>
+                    </label>
+                    <CheckBox t-if="panel.drafts_possible" value="!!(panel.rights.edit_draft_only)"
+                              disabled="this.props.readonly"
+                              onChange="(value) => this.setDataRight('edit_draft_only', value)">
+                        Edit drafts only
+                    </CheckBox>
+                    <button t-if="!this.props.readonly" type="button" class="btn btn-link btn-sm p-0"
+                            t-on-click="() => this.props.openRule()">Custom filter...</button>
+                </div>
+                <div class="small text-muted mt-1">
+                    <t t-out="this.dataSource"/>
+                    <button t-if="panel.source === 'data' and !this.props.readonly" type="button"
+                            class="btn btn-link btn-sm p-0 ms-1 o_om_data_reset"
+                            t-on-click="() => this.props.apply({kind: 'data_reset'})">
+                        Back to the settings of the menu above
+                    </button>
+                </div>
+
+                <t t-foreach="this.sections" t-as="section" t-key="section.key">
+                    <div class="o_om_panel_section mt-2" t-att-data-section="section.key">
+                        <button type="button" class="btn btn-link p-0 fw-bold text-reset o_om_section_toggle"
+                                t-on-click="() => this.toggleSection(section.key)">
+                            <i t-attf-class="fa fa-fw {{this.state.open[section.key] ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                            <t t-out="section.label"/>
+                        </button>
+                        <div t-if="this.state.open[section.key]" class="ps-3 pt-1">
+                            <t t-if="section.key === 'fields'">
+                                <input t-if="panel.fields.length > 12" type="search"
+                                       class="form-control form-control-sm mb-1" placeholder="Search a field..."
+                                       t-on-input="this.onFieldSearch"/>
+                                <div t-foreach="this.shownFields" t-as="field" t-key="field.name"
+                                     class="o_om_panel_row" t-att-data-field="field.name">
+                                    <span class="o_om_panel_label" t-out="field.label"/>
+                                    <div class="btn-group btn-group-sm">
+                                        <button t-foreach="this.FIELD_MODES" t-as="mode" t-key="mode[0]" type="button"
+                                                class="btn" t-att-data-mode="mode[0]"
+                                                t-att-class="mode[0] !== field.mode ? 'btn-outline-secondary' : (mode[0] === 'keep' ? 'btn-secondary' : 'btn-primary')"
+                                                t-att-disabled="this.props.readonly"
+                                                t-on-click="() => this.setField(field, mode[0])" t-out="mode[1]"/>
+                                    </div>
+                                    <button t-if="field.mode !== 'hide'" type="button"
+                                            class="btn btn-sm o_om_no_export"
+                                            t-att-class="field.no_export ? 'btn-primary' : 'btn-outline-secondary'"
+                                            t-att-disabled="this.props.readonly"
+                                            t-att-title="this.noExportTitle(field)"
+                                            t-on-click="() => this.setNoExport(field, !field.no_export)">
+                                        No export
+                                    </button>
+                                    <input t-if="field.mode !== 'keep'" type="text"
+                                           class="form-control form-control-sm o_om_condition"
+                                           placeholder="Only when... (e.g. state == 'done')"
+                                           t-att-value="field.condition" t-att-disabled="this.props.readonly"
+                                           t-on-change="(ev) => this.onFieldCondition(field, ev)"/>
+                                </div>
+                                <div t-if="!panel.fields.length" class="text-muted small">No field on these screens.</div>
+                            </t>
+                            <t t-elif="section.key === 'buttons'">
+                                <div t-foreach="panel.buttons" t-as="button" t-key="button.button_type + button.button_name"
+                                     class="o_om_panel_row" t-att-data-button="button.button_name">
+                                    <span class="o_om_panel_label" t-out="button.label"/>
+                                    <div class="btn-group btn-group-sm">
+                                        <button t-foreach="this.BUTTON_MODES" t-as="mode" t-key="mode[0]" type="button"
+                                                class="btn" t-att-data-mode="mode[0]"
+                                                t-att-class="mode[0] !== this.buttonMode(button) ? 'btn-outline-secondary' : (mode[0] === 'visible' ? 'btn-secondary' : 'btn-primary')"
+                                                t-att-disabled="this.props.readonly"
+                                                t-on-click="() => this.setButton(button, mode[0])" t-out="mode[1]"/>
+                                    </div>
+                                </div>
+                                <div t-if="!panel.buttons.length" class="text-muted small">No button on these screens.</div>
+                                <div class="small text-muted">Blocked: hidden, and refused by the server.</div>
+                            </t>
+                            <t t-elif="section.elementType">
+                                <t t-set="elements" t-value="this.elementsOf(section.elementType)"/>
+                                <div t-foreach="elements" t-as="element"
+                                     t-key="element.element_type + ':' + element.element_name"
+                                     class="o_om_panel_row" t-att-data-element="element.element_name">
+                                    <CheckBox value="!element.hidden" disabled="this.props.readonly"
+                                              onChange="(value) => this.setElement(element, value)">
+                                        <t t-out="element.label"/>
+                                    </CheckBox>
+                                </div>
+                                <div t-if="!elements.length" class="text-muted small" t-out="section.empty"/>
+                            </t>
+                            <t t-elif="section.entries">
+                                <div t-foreach="section.entries" t-as="entry" t-key="entry.type + entry.id"
+                                     class="o_om_panel_row">
+                                    <CheckBox value="!entry.hidden" disabled="this.props.readonly"
+                                              onChange="(value) => this.setPrint(entry, value)">
+                                        <t t-out="entry.label"/>
+                                    </CheckBox>
+                                </div>
+                                <div t-if="!section.entries.length" class="text-muted small" t-out="section.empty"/>
+                            </t>
+                            <t t-elif="section.key === 'switches'">
+                                <div t-foreach="this.switchItems" t-as="item" t-key="item[0]"
+                                     class="o_om_panel_row">
+                                    <CheckBox value="!!(panel.rights[item[0]])" disabled="this.props.readonly"
+                                              onChange="(value) => this.setDataRight(item[0], value)">
+                                        <t t-out="item[1]"/>
+                                    </CheckBox>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <div t-if="!this.isData and !this.isBranch and !panel.allowed" class="text-muted">
+                This menu opens no list of data: it can only be shown or hidden.
+            </div>
+        </div>
+    </t>
+
+</templates>

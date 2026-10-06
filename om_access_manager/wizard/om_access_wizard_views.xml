@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_access_load_models_view_form" model="ir.ui.view">
+        <field name="name">om.access.load.models.form</field>
+        <field name="model">om.access.load.models</field>
+        <field name="arch" type="xml">
+            <form string="Load Models">
+                <p class="text-muted">
+                    Creates one row per model reachable through the menus this profile
+                    still shows, skipping the models it already carries.
+                </p>
+                <group>
+                    <field name="profile_id" readonly="1"/>
+                    <field name="menu_ids" widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                    <field name="readonly"/>
+                </group>
+                <footer>
+                    <button name="action_load" type="object" string="Load"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_import_view_form" model="ir.ui.view">
+        <field name="name">om.access.import.form</field>
+        <field name="model">om.access.import</field>
+        <field name="arch" type="xml">
+            <form string="Import Access Profiles">
+                <p class="text-muted">
+                    A file made with <strong>Export Profiles</strong> on another database. What
+                    this database lacks (an app, a menu, a journal) is skipped and listed in the
+                    chatter of the profile.
+                </p>
+                <group>
+                    <field name="file" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                    <field name="replace"/>
+                    <field name="with_users"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_import_action" model="ir.actions.act_window">
+        <field name="name">Import Access Profiles</field>
+        <field name="res_model">om.access.import</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_access_profile_export_action" model="ir.actions.server">
+        <field name="name">Export Profiles</field>
+        <field name="model_id" ref="om_access_manager.model_om_access_profile"/>
+        <field name="binding_model_id" ref="om_access_manager.model_om_access_profile"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_export_profiles()</field>
+    </record>
+
+    <record id="om_access_template_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.access.template.wizard.form</field>
+        <field name="model">om.access.template.wizard</field>
+        <field name="arch" type="xml">
+            <form string="New from Template">
+                <p class="text-muted">
+                    Only the templates whose apps are installed are offered. The profile
+                    created is an ordinary one: change anything in it afterwards.
+                </p>
+                <group>
+                    <field name="template_key" widget="radio"/>
+                </group>
+                <div class="alert alert-info" role="alert" invisible="not template_key">
+                    <field name="description" nolabel="1"/>
+                    <div class="mt-1 small" invisible="not uses">
+                        Apps: <field name="uses" nolabel="1" class="d-inline"/>
+                    </div>
+                </div>
+                <group invisible="not template_key">
+                    <field name="any_app" invisible="1"/>
+                    <field name="app_id" invisible="not any_app" required="any_app"
+                           options="{'no_create': True, 'no_open': True}"/>
+                    <field name="name"/>
+                    <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_create" type="object" string="Create the Profile"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_template_wizard_action" model="ir.actions.act_window">
+        <field name="name">New from Template</field>
+        <field name="res_model">om.access.template.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_access_assign_view_form" model="ir.ui.view">
+        <field name="name">om.access.assign.form</field>
+        <field name="model">om.access.assign</field>
+        <field name="arch" type="xml">
+            <form string="Set Access Profiles">
+                <group>
+                    <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    <field name="mode" widget="radio"/>
+                    <field name="profile_ids" widget="many2many_tags" options="{'no_create': True}"
+                           required="mode != 'replace'"/>
+                </group>
+                <div class="text-muted" invisible="mode != 'replace' or profile_ids">
+                    Replacing with no profile takes every profile off these users: they are
+                    no longer restricted by this module.
+                </div>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_assign_action" model="ir.actions.act_window">
+        <field name="name">Set Access Profiles</field>
+        <field name="res_model">om.access.assign</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
+
+    <record id="om_access_copy_access_view_form" model="ir.ui.view">
+        <field name="name">om.access.copy.access.form</field>
+        <field name="model">om.access.copy.access</field>
+        <field name="arch" type="xml">
+            <form string="Copy Access">
+                <group>
+                    <group>
+                        <field name="source_user_id" options="{'no_create': True}"/>
+                        <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="mode" widget="radio"/>
+                    </group>
+                    <group string="What">
+                        <field name="with_profiles"/>
+                        <field name="with_assignments"/>
+                        <field name="with_allowed"/>
+                    </group>
+                </group>
+                <field name="summary" nolabel="1" readonly="1"/>
+                <div class="text-muted" invisible="mode != 'move'">
+                    Moving takes the ticked access away from the first user, for a job change.
+                    Their Odoo groups are not touched.
+                </div>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_copy_access_action" model="ir.actions.act_window">
+        <field name="name">Copy Access</field>
+        <field name="res_model">om.access.copy.access</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="groups_id" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">form</field>
+    </record>
+
+    <record id="om_access_app_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.access.app.wizard.form</field>
+        <field name="model">om.access.app.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Restrict an App">
+                <group>
+                    <group>
+                        <field name="profile_id" readonly="1" force_save="1"/>
+                        <field name="app_id" options="{'no_create': True, 'no_open': True}"
+                               placeholder="Pick an app..."/>
+                    </group>
+                    <group invisible="not app_id">
+                        <field name="level" widget="radio"/>
+                        <field name="own_records"/>
+                    </group>
+                </group>
+                <div class="alert alert-info" role="alert" invisible="not app_id or not other_additive">
+                    Some users of this profile carry other additive profiles: a restriction
+                    only bites when all of them have it. Check the result with
+                    <strong>Test as User</strong> on the profile.
+                </div>
+                <notebook invisible="not app_id">
+                    <page string="Menus" name="menus">
+                        <div class="text-muted mb-2">
+                            Untick a menu to hide it, with everything below it. Hiding a menu
+                            does not refuse the data: that is the Data tab.
+                        </div>
+                        <field name="menu_line_ids" nolabel="1">
+                            <list editable="bottom" create="0" delete="0"
+                                  decoration-muted="is_config">
+                                <field name="menu_id" column_invisible="1" force_save="1"/>
+                                <field name="label" readonly="1" force_save="1"/>
+                                <field name="is_config" readonly="1" force_save="1" optional="show"/>
+                                <field name="visible" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Data" name="data">
+                        <div class="text-muted mb-2">
+                            What the users may do with the data of this app, enforced on the
+                            server. Data marked <em>Also Used by</em> belongs to other apps
+                            too: a level leaves it alone, change it here only if you mean it
+                            for every app.
+                        </div>
+                        <field name="model_line_ids" nolabel="1">
+                            <list editable="bottom" create="0" delete="0"
+                                  decoration-muted="not owned">
+                                <field name="model_id" column_invisible="1" force_save="1"/>
+                                <field name="owned" column_invisible="1" force_save="1"/>
+                                <field name="is_config" column_invisible="1" force_save="1"/>
+                                <field name="owner_field" column_invisible="1" force_save="1"/>
+                                <field name="custom_domain" column_invisible="1" force_save="1"/>
+                                <field name="label" readonly="1" force_save="1"/>
+                                <field name="perm_read"/>
+                                <field name="perm_create"/>
+                                <field name="perm_write"/>
+                                <field name="perm_unlink"/>
+                                <field name="scope" readonly="not owner_field and scope != 'custom'"/>
+                                <field name="shared_with" readonly="1" force_save="1"/>
+                                <field name="parent_label" readonly="1" force_save="1" optional="hide"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Reports" name="reports" invisible="not report_line_ids">
+                        <field name="report_line_ids" nolabel="1">
+                            <list editable="bottom" create="0" delete="0">
+                                <field name="report_id" readonly="1" force_save="1"
+                                       options="{'no_open': True}"/>
+                                <field name="model_label" readonly="1" force_save="1"/>
+                                <field name="visible" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </page>
+                    <page string="Actions" name="actions" invisible="not action_line_ids">
+                        <div class="text-muted mb-2">
+                            The entries of the Action menu of the data of this app.
+                        </div>
+                        <field name="action_line_ids" nolabel="1">
+                            <list editable="bottom" create="0" delete="0">
+                                <field name="action_ref" readonly="1" force_save="1"
+                                       options="{'no_open': True}"/>
+                                <field name="model_label" readonly="1" force_save="1"/>
+                                <field name="visible" widget="boolean_toggle"/>
+                            </list>
+                        </field>
+                    </page>
+                </notebook>
+                <field name="other_additive" invisible="1"/>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply"
+                            class="btn-primary" data-hotkey="q" invisible="not app_id"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_scan_buttons_view_form" model="ir.ui.view">
+        <field name="name">om.access.scan.buttons.form</field>
+        <field name="model">om.access.scan.buttons</field>
+        <field name="arch" type="xml">
+            <form string="Scan Views">
+                <field name="state" invisible="1"/>
+                <group invisible="state != 'model'">
+                    <field name="profile_id" readonly="1"/>
+                    <field name="model_id" options="{'no_create': True}"/>
+                    <field name="target" widget="radio"/>
+                    <field name="mode" invisible="target != 'buttons'"/>
+                </group>
+                <div invisible="state != 'select'">
+                    <p class="text-muted">
+                        Tick the buttons to restrict. The others are left untouched.
+                    </p>
+                    <field name="line_ids" nolabel="1" readonly="0">
+                        <list editable="bottom" create="false" delete="false">
+                            <field name="selected" string="Restrict" widget="boolean_toggle"/>
+                            <field name="button_label" string="Label" readonly="1"
+                                   column_invisible="parent.target != 'buttons'"/>
+                            <field name="view_type" string="View" readonly="1"
+                                   column_invisible="parent.target != 'buttons'"/>
+                            <field name="button_type" string="Type" readonly="1"
+                                   column_invisible="parent.target != 'buttons'"/>
+                            <field name="button_name" string="Method / Action" readonly="1"
+                                   column_invisible="parent.target != 'buttons'"/>
+                            <field name="button_id" string="Button Id" readonly="1" optional="hide"
+                                   column_invisible="parent.target != 'buttons'"/>
+                            <field name="element_label" string="Label" readonly="1"
+                                   column_invisible="parent.target != 'elements'"/>
+                            <field name="element_type" string="Kind" readonly="1"
+                                   column_invisible="parent.target != 'elements'"/>
+                            <field name="element_name" string="Name" readonly="1"
+                                   column_invisible="parent.target != 'elements'"/>
+                        </list>
+                    </field>
+                </div>
+                <footer>
+                    <button name="action_scan" type="object" string="Scan"
+                            class="btn-primary" invisible="state != 'model'" data-hotkey="q"/>
+                    <button name="action_apply" type="object" string="Add the Rules"
+                            class="btn-primary" invisible="state != 'select'" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_copy_restrictions_view_form" model="ir.ui.view">
+        <field name="name">om.access.copy.restrictions.form</field>
+        <field name="model">om.access.copy.restrictions</field>
+        <field name="arch" type="xml">
+            <form string="Copy Restrictions">
+                <group>
+                    <field name="profile_id" readonly="1"/>
+                    <field name="source_id" options="{'no_create': True}"/>
+                </group>
+                <group string="What to copy">
+                    <field name="copy_models"/>
+                    <field name="copy_fields"/>
+                    <field name="copy_buttons"/>
+                    <field name="copy_elements"/>
+                    <field name="copy_menus"/>
+                </group>
+                <footer>
+                    <button name="action_copy" type="object" string="Copy"
+                            class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_test_user_view_form" model="ir.ui.view">
+        <field name="name">om.access.test.user.form</field>
+        <field name="model">om.access.test.user</field>
+        <field name="arch" type="xml">
+            <form string="Effective Access">
+                <group>
+                    <field name="profile_id" invisible="1"/>
+                    <field name="preview_user_ids" invisible="1"/>
+                    <field name="user_id" options="{'no_create': True}"
+                           domain="profile_id and [('id', 'in', preview_user_ids)] or [('share', '=', False)]"/>
+                    <field name="profile_ids" widget="many2many_tags" readonly="1"
+                           invisible="not profile_ids"/>
+                </group>
+                <div class="text-muted mb-2" invisible="not user_id">
+                    Open Preview shows Odoo as this user sees it, with their apps, menus,
+                    records, fields and buttons, read only. A banner lets you exit it.
+                </div>
+                <field name="report" nolabel="1" readonly="1"/>
+                <footer>
+                    <button name="action_open_preview" type="object" string="Open Preview"
+                            class="btn-primary" icon="fa-eye" invisible="not user_id"
+                            data-hotkey="q"/>
+                    <button string="Close" class="btn-secondary" special="cancel"
+                            data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_test_user_action" model="ir.actions.act_window">
+        <field name="name">Effective Access</field>
+        <field name="res_model">om.access.test.user</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
