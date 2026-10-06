@@ -113,6 +113,26 @@ class TestPreview(HttpCase):
                       self._error('res.partner', 'action_unarchive', [self.mine.ids], route='call_button'))
         self.assertTrue(self.mine.active)
 
+    def test_server_actions_run_read_only(self):
+        """ Menus open server actions that pick a view: they run in a preview,
+        and what one would save is refused. """
+        partner_model = self.env['ir.model']._get('res.partner')
+        opens = self.env['ir.actions.server'].create({
+            'name': 'OM Open Partners', 'model_id': partner_model.id, 'state': 'code',
+            'code': "action = {'type': 'ir.actions.act_window', 'res_model': 'res.partner', 'views': [[False, 'list']]}",
+        })
+        saves = self.env['ir.actions.server'].create({
+            'name': 'OM Save a Partner', 'model_id': partner_model.id, 'state': 'code',
+            'code': "env['res.partner'].create({'name': 'Saved in a preview'})",
+        })
+        self._start()
+        result = self.make_jsonrpc_request('/web/action/run', {'action_id': opens.id})
+        self.assertEqual(result['res_model'], 'res.partner')
+        response = self.url_open('/web/action/run', json={
+            'jsonrpc': '2.0', 'method': 'call', 'id': 1, 'params': {'action_id': saves.id}})
+        self.assertIn('preview', response.json()['error']['data']['message'])
+        self.assertFalse(self.env['res.partner'].search([('name', '=', 'Saved in a preview')]))
+
     def test_reads_are_logged_as_the_administrator(self):
         self.env['om.user.audit.rule'].create({'name': 'Partners', 'model_ids': [
             (6, 0, self.env['ir.model']._get('res.partner').ids)], 'log_read': True})
