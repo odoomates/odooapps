@@ -115,7 +115,8 @@ class _Evaluator:
         MoveLine = self.env['account.move.line']
         date_from, date_to = self._dates(date_scope)
         domain = Domain([
-            ('company_id', '=', self.company.id),
+            # 'child_of': the entries of the company and of the branches it consolidates
+            ('company_id', 'child_of', self.company.id),
             ('display_type', 'not in', ('line_section', 'line_note')),
             ('date', '<=', date_to),
         ])

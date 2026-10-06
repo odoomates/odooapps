@@ -14,8 +14,9 @@ class AccountAnnualReport(models.TransientModel):
     journal_ids = fields.Many2many(
         'account.journal', 'account_annual_report_journal_rel', 'report_id', 'journal_id',
         string='Journals', required=True,
-        default=lambda self: self.env['account.journal'].search([('company_id', '=', self.env.company.id)]),
-        domain="[('company_id', '=', company_id)]",
+        # 'child_of': the journals of the company and of the branches it consolidates
+        default=lambda self: self.env['account.journal'].search([('company_id', 'child_of', self.env.company.id)]),
+        domain="[('company_id', 'child_of', company_id)]",
     )
     include_balance_sheet = fields.Boolean(string='Balance Sheet', default=True)
     include_profit_and_loss = fields.Boolean(string='Profit and Loss', default=True)
