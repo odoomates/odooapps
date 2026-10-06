@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_users_form_access_profile" model="ir.ui.view">
+        <field name="name">res.users.form.access.profile</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_om_preview" type="object" string="Preview as User"
+                        icon="fa-eye" groups="om_access_manager.group_access_manager"
+                        invisible="share or not active"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Access Profiles" name="access_profiles" groups="om_access_manager.group_access_manager">
+                    <field name="access_profile_ids" widget="many2many_tags"
+                           options="{'no_create': True}" nolabel="1"/>
+                    <button name="%(om_access_manager.om_access_copy_access_action)d" type="action"
+                            string="Copy Access to..." class="btn-link" icon="fa-copy"
+                            context="{'active_model': 'res.users', 'active_id': id}"/>
+                    <div class="text-muted mt-2">
+                        Additive profiles combine permissively; an override profile always wins.
+                        A user with no profile is not restricted by this module.
+                    </div>
+                    <separator string="Temporary Profiles" invisible="not access_assignment_ids"/>
+                    <field name="access_assignment_ids" nolabel="1" readonly="1"
+                           invisible="not access_assignment_ids">
+                        <list string="Temporary Profiles">
+                            <field name="profile_id"/>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="note"/>
+                            <field name="state" widget="badge"/>
+                        </list>
+                    </field>
+                    <separator string="Effective Access"/>
+                    <field name="access_effective" nolabel="1" readonly="1"/>
+                    <separator string="Allowed Records"/>
+                    <div class="text-muted mb-2">
+                        Used by the profiles whose allowed records are "Each User's Own": this
+                        user's points of sale, warehouses, journals...
+                    </div>
+                    <field name="access_allowed_ids" nolabel="1">
+                        <list string="Allowed Records" editable="bottom">
+                            <field name="kind"/>
+                            <field name="res_model" column_invisible="1"/>
+                            <field name="res_id" widget="many2one_reference" required="1"
+                                   options="{'no_create': True}"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_users_tree_access_profile" model="ir.ui.view">
+        <field name="name">res.users.list.access.profile</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_tree"/>
+        <field name="arch" type="xml">
+            <field name="login" position="after">
+                <field name="access_profile_ids" widget="many2many_tags" optional="show"
+                       groups="om_access_manager.group_access_manager" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_users_search_access_profile" model="ir.ui.view">
+        <field name="name">res.users.search.access.profile</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_search"/>
+        <field name="arch" type="xml">
+            <field name="share" position="after">
+                <field name="access_profile_ids" groups="om_access_manager.group_access_manager"/>
+            </field>
+            <filter name="Inactive" position="before">
+                <filter name="filter_with_profile" string="With an Access Profile"
+                        domain="[('access_profile_ids', '!=', False)]" groups="om_access_manager.group_access_manager"/>
+                <filter name="filter_without_profile" string="Without an Access Profile"
+                        domain="[('access_profile_ids', '=', False)]" groups="om_access_manager.group_access_manager"/>
+                <separator/>
+            </filter>
+            <filter name="Inactive" position="after">
+                <group name="group_by_access" groups="om_access_manager.group_access_manager">
+                    <filter name="group_by_access_profile" string="Access Profile"
+                            context="{'group_by': 'access_profile_ids'}"/>
+                </group>
+            </filter>
+        </field>
+    </record>
+
+</odoo>
