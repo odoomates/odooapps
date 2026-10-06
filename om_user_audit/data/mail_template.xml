@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="mail_template_sign_in" model="mail.template">
+        <field name="name">User Audit: Sign-in</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="subject">New sign-in: {{ object.name }}</field>
+        <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+        <field name="auto_delete" eval="True"/>
+        <field name="email_layout_xmlid">mail.mail_notification_light</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+<p><t t-out="object.name or ''"/> (<t t-out="object.login or ''"/>) signed in to <t t-out="object.company_id.name or ''"/>.</p>
+<ul>
+    <t t-set="not_available">N/A</t>
+    <li>When: <t t-out="ctx.get('om_date') and format_datetime(ctx.get('om_date'), tz=object.tz, dt_format='medium') or not_available"/></li>
+    <li>Where: <t t-out="ctx.get('om_place') or not_available"/></li>
+    <li>Address: <t t-out="ctx.get('om_ip') or not_available"/></li>
+    <li>Browser: <t t-out="ctx.get('om_agent') or not_available"/></li>
+</ul>
+<p style="margin: 16px 0px 16px 0px;">
+    If this sign-in was not expected, change the password of this account and end its
+    sessions from Settings.
+</p>
+</div>
+        </field>
+    </record>
+
+</odoo>

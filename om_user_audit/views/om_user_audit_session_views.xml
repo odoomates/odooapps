@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_user_audit_session_view_list" model="ir.ui.view">
+        <field name="name">res.device.list.om.user.audit</field>
+        <field name="model">res.device</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <list string="Sessions" create="0" edit="0" delete="0" default_order="last_activity desc"
+                  decoration-muted="om_idle" decoration-success="is_current">
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="platform"/>
+                <field name="browser"/>
+                <field name="ip_address"/>
+                <field name="country" optional="show"/>
+                <field name="city" optional="show"/>
+                <field name="first_activity"/>
+                <field name="last_activity"/>
+                <field name="om_idle" optional="show"/>
+                <field name="is_current" column_invisible="1"/>
+                <button name="action_om_end" type="object" string="End" icon="fa-sign-out"
+                        class="btn-link text-danger" confirm="End this session? Its user is signed out."/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_user_audit_session_view_search" model="ir.ui.view">
+        <field name="name">res.device.search.om.user.audit</field>
+        <field name="model">res.device</field>
+        <field name="arch" type="xml">
+            <search string="Sessions">
+                <field name="user_id"/>
+                <field name="ip_address"/>
+                <field name="country"/>
+                <group>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_country" string="Country" context="{'group_by': 'country'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_user_audit_session_action" model="ir.actions.act_window">
+        <field name="name">Sessions</field>
+        <field name="res_model">res.device</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0), (0, 0, {'view_mode': 'list', 'view_id': ref('om_user_audit_session_view_list')})]"/>
+        <field name="search_view_id" ref="om_user_audit_session_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No open session</p>
+            <p>Every signed-in browser and device shows up here, with where it signs in from.</p>
+        </field>
+    </record>
+
+    <record id="om_user_audit_session_end_action" model="ir.actions.server">
+        <field name="name">End Sessions</field>
+        <field name="model_id" ref="base.model_res_device"/>
+        <field name="binding_model_id" ref="base.model_res_device"/>
+        <field name="binding_view_types">list</field>
+        <field name="groups_id" eval="[(4, ref('base.group_system'))]"/>
+        <field name="state">code</field>
+        <field name="code">records.action_om_end()</field>
+    </record>
+
+</odoo>
