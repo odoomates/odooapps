@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_user_audit_log_view_list" model="ir.ui.view">
+        <field name="name">om.user.audit.log.list</field>
+        <field name="model">om.user.audit.log</field>
+        <field name="arch" type="xml">
+            <list string="Logs" create="0" edit="0" delete="0"
+                  decoration-danger="event in ('login_failed', 'refused')"
+                  decoration-muted="event in ('read', 'logout')"
+                  decoration-info="event in ('export', 'import', 'print')">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="event" widget="badge"
+                       decoration-danger="event in ('login_failed', 'refused', 'unlink')"
+                       decoration-success="event == 'login'"
+                       decoration-warning="event in ('export', 'session_end')"/>
+                <field name="model_name"/>
+                <field name="res_name" string="Record"/>
+                <field name="record_count" optional="show" invisible="not record_count"/>
+                <field name="changes" optional="show" class="text-wrap"/>
+                <field name="detail" optional="hide"/>
+                <field name="method" optional="hide"/>
+                <field name="login" optional="hide"/>
+                <field name="ip" optional="show"/>
+                <field name="user_agent" optional="hide"/>
+                <field name="model" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_user_audit_log_view_form" model="ir.ui.view">
+        <field name="name">om.user.audit.log.form</field>
+        <field name="model">om.user.audit.log</field>
+        <field name="arch" type="xml">
+            <form string="Log" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_open_record" type="object" string="Open the Record"
+                            class="btn-primary" invisible="not res_id or event == 'unlink'"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="event"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="login" invisible="not login"/>
+                            <field name="ip"/>
+                            <field name="user_agent"/>
+                        </group>
+                        <group>
+                            <field name="model_name" invisible="not model"/>
+                            <field name="model" groups="base.group_no_one" invisible="not model"/>
+                            <field name="res_name" invisible="not res_name"/>
+                            <field name="res_id" invisible="1"/>
+                            <field name="method" invisible="not method"/>
+                            <field name="record_count" invisible="not record_count"/>
+                            <field name="record_ids" invisible="not record_ids"/>
+                        </group>
+                    </group>
+                    <group string="Changes" invisible="not changes">
+                        <field name="changes" nolabel="1" colspan="2"/>
+                    </group>
+                    <group string="Detail" invisible="not detail">
+                        <field name="detail" nolabel="1" colspan="2"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_user_audit_log_view_search" model="ir.ui.view">
+        <field name="name">om.user.audit.log.search</field>
+        <field name="model">om.user.audit.log</field>
+        <field name="arch" type="xml">
+            <search string="Logs">
+                <field name="user_id"/>
+                <field name="model"/>
+                <field name="res_name"/>
+                <field name="ip"/>
+                <field name="changes"/>
+                <filter name="sign_in" string="Sign-ins"
+                        domain="[('event', 'in', ('login', 'login_failed', 'logout', 'session_end'))]"/>
+                <filter name="failed" string="Failed Sign-ins" domain="[('event', '=', 'login_failed')]"/>
+                <separator/>
+                <filter name="changes_filter" string="Changes"
+                        domain="[('event', 'in', ('create', 'write', 'unlink'))]"/>
+                <filter name="deletes" string="Deletions" domain="[('event', '=', 'unlink')]"/>
+                <filter name="reads" string="Reads" domain="[('event', '=', 'read')]"/>
+                <filter name="exports" string="Exports, Imports and Prints"
+                        domain="[('event', 'in', ('export', 'import', 'print'))]"/>
+                <filter name="refusals" string="Refusals" domain="[('event', '=', 'refused')]"/>
+                <separator/>
+                <filter name="today" string="Today" domain="[('date', '>=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_event" string="Event" context="{'group_by': 'event'}"/>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model'}"/>
+                    <filter name="group_date" string="Day" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_user_audit_log_view_pivot" model="ir.ui.view">
+        <field name="name">om.user.audit.log.pivot</field>
+        <field name="model">om.user.audit.log</field>
+        <field name="arch" type="xml">
+            <pivot string="Logs">
+                <field name="user_id" type="row"/>
+                <field name="event" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_user_audit_log_view_graph" model="ir.ui.view">
+        <field name="name">om.user.audit.log.graph</field>
+        <field name="model">om.user.audit.log</field>
+        <field name="arch" type="xml">
+            <graph string="Logs" type="bar" stacked="1">
+                <field name="date" interval="day"/>
+                <field name="event"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="om_user_audit_log_action" model="ir.actions.act_window">
+        <field name="name">Logs</field>
+        <field name="res_model">om.user.audit.log</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="context">{'search_default_today': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing logged yet</p>
+            <p>Sign-ins, reads, changes, exports, imports and prints land here as they happen.
+               With no rule, everything is logged; add rules to log only what matters.</p>
+        </field>
+    </record>
+
+</odoo>
