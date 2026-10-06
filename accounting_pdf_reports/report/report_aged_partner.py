@@ -44,7 +44,10 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         cr = self.env.cr
         user_company = self.env.user.company_id
         user_currency = user_company.currency_id
-        company_ids = self._context.get('company_ids') or [user_company.id]
+        # a branch posts its entries in its own company: they belong to the report
+        # of the parent that consolidates it
+        company_ids = self._context.get('company_ids') or self.env['res.company'].search(
+            [('id', 'child_of', user_company.id)]).ids
         move_state = ['draft', 'posted']
         date = self._context.get('date') or fields.Date.today()
         company = self.env['res.company'].browse(self._context.get('company_id')) or self.env.company

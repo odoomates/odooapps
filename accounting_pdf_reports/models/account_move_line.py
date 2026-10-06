@@ -6,6 +6,11 @@ class AccountMoveLine(models.Model):
     _inherit = "account.move.line"
 
     @api.model
+    def _branch_ids(self, company_id):
+        """ The company and the branches it consolidates, as ids. """
+        return self.env['res.company'].sudo().search([('id', 'child_of', company_id)]).ids
+
+    @api.model
     def _query_get(self, domain=None):
         self.check_access_rights('read')
 
@@ -34,12 +39,16 @@ class AccountMoveLine(models.Model):
         if state and state.lower() != 'all':
             domain += [('parent_state', '=', state)]
 
+        # a branch posts its entries in its own company, and they belong to the report of the
+        # parent that consolidates it. The ids are resolved here instead of with a 'child_of'
+        # leaf: the reports splice this WHERE clause into a FROM clause of their own, where the
+        # join such a leaf needs has no alias.
         if context.get('company_id'):
-            domain += [('company_id', '=', context['company_id'])]
+            domain += [('company_id', 'in', self._branch_ids(context['company_id']))]
         elif context.get('allowed_company_ids'):
             domain += [('company_id', 'in', self.env.companies.ids)]
         else:
-            domain += [('company_id', '=', self.env.company.id)]
+            domain += [('company_id', 'in', self._branch_ids(self.env.company.id))]
 
         if context.get('reconcile_date'):
             domain += ['|', ('reconciled', '=', False), '|', ('matched_debit_ids.max_date', '>', context['reconcile_date']), ('matched_credit_ids.max_date', '>', context['reconcile_date'])]
