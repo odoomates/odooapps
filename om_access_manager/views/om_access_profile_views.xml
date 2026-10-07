@@ -25,13 +25,7 @@
         <field name="name">om.access.profile.list</field>
         <field name="model">om.access.profile</field>
         <field name="arch" type="xml">
-            <tree string="Access Profiles">
-                <header>
-                    <button name="%(om_access_manager.om_access_template_wizard_action)d" type="action"
-                            string="New from Template" class="btn-secondary" display="always"/>
-                    <button name="%(om_access_manager.om_access_import_action)d" type="action"
-                            string="Import" class="btn-secondary" display="always"/>
-                </header>
+            <tree string="Access Profiles" js_class="om_access_profile_list">
                 <field name="sequence" widget="handle"/>
                 <field name="name"/>
                 <field name="strictness"/>
@@ -69,23 +63,23 @@
                                 class="btn-secondary" icon="fa-globe"/>
                         <button name="action_preset_own" type="object" string="Their Own Records"
                                 class="btn-secondary" icon="fa-user"
-                                invisible="'own' not in (available_presets or '')"/>
+                                attrs="{'invisible': ['!', ('available_presets', 'like', 'own')]}"/>
                         <button name="action_preset_team" type="object" string="Their Sales Team"
                                 class="btn-secondary" icon="fa-users"
-                                invisible="'team' not in (available_presets or '')"/>
+                                attrs="{'invisible': ['!', ('available_presets', 'like', 'team')]}"/>
                         <button name="action_preset_company" type="object" string="Their Companies"
                                 class="btn-secondary" icon="fa-building"
-                                invisible="'company' not in (available_presets or '')"/>
+                                attrs="{'invisible': ['!', ('available_presets', 'like', 'company')]}"/>
                         <button name="action_preset_warehouse" type="object" string="Their Warehouse"
                                 class="btn-secondary" icon="inventory_2"
-                                invisible="'warehouse' not in (available_presets or '')"/>
+                                attrs="{'invisible': ['!', ('available_presets', 'like', 'warehouse')]}"/>
                         <button name="action_preset_draft" type="object" string="Edit Drafts Only"
                                 class="btn-secondary" icon="fa-pencil"
-                                invisible="'draft' not in (available_presets or '')"/>
+                                attrs="{'invisible': ['!', ('available_presets', 'like', 'draft')]}"/>
                     </div>
                     <group>
-                        <field name="domain" string="Every Operation" widget="domain"
-                               options="{'model': 'model', 'allow_expressions': True}"/>
+                        <field name="domain" string="Every Operation" widget="om_access_domain"
+                               options="{'model': 'model'}"/>
                     </group>
                     <group string="One operation only" col="1">
                         <div class="text-muted">
@@ -93,14 +87,14 @@
                             instance read everything but edit only the drafts.
                         </div>
                         <group>
-                            <field name="domain_read" string="Read" widget="domain"
-                                   options="{'model': 'model', 'allow_expressions': True}"/>
-                            <field name="domain_write" string="Edit" widget="domain"
-                                   options="{'model': 'model', 'allow_expressions': True}"/>
-                            <field name="domain_create" string="Create" widget="domain"
-                                   options="{'model': 'model', 'allow_expressions': True}"/>
-                            <field name="domain_unlink" string="Delete" widget="domain"
-                                   options="{'model': 'model', 'allow_expressions': True}"/>
+                            <field name="domain_read" string="Read" widget="om_access_domain"
+                                   options="{'model': 'model'}"/>
+                            <field name="domain_write" string="Edit" widget="om_access_domain"
+                                   options="{'model': 'model'}"/>
+                            <field name="domain_create" string="Create" widget="om_access_domain"
+                                   options="{'model': 'model'}"/>
+                            <field name="domain_unlink" string="Delete" widget="om_access_domain"
+                                   options="{'model': 'model'}"/>
                         </group>
                     </group>
                     <group string="Screen">
@@ -142,14 +136,14 @@
                             class="btn-primary" icon="fa-eye"/>
                 </header>
                 <sheet>
-                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
-                            invisible="active"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
+                            attrs="{'invisible': [('active', '!=', False)]}"/>
                     <field name="active" invisible="1"/>
                     <div class="oe_title">
                         <label for="name"/>
                         <h1><field name="name" placeholder="e.g. Warehouse Staff"/></h1>
                     </div>
-                    <div class="alert alert-warning" role="alert" invisible="not block_login">
+                    <div class="alert alert-warning" role="alert" attrs="{'invisible': [('block_login', '=', False)]}">
                         The users of this profile cannot sign in, and their open
                         sessions are ended. Their records are kept: take a user out
                         of the profile to let them back in.
@@ -226,7 +220,7 @@
                                             <field name="hour_to" widget="float_time"/>
                                         </tree>
                                     </field>
-                                    <div colspan="2" class="text-muted" invisible="login_slot_ids">
+                                    <div colspan="2" class="text-muted" attrs="{'invisible': [('login_slot_ids', '!=', [])]}">
                                         No working hours: the users may sign in at any time.
                                     </div>
                                 </group>
@@ -251,10 +245,10 @@
                             <field name="allowed_ids" nolabel="1">
                                 <tree string="Allowed Records" editable="bottom">
                                     <field name="kind"/>
-                                    <field name="res_model" column_invisible="1"/>
+                                    <field name="res_model" invisible="1"/>
                                     <field name="per_user"/>
                                     <field name="res_id" widget="many2one_reference"
-                                           invisible="per_user" required="not per_user"
+                                           attrs="{'invisible': [('per_user', '!=', False)], 'required': [('per_user', '=', False)]}"
                                            options="{'no_create': True}"/>
                                 </tree>
                             </field>
@@ -382,7 +376,7 @@
                                     <field name="element_name" string="Page"/>
                                     <field name="element_label" string="Label" optional="show"/>
                                     <field name="condition" optional="show"/>
-                                    <field name="element_type" column_invisible="1"/>
+                                    <field name="element_type" invisible="1"/>
                                 </tree>
                             </field>
                         </page>
@@ -412,7 +406,7 @@
                                     <field name="model_id" options="{'no_create': True}"/>
                                     <field name="element_name" string="View Type"/>
                                     <field name="element_label" string="Label" optional="show"/>
-                                    <field name="element_type" column_invisible="1"/>
+                                    <field name="element_type" invisible="1"/>
                                 </tree>
                             </field>
                         </page>
@@ -464,7 +458,7 @@
                                     <field name="state" widget="badge"
                                            decoration-success="state == 'active'"
                                            decoration-info="state == 'planned'"/>
-                                    <field name="active" column_invisible="1"/>
+                                    <field name="active" invisible="1"/>
                                 </tree>
                             </field>
                         </page>

@@ -45,7 +45,7 @@ class ResUsers(models.Model):
 
     @classmethod
     def _login(cls, db, login, password, user_agent_env):
-        # Odoo 17 signs in on a cursor of its own: so is the stamp written
+        # Odoo 16 signs in on a cursor of its own: so is the stamp written
         uid = super()._login(db, login, password, user_agent_env)
         if uid and request:
             with cls.pool.cursor() as cr:
@@ -82,7 +82,7 @@ class ResUsers(models.Model):
             (before | self.sudo().access_profile_ids)._sync_group()
             # the guard against locking every administrator out applies here too
             self.sudo().access_profile_ids._check_last_administrator()
-            self.env.registry.clear_cache('default')
+            self.env.registry.clear_caches()
         elif vals.get('active') is False or 'groups_id' in vals:
             # archiving, or taking out of Access Management, the last access
             # manager the profiles leave able to undo them
@@ -91,7 +91,7 @@ class ResUsers(models.Model):
                 self.env['om.access.profile']._om_user_fields_in_filters()):
             # _resolve() depends on the user's companies, and record filters
             # read the default warehouse
-            self.env.registry.clear_cache('default')
+            self.env.registry.clear_caches()
         return result
 
     @api.model
@@ -110,7 +110,7 @@ class ResUsers(models.Model):
 
     def _check_credentials(self, password, env):
         result = super()._check_credentials(password, env)
-        # Odoo 17 checks the credentials of XML-RPC calls on an empty recordset
+        # Odoo 16 checks the credentials of XML-RPC calls on an empty recordset
         for user in self or self.env.user:
             rules = self.env['om.access.profile']._resolve(user.id)
             if not rules.enabled:
@@ -131,7 +131,7 @@ class ResUsers(models.Model):
     @tools.ormcache('sid')
     def _compute_session_token(self, sid):
         # The session token is checked on every request, so changing it while
-        # the login is blocked ends the sessions already open. Odoo 17 computes
+        # the login is blocked ends the sessions already open. Odoo 16 computes
         # it in SQL from the columns of the user: change it here.
         token = super()._compute_session_token(sid)
         if token:

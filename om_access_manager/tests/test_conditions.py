@@ -2,10 +2,11 @@
 from lxml import etree
 
 from odoo.exceptions import ValidationError
-from odoo.tests import HttpCase, new_test_user, tagged
-from odoo.tests.common import JsonRpcException
+from odoo.tests import new_test_user, tagged
 
 from odoo.addons.om_access_manager.models.conditions import ConditionError, condition_domain
+
+from .audit import HttpCase, JsonRpcException, modifier
 
 
 @tagged('post_install', '-at_install')
@@ -70,9 +71,10 @@ class TestConditions(HttpCase):
     def test_the_views_carry_the_conditions(self):
         arch = etree.fromstring(self.env['res.partner'].with_user(self.user).get_view(view_type='form')['arch'])
         email = arch.xpath("//form/sheet//field[@name='email']")[0]
-        self.assertIn("ref == 'vip'", email.get('invisible'))
+        # Odoo 16 serves the conditions as domains, in the modifiers of the node
+        self.assertIn(['ref', '=', 'vip'], modifier(email, 'invisible'))
         phone = arch.xpath("//form/sheet//field[@name='phone']")[0]
-        self.assertIn("ref == 'locked'", phone.get('readonly'))
+        self.assertIn(['ref', '=', 'locked'], modifier(phone, 'readonly'))
         # the fields the conditions read are loaded with the record
         self.assertTrue(arch.xpath("/form//field[@name='ref']"))
 
@@ -89,8 +91,7 @@ class TestConditions(HttpCase):
         self.assertEqual(self.company.phone, '999')
         self.assertEqual(self.person.phone, '222')
         # the rest of the values are written
-        self._call('res.partner', 'web_save', [self.person.ids, {'phone': '999', 'comment': 'kept'}],
-                   {'specification': {}})
+        self._call('res.partner', 'write', [self.person.ids, {'phone': '999', 'comment': 'kept'}])
         self.assertEqual(self.person.phone, '222')
         self.assertIn('kept', str(self.person.comment))
 

@@ -2,8 +2,9 @@
 from lxml import etree
 
 from odoo.exceptions import AccessError
-from odoo.tests import HttpCase, new_test_user, tagged
-from odoo.tests.common import JsonRpcException
+from odoo.tests import new_test_user, tagged
+
+from .audit import HttpCase, JsonRpcException
 
 
 @tagged('post_install', '-at_install')
@@ -80,7 +81,7 @@ class TestMenusAndChatter(HttpCase):
         with self.assertRaises(JsonRpcException):
             self._post('mail.mt_comment')
         self._post('mail.mt_note')
-        # Odoo 17 answers with the data of the chatter: look for the note itself
+        # Odoo 16 answers with the data of the chatter: look for the note itself
         self.assertTrue(self.env['mail.message'].search_count([
             ('model', '=', 'res.partner'), ('res_id', '=', self.partner.id),
             ('subtype_id', '=', self.env.ref('mail.mt_note').id), ('body', 'ilike', 'Hello')]))
@@ -115,19 +116,19 @@ class TestMenusAndChatter(HttpCase):
                 throw new Error('not on the home page: ' + title);
             }
             (await until('.o_data_row td.o_data_cell')).click();
-            const logNote = await until('.o-mail-Chatter-logNote');
+            const logNote = await until('.o_ChatterTopbar_buttonLogNote');
             const visible = (element) => element && element.offsetParent !== null;
             if (!visible(logNote)) {
                 throw new Error('Log note is hidden');
             }
-            if (visible(document.querySelector('.o-mail-Chatter-sendMessage'))) {
+            if (visible(document.querySelector('.o_ChatterTopbar_buttonSendMessage'))) {
                 throw new Error('Send message is shown');
             }
-            if (visible(document.querySelector('.o-mail-Followers'))) {
+            if (visible(document.querySelector('.o_FollowerListMenu'))) {
                 throw new Error('the followers are shown');
             }
             console.log('test successful');
         })()"""
-        # Odoo 17 signs the browser in with the login as the password
+        # Odoo 16 signs the browser in with the login as the password
         self.user.password = self.user.login
         self.browser_js('/web', code, login=self.user.login, timeout=90)

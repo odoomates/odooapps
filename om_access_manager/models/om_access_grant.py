@@ -1,4 +1,4 @@
-# Odoo 17 copies the groups a group implies onto its users, and never takes
+# Odoo 16 copies the groups a group implies onto its users, and never takes
 # them back: a group granted by a profile would stay after the user leaves it.
 # This ledger remembers which groups a profile added to which users (not the
 # ones they had already), so that they go with the profile.

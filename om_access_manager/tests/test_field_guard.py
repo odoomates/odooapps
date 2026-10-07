@@ -2,10 +2,9 @@
 # XML-RPC); the same methods called from Python are left alone.
 import xmlrpc.client
 
-from odoo.tests import HttpCase, new_test_user, tagged
-from odoo.tests.common import JsonRpcException
+from odoo.tests import new_test_user, tagged
 
-from .audit import lines_after_transaction
+from .audit import HttpCase, JsonRpcException, lines_after_transaction
 
 
 @tagged('post_install', '-at_install')
@@ -64,7 +63,7 @@ class TestFieldGuard(HttpCase):
     def test_hidden_values_never_leave(self):
         result = self._call('res.partner', 'web_search_read', [], {
             'domain': [('id', '=', self.partner.id)],
-            'specification': {'name': {}, 'email': {}},
+            'fields': ['name', 'email'],
         })
         # blanked, not removed: the screens keep finding the field they expect
         self.assertEqual(result['records'][0]['name'], 'Guarded')
@@ -80,11 +79,14 @@ class TestFieldGuard(HttpCase):
         self.assertIs(rows[0]['email'], False)
 
     def test_hidden_values_never_leave_through_a_relation(self):
-        result = self._call('res.partner', 'web_read', [self.child.ids], {
-            'specification': {'parent_id': {'fields': {'name': {}, 'email': {}}}},
-        })
-        self.assertEqual(result[0]['parent_id']['name'], 'Guarded')
-        self.assertIs(result[0]['parent_id']['email'], False)
+        # Odoo 16 gives the values of the lines of a one2many with the onchange
+        result = self._call('res.partner', 'onchange', [[], {}, [], {
+            'name': '', 'child_ids': '', 'child_ids.name': '', 'child_ids.email': ''}], {
+            'context': {'default_child_ids': [(0, 0, {'name': 'Line', 'email': 'line@example.com'})]}})
+        lines = [command[2] for command in result['value']['child_ids']
+                 if len(command) > 2 and isinstance(command[2], dict)]
+        self.assertEqual([line['name'] for line in lines], ['Line'])
+        self.assertIs(lines[0]['email'], False)
 
     def test_hidden_fields_cannot_be_used_to_infer_them(self):
         attempts = [
@@ -109,7 +111,7 @@ class TestFieldGuard(HttpCase):
     def test_read_only_and_hidden_fields_are_not_written(self):
         self._call('res.partner', 'write', [self.partner.ids, {
             'name': 'Renamed', 'phone': '999', 'email': 'changed@example.com'}])
-        self._call('res.partner', 'web_save', [self.partner.ids, {'phone': '888'}], {'specification': {}})
+        self._call('res.partner', 'write', [self.partner.ids, {'phone': '888'}])
         self.partner.invalidate_recordset()
         self.assertEqual(self.partner.name, 'Renamed')
         self.assertEqual(self.partner.phone, '111')
@@ -147,7 +149,7 @@ class TestFieldGuard(HttpCase):
         self.assertTrue(self.partner.active)
 
     def test_api_key(self):
-        # Odoo 17 has no JSON-2: an API key is used over XML-RPC
+        # Odoo 16 has no JSON-2: an API key is used over XML-RPC
         key = self.env['res.users.apikeys'].with_user(self.user)._generate(
             'rpc', 'guard test')
         rows = self.xmlrpc_object.execute_kw(

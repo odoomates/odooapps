@@ -4,32 +4,34 @@ import { Component, onWillStart, useState } from "@odoo/owl";
 import { CheckBox } from "@web/core/checkbox/checkbox";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
+import { sprintf } from "@web/core/utils/strings";
 
-const RIGHTS = [
+const RIGHTS = () => [
     ["perm_read", _t("Read")],
     ["perm_create", _t("Create")],
     ["perm_write", _t("Edit")],
     ["perm_unlink", _t("Delete")],
 ];
-const FIELD_MODES = [
+const FIELD_MODES = () => [
     ["keep", _t("Visible")],
     ["readonly", _t("Read-only")],
     ["hide", _t("Hidden")],
     ["required", _t("Required")],
 ];
-const BUTTON_MODES = [
+const BUTTON_MODES = () => [
     ["visible", _t("Visible")],
     ["hide", _t("Hidden")],
     ["hide_block", _t("Blocked")],
 ];
-const LEVELS = [
+const LEVELS = () => [
     ["full", _t("Full access")],
     ["user", _t("No configuration")],
     ["readonly", _t("Read only")],
     ["none", _t("No access")],
 ];
-// the view elements a menu can hide, one section each
-const ELEMENT_SECTIONS = [
+// the view elements a menu can hide, one section each (functions: Odoo 16
+// loads the translations after the modules)
+const ELEMENT_SECTIONS = () => [
     ["pages", "page", _t("Pages"), _t("No page (tab) on the form of this menu.")],
     ["filters", "filter", _t("Filters"), _t("No filter in the search of this menu.")],
     ["views", "view", _t("Views"), _t("This menu opens a single view.")],
@@ -54,10 +56,10 @@ export class MenuPanel extends Component {
     setup() {
         this.orm = useService("orm");
         this.state = useState({ open: { rights: true }, fieldSearch: "", choices: {} });
-        this.RIGHTS = RIGHTS;
-        this.FIELD_MODES = FIELD_MODES;
-        this.BUTTON_MODES = BUTTON_MODES;
-        this.LEVELS = LEVELS;
+        this.RIGHTS = RIGHTS();
+        this.FIELD_MODES = FIELD_MODES();
+        this.BUTTON_MODES = BUTTON_MODES();
+        this.LEVELS = LEVELS();
         onWillStart(() => this.loadChoices());
     }
 
@@ -87,7 +89,7 @@ export class MenuPanel extends Component {
             return _t("Set on this menu.");
         }
         if (this.panel.inherited) {
-            return _t("From %s. Change a box to set it here.", this.panel.inherited.menu);
+            return sprintf(_t("From %s. Change a box to set it here."), this.panel.inherited.menu);
         }
         return _t("Nothing set: full access. Change a box to restrict everything below.");
     }
@@ -145,7 +147,7 @@ export class MenuPanel extends Component {
     }
 
     countLabel(count, label) {
-        return count ? _t("%(label)s (%(count)s)", { label, count }) : label;
+        return count ? sprintf(_t("%(label)s (%(count)s)"), { label, count }) : label;
     }
 
     get sections() {
@@ -156,7 +158,7 @@ export class MenuPanel extends Component {
                 this.count(panel.fields, (field) => field.mode !== "keep"), _t("Fields")) },
             { key: "buttons", label: this.countLabel(
                 this.count(panel.buttons, (button) => button.mode !== "visible"), _t("Buttons")) },
-            ...ELEMENT_SECTIONS.map(([key, type, label, empty]) => ({
+            ...ELEMENT_SECTIONS().map(([key, type, label, empty]) => ({
                 key, elementType: type, empty,
                 label: this.countLabel(
                     this.count(this.elementsOf(type), (element) => element.hidden), label),

@@ -1,9 +1,7 @@
-# Odoo 17 checks the rights on a model in ir.model.access and filters the
+# Odoo 16 checks the rights on a model in ir.model.access and filters the
 # records in ir.rule; both are cached per user, which is where a profile
 # subtracts access. Each profile carries its own hidden group, so the caches
 # keyed by group sets stay right too.
-from lxml import etree
-
 from odoo import _, api, fields, models, tools
 from odoo.exceptions import AccessError, UserError
 from odoo.osv import expression
@@ -30,15 +28,18 @@ class IrModelAccess(models.Model):
             return models_allowed
         return frozenset(name for name in models_allowed if rules.allows(name, mode))
 
-    def _make_access_error(self, model, mode):
-        rules = self.env['om.access.profile']._resolve(self.env.uid)
-        if rules.enabled and not rules.allows(model, mode):
-            return AccessError(_(
-                "Your access profile does not allow you to %(operation)s %(model)s.\n\n"
-                "Ask your administrator if you need to.",
-                operation=_operation_label(self.env, mode),
-                model=self.env['ir.model']._get(model).name or model))
-        return super()._make_access_error(model, mode)
+    @api.model
+    def check(self, model, mode='read', raise_exception=True):
+        # Odoo 16 builds its error inside check(): say plainly that the profile refused
+        if raise_exception and not self.env.su and not super().check(model, mode, raise_exception=False):
+            rules = self.env['om.access.profile']._resolve(self.env.uid)
+            if rules.enabled and not rules.allows(model, mode):
+                raise AccessError(_(
+                    "Your access profile does not allow you to %(operation)s %(model)s.\n\n"
+                    "Ask your administrator if you need to.",
+                    operation=_operation_label(self.env, mode),
+                    model=self.env['ir.model']._get(model).name or model))
+        return super().check(model, mode, raise_exception=raise_exception)
 
 
 class IrRule(models.Model):
@@ -96,16 +97,23 @@ class IrRule(models.Model):
 class Base(models.AbstractModel):
     _inherit = 'base'
 
+    # Odoo 16 turns the attributes of a view into modifiers when it post-processes
+    # it, then caches it: the rules apply before, to a view cached per user.
     @api.model
-    def get_view(self, view_id=None, view_type='form', **options):
-        result = super().get_view(view_id, view_type, **options)
+    def _get_view(self, view_id=None, view_type='form', **options):
+        arch, view = super()._get_view(view_id, view_type, **options)
         rules = self.env['om.access.profile']._current_rules()
-        if not rules.enabled or not rules.affects_views():
-            return result
-        tree = etree.fromstring(result['arch'])
-        self.env['om.access.profile']._apply_view_rules(rules, tree, self._name, view_type)
-        result = dict(result, arch=etree.tostring(tree, encoding='unicode'))
-        return result
+        if rules.enabled and rules.affects_views():
+            self.env['om.access.profile']._apply_view_rules(rules, arch, self._name, view_type)
+        return arch, view
+
+    @api.model
+    def _get_view_cache_key(self, view_id=None, view_type='form', **options):
+        key = super()._get_view_cache_key(view_id, view_type, **options)
+        rules = self.env['om.access.profile']._current_rules()
+        if rules.enabled and rules.affects_views():
+            key += ('om_access_manager', self.env.uid)
+        return key
 
     @api.model
     def fields_get(self, allfields=None, attributes=None):
@@ -129,7 +137,7 @@ class Base(models.AbstractModel):
         if self._name == 'hr.employee' and any(
                 name.startswith('employee') for name in self.env['om.access.profile']._om_user_fields_in_filters()):
             # a filter reads the user's employee (user.employee_id.department_id...)
-            self.env.registry.clear_cache('default')
+            self.env.registry.clear_caches()
         # Odoo does not enforce read-only on write, so fields_get() only hides
         # Archive/Unarchive; this is what refuses them.
         if not ARCHIVE_FIELDS.isdisjoint(vals):

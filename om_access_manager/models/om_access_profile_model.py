@@ -157,7 +157,7 @@ class OmAccessProfileModel(models.Model):
                 chain = ['employee_id' + '.parent_id' * level + '.user_id' for level in range(4)]
                 presets['hierarchy'] = ('domain', "['|', '|', '|', %s]" % ', '.join(
                     "('%s', '=', uid)" % path for path in chain))
-        # dates from today: Odoo 17 has no relative dates in domains, the
+        # dates from today: Odoo 16 has no relative dates in domains, the
         # access domains are computed again every day instead (base_model.py)
         if 'create_date' in model._fields:
             for key, start in (('today', 'context_today()'),

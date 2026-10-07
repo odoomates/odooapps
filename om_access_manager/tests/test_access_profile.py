@@ -7,7 +7,7 @@ from lxml import etree
 from odoo.exceptions import AccessDenied, AccessError, UserError, ValidationError
 from odoo.tests import TransactionCase, tagged
 
-from .audit import has_access
+from .audit import has_access, modifier
 
 
 @tagged('post_install', '-at_install')
@@ -120,7 +120,7 @@ class TestAccessProfile(TransactionCase):
             'model_id': self.partner_model.id, 'perm_create': False,
         })])
         arch = etree.fromstring(self._partner().get_view(view_type='tree')['arch'])
-        self.assertEqual(arch.get('create'), 'False',
+        self.assertEqual(arch.get('create'), 'false',
                          "core derives the Create button from has_access()")
 
     def test_record_filter(self):
@@ -232,7 +232,7 @@ class TestAccessProfile(TransactionCase):
         phones = arch.xpath("//field[@name='phone']")
         self.assertTrue(phones)
         for node in phones:
-            self.assertTrue(node.get('invisible') == '1' or node.get('column_invisible') == '1')
+            self.assertTrue(modifier(node, 'invisible') is True or modifier(node, 'column_invisible') is True)
 
     def test_rules_do_not_leak_into_the_view_of_another_model(self):
         self._profile(field_ids=[(0, 0, {
@@ -254,7 +254,7 @@ class TestAccessProfile(TransactionCase):
         })])
         form = etree.fromstring(self._partner().get_view(view_type='form')['arch'])
         node = form.xpath("//form/sheet//field[@name='phone']")[0]
-        self.assertEqual((node.get('invisible'), node.get('readonly')), ('1', '1'))
+        self.assertEqual((modifier(node, 'invisible'), modifier(node, 'readonly')), (True, True))
         search = etree.fromstring(self._partner().get_view(view_type='search')['arch'])
         self.assertFalse(search.xpath("//field[@name='phone']"))
 
@@ -267,7 +267,7 @@ class TestAccessProfile(TransactionCase):
         arch = etree.fromstring(self._partner().get_view(view_type='form')['arch'])
         nodes = arch.xpath("//field[@name='phone']")
         self.assertTrue(nodes)
-        self.assertTrue(all(node.get('readonly') == '1' for node in nodes))
+        self.assertTrue(all(modifier(node, 'readonly') is True for node in nodes))
 
     def test_block_archive_makes_active_readonly(self):
         self._profile(block_archive=True)
@@ -405,7 +405,7 @@ class TestAccessProfile(TransactionCase):
         ])
         arch = etree.fromstring(self._partner().get_view(view_type='form')['arch'])
         for node in arch.xpath("//field[@name='phone']"):
-            self.assertEqual(node.get('required'), '1')
+            self.assertIs(modifier(node, 'required'), True)
         nodes = arch.xpath("//field[@name='parent_id']")
         self.assertTrue(nodes)
         for node in nodes:

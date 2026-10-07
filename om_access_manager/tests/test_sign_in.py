@@ -69,7 +69,7 @@ class TestSignIn(HttpCase):
 
     @contextlib.contextmanager
     def _as_test_client(self, browser):
-        """ Odoo 17 serves other clients than the test opener when they carry
+        """ Odoo 16 serves other clients than the test opener when they carry
         the key of the test. """
         browser.cookies.set('test_request_key', self.http_request_key)
         yield

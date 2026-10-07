@@ -9,7 +9,7 @@ from ..models.om_access_preview import preview_allowed, preview_of_request
 
 # Not button checked: denying these is Base._access_domain()'s job.
 PROTECTED_METHODS = frozenset({
-    'create', 'write', 'unlink', 'web_save', 'web_read', 'web_search_read',
+    'create', 'write', 'unlink', 'web_search_read',
     'read', 'search', 'search_read', 'onchange', 'copy', 'default_get',
 })
 
@@ -40,11 +40,11 @@ class DataSetAccess(DataSet):
         return super().call_button(model, method, args, kwargs)
 
     @http.route()
-    def resequence(self, model, ids, field='sequence', offset=0, context=None):
-        # Odoo 17 reorders the rows here, not through web_resequence: a field
+    def resequence(self, model, ids, field='sequence', offset=0):
+        # Odoo 16 reorders the rows here, not through web_resequence: a field
         # the profile hides or makes read-only is not reordered either
         Model = request.env[model]
         rules = Model._om_field_rules()
         if rules and field in Model._om_locked(rules, model):
             Model._om_refuse(model, field)
-        return super().resequence(model, ids, field=field, offset=offset, context=context)
+        return super().resequence(model, ids, field=field, offset=offset)

@@ -41,15 +41,15 @@ class TestHistoryAndTransfer(TransactionCase):
         self.assertIn(self.partner_model.name, notes)
 
     def test_switch_changes_are_tracked(self):
-        # Odoo 19 tracks the changes of a record that existed before them:
+        # Odoo tracks the changes of a record that existed before them:
         # end the creation first, as a commit would
         self.env.cr.precommit.run()
         self.profile.block_login = True
         # tracking is written when the transaction commits, which a test never does
         self.env.cr.precommit.run()
-        # Odoo 19 keeps the tracked changes as tracking values of the message
+        # the tracked changes are tracking values of the message
         self.profile.invalidate_recordset(['message_ids'])
-        tracked = self.profile.message_ids.tracking_value_ids.field_id.mapped('name')
+        tracked = self.profile.message_ids.tracking_value_ids.field.mapped('name')
         self.assertIn('block_login', tracked)
 
     def test_effective_access_on_the_user_form(self):

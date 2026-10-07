@@ -66,9 +66,11 @@ class OmAccessProfileElement(models.Model):
                     "'%(name)s' is not a view type. Use one of: %(types)s",
                     name=line.element_name, types=', '.join(VIEW_TYPES)))
 
-    @api.depends('element_label', 'element_name', 'element_type')
-    def _compute_display_name(self):
+    def name_get(self):
+        result = []
         for line in self:
-            line.display_name = (
+            name = (
                 line.element_label or line.element_name
                 or dict(ELEMENT_TYPES)[line.element_type])
+            result.append((line.id, name or ''))
+        return result

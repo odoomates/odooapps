@@ -62,10 +62,12 @@ class OmAccessProfileMenu(models.Model):
         self.profile_id._check_last_administrator()
         return result
 
-    @api.depends('menu_id')
-    def _compute_display_name(self):
+    def name_get(self):
+        result = []
         for line in self:
-            line.display_name = line.menu_id.sudo().complete_name or ''
+            name = line.menu_id.sudo().complete_name or ''
+            result.append((line.id, name or ''))
+        return result
 
     def _om_history_kind(self):
         return _("menu rule")

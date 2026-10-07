@@ -80,15 +80,15 @@
                 <group>
                     <field name="template_key" widget="radio"/>
                 </group>
-                <div class="alert alert-info" role="alert" invisible="not template_key">
+                <div class="alert alert-info" role="alert" attrs="{'invisible': [('template_key', '=', False)]}">
                     <field name="description" nolabel="1"/>
-                    <div class="mt-1 small" invisible="not uses">
+                    <div class="mt-1 small" attrs="{'invisible': [('uses', '=', False)]}">
                         Apps: <field name="uses" nolabel="1" class="d-inline"/>
                     </div>
                 </div>
-                <group invisible="not template_key">
+                <group attrs="{'invisible': [('template_key', '=', False)]}">
                     <field name="any_app" invisible="1"/>
-                    <field name="app_id" invisible="not any_app" required="any_app"
+                    <field name="app_id" attrs="{'invisible': [('any_app', '=', False)], 'required': [('any_app', '!=', False)]}"
                            options="{'no_create': True, 'no_open': True}"/>
                     <field name="name"/>
                     <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
@@ -119,9 +119,9 @@
                     <field name="user_ids" widget="many2many_tags" options="{'no_create': True}"/>
                     <field name="mode" widget="radio"/>
                     <field name="profile_ids" widget="many2many_tags" options="{'no_create': True}"
-                           required="mode != 'replace'"/>
+                           attrs="{'required': [('mode', '!=', 'replace')]}"/>
                 </group>
-                <div class="text-muted" invisible="mode != 'replace' or profile_ids">
+                <div class="text-muted" attrs="{'invisible': ['|', ('mode', '!=', 'replace'), ('profile_ids', '!=', [])]}">
                     Replacing with no profile takes every profile off these users: they are
                     no longer restricted by this module.
                 </div>
@@ -163,7 +163,7 @@
                     </group>
                 </group>
                 <field name="summary" nolabel="1" readonly="1"/>
-                <div class="text-muted" invisible="mode != 'move'">
+                <div class="text-muted" attrs="{'invisible': [('mode', '!=', 'move')]}">
                     Moving takes the ticked access away from the first user, for a job change.
                     Their Odoo groups are not touched.
                 </div>
@@ -198,17 +198,17 @@
                         <field name="app_id" options="{'no_create': True, 'no_open': True}"
                                placeholder="Pick an app..."/>
                     </group>
-                    <group invisible="not app_id">
+                    <group attrs="{'invisible': [('app_id', '=', False)]}">
                         <field name="level" widget="radio"/>
                         <field name="own_records"/>
                     </group>
                 </group>
-                <div class="alert alert-info" role="alert" invisible="not app_id or not other_additive">
+                <div class="alert alert-info" role="alert" attrs="{'invisible': ['|', ('app_id', '=', False), ('other_additive', '=', False)]}">
                     Some users of this profile carry other additive profiles: a restriction
                     only bites when all of them have it. Check the result with
                     <strong>Test as User</strong> on the profile.
                 </div>
-                <notebook invisible="not app_id">
+                <notebook attrs="{'invisible': [('app_id', '=', False)]}">
                     <page string="Menus" name="menus">
                         <div class="text-muted mb-2">
                             Untick a menu to hide it, with everything below it. Hiding a menu
@@ -217,7 +217,7 @@
                         <field name="menu_line_ids" nolabel="1">
                             <tree editable="bottom" create="0" delete="0"
                                   decoration-muted="is_config">
-                                <field name="menu_id" column_invisible="1" force_save="1"/>
+                                <field name="menu_id" invisible="1" force_save="1"/>
                                 <field name="label" readonly="1" force_save="1"/>
                                 <field name="is_config" readonly="1" force_save="1" optional="show"/>
                                 <field name="visible" widget="boolean_toggle"/>
@@ -234,23 +234,23 @@
                         <field name="model_line_ids" nolabel="1">
                             <tree editable="bottom" create="0" delete="0"
                                   decoration-muted="not owned">
-                                <field name="model_id" column_invisible="1" force_save="1"/>
-                                <field name="owned" column_invisible="1" force_save="1"/>
-                                <field name="is_config" column_invisible="1" force_save="1"/>
-                                <field name="owner_field" column_invisible="1" force_save="1"/>
-                                <field name="custom_domain" column_invisible="1" force_save="1"/>
+                                <field name="model_id" invisible="1" force_save="1"/>
+                                <field name="owned" invisible="1" force_save="1"/>
+                                <field name="is_config" invisible="1" force_save="1"/>
+                                <field name="owner_field" invisible="1" force_save="1"/>
+                                <field name="custom_domain" invisible="1" force_save="1"/>
                                 <field name="label" readonly="1" force_save="1"/>
                                 <field name="perm_read"/>
                                 <field name="perm_create"/>
                                 <field name="perm_write"/>
                                 <field name="perm_unlink"/>
-                                <field name="scope" readonly="not owner_field and scope != 'custom'"/>
+                                <field name="scope" attrs="{'readonly': ['&amp;', ('owner_field', '=', False), ('scope', '!=', 'custom')]}"/>
                                 <field name="shared_with" readonly="1" force_save="1"/>
                                 <field name="parent_label" readonly="1" force_save="1" optional="hide"/>
                             </tree>
                         </field>
                     </page>
-                    <page string="Reports" name="reports" invisible="not report_line_ids">
+                    <page string="Reports" name="reports" attrs="{'invisible': [('report_line_ids', '=', [])]}">
                         <field name="report_line_ids" nolabel="1">
                             <tree editable="bottom" create="0" delete="0">
                                 <field name="report_id" readonly="1" force_save="1"
@@ -260,7 +260,7 @@
                             </tree>
                         </field>
                     </page>
-                    <page string="Actions" name="actions" invisible="not action_line_ids">
+                    <page string="Actions" name="actions" attrs="{'invisible': [('action_line_ids', '=', [])]}">
                         <div class="text-muted mb-2">
                             The entries of the Action menu of the data of this app.
                         </div>
@@ -277,7 +277,7 @@
                 <field name="other_additive" invisible="1"/>
                 <footer>
                     <button name="action_apply" type="object" string="Apply"
-                            class="btn-primary" data-hotkey="q" invisible="not app_id"/>
+                            class="btn-primary" data-hotkey="q" attrs="{'invisible': [('app_id', '=', False)]}"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"
                             data-hotkey="x"/>
                 </footer>
@@ -291,13 +291,13 @@
         <field name="arch" type="xml">
             <form string="Scan Views">
                 <field name="state" invisible="1"/>
-                <group invisible="state != 'model'">
+                <group attrs="{'invisible': [('state', '!=', 'model')]}">
                     <field name="profile_id" readonly="1"/>
                     <field name="model_id" options="{'no_create': True}"/>
                     <field name="target" widget="radio"/>
-                    <field name="mode" invisible="target != 'buttons'"/>
+                    <field name="mode" attrs="{'invisible': [('target', '!=', 'buttons')]}"/>
                 </group>
-                <div invisible="state != 'select'">
+                <div attrs="{'invisible': [('state', '!=', 'select')]}">
                     <p class="text-muted">
                         Tick the buttons to restrict. The others are left untouched.
                     </p>
@@ -305,29 +305,29 @@
                         <tree editable="bottom" create="false" delete="false">
                             <field name="selected" string="Restrict" widget="boolean_toggle"/>
                             <field name="button_label" string="Label" readonly="1"
-                                   column_invisible="parent.target != 'buttons'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'buttons')]}"/>
                             <field name="view_type" string="View" readonly="1"
-                                   column_invisible="parent.target != 'buttons'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'buttons')]}"/>
                             <field name="button_type" string="Type" readonly="1"
-                                   column_invisible="parent.target != 'buttons'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'buttons')]}"/>
                             <field name="button_name" string="Method / Action" readonly="1"
-                                   column_invisible="parent.target != 'buttons'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'buttons')]}"/>
                             <field name="button_id" string="Button Id" readonly="1" optional="hide"
-                                   column_invisible="parent.target != 'buttons'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'buttons')]}"/>
                             <field name="element_label" string="Label" readonly="1"
-                                   column_invisible="parent.target != 'elements'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'elements')]}"/>
                             <field name="element_type" string="Kind" readonly="1"
-                                   column_invisible="parent.target != 'elements'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'elements')]}"/>
                             <field name="element_name" string="Name" readonly="1"
-                                   column_invisible="parent.target != 'elements'"/>
+                                   attrs="{'column_invisible': [('parent.target', '!=', 'elements')]}"/>
                         </tree>
                     </field>
                 </div>
                 <footer>
                     <button name="action_scan" type="object" string="Scan"
-                            class="btn-primary" invisible="state != 'model'" data-hotkey="q"/>
+                            class="btn-primary" attrs="{'invisible': [('state', '!=', 'model')]}" data-hotkey="q"/>
                     <button name="action_apply" type="object" string="Add the Rules"
-                            class="btn-primary" invisible="state != 'select'" data-hotkey="q"/>
+                            class="btn-primary" attrs="{'invisible': [('state', '!=', 'select')]}" data-hotkey="q"/>
                     <button string="Cancel" class="btn-secondary" special="cancel"
                             data-hotkey="x"/>
                 </footer>
@@ -372,16 +372,16 @@
                     <field name="user_id" options="{'no_create': True}"
                            domain="profile_id and [('id', 'in', preview_user_ids)] or [('share', '=', False)]"/>
                     <field name="profile_ids" widget="many2many_tags" readonly="1"
-                           invisible="not profile_ids"/>
+                           attrs="{'invisible': [('profile_ids', '=', [])]}"/>
                 </group>
-                <div class="text-muted mb-2" invisible="not user_id">
+                <div class="text-muted mb-2" attrs="{'invisible': [('user_id', '=', False)]}">
                     Open Preview shows Odoo as this user sees it, with their apps, menus,
                     records, fields and buttons, read only. A banner lets you exit it.
                 </div>
                 <field name="report" nolabel="1" readonly="1"/>
                 <footer>
                     <button name="action_open_preview" type="object" string="Open Preview"
-                            class="btn-primary" icon="fa-eye" invisible="not user_id"
+                            class="btn-primary" icon="fa-eye" attrs="{'invisible': [('user_id', '=', False)]}"
                             data-hotkey="q"/>
                     <button string="Close" class="btn-secondary" special="cancel"
                             data-hotkey="x"/>

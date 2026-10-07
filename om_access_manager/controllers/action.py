@@ -27,7 +27,7 @@ class ActionAccess(Action):
             if record and record._name.startswith('ir.actions.'):
                 return record.id
             return None
-        # Odoo 17 actions have no path
+        # Odoo 16 actions have no path
         return None
 
     @http.route()
@@ -38,8 +38,8 @@ class ActionAccess(Action):
         return request.env['om.access.profile']._filter_action_views(result)
 
     @http.route()
-    def run(self, action_id, context=None):
+    def run(self, action_id):
         # in a preview it runs too: menus open server actions that only pick a
         # view, and whatever one tries to save is refused by the preview
         request.env['om.access.profile']._check_action(self._resolve_action_id(action_id))
-        return super().run(action_id, context=context)
+        return super().run(action_id)

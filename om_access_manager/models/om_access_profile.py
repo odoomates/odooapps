@@ -11,12 +11,13 @@ from lxml import etree
 
 from odoo import _, api, fields, models, tools
 from odoo.exceptions import AccessError, UserError, ValidationError
+from odoo.osv import expression
 from odoo.tools import frozendict
 from dateutil.relativedelta import relativedelta
 from odoo.tools.safe_eval import datetime as safe_eval_datetime, time as safe_eval_time
 
 from .om_access_allowed import ALLOWED_KINDS
-from .conditions import condition_fields
+from .conditions import condition_domain, condition_fields
 from .value_filters import and_domains, names_read, or_domains
 from .login_tools import parse_networks
 
@@ -826,7 +827,7 @@ class OmAccessProfile(models.Model):
         if not managers_group or not self:
             return
         # the rules as they are now, not as cached before this change
-        self.env.registry.clear_cache('default')
+        self.env.registry.clear_caches()
         managers = managers_group.sudo().users.filtered('active')
         # no active access manager left at all is the worst lock out
         reasons = [self._om_lockout(manager) for manager in managers] or ['login']
@@ -1244,7 +1245,7 @@ class OmAccessProfile(models.Model):
         return action
 
     #
-    # view rewriting, called from Base.get_view()
+    # view rewriting, called from Base._get_view()
     #
 
     @staticmethod
@@ -1289,15 +1290,26 @@ class OmAccessProfile(models.Model):
             if isinstance(condition, str):
                 self._add_condition(node, attribute, condition, model_name, view_type, needed)
 
-    @classmethod
-    def _add_condition(cls, node, attribute, condition, model_name, view_type, needed):
-        """ OR a profile's condition into an attribute of the view. """
+    def _add_condition(self, node, attribute, condition, model_name, view_type, needed):
+        """ OR a profile's condition into an attribute of the view: a domain
+        of its attrs on Odoo 16, where the view conditions are domains. """
         existing = (node.get(attribute) or '').strip()
         if existing in ('1', 'True', 'true'):
             return
-        if existing and existing not in ('0', 'False', 'false'):
-            condition = '(%s) or (%s)' % (existing, condition)
-        node.set(attribute, condition)
+        try:
+            attrs = ast.literal_eval((node.get('attrs') or '{}').strip()) or {}
+        except (ValueError, SyntaxError):
+            return
+        current = attrs.get(attribute)
+        if current is True or (isinstance(current, int) and current):
+            return
+        current = list(current) if isinstance(current, (list, tuple)) else []
+        if attribute == 'invisible' and node.get('states'):
+            # as Odoo 16 reads them: the states with the domain of attrs, implicitly ANDed
+            current.append(('state', 'not in', node.attrib.pop('states').split(',')))
+        domain = condition_domain(condition, self.env[model_name], self.env.uid)
+        attrs[attribute] = expression.OR([expression.normalize_domain(current), domain]) if current else domain
+        node.set('attrs', repr(attrs))
         root = next((ancestor for ancestor in node.iterancestors() if ancestor.tag in VIEW_ROOTS), None)
         if root is not None:
             needed.setdefault(root, (model_name, set()))[1].update(condition_fields(condition))
@@ -1318,8 +1330,8 @@ class OmAccessProfile(models.Model):
                 if next((a for a in field.iterancestors() if a.tag in VIEW_ROOTS), None) is root
             }
             for name in sorted(names - present):
-                attribute = 'column_invisible' if root.tag in ('list', 'tree') else 'invisible'
-                root.append(etree.Element('field', {'name': name, attribute: '1'}))
+                # invisible="1" hides a column of a list on Odoo 16
+                root.append(etree.Element('field', {'name': name, 'invisible': '1'}))
 
     @classmethod
     def _hide_field(cls, node, view_type):
@@ -1333,7 +1345,8 @@ class OmAccessProfile(models.Model):
         if container in REMOVED_IN_VIEWS:
             cls._drop(node)
             return
-        node.set('column_invisible' if container in ('list', 'tree') else 'invisible', '1')
+        # invisible="1" hides a column of a list on Odoo 16
+        node.set('invisible', '1')
         node.set('readonly', '1')
         for attribute in ('sum', 'avg', 'aggregator', 'required'):
             node.attrib.pop(attribute, None)
@@ -1389,7 +1402,8 @@ class OmAccessProfile(models.Model):
         for node, node_model in list(self._iter_nodes(tree, model_name)):
             tag = node.tag
 
-            if tag == 'chatter':
+            if tag == 'div' and 'oe_chatter' in (node.get('class') or '').split():
+                # the chatter of an Odoo 16 form
                 if node_model is None:
                     continue
                 if node_model not in chatter_hidden:

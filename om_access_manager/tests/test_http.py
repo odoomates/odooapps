@@ -110,9 +110,11 @@ class TestAccessProfileHttp(HttpCase):
             await until('.modal .o_field_widget[name=domain]');
             (await until('.modal button[name=action_preset_own]')).click();
             await wait(1500);
-            if (!document.querySelector('.modal .o_field_widget[name=domain]').textContent.includes('Salesperson')) {
-                throw new Error('the editor does not show the filter: '
-                    + document.querySelector('.modal .o_field_widget[name=domain]').textContent);
+            // a filter reading the user is shown as text on Odoo 16
+            const field = document.querySelector('.modal .o_field_widget[name=domain]');
+            const shown = (field.querySelector('textarea') || {}).value || field.textContent;
+            if (!shown.includes("('user_id', '=', uid)")) {
+                throw new Error('the editor does not show the filter: ' + shown);
             }
             console.log('test successful');
         })()"""
@@ -201,6 +203,6 @@ class TestAccessProfileHttp(HttpCase):
             }
             console.log('test successful');
         })()"""
-        # Odoo 17 signs the browser in with the login as the password
+        # Odoo 16 signs the browser in with the login as the password
         self.user.password = self.user.login
         self.browser_js(f'/web#action={action.id}', user_code, login=self.user.login, timeout=90)

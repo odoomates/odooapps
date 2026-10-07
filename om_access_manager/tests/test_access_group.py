@@ -75,7 +75,7 @@ class TestAccessGroup(TransactionCase):
         """ The three tabs show their kind of view element, and a line added on
         one of them is of that kind. They are developer mode tabs, which the
         web client hides, so the view is read rather than driven. """
-        # Odoo 17 strips the developer mode tabs from the view it serves: read the view itself
+        # Odoo 16 strips the developer mode tabs from the view it serves: read the view itself
         arch = self.env.ref('om_access_manager.om_access_profile_view_form').arch
         for kind in ('view', 'page', 'filter'):
             self.assertIn(f"default_element_type': '{kind}'", arch)

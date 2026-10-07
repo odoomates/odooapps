@@ -5,9 +5,9 @@ import time
 
 from odoo.exceptions import UserError
 from odoo.http import root
-from odoo.tests import HttpCase, new_test_user, tagged
+from odoo.tests import new_test_user, tagged
 
-from .audit import lines_after_transaction
+from .audit import HttpCase, lines_after_transaction
 
 
 @tagged('post_install', '-at_install')
@@ -47,7 +47,7 @@ class TestPreview(HttpCase):
 
     @staticmethod
     def _url(model, method, route):
-        # Odoo 17 has no /web/dataset/call_button/<path>
+        # Odoo 16 has no /web/dataset/call_button/<path>
         return f'/web/dataset/{route}/{model}/{method}' if route == 'call_kw' else f'/web/dataset/{route}'
 
     def _call(self, model, method, args, kwargs=None, route='call_kw'):
@@ -103,8 +103,7 @@ class TestPreview(HttpCase):
 
     def test_nothing_is_saved(self):
         self._start()
-        self.assertIn('preview', self._error('res.partner', 'web_save', [self.mine.ids, {'name': 'Changed'}],
-                                             {'specification': {}}))
+        self.assertIn('preview', self._error('res.partner', 'write', [self.mine.ids, {'name': 'Changed'}]))
         self.assertEqual(self.mine.name, 'Previewed Own')
         self.assertIn('preview', self._error('res.partner', 'create', [{'name': 'Created in a preview'}]))
         self.assertFalse(self.env['res.partner'].search([('name', '=', 'Created in a preview')]))
@@ -145,7 +144,7 @@ class TestPreview(HttpCase):
             (6, 0, self.env['ir.model']._get('res.partner').ids)], 'log_read': True})
         self._start()
         with lines_after_transaction(self.env) as lines:
-            self._call('res.partner', 'web_read', [self.mine.ids], {'specification': {'name': {}}})
+            self._call('res.partner', 'read', [self.mine.ids, ['name']])
         reads = [line for line in lines if line['event'] == 'read']
         self.assertTrue(reads)
         self.assertEqual({line['user_id'] for line in reads}, {self.manager.id})

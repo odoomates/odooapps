@@ -2,10 +2,11 @@
 # into the views, and checked when a client saves a record.
 import xmlrpc.client
 
-from odoo.tests import HttpCase, new_test_user, tagged
-from odoo.tests.common import JsonRpcException
+from odoo.tests import new_test_user, tagged
 
 from odoo.addons.om_access_manager.models.value_filters import and_domains, or_domains
+
+from .audit import HttpCase, JsonRpcException
 
 
 @tagged('post_install', '-at_install')
@@ -67,10 +68,10 @@ class TestValueFilters(HttpCase):
     def test_additive_profiles_widen_the_values(self):
         self._carry(self.profile_be, self.profile_fr)
         for country in (self.be, self.fr):
-            self._call('res.partner', 'web_save', [self.partner.ids, {'country_id': country.id}], {'specification': {}})
+            self._call('res.partner', 'write', [self.partner.ids, {'country_id': country.id}])
             self.assertEqual(self.partner.country_id, country)
         with self.assertRaises(JsonRpcException):
-            self._call('res.partner', 'web_save', [self.partner.ids, {'country_id': self.de.id}], {'specification': {}})
+            self._call('res.partner', 'write', [self.partner.ids, {'country_id': self.de.id}])
 
     def test_an_additive_profile_without_a_filter_lifts_it(self):
         self._carry(self.profile_be, self.env['om.access.profile'].create({'name': 'No filter'}))
@@ -100,19 +101,18 @@ class TestValueFilters(HttpCase):
         self._carry(self._profile('Own states', [('state_id', "[('country_id', '=', country_id)]")]))
         self.partner.country_id = self.be
         with self.assertRaises(JsonRpcException):
-            self._call('res.partner', 'web_save', [self.partner.ids, {'state_id': self.state_fr.id}],
-                       {'specification': {}})
+            self._call('res.partner', 'write', [self.partner.ids, {'state_id': self.state_fr.id}])
         # the country written with it counts
-        self._call('res.partner', 'web_save', [self.partner.ids, {'state_id': self.state_fr.id,
-                                                                  'country_id': self.fr.id}], {'specification': {}})
+        self._call('res.partner', 'write', [self.partner.ids, {'state_id': self.state_fr.id,
+                                                                  'country_id': self.fr.id}])
         self.assertEqual(self.partner.state_id, self.state_fr)
 
     def test_lines_and_many2many(self):
         self._carry(self._profile('Tag A', [('category_id', [self.tag_a])]))
         with self.assertRaises(JsonRpcException):
-            self._call('res.partner', 'web_save', [self.partner.ids, {'child_ids': [
+            self._call('res.partner', 'write', [self.partner.ids, {'child_ids': [
                 (0, 0, {'name': 'Line', 'category_id': [(6, 0, [self.tag_b.id])]}),
-            ]}], {'specification': {}})
+            ]}])
         with self.assertRaises(JsonRpcException):
             self._call('res.partner', 'write', [self.partner.ids, {'category_id': [(4, self.tag_b.id)]}])
         self._call('res.partner', 'write', [self.partner.ids, {'category_id': [(4, self.tag_a.id)]}])
@@ -122,12 +122,12 @@ class TestValueFilters(HttpCase):
         self._carry(self._profile('Parent country', [('country_id', "[('id', '=', parent.country_id)]")]))
         self.partner.country_id = self.be
         with self.assertRaises(JsonRpcException):
-            self._call('res.partner', 'web_save', [self.partner.ids, {'child_ids': [
+            self._call('res.partner', 'write', [self.partner.ids, {'child_ids': [
                 (0, 0, {'name': 'Line', 'country_id': self.fr.id}),
-            ]}], {'specification': {}})
-        self._call('res.partner', 'web_save', [self.partner.ids, {'child_ids': [
+            ]}])
+        self._call('res.partner', 'write', [self.partner.ids, {'child_ids': [
             (0, 0, {'name': 'Line', 'country_id': self.be.id}),
-        ]}], {'specification': {}})
+        ]}])
         self.assertEqual(self.partner.child_ids.country_id, self.be)
 
     def test_xmlrpc(self):

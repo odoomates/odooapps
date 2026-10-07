@@ -5,8 +5,9 @@ import xmlrpc.client
 
 from odoo.exceptions import AccessError, ValidationError
 from odoo import http
-from odoo.tests import HttpCase, new_test_user, tagged
-from odoo.tests.common import JsonRpcException
+from odoo.tests import new_test_user, tagged
+
+from .audit import HttpCase, JsonRpcException
 
 
 @tagged('post_install', '-at_install')
@@ -45,7 +46,7 @@ class TestReview(HttpCase):
 
     def test_call_button_carries_the_field_guard(self):
         result = self._rpc('/web/dataset/call_button', 'res.partner', 'web_search_read',
-                           [[('id', '=', self.partner.id)], {'email': {}}])
+                           [[('id', '=', self.partner.id)], ['email']])
         self.assertIs(result['records'][0]['email'], False)
 
     def test_the_export_dialog_and_file(self):
@@ -68,7 +69,7 @@ class TestReview(HttpCase):
                 self._rpc(f'/web/dataset/call_kw/res.partner/{method}', 'res.partner', method, args, kwargs)
 
     def test_values_read_for_a_grouped_relation_are_blanked(self):
-        self.skipTest("Odoo 17 groups without reading the values of the grouped relation")
+        self.skipTest("Odoo 16 groups without reading the values of the grouped relation")
         result = self._rpc('/web/dataset/call_kw/res.partner/web_read_group', 'res.partner', 'web_read_group',
                            [[('id', '=', self.child.id)], ['parent_id']],
                            {'groupby_read_specification': {'parent_id': {'email': {}}}})
@@ -76,9 +77,8 @@ class TestReview(HttpCase):
         self.assertIs(values['email'], False)
 
     def test_read_only_fields_of_lines_are_not_written(self):
-        self._rpc('/web/dataset/call_kw/res.partner/web_save', 'res.partner', 'web_save',
-                  [self.partner.ids, {'child_ids': [[1, self.child.id, {'phone': '999', 'name': 'Renamed Child'}]]}],
-                  {'specification': {}})
+        self._rpc('/web/dataset/call_kw/res.partner/write', 'res.partner', 'write',
+                  [self.partner.ids, {'child_ids': [[1, self.child.id, {'phone': '999', 'name': 'Renamed Child'}]]}])
         self.child.invalidate_recordset()
         self.assertEqual((self.child.name, self.child.phone), ('Renamed Child', '222'))
 
@@ -100,7 +100,7 @@ class TestReview(HttpCase):
             self.partner.with_user(self.user).write({'name': 'Not mine'})
 
     def test_an_api_key_follows_the_sign_in_rules(self):
-        # Odoo 17 has no JSON-2: an API key is used over XML-RPC
+        # Odoo 16 has no JSON-2: an API key is used over XML-RPC
         key = self.env['res.users.apikeys'].with_user(self.user)._generate('rpc', 'review')
         count = self.xmlrpc_object.execute_kw(
             self.env.cr.dbname, self.user.id, key, 'res.partner', 'search_count', [[]])

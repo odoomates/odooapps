@@ -2,8 +2,8 @@
 
 import { Component } from "@odoo/owl";
 import { browser } from "@web/core/browser/browser";
-import { jsonrpc } from "@web/core/network/rpc_service";
 import { registry } from "@web/core/registry";
+import { useService } from "@web/core/utils/hooks";
 import { session } from "@web/session";
 
 /**
@@ -14,17 +14,21 @@ import { session } from "@web/session";
 export class PreviewBanner extends Component {
     static template = "om_access_manager.PreviewBanner";
 
+    setup() {
+        this.rpc = useService("rpc");
+    }
+
     get preview() {
         return session.om_preview;
     }
 
     async exit() {
-        const { url } = await jsonrpc("/om_access_manager/preview/stop");
+        const { url } = await this.rpc("/om_access_manager/preview/stop");
         const target = new URL(url, browser.location.href);
         const here = new URL(browser.location.href);
         browser.location.href = url;
         if (target.pathname === here.pathname && target.search === here.search) {
-            // Odoo 17 URLs differ by their hash only: load the page again
+            // Odoo 16 URLs differ by their hash only: load the page again
             browser.location.reload();
         }
     }

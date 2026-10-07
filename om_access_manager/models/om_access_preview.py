@@ -60,7 +60,7 @@ class ResUsers(models.Model):
         if not request:
             raise UserError(_("A preview needs a browser session."))
         if 'res.users.settings' in self.env:
-            # Odoo 17 creates them on the first page load, and a preview is read only
+            # Odoo 16 creates them on the first page load, and a preview is read only
             self.env['res.users.settings'].sudo()._find_or_create_for_user(target)
         request.session[PREVIEW_KEY] = {
             'uid': target.id,

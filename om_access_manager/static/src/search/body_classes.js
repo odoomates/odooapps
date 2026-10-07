@@ -1,5 +1,6 @@
 /** @odoo-module **/
 
+import { whenReady } from "@odoo/owl";
 import { registry } from "@web/core/registry";
 import { session } from "@web/session";
 
@@ -12,7 +13,8 @@ registry.category("services").add("om_access_body_classes", {
     start() {
         const classes = session.om_access_classes || [];
         if (classes.length) {
-            document.body.classList.add(...classes);
+            // Odoo 16 starts the services before the page is parsed
+            whenReady(() => document.body.classList.add(...classes));
         }
     },
 });

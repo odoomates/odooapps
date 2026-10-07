@@ -53,7 +53,9 @@ class OmAccessProfileButton(models.Model):
          'A profile can only carry one rule per button.'),
     ]
 
-    @api.depends('button_label', 'button_name')
-    def _compute_display_name(self):
+    def name_get(self):
+        result = []
         for line in self:
-            line.display_name = line.button_label or line.button_name or ''
+            name = line.button_label or line.button_name or ''
+            result.append((line.id, name or ''))
+        return result

@@ -24,7 +24,7 @@ class IrUiMenu(models.Model):
 
     @api.model
     def get_user_roots(self):
-        # Odoo 17 leaves the apps out of the blacklist of load_menus(): a hidden
+        # Odoo 16 leaves the apps out of the blacklist of load_menus(): a hidden
         # app would stay on the home screen
         roots = super().get_user_roots()
         blacklist = set(self._load_menus_blacklist())

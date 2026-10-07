@@ -413,7 +413,7 @@ class OmAccessProfile(models.Model):
         User, Administrator), and which one this profile grants. """
         menus = self.env['ir.ui.menu'].sudo().with_context(**{'ir.ui.menu.full_list': True}).search([('id', 'child_of', menu.id)])
         gates = menus.groups_id
-        # Odoo 17 has no access levels: the application of the groups stands in
+        # Odoo 16 has no access levels: the application of the groups stands in
         privileges = gates.category_id
         forbidden = self.env['res.groups']
         for xmlid in UNGRANTABLE_GROUPS:

@@ -24,7 +24,8 @@ class OmAccessHistoryMixin(models.AbstractModel):
         if changed:
             detail = ' (%s)' % ', '.join(
                 self._fields[name].string for name in changed if name in self._fields)
-        for profile, profile_lines in lines.grouped('profile_id').items():
+        for profile in lines.profile_id:
+            profile_lines = lines.filtered(lambda line: line.profile_id == profile)
             items = Markup('').join(
                 Markup('<li>%s%s</li>') % (line._om_history_label(), detail) for line in profile_lines)
             profile.message_post(

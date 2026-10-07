@@ -15,7 +15,7 @@ class TestTemplates(TransactionCase):
         super().setUpClass()
         cls.user = new_test_user(cls.env, 'om_access_template_user', groups='base.group_user')
         cls.discuss = cls.env.ref('mail.menu_root_discuss')
-        # Odoo 17 has no data menu under Discuss: give it its canned responses
+        # Odoo 16 has no data menu under Discuss: give it its canned responses
         cls.env['ir.ui.menu'].create({
             'name': 'Canned Responses', 'parent_id': cls.discuss.id,
             'action': f"ir.actions.act_window,{cls.env.ref('mail.mail_shortcode_action').id}"})
@@ -23,8 +23,14 @@ class TestTemplates(TransactionCase):
     def _create(self, key, **values):
         form = Form(self.env['om.access.template.wizard'])
         form.template_key = key
+        Wizard = self.env['om.access.template.wizard']
         for name, value in values.items():
-            setattr(form, name, value)
+            if Wizard._fields[name].type == 'many2many':
+                # Odoo 16's Form adds the records of a many2many one by one
+                for record in value:
+                    getattr(form, name).add(record)
+            else:
+                setattr(form, name, value)
         action = form.save().action_create()
         return self.env['om.access.profile'].browse(action['res_id'])
 

@@ -16,7 +16,7 @@ class TestAppWizard(TransactionCase):
             'name': 'App Profile', 'user_ids': [(6, 0, cls.user.ids)],
         })
         cls.discuss = cls.env.ref('mail.menu_root_discuss')
-        # Odoo 17 has no data menu under Discuss: give it its canned responses
+        # Odoo 16 has no data menu under Discuss: give it its canned responses
         cls.env['ir.ui.menu'].create({
             'name': 'Canned Responses', 'parent_id': cls.discuss.id,
             'action': f"ir.actions.act_window,{cls.env.ref('mail.mail_shortcode_action').id}"})

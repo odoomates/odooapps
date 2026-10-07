@@ -24,6 +24,18 @@ EXTRA_TOTALS = 'extra_total_fields'
 DOMAIN_SUBQUERY_OPERATORS = ('any', 'not any', 'any!', 'not any!')
 
 
+def onchange_specification(field_onchange):
+    """ The fields of an onchange (``order_line``, ``order_line.price_unit``)
+    nested as Odoo 17's specification: {'order_line': {'fields': {'price_unit': {}}}}. """
+    specification = {}
+    for path in field_onchange or ():
+        node = specification
+        for name in path.split('.'):
+            node = node.setdefault('fields', {}).setdefault(name, {}) if node is not specification \
+                else node.setdefault(name, {})
+    return specification
+
+
 class RecordValues:
     """ The values of a record being saved, as the web client gives them to a
     domain: what is written, else what the record holds, else the default;
@@ -347,30 +359,25 @@ class Base(models.AbstractModel):
         result = super().search_read(domain, fields, offset=offset, limit=limit, order=order, **read_kwargs)
         return self._om_blank(rules, result) if rules else result
 
-    def web_read(self, specification):
-        rules = self._om_rpc_entry('web_read') and self._om_field_rules()
-        result = super().web_read(specification)
-        return self._om_blank(rules, result, specification) if rules else result
-
     @api.model
-    def web_search_read(self, domain, specification, offset=0, limit=None, order=None, count_limit=None):
+    def web_search_read(self, domain=None, fields=None, offset=0, limit=None, order=None, count_limit=None):
         rules = self._om_rpc_entry('web_search_read') and self._om_field_rules()
         if rules:
             self._om_check_domain(rules, domain)
             self._om_check_order(rules, order)
         result = super().web_search_read(
-            domain, specification, offset=offset, limit=limit, order=order, count_limit=count_limit)
+            domain, fields, offset=offset, limit=limit, order=order, count_limit=count_limit)
         if rules:
-            self._om_blank(rules, result.get('records', []), specification)
+            self._om_blank(rules, result.get('records', []))
         return result
 
     @api.model
-    def search(self, domain, offset=0, limit=None, order=None):
+    def search(self, domain, offset=0, limit=None, order=None, count=False):
         rules = self._om_rpc_entry('search') and self._om_field_rules()
         if rules:
             self._om_check_domain(rules, domain)
             self._om_check_order(rules, order)
-        return super().search(domain, offset=offset, limit=limit, order=order)
+        return super().search(domain, offset=offset, limit=limit, order=order, count=count)
 
     @api.model
     def search_count(self, domain, limit=None):
@@ -380,7 +387,8 @@ class Base(models.AbstractModel):
         return super().search_count(domain, limit=limit)
 
     @api.model
-    def web_read_group(self, domain, fields, groupby, limit=None, offset=0, orderby=False, lazy=True):
+    def web_read_group(self, domain, fields, groupby, limit=None, offset=0, orderby=False, lazy=True,
+                       **kwargs):
         rules = self._om_rpc_entry('web_read_group') and self._om_field_rules()
         if rules:
             self._om_check_domain(rules, domain)
@@ -388,7 +396,7 @@ class Base(models.AbstractModel):
             self._om_check_specs(rules, fields)
             self._om_check_order(rules, orderby)
         return super().web_read_group(domain, fields, groupby, limit=limit, offset=offset, orderby=orderby,
-                                      lazy=lazy)
+                                      lazy=lazy, **kwargs)
 
     @api.model
     def read_group(self, domain, fields, groupby, offset=0, limit=None, orderby=False, lazy=True):
@@ -458,14 +466,6 @@ class Base(models.AbstractModel):
         self._om_check_search_panel('search_panel_select_multi_range', field_name, kwargs)
         return super().search_panel_select_multi_range(field_name, **kwargs)
 
-    @api.model
-    def search_fetch(self, domain, field_names=None, offset=0, limit=None, order=None):
-        rules = self._om_rpc_entry('search_fetch') and self._om_field_rules()
-        if rules:
-            self._om_check_domain(rules, domain)
-            self._om_check_order(rules, order)
-        return super().search_fetch(domain, field_names, offset=offset, limit=limit, order=order)
-
     def copy_data(self, default=None):
         rules = self._om_rpc_entry('copy_data') and self._om_field_rules()
         result = super().copy_data(default)
@@ -520,22 +520,12 @@ class Base(models.AbstractModel):
     # writing
     #
 
-    def onchange(self, values, field_names, fields_spec):
+    def onchange(self, values, field_name, field_onchange):
         rules = self._om_rpc_entry('onchange') and self._om_field_rules()
-        result = super().onchange(values, field_names, fields_spec)
+        result = super().onchange(values, field_name, field_onchange)
         if rules and isinstance(result.get('value'), dict):
-            self._om_blank(rules, [result['value']], fields_spec)
+            self._om_blank(rules, [result['value']], onchange_specification(field_onchange))
         return result
-
-    def web_save(self, vals, specification, next_id=None):
-        if self._om_rpc_entry('web_save') and (value_rules := self._om_value_rules()):
-            for record in self or [None]:
-                self._om_check_values(value_rules, vals, record)
-        rules = self._om_rpc_entry('web_save') and self._om_field_rules()
-        if rules:
-            vals = self._om_drop_locked(rules, vals, self[:1] or None)
-        result = super().web_save(vals, specification, next_id=next_id)
-        return self._om_blank(rules, result, specification) if rules else result
 
     def write(self, vals):
         if self._om_rpc_entry('write') and (value_rules := self._om_value_rules()):

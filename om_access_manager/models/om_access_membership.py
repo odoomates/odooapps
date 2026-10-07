@@ -67,10 +67,12 @@ class OmAccessProfileAssignment(models.Model):
          "An assignment cannot end before it starts."),
     ]
 
-    @api.depends('profile_id', 'user_id')
-    def _compute_display_name(self):
+    def name_get(self):
+        result = []
         for line in self:
-            line.display_name = f"{line.profile_id.name or ''}: {line.user_id.name or ''}"
+            name = f"{line.profile_id.name or ''}: {line.user_id.name or ''}"
+            result.append((line.id, name or ''))
+        return result
 
     def _om_state_today(self):
         self.ensure_one()
@@ -133,5 +135,5 @@ class ResGroups(models.Model):
         # a member added or removed from the group's side changes their profiles
         if {'user_ids', 'implied_ids', 'implied_by_ids'} & set(vals) \
                 and self.env['om.access.profile'].sudo().search_count([('group_ids', '!=', False)], limit=1):
-            self.env.registry.clear_cache('default')
+            self.env.registry.clear_caches()
         return result

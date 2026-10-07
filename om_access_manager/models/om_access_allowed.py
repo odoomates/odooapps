@@ -106,15 +106,17 @@ class OmAccessAllowed(models.Model):
             if not line.per_user and not line.res_id:
                 raise ValidationError(_("Pick the allowed record, or tick 'Each user's own'."))
 
-    @api.depends('res_model', 'res_id', 'per_user')
-    def _compute_display_name(self):
+    def name_get(self):
+        result = []
         for line in self:
             if line.per_user:
-                line.display_name = _("Each user's own")
+                name = _("Each user's own")
             elif line.res_model in self.env and line.res_id:
-                line.display_name = self.env[line.res_model].sudo().browse(line.res_id).display_name
+                name = self.env[line.res_model].sudo().browse(line.res_id).display_name
             else:
-                line.display_name = False
+                name = False
+            result.append((line.id, name or ''))
+        return result
 
     @api.model
     def _filters(self, kind, ids):

@@ -1,24 +1,15 @@
 /** @odoo-module **/
 
-import { Component, onWillStart, useState } from "@odoo/owl";
+import { Component, onWillStart, onWillUpdateProps, useState } from "@odoo/owl";
 import { CheckBox } from "@web/core/checkbox/checkbox";
-import { _t } from "@web/core/l10n/translation";
-import { x2ManyCommands } from "@web/core/orm_service";
+import { _lt, _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
-import { useRecordObserver } from "@web/model/relational_model/utils";
+import { sprintf } from "@web/core/utils/strings";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 import { MenuPanel } from "./menu_panel";
 
 const MODEL = "om.access.profile";
-
-/** Odoo 17 keeps applyCommands private: do what its linkTo() does, with a list of commands. */
-function applyCommands(list, commands) {
-    return list.model.mutex.exec(async () => {
-        await list._applyCommands(commands);
-        await list._onUpdate();
-    });
-}
 
 /**
  * The Menus & Apps tab: the real menu tree of the database, where a profile is
@@ -53,14 +44,7 @@ export class MenuTreeField extends Component {
         });
         // the apps the users of the profile can open follow its users, saved or not
         this.membersKey = null;
-        useRecordObserver((record) => {
-            const users = record.data.user_ids;
-            const key = users ? users.currentIds.join(",") : "";
-            if (key !== this.membersKey) {
-                this.membersKey = key;
-                return this.loadAppAccess(users ? users.currentIds : []);
-            }
-        });
+        onWillUpdateProps((nextProps) => this.observeMembers(nextProps.record));
         this.menus = {};
         this.children = {};
         this.roots = [];
@@ -73,7 +57,17 @@ export class MenuTreeField extends Component {
             this.roots = menus.filter((menu) => !menu.parent_id).map((menu) => menu.id);
             this.prints = await this.orm.call(MODEL, "om_tree_prints", []);
             await this.loadTreeState();
+            await this.observeMembers(this.props.record);
         });
+    }
+
+    observeMembers(record) {
+        const users = record.data.user_ids;
+        const key = users ? users.currentIds.join(",") : "";
+        if (key !== this.membersKey) {
+            this.membersKey = key;
+            return this.loadAppAccess(users ? users.currentIds : []);
+        }
     }
 
     get record() {
@@ -290,36 +284,28 @@ export class MenuTreeField extends Component {
         if (info && granted) {
             if (shown && this.notGiven(menuId)) {
                 // ticking an app its users cannot open gives it to them
-                await applyCommands(granted, [
-                    [x2ManyCommands.LINK, info.grant.id, { id: info.grant.id, display_name: info.grant.name }],
-                ]);
+                await granted.replaceWith([...granted.currentIds, info.grant.id]);
             } else if (!shown) {
                 // unticking an app the profile gives takes it back
                 const given = info.group_ids.filter((id) => this.grantedIds.has(id));
                 if (given.length) {
-                    await applyCommands(granted, given.map((id) => [x2ManyCommands.UNLINK, id]));
+                    await granted.replaceWith(granted.currentIds.filter((id) => !given.includes(id)));
                 }
             }
         }
         const hidden = this.hiddenIds;
-        const commands = [];
+        let next;
         if (shown) {
-            if (hidden.has(menuId)) {
-                commands.push([x2ManyCommands.UNLINK, menuId]);
+            if (!hidden.has(menuId)) {
+                return;
             }
+            next = [...hidden].filter((id) => id !== menuId);
         } else {
-            const menu = this.menus[menuId];
-            commands.push([x2ManyCommands.LINK, menuId, { id: menuId, display_name: menu.name }]);
             // the menu now hides its whole branch: what was hidden below it is redundant
-            for (const id of this.descendants(menuId)) {
-                if (hidden.has(id)) {
-                    commands.push([x2ManyCommands.UNLINK, id]);
-                }
-            }
+            const below = new Set(this.descendants(menuId));
+            next = [...[...hidden].filter((id) => !below.has(id)), menuId];
         }
-        if (commands.length) {
-            return applyCommands(this.record.data[this.props.name], commands);
-        }
+        return this.record.data[this.props.name].replaceWith(next);
     }
 
     async togglePrint(entry, shown) {
@@ -342,7 +328,7 @@ export class MenuTreeField extends Component {
     }
 
     hiddenLabel(count) {
-        return count === 1 ? _t("1 hidden") : _t("%s hidden", count);
+        return count === 1 ? _t("1 hidden") : sprintf(_t("%s hidden"), count);
     }
 
     // the panel
@@ -350,7 +336,7 @@ export class MenuTreeField extends Component {
     /** The panel writes through the server: the profile must exist and hold
      * the changes made on the form first. */
     async ensureSaved() {
-        if (this.record.isNew || (await this.record.isDirty())) {
+        if (this.record.isNew || this.record.isDirty) {
             const saved = await this.record.save();
             if (!saved) {
                 return false;
@@ -403,12 +389,11 @@ export class MenuTreeField extends Component {
     }
 }
 
-export const menuTreeField = {
-    component: MenuTreeField,
-    displayName: _t("Menu Tree"),
-    supportedTypes: ["many2many"],
-    relatedFields: () => [{ name: "display_name", type: "char" }],
-    isEmpty: () => false,
+MenuTreeField.displayName = _lt("Menu Tree");
+MenuTreeField.supportedTypes = ["many2many"];
+MenuTreeField.fieldsToFetch = {
+    display_name: { name: "display_name", type: "char" },
 };
+MenuTreeField.isSet = () => true;
 
-registry.category("fields").add("om_access_menu_tree", menuTreeField);
+registry.category("fields").add("om_access_menu_tree", MenuTreeField);

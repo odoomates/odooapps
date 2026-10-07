@@ -13,7 +13,7 @@ class IrFilters(models.Model):
 
     @api.model
     def create_or_replace(self, vals):
-        # saving a search from the web client, on Odoo 17
+        # saving a search from the web client, on Odoo 16
         self._om_check_favorites()
         return super().create_or_replace(vals)
 

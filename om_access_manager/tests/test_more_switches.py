@@ -4,8 +4,9 @@ import json
 
 from odoo.exceptions import AccessError
 from odoo import http
-from odoo.tests import HttpCase, new_test_user, tagged
-from odoo.tests.common import JsonRpcException
+from odoo.tests import new_test_user, tagged
+
+from .audit import HttpCase, JsonRpcException
 
 
 @tagged('post_install', '-at_install')
@@ -35,7 +36,7 @@ class TestMoreSwitches(HttpCase):
 
     def test_saving_a_search_is_refused(self):
         self.authenticate(self.user.login, self.password)
-        # Odoo 17 saves a search with create_or_replace, for one user
+        # Odoo 16 saves a search with create_or_replace, for one user
         values = {'name': 'Mine', 'model_id': 'res.partner', 'domain': '[]', 'user_id': self.user.id}
         self._call('ir.filters', 'create_or_replace', [values])
         self.profile.block_favorites = True
@@ -44,7 +45,7 @@ class TestMoreSwitches(HttpCase):
 
     def test_changing_properties_is_refused(self):
         if 'properties' not in self.env['res.partner']._fields:
-            self.skipTest("Odoo 17 contacts have no properties")
+            self.skipTest("Odoo 16 contacts have no properties")
         self.profile.block_properties = True
         definition = [{'name': 'om_prop', 'string': 'Prop', 'type': 'char', 'definition_changed': True}]
         partner = self.partner.with_user(self.user)
@@ -76,7 +77,7 @@ class TestMoreSwitches(HttpCase):
         self.assertNotIn('email', [field['id'] for field in found])
         self.assertIn('name', [field['id'] for field in found])
         # still shown on the screens
-        rows = self._call('res.partner', 'web_read', [self.partner.ids], {'specification': {'email': {}}})
+        rows = self._call('res.partner', 'read', [self.partner.ids, ['email']])
         self.assertEqual(rows[0]['email'], 'secret@example.com')
         data = json.dumps({'model': 'res.partner', 'ids': self.partner.ids, 'domain': [], 'import_compat': False,
                            'fields': [{'name': 'email', 'label': 'Email'}]})
