@@ -56,31 +56,31 @@ class ReportAgedPartnerBalance(models.AbstractModel):
 
         if target_move == 'posted':
             move_state = ['posted']
-        arg_list = (tuple(move_state), tuple(account_type))
-
-        reconciliation_clause = '(l.reconciled IS FALSE)'
-        cr.execute('SELECT debit_move_id, credit_move_id FROM account_partial_reconcile where max_date > %s',
-                   (date_from,))
-        reconciled_after_date = []
-        for row in cr.fetchall():
-            reconciled_after_date += [row[0], row[1]]
-        if reconciled_after_date:
-            reconciliation_clause = '(l.reconciled IS FALSE OR l.id IN %s)'
-            arg_list += (tuple(reconciled_after_date),)
-        arg_list += (date_from, tuple(company_ids))
+        # the open items as of the date: the items not reconciled yet, and the ones reconciled after it
+        reconciliation_clause = '''(l.reconciled IS FALSE
+            OR EXISTS(SELECT 1 FROM account_partial_reconcile p
+                       WHERE p.debit_move_id = l.id AND p.max_date > %(date_from)s)
+            OR EXISTS(SELECT 1 FROM account_partial_reconcile p
+                       WHERE p.credit_move_id = l.id AND p.max_date > %(date_from)s))'''
+        args = {
+            'move_state': tuple(move_state),
+            'account_type': tuple(account_type),
+            'date_from': date_from,
+            'company_ids': tuple(company_ids),
+        }
         query = ('''
             SELECT DISTINCT l.partner_id, UPPER(res_partner.name)
             FROM account_move_line AS l left join res_partner on l.partner_id = res_partner.id, '''
                  '''account_account, account_move am
             WHERE (l.account_id = account_account.id)
                 AND (l.move_id = am.id)
-                AND (am.state IN %s)
-                AND (account_account.account_type IN %s)
+                AND (am.state IN %(move_state)s)
+                AND (account_account.account_type IN %(account_type)s)
                 AND ''' + reconciliation_clause + '''
-                AND (l.date <= %s)
-                AND l.company_id IN %s
+                AND (l.date <= %(date_from)s)
+                AND l.company_id IN %(company_ids)s
             ORDER BY UPPER(res_partner.name)''')
-        cr.execute(query, arg_list)
+        cr.execute(query, args)
         partners = cr.dictfetchall()
         # put a total of 0
         for i in range(7):
@@ -92,109 +92,71 @@ class ReportAgedPartnerBalance(models.AbstractModel):
         lines = dict((partner['partner_id'] or False, []) for partner in partners)
         if not partner_ids:
             return [], [], {}
+        args['partner_ids'] = tuple(partner_ids)
+
+        # the period of each item: 6 when it is not due yet, else 1 to 5 for the
+        # periods '0' (the oldest) to '4' (the most recent)
+        period_cases = ['WHEN COALESCE(l.date_maturity, l.date) >= %(date_from)s THEN 6']
+        for i in range(5):
+            start, stop = periods[str(i)]['start'], periods[str(i)]['stop']
+            args.update({f'start_{i}': start, f'stop_{i}': stop})
+            if start and stop:
+                condition = f'COALESCE(l.date_maturity, l.date) BETWEEN %(start_{i})s AND %(stop_{i})s'
+            elif start:
+                condition = f'COALESCE(l.date_maturity, l.date) >= %(start_{i})s'
+            else:
+                condition = f'COALESCE(l.date_maturity, l.date) <= %(stop_{i})s'
+            period_cases.append(f'WHEN {condition} THEN {i + 1}')
+
+        # the open items with what was reconciled with them until the date, in one query: an item
+        # reconciled before the date and not after is settled, and left out
+        query = '''
+            SELECT l.id, l.partner_id, l.company_id, l.balance,
+                   CASE ''' + ' '.join(period_cases) + ''' END AS period,
+                   (SELECT COALESCE(SUM(p.amount), 0) FROM account_partial_reconcile p
+                     WHERE p.credit_move_id = l.id AND p.max_date <= %(date_from)s) AS matched_debit,
+                   (SELECT COALESCE(SUM(p.amount), 0) FROM account_partial_reconcile p
+                     WHERE p.debit_move_id = l.id AND p.max_date <= %(date_from)s) AS matched_credit
+            FROM account_move_line AS l, account_account, account_move am
+            WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
+                AND (am.state IN %(move_state)s)
+                AND (account_account.account_type IN %(account_type)s)
+                AND ((l.partner_id IN %(partner_ids)s) OR (l.partner_id IS NULL))
+                AND ''' + reconciliation_clause + '''
+                AND (l.date <= %(date_from)s)
+                AND l.company_id IN %(company_ids)s'''
+        cr.execute(query, args)
 
         # This dictionary will store the not due amount of all partners
         undue_amounts = {}
-        query = '''SELECT l.id
-                FROM account_move_line AS l, account_account, account_move am
-                WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
-                    AND (am.state IN %s)
-                    AND (account_account.account_type IN %s)
-                    AND (COALESCE(l.date_maturity,l.date) >= %s)\
-                    AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
-                AND (l.date <= %s)
-                AND l.company_id IN %s'''
-        cr.execute(query, (tuple(move_state), tuple(account_type), date_from,
-                           tuple(partner_ids), date_from, tuple(company_ids)))
-        aml_ids = cr.fetchall()
-        aml_ids = aml_ids and [x[0] for x in aml_ids] or []
-        for line in self.env['account.move.line'].browse(aml_ids):
-            partner_id = line.partner_id.id or False
-            if partner_id not in undue_amounts:
-                undue_amounts[partner_id] = 0.0
-            line_amount = line.company_id.currency_id._convert(line.balance,
-                                                               user_currency,
-                                                               company, date)
+        # Each history will contain: history[1] = {'<partner_id>': <partner_debit-credit>}
+        history = [{} for i in range(5)]
+        MoveLine = self.env['account.move.line']
+        Company = self.env['res.company']
+        for row in cr.dictfetchall():
+            partner_id = row['partner_id'] or False
+            line_currency = Company.browse(row['company_id']).currency_id
+            line_amount = line_currency._convert(row['balance'], user_currency, company, date)
             if user_currency.is_zero(line_amount):
                 continue
-            for partial_line in line.matched_debit_ids:
-                if partial_line.max_date <= date_from:
-                    line_currency = partial_line.company_id.currency_id
-                    line_amount += line_currency._convert(partial_line.amount,
-                                                          user_currency,
-                                                          company, date)
-            for partial_line in line.matched_credit_ids:
-                if partial_line.max_date <= date_from:
-                    line_currency = partial_line.company_id.currency_id
-                    line_amount -= line_currency._convert(partial_line.amount,
-                                                          user_currency,
-                                                          company, date)
-            if not user_currency.is_zero(line_amount):
-                undue_amounts[partner_id] += line_amount
-                lines[partner_id].append({
-                    'line': line,
-                    'amount': line_amount,
-                    'period': 6,
-                })
+            # the amounts reconciled with an item are in the currency of its company
+            if row['matched_debit']:
+                line_amount += line_currency._convert(row['matched_debit'], user_currency, company, date)
+            if row['matched_credit']:
+                line_amount -= line_currency._convert(row['matched_credit'], user_currency, company, date)
+            if user_currency.is_zero(line_amount):
+                continue
+            amounts = undue_amounts if row['period'] == 6 else history[row['period'] - 1]
+            amounts[partner_id] = amounts.get(partner_id, 0.0) + line_amount
+            lines.setdefault(partner_id, []).append({
+                'line': MoveLine.browse(row['id']),
+                'amount': line_amount,
+                'period': row['period'],
+            })
 
-        # Use one query per period and store results in history (a list variable)
-        # Each history will contain: history[1] = {'<partner_id>': <partner_debit-credit>}
-        history = []
-        for i in range(5):
-            args_list = (tuple(move_state), tuple(account_type), tuple(partner_ids),)
-            dates_query = '(COALESCE(l.date_maturity,l.date)'
-
-            if periods[str(i)]['start'] and periods[str(i)]['stop']:
-                dates_query += ' BETWEEN %s AND %s)'
-                args_list += (periods[str(i)]['start'], periods[str(i)]['stop'])
-            elif periods[str(i)]['start']:
-                dates_query += ' >= %s)'
-                args_list += (periods[str(i)]['start'],)
-            else:
-                dates_query += ' <= %s)'
-                args_list += (periods[str(i)]['stop'],)
-            args_list += (date_from, tuple(company_ids))
-
-            query = '''SELECT l.id
-                    FROM account_move_line AS l, account_account, account_move am
-                    WHERE (l.account_id = account_account.id) AND (l.move_id = am.id)
-                        AND (am.state IN %s)
-                        AND (account_account.account_type IN %s)
-                        AND ((l.partner_id IN %s) OR (l.partner_id IS NULL))
-                        AND ''' + dates_query + '''
-                    AND (l.date <= %s)
-                    AND l.company_id IN %s'''
-            cr.execute(query, args_list)
-            partners_amount = {}
-            aml_ids = cr.fetchall()
-            aml_ids = aml_ids and [x[0] for x in aml_ids] or []
-            for line in self.env['account.move.line'].browse(aml_ids):
-                partner_id = line.partner_id.id or False
-                if partner_id not in partners_amount:
-                    partners_amount[partner_id] = 0.0
-                line_currency_id = line.company_id.currency_id
-                line_amount = line_currency_id._convert(line.balance, user_currency, company, date)
-                if user_currency.is_zero(line_amount):
-                    continue
-                for partial_line in line.matched_debit_ids:
-                    if partial_line.max_date <= date_from:
-                        line_currency_id = partial_line.company_id.currency_id
-                        line_amount += line_currency_id._convert(
-                            partial_line.amount, user_currency, company, date)
-                for partial_line in line.matched_credit_ids:
-                    if partial_line.max_date <= date_from:
-                        line_currency_id = partial_line.company_id.currency_id
-                        line_amount -= line_currency_id._convert(
-                            partial_line.amount, user_currency, company, date)
-                if not user_currency.is_zero(line_amount):
-                    partners_amount[partner_id] += line_amount
-                    lines[partner_id].append({
-                        'line': line,
-                        'amount': line_amount,
-                        'period': i + 1,
-                        })
-            history.append(partners_amount)
-
+        # the names of the partners are read together, not one partner at a time
+        partner_records = self.env['res.partner'].browse(
+            [partner['partner_id'] for partner in partners if partner['partner_id']])
         for partner in partners:
             if partner['partner_id'] is None:
                 partner['partner_id'] = False
@@ -224,7 +186,7 @@ class ReportAgedPartnerBalance(models.AbstractModel):
             total[(i + 1)] += values['total']
             values['partner_id'] = partner['partner_id']
             if partner['partner_id']:
-                browsed_partner = self.env['res.partner'].browse(partner['partner_id'])
+                browsed_partner = partner_records.browse(partner['partner_id']).with_prefetch(partner_records._ids)
                 values['name'] = browsed_partner.name and len(
                     browsed_partner.name) >= 45 and browsed_partner.name[
                                                     0:40] + '...' or browsed_partner.name
