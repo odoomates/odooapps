@@ -1,0 +1,84 @@
+/** @odoo-module **/
+
+import tour from "web_tour.tour";
+
+// Ticking an app its users cannot open gives it to them, unticking takes it back.
+tour.register("om_access_manager_tick_grant", {
+    test: true,
+}, [
+    {
+        content: "edit the profile (Odoo 15 opens it read only)",
+        trigger: ".o_form_button_edit",
+        run: "click",
+    },
+    {
+        content: "open the menu tree",
+        trigger: ".o_notebook .nav-link:contains(Menus)",
+        run: "click",
+    },
+    {
+        content: "the app is not given: shown unticked",
+        trigger: ".o_om_menu_tree_row:contains(OM Tick App) .o_om_not_given",
+        run() {},
+    },
+    {
+        content: "tick it",
+        trigger: ".o_om_menu_tree_row:contains(OM Tick App) input[type=checkbox]",
+        run: "click",
+    },
+    {
+        content: "given: ticked, and granted",
+        trigger: '.o_field_widget[name="granted_group_ids"] .o_tag_badge_text:contains(OM Tick App / User)',
+        run() {},
+    },
+    {
+        content: "no longer marked",
+        trigger: ".o_om_menu_tree_row:contains(OM Tick App):not(:has(.o_om_not_given)) input[type=checkbox]:checked",
+        run() {},
+    },
+    {
+        content: "save",
+        trigger: ".o_form_button_save",
+        run: "click",
+    },
+    {
+        content: "saved",
+        trigger: ".o_form_view.o_form_readonly",
+        run() {},
+    },
+]);
+
+tour.register("om_access_manager_untick_grant", {
+    test: true,
+}, [
+    {
+        content: "edit the profile (Odoo 15 opens it read only)",
+        trigger: ".o_form_button_edit",
+        run: "click",
+    },
+    {
+        content: "open the menu tree",
+        trigger: ".o_notebook .nav-link:contains(Menus)",
+        run: "click",
+    },
+    {
+        content: "untick the app the profile gives",
+        trigger: ".o_om_menu_tree_row:contains(OM Tick App) input[type=checkbox]:checked",
+        run: "click",
+    },
+    {
+        content: "the grant is gone",
+        trigger: '.o_field_widget[name="granted_group_ids"]:not(:has(.o_tag_badge_text:contains(OM Tick App)))',
+        run() {},
+    },
+    {
+        content: "save",
+        trigger: ".o_form_button_save",
+        run: "click",
+    },
+    {
+        content: "saved",
+        trigger: ".o_form_view.o_form_readonly",
+        run() {},
+    },
+]);

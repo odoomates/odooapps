@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_access_manager.MenuPanel" owl="1">
+        <div class="o_om_menu_panel">
+            <div class="o_om_menu_panel_head mb-2">
+                <div t-if="panel.menu.depth" class="text-muted small" t-esc="panel.menu.path"/>
+                <h4 class="mb-1" t-esc="panel.menu.name"/>
+                <div t-if="isData" class="small">
+                    <span class="badge badge-light border" t-esc="panel.model_label"/>
+                    <t t-if="panel.also.length">
+                        <span class="text-muted ml-1">also opened by:</span>
+                        <span class="ml-1" t-att-title="panel.also.join('\n')"
+                              t-esc="panel.also.length === 1 ? panel.also[0] : panel.also[0] + ' (+' + (panel.also.length - 1) + ')'"/>
+                    </t>
+                </div>
+                <div t-if="isData and panel.also.length" class="small text-muted mt-1">
+                    What is set here applies to this data wherever it opens: Odoo checks
+                    rights per data, not per menu.
+                </div>
+            </div>
+
+            <div t-if="panel.hidden" class="alert alert-warning py-2 small">
+                <strong>This menu is hidden.</strong>
+                Its data stays reachable from other menus, links and the API: untick
+                <em>Read</em> below to deny it.
+                <button t-if="!props.readonly" type="button" class="btn btn-link btn-sm p-0 ml-1"
+                        t-on-click="showMenu()">Show it again</button>
+            </div>
+
+            <!-- an app: the access it grants -->
+            <div t-if="panel.grants" class="o_om_panel_block mb-3 o_om_grants">
+                <h5 class="o_om_panel_title">Access to the app</h5>
+                <t t-if="panel.grants.length">
+                    <div t-foreach="panel.grants" t-as="grant" t-key="grant.privilege_id"
+                         class="d-flex flex-wrap align-items-center gap-2 mb-2 o_om_grant"
+                         t-att-data-privilege="grant.privilege_id">
+                        <span class="font-weight-bold" t-esc="grant.name"/>
+                        <select class="custom-select custom-select-sm w-auto" t-att-disabled="props.readonly"
+                                t-on-change="setGrant(grant)">
+                            <option value="" t-att-selected="!grant.granted">Their own Odoo groups</option>
+                            <option t-foreach="grant.groups" t-as="group" t-key="group.id"
+                                    t-att-value="group.id" t-att-selected="group.id === grant.granted"
+                                    t-esc="group.name"/>
+                        </select>
+                    </div>
+                    <div class="small text-muted">
+                        Users whose form gives them no access to this app do not see it: grant it
+                        here, then restrict it below and on its menus. Taken away with the profile.
+                    </div>
+                </t>
+                <div t-else="" class="small text-muted">Every internal user has this app: nothing to grant.</div>
+            </div>
+
+            <!-- a menu with children: what it passes down -->
+            <div t-if="isBranch" class="o_om_panel_block mb-3">
+                <h5 class="o_om_panel_title">Everything below</h5>
+                <div class="btn-group btn-group-sm flex-wrap mb-2" role="group">
+                    <button t-foreach="LEVELS" t-as="level" t-key="level[0]" type="button"
+                            class="btn o_om_level"
+                            t-att-class="panel.level === level[0] ? 'btn-primary' : 'btn-outline-secondary'"
+                            t-att-data-level="level[0]" t-att-disabled="props.readonly"
+                            t-on-click="setLevel(level[0])" t-esc="level[1]"/>
+                </div>
+                <span t-if="!panel.level" class="badge badge-light border ml-2 align-top">Custom</span>
+                <t t-set="values" t-value="branchValues"/>
+                <div class="d-flex flex-wrap gap-3 align-items-center o_om_branch_rights">
+                    <div class="form-check" t-foreach="RIGHTS" t-as="right" t-key="right[0]"><input type="checkbox" class="form-check-input" t-att-checked="!!(values[right[0]])" t-att-disabled="props.readonly" t-att-name="right[0]" t-on-change="onCheck('setBranchRight', right[0])"/><label class="form-check-label"><t t-esc="right[1]"/></label></div>
+                </div>
+                <div class="d-flex flex-wrap gap-3 align-items-center mt-2">
+                    <label class="mb-0">Records
+                        <select class="custom-select custom-select-sm d-inline-block w-auto ml-1 o_om_branch_records"
+                                t-att-disabled="props.readonly" t-on-change="onBranchRecords">
+                            <option t-foreach="branchRecordChoices" t-as="choice" t-key="choice[0]"
+                                    t-att-value="choice[0]" t-att-selected="choice[0] === values.records"
+                                    t-esc="choice[1]"/>
+                        </select>
+                    </label>
+                    <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!!(values.edit_draft_only)" t-att-disabled="props.readonly" t-on-change="onCheck('setBranchRight', 'edit_draft_only')"/><label class="form-check-label">Edit drafts only</label></div>
+                    <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!!(values.include_shared)" t-att-disabled="props.readonly" t-on-change="onCheck('setBranchRight', 'include_shared')"/><label class="form-check-label">Also shared data</label></div>
+                </div>
+                <div class="small text-muted mt-1">
+                    <t t-esc="branchSource"/>
+                    <button t-if="panel.rule and !props.readonly" type="button"
+                            class="btn btn-link btn-sm p-0 ml-1 o_om_menu_reset"
+                            t-on-click="resetMenu">
+                        <t t-if="panel.inherited">Back to the settings of <t t-esc="panel.inherited.menu"/></t>
+                        <t t-else="">Back to full access</t>
+                    </button>
+                </div>
+                <div class="small text-muted">
+                    The closest setting wins: a menu or a data below can be set apart.
+                    Shared data (opened by other apps too) is left alone unless
+                    <em>Also shared data</em> is ticked. The records choice leaves the data of
+                    the Configuration menus whole (a salesperson still sees every sales team).
+                </div>
+            </div>
+
+            <!-- an app: its allowed records -->
+            <div t-if="panel.allowed and panel.allowed.length" class="o_om_panel_block mb-3">
+                <h5 class="o_om_panel_title">Allowed records</h5>
+                <div t-foreach="panel.allowed" t-as="kind" t-key="kind.kind" class="mb-2 o_om_allowed"
+                     t-att-data-kind="kind.kind">
+                    <div class="font-weight-bold" t-esc="kind.label"/>
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <span t-foreach="kind.records" t-as="record" t-key="record.line_id"
+                              class="badge badge-pill badge-light border">
+                            <t t-esc="record.name"/>
+                            <button t-if="!props.readonly" type="button" class="btn btn-link btn-sm p-0 ml-1"
+                                    t-on-click="removeAllowed(kind, record)" title="Remove">×</button>
+                        </span>
+                        <span t-if="!kind.records.length and !kind.per_user" class="text-muted small">All</span>
+                        <select t-if="!props.readonly" class="custom-select custom-select-sm w-auto"
+                                t-on-change="onAddAllowed(kind)">
+                            <option value="">Add...</option>
+                            <option t-foreach="allowedChoices(kind)" t-as="choice" t-key="choice.id"
+                                    t-att-value="choice.id" t-esc="choice.display_name"/>
+                        </select>
+                        <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="kind.per_user" t-att-disabled="props.readonly" t-on-change="onCheck('setPerUser', kind)"/><label class="form-check-label">Each user's own</label></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- a menu opening data -->
+            <div t-if="isData" class="o_om_panel_block">
+                <h5 class="o_om_panel_title">Rights</h5>
+                <div class="d-flex flex-wrap gap-3 align-items-center o_om_data_rights">
+                    <div class="form-check" t-foreach="RIGHTS" t-as="right" t-key="right[0]"><input type="checkbox" class="form-check-input" t-att-checked="!!(panel.rights[right[0]])" t-att-disabled="props.readonly" t-att-name="right[0]" t-on-change="onCheck('setDataRight', right[0])"/><label class="form-check-label"><t t-esc="right[1]"/></label></div>
+                </div>
+                <div class="d-flex flex-wrap gap-3 align-items-center mt-2">
+                    <label class="mb-0">Records
+                        <select class="custom-select custom-select-sm d-inline-block w-auto ml-1 o_om_data_records"
+                                t-att-disabled="props.readonly" t-on-change="onDataRecords">
+                            <option t-foreach="recordChoices" t-as="choice" t-key="choice[0]"
+                                    t-att-value="choice[0]" t-att-selected="choice[0] === panel.rights.records"
+                                    t-esc="choice[1]"/>
+                        </select>
+                    </label>
+                    <div class="form-check" t-if="panel.drafts_possible"><input type="checkbox" class="form-check-input" t-att-checked="!!(panel.rights.edit_draft_only)" t-att-disabled="props.readonly" t-on-change="onCheck('setDataRight', 'edit_draft_only')"/><label class="form-check-label">Edit drafts only</label></div>
+                    <button t-if="!props.readonly" type="button" class="btn btn-link btn-sm p-0"
+                            t-on-click="openRule">Custom filter...</button>
+                </div>
+                <div class="small text-muted mt-1">
+                    <t t-esc="dataSource"/>
+                    <button t-if="panel.source === 'data' and !props.readonly" type="button"
+                            class="btn btn-link btn-sm p-0 ml-1 o_om_data_reset"
+                            t-on-click="resetData">
+                        Back to the settings of the menu above
+                    </button>
+                </div>
+
+                <t t-foreach="sections" t-as="section" t-key="section.key">
+                    <div class="o_om_panel_section mt-2" t-att-data-section="section.key">
+                        <button type="button" class="btn btn-link p-0 font-weight-bold text-reset o_om_section_toggle"
+                                t-on-click="toggleSection(section.key)">
+                            <i t-attf-class="fa fa-fw {{state.open[section.key] ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                            <t t-esc="section.label"/>
+                        </button>
+                        <div t-if="state.open[section.key]" class="pl-3 pt-1">
+                            <t t-if="section.key === 'fields'">
+                                <input t-if="panel.fields.length > 12" type="search"
+                                       class="form-control form-control-sm mb-1" placeholder="Search a field..."
+                                       t-on-input="onFieldSearch"/>
+                                <div t-foreach="shownFields" t-as="field" t-key="field.name"
+                                     class="o_om_panel_row" t-att-data-field="field.name">
+                                    <span class="o_om_panel_label" t-esc="field.label"/>
+                                    <div class="btn-group btn-group-sm">
+                                        <button t-foreach="FIELD_MODES" t-as="mode" t-key="mode[0]" type="button"
+                                                class="btn" t-att-data-mode="mode[0]"
+                                                t-att-class="mode[0] !== field.mode ? 'btn-outline-secondary' : (mode[0] === 'keep' ? 'btn-secondary' : 'btn-primary')"
+                                                t-att-disabled="props.readonly"
+                                                t-on-click="setFieldMode(field, mode[0])" t-esc="mode[1]"/>
+                                    </div>
+                                    <button t-if="field.mode !== 'hide'" type="button"
+                                            class="btn btn-sm o_om_no_export"
+                                            t-att-class="field.no_export ? 'btn-primary' : 'btn-outline-secondary'"
+                                            t-att-disabled="props.readonly"
+                                            t-att-title="noExportTitle(field)"
+                                            t-on-click="setNoExport(field, !field.no_export)">
+                                        No export
+                                    </button>
+                                    <input t-if="field.mode !== 'keep'" type="text"
+                                           class="form-control form-control-sm o_om_condition"
+                                           placeholder="Only when... (e.g. state == 'done')"
+                                           t-att-value="field.condition" t-att-disabled="props.readonly"
+                                           t-on-change="onFieldCondition(field)"/>
+                                </div>
+                                <div t-if="!panel.fields.length" class="text-muted small">No field on these screens.</div>
+                            </t>
+                            <t t-elif="section.key === 'buttons'">
+                                <div t-foreach="panel.buttons" t-as="button" t-key="button.button_type + button.button_name"
+                                     class="o_om_panel_row" t-att-data-button="button.button_name">
+                                    <span class="o_om_panel_label" t-esc="button.label"/>
+                                    <div class="btn-group btn-group-sm">
+                                        <button t-foreach="BUTTON_MODES" t-as="mode" t-key="mode[0]" type="button"
+                                                class="btn" t-att-data-mode="mode[0]"
+                                                t-att-class="mode[0] !== buttonMode(button) ? 'btn-outline-secondary' : (mode[0] === 'visible' ? 'btn-secondary' : 'btn-primary')"
+                                                t-att-disabled="props.readonly"
+                                                t-on-click="setButton(button, mode[0])" t-esc="mode[1]"/>
+                                    </div>
+                                </div>
+                                <div t-if="!panel.buttons.length" class="text-muted small">No button on these screens.</div>
+                                <div class="small text-muted">Blocked: hidden, and refused by the server.</div>
+                            </t>
+                            <t t-elif="section.elementType">
+                                <t t-set="elements" t-value="elementsOf(section.elementType)"/>
+                                <div t-foreach="elements" t-as="element"
+                                     t-key="element.element_type + ':' + element.element_name"
+                                     class="o_om_panel_row" t-att-data-element="element.element_name">
+                                    <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!element.hidden" t-att-disabled="props.readonly" t-on-change="onCheck('setElement', element)"/><label class="form-check-label"><t t-esc="element.label"/></label></div>
+                                </div>
+                                <div t-if="!elements.length" class="text-muted small" t-esc="section.empty"/>
+                            </t>
+                            <t t-elif="section.entries">
+                                <div t-foreach="section.entries" t-as="entry" t-key="entry.type + entry.id"
+                                     class="o_om_panel_row">
+                                    <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!entry.hidden" t-att-disabled="props.readonly" t-on-change="onCheck('setPrint', entry)"/><label class="form-check-label"><t t-esc="entry.label"/></label></div>
+                                </div>
+                                <div t-if="!section.entries.length" class="text-muted small" t-esc="section.empty"/>
+                            </t>
+                            <t t-elif="section.key === 'switches'">
+                                <div t-foreach="switchItems" t-as="item" t-key="item[0]"
+                                     class="o_om_panel_row">
+                                    <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!!(panel.rights[item[0]])" t-att-disabled="props.readonly" t-on-change="onCheck('setDataRight', item[0])"/><label class="form-check-label"><t t-esc="item[1]"/></label></div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+            <div t-if="!isData and !isBranch and !panel.allowed" class="text-muted">
+                This menu opens no list of data: it can only be shown or hidden.
+            </div>
+        </div>
+    </t>
+
+</templates>

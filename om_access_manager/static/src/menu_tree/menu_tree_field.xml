@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_access_manager.MenuTreeField" owl="1">
+        <div class="o_om_menu_tree_layout">
+            <div class="o_om_menu_tree">
+                <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+                    <input type="search" class="form-control o_om_menu_tree_search flex-grow-1 w-auto"
+                           placeholder="Search a menu, a data or a report..." t-att-value="state.search"
+                           t-on-input="onSearch"/>
+                    <div class="form-check" t-att-class="'o_om_only_restricted'"><input type="checkbox" class="form-check-input" t-att-checked="state.onlyRestricted" t-on-change="onCheck('toggleOnlyRestricted')"/><label class="form-check-label">Only what is restricted</label></div>
+                </div>
+                <t t-foreach="rows" t-as="row" t-key="row.id">
+                <div t-if="row.kind === 'print'" class="d-flex align-items-center o_om_menu_tree_row o_om_tree_print"
+                     t-att-style="'padding-left: ' + (row.depth * 1.5) + 'rem'" t-att-data-print="row.key">
+                    <span class="fa fa-fw mr-1"/>
+                    <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!row.hidden" t-att-disabled="readonly or state.busy" t-on-change="onCheck('togglePrint', row.entry)"/><label class="form-check-label"/></div>
+                    <i t-attf-class="fa fa-{{row.icon}} mr-1 text-muted"/>
+                    <span class="small" t-att-class="{'text-muted text-decoration-line-through': row.hidden}"
+                          t-esc="row.name"/>
+                    <span t-if="row.entry.kind === 'action'" class="text-muted small ml-2">Action menu</span>
+                </div>
+                <div t-else="" class="d-flex align-items-center o_om_menu_tree_row"
+                     t-att-class="{'o_om_menu_tree_app': row.depth === 0, 'o_om_menu_tree_selected': row.selected}"
+                     t-att-style="'padding-left: ' + (row.depth * 1.5) + 'rem'"
+                     t-att-data-menu-id="row.id">
+                    <button t-if="row.hasChildren and !state.search and !state.onlyRestricted" type="button"
+                            class="btn btn-link p-0 mr-1 o_om_menu_tree_caret"
+                            t-on-click="toggleExpand(row.id)">
+                        <i t-attf-class="fa fa-fw {{row.expanded ? 'fa-caret-down' : 'fa-caret-right'}}"/>
+                    </button>
+                    <span t-else="" class="fa fa-fw mr-1"/>
+                    <div class="form-check" t-att-class="row.partial and !row.notGiven ? 'o_om_partial' : ''"><input type="checkbox" class="form-check-input" t-att-checked="!row.hidden and !row.notGiven" t-att-disabled="readonly or row.parentHidden" t-on-change="onCheck('toggle', row.id)"/><label class="form-check-label"/></div>
+                    <button type="button" class="btn btn-link p-0 text-left text-reset o_om_menu_tree_name"
+                            t-on-click="select(row.id)">
+                        <span t-att-class="{'font-weight-bold': row.depth === 0, 'text-muted text-decoration-line-through': row.hidden, 'text-muted': row.notGiven}"
+                              t-esc="row.name"/>
+                    </button>
+                    <span t-if="row.notGiven" class="badge badge-light border ml-2 o_om_not_given"
+                          t-att-title="'Its users cannot open this app. Tick it to give them ' + row.grant.name + '.'">
+                        Not given
+                    </span>
+                    <span t-if="row.model" class="text-muted small ml-2 o_om_menu_tree_model" t-esc="row.model"/>
+                    <span t-if="row.shared" class="badge badge-light border ml-1"
+                          title="Other apps open this data too">shared</span>
+                    <i t-foreach="row.marks" t-as="mark" t-key="mark_index" t-attf-class="fa fa-{{mark.icon}} ml-1 text-warning o_om_mark"
+                       t-att-title="mark.title"/>
+                    <span t-if="row.depth === 0 and !row.hidden and row.hiddenCount"
+                          class="badge badge-pill badge-warning ml-2" t-esc="hiddenLabel(row.hiddenCount)"/>
+                </div>
+                </t>
+            </div>
+            <div class="o_om_menu_tree_panel" t-att-class="{'o_om_busy': state.busy}">
+                <MenuPanel t-if="state.panel" t-key="state.panel.menu.id"
+                           panel="state.panel" readonly="readonly"
+                           t-on-om-apply="onApply" t-on-om-open-rule="onOpenRule"/>
+                <div t-else="" class="text-muted p-3 o_om_menu_tree_hint">
+                    <h5>Configure from the menus</h5>
+                    <p>Click a menu on the left to set, for the users of this profile:</p>
+                    <ul>
+                        <li>whether they may read, create, edit and delete its data, and which records they see;</li>
+                        <li>its fields, buttons, tabs and filters, print and action entries;</li>
+                        <li>on an app or a submenu, the same for everything below it.</li>
+                    </ul>
+                    <p class="small mb-0 mt-3 o_om_beta_note">
+                        Beta: something missing or unclear? Tell us at
+                        <a href="mailto:odoomates@gmail.com">odoomates@gmail.com</a> or on
+                        <a href="https://github.com/odoomates/odooapps/issues" target="_blank">GitHub</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>
