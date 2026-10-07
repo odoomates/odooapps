@@ -9,3 +9,4 @@ from . import test_tax_closing
 from . import test_tax_grid
 from . import test_branch_reports
 from . import test_partner_ledger
+from . import test_general_ledger

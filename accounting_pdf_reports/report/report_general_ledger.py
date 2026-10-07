@@ -70,9 +70,9 @@ class ReportGeneralLedger(models.AbstractModel):
             for row in cr.dictfetchall():
                 move_lines[row.pop('account_id')].append(row)
 
-        sql_sort = 'l.date, l.move_id'
+        sql_sort = 'l.date, l.move_id, l.id'
         if sortby == 'sort_journal_partner':
-            sql_sort = 'j.code, p.name, l.move_id'
+            sql_sort = 'j.code, p.name, l.move_id, l.id'
 
         # Prepare sql query base on selected parameters from wizard
         context = dict(self.env.context)
@@ -108,12 +108,19 @@ class ReportGeneralLedger(models.AbstractModel):
         params = (tuple(accounts.ids),) + tuple(where_params)
         cr.execute(sql, params)
 
-        for row in cr.dictfetchall():
+        # the running balance of each account: what its previous lines (and the initial balance) add up to,
+        # summed as the lines come, not again from the first line for each one
+        previous = {}
+        for account_id, lines in move_lines.items():
             balance = 0
-            for line in move_lines.get(row['account_id']):
+            for line in lines:
                 balance += line['debit'] - line['credit']
-            row['balance'] += balance
-            move_lines[row.pop('account_id')].append(row)
+            previous[account_id] = balance
+        for row in cr.dictfetchall():
+            account_id = row.pop('account_id')
+            row['balance'] += previous[account_id]
+            previous[account_id] += row['debit'] - row['credit']
+            move_lines[account_id].append(row)
 
         # Calculate the debit, credit and balance for Accounts
         account_res = []
