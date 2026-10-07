@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.user.audit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="User Audit" string="User Audit"
+                     data-key="om_user_audit">
+                    <h2>Logs</h2>
+                    <div class="row mt16 o_settings_container" name="om_user_audit_logs">
+                        <div class="col-12 col-lg-6 o_setting_box" id="om_audit_keep">
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">Retention</span>
+                                <div class="text-muted">
+                                    Older lines are deleted every night (0 keeps them).
+                                </div>
+                                <div class="content-group mt-2">
+                                    <div class="row">
+                                        <label for="om_audit_keep_days" class="col-lg-5 o_light_label"/>
+                                        <field name="om_audit_keep_days"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_audit_keep_sign_in_days" class="col-lg-5 o_light_label"/>
+                                        <field name="om_audit_keep_sign_in_days"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="om_audit_reads">
+                            <div class="o_setting_left_pane">
+                                <field name="om_audit_log_reads"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="om_audit_log_reads"/>
+                                <div class="text-muted">
+                                    Turn the most frequent event off everywhere at once.
+                                </div>
+                                <div class="mt-2 text-muted">
+                                    <field name="om_audit_lines_today" class="w-auto font-weight-bold"/> lines in the
+                                    last 24 hours.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="om_audit_rules">
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">What to Log</span>
+                                <div class="text-muted">
+                                    With no rule, everything but the technical data below.
+                                </div>
+                                <button name="%(om_user_audit.om_user_audit_rule_action)d" type="action"
+                                        string="Rules" icon="fa-arrow-right" class="btn-link"/>
+                                <div class="mt-2">
+                                    <label for="om_audit_excluded_models" class="o_light_label"/>
+                                    <field name="om_audit_excluded_models" class="w-100"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h2>Sessions</h2>
+                    <div class="row mt16 o_settings_container" name="om_user_audit_sessions">
+                        <div class="col-12 col-lg-6 o_setting_box" id="om_audit_sign_in_mail">
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">Sign-in Emails</span>
+                                <div class="text-muted">
+                                    An email on every sign-in in the browser.
+                                </div>
+                                <field name="om_audit_sign_in_mail" widget="radio"/>
+                                <div attrs="{'invisible': [('om_audit_sign_in_mail', '=', 'none')]}">
+                                    <field name="om_audit_sign_in_mail_new_only"/>
+                                    <label for="om_audit_sign_in_mail_new_only" class="o_light_label"/>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="om_audit_idle">
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">Idle Sessions</span>
+                                <div class="text-muted">
+                                    Sign out a user who has done nothing for this long (0: never).
+                                </div>
+                                <field name="om_audit_idle_minutes"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_user_audit_settings_action" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'om_user_audit', 'bin_size': False}</field>
+    </record>
+
+</odoo>
