@@ -507,6 +507,18 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
         self.assertFalse(refund.asset_ids)
         self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 3)
 
+    def test_assets_from_auto_posted_bill(self):
+        """ A bill posted on its date by the auto-post job creates its assets like a bill posted by hand """
+        self.category.create_from_bill = True
+        bill = self._create_bill()
+        bill.auto_post = 'at_date'
+        # the accounting date of a bill is the end of its month
+        self._autopost(bill.date.isoformat())
+
+        self.assertEqual(bill.state, 'posted')
+        self.assertEqual(bill.asset_ids.category_id, self.category)
+        self.assertEqual(bill.asset_ids.value, 1000.0)
+
     def test_bill_account_without_category(self):
         bill = self._create_bill()
         with freeze_time('2025-01-15'):
