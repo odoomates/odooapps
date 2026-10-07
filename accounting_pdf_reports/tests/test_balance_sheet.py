@@ -1,4 +1,5 @@
 from odoo.tests import tagged
+from odoo.exceptions import ValidationError
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -165,3 +166,22 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
             printed = report._get_children_by_order().filtered(lambda line: line.parent_id == report)
             # the ids, in order: two recordsets compare equal whatever their order
             self.assertEqual(printed.ids, sections.ids, xmlid)
+
+    def test_a_section_cannot_depend_on_itself(self):
+        """ A loop in the sections would make the report recurse forever """
+        balance_sheet = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
+        assets = self.env.ref('accounting_pdf_reports.account_financial_report_assets0')
+        with self.assertRaises(ValidationError):
+            balance_sheet.parent_id = assets
+        with self.assertRaises(ValidationError):
+            assets.write({'type': 'account_report', 'account_report_id': balance_sheet.id})
+        value = self.env['account.financial.report'].create({
+            'name': 'Value', 'type': 'account_report', 'account_report_id': assets.id})
+        with self.assertRaises(ValidationError):
+            value.account_report_id = value
+        # a View that sums a Report Value of itself
+        view = self.env['account.financial.report'].create({'name': 'View', 'type': 'sum'})
+        with self.assertRaises(ValidationError):
+            value.write({'parent_id': view.id, 'account_report_id': view.id})
+        # what the standard reports do stays allowed
+        value.write({'parent_id': view.id, 'account_report_id': balance_sheet.id})
