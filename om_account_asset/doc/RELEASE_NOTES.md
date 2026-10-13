@@ -1,5 +1,15 @@
 ## Module <om_account_asset>
 
+#### 13.10.2026
+#### Version 15.0.7.0.0
+##### IMP
+- sell or dispose of an asset: a wizard books the disposal entry with the gain or the loss, a fully
+  depreciated asset can be disposed of too
+##### FIX
+- the assets of the bills posted by the auto-post job are created
+- an asset is closed when its last depreciation entry is posted
+- the asset tests no longer load files that are not shipped
+
 #### 06.09.2022
 #### Version 15.0.6.9.0
 ##### FIX

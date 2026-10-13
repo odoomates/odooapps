@@ -17,7 +17,11 @@ class AccountMove(models.Model):
         return super(AccountMove, self).button_cancel()
 
     def action_post(self):
+        # after the entries are posted: post_lines_and_close_asset() only closes an asset
+        # whose depreciation entries are all posted, and the ones of this move are still
+        # draft until super() runs, so calling it first never closed anything
+        result = super(AccountMove, self).action_post()
         for move in self:
             for depreciation_line in move.asset_depreciation_ids:
                 depreciation_line.post_lines_and_close_asset()
-        return super(AccountMove, self).action_post()
+        return result

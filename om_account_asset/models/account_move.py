@@ -44,14 +44,17 @@ class AccountMove(models.Model):
                 asset.sudo().message_post(body=_("Vendor bill cancelled."))
         return res
 
-    def action_post(self):
-        result = super(AccountMove, self).action_post()
-        for inv in self:
-            context = dict(self.env.context)
-            context.pop('default_type', None)
-            for mv_line in inv.invoice_line_ids.filtered(lambda line: line.move_id.move_type in ('in_invoice','out_invoice')):
+    def _post(self, soft=True):
+        # not action_post: the entries posted automatically on their date, and the recurring
+        # ones, are posted by _post only and create their assets too
+        posted = super()._post(soft=soft)
+        context = dict(self.env.context)
+        context.pop('default_type', None)
+        # credit notes keep the category of the reversed lines but do not create assets
+        for inv in posted.filtered(lambda m: m.move_type in ('in_invoice', 'out_invoice')):
+            for mv_line in inv.invoice_line_ids:
                 mv_line.with_context(context).asset_create()
-        return result
+        return posted
 
 
 class AccountMoveLine(models.Model):

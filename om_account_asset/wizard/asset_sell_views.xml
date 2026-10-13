@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="asset_sell_form" model="ir.ui.view">
+        <field name="name">asset.sell.form</field>
+        <field name="model">asset.sell</field>
+        <field name="arch" type="xml">
+            <form string="Sell or Dispose">
+                <field name="asset_id" invisible="1"/>
+                <field name="asset_state" invisible="1"/>
+                <field name="company_id" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="action" widget="radio" options="{'horizontal': true}"/>
+                        <field name="date"/>
+                        <field name="book_value"/>
+                    </group>
+                    <group>
+                        <field name="account_asset_gain_id" attrs="{'required': [('action','=','sell')]}"/>
+                        <field name="account_asset_loss_id" required="1"/>
+                    </group>
+                </group>
+                <group attrs="{'invisible': [('action','!=','sell')]}">
+                    <field name="sale_invoice_ids" widget="many2many_tags"
+                           options="{'no_create': True}"
+                           attrs="{'required': [('action','=','sell')]}"/>
+                    <field name="sale_amount"/>
+                </group>
+                <group>
+                    <field name="note" placeholder="Why is the asset sold or disposed of?"/>
+                </group>
+                <p class="text-muted">
+                    The asset is depreciated up to the date, then a draft entry removes its gross
+                    value and the depreciation recorded so far and books the difference with the
+                    sale price as a gain or a loss.
+                </p>
+                <footer>
+                    <button name="action_confirm" string="Confirm" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_asset_sell" model="ir.actions.act_window">
+        <field name="name">Sell or Dispose</field>
+        <field name="res_model">asset.sell</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="asset_sell_form"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

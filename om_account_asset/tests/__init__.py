@@ -2,3 +2,5 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 from . import test_account_asset
+from . import test_asset_disposal
+from . import test_asset_bill
