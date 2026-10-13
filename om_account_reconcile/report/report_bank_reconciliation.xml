@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_bank_reconciliation">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page o_om_report">
+                    <t t-call="om_account_reconcile.report_style"/>
+                    <h2>Bank Reconciliation Statement</h2>
+
+                    <div id="informations" class="row mb-4">
+                        <div class="col">
+                            <strong>As at:</strong>
+                            <div><span t-out="data['date']" t-options="{'widget': 'date'}"/></div>
+                        </div>
+                        <div class="col">
+                            <strong>Target Moves:</strong>
+                            <div t-if="data['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['target_move'] == 'posted'">All Posted Entries</div>
+                        </div>
+                    </div>
+
+                    <t t-foreach="sections" t-as="section">
+                        <t t-set="currency" t-value="section['currency']"/>
+                        <div t-att-style="section_index &gt; 0 and 'page-break-before: always;' or ''">
+                            <h3>
+                                <span t-out="section['journal'].name"/>
+                                <small class="text-muted"> (<span t-out="section['journal'].code"/>)</small>
+                            </h3>
+
+                            <div t-if="section['misconfigured']" class="alert alert-warning" role="alert">
+                                This journal has no outstanding receipts or payments account on its
+                                payment methods, so payments made through it never reach the ledger.
+                                The figures below cannot be reconciled until that is set.
+                            </div>
+
+                            <table class="table table-sm table-reports">
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <t t-if="section['opening_is_ledger']">
+                                                Balance per <t t-if="section['is_cash']">cash book</t><t t-else="">bank ledger</t>
+                                            </t>
+                                            <t t-else="">
+                                                Balance per bank statement
+                                                <small class="text-muted">
+                                                    (<span t-out="section['statement'].name"/>,
+                                                    <span t-out="section['statement'].date" t-options="{'widget': 'date'}"/>)
+                                                </small>
+                                            </t>
+                                        </td>
+                                        <td class="text-end text-nowrap">
+                                            <span t-out="section['opening']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="not section['opening_is_ledger']">
+                                        <td class="ps-4 text-muted">Balance per <t t-if="section['is_cash']">cash book</t><t t-else="">bank ledger</t></td>
+                                        <td class="text-end text-nowrap text-muted">
+                                            <span t-out="section['ledger']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">Add: uncleared receipts</td>
+                                        <td class="text-end text-nowrap">
+                                            <span t-out="section['receipts']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td class="ps-4">Less: uncleared payments</td>
+                                        <td class="text-end text-nowrap">
+                                            <span t-out="section['payments']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="section['unmatched']">
+                                        <td class="ps-4">Items not yet matched</td>
+                                        <td class="text-end text-nowrap">
+                                            <span t-out="section['unmatched']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                    <tr class="o_om_total">
+                                        <td>Cash position per books</td>
+                                        <td class="text-end text-nowrap">
+                                            <span t-out="section['book_balance']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+
+                            <t t-if="data['show_details']">
+                                <t t-set="schedules" t-value="[
+                                    ('Uncleared receipts', section['receipt_lines']),
+                                    ('Uncleared payments', section['payment_lines'])]"/>
+                                <t t-foreach="schedules" t-as="schedule">
+                                    <t t-if="schedule[1]">
+                                        <h4 class="mt-4" t-out="schedule[0]"/>
+                                        <table class="table table-sm table-reports">
+                                            <thead>
+                                                <tr>
+                                                    <th>Date</th>
+                                                    <th>Reference</th>
+                                                    <th>Partner</th>
+                                                    <th class="text-end">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr t-foreach="schedule[1]" t-as="line">
+                                                    <td class="o_om_date"><span t-out="line.date" t-options="{'widget': 'date'}"/></td>
+                                                    <td><span t-out="line.move_id.name"/></td>
+                                                    <td><span t-out="line.partner_id.display_name"/></td>
+                                                    <td class="text-end text-nowrap">
+                                                        <span t-out="line.amount_residual" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </t>
+                                </t>
+
+                                <t t-if="section['unmatched_lines']">
+                                    <h4 class="mt-4">Items not yet matched</h4>
+                                    <table class="table table-sm table-reports">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Label</th>
+                                                <th class="text-end">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr t-foreach="section['unmatched_lines']" t-as="line">
+                                                <td class="o_om_date"><span t-out="line.date" t-options="{'widget': 'date'}"/></td>
+                                                <td><span t-out="line.payment_ref"/></td>
+                                                <td class="text-end text-nowrap">
+                                                    <span t-out="line.amount" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </t>
+                            </t>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
