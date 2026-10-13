@@ -2,13 +2,16 @@
 <odoo>
 
     <record id="view_account_fiscal_year_tree" model="ir.ui.view">
-        <field name="name">account.fiscal.year.tree</field>
+        <field name="name">account.fiscal.year.list</field>
         <field name="model">account.fiscal.year</field>
         <field name="arch" type="xml">
-            <tree>
+            <tree decoration-muted="state == 'closed'">
                 <field name="name"/>
                 <field name="date_from"/>
                 <field name="date_to"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="closing_move_id" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'closed'" decoration-info="state == 'open'"/>
             </tree>
         </field>
     </record>
@@ -18,15 +21,32 @@
         <field name="model">account.fiscal.year</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button name="action_open_closing_wizard" string="Close Fiscal Year" type="object"
+                            class="btn-primary"
+                            groups="account.group_account_manager" attrs="{'invisible': ['|', ('state', '!=', 'open'), ('id', '=', False)]}"/>
+                    <button name="action_reopen" string="Reopen" type="object" groups="account.group_account_manager"
+                            confirm="The closing entry will be reversed. Lower the lock dates first if its date is locked. Do you want to reopen this fiscal year?" attrs="{'invisible': [('state', '!=', 'closed')]}"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
                 <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_closing_move" type="object" class="oe_stat_button"
+                                icon="fa-book" attrs="{'invisible': [('closing_move_id', '=', False)]}">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Closing Entry</span>
+                            </div>
+                        </button>
+                    </div>
                     <group>
                         <group>
-                            <field name="name"/>
-                            <field name="company_id"/>
+                            <field name="name" attrs="{'readonly': [('state', '=', 'closed')]}"/>
+                            <field name="company_id" groups="base.group_multi_company" attrs="{'readonly': [('state', '=', 'closed')]}"/>
                         </group>
                         <group>
-                            <field name="date_from"/>
-                            <field name="date_to"/>
+                            <field name="date_from" attrs="{'readonly': [('state', '=', 'closed')]}"/>
+                            <field name="date_to" attrs="{'readonly': [('state', '=', 'closed')]}"/>
+                            <field name="closing_move_id" attrs="{'invisible': [('closing_move_id', '=', False)]}"/>
                         </group>
                     </group>
                 </sheet>
@@ -34,10 +54,24 @@
         </field>
     </record>
 
+    <record id="view_account_fiscal_year_search" model="ir.ui.view">
+        <field name="name">account.fiscal.year.search</field>
+        <field name="model">account.fiscal.year</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <filter string="Open" name="open" domain="[('state', '=', 'open')]"/>
+                <filter string="Closed" name="closed" domain="[('state', '=', 'closed')]"/>
+            </search>
+        </field>
+    </record>
+
     <record id="actions_account_fiscal_year" model="ir.actions.act_window">
         <field name="name">Fiscal Years</field>
         <field name="res_model">account.fiscal.year</field>
         <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="view_account_fiscal_year_search"/>
         <field name="help" type="html">
             <p class="oe_view_nocontent_create">
                 Click here to create a new fiscal year.
@@ -46,10 +80,17 @@
     </record>
 
     <menuitem id="menu_fiscal_year"
-              name="Fiscal Year"
-              sequence="5"
+              name="Fiscal Years"
+              sequence="45"
               parent="account.account_account_menu"
               action="actions_account_fiscal_year"
               groups="om_fiscal_year.group_fiscal_year"/>
+
+    <menuitem id="menu_fiscal_year_closing"
+              name="Year-End Closing"
+              sequence="10"
+              parent="menu_account_closing"
+              action="actions_account_fiscal_year"
+              groups="account.group_account_manager"/>
 
 </odoo>

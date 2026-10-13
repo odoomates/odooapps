@@ -1,5 +1,10 @@
 ## Module <om_fiscal_year>
 
+#### 13.10.2026
+#### Version 15.0.2.3.0
+##### IMP
+- year-end closing, period closing with its checklist and tasks, and the Closing menu
+
 #### 15.04.2022
 #### Version 15.0.2.1.0
 ##### IMP
