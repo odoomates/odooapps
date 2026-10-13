@@ -137,8 +137,8 @@ class TestStatementImport(AccountTestInvoicingCommon):
         with file_open('om_account_bank_statement_import/sample_files/%s' % file_name, 'rb') as file:
             return file.read()
 
-    def test_the_layout_of_16_imports_without_a_map(self):
-        """ The files of the import of 16.0 before the maps (Date, Label, Reference, Partner, Amount, Currency)
+    def test_the_layout_of_17_imports_without_a_map(self):
+        """ The files of the import of 17.0 before the maps (Date, Label, Reference, Partner, Amount, Currency)
         import into a journal without a map of its own, as they did. """
         partner = self.env['res.partner'].create({'name': 'odoo mates'})
         self.assertFalse(self.journal.statement_import_map_id)
@@ -150,7 +150,7 @@ class TestStatementImport(AccountTestInvoicingCommon):
         self.assertEqual(lines.partner_id, partner)
         self.assertEqual(set(lines.mapped('date')), {date(2020, 12, 1)})
 
-    def test_the_excel_layout_of_16_imports_without_a_map(self):
+    def test_the_excel_layout_of_17_imports_without_a_map(self):
         self.env['res.partner'].create({'name': 'odoo mates'})
         self.env.ref('base.KWD').active = True
         action = self._import(self._sample('Import_Sample.xlsx'), 'Import_Sample.xlsx', journal_id=self.journal.id)
