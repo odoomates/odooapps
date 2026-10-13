@@ -1,26 +1,28 @@
-# -*- encoding: utf-8 -*-
-
 {
-    'name': 'Odoo 15 Account Bank Statement Import',
-    'version': '15.0.2.4.0',
+    'name': 'Odoo 15 Bank Statement Import',
+    'version': '15.0.3.0.0',
     'category': 'Accounting',
-    'depends': ['account'],
-    'website': 'https://www.odoomates.tech',
-    'author': 'Odoo Mates, Odoo SA',
-    'support': 'odoomates@gmail.com',
+    'summary': 'Import the bank statements of your bank: CAMT, MT940, OFX, QIF, CSV and Excel',
+    'description': """
+Import the statements your bank gives you, in the format it offers: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX or
+QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept for the next import.
+
+The journal is recognised from the account number in the file, the transactions already imported are skipped, and
+the file stays attached to the statement.
+    """,
+    'sequence': '1',
+    'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
-    'description': """Generic Wizard to Import Bank Statements In Odoo15 Community Edition.
-(This module does include any CSV and XLSX type import format.)""",
+    'support': 'odoomates@gmail.com',
+    'depends': ['account'],
     'data': [
         'security/ir.model.access.csv',
-        'wizard/journal_creation.xml',
-        'views/account_bank_statement_import_view.xml',
+        'security/security.xml',
+        'data/statement_import_map_data.xml',
+        'views/account_statement_import_map_views.xml',
+        'wizard/account_statement_import_views.xml',
+        'views/account_journal_views.xml',
     ],
-    'demo': [
-        'demo/partner_bank.xml',
-    ],
-    'images': ['static/description/banner.png'],
-    'installable': True,
-    'auto_install': True,
+    'images': ['static/description/banner.gif'],
 }
