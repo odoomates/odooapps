@@ -1,11 +1,23 @@
-# -*- coding: utf-8 -*-
-
-from odoo import api, fields, models, _
+from odoo import fields, models, _
 from odoo.exceptions import RedirectWarning, ValidationError
 
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
+
+    retained_earnings_account_id = fields.Many2one(
+        'account.account', string='Retained Earnings Account', check_company=True,
+        domain=[('account_type', '=', 'equity')],
+        help='Account receiving the earnings of the fiscal years when they are closed.')
+
+    def _get_unreconciled_statement_lines_domain(self, last_date):
+        # the domain of Odoo 18
+        return [
+            ('company_id', 'child_of', self.ids),
+            ('is_reconciled', '=', False),
+            ('date', '<=', last_date),
+            ('move_id.state', 'in', ('draft', 'posted')),
+        ]
 
     # RedirectWarning is changed with validation error to remove error of missing reconciliation view
     def _validate_fiscalyear_lock(self, values):
