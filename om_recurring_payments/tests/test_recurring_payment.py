@@ -188,7 +188,8 @@ class TestRecurringPayment(AccountTestInvoicingCommon):
 
     def test_access_rights(self):
         models = ('account.recurring.template', 'recurring.payment', 'recurring.payment.line')
-        administrator = new_test_user(self.env, login='recurring_admin', groups='account.group_account_manager')
+        administrator = new_test_user(self.env, login='recurring_admin',
+                                      groups='account.group_account_manager,account.group_account_user')
         for model in models:
             self.assertTrue(_has_access(self.env[model].with_user(administrator), 'create'), model)
 
