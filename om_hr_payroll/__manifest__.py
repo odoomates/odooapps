@@ -1,7 +1,7 @@
 {
     'name': 'Odoo 17 HR Payroll',
     'category': 'Generic Modules/Human Resources',
-    'version': '17.0.1.0.6',
+    'version': '17.0.1.0.7',
     'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'summary': 'Payroll For Odoo 17 Community Edition',
@@ -20,6 +20,7 @@
         'data/hr_payroll_sequence.xml',
         'data/hr_payroll_category.xml',
         'data/hr_payroll_data.xml',
+        'data/hr_contract_type.xml',
         'wizard/hr_payroll_payslips_by_employees_views.xml',
         'views/hr_contract_type_views.xml',
         'views/hr_contract_views.xml',
@@ -36,6 +37,7 @@
         'views/hr_leave_type_view.xml',
         'data/mail_template.xml',
     ],
+    'pre_init_hook': 'pre_init_hook',
     'images': ['static/description/banner.png'],
     'application': True,
 }
