@@ -13,7 +13,7 @@
     </record>
 
     <record id="view_budget_post_tree" model="ir.ui.view">
-        <field name="name">account.budget.post.tree</field>
+        <field name="name">account.budget.post.list</field>
         <field name="model">account.budget.post</field>
         <field name="arch" type="xml">
             <tree string="Budgetary Position">
@@ -149,15 +149,15 @@
                     </notebook>
                 </sheet>
                 <div class="oe_chatter">
-                    <field name="message_follower_ids" widget="mail_followers" groups="base.group_user"/>
-                    <field name="message_ids" widget="mail_thread"/>
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
                 </div>
             </form>
         </field>
     </record>
 
     <record id="crossovered_budget_view_tree" model="ir.ui.view">
-        <field name="name">crossovered.budget.view.tree</field>
+        <field name="name">crossovered.budget.view.list</field>
         <field name="model">crossovered.budget</field>
         <field name="arch" type="xml">
             <tree decoration-info="state == 'draft'" decoration-muted="state in ('done','cancel')" string="Budget">
@@ -192,7 +192,7 @@
                                 </div>
                                 <div class="col-4">
                                     <span class="float-right">
-                                        <field name="state" widget="kanban_label_selection"
+                                        <field name="state" widget="label_selection"
                                                options="{'classes': {'draft': 'default', 'done': 'success'}}"/>
                                     </span>
                                 </div>
@@ -251,7 +251,7 @@
     </record>
 
     <menuitem id="menu_act_crossovered_budget_view"
-              parent="account.menu_finance_entries_management"
+              parent="account.account_management_menu"
               name="Budgets"
               action="act_crossovered_budget_view"
               sequence="60"
@@ -275,7 +275,7 @@
     </record>
 
     <record id="view_crossovered_budget_line_tree" model="ir.ui.view">
-        <field name="name">crossovered.budget.line.tree</field>
+        <field name="name">crossovered.budget.line.list</field>
         <field name="model">crossovered.budget.lines</field>
         <field name="arch" type="xml">
             <tree string="Budget Lines" create="0">

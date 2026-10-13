@@ -25,6 +25,8 @@ class TestBudgetLine(TransactionCase):
         Lines = self.env['crossovered.budget.lines']
         self.assertEqual(budget.crossovered_budget_line.analytic_plan_id, plan)
         self.assertEqual(budget.crossovered_budget_line.read(['analytic_plan_id'])[0]['analytic_plan_id'][0], plan.id)
-        self.assertEqual(Lines.search([('id', 'in', budget.crossovered_budget_line.ids)], order='analytic_plan_id'),
-                         budget.crossovered_budget_line)
+        # not a column: the ORM leaves the order out, with a warning
+        with self.assertLogs('odoo.models', level='WARNING'):
+            self.assertEqual(Lines.search([('id', 'in', budget.crossovered_budget_line.ids)], order='analytic_plan_id'),
+                             budget.crossovered_budget_line)
         self.assertTrue(Lines.fields_get(['analytic_plan_id']))
