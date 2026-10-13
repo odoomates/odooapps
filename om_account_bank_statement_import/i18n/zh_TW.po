@@ -1,0 +1,605 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,description:base.module_om_account_bank_statement_import
+msgid ""
+"\n"
+"Import the statements your bank gives you, in the format it offers: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX or\n"
+"QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept for the next import.\n"
+"\n"
+"The journal is recognised from the account number in the file, the transactions already imported are skipped, and\n"
+"the file stays attached to the statement. The statements are then reconciled as usual.\n"
+msgstr ""
+"\n"
+"以您銀行提供的格式匯入銀行結單：CAMT.053（ISO 20022）、MT940（SWIFT）、OFX 或\n"
+"QFX、QIF，以及附銀行欄位對應的 CSV 或 Excel，該對應會保留供下次匯入使用。\n"
+"\n"
+"系統會根據檔案中的帳號識別日記賬，跳過已匯入的交易，並將\n"
+"檔案附加到對帳單。之後即可如常核銷對帳單。\n"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "%(imported)s transaction(s) imported, %(skipped)s already there."
+msgstr "已匯入 %(imported)s 筆交易，%(skipped)s 筆已存在。"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid ""
+"A map tells Odoo how to read the CSV or Excel file of one bank: its separators, the format\n"
+"                    of its dates and which column holds the date, the label and the amount of a transaction.\n"
+"                    Set the map on the journal of the bank and import the file as usual."
+msgstr ""
+"對應設定告訴 Odoo 如何讀取某間銀行的 CSV 或 Excel 檔案：其分隔符、日期\n"
+"                    格式，以及哪一欄包含交易的日期、標籤及金額。\n"
+"                    在銀行的日記賬上設定對應，然後如常匯入檔案。"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "A statement is imported in a bank or cash journal, not in %s."
+msgstr "對帳單須匯入銀行或現金日記賬，而非 %s。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.constraint,message:om_account_bank_statement_import.constraint_account_bank_statement_line_unique_import_id_uniq
+msgid "A transaction of a bank statement file is only imported once."
+msgstr "銀行結單檔案中的交易只會匯入一次。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "Account Number Column"
+msgstr "帳號欄"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Amount"
+msgstr "金額"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid "Amount Column"
+msgstr "金額欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Bank Statement File Map"
+msgstr "銀行結單檔案對應"
+
+#. module: om_account_bank_statement_import
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_account_statement_import_map
+#: model:ir.ui.menu,name:om_account_bank_statement_import.menu_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_list
+msgid "Bank Statement File Maps"
+msgstr "銀行結單檔案對應"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "銀行結單資料行"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Cancel"
+msgstr "取消"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Columns"
+msgstr "欄位"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator__,
+msgid "Comma (1234,56)"
+msgstr "逗號（1234,56）"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__company_id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Company"
+msgstr "公司"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_uid
+msgid "Created by"
+msgstr "建立人員"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_date
+msgid "Created on"
+msgstr "建立於"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "Credit Column"
+msgstr "貸方欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "Currency Column"
+msgstr "貨幣欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_date
+msgid "Date Column"
+msgstr "日期欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__date_format
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid "Date Format"
+msgstr "日期格式"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "Debit Column"
+msgstr "借方欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid "Debit is Positive"
+msgstr "借方為正數"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__decimal_separator
+msgid "Decimal Separator"
+msgstr "小數分隔符"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid "Delimiter"
+msgstr "分隔符"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid "Describe the file of your bank"
+msgstr "描述您銀行的檔案"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__display_name
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__display_name
+msgid "Display Name"
+msgstr "顯示名稱"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator___
+msgid "Dot (1234.56)"
+msgstr "句點（1234.56）"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid "Encoding"
+msgstr "編碼"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "Every transaction of %(count)s file(s) was already imported."
+msgstr "%(count)s 個檔案中的所有交易均已匯入。"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "File"
+msgstr "文件"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid "File Map"
+msgstr "檔案對應"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid "Files"
+msgstr "檔案"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "For CSV and Excel files"
+msgstr "適用於 CSV 及 Excel 檔案"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "From the account number in the file"
+msgstr "根據檔案中的帳號"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid "Has a Header Row"
+msgstr "包含標題列"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__id
+msgid "ID"
+msgstr "識別號"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Import"
+msgstr "匯入"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Import Bank Statement"
+msgstr "匯入銀行結單"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid "Import ID"
+msgstr "匯入 ID"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_journal.py:0
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_journal_dashboard_kanban_view
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_bank_statement_tree
+msgid "Import Statement"
+msgstr "匯入對帳單"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,summary:base.module_om_account_bank_statement_import
+msgid ""
+"Import the bank statements of your bank: CAMT, MT940, OFX, QIF, CSV and "
+"Excel"
+msgstr "匯入您銀行的銀行結單：CAMT、MT940、OFX、QIF、CSV 及 Excel"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid "Journal"
+msgstr "日記賬"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "Label Column"
+msgstr "標籤欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_uid
+msgid "Last Updated by"
+msgstr "最後更新者"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_date
+msgid "Last Updated on"
+msgstr "最後更新於"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Leave empty to share the map with every company."
+msgstr "留空以與所有公司共用此對應。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid ""
+"Leave empty to use the journal of the bank account written in the file."
+msgstr "留空以使用檔案中所寫銀行帳戶的日記賬。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__name
+msgid "Name"
+msgstr "名稱"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"No journal was found for the account %(account)s of the file %(file)s. "
+"Choose a journal, or write that account number on the bank account of its "
+"journal."
+msgstr "找不到檔案 %(file)s 中帳戶 %(account)s 的日記賬。請選擇日記賬，或將該帳號填寫到其日記賬的銀行帳戶上。"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "No transaction was found in the file(s)."
+msgstr "檔案中找不到任何交易。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__note
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Notes"
+msgstr "備註"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_narration
+msgid "Notes Column"
+msgstr "備註欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,shortdesc:base.module_om_account_bank_statement_import
+msgid "Odoo 20 Bank Statement Import"
+msgstr "Odoo 20 銀行結單匯入"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid ""
+"One column with the sign of the transaction, negative when the money leaves "
+"the account."
+msgstr "單一欄位，帶有交易的正負號，款項流出帳戶時為負數。"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other"
+msgstr "其他"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other Party"
+msgstr "對方"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_partner
+msgid "Partner Column"
+msgstr "業務夥伴欄"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_ref
+msgid "Reference Column"
+msgstr "參考欄"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Rows"
+msgstr "行"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid "Rows to Skip"
+msgstr "要跳過的列數"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid "Sheet"
+msgstr "工作表"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid "Statement File Map"
+msgstr "對帳單檔案對應"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "Text Delimiter"
+msgstr "文字分隔符"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "The ISO code of the currency, e.g. EUR."
+msgstr "貨幣的 ISO 代碼，例如 EUR。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "The bank account of the other party of the transaction."
+msgstr "交易對方的銀行帳戶。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "The character around a value containing the delimiter. CSV only."
+msgstr "包含分隔符之值的前後字元。僅適用於 CSV。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid ""
+"The character between two columns, CSV only. Write tab for a tabulation (TSV"
+" files)."
+msgstr "兩欄之間的字元，僅適用於 CSV。輸入 tab 表示定位字元（TSV 檔案）。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid ""
+"The character grouping the digits of the big numbers, if any: 1,234.56 or "
+"1.234,56 or 1 234,56."
+msgstr "大數字的千位分隔字元（如有）：1,234.56、1.234,56 或 1 234,56。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid ""
+"The columns of the CSV or Excel files of your bank. Not needed for the other"
+" formats."
+msgstr "您銀行 CSV 或 Excel 檔案的欄位。其他格式不需要。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid ""
+"The columns of the CSV or Excel statements of this bank, filled in by "
+"default when importing."
+msgstr "此銀行 CSV 或 Excel 對帳單的欄位，匯入時預設填入。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid ""
+"The debit column holds the money leaving the account as a positive number. "
+"Uncheck it when your bank writes the debits with a minus sign."
+msgstr "借方欄以正數記錄流出帳戶的款項。如您的銀行以負號記錄借方，請取消勾選。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "The description of the transaction."
+msgstr "交易的說明。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid ""
+"The encoding of the text of the file: utf-8, utf-8-sig, latin1, cp1252... "
+"CSV only."
+msgstr "檔案文字的編碼：utf-8、utf-8-sig、latin1、cp1252 等。僅適用於 CSV。"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is in %(file_currency)s, but the journal %(journal)s is in"
+" %(currency)s."
+msgstr "檔案 %(file)s 使用 %(file_currency)s，但日記賬 %(journal)s 使用 %(currency)s。"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is the statement of the account %(account)s, which belongs"
+" to the journal %(journal)s, not to %(chosen)s."
+msgstr "檔案 %(file)s 是帳戶 %(account)s 的對帳單，該帳戶屬於日記賬 %(journal)s，而非 %(chosen)s。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid ""
+"The first row read holds the names of the columns. Without a header, the "
+"columns below are given by their number, the first column being 1."
+msgstr "讀取的第一列為欄位名稱。若無標題列，下方欄位以編號表示，第一欄為 1。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__date_format
+msgid ""
+"The format of the dates of a QIF file, such as %d/%m/%Y. Left empty, the day"
+" and the month are told apart from the values themselves."
+msgstr "QIF 檔案的日期格式，例如 %d/%m/%Y。留空則根據值本身區分日與月。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid ""
+"The format of the dates of the file, in the Python notation: %d/%m/%Y, "
+"%m/%d/%y, %Y-%m-%d..."
+msgstr "檔案的日期格式，使用 Python 表示法：%d/%m/%Y、%m/%d/%y、%Y-%m-%d 等。"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "The format of the file %s is not supported."
+msgstr "不支援檔案 %s 的格式。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid ""
+"The identifier of the transaction at the bank, to import the same file twice"
+" without duplicating its transactions."
+msgstr "交易在銀行的識別碼，使同一檔案匯入兩次也不會重複其交易。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid ""
+"The identifier of the transaction in the file it was imported from: a "
+"transaction already imported in the journal is not imported again."
+msgstr "交易在其匯入檔案中的識別碼：已匯入日記賬的交易不會再次匯入。"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_statement_import_map.py:0
+msgid ""
+"The map \"%s\" needs an amount column, or a debit column and a credit "
+"column."
+msgstr "對應「%s」需要金額欄，或借方欄及貸方欄。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "The money entering the account."
+msgstr "流入帳戶的款項。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "The money leaving the account."
+msgstr "流出帳戶的款項。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid ""
+"The name or the number (1 for the first one) of the sheet to read. Excel "
+"only, the first sheet by default."
+msgstr "要讀取之工作表的名稱或編號（第一個為 1）。僅適用於 Excel，預設為第一個工作表。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid ""
+"The number of rows to ignore at the top of the file, before the header."
+msgstr "檔案頂部、標題列之前要忽略的列數。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid ""
+"The statement files of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or "
+"Excel."
+msgstr "您銀行的對帳單檔案：CAMT.053、MT940、OFX、QFX、QIF、CSV 或 Excel。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid "Thousands Separator"
+msgstr "千位分隔符"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Transaction"
+msgstr "交易"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid "Unique ID Column"
+msgstr "唯一 ID 欄"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid ""
+"Upload the statements of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or Excel.\n"
+"                        The transactions already imported are left out."
+msgstr ""
+"上載您銀行的對帳單：CAMT.053、MT940、OFX、QFX、QIF、CSV 或 Excel。\n"
+"                        已匯入的交易會被略過。"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Values"
+msgstr "選項"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"Write the name of the column of the file when it has a header row, or the\n"
+"                                    number of the column otherwise, the first column being\n"
+"                                    <code>1</code>. Use either the amount column, or the debit and the credit\n"
+"                                    columns."
+msgstr ""
+"檔案有標題列時，請輸入檔案的欄位名稱，否則請輸入\n"
+"                                    欄位編號，第一欄為\n"
+"                                    <code>1</code>。請使用金額欄，或使用借方及貸方\n"
+"                                    欄。"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "e.g. %d/%m/%Y, for QIF files"
+msgstr "例如：%d/%m/%Y，適用於 QIF 檔案"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"e.g. Export the transactions of the month from the website of the bank, in "
+"CSV."
+msgstr "例如：從銀行網站以 CSV 格式匯出當月交易。"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__name
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "e.g. My Bank - CSV export"
+msgstr "例如：我的銀行 - CSV 匯出"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "of the file"
+msgstr "檔案的"

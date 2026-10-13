@@ -1,0 +1,636 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,description:base.module_om_account_bank_statement_import
+msgid ""
+"\n"
+"Import the statements your bank gives you, in the format it offers: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX or\n"
+"QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept for the next import.\n"
+"\n"
+"The journal is recognised from the account number in the file, the transactions already imported are skipped, and\n"
+"the file stays attached to the statement. The statements are then reconciled as usual.\n"
+msgstr ""
+"\n"
+"นำเข้ารายการเดินบัญชีที่ธนาคารของคุณให้มา ในรูปแบบที่ธนาคารรองรับ: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX หรือ\n"
+"QFX, QIF และ CSV หรือ Excel พร้อมแผนผังคอลัมน์ของธนาคารของคุณ ซึ่งจะถูกเก็บไว้สำหรับการนำเข้าครั้งถัดไป\n"
+"\n"
+"ระบบจะระบุสมุดรายวันจากเลขที่บัญชีในไฟล์ ธุรกรรมที่นำเข้าแล้วจะถูกข้าม และ\n"
+"ไฟล์จะถูกแนบไว้กับรายการเดินบัญชี จากนั้นรายการเดินบัญชีจะถูกกระทบยอดตามปกติ\n"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "%(imported)s transaction(s) imported, %(skipped)s already there."
+msgstr "นำเข้าธุรกรรมแล้ว %(imported)s รายการ มีอยู่แล้ว %(skipped)s รายการ"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid ""
+"A map tells Odoo how to read the CSV or Excel file of one bank: its separators, the format\n"
+"                    of its dates and which column holds the date, the label and the amount of a transaction.\n"
+"                    Set the map on the journal of the bank and import the file as usual."
+msgstr ""
+"แผนผังจะบอก Odoo ว่าจะอ่านไฟล์ CSV หรือ Excel ของธนาคารหนึ่งอย่างไร: ตัวคั่น รูปแบบ\n"
+"                    ของวันที่ และคอลัมน์ใดเก็บวันที่ ป้ายกำกับ และจำนวนเงินของธุรกรรม\n"
+"                    กำหนดแผนผังในสมุดรายวันของธนาคารและนำเข้าไฟล์ตามปกติ"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "A statement is imported in a bank or cash journal, not in %s."
+msgstr "รายการเดินบัญชีต้องนำเข้าในสมุดรายวันธนาคารหรือเงินสด ไม่ใช่ใน %s"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.constraint,message:om_account_bank_statement_import.constraint_account_bank_statement_line_unique_import_id_uniq
+msgid "A transaction of a bank statement file is only imported once."
+msgstr "ธุรกรรมของไฟล์รายการเดินบัญชีธนาคารจะถูกนำเข้าเพียงครั้งเดียว"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "Account Number Column"
+msgstr "คอลัมน์เลขที่บัญชี"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Amount"
+msgstr "จำนวน"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid "Amount Column"
+msgstr "คอลัมน์จำนวนเงิน"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Bank Statement File Map"
+msgstr "แผนผังไฟล์รายการเดินบัญชีธนาคาร"
+
+#. module: om_account_bank_statement_import
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_account_statement_import_map
+#: model:ir.ui.menu,name:om_account_bank_statement_import.menu_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_list
+msgid "Bank Statement File Maps"
+msgstr "แผนผังไฟล์รายการเดินบัญชีธนาคาร"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "บรรทัดรายการเดินบัญชีธนาคาร"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Cancel"
+msgstr "ยกเลิก"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Columns"
+msgstr "คอลัมน์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator__,
+msgid "Comma (1234,56)"
+msgstr "จุลภาค (1234,56)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__company_id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Company"
+msgstr "บริษัท"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_uid
+msgid "Created by"
+msgstr "สร้างโดย"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_date
+msgid "Created on"
+msgstr "สร้างเมื่อ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "Credit Column"
+msgstr "คอลัมน์เครดิต"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "Currency Column"
+msgstr "คอลัมน์สกุลเงิน"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_date
+msgid "Date Column"
+msgstr "คอลัมน์วันที่"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__date_format
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid "Date Format"
+msgstr "รูปแบบวันที่"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "Debit Column"
+msgstr "คอลัมน์เดบิต"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid "Debit is Positive"
+msgstr "เดบิตเป็นค่าบวก"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__decimal_separator
+msgid "Decimal Separator"
+msgstr "อักษรแบ่งคั่นเลขทศนิยม"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid "Delimiter"
+msgstr "ตัวคั่น"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid "Describe the file of your bank"
+msgstr "อธิบายไฟล์ของธนาคารของคุณ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__display_name
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__display_name
+msgid "Display Name"
+msgstr "แสดงชื่อ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator___
+msgid "Dot (1234.56)"
+msgstr "จุด (1234.56)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid "Encoding"
+msgstr "การเข้ารหัส"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "Every transaction of %(count)s file(s) was already imported."
+msgstr "ทุกธุรกรรมของไฟล์ %(count)s ไฟล์ถูกนำเข้าแล้ว"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "File"
+msgstr "ไฟล์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid "File Map"
+msgstr "แผนผังไฟล์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid "Files"
+msgstr "ไฟล์"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "For CSV and Excel files"
+msgstr "สำหรับไฟล์ CSV และ Excel"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "From the account number in the file"
+msgstr "จากเลขที่บัญชีในไฟล์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid "Has a Header Row"
+msgstr "มีแถวหัวคอลัมน์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__id
+msgid "ID"
+msgstr "ไอดี"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Import"
+msgstr "นำเข้า"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Import Bank Statement"
+msgstr "นำเข้ารายการเดินบัญชีธนาคาร"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid "Import ID"
+msgstr "รหัสการนำเข้า"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_journal.py:0
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_journal_dashboard_kanban_view
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_bank_statement_tree
+msgid "Import Statement"
+msgstr "นำเข้ารายการเดินบัญชี"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,summary:base.module_om_account_bank_statement_import
+msgid ""
+"Import the bank statements of your bank: CAMT, MT940, OFX, QIF, CSV and "
+"Excel"
+msgstr ""
+"นำเข้ารายการเดินบัญชีธนาคารของธนาคารของคุณ: CAMT, MT940, OFX, QIF, CSV และ "
+"Excel"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid "Journal"
+msgstr "สมุดบันทึก"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "Label Column"
+msgstr "คอลัมน์ป้ายกำกับ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_uid
+msgid "Last Updated by"
+msgstr "อัปเดตครั้งล่าสุดโดย"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_date
+msgid "Last Updated on"
+msgstr "อัปเดตครั้งล่าสุดเมื่อ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Leave empty to share the map with every company."
+msgstr "เว้นว่างไว้เพื่อใช้แผนผังร่วมกับทุกบริษัท"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid ""
+"Leave empty to use the journal of the bank account written in the file."
+msgstr "เว้นว่างไว้เพื่อใช้สมุดรายวันของบัญชีธนาคารที่ระบุในไฟล์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__name
+msgid "Name"
+msgstr "ชื่อ"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"No journal was found for the account %(account)s of the file %(file)s. "
+"Choose a journal, or write that account number on the bank account of its "
+"journal."
+msgstr ""
+"ไม่พบสมุดรายวันสำหรับบัญชี %(account)s ของไฟล์ %(file)s เลือกสมุดรายวัน "
+"หรือระบุเลขที่บัญชีนั้นในบัญชีธนาคารของสมุดรายวัน"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "No transaction was found in the file(s)."
+msgstr "ไม่พบธุรกรรมในไฟล์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__note
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Notes"
+msgstr "โน้ต"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_narration
+msgid "Notes Column"
+msgstr "คอลัมน์หมายเหตุ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,shortdesc:base.module_om_account_bank_statement_import
+msgid "Odoo 20 Bank Statement Import"
+msgstr "การนำเข้ารายการเดินบัญชีธนาคาร Odoo 20"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid ""
+"One column with the sign of the transaction, negative when the money leaves "
+"the account."
+msgstr "คอลัมน์เดียวที่มีเครื่องหมายของธุรกรรม เป็นค่าลบเมื่อเงินออกจากบัญชี"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other"
+msgstr "อื่นๆ"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other Party"
+msgstr "คู่สัญญาอีกฝ่าย"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_partner
+msgid "Partner Column"
+msgstr "คอลัมน์พาร์ทเนอร์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_ref
+msgid "Reference Column"
+msgstr "คอลัมน์การอ้างอิง"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Rows"
+msgstr "แถว"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid "Rows to Skip"
+msgstr "จำนวนแถวที่จะข้าม"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid "Sheet"
+msgstr "ชีต"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid "Statement File Map"
+msgstr "แผนผังไฟล์รายการเดินบัญชี"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "Text Delimiter"
+msgstr "ตัวคั่นข้อความ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "The ISO code of the currency, e.g. EUR."
+msgstr "รหัส ISO ของสกุลเงิน เช่น EUR"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "The bank account of the other party of the transaction."
+msgstr "บัญชีธนาคารของคู่สัญญาอีกฝ่ายของธุรกรรม"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "The character around a value containing the delimiter. CSV only."
+msgstr "อักขระที่ล้อมรอบค่าที่มีตัวคั่น เฉพาะ CSV เท่านั้น"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid ""
+"The character between two columns, CSV only. Write tab for a tabulation (TSV"
+" files)."
+msgstr ""
+"อักขระระหว่างสองคอลัมน์ เฉพาะ CSV เท่านั้น เขียน tab สำหรับแท็บ (ไฟล์ TSV)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid ""
+"The character grouping the digits of the big numbers, if any: 1,234.56 or "
+"1.234,56 or 1 234,56."
+msgstr ""
+"อักขระที่จัดกลุ่มตัวเลขของจำนวนที่มีค่ามาก ถ้ามี: 1,234.56 หรือ 1.234,56 "
+"หรือ 1 234,56"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid ""
+"The columns of the CSV or Excel files of your bank. Not needed for the other"
+" formats."
+msgstr ""
+"คอลัมน์ของไฟล์ CSV หรือ Excel ของธนาคารของคุณ ไม่จำเป็นสำหรับรูปแบบอื่น"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid ""
+"The columns of the CSV or Excel statements of this bank, filled in by "
+"default when importing."
+msgstr ""
+"คอลัมน์ของรายการเดินบัญชี CSV หรือ Excel ของธนาคารนี้ "
+"ซึ่งกรอกไว้โดยค่าเริ่มต้นเมื่อนำเข้า"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid ""
+"The debit column holds the money leaving the account as a positive number. "
+"Uncheck it when your bank writes the debits with a minus sign."
+msgstr ""
+"คอลัมน์เดบิตเก็บเงินที่ออกจากบัญชีเป็นจำนวนบวก "
+"ยกเลิกการเลือกเมื่อธนาคารของคุณเขียนเดบิตด้วยเครื่องหมายลบ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "The description of the transaction."
+msgstr "คำอธิบายของธุรกรรม"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid ""
+"The encoding of the text of the file: utf-8, utf-8-sig, latin1, cp1252... "
+"CSV only."
+msgstr ""
+"การเข้ารหัสของข้อความในไฟล์: utf-8, utf-8-sig, latin1, cp1252... เฉพาะ CSV "
+"เท่านั้น"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is in %(file_currency)s, but the journal %(journal)s is in"
+" %(currency)s."
+msgstr ""
+"ไฟล์ %(file)s อยู่ในสกุลเงิน %(file_currency)s แต่สมุดรายวัน %(journal)s "
+"อยู่ในสกุลเงิน %(currency)s"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is the statement of the account %(account)s, which belongs"
+" to the journal %(journal)s, not to %(chosen)s."
+msgstr ""
+"ไฟล์ %(file)s เป็นรายการเดินบัญชีของบัญชี %(account)s ซึ่งเป็นของสมุดรายวัน "
+"%(journal)s ไม่ใช่ของ %(chosen)s"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid ""
+"The first row read holds the names of the columns. Without a header, the "
+"columns below are given by their number, the first column being 1."
+msgstr ""
+"แถวแรกที่อ่านจะเก็บชื่อของคอลัมน์ หากไม่มีแถวหัวคอลัมน์ "
+"คอลัมน์ด้านล่างจะระบุด้วยหมายเลข โดยคอลัมน์แรกคือ 1"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__date_format
+msgid ""
+"The format of the dates of a QIF file, such as %d/%m/%Y. Left empty, the day"
+" and the month are told apart from the values themselves."
+msgstr ""
+"รูปแบบของวันที่ในไฟล์ QIF เช่น %d/%m/%Y หากเว้นว่างไว้ "
+"ระบบจะแยกวันและเดือนจากค่าเอง"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid ""
+"The format of the dates of the file, in the Python notation: %d/%m/%Y, "
+"%m/%d/%y, %Y-%m-%d..."
+msgstr ""
+"รูปแบบของวันที่ในไฟล์ ตามรูปแบบของ Python: %d/%m/%Y, %m/%d/%y, %Y-%m-%d..."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "The format of the file %s is not supported."
+msgstr "ไม่รองรับรูปแบบของไฟล์ %s"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid ""
+"The identifier of the transaction at the bank, to import the same file twice"
+" without duplicating its transactions."
+msgstr ""
+"รหัสของธุรกรรมที่ธนาคาร "
+"เพื่อให้นำเข้าไฟล์เดิมสองครั้งได้โดยไม่ทำให้ธุรกรรมซ้ำ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid ""
+"The identifier of the transaction in the file it was imported from: a "
+"transaction already imported in the journal is not imported again."
+msgstr ""
+"รหัสของธุรกรรมในไฟล์ที่นำเข้ามา: "
+"ธุรกรรมที่นำเข้าในสมุดรายวันแล้วจะไม่ถูกนำเข้าอีก"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_statement_import_map.py:0
+msgid ""
+"The map \"%s\" needs an amount column, or a debit column and a credit "
+"column."
+msgstr "แผนผัง \"%s\" ต้องมีคอลัมน์จำนวนเงิน หรือคอลัมน์เดบิตและคอลัมน์เครดิต"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "The money entering the account."
+msgstr "เงินที่เข้าบัญชี"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "The money leaving the account."
+msgstr "เงินที่ออกจากบัญชี"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid ""
+"The name or the number (1 for the first one) of the sheet to read. Excel "
+"only, the first sheet by default."
+msgstr ""
+"ชื่อหรือหมายเลข (1 สำหรับชีตแรก) ของชีตที่จะอ่าน เฉพาะ Excel เท่านั้น "
+"โดยค่าเริ่มต้นเป็นชีตแรก"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid ""
+"The number of rows to ignore at the top of the file, before the header."
+msgstr "จำนวนแถวที่จะข้ามที่ด้านบนของไฟล์ ก่อนแถวหัวคอลัมน์"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid ""
+"The statement files of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or "
+"Excel."
+msgstr ""
+"ไฟล์รายการเดินบัญชีของธนาคารของคุณ: CAMT.053, MT940, OFX, QFX, QIF, CSV หรือ"
+" Excel"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid "Thousands Separator"
+msgstr "อักษรคั่นหลักพัน"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Transaction"
+msgstr "ธุรกรรม"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid "Unique ID Column"
+msgstr "คอลัมน์รหัสเฉพาะ"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid ""
+"Upload the statements of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or Excel.\n"
+"                        The transactions already imported are left out."
+msgstr ""
+"อัปโหลดรายการเดินบัญชีของธนาคารของคุณ: CAMT.053, MT940, OFX, QFX, QIF, CSV หรือ Excel\n"
+"                        ธุรกรรมที่นำเข้าแล้วจะไม่ถูกนำเข้าอีก"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Values"
+msgstr "มูลค่า"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"Write the name of the column of the file when it has a header row, or the\n"
+"                                    number of the column otherwise, the first column being\n"
+"                                    <code>1</code>. Use either the amount column, or the debit and the credit\n"
+"                                    columns."
+msgstr ""
+"เขียนชื่อคอลัมน์ของไฟล์เมื่อไฟล์มีแถวหัวคอลัมน์ หรือ\n"
+"                                    หมายเลขคอลัมน์ในกรณีอื่น โดยคอลัมน์แรกคือ\n"
+"                                    <code>1</code> ใช้คอลัมน์จำนวนเงิน หรือคอลัมน์เดบิตและ\n"
+"                                    คอลัมน์เครดิต"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "e.g. %d/%m/%Y, for QIF files"
+msgstr "เช่น %d/%m/%Y สำหรับไฟล์ QIF"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"e.g. Export the transactions of the month from the website of the bank, in "
+"CSV."
+msgstr "เช่น ส่งออกธุรกรรมของเดือนจากเว็บไซต์ของธนาคาร เป็น CSV"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__name
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "e.g. My Bank - CSV export"
+msgstr "เช่น ธนาคารของฉัน - ส่งออก CSV"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "of the file"
+msgstr "ของไฟล์"

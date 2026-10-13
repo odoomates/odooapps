@@ -89,15 +89,17 @@ class ResPartner(models.Model):
         help="The customer promised to pay by this date: no reminder is sent until then.")
     followup_promise_amount = fields.Float(
         string='Promised Amount', company_dependent=True, tracking=True, digits='Account')
+    # computed as superuser: a user without accounting rights reading a contact in full (an export, the API,
+    # another app's screen) is not refused for the follow-up plans and journal items they are computed from
     followup_status = fields.Selection(
         FOLLOWUP_STATUSES, string='Follow-up Status', compute='_compute_followup_status',
-        search='_search_followup_status')
+        search='_search_followup_status', compute_sudo=True)
     followup_next_date = fields.Date(
-        string='Next Reminder', compute='_compute_followup_status',
+        string='Next Reminder', compute='_compute_followup_status', compute_sudo=True,
         help="The day the next reminder is due, from the due dates of the open invoices and the delays of the "
              "follow-up plan.")
     followup_level_due_id = fields.Many2one(
-        'followup.line', string='Reminder Due', compute='_compute_followup_status',
+        'followup.line', string='Reminder Due', compute='_compute_followup_status', compute_sudo=True,
         help="The level of the reminder to send now.")
     followup_currency_id = fields.Many2one('res.currency', compute='_compute_followup_currency')
 

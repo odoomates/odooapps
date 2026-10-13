@@ -1,13 +1,8 @@
-# Translation of Odoo Server.
-# This file contains the translation of the following modules:
-# 	* om_account_accountant
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 14.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-07-07 07:33+0000\n"
-"PO-Revision-Date: 2022-07-07 07:33+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: uk\n"
@@ -17,10 +12,16 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: om_account_accountant
-#: model:ir.actions.act_window,name:om_account_accountant.action_account_group_action
-#: model:ir.ui.menu,name:om_account_accountant.menu_account_group
-msgid "Account Groups"
-msgstr "Групи рахунків"
+#. odoo-python
+#: code:addons/om_account_accountant/models/account_move.py:0
+msgid ""
+"%(warning)s\n"
+"\n"
+"This invoice cannot be posted: ask an accounting manager to post it, or collect what the customer owes first."
+msgstr ""
+"%(warning)s\n"
+"\n"
+"Цей рахунок неможливо опублікувати: попросіть менеджера з бухобліку опублікувати його або спочатку стягніть заборгованість клієнта."
 
 #. module: om_account_accountant
 #: model:ir.actions.act_window,name:om_account_accountant.action_account_account_tag
@@ -29,25 +30,37 @@ msgid "Account Tags"
 msgstr "Теги рахунків"
 
 #. module: om_account_accountant
-#: model:ir.ui.menu,name:om_account_accountant.account_type_menu
-msgid "Account Types"
-msgstr "Типи рахунків"
-
-#. module: om_account_accountant
 #: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
 #: model_terms:ir.ui.view,arch_db:om_account_accountant.view_partner_property_form
 msgid "Accounting"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:res.groups,name:om_account_accountant.group_fiscal_year
-msgid "Allow to define fiscal years of more or less than a year"
-msgstr ""
+msgstr "Бухоблік"
 
 #. module: om_account_accountant
 #: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
 msgid "Anglo-Saxon Accounting"
+msgstr "Англосаксонський облік"
+
+#. module: om_account_accountant
+#: model:ir.module.module,summary:base.module_om_account_accountant
+msgid ""
+"Annual Report, Bank Reconciliation Statement, Accounting Reports, Asset "
+"Management and Budget, Recurring Payments, Lock Dates, Fiscal Year, Period "
+"Closing, Accounting Dashboard, Financial Reports, Cash Flow Statement, Cash "
+"Forecast, Customer Follow up Management, Bank Reconciliation, Cheque "
+"Printing, Automatic Currency Rates, Currency Revaluation, Bank Statement "
+"Import"
 msgstr ""
+"Річний звіт, звіт про узгодження з банком, бухгалтерські звіти, управління "
+"активами та бюджетом, регулярні платежі, дати блокування, фінансовий рік, "
+"закриття періоду, дашборд бухобліку, фінансові звіти, звіт про рух грошових "
+"коштів, прогноз руху грошових коштів, управління нагадуваннями клієнтам, "
+"узгодження з банком, друк чеків, автоматичні курси валют, переоцінка валюти,"
+" імпорт банківських виписок"
+
+#. module: om_account_accountant
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_bank_reconciliation
+msgid "Bank Reconciliation"
+msgstr "Узгодження з банком"
 
 #. module: om_account_accountant
 #: model:ir.ui.menu,name:om_account_accountant.menu_accounting_statement_bank
@@ -56,229 +69,120 @@ msgstr "Банківські виписки"
 
 #. module: om_account_accountant
 #: model:ir.ui.menu,name:om_account_accountant.menu_accounting_bank_and_cash
+#: model:ir.ui.menu,name:om_account_accountant.menu_action_account_moves_journal_bank_cash
 msgid "Bank and Cash"
 msgstr "Банк та каса"
 
 #. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.view_change_lock_date
-msgid "Cancel"
-msgstr "Скасувати"
+#: model:ir.model.fields,field_description:om_account_accountant.field_res_company__credit_limit_block
+#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__credit_limit_block
+msgid "Block Over the Credit Limit"
+msgstr "Блокувати понад кредитний ліміт"
 
 #. module: om_account_accountant
 #: model:ir.ui.menu,name:om_account_accountant.menu_accounting_statement_cash
-msgid "Cash Registers"
-msgstr "Касові апарати"
+msgid "Cash Statements"
+msgstr "Касові виписки"
 
 #. module: om_account_accountant
-#: model:ir.model,name:om_account_accountant.model_change_lock_date
-msgid "Change Lock Date"
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_account_account_tag
+msgid "Create an account tag"
+msgstr "Створіть тег рахунку"
+
+#. module: om_account_accountant
+#: model:ir.actions.act_window,name:om_account_accountant.action_moves_unposted
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_moves_unposted
+msgid "Draft Entries"
+msgstr "Чорнові записи"
+
+#. module: om_account_accountant
+#: model:ir.actions.act_window,name:om_account_accountant.action_moves_to_review
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_moves_to_review
+msgid "Entries to Review"
+msgstr "Записи до перегляду"
+
+#. module: om_account_accountant
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_moves_unposted
+msgid ""
+"Everything is posted. Draft entries are not in the reports and not in the balances, so a period\n"
+"                should not be closed while any are left here."
 msgstr ""
+"Усе опубліковано. Чорнових записів немає у звітах і балансах, тому період\n"
+"                не слід закривати, доки тут залишаються такі записи."
 
 #. module: om_account_accountant
-#: model:ir.ui.menu,name:om_account_accountant.menu_account_coa_template
-msgid "Chart of Accounts Templates"
-msgstr "Шаблони планів рахунків"
-
-#. module: om_account_accountant
-#: model_terms:ir.actions.act_window,help:om_account_accountant.actions_account_fiscal_year
-msgid "Click here to create a new fiscal year."
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__company_id
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__company_id
-msgid "Company"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model,name:om_account_accountant.model_res_config_settings
-msgid "Config Settings"
-msgstr "Налаштування"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__create_uid
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__create_uid
-msgid "Created by"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__create_date
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__create_date
-msgid "Created on"
-msgstr ""
-
-#. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
-msgid "Define fiscal years of more or less than one year"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__display_name
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_move__display_name
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__display_name
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__display_name
-msgid "Display Name"
-msgstr "Відобразити назву"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__date_to
-msgid "End Date"
-msgstr "Дата закінчення"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_account_fiscal_year__date_to
-msgid "Ending Date, included in the fiscal year."
-msgstr "Кінцева дата, яка входиь до фіскального року."
-
-#. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
-msgid "Fiscal Period Closing"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.actions.act_window,name:om_account_accountant.action_account_fiscal_position_template
-#: model:ir.ui.menu,name:om_account_accountant.menu_account_fiscal_position_template
-msgid "Fiscal Position Templates"
-msgstr "Шаблони схем оподаткування"
-
-#. module: om_account_accountant
-#: model:ir.model,name:om_account_accountant.model_account_fiscal_year
-#: model:ir.ui.menu,name:om_account_accountant.menu_fiscal_year
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
-msgid "Fiscal Year"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.actions.act_window,name:om_account_accountant.actions_account_fiscal_year
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__group_fiscal_year
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
-msgid "Fiscal Years"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__fiscalyear_last_day
-msgid "Fiscalyear Last Day"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__fiscalyear_last_month
-msgid "Fiscalyear Last Month"
-msgstr ""
-
-#. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.view_account_payment_method_search
-msgid "Group By"
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__id
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_move__id
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__id
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__id
+#: model:ir.model.fields,field_description:om_account_accountant.field_res_company__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: om_account_accountant
-#: model:ir.model,name:om_account_accountant.model_account_move
-msgid "Journal Entry"
-msgstr "Запис у журналі"
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_journal_audit
+msgid "Journal Audit"
+msgstr "Аудит журналу"
 
 #. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
-msgid "Last Day"
-msgstr ""
+#: model:ir.ui.menu,name:om_account_accountant.menu_finance_entries_accounting_journals
+msgid "Journals"
+msgstr "Журнали"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year____last_update
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_move____last_update
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date____last_update
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings____last_update
-msgid "Last Modified on"
-msgstr "Останні зміни"
+#: model:ir.ui.menu,name:om_account_accountant.menu_account_management_config
+msgid "Management"
+msgstr "Управління"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__write_uid
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__write_uid
-msgid "Last Updated by"
-msgstr ""
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_match_journal_items
+msgid "Match Journal Items"
+msgstr "Зіставити елементи журналу"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__write_date
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__write_date
-msgid "Last Updated on"
-msgstr ""
+#: model:ir.ui.menu,name:om_account_accountant.menu_action_account_moves_journal_misc
+msgid "Miscellaneous"
+msgstr "Інші"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__fiscalyear_lock_date
-msgid "Lock Date"
-msgstr ""
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_moves_unposted
+msgid "No draft entry"
+msgstr "Немає чорнових записів"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__fiscalyear_lock_date
-msgid "Lock Date for All Users"
-msgstr "Дата закриття для всіх користувачів"
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_account_payment_method
+msgid "No payment method"
+msgstr "Немає способу оплати"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__period_lock_date
-#: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__period_lock_date
-msgid "Lock Date for Non-Advisers"
-msgstr "Дата закриття для користувачів без ролі Консультант"
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_moves_to_review
+msgid "Nothing waiting to be reviewed"
+msgstr "Немає нічого, що очікує на перевірку"
 
 #. module: om_account_accountant
-#: model:ir.ui.menu,name:om_account_accountant.menu_action_change_lock_date
-msgid "Lock Dates"
-msgstr "Дати закриття періодів"
+#: model:ir.module.module,shortdesc:base.module_om_account_accountant
+msgid "Odoo 20 Accounting Community"
+msgstr "Бухоблік Odoo 20 Community"
 
 #. module: om_account_accountant
-#: model:ir.actions.act_window,name:om_account_accountant.action_view_change_lock_date
-msgid "Lock your Fiscal Period"
-msgstr "Закрийте свій податковий період"
-
-#. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
-msgid "Lock your fiscal period"
-msgstr "Закрийте свій податковий період"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__name
-msgid "Name"
-msgstr "Назва"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_change_lock_date__tax_lock_date
+#: model:ir.module.module,description:base.module_om_account_accountant
 msgid ""
-"No users can edit journal entries related to a tax prior and inclusive of "
-"this date."
+"Odoo 20 Financial Reports, Asset Management and Budget, Financial Reports, "
+"Cash Flow Statement, Cash Forecast, Recurring Payments, Bank Reconciliation,"
+" Customer Follow Up Management, Account Lock Date, Fiscal Year and Period "
+"Closing, Cheque Printing, Automatic Currency Rates, Accounting Dashboard"
 msgstr ""
+"Фінансові звіти Odoo 20, управління активами та бюджетом, фінансові звіти, "
+"звіт про рух грошових коштів, прогноз руху грошових коштів, регулярні "
+"платежі, узгодження з банком, управління нагадуваннями клієнтам, дата "
+"блокування рахунків, фінансовий рік і закриття періоду, друк чеків, "
+"автоматичні курси валют, дашборд бухобліку"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_res_config_settings__fiscalyear_lock_date
-msgid ""
-"No users, including Advisers, can edit accounts prior to and inclusive of "
-"this date. Use it for fiscal year locking for example."
-msgstr ""
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_open_items
+msgid "Open Items"
+msgstr "Відкриті елементи"
 
 #. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_change_lock_date__fiscalyear_lock_date
-msgid ""
-"No users, including Advisers, can edit accounts prior to and inclusive of "
-"this date. Use it for fiscal year locking."
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_res_config_settings__period_lock_date
-msgid ""
-"Only users with the 'Adviser' role can edit accounts prior to and inclusive "
-"of this date. Use it for period locking inside an open fiscal year, for "
-"example."
-msgstr ""
-
-#. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_change_lock_date__period_lock_date
-msgid ""
-"Only users with the Adviser role can edit accounts prior to and inclusive of"
-" this date. Use it for period locking inside an open fiscal year."
-msgstr ""
+#: model:res.groups,name:om_account_accountant.group_credit_limit_override
+msgid "Override the Credit Limit"
+msgstr "Перевищувати кредитний ліміт"
 
 #. module: om_account_accountant
 #: model_terms:ir.ui.view,arch_db:om_account_accountant.view_account_payment_method_search
@@ -300,17 +204,46 @@ msgid "Payment Type"
 msgstr "Тип оплати"
 
 #. module: om_account_accountant
+#: model:res.groups,comment:om_account_accountant.group_credit_limit_override
+msgid ""
+"Post the customer invoices going over the credit limit of the customer."
+msgstr "Публікувати рахунки клієнтам, що перевищують кредитний ліміт клієнта."
+
+#. module: om_account_accountant
+#. odoo-python
+#: code:addons/om_account_accountant/models/account_move.py:0
+msgid ""
+"Posted over the credit limit of the customer.\n"
+"%(warning)s"
+msgstr ""
+"Опубліковано понад кредитний ліміт клієнта.\n"
+"%(warning)s"
+
+#. module: om_account_accountant
+#: model:ir.ui.menu,name:om_account_accountant.menu_action_account_moves_journal_purchase
+msgid "Purchases"
+msgstr "Купівлі"
+
+#. module: om_account_accountant
 #: model:ir.actions.server,name:om_account_accountant.action_account_reconciliation
 msgid "Reconcile"
-msgstr ""
+msgstr "Узгодити"
+
+#. module: om_account_accountant
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_reconciliation
+msgid "Reconciliation"
+msgstr "Узгодження"
 
 #. module: om_account_accountant
 #: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
 msgid ""
 "Record the cost of a good as an expense when this good is\n"
-"                                    invoiced to a final customer (instead of recording the cost as soon\n"
-"                                    as the product is received in stock)."
+"                                invoiced to a final customer (instead of recording the cost as soon\n"
+"                                as the product is received in stock)."
 msgstr ""
+"Відображати собівартість товару як витрати, коли на цей товар\n"
+"                                виставлено рахунок кінцевому клієнту (замість відображення собівартості одразу,\n"
+"                                як товар надійшов на склад)."
 
 #. module: om_account_accountant
 #: model:ir.model.fields,help:om_account_accountant.field_res_config_settings__anglo_saxon_accounting
@@ -318,53 +251,84 @@ msgid ""
 "Record the cost of a good as an expense when this good is invoiced to a "
 "final customer."
 msgstr ""
+"Відображати собівартість товару як витрати, коли на цей товар виставлено "
+"рахунок кінцевому клієнту."
 
 #. module: om_account_accountant
-#: model_terms:ir.ui.view,arch_db:om_account_accountant.view_change_lock_date
-msgid "Save"
-msgstr "Зберегти"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_account_fiscal_year__date_from
-msgid "Start Date"
-msgstr "Дата початку"
-
-#. module: om_account_accountant
-#: model:ir.model.fields,help:om_account_accountant.field_account_fiscal_year__date_from
-msgid "Start Date, included in the fiscal year."
+#: model:ir.model.fields,help:om_account_accountant.field_res_company__credit_limit_block
+#: model:ir.model.fields,help:om_account_accountant.field_res_config_settings__credit_limit_block
+msgid ""
+"Refuse to post a customer invoice that brings the customer over its credit "
+"limit. The users allowed to override the credit limit can still post it, and"
+" the override is logged on the invoice."
 msgstr ""
+"Відмовляти в публікації рахунку клієнту, через який клієнт перевищує свій "
+"кредитний ліміт. Користувачі, яким дозволено перевищувати кредитний ліміт, "
+"усе одно можуть його опублікувати, і перевищення фіксується в рахунку."
 
 #. module: om_account_accountant
-#: model:ir.model.fields,field_description:om_account_accountant.field_change_lock_date__tax_lock_date
-msgid "Tax Lock Date"
+#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
+msgid "Refuse to post an invoice going over the limit"
+msgstr "Відмовляти в публікації рахунку, що перевищує ліміт"
+
+#. module: om_account_accountant
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_regularization
+msgid "Regularization Entries"
+msgstr "Записи регулювання"
+
+#. module: om_account_accountant
+#: model:ir.ui.menu,name:om_account_accountant.menu_action_account_moves_journal_sales
+msgid "Sales"
+msgstr "Продажі"
+
+#. module: om_account_accountant
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_account_account_tag
+msgid ""
+"Tags group accounts or tax lines in the reports, such as the cash flow "
+"statement or the tax grids."
 msgstr ""
+"Теги групують рахунки або податкові рядки у звітах, як-от звіт про рух "
+"грошових коштів чи сітки податків."
 
 #. module: om_account_accountant
-#: model:ir.ui.menu,name:om_account_accountant.menu_account_templates
-msgid "Templates"
-msgstr "Шаблони"
-
-#. module: om_account_accountant
-#: code:addons/om_account_accountant/models/account_fiscal_year.py:0
-#, python-format
-msgid "The ending date must not be prior to the starting date."
+#: model_terms:ir.ui.view,arch_db:om_account_accountant.res_config_settings_view_form
+msgid ""
+"The accounting managers can still post it: the override is logged on the "
+"invoice."
 msgstr ""
+"Менеджери з бухобліку все одно можуть його опублікувати: перевищення "
+"фіксується в рахунку."
+
+#. module: om_account_accountant
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_account_payment_method
+msgid ""
+"The payment methods, such as manual or cheque, that the journals offer for "
+"incoming and outgoing payments."
+msgstr ""
+"Способи оплати, як-от вручну чи чеком, які журнали пропонують для вхідних і "
+"вихідних платежів."
+
+#. module: om_account_accountant
+#: model_terms:ir.actions.act_window,help:om_account_accountant.action_moves_to_review
+msgid ""
+"The posted entries someone has marked to review appear here until they are "
+"checked."
+msgstr ""
+"Опубліковані записи, які хтось позначив для перевірки, відображаються тут, "
+"доки їх не перевірять."
+
+#. module: om_account_accountant
+#: model:ir.actions.client,name:om_account_accountant.action_bank_rec_to_review
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_bank_rec_to_review
+msgid "Transactions to Review"
+msgstr "Транзакції для перевірки"
+
+#. module: om_account_accountant
+#: model:ir.ui.menu,name:om_account_accountant.menu_review_unrealized_currencies
+msgid "Unrealized Currencies"
+msgstr "Нереалізовані валюти"
 
 #. module: om_account_accountant
 #: model:ir.model.fields,field_description:om_account_accountant.field_res_config_settings__anglo_saxon_accounting
 msgid "Use anglo-saxon accounting"
-msgstr ""
-
-#. module: om_account_accountant
-#: code:addons/om_account_accountant/wizard/change_lock_date.py:0
-#, python-format
-msgid "You Are Not Allowed To Perform This Operation"
-msgstr ""
-
-#. module: om_account_accountant
-#: code:addons/om_account_accountant/models/account_fiscal_year.py:0
-#, python-format
-msgid ""
-"You can not have an overlap between two fiscal years, please correct the "
-"start and/or end dates of your fiscal years."
-msgstr ""
+msgstr "Англосаксонський бухоблік"

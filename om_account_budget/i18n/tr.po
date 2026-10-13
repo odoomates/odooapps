@@ -1,13 +1,8 @@
-# Translation of Odoo Server.
-# This file contains the translation of the following modules:
-# 	* om_account_budget
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 15.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-04-15 06:43+0000\n"
-"PO-Revision-Date: 2022-04-15 06:43+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: tr\n"
@@ -17,500 +12,1291 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: om_account_budget
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
-"\"End Date\" of the budget line should be included in the Period of the "
-"budget"
-msgstr "Bütçe satırının \"bitiş tarihi\", bütçe dönemi içinde olmalıdır."
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, committed "
+"%(committed)s, this document %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s (%(budget)s): planlanan %(planned)s, gerçekleşen %(actual)s, "
+"taahhüt edilen %(committed)s, bu belge %(new)s, bütçe aşımı %(over)s"
 
 #. module: om_account_budget
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
-"\"Start Date\" of the budget line should be included in the Period of the "
-"budget"
-msgstr "Bütçe satırının \"başlangıç tarihi\", bütçe dönemi içinde olmalıdır."
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, this document"
+" %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s (%(budget)s): planlanan %(planned)s, gerçekleşen %(actual)s, bu "
+"belge %(new)s, bütçe aşımı %(over)s"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_kanban
-msgid "<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Period\" title=\"Period\"/>"
-msgstr "<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Dönem\" title=\"Dönem\"/>"
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid ""
+"%(line)s reached %(percent)s%% of its planned amount (%(practical)s of "
+"%(planned)s)."
+msgstr ""
+"%(line)s planlanan tutarının %(percent)s%% oranına ulaştı (%(practical)s / "
+"%(planned)s)."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__account_ids
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_form
+#. odoo-python
+#: code:addons/om_account_budget/models/account_move.py:0
+msgid ""
+"%(move)s cannot be posted, it goes over budget:\n"
+"%(lines)s\n"
+"Ask an accounting manager to post it or to raise the budget."
+msgstr ""
+"%(move)s onaylanamaz, bütçeyi aşıyor:\n"
+"%(lines)s\n"
+"Onaylaması veya bütçeyi artırması için bir muhasebe yöneticisine başvurun."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "%(user)s was emailed: some lines spent more than planned."
+msgstr ""
+"%(user)s kullanıcısına e-posta gönderildi: bazı satırlar planlanandan fazla "
+"harcadı."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "%s (copy)"
+msgstr "%s (kopya)"
+
+#. module: om_account_budget
+#: model:ir.actions.report,print_report_name:om_account_budget.action_report_budget_vs_actual
+msgid "'Budget vs Actual - %s' % object.name"
+msgstr "'Bütçe ve Gerçekleşen - %s' % object.name"
+
+#. module: om_account_budget
+#: model:mail.template,body_html:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Hello <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        These lines of the budget <strong t-out=\"object.name or ''\">Budget 2026</strong> spent more than planned:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Review the spending, or revise the planned amounts of the budget.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Merhaba <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        <strong t-out=\"object.name or ''\">Budget 2026</strong> bütçesinin şu satırları planlanandan fazla harcadı:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Lütfen harcamaları gözden geçirin veya bütçenin planlanan tutarlarını revize edin.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_kanban
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+msgstr ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "<span class=\"text-muted\"> of </span>"
+msgstr "<span class=\"text-muted\"> / </span>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Period:</strong>"
+msgstr "<strong>Dönem:</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Responsible:</strong>"
+msgstr "<strong>Sorumlu:</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Status:</strong>"
+msgstr "<strong>Durum:</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid ""
+"A budgetary position groups the accounts a budget line follows, such as the "
+"travel or the salary expenses."
+msgstr ""
+"Bir bütçe kalemi, seyahat veya maaş giderleri gibi bir bütçe satırının takip"
+" ettiği hesapları gruplar."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid ""
+"A draft copy of the budget is created, its lines are moved to the new "
+"period."
+msgstr ""
+"Bütçenin taslak bir kopyası oluşturulur, satırları yeni döneme taşınır."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__account_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
 msgid "Accounts"
 msgstr "Hesaplar"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__percentage
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+msgid "Achieved"
+msgstr "Gerçekleşen"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__achievement
 msgid "Achievement"
 msgstr "Kazanım"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_needaction
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction
 msgid "Action Needed"
 msgstr "Eylem Gerekli"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__practical_amount
-msgid "Amount really earned/spent."
-msgstr "Gerçekten kazanılan/harcanan tutar."
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__active
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__active
+msgid "Active"
+msgstr "Etkin"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__theoritical_amount
-msgid "Amount you are supposed to have earned/spent at this date."
-msgstr "Bu tarihe dek kazanmanız/harcamanız gereken tutar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_ids
+msgid "Activities"
+msgstr "Aktiviteler"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__planned_amount
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Etkinlik İstisna Dekorasyonu"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_plans_ids
+msgid "Activity Plans"
+msgstr "Aktivite Planları"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_state
+msgid "Activity State"
+msgstr "Aktivite Durumu"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Aktivite Türü İmgesi"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Actual"
+msgstr "Gerçekleşen"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__practical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+msgid "Actual Amount"
+msgstr "Gerçekleşen Tutar"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_practical_amount
+msgid "Actual Expenses"
+msgstr "Gerçekleşen Giderler"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_practical_amount
+msgid "Actual Revenues"
+msgstr "Gerçekleşen Gelirler"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__achievement
+msgid "Actual amount compared with the theoretical amount."
+msgstr "Teorik tutarla karşılaştırılan gerçekleşen tutar."
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
 msgid ""
-"Amount you plan to earn/spend. Record a positive amount if it is a revenue "
-"and a negative amount if it is a cost."
+"Add this analytic account to the lines of a budget to follow its spending "
+"here."
 msgstr ""
-"Kazanmayı/harcamayı planladığınız tutar. Bu bir gelir ise pozitif, gider ise"
-" negatif değer giriniz."
+"Harcamalarını burada takip etmek için bu analitik hesabı bir bütçenin "
+"satırlarına ekleyin."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__practical_amount
+msgid "Amount really spent or earned, from the posted journal entries."
+msgstr ""
+"Onaylanmış yevmiye kayıtlarından, gerçekte harcanan veya kazanılan tutar."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__theoretical_amount
+msgid "Amount you are supposed to have spent or earned at this date."
+msgstr "Bu tarihe kadar harcamış veya kazanmış olmanız beklenen tutar."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__planned_amount
+msgid "Amount you plan to spend (expense lines) or to earn (revenue lines)."
+msgstr ""
+"Harcamayı (gider satırları) veya kazanmayı (gelir satırları) planladığınız "
+"tutar."
 
 #. module: om_account_budget
 #: model:ir.model,name:om_account_budget.model_account_analytic_account
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__analytic_account_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_account_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Analytic Account"
 msgstr "Analitik Hesap"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__analytic_plan_id
-msgid "Analytic Group"
-msgstr "Analitik Grup"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Approve"
 msgstr "Onayla"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_attachment_count
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Archived"
+msgstr "Arşivlendi"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__at_date
+msgid "At a Date"
+msgstr "Bir Tarihte"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__is_over_budget
+msgid "At least one expense line spent more than its theoretical amount."
+msgstr "En az bir gider satırı teorik tutarından fazla harcadı."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_attachment_count
 msgid "Attachment Count"
 msgstr "Ek Sayısı"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_crossovered_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__crossovered_budget_id
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_tree
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Audit"
+msgstr "Denetim"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_block_documents
+msgid "Block Documents Over Budget"
+msgstr "Bütçeyi Aşan Belgeleri Engelle"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__budget_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budget"
 msgstr "Bütçe"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_account_analytic_account_cb_lines
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_line_analysis
+msgid "Budget Analysis"
+msgstr "Bütçe Analizi"
+
+#. module: om_account_budget
+#: model:mail.activity.type,name:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Budget Exceeded"
+msgstr "Bütçe Aşıldı"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_analytic_account_budget_lines
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 msgid "Budget Items"
 msgstr "Bütçe Kalemleri"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_crossovered_budget_lines
+#: model:ir.model,name:om_account_budget.model_account_budget_line
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
 msgid "Budget Line"
 msgstr "Bütçe Satırı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__crossovered_budget_line
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__crossovered_budget_line
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_tree
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__budget_line_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__line_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_graph
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 msgid "Budget Lines"
 msgstr "Bütçe Satırları"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__name
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Budget Name"
 msgstr "Bütçe Adı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__crossovered_budget_state
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_line_analysis
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Budget Report"
+msgstr "Bütçe Raporu"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Budget Report: %s"
+msgstr "Bütçe Raporu: %s"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_state
 msgid "Budget State"
 msgstr "Bütçe Durumu"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_account_budget_post
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__general_budget_id
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_search
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_tree
+#: model:ir.model.fields,field_description:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,field_description:om_account_budget.field_account_move__budget_warning
+msgid "Budget Warning"
+msgstr "Bütçe Uyarısı"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid "Budget Warning Threshold"
+msgstr "Bütçe Uyarı Eşiği"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,help:om_account_budget.field_account_move__budget_warning
+msgid ""
+"Budget lines this draft vendor bill would push over their planned amount."
+msgstr ""
+"Bu taslak tedarikçi faturasının planlanan tutarını aşmasına neden olacağı "
+"bütçe satırları."
+
+#. module: om_account_budget
+#: model:ir.actions.report,name:om_account_budget.action_report_budget_vs_actual
+msgid "Budget vs Actual"
+msgstr "Bütçe ve Gerçekleşen"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Budget vs Actual:"
+msgstr "Bütçe ve Gerçekleşen:"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Budget warnings"
+msgstr "Bütçe uyarıları"
+
+#. module: om_account_budget
+#: model:mail.template,name:om_account_budget.mail_template_budget_exceeded
+msgid "Budget: lines over budget"
+msgstr "Bütçe: bütçeyi aşan satırlar"
+
+#. module: om_account_budget
+#: model:ir.actions.server,name:om_account_budget.ir_cron_budget_warnings_ir_actions_server
+msgid "Budget: warn the responsibles of over budget lines"
+msgstr "Bütçe: bütçeyi aşan satırların sorumlularını uyar"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_position
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__position_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budgetary Position"
 msgstr "Bütçe Pozisyonu"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.open_budget_post_form
-#: model:ir.ui.menu,name:om_account_budget.menu_budget_post_form
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_position
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_position
 msgid "Budgetary Positions"
 msgstr "Bütçe Pozisyonları"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_crossovered_budget_view
-#: model:ir.ui.menu,name:om_account_budget.menu_act_crossovered_budget_view
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget
 msgid "Budgets"
 msgstr "Bütçeler"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_crossovered_budget_lines_view
-#: model:ir.ui.menu,name:om_account_budget.menu_act_crossovered_budget_lines_view
-msgid "Budgets Analysis"
-msgstr "Bütçe Analizi"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Cancel Budget"
 msgstr "Bütçeyi İptal Et"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__cancel
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__cancel
 msgid "Cancelled"
 msgstr "İptal Edildi"
 
 #. module: om_account_budget
-#: model_terms:ir.actions.act_window,help:om_account_budget.act_crossovered_budget_view
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
 msgid "Click to create a new budget."
 msgstr "Yeni bir bütçe oluşturmak için tıklayınız"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__company_id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__company_id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__company_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Committed"
+msgstr "Taahhüt Edilen"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__company_id
 msgid "Company"
 msgstr "Şirket"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__percentage
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
 msgid ""
-"Comparison between practical and theoretical amount. This measure tells you "
-"if you are below or over budget."
+"Compare what was planned with what was achieved, by budget, budgetary "
+"position, analytic account or period."
 msgstr ""
-"Pratik ve teorik tutarların karşılaştırması. Bu kriter size bütçenin altında"
-" mı üstünde mi olduğunuzu söyler."
+"Planlananı gerçekleşenle bütçeye, bütçe kalemine, analitik hesaba veya "
+"döneme göre karşılaştırın."
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Confirm"
 msgstr "Onayla"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__confirm
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__confirm
 msgid "Confirmed"
 msgstr "Teyit Edildi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__create_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__create_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__create_uid
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid "Copy"
+msgstr "Kopyala"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_copy
+msgid "Copy a Budget to Another Period"
+msgstr "Bir Bütçeyi Başka Bir Döneme Kopyala"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Copy to Next Period"
+msgstr "Sonraki Döneme Kopyala"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid "Create a budgetary position"
+msgstr "Bir bütçe kalemi oluşturun"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_uid
 msgid "Created by"
 msgstr "Oluşturan"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__create_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__create_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_date
 msgid "Created on"
 msgstr "Oluşturulma Tarihi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__currency_id
 msgid "Currency"
 msgstr "Para Birimi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__display_name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__display_name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__display_name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Discard"
+msgstr "Sil"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__display_name
 msgid "Display Name"
 msgstr "Görüntülenen Ad"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__done
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__done
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Done"
 msgstr "Tamamlandı"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__draft
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__draft
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Draft"
 msgstr "Taslak"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "Draft Budgets"
-msgstr "Taslak Bütçe"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid ""
+"Each line covering several periods is replaced by one line per period, its planned amount\n"
+"                    shared according to the days of each period."
+msgstr ""
+"Birden fazla dönemi kapsayan her satır, dönem başına bir satırla değiştirilir; planlanan tutarı\n"
+"                    her dönemin gün sayısına göre paylaştırılır."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__date_to
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid "Email the Budget Responsible"
+msgstr "Bütçe Sorumlusuna E-posta Gönder"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Email the responsible when a budget is exceeded"
+msgstr "Bir bütçe aşıldığında sorumluya e-posta gönder"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_to
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
 msgid "End Date"
 msgstr "Bitiş Tarihi"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-msgid "Entries..."
-msgstr "Kayıtlar"
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__exceeded
+msgid "Exceeded"
+msgstr "Aşıldı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_follower_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__distribution
+msgid "Expected"
+msgstr "Beklenen"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Expected to Date"
+msgstr "Bugüne Kadar Beklenen"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__expense
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__expense
+msgid "Expense"
+msgstr "Masraf"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__is_over_budget
+msgid "Expense line which spent more than its theoretical amount."
+msgstr "Teorik tutarından fazla harcayan gider satırı."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__budget_type
+msgid ""
+"Expense lines plan costs, revenue lines plan incomes. Planned amounts are "
+"always positive."
+msgstr ""
+"Gider satırları maliyetleri, gelir satırları gelirleri planlar. Planlanan "
+"tutarlar her zaman pozitiftir."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_position__budget_type
+msgid ""
+"Expense: the planned amounts are costs, spending more than planned is over budget.\n"
+"Revenue: the planned amounts are incomes, earning more than planned is above budget."
+msgstr ""
+"Gider: planlanan tutarlar maliyettir, planlanandan fazla harcamak bütçe aşımıdır.\n"
+"Gelir: planlanan tutarlar gelirdir, planlanandan fazla kazanmak bütçenin üzerindedir."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Expenses"
+msgstr "Masraflar"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_achievement
+msgid "Expenses Achievement"
+msgstr "Gider Gerçekleşmesi"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_follower_ids
 msgid "Followers"
 msgstr "Takipçiler"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_partner_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_partner_ids
 msgid "Followers (Partners)"
 msgstr "Takipçiler (İş Ortakları)"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
-msgid "Group By"
-msgstr "Gruplama"
-
-#. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__has_message
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__has_message
 msgid "Has Message"
 msgstr "Mesajı Olan"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_chart_template__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_needaction
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_unread
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon"
+msgstr "Simge"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "İstisnai bir etkinliği belirtmek için kullanılan simge."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction
 msgid "If checked, new messages require your attention."
 msgstr "İşaretlenirse, yeni mesajlarla ilgilenmeniz gerekir."
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_error
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_sms_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr "İşaretlenirse, bazı iletilerde teslim hatası olur."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__is_above_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_above_budget
 msgid "Is Above Budget"
 msgstr "Bütçenin Üzerinde"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_is_follower
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_is_follower
 msgid "Is Follower"
 msgstr "Takipçi mi?"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post____last_update
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget____last_update
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines____last_update
-msgid "Last Modified on"
-msgstr "Son Değişiklik Tarihi"
-
-#. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__write_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__write_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_uid
 msgid "Last Updated by"
 msgstr "Son Güncellemeyi Yapan"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__write_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__write_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_date
 msgid "Last Updated on"
 msgstr "Son Güncelleme Tarihi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_main_attachment_id
-msgid "Main Attachment"
-msgstr "Ana Ek"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_split__line_ids
+msgid "Leave empty to split every line of the budget."
+msgstr "Bütçenin tüm satırlarını bölmek için boş bırakın."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_error
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Line"
+msgstr "Satır"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__line_ids
+msgid "Lines to Split"
+msgstr "Bölünecek Satırlar"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr "Material Symbols simgesi, örn. checklist"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error
 msgid "Message Delivery error"
 msgstr "Teslim hatası mesajı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_ids
 msgid "Messages"
 msgstr "Mesajlar"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__name
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__1
+msgid "Monthly"
+msgstr "Aylık"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Aktivite Son Tarihim"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "My Budgets"
+msgstr "Bütçelerim"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__name
 msgid "Name"
 msgstr "İsim"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__name
+msgid "New Budget Name"
+msgstr "Yeni Bütçe Adı"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Sonraki Aktivite Son Tarihi"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_summary
+msgid "Next Activity Summary"
+msgstr "Sonraki Aktivite Özeti"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_id
+msgid "Next Activity Type"
+msgstr "Sonraki Aktivitie Türü"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid "No budget line for this analytic account"
+msgstr "Bu analitik hesap için bütçe satırı yok"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid "No budget line yet"
+msgstr "Henüz bütçe satırı yok"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__none
+msgid "None"
+msgstr "Hiçbiri"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 msgid "Not Cancelled"
 msgstr "İptal Edilmedi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_needaction_counter
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Notify the responsible of a validated budget when an expense line reaches "
+"this share of its planned amount. Going over it also assigns a To-Do "
+"activity."
+msgstr ""
+"Bir gider satırı planlanan tutarının bu oranına ulaştığında, onaylanmış bir "
+"bütçenin sorumlusunu bilgilendir. Bu oranın aşılması ayrıca bir Yapılacak "
+"aktivitesi atar."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction_counter
 msgid "Number of Actions"
 msgstr "Eylem Sayısı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_error_counter
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error_counter
 msgid "Number of errors"
 msgstr "Hata Sayısı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_needaction_counter
-msgid "Number of messages which requires an action"
-msgstr "Eylem gerektiren mesaj sayısı"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "İşlem gerektiren mesaj sayısı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_error_counter
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error_counter
 msgid "Number of messages with delivery error"
 msgstr "Teslim hatası içeren mesaj hatası"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_unread_counter
-msgid "Number of unread messages"
-msgstr "Okunmamış mesaj sayısı"
+#: model:ir.module.module,shortdesc:base.module_om_account_budget
+#: model:ir.module.module,summary:base.module_om_account_budget
+msgid "Odoo 20 Budget Management"
+msgstr "Odoo 20 Bütçe Yönetimi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__paid_date
-msgid "Paid Date"
-msgstr "Ödeme Tarihi"
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Only accounting managers can approve, close or cancel budgets."
+msgstr ""
+"Yalnızca muhasebe yöneticileri bütçeleri onaylayabilir, kapatabilir veya "
+"iptal edebilir."
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_block_documents
+msgid ""
+"Only the accounting managers can post the vendor bills (and confirm the "
+"purchase orders) going over the planned amount of a budget line; the other "
+"users see a warning."
+msgstr ""
+"Bir bütçe satırının planlanan tutarını aşan tedarikçi faturalarını yalnızca "
+"muhasebe yöneticileri onaylayabilir (ve satınalma siparişlerini teyit "
+"edebilir); diğer kullanıcılar bir uyarı görür."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_split.py:0
+msgid "Only the lines of draft budgets can be split."
+msgstr "Yalnızca taslak bütçelerin satırları bölünebilir."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Operation not supported."
+msgstr "İşlem desteklenmiyor."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__is_over_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_over_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Over Budget"
+msgstr "Bütçe Aşımı"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over budget: %s"
+msgstr "Bütçe aşımı: %s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over by"
+msgstr "Aşım"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__period
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Period"
 msgstr "Dönem"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__planned_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_plan_id
+msgid "Plan"
+msgstr "Plan"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Planned"
+msgstr "Planlanan"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Planned Amount"
 msgstr "Planlanan Tutar"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Planned amount"
-msgstr "Planlanan Tutar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_date
+msgid "Planned Date"
+msgstr "Planlanan Tarih"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__practical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
-msgid "Practical Amount"
-msgstr "Pratikteki Tutar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_planned_amount
+msgid "Planned Expenses"
+msgstr "Planlanan Giderler"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Practical amount"
-msgstr "Pratikteki tutar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_planned_amount
+msgid "Planned Revenues"
+msgstr "Planlanan Gelirler"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__3
+msgid "Quarterly"
+msgstr "Üç Aylık"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Reset the budget \"%s\" to draft to change it."
+msgstr "Değiştirmek için \"%s\" bütçesini taslağa döndürün."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Reset the budget \"%s\" to draft to change its lines."
+msgstr "Satırlarını değiştirmek için \"%s\" bütçesini taslağa döndürün."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Reset to Draft"
 msgstr "Taslak durumuna sıfırla"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__user_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__user_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Responsible"
 msgstr "Sorumlu"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_sms_error
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_user_id
+msgid "Responsible User"
+msgstr "Sorumlu Kullanıcı"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__revenue
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__revenue
+msgid "Revenue"
+msgstr "Gelir"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Revenues"
+msgstr "Gelirler"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_achievement
+msgid "Revenues Achievement"
+msgstr "Gelir Gerçekleşmesi"
+
+#. module: om_account_budget
+#: model:mail.activity.type,summary:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Review the lines over budget"
+msgstr "Bütçeyi aşan satırları inceleyin"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr "SMS Teslim Hatası"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__date_from
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__date_from
+#: model:mail.template,description:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"Sent to the responsible of a validated budget when expense lines go over "
+"their planned amount"
+msgstr ""
+"Gider satırları planlanan tutarlarını aştığında onaylanmış bir bütçenin "
+"sorumlusuna gönderilir"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__sequence
+msgid "Sequence"
+msgstr "Sıra"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Set a planned date within the period of the line \"%s\"."
+msgstr "\"%s\" satırının dönemi içinde bir planlanan tarih belirleyin."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Some lines spent more than planned."
+msgstr "Bazı satırlar planlanandan fazla harcadı."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Spent"
+msgstr "Harcanan"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split"
+msgstr "Böl"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_split
+msgid "Split Budget Lines by Period"
+msgstr "Bütçe Satırlarını Döneme Göre Böl"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split Lines by Period"
+msgstr "Satırları Döneme Göre Böl"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Split by Period"
+msgstr "Döneme Göre Böl"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__spread
+msgid "Spread Evenly"
+msgstr "Eşit Dağıt"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__distribution
+msgid ""
+"Spread Evenly: the amount is expected little by little over the period.\n"
+"At a Date: the whole amount is expected on the planned date, e.g. a yearly fee."
+msgstr ""
+"Eşit Dağıt: tutarın dönem boyunca azar azar gerçekleşmesi beklenir.\n"
+"Bir Tarihte: tutarın tamamının planlanan tarihte gerçekleşmesi beklenir, örn. yıllık bir ücret."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_from
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Start Date"
 msgstr "Başlangıç Tarihi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__state
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__state
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Status"
 msgstr "Durum"
 
 #. module: om_account_budget
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
-msgid "The budget must have at least one account."
-msgstr "Bütçe en az bir hesap içermelidir."
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Aktivitelere göre durum \n"
+"Gecikmiş\\: Son tarih geçmiş\n"
+"Bugün\\: Aktivite tarihi bugün\n"
+"Planlanmış\\: Gelecek Aktiviteler."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__theoritical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__warning_level
+msgid "Technical field: last warning sent to the responsible of the budget."
+msgstr "Teknik alan: bütçe sorumlusuna gönderilen son uyarı."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "The budget \"%s\" must start before it ends."
+msgstr "\"%s\" bütçesi bitmeden önce başlamalıdır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_position.py:0
+msgid "The budgetary position \"%s\" must have at least one account."
+msgstr "\"%s\" bütçe kaleminin en az bir hesabı olmalıdır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "The line \"%s\" must start before it ends."
+msgstr "\"%s\" satırı bitmeden önce başlamalıdır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The lines \"%(line)s\" and \"%(other)s\" overlap: the same entries would be "
+"counted twice."
+msgstr ""
+"\"%(line)s\" ve \"%(other)s\" satırları çakışıyor: aynı kayıtlar iki kez "
+"sayılır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "The new budget must start before it ends."
+msgstr "Yeni bütçe bitmeden önce başlamalıdır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The period of the line \"%s\" must be included in the period of the budget."
+msgstr "\"%s\" satırının dönemi bütçenin dönemine dahil olmalıdır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The planned amount of \"%s\" must be positive: choose whether the line is an"
+" expense or a revenue."
+msgstr ""
+"\"%s\" için planlanan tutar pozitif olmalıdır: satırın gider mi yoksa gelir "
+"mi olduğunu seçin."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid ""
+"The responsible of a budget is warned when an expense line reaches this "
+"percentage of its planned amount, and again when it goes over it."
+msgstr ""
+"Bir gider satırı planlanan tutarının bu yüzdesine ulaştığında ve tekrar "
+"aştığında bütçe sorumlusu uyarılır."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Theoretical"
+msgstr "Teorik"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__theoretical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Theoretical Amount"
 msgstr "Teorik Tutar"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
-msgid "Theoritical Amount"
-msgstr "Teorik Tutar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_theoretical_amount
+msgid "Theoretical Expenses"
+msgstr "Teorik Giderler"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Theoritical amount"
-msgstr "Teorik Tutar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_theoretical_amount
+msgid "Theoretical Revenues"
+msgstr "Teorik Gelirler"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "These lines spent more than planned:"
+msgstr "Bu satırlar planlanandan fazla harcadı:"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "This budget has no line."
+msgstr "Bu bütçenin satırı yok."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "This document goes over budget"
+msgstr "Bu belge bütçeyi aşıyor"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__threshold
+msgid "Threshold Reached"
+msgstr "Eşiğe Ulaşıldı"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "To Approve"
 msgstr "Onaylamak"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "To Approve Budgets"
-msgstr "Onay Bekleyen Bütçe"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Total"
+msgstr "Toplam"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_unread
-msgid "Unread Messages"
-msgstr "Okunmamış Mesajlar"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_type
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__budget_type
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+msgid "Type"
+msgstr "Tip"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_unread_counter
-msgid "Unread Messages Counter"
-msgstr "Okunmamış Mesaj Sayacı"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Kayıtlardaki istisna etkinliğinin türü."
 
 #. module: om_account_budget
-#: model_terms:ir.actions.act_window,help:om_account_budget.act_crossovered_budget_view
+#: model:ir.module.module,description:base.module_om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
 msgid "Use budgets to compare actual with expected revenues and costs"
 msgstr ""
 "Beklenen gelir ve harcamalar ile gerçekte değerleri karşılaştırmak için "
 "bütçeleri kullanabilirsiniz"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__validate
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__validate
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Validated"
 msgstr "Doğrulandı"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__website_message_ids
-msgid "Website Messages"
-msgstr "Websitesi Mesajları"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Vendor bills and purchase orders going over a budget always show a warning. "
+"When blocking, only accounting managers can post or confirm them."
+msgstr ""
+"Bir bütçeyi aşan tedarikçi faturaları ve satınalma siparişleri her zaman bir"
+" uyarı gösterir. Engelleme açıkken bunları yalnızca muhasebe yöneticileri "
+"onaylayabilir veya teyit edebilir."
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__website_message_ids
-msgid "Website communication history"
-msgstr "Websitesi iletişim geçmişi"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__warning_level
+msgid "Warning Level"
+msgstr "Uyarı Seviyesi"
 
 #. module: om_account_budget
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid ""
+"When an expense line of a validated budget goes over its planned amount, its"
+" responsible gets an email besides the To-Do activity."
+msgstr ""
+"Onaylanmış bir bütçenin gider satırı planlanan tutarını aştığında, sorumlusu"
+" Yapılacak aktivitesinin yanı sıra bir e-posta alır."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
 "You have to enter at least a budgetary position or analytic account on a "
 "budget line."
 msgstr ""
 "Bütçe satırına en az bir bütçe pozisyonu ya da analitik hesap girmelisiniz."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "e.g. Budget 2026"
+msgstr "örn. Bütçe 2026"
+
+#. module: om_account_budget
+#: model:mail.template,subject:om_account_budget.mail_template_budget_exceeded
+msgid "{{ object.name }}: over budget"
+msgstr "{{ object.name }}: bütçe aşımı"

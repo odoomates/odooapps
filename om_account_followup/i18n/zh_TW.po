@@ -1,21 +1,15 @@
-# Translation of Odoo Server.
-# This file contains the translation of the following modules:
-# 	* om_account_followup
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0-20231105\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-23 21:31+0000\n"
-"PO-Revision-Date: 2023-11-24 06:22+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.4.1\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #. module: om_account_followup
 #: model:followup.line,description:om_account_followup.demo_followup_line3
@@ -137,6 +131,12 @@ msgstr "應發送 %(count)s 封電子郵件，但其中 %(unknown)s 個電子郵
 
 #. module: om_account_followup
 #. odoo-python
+#: code:addons/om_account_followup/wizard/followup_send.py:0
+msgid "%(count)s reminder(s) sent."
+msgstr "已發送 %(count)s 份提醒。"
+
+#. module: om_account_followup
+#. odoo-python
 #: code:addons/om_account_followup/wizard/followup_print.py:0
 msgid "%s email(s) sent"
 msgstr "已發送 %s 封電子郵件"
@@ -160,249 +160,219 @@ msgid "%s partners have no credits and as such the action is cleared"
 msgstr "%s 合作夥伴目前沒有信用額度，因此該措施已被解除"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid ", the latest payment follow-up was:"
-msgstr "，最新的付款跟催是："
+#: model:ir.actions.report,print_report_name:om_account_followup.action_report_customer_statement
+msgid "'Statement - %s' % (object.name or '')"
+msgstr "'對帳單 - %s' % (object.name or '')"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid ": Current Date"
-msgstr "與欄位值進行比較的日期，預設情況下使用目前日期"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid ": Partner Name"
-msgstr ": 合作夥伴名稱"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid ": User Name"
-msgstr ": 使用者名稱"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid ": User's Company Name"
-msgstr "：用戶的公司名稱"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
-msgid ""
-"<br/>\n"
-"                                Customer ref:"
-msgstr ""
-"<br/>\n"
-"                                客戶編碼:"
-
-#. module: om_account_followup
-#: model:mail.template,body_html:om_account_followup.email_template_om_account_followup_level0
-msgid ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"\n"
-"    <p>Dear <t t-out=\"object.name\"/>,</p>\n"
-"    <p>\n"
-"    Exception made if there was a mistake of ours, it seems that the following amount stays unpaid. Please, take\n"
-"appropriate measures in order to carry out this payment in the next 8 days.\n"
-"\n"
-"Would your payment have been carried out after this mail was sent, please ignore this message. Do not hesitate to\n"
-"contact our accounting department.  \n"
-"\n"
-"    </p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"<br/>\n"
-"   <br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"\n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"    <br/>\n"
-"\n"
-"</div>\n"
-"            "
-msgstr ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>親愛的 ${object.name},</p>\n"
-"    <p>\n"
-"    除非是我們的錯誤造成的例外情況，否則似乎以下金額尚未支付。請您在接下來的8天內採取適當措施完成此付款。\n"
-"\n"
-"如果您在本郵件發送後已經完成付款，請忽略此訊息。如有任何疑問，請隨時聯絡我們的會計部門。    </p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"<br/>\n"
-"</div>\n"
-"            "
-
-#. module: om_account_followup
-#: model:mail.template,body_html:om_account_followup.email_template_om_account_followup_level2
-msgid ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>Dear <t t-out=\"object.name\"/>,</p>\n"
-"    <p>\n"
-"    Despite several reminders, your account is still not settled.\n"
-"Unless full payment is made in next 8 days, legal action for the recovery of the debt will be taken without\n"
-"further notice.\n"
-"I trust that this action will prove unnecessary and details of due payments is printed below.\n"
-"In case of any queries concerning this matter, do not hesitate to contact our accounting department.\n"
-"</p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"    <br/>\n"
-"\n"
-"</div>\n"
-"            "
-msgstr ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>Dear <t t-out=\"object.name\"/>,</p>\n"
-"    <p>\n"
-"    儘管多次提醒，您的帳戶仍未結清。\n"
-"除非在接下來的8天內進行全額付款，否則將會在不另行通知的情況下採取法律行動來追討欠款。\n"
-"我相信這一舉措將是不必要的，未付款的詳細資訊如下所示。\n"
-"如果對此事有任何疑問，請不要猶豫，隨時聯繫我們的會計部門。\n"
-"</p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"    <br/>\n"
-"\n"
-"</div>\n"
-"            "
+#: model:ir.actions.report,print_report_name:om_account_followup.action_report_vendor_statement
+msgid "'Vendor Statement - %s' % (object.name or '')"
+msgstr "'供應商對帳單 - %s' % (object.name or '')"
 
 #. module: om_account_followup
 #: model:mail.template,body_html:om_account_followup.email_template_om_account_followup_default
 msgid ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>Dear <t t-out=\"object.name\"/>,</p>\n"
-"    <p>\n"
-"    Exception made if there was a mistake of ours, it seems that the following amount stays unpaid. Please, take\n"
-"appropriate measures in order to carry out this payment in the next 8 days.\n"
-"Would your payment have been carried out after this mail was sent, please ignore this message. Do not hesitate to\n"
-"contact our accounting department.\n"
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">Dear <t t-out=\"object.name or ''\"/>,</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">According to our records, the invoices below are past their due date.</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">If you have already paid them, please ignore this message. Otherwise, please settle them at your earliest convenience, and do not hesitate to contact us if you have any question.</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        Best regards,<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
 "    </p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"<br/>\n"
 "</div>\n"
 "            "
 msgstr ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>親愛的 ${object.name},</p>\n"
-"    <p>\n"
-"    除非是我們的錯誤造成的例外情況，否則似乎以下金額尚未支付。請您在接下來的8天內採取適當措施完成此付款。\n"
-"\n"
-"如果您在本郵件發送後已經完成付款，請忽略此訊息。如有任何疑問，請隨時聯絡我們的會計部門。    </p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"<br/>\n"
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">親愛的 <t t-out=\"object.name or ''\"/>：</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">根據我們的記錄，以下發票已逾期。</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">如您已付款，請忽略此訊息。否則，請盡快付款；如有任何疑問，歡迎隨時與我們聯絡。</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        順祝 安康<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
 "</div>\n"
 "            "
 
 #. module: om_account_followup
 #: model:mail.template,body_html:om_account_followup.email_template_om_account_followup_level1
 msgid ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>Dear <t t-out=\"object.name\"/>,</p>\n"
-"   <p>\n"
-"    We are disappointed to see that despite sending a reminder, that your account is now seriously overdue.\n"
-"It is essential that immediate payment is made, otherwise we will have to consider placing a stop on your account\n"
-"which means that we will no longer be able to supply your company with (goods/services).\n"
-"Please, take appropriate measures in order to carry out this payment in the next 8 days.\n"
-"If there is a problem with paying invoice that we are not aware of, do not hesitate to contact our accounting\n"
-"department. so that we can resolve the matter quickly.\n"
-"Details of due payments is printed below.\n"
-" </p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"    \n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"    \n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"    <br/>\n"
-"\n"
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">Dear <t t-out=\"object.name or ''\"/>,</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Despite our previous reminder, the invoices below are still unpaid.</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Please settle them within the next 8 days, or let us know if there is an issue we should be aware of, so that we can solve it quickly.</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        Best regards,<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
 "</div>\n"
 "            "
 msgstr ""
-"<div style=\"font-family: 'Lucica Grande', Ubuntu, Arial, Verdana, sans-serif; font-size: 12px; color: rgb(34, 34, 34); background-color: rgb(255, 255, 255); \">\n"
-"    \n"
-"    <p>親愛的 ${object.name},</p>\n"
-"   <p>\n"
-"    我們很失望地看到，儘管已經發送了催繳通知，您的帳戶目前仍然嚴重逾期。\n"
-"迫切需要立即付款，否則我們將不得不考慮停止您的帳戶，這意味著我們將無法再向貴公司提供（商品/服務）。\n"
-"請您在接下來的8天內採取適當措施，以便完成這筆付款。\n"
-"如果您在支付發票方面遇到我們不知道的問題，請不要猶豫，立即聯絡我們的會計部門，以便我們能夠迅速解決此事。\n"
-"未付款的詳細資訊如下所示。 </p>\n"
-"<br/>\n"
-"Best Regards,\n"
-"    \n"
-"<br/>\n"
-"<br/>\n"
-"<t t-out=\"user.name\"/>\n"
-"    \n"
-"<br/>\n"
-"<br/>\n"
-"\n"
-"<t t-out=\"object.get_followup_table_html()\"/>\n"
-"\n"
-"    <br/>\n"
-"\n"
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">親愛的 <t t-out=\"object.name or ''\"/>：</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">儘管我們先前已發出提醒，以下發票仍未付款。</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">請於 8 天內付款；如有任何我們應知悉的問題，請告知我們，以便盡快解決。</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        順祝 安康<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
 "</div>\n"
 "            "
+
+#. module: om_account_followup
+#: model:mail.template,body_html:om_account_followup.email_template_om_account_followup_level2
+msgid ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">Dear <t t-out=\"object.name or ''\"/>,</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Despite several reminders, the invoices below are still unpaid.</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Unless the full amount is paid within the next 8 days, we will have to put your account on hold and take further action to recover the debt. We trust this will not be necessary: please contact our accounting department if you have any question.</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        Best regards,<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">親愛的 <t t-out=\"object.name or ''\"/>：</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">儘管我們已多次提醒，以下發票仍未付款。</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">除非您在 8 天內付清全部款項，否則我們將不得不暫停您的帳戶，並採取進一步行動追討欠款。我們相信這並非必要：如有任何疑問，請聯絡我們的會計部門。</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        順祝 安康<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_followup
+#: model:mail.template,body_html:om_account_followup.email_template_vendor_statement
+msgid ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">Dear <t t-out=\"object.name or ''\"/>,</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Please find attached the bills and payments still open in our records for your account.</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Could you check them against your own statement and let us know of any difference?</p>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        Best regards,<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">親愛的 <t t-out=\"object.name or ''\"/>：</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">隨附我們記錄中您帳戶尚未結清的帳單及付款。</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">請與您的對帳單核對，如有任何差異請告知我們。</p>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        順祝 安康<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_followup
+#: model:mail.template,body_html:om_account_followup.email_template_customer_statement
+msgid ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">Dear <t t-out=\"object.name or ''\"/>,</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">Please find attached the statement of your account with <t t-out=\"env.company.name or ''\"/>, with the invoices and payments still open.</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">If anything does not match your records, please let us know.</p>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        Best regards,<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">親愛的 <t t-out=\"object.name or ''\"/>：</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">隨附您在 <t t-out=\"env.company.name or ''\"/> 的帳戶對帳單，列出尚未結清的發票及付款。</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">如有任何與您記錄不符之處，請告知我們。</p>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        順祝 安康<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_followup
+#: model:mail.template,body_html:om_account_followup.email_template_om_account_followup_level0
+msgid ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">Dear <t t-out=\"object.name or ''\"/>,</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">This is a friendly reminder that the invoices below are past their due date.</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">If you have already paid them, please ignore this message. Otherwise, you can pay them from the links below or by bank transfer. Do not hesitate to contact us if you have any question.</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        Best regards,<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0; padding: 0; font-size: 14px;\">\n"
+"    <p style=\"margin: 0 0 12px 0;\">親愛的 <t t-out=\"object.name or ''\"/>：</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">謹此友善提醒，以下發票已逾期。</p>\n"
+"    <p style=\"margin: 0 0 12px 0;\">如您已付款，請忽略此訊息。否則，您可透過以下連結或銀行轉帳付款。如有任何疑問，歡迎隨時與我們聯絡。</p>\n"
+"    <t t-out=\"object.get_followup_table_html()\"/>\n"
+"    <p style=\"margin: 12px 0 0 0;\">\n"
+"        順祝 安康<br/>\n"
+"        <t t-out=\"user.name or ''\"/><br/>\n"
+"        <t t-out=\"env.company.name or ''\"/>\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "<span class=\"fw-bold me-1\">Vendor Statement</span>"
+msgstr "<span class=\"fw-bold me-1\">供應商對帳單</span>"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid "<span class=\"ms-2\">days overdue</span>"
+msgstr "<span class=\"ms-2\">天逾期</span>"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_kanban
+msgid "<span class=\"text-muted\">Due</span>"
+msgstr "<span class=\"text-muted\">到期</span>"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_kanban
+msgid "<span class=\"text-muted\">Overdue</span>"
+msgstr "<span class=\"text-muted\">逾期</span>"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "<strong>Date</strong>"
+msgstr "<strong>日期</strong>"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "<strong>Payment Details</strong>"
+msgstr "<strong>付款詳情</strong>"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "<strong>Reminder</strong>"
+msgstr "<strong>提醒</strong>"
 
 #. module: om_account_followup
 #: model:mail.template,name:om_account_followup.email_template_om_account_followup_level1
@@ -410,14 +380,19 @@ msgid "A bit urging second payment follow-up reminder email"
 msgstr "有點催第二次付款後續提醒郵件"
 
 #. module: om_account_followup
-#: model:ir.model,name:om_account_followup.model_followup_followup
-msgid "Account Follow-up"
-msgstr "帳戶跟催"
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_om_account_followup_definition_form
+msgid ""
+"A plan lists the reminders sent to the customers who do not pay on time: after how many days,\n"
+"                    by email, by letter, or as an action for the person in charge."
+msgstr ""
+"催款計劃列出發送給未按時付款客戶的提醒：在多少天後、\n"
+"                    以電郵、信件，或作為負責人的待辦動作。"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Account Move line"
-msgstr "帳戶明細"
+#: model:ir.model.fields.selection,name:om_account_followup.selection__res_partner__followup_status__in_need_of_action
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
+msgid "Action Needed"
+msgstr "需要採取行動"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__manual_action_note
@@ -425,39 +400,49 @@ msgid "Action To Do"
 msgstr "待辦的行動"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Action to be taken e.g. Give a phonecall, Check if it's paid, ..."
-msgstr "應採取的行動，例如打個電話，看看是否已付款，..."
-
-#. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid "After"
-msgstr "之後"
+msgid "Actions"
+msgstr "動作"
 
 #. module: om_account_followup
 #. odoo-python
 #: code:addons/om_account_followup/models/partner.py:0
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Ageing"
+msgstr "帳齡"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_open_items
 msgid "Amount"
 msgstr "金額"
 
 #. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Amount (%s)"
+msgstr "金額（%s）"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__balance
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__payment_amount_due
 #: model:ir.model.fields,field_description:om_account_followup.field_res_users__payment_amount_due
 msgid "Amount Due"
 msgstr "到期金額"
 
 #. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__balance_overdue
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__payment_amount_overdue
 #: model:ir.model.fields,field_description:om_account_followup.field_res_users__payment_amount_overdue
 msgid "Amount Overdue"
 msgstr "逾期金額"
 
 #. module: om_account_followup
-#. odoo-python
-#: code:addons/om_account_followup/models/partner.py:0
-msgid "Amount due"
-msgstr "到期金額"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Amounts"
+msgstr "金額"
 
 #. module: om_account_followup
 #. odoo-python
@@ -471,7 +456,11 @@ msgid "Assign a Responsible"
 msgstr "指派一名負責人"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__balance
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__attach_invoices
+msgid "Attach the Overdue Invoices"
+msgstr "附加逾期發票"
+
+#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__balance
 msgid "Balance"
 msgstr "餘額"
@@ -487,26 +476,44 @@ msgid "Balance Amount"
 msgstr "餘額"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid ""
-"Below is the history of the transactions of this\n"
-"                            customer."
-msgstr "以下是該客戶交易的歷史記錄。"
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__body
+msgid "Body"
+msgstr "內文"
 
 #. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/followup.py:0
+msgid "Call the customer about the overdue invoices."
+msgstr "就逾期發票致電客戶。"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_send_form
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
 msgid "Cancel"
 msgstr "取消"
 
 #. module: om_account_followup
-#: model_terms:ir.actions.act_window,help:om_account_followup.action_om_account_followup_definition_form
-msgid "Click to define follow-up levels and their related actions."
-msgstr "點擊以定義後續跟催級別及其相關操作。"
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Choose the email template of the reminder."
+msgstr "請選擇提醒的電郵範本。"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/followup.py:0
+msgid "Choose the user sending the automatic follow-ups."
+msgstr "請選擇發送自動催款的使用者。"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/wizard/followup_send.py:0
+msgid "Choose to send an email, to print a letter, or both."
+msgstr "請選擇發送電郵、列印信件，或兩者皆是。"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Click to mark the action as done."
-msgstr "點擊以標記此操作為已完成。"
+msgid "Clear Promise"
+msgstr "清除承諾"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_sending_results
@@ -523,19 +530,20 @@ msgid "Company"
 msgstr "公司"
 
 #. module: om_account_followup
-#: model:ir.model,name:om_account_followup.model_res_config_settings
-msgid "Config Settings"
-msgstr "設置"
-
-#. module: om_account_followup
 #: model:ir.model,name:om_account_followup.model_res_partner
 msgid "Contact"
 msgstr "聯繫人"
 
 #. module: om_account_followup
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_om_account_followup_definition_form
+msgid "Create a follow-up plan"
+msgstr "建立催款計劃"
+
+#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__create_uid
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__create_uid
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_print__create_uid
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__create_uid
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__create_uid
 msgid "Created by"
 msgstr "建立者"
@@ -544,30 +552,23 @@ msgstr "建立者"
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__create_date
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__create_date
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_print__create_date
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__create_date
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__create_date
 msgid "Created on"
 msgstr "建立於"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__credit
-msgid "Credit"
-msgstr "貸方"
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__partner_id
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_send_form
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_search
+msgid "Customer"
+msgstr "客戶"
 
 #. module: om_account_followup
 #: model:ir.module.module,shortdesc:base.module_om_account_followup
 msgid "Customer Follow Up Management"
-msgstr ""
-
-#. module: om_account_followup
-#: model:ir.module.module,description:base.module_om_account_followup
-#: model:ir.module.module,summary:base.module_om_account_followup
-msgid "Customer FollowUp Management"
-msgstr ""
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
-msgid "Customer Followup"
-msgstr "客戶跟催"
+msgstr "客戶催款管理"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__payment_note
@@ -576,14 +577,70 @@ msgid "Customer Payment Promise"
 msgstr "客戶付款承諾"
 
 #. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Customer Reference"
+msgstr "客戶參照"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.actions.report,name:om_account_followup.action_report_customer_statement
+#: model:ir.model,name:om_account_followup.model_report_om_account_followup_report_customer_statement
+#: model:mail.template,name:om_account_followup.email_template_customer_statement
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Customer Statement"
+msgstr "客戶對帳單"
+
+#. module: om_account_followup
+#: model:ir.module.module,summary:base.module_om_account_followup
+msgid "Customer payment follow-ups and reminders"
+msgstr "客戶付款催款及提醒"
+
+#. module: om_account_followup
+#: model:ir.module.module,description:base.module_om_account_followup
+msgid ""
+"Customer payment follow-ups: reminders by email and letter, customer statements, promises to pay,\n"
+"disputed invoices and follow-up plans per customer."
+msgstr ""
+"客戶付款催款：電郵及信件提醒、客戶對帳單、付款承諾、\n"
+"爭議發票及每位客戶的催款計劃。"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Customer statement printed"
+msgstr "已列印客戶對帳單"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__partner_count
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__partner_ids
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_form
+msgid "Customers"
+msgstr "客戶"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Date"
+msgstr "日期"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Days Overdue"
+msgstr "逾期天數"
+
+#. module: om_account_followup
 #: model:ir.model.constraint,message:om_account_followup.constraint_followup_line_days_uniq
 msgid "Days of the follow-up levels must be different"
 msgstr "後續跟催的級別天數必須不同"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__debit
-msgid "Debit"
-msgstr "借方"
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__is_default
+msgid "Default Plan"
+msgstr "預設計劃"
 
 #. module: om_account_followup
 #: model:mail.template,name:om_account_followup.email_template_om_account_followup_default
@@ -591,42 +648,52 @@ msgid "Default payment follow-up reminder e-mail"
 msgstr "預設付款後續提醒郵件"
 
 #. module: om_account_followup
-#. odoo-python
-#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Default plan"
+msgstr "預設計劃"
+
+#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__description
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
 msgid "Description"
 msgstr "描述"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_account_move_line__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_print__display_name
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__display_name
-#: model:ir.model.fields,field_description:om_account_followup.field_report_om_account_followup_report_followup__display_name
-#: model:ir.model.fields,field_description:om_account_followup.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:om_account_followup.field_report_om_account_followup_report_customer_statement__display_name
+#: model:ir.model.fields,field_description:om_account_followup.field_report_om_account_followup_report_vendor_statement__display_name
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__display_name
 msgid "Display Name"
 msgstr "顯示名稱"
 
 #. module: om_account_followup
-#: model:ir.ui.menu,name:om_account_followup.om_account_followup_s
-msgid "Do Manual Follow-Ups"
-msgstr "執行手動跟催"
+#: model:ir.model.fields,field_description:om_account_followup.field_account_bank_statement_line__followup_dispute_reason
+#: model:ir.model.fields,field_description:om_account_followup.field_account_move__followup_dispute_reason
+msgid "Dispute Reason"
+msgstr "爭議原因"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
-msgid ""
-"Document: Customer account statement\n"
-"                                <br/>\n"
-"                                Date:"
-msgstr ""
-"文件：客戶帳結單\n"
-"                                <br/>\n"
-"                                日期:"
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.model.fields,field_description:om_account_followup.field_account_bank_statement_line__followup_disputed
+#: model:ir.model.fields,field_description:om_account_followup.field_account_move__followup_disputed
+#: model:ir.model.fields,field_description:om_account_followup.field_account_move_line__followup_disputed
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_account_invoice_filter_followup
+msgid "Disputed"
+msgstr "有爭議"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Document"
+msgstr "文件"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_sending_results
@@ -636,6 +703,7 @@ msgstr "下載信件"
 #. module: om_account_followup
 #. odoo-python
 #: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
 msgid "Due Date"
 msgstr "到期日"
 
@@ -645,18 +713,83 @@ msgid "Due Days"
 msgstr "到期日"
 
 #. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_send_form
+msgid ""
+"Each customer receives the email of the template, with its own overdue "
+"invoices."
+msgstr "每位客戶都會收到該範本的電郵，附上其各自的逾期發票。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__send_email
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid "Email"
+msgstr "電郵地址"
+
+#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__email_template_id
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__template_id
 msgid "Email Template"
 msgstr "Email模板"
 
 #. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_followup_followup__auto_send
+msgid ""
+"Every day, send the reminders that are due: update the follow-up levels, "
+"send the emails and schedule the manual actions. Letters are not printed "
+"automatically: print them from the customers."
+msgstr "每天發送到期的提醒：更新催款等級、發送電郵並安排手動動作。信件不會自動列印：請從客戶列印。"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Excel"
+msgstr "Excel"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+msgid "Exclude"
+msgstr "排除"
+
+#. module: om_account_followup
+#: model:ir.model.fields.selection,name:om_account_followup.selection__res_partner__followup_status__excluded
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
+msgid "Excluded"
+msgstr "已排除"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_excluded
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_excluded
+msgid "Excluded from Follow-ups"
+msgstr "排除於催款之外"
+
+#. module: om_account_followup
 #. odoo-python
-#: code:addons/om_account_followup/models/partner.py:0
-msgid "Email not sent because of email address of partner not filled in"
-msgstr "由於未填寫合作夥伴的電子郵件地址，電子郵件未發送"
+#: code:addons/om_account_followup/wizard/followup_send.py:0
+msgid "Excluded from the follow-ups: %s"
+msgstr "已排除於催款之外：%s"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Exclusion"
+msgstr "排除"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_exclusion_reason
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_exclusion_reason
+msgid "Exclusion Reason"
+msgstr "排除原因"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/followup.py:0
+msgid "Final notice"
+msgstr "最終通知"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__date_move
+msgid "First Open Item"
+msgstr "最早未結項目"
+
+#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__date_move
 msgid "First move"
 msgstr "第一步驟"
@@ -668,19 +801,23 @@ msgstr "第一封禮貌付款後續提醒電子郵件"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__followup_id
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__followup_id
 msgid "Follow Ups"
 msgstr "跟催"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_print__followup_id
-msgid "Follow-Up"
-msgstr "跟催"
+#: model:mail.activity.type,summary:om_account_followup.mail_activity_type_followup
+msgid "Follow up the overdue payments"
+msgstr "跟進逾期付款"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__name
 msgid "Follow-Up Action"
 msgstr "跟催行動"
+
+#. module: om_account_followup
+#: model:ir.ui.menu,name:om_account_followup.menu_action_followup_stat_follow
+msgid "Follow-Up Analysis"
+msgstr "催款分析"
 
 #. module: om_account_followup
 #: model:ir.ui.menu,name:om_account_followup.menu_finance_followup
@@ -689,11 +826,14 @@ msgstr "帳款跟催"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__followup_line
-#: model:ir.ui.menu,name:om_account_followup.om_account_followup_main_menu
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_form
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
 msgid "Follow-up"
 msgstr "跟催"
+
+#. module: om_account_followup
+#: model:ir.actions.act_window,name:om_account_followup.action_followup_stat
+msgid "Follow-up Analysis"
+msgstr "催款分析"
 
 #. module: om_account_followup
 #: model:ir.model,name:om_account_followup.model_followup_line
@@ -702,20 +842,32 @@ msgstr "跟催標準"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_account_move_line__followup_line_id
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__followup_id
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_search
 msgid "Follow-up Level"
 msgstr "跟催級別"
 
 #. module: om_account_followup
-#: model:ir.actions.act_window,name:om_account_followup.action_om_account_followup_definition_form
-#: model:ir.ui.menu,name:om_account_followup.om_account_followup_menu
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_tree
 msgid "Follow-up Levels"
 msgstr "跟催級別"
 
 #. module: om_account_followup
-#: model:ir.actions.report,name:om_account_followup.action_report_followup
-msgid "Follow-up Report"
-msgstr "跟催報告"
+#: model:ir.model,name:om_account_followup.model_followup_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_plan_id
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_plan_id
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_form
+msgid "Follow-up Plan"
+msgstr "催款計劃"
+
+#. module: om_account_followup
+#: model:ir.actions.act_window,name:om_account_followup.action_om_account_followup_definition_form
+#: model:ir.ui.menu,name:om_account_followup.om_account_followup_menu
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_tree
+msgid "Follow-up Plans"
+msgstr "催款計劃"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__payment_responsible_id
@@ -740,10 +892,10 @@ msgid "Follow-up Statistics by Partner"
 msgstr "合作夥伴跟催統計"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_tree
-msgid "Follow-up Steps"
-msgstr "跟催步驟"
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_status
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_status
+msgid "Follow-up Status"
+msgstr "催款狀態"
 
 #. module: om_account_followup
 #. odoo-python
@@ -752,15 +904,25 @@ msgid "Follow-up letter of %s will be sent"
 msgstr "將發送跟催信函 %s"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_graph
-msgid "Follow-up lines"
-msgstr "跟催項目"
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Follow-up reminder sent: %s"
+msgstr "已發送催款提醒：%s"
 
 #. module: om_account_followup
-#: model:ir.actions.act_window,name:om_account_followup.action_followup_stat
-#: model:ir.ui.menu,name:om_account_followup.menu_action_followup_stat_follow
-msgid "Follow-ups Analysis"
-msgstr "跟催分析"
+#: model:ir.actions.server,name:om_account_followup.ir_cron_send_followups_ir_actions_server
+msgid "Follow-up: send the reminders due"
+msgstr "催款：發送到期的提醒"
+
+#. module: om_account_followup
+#: model:ir.actions.act_window,name:om_account_followup.action_customer_followup
+#: model:ir.ui.menu,name:om_account_followup.om_account_followup_s
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_graph
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_list
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_pivot
+msgid "Follow-ups"
+msgstr "催款"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_search
@@ -768,27 +930,16 @@ msgid "Follow-ups Sent"
 msgstr "已發送跟催信息"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
-msgid "Follow-ups To Do"
-msgstr "跟催待辦事項"
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_currency_id
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_currency_id
+msgid "Followup Currency"
+msgstr "催款貨幣"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
-msgid "Followup Level"
-msgstr "跟催級別"
-
-#. module: om_account_followup
-#: model_terms:ir.actions.act_window,help:om_account_followup.action_om_account_followup_definition_form
-msgid ""
-"For each step, specify the actions to be taken and delay in\n"
-"                    days. It is\n"
-"                    possible to use print and e-mail templates to send specific\n"
-"                    messages to\n"
-"                    the customer."
-msgstr ""
-"對於每個步驟，請指定要採取的操作和延遲天數。\n"
-"                   可以使用列印和電子郵件範本\n"
-"                   向客戶發送特定的訊息。"
+#. odoo-python
+#: code:addons/om_account_followup/models/followup.py:0
+msgid "Friendly reminder"
+msgstr "友善提醒"
 
 #. module: om_account_followup
 #: model:ir.model.fields,help:om_account_followup.field_followup_line__sequence
@@ -796,32 +947,38 @@ msgid "Gives the sequence order when displaying a list of follow-up lines."
 msgstr "給出顯示後續行列表時的順序。"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid ""
-"He said the problem was temporary and promised to pay 50% before 15th of "
-"May, balance before 1st of July."
-msgstr "他說問題是暫時的，並承諾在5月15日之前支付50%，在7月1日之前支付餘額。"
-
-#. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_account_move_line__id
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__id
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__id
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_print__id
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__id
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__id
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__id
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__id
-#: model:ir.model.fields,field_description:om_account_followup.field_report_om_account_followup_report_followup__id
-#: model:ir.model.fields,field_description:om_account_followup.field_res_config_settings__id
+#: model:ir.model.fields,field_description:om_account_followup.field_report_om_account_followup_report_customer_statement__id
+#: model:ir.model.fields,field_description:om_account_followup.field_report_om_account_followup_report_vendor_statement__id
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__id
 msgid "ID"
 msgstr "ID"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
 msgid ""
-"If not specified by the latest follow-up level, it will send from the "
-"default email template"
-msgstr "若最新跟催級別未指定，則從默認郵件模板發送"
+"If you have already paid, please ignore the overdue amounts. For any question about this\n"
+"                    statement, contact our accounting department."
+msgstr ""
+"如您已付款，請忽略逾期金額。如對此對帳單有任何疑問，\n"
+"                    請聯絡我們的會計部門。"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "In charge of the collection"
+msgstr "負責收款"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Invoice"
+msgstr "發票"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__invoice_partner_id
@@ -831,14 +988,13 @@ msgstr "發票地址"
 #. module: om_account_followup
 #. odoo-python
 #: code:addons/om_account_followup/models/partner.py:0
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
 msgid "Invoice Date"
 msgstr "發票日期"
 
 #. module: om_account_followup
-#: model:ir.model,name:om_account_followup.model_account_move_line
-msgid "Journal Item"
-msgstr "日記帳項目"
+#: model:ir.model,name:om_account_followup.model_account_move
+msgid "Journal Entry"
+msgstr "日記賬記項"
 
 #. module: om_account_followup
 #: model:ir.actions.act_window,name:om_account_followup.account_manual_reconcile_action
@@ -847,9 +1003,26 @@ msgid "Journal Items to Reconcile"
 msgstr "待調節的日記帳明細"
 
 #. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__last_auto_send
+msgid "Last Automatic Sending"
+msgstr "最近一次自動發送"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__date_move_last
+msgid "Last Open Item"
+msgstr "最後未結項目"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Last Reminder"
+msgstr "最近一次提醒"
+
+#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__write_uid
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__write_uid
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_print__write_uid
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__write_uid
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__write_uid
 msgid "Last Updated by"
 msgstr "最後更新人"
@@ -858,18 +1031,20 @@ msgstr "最後更新人"
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__write_date
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__write_date
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_print__write_date
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__write_date
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_sending_results__write_date
 msgid "Last Updated on"
 msgstr "最後更新時間"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__date_move_last
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__date_move_last
 msgid "Last move"
 msgstr "最後一步驟"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_account_move_line__followup_date
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__date_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_search
 msgid "Latest Follow-up"
 msgstr "最近跟催"
 
@@ -902,25 +1077,23 @@ msgid "Latest follow-up"
 msgstr "最新跟催"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__date_followup
-msgid "Latest followup"
-msgstr "最新跟催"
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__print_letter
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid "Letter"
+msgstr "信件"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Log a Call"
+msgstr "記錄通話"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__manual_action
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
 msgid "Manual Action"
 msgstr "手動操作"
-
-#. module: om_account_followup
-#: model:ir.actions.act_window,name:om_account_followup.action_customer_followup
-msgid "Manual Follow-Ups"
-msgstr "手動跟催"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
-msgid "Maturity Date"
-msgstr "到期日"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__max_followup_id
@@ -930,10 +1103,6 @@ msgstr "最大跟催級別"
 #. module: om_account_followup
 #: model:ir.actions.act_window,name:om_account_followup.action_customer_my_followup
 #: model:ir.ui.menu,name:om_account_followup.menu_sale_followup
-msgid "My Follow-Ups"
-msgstr "我的後續跟催"
-
-#. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
 msgid "My Follow-ups"
 msgstr "我的後續跟催"
@@ -961,9 +1130,31 @@ msgid "Next Action Date"
 msgstr "下一行動日期"
 
 #. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_next_date
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_next_date
+msgid "Next Reminder"
+msgstr "下次提醒"
+
+#. module: om_account_followup
+#: model:ir.model.fields.selection,name:om_account_followup.selection__res_partner__followup_status__no_action_needed
+msgid "No Overdue"
+msgstr "無逾期"
+
+#. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
 msgid "No Responsible"
 msgstr "未設置負責人"
+
+#. module: om_account_followup
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_customer_my_followup
+msgid "No customer to follow up"
+msgstr "沒有需要催款的客戶"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/wizard/followup_send.py:0
+msgid "No email address: %s"
+msgstr "沒有電郵地址：%s"
 
 #. module: om_account_followup
 #: model_terms:ir.actions.act_window,help:om_account_followup.account_manual_reconcile_action
@@ -971,30 +1162,90 @@ msgid "No journal items found."
 msgstr "未找到日記項目。"
 
 #. module: om_account_followup
-#: model:ir.model.constraint,message:om_account_followup.constraint_followup_followup_company_uniq
-msgid "Only one follow-up per company is allowed"
-msgstr "每家公司只允許進行一次跟催"
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_followup_stat
+msgid "No overdue customer"
+msgstr "沒有逾期客戶"
 
 #. module: om_account_followup
-#: model:ir.model.fields,help:om_account_followup.field_res_partner__payment_responsible_id
-#: model:ir.model.fields,help:om_account_followup.field_res_users__payment_responsible_id
-msgid ""
-"Optionally you can assign a user to this field, which will make him "
-"responsible for the action."
-msgstr "(可選) 您可以於此欄位設置使用者, 由使用者負責該操作。"
+#: model:ir.model.fields,help:om_account_followup.field_res_partner__followup_excluded
+#: model:ir.model.fields,help:om_account_followup.field_res_users__followup_excluded
+msgid "No reminder is sent to this customer."
+msgstr "不會向此客戶發送任何提醒。"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/wizard/followup_send.py:0
+msgid "Not sent, without email address: %s"
+msgstr "未發送，沒有電郵地址：%s"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Note"
+msgstr "備註"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/wizard/followup_print.py:0
+msgid "Nothing is due any more."
+msgstr "已沒有任何到期款項。"
 
 #. module: om_account_followup
 #. odoo-python
 #: code:addons/om_account_followup/models/partner.py:0
-msgid "Overdue email sent to %s"
-msgstr "逾期電子郵件已發送至 %s"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Nothing is open on this account."
+msgstr "此帳戶沒有未結項目。"
 
 #. module: om_account_followup
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat__partner_id
-#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__partner_id
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_customer_followup
+msgid "Nothing to follow up"
+msgstr "沒有需要催款的項目"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Oldest Due Date"
+msgstr "最早到期日"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_open_items
+msgid "Open Amount"
+msgstr "未結金額"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Open Amount (%s)"
+msgstr "未結金額（%s）"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_open_items
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Open Items"
+msgstr "未結項目"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.model.fields.selection,name:om_account_followup.selection__res_partner__followup_status__with_overdue_invoices
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_search
+msgid "Overdue"
+msgstr "逾期"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_stat_by_partner__partner_id
 msgid "Partner"
 msgstr "合作夥伴"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__partner_count
+msgid "Partner Count"
+msgstr "業務夥伴數目"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.account_move_line_partner_tree
@@ -1013,11 +1264,7 @@ msgid "Partners"
 msgstr "合作夥伴"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
-msgid "Partners with Overdue Credits"
-msgstr "逾期信用合作夥伴"
-
-#. module: om_account_followup
+#: model:mail.activity.type,name:om_account_followup.mail_activity_type_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
 msgid "Payment Follow-up"
 msgstr "付款催收管理"
@@ -1029,19 +1276,44 @@ msgid "Payment Note"
 msgstr "付款備註"
 
 #. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Payment follow-up call"
+msgstr "付款催款通話"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_print__followup_id
+msgid "Plan"
+msgstr "計劃"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid ""
+"Please check these open amounts against your records and let our accounting department know\n"
+"                    of any difference."
+msgstr ""
+"請將這些未結金額與您的記錄核對，如有任何差異，\n"
+"                    請告知我們的會計部門。"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Print"
+msgstr "列印"
+
+#. module: om_account_followup
 #: model:ir.model,name:om_account_followup.model_followup_print
 msgid "Print Follow-up & Send Mail to Customers"
 msgstr "列印跟催並向客戶發送郵件"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Print Overdue Payments"
-msgstr "列印逾期付款"
+msgid "Print Statement"
+msgstr "列印對帳單"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Print overdue payments report independent of follow-up line"
-msgstr "獨立於後續銘系列印逾期付款報告"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+msgid "Print Statements"
+msgstr "列印對帳單"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__description
@@ -1049,31 +1321,57 @@ msgid "Printed Message"
 msgstr "列印訊息"
 
 #. module: om_account_followup
-#. odoo-python
-#: code:addons/om_account_followup/models/partner.py:0
-msgid "Printed overdue payments report"
-msgstr "列印逾期付款報告"
+#: model:ir.model.fields.selection,name:om_account_followup.selection__res_partner__followup_status__promise
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Promise to Pay"
+msgstr "付款承諾"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
-msgid "Ref"
-msgstr "參考編號"
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_promise_amount
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_promise_amount
+msgid "Promised Amount"
+msgstr "承諾金額"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_promise_date
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_promise_date
+msgid "Promised Payment Date"
+msgstr "承諾付款日期"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__recipient_ids
+msgid "Recipients"
+msgstr "接收者"
 
 #. module: om_account_followup
 #. odoo-python
 #: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
 msgid "Reference"
 msgstr "參考"
 
 #. module: om_account_followup
-#: model:ir.model,name:om_account_followup.model_report_om_account_followup_report_followup
-msgid "Report Followup"
-msgstr "報告跟催"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_search
+msgid "Reminded"
+msgstr "已提醒"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Responsible of credit collection"
-msgstr "信用收款的負責人"
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__level_id
+msgid "Reminder"
+msgstr "提醒"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_res_partner__followup_level_due_id
+#: model:ir.model.fields,field_description:om_account_followup.field_res_users__followup_level_due_id
+msgid "Reminder Due"
+msgstr "提醒到期"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Reminder not sent"
+msgstr "未發送提醒"
 
 #. module: om_account_followup
 #: model:ir.model,name:om_account_followup.model_followup_sending_results
@@ -1082,18 +1380,47 @@ msgstr "不同信函和電子郵件發送的結果"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_filter
-msgid "Search Follow-up"
-msgstr "搜索跟催"
+msgid "Search Follow-up Plans"
+msgstr "搜尋催款計劃"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/followup.py:0
+msgid "Second reminder"
+msgstr "第二次提醒"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_send_form
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Send"
+msgstr "發送"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid "Send After"
+msgstr "發送時間（天後）"
 
 #. module: om_account_followup
 #: model:ir.actions.act_window,name:om_account_followup.action_om_account_followup_print
-msgid "Send Follow-Ups"
-msgstr "發送跟催資訊"
+#: model:ir.ui.menu,name:om_account_followup.om_account_followup_print_menu
+msgid "Send All Reminders"
+msgstr "發送所有提醒"
 
 #. module: om_account_followup
-#: model:ir.ui.menu,name:om_account_followup.om_account_followup_print_menu
-msgid "Send Letters and Emails"
-msgstr "發送信件和電子郵件"
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__auto_user_id
+msgid "Send As"
+msgstr "發送方式"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__auto_send
+msgid "Send Automatically"
+msgstr "自動發送"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Send Customer Statement"
+msgstr "發送客戶對帳單"
 
 #. module: om_account_followup
 #. odoo-python
@@ -1102,9 +1429,40 @@ msgid "Send Letters and Emails: Actions Summary"
 msgstr "發送信件和電子郵件：行動摘要"
 
 #. module: om_account_followup
+#: model:ir.model,name:om_account_followup.model_followup_send
+msgid "Send Payment Reminder"
+msgstr "發送付款提醒"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.actions.act_window,name:om_account_followup.action_followup_send
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_send_form
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "Send Overdue Email"
-msgstr "發送逾期郵件"
+msgid "Send Reminder"
+msgstr "發送提醒"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
+msgid "Send Reminders"
+msgstr "發送提醒"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Send Statement"
+msgstr "發送對帳單"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+msgid "Send Statements"
+msgstr "發送對帳單"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Send Vendor Statement"
+msgstr "發送供應商對帳單"
 
 #. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__send_letter
@@ -1112,20 +1470,9 @@ msgid "Send a Letter"
 msgstr "寄信"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid "Send a Letter or Email"
-msgstr "發送信件或電子郵件"
-
-#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__send_email
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
 msgid "Send an Email"
 msgstr "通過信件發送"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
-msgid "Send emails and generate letters"
-msgstr "發送電子郵件並生成信件"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
@@ -1133,33 +1480,157 @@ msgid "Send follow-ups"
 msgstr "發送跟催資訊"
 
 #. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
+msgid ""
+"Send the reminders due to the customers of the plan: the emails are sent, the letters are\n"
+"                        gathered in one PDF and the manual actions are scheduled. The excluded customers and the\n"
+"                        ones who promised to pay later are left alone."
+msgstr ""
+"向計劃中的客戶發送到期的提醒：電郵會被發送，信件會\n"
+"                        合併成一份 PDF，手動動作會被安排。已排除的客戶及\n"
+"                        承諾稍後付款的客戶不受影響。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_followup__sequence
 #: model:ir.model.fields,field_description:om_account_followup.field_followup_line__sequence
 msgid "Sequence"
 msgstr "序列"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_sending_results
-msgid "Summary of actions"
-msgstr "行動概要"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Statement in Excel"
+msgstr "Excel 對帳單"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "The"
-msgstr "此"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+msgid "Statements in Excel"
+msgstr "Excel 對帳單"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__subject
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_send_form
+msgid "Subject"
+msgstr "主題"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_sending_results
+msgid "Summary of Actions"
+msgstr "動作摘要"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_followup_send__attach_invoices
+msgid "The PDF of the overdue invoices are attached to the email."
+msgstr "逾期發票的 PDF 會附加到電郵中。"
+
+#. module: om_account_followup
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_followup_stat
+msgid ""
+"The amounts due and overdue of the customers, by follow-up level, once "
+"invoices are past their due date."
+msgstr "發票逾期後，客戶的到期及逾期金額，按催款等級顯示。"
 
 #. module: om_account_followup
 #. odoo-python
-#: code:addons/om_account_followup/report/followup_print.py:0
+#: code:addons/om_account_followup/models/followup.py:0
+msgid "The company %s already has a default follow-up plan."
+msgstr "公司 %s 已有預設催款計劃。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_account_bank_statement_line__followup_disputed
+#: model:ir.model.fields,help:om_account_followup.field_account_move__followup_disputed
+#: model:ir.model.fields,help:om_account_followup.field_account_move_line__followup_disputed
 msgid ""
-"The followup plan defined for the current company does not have any followup"
-" action."
-msgstr "當前公司定義的後續跟催計劃沒有任何後續行動。"
+"The customer disputes this invoice: it is left out of the follow-up "
+"reminders and of the overdue amounts until the dispute is settled."
+msgstr "客戶對此發票有爭議：在爭議解決之前，它不會列入催款提醒及逾期金額。"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_move_form_followup
+msgid ""
+"The customer disputes this invoice: it is left out of the payment reminders."
+msgstr "客戶對此發票有爭議：它不會列入付款提醒。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_res_partner__followup_promise_date
+#: model:ir.model.fields,help:om_account_followup.field_res_users__followup_promise_date
+msgid ""
+"The customer promised to pay by this date: no reminder is sent until then."
+msgstr "客戶承諾在此日期前付款：在此之前不會發送提醒。"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/wizard/followup_send.py:0
+msgid "The customers are excluded from the follow-ups."
+msgstr "這些客戶已排除於催款之外。"
+
+#. module: om_account_followup
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_customer_my_followup
+msgid ""
+"The customers with an amount due whose follow-up you are responsible for are"
+" listed here."
+msgstr "此處列出您負責催款、且有到期金額的客戶。"
+
+#. module: om_account_followup
+#: model_terms:ir.actions.act_window,help:om_account_followup.action_customer_followup
+msgid ""
+"The customers with open invoices show here, with the reminders to send "
+"today."
+msgstr "有未結發票的客戶會顯示在此，並附上今天要發送的提醒。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_res_partner__followup_next_date
+#: model:ir.model.fields,help:om_account_followup.field_res_users__followup_next_date
+msgid ""
+"The day the next reminder is due, from the due dates of the open invoices "
+"and the delays of the follow-up plan."
+msgstr "下次提醒的到期日，依未結發票的到期日及催款計劃的延遲天數計算。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_followup_followup__auto_user_id
+msgid ""
+"The follow-up emails are sent in the name of this user, with the access "
+"rights of this user."
+msgstr "催款電郵以此使用者的名義、並以此使用者的存取權發送。"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid "The follow-up responsible of the customer"
+msgstr "客戶的催款負責人"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_followup_send__level_id
+msgid ""
+"The level of the reminder sent. It follows the level due for the customer."
+msgstr "已發送提醒的等級。它跟隨客戶應有的等級。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_res_partner__followup_level_due_id
+#: model:ir.model.fields,help:om_account_followup.field_res_users__followup_level_due_id
+msgid "The level of the reminder to send now."
+msgstr "現在要發送的提醒等級。"
 
 #. module: om_account_followup
 #: model:ir.model.fields,help:om_account_followup.field_res_partner__latest_followup_level_id
 #: model:ir.model.fields,help:om_account_followup.field_res_users__latest_followup_level_id
 msgid "The maximum follow-up level"
 msgstr "最大跟催水平"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid ""
+"The message printed at the top of the customer statement. It can use\n"
+"                                    <code>%(partner_name)s</code> (the customer),\n"
+"                                    <code>%(date)s</code> (the date of the statement),\n"
+"                                    <code>%(company_name)s</code> (your company) and\n"
+"                                    <code>%(user_signature)s</code> (the user printing it).\n"
+"                                    Write <code>%%</code> for a percent sign."
+msgstr ""
+"列印在客戶對帳單頂部的訊息。可使用\n"
+"                                    <code>%(partner_name)s</code>（客戶）、\n"
+"                                    <code>%(date)s</code>（對帳單日期）、\n"
+"                                    <code>%(company_name)s</code>（您的公司）及\n"
+"                                    <code>%(user_signature)s</code>（列印的使用者）。\n"
+"                                    輸入 <code>%%</code> 表示百分比符號。"
 
 #. module: om_account_followup
 #: model:ir.model.fields,help:om_account_followup.field_followup_line__delay
@@ -1170,30 +1641,50 @@ msgid ""
 msgstr "在發送催繳通知之前，從發票到期日之後等待的天數。如果您想提前發送禮貌的警示，也可以是負數。"
 
 #. module: om_account_followup
-#. odoo-python
-#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.model.fields,help:om_account_followup.field_followup_followup__is_default
 msgid ""
-"The partner does not have any accounting entries to print in the overdue "
-"report for the current company."
-msgstr "合作夥伴在當前公司的逾期報告中沒有任何可列印的會計分錄。"
+"The plan of the customers of the company who have no plan of their own."
+msgstr "公司中沒有自己催款計劃之客戶所使用的計劃。"
 
 #. module: om_account_followup
 #. odoo-python
 #: code:addons/om_account_followup/models/partner.py:0
-msgid "There is no followup plan defined for the current company."
-msgstr "目前公司沒有製定後續計劃。"
+msgid "The reminder could not be emailed: the customer has no email address."
+msgstr "無法以電郵發送提醒：客戶沒有電郵地址。"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_form
 msgid ""
-"This action will send follow-up emails, print the\n"
-"                        letters and\n"
-"                        set the manual actions per customer, according to the\n"
-"                        follow-up levels defined."
+"The reminders are sent when an invoice is overdue by the number of days of a level.\n"
+"                            When a customer has several overdue invoices, the reminder of the most overdue one is\n"
+"                            sent. The customers without a plan of their own follow the default plan."
 msgstr ""
-"此操作將根據所定義的後續級別，\n"
-"                        向客戶發送後續跟進郵件，\n"
-"                        列印信件，並設置手動操作。"
+"當發票逾期天數達到某等級的天數時，即發送提醒。\n"
+"                            客戶有多張逾期發票時，會發送逾期最久者的\n"
+"                            提醒。沒有自己計劃的客戶會使用預設計劃。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_res_partner__followup_plan_id
+#: model:ir.model.fields,help:om_account_followup.field_res_users__followup_plan_id
+msgid ""
+"The reminders sent to this customer. Leave empty for the default plan of the"
+" company."
+msgstr "發送給此客戶的提醒。留空則使用公司的預設計劃。"
+
+#. module: om_account_followup
+#: model:ir.model.fields,help:om_account_followup.field_res_partner__payment_responsible_id
+#: model:ir.model.fields,help:om_account_followup.field_res_users__payment_responsible_id
+msgid ""
+"The user in charge of collecting the payments of this customer: the manual "
+"actions of the follow-ups are assigned to this user."
+msgstr "負責向此客戶收款的使用者：催款的手動動作會指派給此使用者。"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid ""
+"There is nothing open to print in the statement of the current company."
+msgstr "目前公司的對帳單中沒有可列印的未結項目。"
 
 #. module: om_account_followup
 #: model:ir.model.fields,help:om_account_followup.field_followup_print__date
@@ -1201,42 +1692,19 @@ msgid "This field allow you to select a forecast date to plan your follow-ups"
 msgstr "這個欄位允許您選擇一個預測日期來計劃您的後續跟催"
 
 #. module: om_account_followup
-#: model:ir.model.fields,help:om_account_followup.field_res_partner__payment_next_action
-#: model:ir.model.fields,help:om_account_followup.field_res_users__payment_next_action
-msgid ""
-"This is the next action to be taken.  It will automatically be set when the "
-"partner gets a follow-up level that requires a manual action. "
-msgstr "這是需要採取的下一步操作。當合作夥伴達到需要手動操作的後續跟催級別時，它將自動設置。 "
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_tree
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_followup_open_items
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_stat_list
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "Total"
+msgstr "總計"
 
 #. module: om_account_followup
-#: model:ir.model.fields,help:om_account_followup.field_res_partner__payment_next_action_date
-#: model:ir.model.fields,help:om_account_followup.field_res_users__payment_next_action_date
-msgid ""
-"This is when the manual follow-up is needed. The date will be set to the "
-"current date when the partner gets a follow-up level that requires a manual "
-"action. Can be practical to set manually e.g. to see if he keeps his "
-"promises."
-msgstr "這時候就需要人工跟催了。該日期將設置為合作夥伴獲得需要手動操作的後續級別時的當前日期。可以手動設置，例如看看他是否遵守諾言。"
-
-#. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_form
-msgid ""
-"To remind customers of paying their invoices, you can\n"
-"                        define different actions depending on how severely\n"
-"                        overdue the customer is. These actions are bundled\n"
-"                        into follow-up levels that are triggered when the due\n"
-"                        date of an invoice has passed a certain\n"
-"                        number of days. If there are other overdue invoices for\n"
-"                        the\n"
-"                        same customer, the actions of the most\n"
-"                        overdue invoice will be executed."
-msgstr ""
-"為了提醒客戶支付他們的發票，\n"
-"                        您可以根據客戶逾期的嚴重程度來定義不同的操作。\n"
-"                        這些操作被捆綁到不同的後續跟催級別中，\n"
-"                        當發票的到期日過了特定的天數時觸發。\n"
-"                        如果同一客戶還有其他逾期的發票，\n"
-"                        則將執行最逾期發票的操作。"
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Total Open"
+msgstr "未結總額"
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.account_move_line_partner_tree
@@ -1251,11 +1719,6 @@ msgid "Total debit"
 msgstr "借方總計"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.report_followup
-msgid "Total:"
-msgstr "總計:"
-
-#. module: om_account_followup
 #: model:ir.model.fields,field_description:om_account_followup.field_res_partner__unreconciled_aml_ids
 #: model:ir.model.fields,field_description:om_account_followup.field_res_users__unreconciled_aml_ids
 msgid "Unreconciled Aml"
@@ -1265,6 +1728,37 @@ msgstr "未調節的 Aml"
 #: model:mail.template,name:om_account_followup.email_template_om_account_followup_level2
 msgid "Urging payment follow-up reminder email"
 msgstr "催促付款後續提醒郵件"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Vendor Reference"
+msgstr "供應商參考"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+#: model:ir.actions.report,name:om_account_followup.action_report_vendor_statement
+#: model:ir.model,name:om_account_followup.model_report_om_account_followup_report_vendor_statement
+#: model:mail.template,name:om_account_followup.email_template_vendor_statement
+#: model_terms:ir.ui.view,arch_db:om_account_followup.report_customer_statement_document
+msgid "Vendor Statement"
+msgstr "供應商對帳單"
+
+#. module: om_account_followup
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Vendor statement printed"
+msgstr "已列印供應商對帳單"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.customer_followup_search_view
+msgid "Waiting for the Next Reminder"
+msgstr "等待下次提醒"
+
+#. module: om_account_followup
+#: model:ir.model.fields,field_description:om_account_followup.field_followup_send__warning
+msgid "Warning"
+msgstr "警告"
 
 #. module: om_account_followup
 #: model:ir.model.fields,help:om_account_followup.field_followup_line__send_letter
@@ -1290,17 +1784,10 @@ msgid "Worst Due Date"
 msgstr "最差到期日"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid ""
-"Write here the introduction in the letter,\n"
-"                            according to the level of the follow-up. You can\n"
-"                            use the following keywords in the text. Don't\n"
-"                            forget to translate in all languages you installed\n"
-"                            using to top right icon."
-msgstr ""
-"根據跟催的級別，在信函中撰寫以下引言。\n"
-"                            您可以在文本中使用以下關鍵詞。\n"
-"                            請不要忘記使用右上角的圖標將其翻譯為您安裝的所有語言。"
+#. odoo-python
+#: code:addons/om_account_followup/models/partner.py:0
+msgid "Yes"
+msgstr "是"
 
 #. module: om_account_followup
 #. odoo-python
@@ -1319,13 +1806,28 @@ msgstr "您的描述無效，請使用正確的圖例，或者如果您想使用
 
 #. module: om_account_followup
 #: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
-msgid "days overdue, do the following actions:"
-msgstr "逾期天數，請執行以下操作："
+msgid "e.g. Call the customer"
+msgstr "例如：致電客戶"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_print
-msgid "or"
-msgstr "或"
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_form
+msgid "e.g. Key accounts"
+msgstr "例如：重要客戶"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "e.g. Payment plan agreed with the customer"
+msgstr "例如：與客戶議定的付款計劃"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_om_account_followup_followup_line_form
+msgid "e.g. Second reminder"
+msgstr "例如：第二次提醒"
+
+#. module: om_account_followup
+#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
+msgid "e.g. Will pay half before the 15th, the rest next month"
+msgstr "例如：15 日前付一半，其餘下月付清"
 
 #. module: om_account_followup
 #: model:mail.template,subject:om_account_followup.email_template_om_account_followup_default
@@ -1336,6 +1838,7 @@ msgid "{{ env.company.name }} Payment Reminder"
 msgstr "{{ env.company.name }} 付款提醒"
 
 #. module: om_account_followup
-#: model_terms:ir.ui.view,arch_db:om_account_followup.view_partner_inherit_followup_form
-msgid "⇾ Mark as Done"
-msgstr "標為已完成"
+#: model:mail.template,subject:om_account_followup.email_template_customer_statement
+#: model:mail.template,subject:om_account_followup.email_template_vendor_statement
+msgid "{{ env.company.name }} Statement of Account"
+msgstr "{{ env.company.name }} 帳戶對帳單"

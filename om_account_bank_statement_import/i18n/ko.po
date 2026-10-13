@@ -1,0 +1,610 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,description:base.module_om_account_bank_statement_import
+msgid ""
+"\n"
+"Import the statements your bank gives you, in the format it offers: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX or\n"
+"QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept for the next import.\n"
+"\n"
+"The journal is recognised from the account number in the file, the transactions already imported are skipped, and\n"
+"the file stays attached to the statement. The statements are then reconciled as usual.\n"
+msgstr ""
+"\n"
+"은행에서 제공하는 형식의 명세서를 가져옵니다: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX 또는\n"
+"QFX, QIF, 그리고 은행별 열 매핑을 지정한 CSV 또는 Excel (매핑은 다음 가져오기를 위해 저장됨).\n"
+"\n"
+"전표는 파일의 계좌 번호로 인식되고, 이미 가져온 거래는 건너뛰며,\n"
+"파일은 명세서에 첨부된 상태로 유지됩니다. 이후 명세서는 평소처럼 조정합니다.\n"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "%(imported)s transaction(s) imported, %(skipped)s already there."
+msgstr "거래 %(imported)s건을 가져왔으며, %(skipped)s건은 이미 있습니다."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid ""
+"A map tells Odoo how to read the CSV or Excel file of one bank: its separators, the format\n"
+"                    of its dates and which column holds the date, the label and the amount of a transaction.\n"
+"                    Set the map on the journal of the bank and import the file as usual."
+msgstr ""
+"매핑은 Odoo가 은행의 CSV 또는 Excel 파일을 읽는 방법을 정의합니다: 구분자, 날짜\n"
+"                    형식, 그리고 거래의 날짜, 라벨 및 금액이 들어 있는 열.\n"
+"                    은행 전표에 매핑을 설정하고 평소처럼 파일을 가져오세요."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "A statement is imported in a bank or cash journal, not in %s."
+msgstr "명세서는 %s 전표가 아니라 은행 또는 현금 전표로 가져와야 합니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.constraint,message:om_account_bank_statement_import.constraint_account_bank_statement_line_unique_import_id_uniq
+msgid "A transaction of a bank statement file is only imported once."
+msgstr "은행거래명세서 파일의 거래는 한 번만 가져옵니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "Account Number Column"
+msgstr "계좌 번호 열"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Amount"
+msgstr "금액"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid "Amount Column"
+msgstr "금액 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Bank Statement File Map"
+msgstr "은행거래명세서 파일 매핑"
+
+#. module: om_account_bank_statement_import
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_account_statement_import_map
+#: model:ir.ui.menu,name:om_account_bank_statement_import.menu_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_list
+msgid "Bank Statement File Maps"
+msgstr "은행거래명세서 파일 매핑"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "은행거래명세서 내역"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Cancel"
+msgstr "취소"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Columns"
+msgstr "열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator__,
+msgid "Comma (1234,56)"
+msgstr "쉼표 (1234,56)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__company_id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Company"
+msgstr "회사"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_uid
+msgid "Created by"
+msgstr "작성자"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_date
+msgid "Created on"
+msgstr "작성일자"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "Credit Column"
+msgstr "대변 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "Currency Column"
+msgstr "통화 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_date
+msgid "Date Column"
+msgstr "날짜 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__date_format
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid "Date Format"
+msgstr "날짜 형식"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "Debit Column"
+msgstr "차변 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid "Debit is Positive"
+msgstr "차변을 양수로 표시"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__decimal_separator
+msgid "Decimal Separator"
+msgstr "소수점 구분 기호"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid "Delimiter"
+msgstr "구분자"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid "Describe the file of your bank"
+msgstr "은행 파일 형식 설명"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__display_name
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__display_name
+msgid "Display Name"
+msgstr "표시명"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator___
+msgid "Dot (1234.56)"
+msgstr "마침표 (1234.56)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid "Encoding"
+msgstr "인코딩"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "Every transaction of %(count)s file(s) was already imported."
+msgstr "%(count)s개 파일의 모든 거래를 이미 가져왔습니다."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "File"
+msgstr "파일"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid "File Map"
+msgstr "파일 매핑"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid "Files"
+msgstr "파일"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "For CSV and Excel files"
+msgstr "CSV 및 Excel 파일용"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "From the account number in the file"
+msgstr "파일의 계좌 번호 기준"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid "Has a Header Row"
+msgstr "헤더 행 있음"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__id
+msgid "ID"
+msgstr "ID"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Import"
+msgstr "가져오기"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Import Bank Statement"
+msgstr "은행거래명세서 가져오기"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid "Import ID"
+msgstr "가져오기 ID"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_journal.py:0
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_journal_dashboard_kanban_view
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_bank_statement_tree
+msgid "Import Statement"
+msgstr "명세서 가져오기"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,summary:base.module_om_account_bank_statement_import
+msgid ""
+"Import the bank statements of your bank: CAMT, MT940, OFX, QIF, CSV and "
+"Excel"
+msgstr "은행의 은행거래명세서 가져오기: CAMT, MT940, OFX, QIF, CSV 및 Excel"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid "Journal"
+msgstr "전표"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "Label Column"
+msgstr "라벨 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_uid
+msgid "Last Updated by"
+msgstr "최근 갱신한 사람"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_date
+msgid "Last Updated on"
+msgstr "최근 갱신 일자"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Leave empty to share the map with every company."
+msgstr "모든 회사와 매핑을 공유하려면 비워 두세요."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid ""
+"Leave empty to use the journal of the bank account written in the file."
+msgstr "파일에 기재된 은행 계좌의 전표를 사용하려면 비워 두세요."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__name
+msgid "Name"
+msgstr "이름"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"No journal was found for the account %(account)s of the file %(file)s. "
+"Choose a journal, or write that account number on the bank account of its "
+"journal."
+msgstr ""
+"%(file)s 파일의 %(account)s 계좌에 해당하는 전표가 없습니다. 전표를 선택하거나 해당 전표의 은행 계좌에 그 계좌 번호를"
+" 입력하세요."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "No transaction was found in the file(s)."
+msgstr "파일에서 거래를 찾을 수 없습니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__note
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Notes"
+msgstr "메모"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_narration
+msgid "Notes Column"
+msgstr "메모 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,shortdesc:base.module_om_account_bank_statement_import
+msgid "Odoo 20 Bank Statement Import"
+msgstr "Odoo 20 은행거래명세서 가져오기"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid ""
+"One column with the sign of the transaction, negative when the money leaves "
+"the account."
+msgstr "거래의 부호가 들어 있는 하나의 열로, 계좌에서 돈이 나갈 때 음수입니다."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other"
+msgstr "기타"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other Party"
+msgstr "거래 상대방"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_partner
+msgid "Partner Column"
+msgstr "협력사 열"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_ref
+msgid "Reference Column"
+msgstr "참조 열"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Rows"
+msgstr "행"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid "Rows to Skip"
+msgstr "건너뛸 행 수"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid "Sheet"
+msgstr "시트"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid "Statement File Map"
+msgstr "명세서 파일 매핑"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "Text Delimiter"
+msgstr "텍스트 구분자"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "The ISO code of the currency, e.g. EUR."
+msgstr "통화의 ISO 코드입니다(예: EUR)."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "The bank account of the other party of the transaction."
+msgstr "거래 상대방의 은행 계좌입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "The character around a value containing the delimiter. CSV only."
+msgstr "구분자가 포함된 값을 감싸는 문자입니다. CSV 전용입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid ""
+"The character between two columns, CSV only. Write tab for a tabulation (TSV"
+" files)."
+msgstr "두 열 사이의 문자입니다. CSV 전용입니다. 탭 문자(TSV 파일)를 사용하려면 tab을 입력하세요."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid ""
+"The character grouping the digits of the big numbers, if any: 1,234.56 or "
+"1.234,56 or 1 234,56."
+msgstr "큰 숫자의 자릿수를 묶는 문자(있는 경우): 1,234.56 또는 1.234,56 또는 1 234,56."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid ""
+"The columns of the CSV or Excel files of your bank. Not needed for the other"
+" formats."
+msgstr "은행 CSV 또는 Excel 파일의 열입니다. 다른 형식에는 필요하지 않습니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid ""
+"The columns of the CSV or Excel statements of this bank, filled in by "
+"default when importing."
+msgstr "이 은행의 CSV 또는 Excel 명세서의 열로, 가져올 때 기본값으로 채워집니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid ""
+"The debit column holds the money leaving the account as a positive number. "
+"Uncheck it when your bank writes the debits with a minus sign."
+msgstr "차변 열에는 계좌에서 나가는 금액이 양수로 들어 있습니다. 은행이 차변을 마이너스 기호로 기재하면 선택을 해제하세요."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "The description of the transaction."
+msgstr "거래 설명입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid ""
+"The encoding of the text of the file: utf-8, utf-8-sig, latin1, cp1252... "
+"CSV only."
+msgstr "파일 텍스트의 인코딩: utf-8, utf-8-sig, latin1, cp1252... CSV 전용입니다."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is in %(file_currency)s, but the journal %(journal)s is in"
+" %(currency)s."
+msgstr ""
+"%(file)s 파일의 통화는 %(file_currency)s이지만, %(journal)s 전표의 통화는 %(currency)s입니다."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is the statement of the account %(account)s, which belongs"
+" to the journal %(journal)s, not to %(chosen)s."
+msgstr ""
+"%(file)s 파일은 %(account)s 계좌의 명세서이며, 이 계좌는 %(chosen)s이(가) 아니라 %(journal)s 전표에"
+" 속합니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid ""
+"The first row read holds the names of the columns. Without a header, the "
+"columns below are given by their number, the first column being 1."
+msgstr "첫 번째로 읽는 행에 열 이름이 들어 있습니다. 헤더가 없으면 아래 열은 번호로 지정하며, 첫 번째 열이 1입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__date_format
+msgid ""
+"The format of the dates of a QIF file, such as %d/%m/%Y. Left empty, the day"
+" and the month are told apart from the values themselves."
+msgstr "QIF 파일의 날짜 형식입니다(예: %d/%m/%Y). 비워 두면 값 자체로 일과 월을 구분합니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid ""
+"The format of the dates of the file, in the Python notation: %d/%m/%Y, "
+"%m/%d/%y, %Y-%m-%d..."
+msgstr "파일의 날짜 형식(Python 표기법): %d/%m/%Y, %m/%d/%y, %Y-%m-%d..."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "The format of the file %s is not supported."
+msgstr "%s 파일 형식은 지원되지 않습니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid ""
+"The identifier of the transaction at the bank, to import the same file twice"
+" without duplicating its transactions."
+msgstr "은행의 거래 식별자로, 같은 파일을 두 번 가져와도 거래가 중복되지 않게 합니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid ""
+"The identifier of the transaction in the file it was imported from: a "
+"transaction already imported in the journal is not imported again."
+msgstr "거래를 가져온 파일에서의 거래 식별자입니다. 전표에 이미 가져온 거래는 다시 가져오지 않습니다."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_statement_import_map.py:0
+msgid ""
+"The map \"%s\" needs an amount column, or a debit column and a credit "
+"column."
+msgstr "\"%s\" 매핑에는 금액 열, 또는 차변 열과 대변 열이 필요합니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "The money entering the account."
+msgstr "계좌로 들어오는 금액입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "The money leaving the account."
+msgstr "계좌에서 나가는 금액입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid ""
+"The name or the number (1 for the first one) of the sheet to read. Excel "
+"only, the first sheet by default."
+msgstr "읽을 시트의 이름 또는 번호(첫 번째 시트는 1)입니다. Excel 전용이며 기본값은 첫 번째 시트입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid ""
+"The number of rows to ignore at the top of the file, before the header."
+msgstr "헤더 앞에서 파일 상단에 무시할 행 수입니다."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid ""
+"The statement files of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or "
+"Excel."
+msgstr "은행의 명세서 파일: CAMT.053, MT940, OFX, QFX, QIF, CSV 또는 Excel."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid "Thousands Separator"
+msgstr "천 단위 구분 기호"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Transaction"
+msgstr "거래"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid "Unique ID Column"
+msgstr "고유 ID 열"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid ""
+"Upload the statements of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or Excel.\n"
+"                        The transactions already imported are left out."
+msgstr ""
+"은행 명세서를 업로드하세요: CAMT.053, MT940, OFX, QFX, QIF, CSV 또는 Excel.\n"
+"                        이미 가져온 거래는 제외됩니다."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Values"
+msgstr "값"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"Write the name of the column of the file when it has a header row, or the\n"
+"                                    number of the column otherwise, the first column being\n"
+"                                    <code>1</code>. Use either the amount column, or the debit and the credit\n"
+"                                    columns."
+msgstr ""
+"파일에 헤더 행이 있으면 열 이름을, 없으면\n"
+"                                    열 번호를 입력하세요. 첫 번째 열은\n"
+"                                    <code>1</code>입니다. 금액 열을 사용하거나 차변 열과 대변 열을\n"
+"                                    사용하세요."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "e.g. %d/%m/%Y, for QIF files"
+msgstr "예: %d/%m/%Y (QIF 파일용)"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"e.g. Export the transactions of the month from the website of the bank, in "
+"CSV."
+msgstr "예: 은행 웹사이트에서 해당 월의 거래를 CSV 형식으로 내보내기."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__name
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "e.g. My Bank - CSV export"
+msgstr "예: 내 은행 - CSV 내보내기"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "of the file"
+msgstr "파일의"

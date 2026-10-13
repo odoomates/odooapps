@@ -16,8 +16,12 @@ class TestFieldGuard(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.password = 'om-access-manager-guard-pw'
-        cls.user = new_test_user(cls.env, 'om_access_guard_user', groups='base.group_user,base.group_partner_manager',
-                                 password=cls.password)
+        groups = 'base.group_user,base.group_partner_manager'
+        if cls.env.ref('account.group_account_readonly', raise_if_not_found=False):
+            # reading a contact in full computes the accounting fields of Odoo 20 without a group of their own
+            # (days_sales_outstanding, supplier_invoice_count), which need to read the journal entries
+            groups += ',account.group_account_readonly'
+        cls.user = new_test_user(cls.env, 'om_access_guard_user', groups=groups, password=cls.password)
         Fields = cls.env['ir.model.fields']
         partner_model = cls.env['ir.model']._get('res.partner')
         cls.partner = cls.env['res.partner'].create({

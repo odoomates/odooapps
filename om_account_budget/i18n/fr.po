@@ -1,526 +1,1308 @@
-# Translation of Odoo Server.
-# This file contains the translation of the following modules:
-# 	* om_account_budget
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 15.0-20220319\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-06-12 03:15+0000\n"
-"PO-Revision-Date: 2022-07-06 00:09+0200\n"
-"Last-Translator: Sylvain Lc\n"
+"Last-Translator: \n"
 "Language-Team: \n"
 "Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 3.1\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, committed "
+"%(committed)s, this document %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s (%(budget)s) : prévu %(planned)s, réalisé %(actual)s, engagé "
+"%(committed)s, ce document %(new)s, %(over)s de dépassement budgétaire"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, this document"
+" %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s (%(budget)s) : prévu %(planned)s, réalisé %(actual)s, ce document "
+"%(new)s, %(over)s de dépassement budgétaire"
+
+#. module: om_account_budget
+#. odoo-python
 #: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
 msgid ""
-"\"End Date\" of the budget line should be included in the Period of the "
-"budget"
+"%(line)s reached %(percent)s%% of its planned amount (%(practical)s of "
+"%(planned)s)."
 msgstr ""
-"La \"date de fin\" de la ligne budgétaire doit être incluse dans la période "
-"du budget"
+"%(line)s a atteint %(percent)s%% de son montant prévu (%(practical)s sur "
+"%(planned)s)."
 
 #. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_move.py:0
+msgid ""
+"%(move)s cannot be posted, it goes over budget:\n"
+"%(lines)s\n"
+"Ask an accounting manager to post it or to raise the budget."
+msgstr ""
+"%(move)s ne peut pas être comptabilisé, il dépasse le budget :\n"
+"%(lines)s\n"
+"Demandez à un responsable comptable de le comptabiliser ou d'augmenter le budget."
+
+#. module: om_account_budget
+#. odoo-python
 #: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
-msgid ""
-"\"Start Date\" of the budget line should be included in the Period of the "
-"budget"
+msgid "%(user)s was emailed: some lines spent more than planned."
 msgstr ""
-"La \"date de début\" de la ligne budgétaire doit être incluse dans la "
-"période du budget"
+"%(user)s a reçu un e-mail : certaines lignes ont dépensé plus que prévu."
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_kanban
-msgid ""
-"<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Period\" title=\"Period"
-"\"/>"
-msgstr ""
-"<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Période\" title="
-"\"Période\"/>"
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "%s (copy)"
+msgstr "%s (copie)"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__account_ids
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_form
+#: model:ir.actions.report,print_report_name:om_account_budget.action_report_budget_vs_actual
+msgid "'Budget vs Actual - %s' % object.name"
+msgstr "'Budget vs réalisé - %s' % object.name"
+
+#. module: om_account_budget
+#: model:mail.template,body_html:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Hello <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        These lines of the budget <strong t-out=\"object.name or ''\">Budget 2026</strong> spent more than planned:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Review the spending, or revise the planned amounts of the budget.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Bonjour <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        Ces lignes du budget <strong t-out=\"object.name or ''\">Budget 2026</strong> ont dépensé plus que prévu :\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Vérifiez les dépenses ou révisez les montants prévus du budget.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_kanban
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+msgstr ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "<span class=\"text-muted\"> of </span>"
+msgstr "<span class=\"text-muted\"> sur </span>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Period:</strong>"
+msgstr "<strong>Période :</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Responsible:</strong>"
+msgstr "<strong>Responsable :</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Status:</strong>"
+msgstr "<strong>Statut :</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid ""
+"A budgetary position groups the accounts a budget line follows, such as the "
+"travel or the salary expenses."
+msgstr ""
+"Un poste budgétaire regroupe les comptes suivis par une ligne de budget, "
+"comme les frais de déplacement ou les charges salariales."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid ""
+"A draft copy of the budget is created, its lines are moved to the new "
+"period."
+msgstr ""
+"Une copie brouillon du budget est créée, ses lignes sont déplacées vers la "
+"nouvelle période."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__account_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
 msgid "Accounts"
 msgstr "Comptes"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__percentage
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+msgid "Achieved"
+msgstr "Réalisé"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__achievement
 msgid "Achievement"
 msgstr "Réalisation"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_needaction
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction
 msgid "Action Needed"
 msgstr "Action nécessaire"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__practical_amount
-msgid "Amount really earned/spent."
-msgstr "Montant vraiment gagné/dépensé."
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__active
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__active
+msgid "Active"
+msgstr "Actif"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__theoritical_amount
-msgid "Amount you are supposed to have earned/spent at this date."
-msgstr "Montant que vous êtes supposé avoir gagné/dépensé à cette date."
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_ids
+msgid "Activities"
+msgstr "Activités"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__planned_amount
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "Indicateur d’exception d’activité"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_plans_ids
+msgid "Activity Plans"
+msgstr "Plans d'activité"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_state
+msgid "Activity State"
+msgstr "Statut de l'activité"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "Icône de type d'activité"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Actual"
+msgstr "Réalisé"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__practical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+msgid "Actual Amount"
+msgstr "Montant réalisé"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_practical_amount
+msgid "Actual Expenses"
+msgstr "Charges réalisées"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_practical_amount
+msgid "Actual Revenues"
+msgstr "Produits réalisés"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__achievement
+msgid "Actual amount compared with the theoretical amount."
+msgstr "Montant réalisé comparé au montant théorique."
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
 msgid ""
-"Amount you plan to earn/spend. Record a positive amount if it is a revenue "
-"and a negative amount if it is a cost."
+"Add this analytic account to the lines of a budget to follow its spending "
+"here."
 msgstr ""
-"Montant que vous prévoyez gagner / dépenser. Enregistrez un montant positif "
-"s'il s'agit d'un revenu et un montant négatif s'il s'agit d'un coût."
+"Ajoutez ce compte analytique aux lignes d'un budget pour suivre ses dépenses"
+" ici."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__practical_amount
+msgid "Amount really spent or earned, from the posted journal entries."
+msgstr ""
+"Montant réellement dépensé ou gagné, d'après les pièces comptables "
+"comptabilisées."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__theoretical_amount
+msgid "Amount you are supposed to have spent or earned at this date."
+msgstr "Montant que vous êtes censé avoir dépensé ou gagné à cette date."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__planned_amount
+msgid "Amount you plan to spend (expense lines) or to earn (revenue lines)."
+msgstr ""
+"Montant que vous prévoyez de dépenser (lignes de charges) ou de gagner "
+"(lignes de produits)."
 
 #. module: om_account_budget
 #: model:ir.model,name:om_account_budget.model_account_analytic_account
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__analytic_account_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_account_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Analytic Account"
 msgstr "Compte analytique"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__analytic_plan_id
-msgid "Analytic Group"
-msgstr "Groupe analytique"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Approve"
 msgstr "Approuver"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_attachment_count
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Archived"
+msgstr "Archivé"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__at_date
+msgid "At a Date"
+msgstr "À une date"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__is_over_budget
+msgid "At least one expense line spent more than its theoretical amount."
+msgstr ""
+"Au moins une ligne de charges a dépensé plus que son montant théorique."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_attachment_count
 msgid "Attachment Count"
 msgstr "Nombre de pièces jointes"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_crossovered_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__crossovered_budget_id
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_tree
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Audit"
+msgstr "Audit"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_block_documents
+msgid "Block Documents Over Budget"
+msgstr "Bloquer les documents hors budget"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__budget_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budget"
 msgstr "Budget"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_account_analytic_account_cb_lines
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_line_analysis
+msgid "Budget Analysis"
+msgstr "Analyse budgétaire"
+
+#. module: om_account_budget
+#: model:mail.activity.type,name:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Budget Exceeded"
+msgstr "Budget dépassé"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_analytic_account_budget_lines
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 msgid "Budget Items"
 msgstr "Postes budgétaires"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_crossovered_budget_lines
+#: model:ir.model,name:om_account_budget.model_account_budget_line
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
 msgid "Budget Line"
 msgstr "Ligne de budget"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__crossovered_budget_line
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__crossovered_budget_line
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_tree
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__budget_line_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__line_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_graph
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 msgid "Budget Lines"
 msgstr "Lignes de budget"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__name
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Budget Name"
 msgstr "Nom du budget"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__crossovered_budget_state
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_line_analysis
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Budget Report"
+msgstr "Rapport budgétaire"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Budget Report: %s"
+msgstr "Rapport budgétaire : %s"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_state
 msgid "Budget State"
 msgstr "Etat du Budget"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_account_budget_post
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__general_budget_id
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_search
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_tree
+#: model:ir.model.fields,field_description:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,field_description:om_account_budget.field_account_move__budget_warning
+msgid "Budget Warning"
+msgstr "Alerte budgétaire"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid "Budget Warning Threshold"
+msgstr "Seuil d'alerte budgétaire"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,help:om_account_budget.field_account_move__budget_warning
+msgid ""
+"Budget lines this draft vendor bill would push over their planned amount."
+msgstr ""
+"Lignes de budget que cette facture fournisseur brouillon ferait dépasser "
+"leur montant prévu."
+
+#. module: om_account_budget
+#: model:ir.actions.report,name:om_account_budget.action_report_budget_vs_actual
+msgid "Budget vs Actual"
+msgstr "Budget vs réalisé"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Budget vs Actual:"
+msgstr "Budget vs réalisé :"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Budget warnings"
+msgstr "Alertes budgétaires"
+
+#. module: om_account_budget
+#: model:mail.template,name:om_account_budget.mail_template_budget_exceeded
+msgid "Budget: lines over budget"
+msgstr "Budget : lignes en dépassement"
+
+#. module: om_account_budget
+#: model:ir.actions.server,name:om_account_budget.ir_cron_budget_warnings_ir_actions_server
+msgid "Budget: warn the responsibles of over budget lines"
+msgstr "Budget : avertir les responsables des lignes en dépassement"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_position
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__position_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budgetary Position"
 msgstr "Poste budgétaire"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.open_budget_post_form
-#: model:ir.ui.menu,name:om_account_budget.menu_budget_post_form
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_position
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_position
 msgid "Budgetary Positions"
 msgstr "Positions budgétaires"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_crossovered_budget_view
-#: model:ir.ui.menu,name:om_account_budget.menu_act_crossovered_budget_view
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget
 msgid "Budgets"
 msgstr "Budgets"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_crossovered_budget_lines_view
-#: model:ir.ui.menu,name:om_account_budget.menu_act_crossovered_budget_lines_view
-msgid "Budgets Analysis"
-msgstr "Analyse budgétaire"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Cancel Budget"
 msgstr "Annuler le budget"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__cancel
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__cancel
 msgid "Cancelled"
 msgstr "Annulé"
 
 #. module: om_account_budget
-#: model_terms:ir.actions.act_window,help:om_account_budget.act_crossovered_budget_view
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
 msgid "Click to create a new budget."
 msgstr "Cliquer pour créer un nouveau budget."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__company_id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__company_id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__company_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Committed"
+msgstr "Engagé"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__company_id
 msgid "Company"
 msgstr "Société"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__percentage
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
 msgid ""
-"Comparison between practical and theoretical amount. This measure tells you "
-"if you are below or over budget."
+"Compare what was planned with what was achieved, by budget, budgetary "
+"position, analytic account or period."
 msgstr ""
-"Comparaison entre le montant pratique et le montant théorique. Ceci vous "
-"permet de savoir si vous êtes en dessous ou au dessus du budget."
+"Comparez le prévu au réalisé, par budget, poste budgétaire, compte "
+"analytique ou période."
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Confirm"
 msgstr "Confirmer"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__confirm
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__confirm
 msgid "Confirmed"
 msgstr "Confirmé"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__create_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__create_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__create_uid
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid "Copy"
+msgstr "Copier"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_copy
+msgid "Copy a Budget to Another Period"
+msgstr "Copier un budget vers une autre période"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Copy to Next Period"
+msgstr "Copier vers la période suivante"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid "Create a budgetary position"
+msgstr "Créer un poste budgétaire"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_uid
 msgid "Created by"
 msgstr "Créé par"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__create_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__create_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_date
 msgid "Created on"
 msgstr "Créé sur"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__currency_id
 msgid "Currency"
 msgstr "Devise"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__display_name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__display_name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__display_name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Discard"
+msgstr "Ignorer"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__display_name
 msgid "Display Name"
 msgstr "Afficher un nom"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__done
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__done
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Done"
 msgstr "Terminé"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__draft
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__draft
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Draft"
 msgstr "Brouillon"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "Draft Budgets"
-msgstr "Budgets brouillons"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid ""
+"Each line covering several periods is replaced by one line per period, its planned amount\n"
+"                    shared according to the days of each period."
+msgstr ""
+"Chaque ligne couvrant plusieurs périodes est remplacée par une ligne par période, son montant prévu\n"
+"                    étant réparti selon le nombre de jours de chaque période."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__date_to
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid "Email the Budget Responsible"
+msgstr "Envoyer un e-mail au responsable du budget"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Email the responsible when a budget is exceeded"
+msgstr "Envoyer un e-mail au responsable lorsqu'un budget est dépassé"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_to
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
 msgid "End Date"
 msgstr "Date de fin"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-msgid "Entries..."
-msgstr "Ecritures..."
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__exceeded
+msgid "Exceeded"
+msgstr "Dépassé"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_follower_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__distribution
+msgid "Expected"
+msgstr "Prévu"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Expected to Date"
+msgstr "Prévu à date"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__expense
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__expense
+msgid "Expense"
+msgstr "Charge"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__is_over_budget
+msgid "Expense line which spent more than its theoretical amount."
+msgstr "Ligne de charges ayant dépensé plus que son montant théorique."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__budget_type
+msgid ""
+"Expense lines plan costs, revenue lines plan incomes. Planned amounts are "
+"always positive."
+msgstr ""
+"Les lignes de charges prévoient des coûts, les lignes de produits prévoient "
+"des recettes. Les montants prévus sont toujours positifs."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_position__budget_type
+msgid ""
+"Expense: the planned amounts are costs, spending more than planned is over budget.\n"
+"Revenue: the planned amounts are incomes, earning more than planned is above budget."
+msgstr ""
+"Charge : les montants prévus sont des coûts, dépenser plus que prévu constitue un dépassement budgétaire.\n"
+"Produit : les montants prévus sont des recettes, gagner plus que prévu place au-dessus du budget."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Expenses"
+msgstr "Charges"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_achievement
+msgid "Expenses Achievement"
+msgstr "Réalisation des charges"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_follower_ids
 msgid "Followers"
 msgstr "Suiveuses"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_partner_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_partner_ids
 msgid "Followers (Partners)"
 msgstr "Abonnés (Partenaires)"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
-msgid "Group By"
-msgstr "Grouper par"
-
-#. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__has_message
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__has_message
 msgid "Has Message"
 msgstr "A un message"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_chart_template__id
 msgid "ID"
 msgstr "ID"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_needaction
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_unread
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon"
+msgstr "Icône"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "Icône pour indiquer une activité d'exception."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction
 msgid "If checked, new messages require your attention."
 msgstr "Si coché, de nouveaux messages demandent votre attention."
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_error
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_sms_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr "Si actif, certains messages ont une erreur de livraison."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__is_above_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_above_budget
 msgid "Is Above Budget"
 msgstr "Est Au-dessus du Budget"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_is_follower
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_is_follower
 msgid "Is Follower"
 msgstr "Est un abonné"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post____last_update
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget____last_update
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines____last_update
-msgid "Last Modified on"
-msgstr "Dernière modification le"
-
-#. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__write_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__write_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_uid
 msgid "Last Updated by"
 msgstr "Dernière mise à jour par"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__write_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__write_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_date
 msgid "Last Updated on"
 msgstr "Dernière mise à jour le"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_main_attachment_id
-msgid "Main Attachment"
-msgstr "Pièce jointe principale"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_split__line_ids
+msgid "Leave empty to split every line of the budget."
+msgstr "Laissez vide pour répartir toutes les lignes du budget."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_error
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Line"
+msgstr "Ligne"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__line_ids
+msgid "Lines to Split"
+msgstr "Lignes à répartir"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr "Icône Material Symbols, par ex. checklist"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error
 msgid "Message Delivery error"
 msgstr "Erreur d'envoi du message"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_ids
 msgid "Messages"
 msgstr "Messages"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__name
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__1
+msgid "Monthly"
+msgstr "Mensuel"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "Échéance de mon activité"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "My Budgets"
+msgstr "Mes budgets"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__name
 msgid "Name"
 msgstr "Nom"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__name
+msgid "New Budget Name"
+msgstr "Nom du nouveau budget"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "Échéance de l'activité à venir"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_summary
+msgid "Next Activity Summary"
+msgstr "Résumé de l'activité suivante"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_id
+msgid "Next Activity Type"
+msgstr "Type d'activités à venir"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid "No budget line for this analytic account"
+msgstr "Aucune ligne de budget pour ce compte analytique"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid "No budget line yet"
+msgstr "Aucune ligne de budget pour l'instant"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__none
+msgid "None"
+msgstr "Aucun"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 msgid "Not Cancelled"
 msgstr "Pas Annulé"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_needaction_counter
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Notify the responsible of a validated budget when an expense line reaches "
+"this share of its planned amount. Going over it also assigns a To-Do "
+"activity."
+msgstr ""
+"Avertir le responsable d'un budget validé lorsqu'une ligne de charges "
+"atteint cette part de son montant prévu. Son dépassement attribue également "
+"une activité À faire."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction_counter
 msgid "Number of Actions"
 msgstr "Nombre d'actions"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_error_counter
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error_counter
 msgid "Number of errors"
 msgstr "Nombre d'erreurs"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_needaction_counter
-msgid "Number of messages which requires an action"
-msgstr "Nombre de messages exigeant une action"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "Nombre de messages nécessitant une action"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_error_counter
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error_counter
 msgid "Number of messages with delivery error"
 msgstr "Nombre de messages avec des erreurs d'envoi"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_unread_counter
-msgid "Number of unread messages"
-msgstr "Nombre de messages non lus"
+#: model:ir.module.module,shortdesc:base.module_om_account_budget
+#: model:ir.module.module,summary:base.module_om_account_budget
+msgid "Odoo 20 Budget Management"
+msgstr "Gestion budgétaire Odoo 20"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__paid_date
-msgid "Paid Date"
-msgstr "Date de paiement"
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Only accounting managers can approve, close or cancel budgets."
+msgstr ""
+"Seuls les responsables comptables peuvent approuver, clôturer ou annuler des"
+" budgets."
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_block_documents
+msgid ""
+"Only the accounting managers can post the vendor bills (and confirm the "
+"purchase orders) going over the planned amount of a budget line; the other "
+"users see a warning."
+msgstr ""
+"Seuls les responsables comptables peuvent comptabiliser les factures "
+"fournisseurs (et confirmer les bons de commande) qui dépassent le montant "
+"prévu d'une ligne de budget ; les autres utilisateurs voient un "
+"avertissement."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_split.py:0
+msgid "Only the lines of draft budgets can be split."
+msgstr "Seules les lignes des budgets brouillon peuvent être réparties."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Operation not supported."
+msgstr "Opération non prise en charge."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__is_over_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_over_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Over Budget"
+msgstr "Dépassement budgétaire"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over budget: %s"
+msgstr "Dépassement budgétaire : %s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over by"
+msgstr "Dépassement de"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__period
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Period"
 msgstr "Période"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__planned_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_plan_id
+msgid "Plan"
+msgstr "Plan"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Planned"
+msgstr "Planifié"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Planned Amount"
 msgstr "Montant prévu"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Planned amount"
-msgstr "Montant prévu"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_date
+msgid "Planned Date"
+msgstr "Date prévue"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__practical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
-msgid "Practical Amount"
-msgstr "Montant réel"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_planned_amount
+msgid "Planned Expenses"
+msgstr "Charges prévues"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Practical amount"
-msgstr "Montant Réel"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_planned_amount
+msgid "Planned Revenues"
+msgstr "Produits prévus"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__3
+msgid "Quarterly"
+msgstr "Trimestriel"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Reset the budget \"%s\" to draft to change it."
+msgstr "Remettez le budget \"%s\" en brouillon pour le modifier."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Reset the budget \"%s\" to draft to change its lines."
+msgstr "Remettez le budget \"%s\" en brouillon pour modifier ses lignes."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Reset to Draft"
 msgstr "Remettre en brouillon"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__user_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__user_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Responsible"
 msgstr "Responsable"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_sms_error
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_user_id
+msgid "Responsible User"
+msgstr "Utilisateur responsable"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__revenue
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__revenue
+msgid "Revenue"
+msgstr "Revenus"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Revenues"
+msgstr "Produits"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_achievement
+msgid "Revenues Achievement"
+msgstr "Réalisation des produits"
+
+#. module: om_account_budget
+#: model:mail.activity.type,summary:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Review the lines over budget"
+msgstr "Vérifier les lignes en dépassement budgétaire"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr "Erreur d'envoi SMS"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__date_from
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__date_from
+#: model:mail.template,description:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"Sent to the responsible of a validated budget when expense lines go over "
+"their planned amount"
+msgstr ""
+"Envoyé au responsable d'un budget validé lorsque des lignes de charges "
+"dépassent leur montant prévu"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__sequence
+msgid "Sequence"
+msgstr "Séquence"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Set a planned date within the period of the line \"%s\"."
+msgstr "Définissez une date prévue comprise dans la période de la ligne \"%s\"."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Some lines spent more than planned."
+msgstr "Certaines lignes ont dépensé plus que prévu."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Spent"
+msgstr "Dépensé"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split"
+msgstr "Répartir"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_split
+msgid "Split Budget Lines by Period"
+msgstr "Répartir les lignes de budget par période"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split Lines by Period"
+msgstr "Répartir les lignes par période"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Split by Period"
+msgstr "Répartir par période"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__spread
+msgid "Spread Evenly"
+msgstr "Répartition uniforme"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__distribution
+msgid ""
+"Spread Evenly: the amount is expected little by little over the period.\n"
+"At a Date: the whole amount is expected on the planned date, e.g. a yearly fee."
+msgstr ""
+"Répartition uniforme : le montant est attendu progressivement sur la période.\n"
+"À une date : la totalité du montant est attendue à la date prévue, par ex. une redevance annuelle."
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_from
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Start Date"
 msgstr "Date de début"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__state
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__state
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Status"
 msgstr "Statut"
 
 #. module: om_account_budget
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
-msgid "The budget must have at least one account."
-msgstr "Le budget doit avoir au moins un compte."
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"Statut basé sur les activités\n"
+"En retard : l'échéance est déjà dépassée\n"
+"Aujourd'hui : la date d'activité est aujourd'hui\n"
+"Planifié : activités futures."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__theoritical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__warning_level
+msgid "Technical field: last warning sent to the responsible of the budget."
+msgstr ""
+"Champ technique : dernier avertissement envoyé au responsable du budget."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "The budget \"%s\" must start before it ends."
+msgstr "Le budget \"%s\" doit commencer avant de se terminer."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_position.py:0
+msgid "The budgetary position \"%s\" must have at least one account."
+msgstr "Le poste budgétaire \"%s\" doit avoir au moins un compte."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "The line \"%s\" must start before it ends."
+msgstr "La ligne \"%s\" doit commencer avant de se terminer."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The lines \"%(line)s\" and \"%(other)s\" overlap: the same entries would be "
+"counted twice."
+msgstr ""
+"Les lignes \"%(line)s\" et \"%(other)s\" se chevauchent : les mêmes "
+"écritures seraient comptées deux fois."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "The new budget must start before it ends."
+msgstr "Le nouveau budget doit commencer avant de se terminer."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The period of the line \"%s\" must be included in the period of the budget."
+msgstr ""
+"La période de la ligne \"%s\" doit être comprise dans la période du budget."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The planned amount of \"%s\" must be positive: choose whether the line is an"
+" expense or a revenue."
+msgstr ""
+"Le montant prévu de \"%s\" doit être positif : choisissez si la ligne est "
+"une charge ou un produit."
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid ""
+"The responsible of a budget is warned when an expense line reaches this "
+"percentage of its planned amount, and again when it goes over it."
+msgstr ""
+"Le responsable d'un budget est averti lorsqu'une ligne de charges atteint ce"
+" pourcentage de son montant prévu, puis à nouveau lorsqu'elle le dépasse."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Theoretical"
+msgstr "Théorique"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__theoretical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Theoretical Amount"
 msgstr "Montant théorique"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
-msgid "Theoritical Amount"
-msgstr "Montant théorique"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_theoretical_amount
+msgid "Theoretical Expenses"
+msgstr "Charges théoriques"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Theoritical amount"
-msgstr "Montant théorique"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_theoretical_amount
+msgid "Theoretical Revenues"
+msgstr "Produits théoriques"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "These lines spent more than planned:"
+msgstr "Ces lignes ont dépensé plus que prévu :"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "This budget has no line."
+msgstr "Ce budget n'a aucune ligne."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "This document goes over budget"
+msgstr "Ce document dépasse le budget"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__threshold
+msgid "Threshold Reached"
+msgstr "Seuil atteint"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "To Approve"
 msgstr "À approuver"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "To Approve Budgets"
-msgstr "Budgets à approuver"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Total"
+msgstr "Total"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_unread
-msgid "Unread Messages"
-msgstr "Messages non lus"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_type
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__budget_type
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+msgid "Type"
+msgstr "Type"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_unread_counter
-msgid "Unread Messages Counter"
-msgstr "Compteur de messages non lus"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "Type d'activité d'exception enregistrée."
 
 #. module: om_account_budget
-#: model_terms:ir.actions.act_window,help:om_account_budget.act_crossovered_budget_view
+#: model:ir.module.module,description:base.module_om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
 msgid "Use budgets to compare actual with expected revenues and costs"
 msgstr ""
 "Utilisez les budgets pour comparer les revenus et coûts attendus à la "
 "situation actuelle"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__validate
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__validate
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Validated"
 msgstr "Validé"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__website_message_ids
-msgid "Website Messages"
-msgstr "Messages du site web"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Vendor bills and purchase orders going over a budget always show a warning. "
+"When blocking, only accounting managers can post or confirm them."
+msgstr ""
+"Les factures fournisseurs et bons de commande qui dépassent un budget "
+"affichent toujours un avertissement. En cas de blocage, seuls les "
+"responsables comptables peuvent les comptabiliser ou les confirmer."
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__website_message_ids
-msgid "Website communication history"
-msgstr "Historique de communication du site web"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__warning_level
+msgid "Warning Level"
+msgstr "Niveau d'alerte"
 
 #. module: om_account_budget
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid ""
+"When an expense line of a validated budget goes over its planned amount, its"
+" responsible gets an email besides the To-Do activity."
+msgstr ""
+"Lorsqu'une ligne de charges d'un budget validé dépasse son montant prévu, "
+"son responsable reçoit un e-mail en plus de l'activité À faire."
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
 "You have to enter at least a budgetary position or analytic account on a "
 "budget line."
 msgstr ""
 "Vous devez saisir au moins une position budgétaire ou un compte analytique "
 "sur une ligne budgétaire."
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "e.g. Budget 2026"
+msgstr "par ex. Budget 2026"
+
+#. module: om_account_budget
+#: model:mail.template,subject:om_account_budget.mail_template_budget_exceeded
+msgid "{{ object.name }}: over budget"
+msgstr "{{ object.name }} : dépassement budgétaire"

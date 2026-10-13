@@ -1,0 +1,1261 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, committed "
+"%(committed)s, this document %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s (%(budget)s): 計画 %(planned)s、実績 %(actual)s、引当 %(committed)s、本ドキュメント"
+" %(new)s、予算超過 %(over)s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, this document"
+" %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s (%(budget)s): 計画 %(planned)s、実績 %(actual)s、本ドキュメント %(new)s、予算超過 "
+"%(over)s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid ""
+"%(line)s reached %(percent)s%% of its planned amount (%(practical)s of "
+"%(planned)s)."
+msgstr "%(line)s が計画額の%(percent)s%%に達しました(%(planned)s 中 %(practical)s)。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_move.py:0
+msgid ""
+"%(move)s cannot be posted, it goes over budget:\n"
+"%(lines)s\n"
+"Ask an accounting manager to post it or to raise the budget."
+msgstr ""
+"%(move)s は予算を超過するため記帳できません:\n"
+"%(lines)s\n"
+"会計マネジャーに記帳または予算の引き上げを依頼してください。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "%(user)s was emailed: some lines spent more than planned."
+msgstr "%(user)s にメールを送信しました: 一部の明細が計画を超えて支出しています。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "%s (copy)"
+msgstr "%s (コピー)"
+
+#. module: om_account_budget
+#: model:ir.actions.report,print_report_name:om_account_budget.action_report_budget_vs_actual
+msgid "'Budget vs Actual - %s' % object.name"
+msgstr "'予算実績比較 - %s' % object.name"
+
+#. module: om_account_budget
+#: model:mail.template,body_html:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Hello <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        These lines of the budget <strong t-out=\"object.name or ''\">Budget 2026</strong> spent more than planned:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Review the spending, or revise the planned amounts of the budget.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t> 様\n"
+"        <br/><br/>\n"
+"        予算 <strong t-out=\"object.name or ''\">Budget 2026</strong> の以下の明細が計画を超えて支出しています:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        支出を確認するか、予算の計画額を見直してください。\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_kanban
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+msgstr ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "<span class=\"text-muted\"> of </span>"
+msgstr "<span class=\"text-muted\"> / </span>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Period:</strong>"
+msgstr "<strong>期間:</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Responsible:</strong>"
+msgstr "<strong>担当者:</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Status:</strong>"
+msgstr "<strong>ステータス:</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid ""
+"A budgetary position groups the accounts a budget line follows, such as the "
+"travel or the salary expenses."
+msgstr "予算ポジションは、出張費や給与費用など、予算明細が追跡する勘定科目をグループ化します。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid ""
+"A draft copy of the budget is created, its lines are moved to the new "
+"period."
+msgstr "予算のドラフトコピーが作成され、その明細は新しい期間に移動されます。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__account_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+msgid "Accounts"
+msgstr "勘定科目"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+msgid "Achieved"
+msgstr "達成"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__achievement
+msgid "Achievement"
+msgstr "達成率"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction
+msgid "Action Needed"
+msgstr "要アクション"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__active
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__active
+msgid "Active"
+msgstr "有効"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_ids
+msgid "Activities"
+msgstr "活動"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "例外の活動を示す装飾"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_plans_ids
+msgid "Activity Plans"
+msgstr "活動計画"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_state
+msgid "Activity State"
+msgstr "活動ステータス"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "活動タイプアイコン"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Actual"
+msgstr "実績"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__practical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+msgid "Actual Amount"
+msgstr "実績額"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_practical_amount
+msgid "Actual Expenses"
+msgstr "実績費用"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_practical_amount
+msgid "Actual Revenues"
+msgstr "実績収益"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__achievement
+msgid "Actual amount compared with the theoretical amount."
+msgstr "理論額と比較した実績額。"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid ""
+"Add this analytic account to the lines of a budget to follow its spending "
+"here."
+msgstr "この分析勘定を予算明細に追加すると、ここで支出を追跡できます。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__practical_amount
+msgid "Amount really spent or earned, from the posted journal entries."
+msgstr "記帳済仕訳による実際の支出額または収益額。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__theoretical_amount
+msgid "Amount you are supposed to have spent or earned at this date."
+msgstr "この日付時点で支出または獲得しているはずの金額。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__planned_amount
+msgid "Amount you plan to spend (expense lines) or to earn (revenue lines)."
+msgstr "支出予定額(費用明細)または獲得予定額(収益明細)。"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_analytic_account
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_account_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Analytic Account"
+msgstr "分析勘定"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Approve"
+msgstr "承認"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Archived"
+msgstr "アーカイブ済"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__at_date
+msgid "At a Date"
+msgstr "日付時点"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__is_over_budget
+msgid "At least one expense line spent more than its theoretical amount."
+msgstr "少なくとも1つの費用明細が理論額を超えて支出しています。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_attachment_count
+msgid "Attachment Count"
+msgstr "添付数"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Audit"
+msgstr "監査"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_block_documents
+msgid "Block Documents Over Budget"
+msgstr "予算超過ドキュメントをブロック"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__budget_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Budget"
+msgstr "予算"
+
+#. module: om_account_budget
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_line_analysis
+msgid "Budget Analysis"
+msgstr "予算分析"
+
+#. module: om_account_budget
+#: model:mail.activity.type,name:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Budget Exceeded"
+msgstr "予算超過"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_analytic_account_budget_lines
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+msgid "Budget Items"
+msgstr "予算項目"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_line
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
+msgid "Budget Line"
+msgstr "予算明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__budget_line_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__line_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_graph
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+msgid "Budget Lines"
+msgstr "予算明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Budget Name"
+msgstr "予算名"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_line_analysis
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Budget Report"
+msgstr "予算レポート"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Budget Report: %s"
+msgstr "予算レポート: %s"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_state
+msgid "Budget State"
+msgstr "予算状態"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,field_description:om_account_budget.field_account_move__budget_warning
+msgid "Budget Warning"
+msgstr "予算警告"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid "Budget Warning Threshold"
+msgstr "予算警告しきい値"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,help:om_account_budget.field_account_move__budget_warning
+msgid ""
+"Budget lines this draft vendor bill would push over their planned amount."
+msgstr "このドラフトの仕入先請求書により計画額を超過する予算明細。"
+
+#. module: om_account_budget
+#: model:ir.actions.report,name:om_account_budget.action_report_budget_vs_actual
+msgid "Budget vs Actual"
+msgstr "予算実績比較"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Budget vs Actual:"
+msgstr "予算実績比較:"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Budget warnings"
+msgstr "予算警告"
+
+#. module: om_account_budget
+#: model:mail.template,name:om_account_budget.mail_template_budget_exceeded
+msgid "Budget: lines over budget"
+msgstr "予算: 予算超過明細"
+
+#. module: om_account_budget
+#: model:ir.actions.server,name:om_account_budget.ir_cron_budget_warnings_ir_actions_server
+msgid "Budget: warn the responsibles of over budget lines"
+msgstr "予算: 予算超過明細の担当者に警告"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_position
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__position_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Budgetary Position"
+msgstr "予算ポジション"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_position
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_position
+msgid "Budgetary Positions"
+msgstr "予算ポジション"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget
+msgid "Budgets"
+msgstr "予算"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Cancel Budget"
+msgstr "予算を取消"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__cancel
+msgid "Cancelled"
+msgstr "取消済"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
+msgid "Click to create a new budget."
+msgstr "クリックして新しい予算を作成します。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Committed"
+msgstr "引当"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__company_id
+msgid "Company"
+msgstr "会社"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid ""
+"Compare what was planned with what was achieved, by budget, budgetary "
+"position, analytic account or period."
+msgstr "予算、予算ポジション、分析勘定、または期間別に、計画と実績を比較します。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Confirm"
+msgstr "確定"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__confirm
+msgid "Confirmed"
+msgstr "確定済"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid "Copy"
+msgstr "コピー"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_copy
+msgid "Copy a Budget to Another Period"
+msgstr "予算を別の期間にコピー"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Copy to Next Period"
+msgstr "次の期間にコピー"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid "Create a budgetary position"
+msgstr "予算ポジションを作成"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_uid
+msgid "Created by"
+msgstr "作成者"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_date
+msgid "Created on"
+msgstr "作成日"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__currency_id
+msgid "Currency"
+msgstr "通貨"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Discard"
+msgstr "破棄"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__display_name
+msgid "Display Name"
+msgstr "表示名"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__done
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Done"
+msgstr "完了"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__draft
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Draft"
+msgstr "ドラフト"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid ""
+"Each line covering several periods is replaced by one line per period, its planned amount\n"
+"                    shared according to the days of each period."
+msgstr ""
+"複数の期間にわたる明細は期間ごとに1つの明細に置き換えられ、計画額は\n"
+"                    各期間の日数に応じて按分されます。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid "Email the Budget Responsible"
+msgstr "予算担当者にメール送信"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Email the responsible when a budget is exceeded"
+msgstr "予算超過時に担当者にメール送信"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_to
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+msgid "End Date"
+msgstr "終了日"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__exceeded
+msgid "Exceeded"
+msgstr "超過"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__distribution
+msgid "Expected"
+msgstr "予定"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Expected to Date"
+msgstr "現時点の予定"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__expense
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__expense
+msgid "Expense"
+msgstr "費用"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__is_over_budget
+msgid "Expense line which spent more than its theoretical amount."
+msgstr "理論額を超えて支出した費用明細。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__budget_type
+msgid ""
+"Expense lines plan costs, revenue lines plan incomes. Planned amounts are "
+"always positive."
+msgstr "費用明細はコストを、収益明細は収入を計画します。計画額は常に正の値です。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_position__budget_type
+msgid ""
+"Expense: the planned amounts are costs, spending more than planned is over budget.\n"
+"Revenue: the planned amounts are incomes, earning more than planned is above budget."
+msgstr ""
+"費用: 計画額はコストであり、計画を超える支出は予算超過です。\n"
+"収益: 計画額は収入であり、計画を超える収入は予算を上回ります。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Expenses"
+msgstr "費用"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_achievement
+msgid "Expenses Achievement"
+msgstr "費用達成率"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_follower_ids
+msgid "Followers"
+msgstr "フォロワー"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "フォロワー (取引先)"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__has_message
+msgid "Has Message"
+msgstr "メッセージあり"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_chart_template__id
+msgid "ID"
+msgstr "ID"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon"
+msgstr "アイコン"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "例外活動を示すアイコン"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "チェックした場合は、新しいメッセージに注意が必要です。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "有効にすると、一部のメッセージに配信エラーが発生します。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_above_budget
+msgid "Is Above Budget"
+msgstr "予算を上回る"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_is_follower
+msgid "Is Follower"
+msgstr "フォロー中"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_uid
+msgid "Last Updated by"
+msgstr "最終更新者"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_date
+msgid "Last Updated on"
+msgstr "最終更新日"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_split__line_ids
+msgid "Leave empty to split every line of the budget."
+msgstr "予算のすべての明細を分割する場合は空欄のままにしてください。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Line"
+msgstr "ライン"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__line_ids
+msgid "Lines to Split"
+msgstr "分割する明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr "Material Symbols のアイコン (例：checklist)"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error
+msgid "Message Delivery error"
+msgstr "メッセージ配信エラー"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_ids
+msgid "Messages"
+msgstr "メッセージ"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__1
+msgid "Monthly"
+msgstr "月次"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "活動期限"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "My Budgets"
+msgstr "自分の予算"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__name
+msgid "Name"
+msgstr "名称"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__name
+msgid "New Budget Name"
+msgstr "新しい予算名"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "次の活動期限"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_summary
+msgid "Next Activity Summary"
+msgstr "次の活動概要"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_id
+msgid "Next Activity Type"
+msgstr "次の活動タイプ"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid "No budget line for this analytic account"
+msgstr "この分析勘定の予算明細はありません"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid "No budget line yet"
+msgstr "予算明細はまだありません"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__none
+msgid "None"
+msgstr "なし"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+msgid "Not Cancelled"
+msgstr "取消以外"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Notify the responsible of a validated budget when an expense line reaches "
+"this share of its planned amount. Going over it also assigns a To-Do "
+"activity."
+msgstr "検証済予算の費用明細が計画額のこの割合に達したときに担当者に通知します。超過した場合はTo Do活動も割り当てられます。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction_counter
+msgid "Number of Actions"
+msgstr "アクション数"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error_counter
+msgid "Number of errors"
+msgstr "エラー数"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "対応が必要なメッセージ数"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "配信エラーが発生されたメッセージ数"
+
+#. module: om_account_budget
+#: model:ir.module.module,shortdesc:base.module_om_account_budget
+#: model:ir.module.module,summary:base.module_om_account_budget
+msgid "Odoo 20 Budget Management"
+msgstr "Odoo 20 予算管理"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Only accounting managers can approve, close or cancel budgets."
+msgstr "予算の承認、クローズ、取消ができるのは会計マネジャーのみです。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_block_documents
+msgid ""
+"Only the accounting managers can post the vendor bills (and confirm the "
+"purchase orders) going over the planned amount of a budget line; the other "
+"users see a warning."
+msgstr ""
+"予算明細の計画額を超える仕入先請求書の記帳(および購買オーダの確定)ができるのは会計マネジャーのみです。その他のユーザには警告が表示されます。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_split.py:0
+msgid "Only the lines of draft budgets can be split."
+msgstr "分割できるのはドラフト予算の明細のみです。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Operation not supported."
+msgstr "操作はサポートされていません。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__is_over_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_over_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Over Budget"
+msgstr "予算超過"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over budget: %s"
+msgstr "予算超過: %s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over by"
+msgstr "超過額"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__period
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Period"
+msgstr "期間"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_plan_id
+msgid "Plan"
+msgstr "計画"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Planned"
+msgstr "予定済"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+msgid "Planned Amount"
+msgstr "計画額"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_date
+msgid "Planned Date"
+msgstr "計画日"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_planned_amount
+msgid "Planned Expenses"
+msgstr "計画費用"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_planned_amount
+msgid "Planned Revenues"
+msgstr "計画収益"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__3
+msgid "Quarterly"
+msgstr "四半期"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Reset the budget \"%s\" to draft to change it."
+msgstr "予算「%s」を変更するにはドラフトに戻してください。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Reset the budget \"%s\" to draft to change its lines."
+msgstr "予算「%s」の明細を変更するにはドラフトに戻してください。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Reset to Draft"
+msgstr "ドラフトに戻す"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__user_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Responsible"
+msgstr "担当者"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_user_id
+msgid "Responsible User"
+msgstr "担当ユーザ"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__revenue
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__revenue
+msgid "Revenue"
+msgstr "収益"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Revenues"
+msgstr "収益"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_achievement
+msgid "Revenues Achievement"
+msgstr "収益達成率"
+
+#. module: om_account_budget
+#: model:mail.activity.type,summary:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Review the lines over budget"
+msgstr "予算超過明細を確認"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "SMS配信エラー"
+
+#. module: om_account_budget
+#: model:mail.template,description:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"Sent to the responsible of a validated budget when expense lines go over "
+"their planned amount"
+msgstr "検証済予算の費用明細が計画額を超えたときに担当者に送信されます"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__sequence
+msgid "Sequence"
+msgstr "シーケンス"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Set a planned date within the period of the line \"%s\"."
+msgstr "明細「%s」の期間内で計画日を設定してください。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Some lines spent more than planned."
+msgstr "一部の明細が計画を超えて支出しています。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Spent"
+msgstr "支出"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split"
+msgstr "分割"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_split
+msgid "Split Budget Lines by Period"
+msgstr "予算明細を期間別に分割"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split Lines by Period"
+msgstr "明細を期間別に分割"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Split by Period"
+msgstr "期間別に分割"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__spread
+msgid "Spread Evenly"
+msgstr "均等配分"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__distribution
+msgid ""
+"Spread Evenly: the amount is expected little by little over the period.\n"
+"At a Date: the whole amount is expected on the planned date, e.g. a yearly fee."
+msgstr ""
+"均等配分: 金額は期間を通じて少しずつ発生する見込みです。\n"
+"日付時点: 金額全体が計画日に発生する見込みです(例: 年会費)。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_from
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Start Date"
+msgstr "開始日"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__state
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Status"
+msgstr "ステータス"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"活動に基づくステータス\n"
+"遅延: 期限が既に過ぎています\n"
+"今日: 活動日は今日です\n"
+"予定: 今後の活動です"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__warning_level
+msgid "Technical field: last warning sent to the responsible of the budget."
+msgstr "技術フィールド: 予算担当者に最後に送信された警告。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "The budget \"%s\" must start before it ends."
+msgstr "予算「%s」の開始日は終了日より前である必要があります。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_position.py:0
+msgid "The budgetary position \"%s\" must have at least one account."
+msgstr "予算ポジション「%s」には少なくとも1つの勘定科目が必要です。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "The line \"%s\" must start before it ends."
+msgstr "明細「%s」の開始日は終了日より前である必要があります。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The lines \"%(line)s\" and \"%(other)s\" overlap: the same entries would be "
+"counted twice."
+msgstr "明細「%(line)s」と「%(other)s」が重複しています: 同じ仕訳が二重に計上されます。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "The new budget must start before it ends."
+msgstr "新しい予算の開始日は終了日より前である必要があります。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The period of the line \"%s\" must be included in the period of the budget."
+msgstr "明細「%s」の期間は予算の期間内に含まれる必要があります。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The planned amount of \"%s\" must be positive: choose whether the line is an"
+" expense or a revenue."
+msgstr "「%s」の計画額は正の値である必要があります: 明細が費用か収益かを選択してください。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid ""
+"The responsible of a budget is warned when an expense line reaches this "
+"percentage of its planned amount, and again when it goes over it."
+msgstr "費用明細が計画額のこの割合に達したとき、および超過したときに、予算の担当者に警告されます。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Theoretical"
+msgstr "理論値"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__theoretical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+msgid "Theoretical Amount"
+msgstr "理論額"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_theoretical_amount
+msgid "Theoretical Expenses"
+msgstr "理論費用"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_theoretical_amount
+msgid "Theoretical Revenues"
+msgstr "理論収益"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "These lines spent more than planned:"
+msgstr "以下の明細が計画を超えて支出しています:"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "This budget has no line."
+msgstr "この予算には明細がありません。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "This document goes over budget"
+msgstr "このドキュメントは予算を超過します"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__threshold
+msgid "Threshold Reached"
+msgstr "しきい値到達"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "To Approve"
+msgstr "承認待ち"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Total"
+msgstr "合計"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_type
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__budget_type
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+msgid "Type"
+msgstr "タイプ"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "レコード上の例外の活動タイプ。"
+
+#. module: om_account_budget
+#: model:ir.module.module,description:base.module_om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
+msgid "Use budgets to compare actual with expected revenues and costs"
+msgstr "予算を使って、見込収益及び費用を実績と比較"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__validate
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Validated"
+msgstr "検証済"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Vendor bills and purchase orders going over a budget always show a warning. "
+"When blocking, only accounting managers can post or confirm them."
+msgstr "予算を超過する仕入先請求書と購買オーダには常に警告が表示されます。ブロックする場合、記帳または確定できるのは会計マネジャーのみです。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__warning_level
+msgid "Warning Level"
+msgstr "警告レベル"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid ""
+"When an expense line of a validated budget goes over its planned amount, its"
+" responsible gets an email besides the To-Do activity."
+msgstr "検証済予算の費用明細が計画額を超えると、担当者はTo Do活動に加えてメールを受け取ります。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"You have to enter at least a budgetary position or analytic account on a "
+"budget line."
+msgstr "予算明細には少なくとも予算ポジションまたは分析勘定を入力してください。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "e.g. Budget 2026"
+msgstr "例: 2026年度予算"
+
+#. module: om_account_budget
+#: model:mail.template,subject:om_account_budget.mail_template_budget_exceeded
+msgid "{{ object.name }}: over budget"
+msgstr "{{ object.name }}: 予算超過"

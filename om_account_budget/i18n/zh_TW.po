@@ -1,496 +1,1259 @@
-# Translation of Odoo Server.
-# This file contains the translation of the following modules:
-# 	* om_account_budget
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0-20231105\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-11-23 21:30+0000\n"
-"PO-Revision-Date: 2023-11-24 06:16+0800\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Poedit 3.4.1\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
 
 #. module: om_account_budget
 #. odoo-python
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
+#: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
-"\"End Date\" of the budget line should be included in the Period of the "
-"budget"
-msgstr "預算項目的「結束日期」應包含在預算期間"
-
-#. module: om_account_budget
-#. odoo-python
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
-msgid ""
-"\"Start Date\" of the budget line should be included in the Period of the "
-"budget"
-msgstr "預算項目的「開始日期」應包含在預算期間"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_kanban
-msgid ""
-"<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Period\" "
-"title=\"Period\"/>"
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, committed "
+"%(committed)s, this document %(new)s, %(over)s over budget"
 msgstr ""
-"<i class=\"fa fa-clock-o\" role=\"img\" aria-label=\"Period\" "
-"title=\"Period\"/>"
+"%(line)s（%(budget)s）：計劃 %(planned)s，實際 %(actual)s，已承諾 %(committed)s，本文件 "
+"%(new)s，超出預算 %(over)s"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__account_ids
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_form
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"%(line)s (%(budget)s): planned %(planned)s, actual %(actual)s, this document"
+" %(new)s, %(over)s over budget"
+msgstr ""
+"%(line)s（%(budget)s）：計劃 %(planned)s，實際 %(actual)s，本文件 %(new)s，超出預算 %(over)s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid ""
+"%(line)s reached %(percent)s%% of its planned amount (%(practical)s of "
+"%(planned)s)."
+msgstr "%(line)s 已達計劃金額的 %(percent)s%%（%(practical)s / %(planned)s）。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_move.py:0
+msgid ""
+"%(move)s cannot be posted, it goes over budget:\n"
+"%(lines)s\n"
+"Ask an accounting manager to post it or to raise the budget."
+msgstr ""
+"%(move)s 無法過賬，因為它超出預算：\n"
+"%(lines)s\n"
+"請會計經理將其過賬或提高預算。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "%(user)s was emailed: some lines spent more than planned."
+msgstr "已向 %(user)s 發送電郵：部分明細的支出超出計劃。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "%s (copy)"
+msgstr "%s (副本)"
+
+#. module: om_account_budget
+#: model:ir.actions.report,print_report_name:om_account_budget.action_report_budget_vs_actual
+msgid "'Budget vs Actual - %s' % object.name"
+msgstr "'預算與實際比較 - %s' % object.name"
+
+#. module: om_account_budget
+#: model:mail.template,body_html:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        Hello <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>,\n"
+"        <br/><br/>\n"
+"        These lines of the budget <strong t-out=\"object.name or ''\">Budget 2026</strong> spent more than planned:\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        Review the spending, or revise the planned amounts of the budget.\n"
+"    </p>\n"
+"</div>\n"
+"            "
+msgstr ""
+"<div style=\"margin: 0px; padding: 0px;\">\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        您好 <t t-out=\"object._get_budget_alert_user().name or ''\">Marc Demo</t>，\n"
+"        <br/><br/>\n"
+"        預算 <strong t-out=\"object.name or ''\">Budget 2026</strong> 中以下明細的支出超出計劃：\n"
+"    </p>\n"
+"    <t t-out=\"object._get_budget_exceeded_table()\"/>\n"
+"    <p style=\"margin: 0px; padding: 0px; font-size: 13px;\">\n"
+"        <br/>\n"
+"        請檢查支出，或修訂預算的計劃金額。\n"
+"    </p>\n"
+"</div>\n"
+"            "
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_kanban
+msgid ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+msgstr ""
+"<i class=\"oi me-1\" data-icon=\"schedule\" role=\"img\" aria-"
+"label=\"Period\" title=\"Period\"/>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "<span class=\"text-muted\"> of </span>"
+msgstr "<span class=\"text-muted\"> / </span>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Period:</strong>"
+msgstr "<strong>期間：</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Responsible:</strong>"
+msgstr "<strong>負責人：</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "<strong>Status:</strong>"
+msgstr "<strong>狀態：</strong>"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid ""
+"A budgetary position groups the accounts a budget line follows, such as the "
+"travel or the salary expenses."
+msgstr "預算科目將預算明細所追蹤的帳戶歸為一組，例如差旅費用或薪資費用。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid ""
+"A draft copy of the budget is created, its lines are moved to the new "
+"period."
+msgstr "系統會建立預算的草稿副本，並將其明細移至新期間。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__account_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
 msgid "Accounts"
 msgstr "會計帳戶"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__percentage
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+msgid "Achieved"
+msgstr "達成"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__achievement
 msgid "Achievement"
 msgstr "達成"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_needaction
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction
 msgid "Action Needed"
 msgstr "需採取行動"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__practical_amount
-msgid "Amount really earned/spent."
-msgstr "實際賺取/花費的金額。"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__active
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__active
+msgid "Active"
+msgstr "啟用"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__theoritical_amount
-msgid "Amount you are supposed to have earned/spent at this date."
-msgstr "您在該日期應賺取/支出的金額。"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_ids
+msgid "Activities"
+msgstr "活動"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__planned_amount
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr "活動異常圖示"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_plans_ids
+msgid "Activity Plans"
+msgstr "活動計劃"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_state
+msgid "Activity State"
+msgstr "活動狀態"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_icon
+msgid "Activity Type Icon"
+msgstr "活動類型圖示"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Actual"
+msgstr "實際"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__practical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+msgid "Actual Amount"
+msgstr "實際金額"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_practical_amount
+msgid "Actual Expenses"
+msgstr "實際費用"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_practical_amount
+msgid "Actual Revenues"
+msgstr "實際收入"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__achievement
+msgid "Actual amount compared with the theoretical amount."
+msgstr "實際金額與理論金額的比較。"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
 msgid ""
-"Amount you plan to earn/spend. Record a positive amount if it is a revenue "
-"and a negative amount if it is a cost."
-msgstr ""
-"您計劃賺取/支出的金額。如果是收入，則記錄正數；如果是成本，則記錄負數。"
+"Add this analytic account to the lines of a budget to follow its spending "
+"here."
+msgstr "將此分析帳戶加入預算明細，即可在此追蹤其支出。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__practical_amount
+msgid "Amount really spent or earned, from the posted journal entries."
+msgstr "實際支出或賺取的金額，取自已過賬的日記賬記項。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__theoretical_amount
+msgid "Amount you are supposed to have spent or earned at this date."
+msgstr "截至此日期理應支出或賺取的金額。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__planned_amount
+msgid "Amount you plan to spend (expense lines) or to earn (revenue lines)."
+msgstr "您計劃支出（費用明細）或賺取（收入明細）的金額。"
 
 #. module: om_account_budget
 #: model:ir.model,name:om_account_budget.model_account_analytic_account
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__analytic_account_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_account_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Analytic Account"
 msgstr "分析科目"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__analytic_plan_id
-msgid "Analytic Plan"
-msgstr "分析計劃"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Approve"
 msgstr "批准"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_attachment_count
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Archived"
+msgstr "已封存"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__at_date
+msgid "At a Date"
+msgstr "於指定日期"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__is_over_budget
+msgid "At least one expense line spent more than its theoretical amount."
+msgstr "至少有一筆費用明細的支出超出其理論金額。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_attachment_count
 msgid "Attachment Count"
 msgstr "附件數"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_crossovered_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__crossovered_budget_id
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_tree
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Audit"
+msgstr "稽核"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_block_documents
+msgid "Block Documents Over Budget"
+msgstr "阻擋超出預算的文件"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__budget_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budget"
 msgstr "預算"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_account_analytic_account_cb_lines
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_line_analysis
+msgid "Budget Analysis"
+msgstr "預算分析"
+
+#. module: om_account_budget
+#: model:mail.activity.type,name:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Budget Exceeded"
+msgstr "超出預算"
+
+#. module: om_account_budget
+#: model:ir.actions.act_window,name:om_account_budget.action_analytic_account_budget_lines
 #: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
 msgid "Budget Items"
 msgstr "預算項目"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_crossovered_budget_lines
+#: model:ir.model,name:om_account_budget.model_account_budget_line
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
 msgid "Budget Line"
 msgstr "預算明細"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__crossovered_budget_line
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__crossovered_budget_line
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_tree
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__budget_line_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__line_ids
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_graph
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_pivot
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 msgid "Budget Lines"
 msgstr "預算明細"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__name
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Budget Name"
 msgstr "預算名稱"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__crossovered_budget_state
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_line_analysis
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Budget Report"
+msgstr "預算報表"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Budget Report: %s"
+msgstr "預算報表：%s"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_state
 msgid "Budget State"
 msgstr "預算國家"
 
 #. module: om_account_budget
-#: model:ir.model,name:om_account_budget.model_account_budget_post
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__general_budget_id
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_search
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_budget_post_tree
+#: model:ir.model.fields,field_description:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,field_description:om_account_budget.field_account_move__budget_warning
+msgid "Budget Warning"
+msgstr "預算警告"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid "Budget Warning Threshold"
+msgstr "預算警告門檻"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_bank_statement_line__budget_warning
+#: model:ir.model.fields,help:om_account_budget.field_account_move__budget_warning
+msgid ""
+"Budget lines this draft vendor bill would push over their planned amount."
+msgstr "此草稿供應商帳單會使其超出計劃金額的預算明細。"
+
+#. module: om_account_budget
+#: model:ir.actions.report,name:om_account_budget.action_report_budget_vs_actual
+msgid "Budget vs Actual"
+msgstr "預算與實際比較"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Budget vs Actual:"
+msgstr "預算與實際比較："
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Budget warnings"
+msgstr "預算警告"
+
+#. module: om_account_budget
+#: model:mail.template,name:om_account_budget.mail_template_budget_exceeded
+msgid "Budget: lines over budget"
+msgstr "預算：超出預算的明細"
+
+#. module: om_account_budget
+#: model:ir.actions.server,name:om_account_budget.ir_cron_budget_warnings_ir_actions_server
+msgid "Budget: warn the responsibles of over budget lines"
+msgstr "預算：警告超出預算明細的負責人"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_position
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__position_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Budgetary Position"
 msgstr "預算狀況"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.open_budget_post_form
-#: model:ir.ui.menu,name:om_account_budget.menu_budget_post_form
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget_position
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget_position
 msgid "Budgetary Positions"
 msgstr "預算項目"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_crossovered_budget_view
-#: model:ir.ui.menu,name:om_account_budget.menu_act_crossovered_budget_view
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
+#: model:ir.actions.act_window,name:om_account_budget.action_account_budget
+#: model:ir.ui.menu,name:om_account_budget.menu_account_budget
 msgid "Budgets"
 msgstr "預算"
 
 #. module: om_account_budget
-#: model:ir.actions.act_window,name:om_account_budget.act_crossovered_budget_lines_view
-#: model:ir.ui.menu,name:om_account_budget.menu_act_crossovered_budget_lines_view
-msgid "Budgets Analysis"
-msgstr "預算分析"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Cancel Budget"
 msgstr "取消預算"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__cancel
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__cancel
 msgid "Cancelled"
 msgstr "已取消"
 
 #. module: om_account_budget
-#: model_terms:ir.actions.act_window,help:om_account_budget.act_crossovered_budget_view
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
 msgid "Click to create a new budget."
 msgstr "點選以建立新預算。"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__company_id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__company_id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__company_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Committed"
+msgstr "已承諾"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__company_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__company_id
 msgid "Company"
 msgstr "公司"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget_lines__percentage
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
 msgid ""
-"Comparison between practical and theoretical amount. This measure tells you "
-"if you are below or over budget."
-msgstr "實際金額與理論金額的比較。此指標可以告訴您是否低於或超過預算。"
+"Compare what was planned with what was achieved, by budget, budgetary "
+"position, analytic account or period."
+msgstr "按預算、預算科目、分析帳戶或期間，比較計劃與實際達成的數字。"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Confirm"
 msgstr "確認"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__confirm
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__confirm
 msgid "Confirmed"
 msgstr "已確認"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__create_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__create_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__create_uid
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+msgid "Copy"
+msgstr "複製"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_copy
+msgid "Copy a Budget to Another Period"
+msgstr "將預算複製到另一期間"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Copy to Next Period"
+msgstr "複製到下一期間"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_position
+msgid "Create a budgetary position"
+msgstr "建立預算科目"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_uid
 msgid "Created by"
 msgstr "建立者"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__create_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__create_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__create_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__create_date
 msgid "Created on"
 msgstr "建立於"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__currency_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__currency_id
 msgid "Currency"
 msgstr "幣別"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__display_name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__display_name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__display_name
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Discard"
+msgstr "捨棄"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__display_name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__display_name
 msgid "Display Name"
 msgstr "顯示名稱"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__done
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__done
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Done"
 msgstr "完成"
 
 #. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__draft
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__draft
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Draft"
 msgstr "草稿"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "Draft Budgets"
-msgstr "預算草案"
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid ""
+"Each line covering several periods is replaced by one line per period, its planned amount\n"
+"                    shared according to the days of each period."
+msgstr ""
+"每筆涵蓋多個期間的明細會被替換為每個期間各一筆明細，其計劃金額\n"
+"                    按各期間的天數分攤。"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__date_to
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,field_description:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid "Email the Budget Responsible"
+msgstr "電郵通知預算負責人"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid "Email the responsible when a budget is exceeded"
+msgstr "預算超出時電郵通知負責人"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_to
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_to
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
 msgid "End Date"
 msgstr "結束日期"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-msgid "Entries..."
-msgstr "細項"
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__exceeded
+msgid "Exceeded"
+msgstr "已超出"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_follower_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__distribution
+msgid "Expected"
+msgstr "預期"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Expected to Date"
+msgstr "截至目前預期"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__expense
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__expense
+msgid "Expense"
+msgstr "開支"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__is_over_budget
+msgid "Expense line which spent more than its theoretical amount."
+msgstr "支出超出其理論金額的費用明細。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__budget_type
+msgid ""
+"Expense lines plan costs, revenue lines plan incomes. Planned amounts are "
+"always positive."
+msgstr "費用明細計劃成本，收入明細計劃收入。計劃金額一律為正數。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_position__budget_type
+msgid ""
+"Expense: the planned amounts are costs, spending more than planned is over budget.\n"
+"Revenue: the planned amounts are incomes, earning more than planned is above budget."
+msgstr ""
+"費用：計劃金額為成本，支出超出計劃即超出預算。\n"
+"收入：計劃金額為收入，賺取超出計劃即高於預算。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Expenses"
+msgstr "開支"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_achievement
+msgid "Expenses Achievement"
+msgstr "費用達成率"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_follower_ids
 msgid "Followers"
 msgstr "關注者"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_partner_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_partner_ids
 msgid "Followers (Partners)"
 msgstr "訂閱者(合作夥伴)"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
-msgid "Group By"
-msgstr "分組按"
-
-#. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__has_message
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__has_message
 msgid "Has Message"
 msgstr "有訊息"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__id
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_analytic_account__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_chart_template__id
 msgid "ID"
 msgstr "ID"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_needaction
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon"
+msgstr "圖示"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr "用於指示異常活動的圖示。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction
 msgid "If checked, new messages require your attention."
 msgstr "勾選代表有新訊息需要您留意."
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_error
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_sms_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_sms_error
 msgid "If checked, some messages have a delivery error."
 msgstr "勾選代表有訊息發生傳送錯誤."
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__is_above_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_above_budget
 msgid "Is Above Budget"
 msgstr "超出預算"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_is_follower
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_is_follower
 msgid "Is Follower"
 msgstr "是訂閱者"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__write_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__write_uid
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_uid
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_uid
 msgid "Last Updated by"
 msgstr "最後更新人"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__write_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__write_date
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__write_date
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__write_date
 msgid "Last Updated on"
 msgstr "最後更新時間"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_error
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_split__line_ids
+msgid "Leave empty to split every line of the budget."
+msgstr "留空以拆分預算的所有明細。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Line"
+msgstr "明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__line_ids
+msgid "Lines to Split"
+msgstr "要拆分的明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr "Material Symbols 圖示，例如：checklist"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error
 msgid "Message Delivery error"
 msgstr "訊息遞送錯誤"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_ids
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_ids
 msgid "Messages"
 msgstr "訊息"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_post__name
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__name
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__1
+msgid "Monthly"
+msgstr "每月"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr "我的活動截止時間"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "My Budgets"
+msgstr "我的預算"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__name
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__name
 msgid "Name"
 msgstr "名稱"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_search
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__name
+msgid "New Budget Name"
+msgstr "新預算名稱"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr "下一活動截止日期"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_summary
+msgid "Next Activity Summary"
+msgstr "下一活動摘要"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_type_id
+msgid "Next Activity Type"
+msgstr "下一活動類型"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_analytic_account_budget_lines
+msgid "No budget line for this analytic account"
+msgstr "此分析帳戶沒有預算明細"
+
+#. module: om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget_line_analysis
+msgid "No budget line yet"
+msgstr "尚無預算明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__none
+msgid "None"
+msgstr "無"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
 msgid "Not Cancelled"
 msgstr "未取消"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_needaction_counter
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Notify the responsible of a validated budget when an expense line reaches "
+"this share of its planned amount. Going over it also assigns a To-Do "
+"activity."
+msgstr "當費用明細達到其計劃金額的此比例時，通知已驗證預算的負責人。超出時還會指派一項待辦事項活動。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_needaction_counter
 msgid "Number of Actions"
 msgstr "動作數"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_error_counter
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_error_counter
 msgid "Number of errors"
 msgstr "錯誤數"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_needaction_counter
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_needaction_counter
 msgid "Number of messages requiring action"
 msgstr "需要執行操作的訊息數量"
 
 #. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__message_has_error_counter
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__message_has_error_counter
 msgid "Number of messages with delivery error"
 msgstr "有發送錯誤的郵件數"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__paid_date
-msgid "Paid Date"
-msgstr "付款日期"
+#: model:ir.module.module,shortdesc:base.module_om_account_budget
+#: model:ir.module.module,summary:base.module_om_account_budget
+msgid "Odoo 20 Budget Management"
+msgstr "Odoo 20 預算管理"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Only accounting managers can approve, close or cancel budgets."
+msgstr "只有會計經理才能核准、結束或取消預算。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_block_documents
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_block_documents
+msgid ""
+"Only the accounting managers can post the vendor bills (and confirm the "
+"purchase orders) going over the planned amount of a budget line; the other "
+"users see a warning."
+msgstr "只有會計經理才能過賬超出預算明細計劃金額的供應商帳單（及確認採購訂單）；其他使用者會看到警告。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_split.py:0
+msgid "Only the lines of draft budgets can be split."
+msgstr "只能拆分草稿預算的明細。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Operation not supported."
+msgstr "不支援該操作。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__is_over_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__is_over_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Over Budget"
+msgstr "超出預算"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over budget: %s"
+msgstr "超出預算：%s"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Over by"
+msgstr "超出"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_split__period
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_copy_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Period"
 msgstr "會計期間"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__planned_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__analytic_plan_id
+msgid "Plan"
+msgstr "計劃"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Planned"
+msgstr "已安排"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Planned Amount"
 msgstr "計劃金額"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Planned amount"
-msgstr "計劃金額"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__planned_date
+msgid "Planned Date"
+msgstr "計劃日期"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__practical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
-msgid "Practical Amount"
-msgstr "實際金額"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_planned_amount
+msgid "Planned Expenses"
+msgstr "計劃費用"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Practical amount"
-msgstr "實際數量"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_planned_amount
+msgid "Planned Revenues"
+msgstr "計劃收入"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__rating_ids
-msgid "Ratings"
-msgstr "評分"
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_split__period__3
+msgid "Quarterly"
+msgstr "每季"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Reset the budget \"%s\" to draft to change it."
+msgstr "請將預算「%s」重設為草稿以進行變更。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Reset the budget \"%s\" to draft to change its lines."
+msgstr "請將預算「%s」重設為草稿以變更其明細。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
 msgid "Reset to Draft"
 msgstr "重設為草稿"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__user_id
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__user_id
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Responsible"
 msgstr "負責人"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__message_has_sms_error
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__activity_user_id
+msgid "Responsible User"
+msgstr "責任使用者"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__budget_type__revenue
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_position__budget_type__revenue
+msgid "Revenue"
+msgstr "收入"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_position_search
+msgid "Revenues"
+msgstr "收入"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_achievement
+msgid "Revenues Achievement"
+msgstr "收入達成率"
+
+#. module: om_account_budget
+#: model:mail.activity.type,summary:om_account_budget.mail_activity_type_budget_exceeded
+msgid "Review the lines over budget"
+msgstr "檢查超出預算的明細"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr "簡訊發送錯誤"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__date_from
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__date_from
+#: model:mail.template,description:om_account_budget.mail_template_budget_exceeded
+msgid ""
+"Sent to the responsible of a validated budget when expense lines go over "
+"their planned amount"
+msgstr "當費用明細超出其計劃金額時，發送給已驗證預算的負責人"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__sequence
+msgid "Sequence"
+msgstr "序列號"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "Set a planned date within the period of the line \"%s\"."
+msgstr "請在明細「%s」的期間內設定計劃日期。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Some lines spent more than planned."
+msgstr "部分明細的支出超出計劃。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "Spent"
+msgstr "已支出"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split"
+msgstr "拆分"
+
+#. module: om_account_budget
+#: model:ir.model,name:om_account_budget.model_account_budget_split
+msgid "Split Budget Lines by Period"
+msgstr "按期間拆分預算明細"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_split_form
+msgid "Split Lines by Period"
+msgstr "按期間拆分明細"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Split by Period"
+msgstr "按期間拆分"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__distribution__spread
+msgid "Spread Evenly"
+msgstr "平均分攤"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__distribution
+msgid ""
+"Spread Evenly: the amount is expected little by little over the period.\n"
+"At a Date: the whole amount is expected on the planned date, e.g. a yearly fee."
+msgstr ""
+"平均分攤：金額在期間內逐步預期發生。\n"
+"於指定日期：全部金額預期在計劃日期發生，例如年費。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_copy__date_from
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__date_from
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_list
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Start Date"
 msgstr "開始日期"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__state
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__state
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
 msgid "Status"
 msgstr "狀態"
 
 #. module: om_account_budget
-#. odoo-python
-#: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
-msgid "The budget must have at least one account."
-msgstr "預算必須至少有一個帳戶。"
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+"根據活動的狀態 \n"
+" 逾期：已經超過截止日期 \n"
+" 現今：活動日期是當天 \n"
+" 計劃：未來活動。"
 
 #. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget_lines__theoritical_amount
-#: model_terms:ir.ui.view,arch_db:om_account_budget.crossovered_budget_view_form
+#: model:ir.model.fields,help:om_account_budget.field_account_budget_line__warning_level
+msgid "Technical field: last warning sent to the responsible of the budget."
+msgstr "技術欄位：最近一次發送給預算負責人的警告。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget.py:0
+msgid "The budget \"%s\" must start before it ends."
+msgstr "預算「%s」的開始日期必須早於結束日期。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_position.py:0
+msgid "The budgetary position \"%s\" must have at least one account."
+msgstr "預算科目「%s」必須至少有一個帳戶。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "The line \"%s\" must start before it ends."
+msgstr "明細「%s」的開始日期必須早於結束日期。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The lines \"%(line)s\" and \"%(other)s\" overlap: the same entries would be "
+"counted twice."
+msgstr "明細「%(line)s」與「%(other)s」重疊：相同的分錄會被重複計算。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/wizard/account_budget_copy.py:0
+msgid "The new budget must start before it ends."
+msgstr "新預算的開始日期必須早於結束日期。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The period of the line \"%s\" must be included in the period of the budget."
+msgstr "明細「%s」的期間必須包含在預算的期間內。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid ""
+"The planned amount of \"%s\" must be positive: choose whether the line is an"
+" expense or a revenue."
+msgstr "「%s」的計劃金額必須為正數：請選擇該明細為費用或收入。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_warning_threshold
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_warning_threshold
+msgid ""
+"The responsible of a budget is warned when an expense line reaches this "
+"percentage of its planned amount, and again when it goes over it."
+msgstr "當費用明細達到其計劃金額的此百分比時，以及超出時，都會警告預算負責人。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "Theoretical"
+msgstr "理論"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__theoretical_amount
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_list
 msgid "Theoretical Amount"
 msgstr "理論金額"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_analytic_account_form_inherit_budget
-msgid "Theoritical Amount"
-msgstr "理論金額"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__expense_theoretical_amount
+msgid "Theoretical Expenses"
+msgstr "理論費用"
 
 #. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_graph
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_line_pivot
-msgid "Theoritical amount"
-msgstr "理論金額"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "To Approve"
-msgstr "待批准"
-
-#. module: om_account_budget
-#: model_terms:ir.ui.view,arch_db:om_account_budget.view_crossovered_budget_search
-msgid "To Approve Budgets"
-msgstr "待批准預算"
-
-#. module: om_account_budget
-#: model_terms:ir.actions.act_window,help:om_account_budget.act_crossovered_budget_view
-msgid "Use budgets to compare actual with expected revenues and costs"
-msgstr "使用預算來比較實際與預期的收入和成本"
-
-#. module: om_account_budget
-#: model:ir.model.fields.selection,name:om_account_budget.selection__crossovered_budget__state__validate
-msgid "Validated"
-msgstr "已驗證"
-
-#. module: om_account_budget
-#: model:ir.model.fields,field_description:om_account_budget.field_crossovered_budget__website_message_ids
-msgid "Website Messages"
-msgstr "網站訊息"
-
-#. module: om_account_budget
-#: model:ir.model.fields,help:om_account_budget.field_crossovered_budget__website_message_ids
-msgid "Website communication history"
-msgstr "網站溝通記錄"
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget__revenue_theoretical_amount
+msgid "Theoretical Revenues"
+msgstr "理論收入"
 
 #. module: om_account_budget
 #. odoo-python
 #: code:addons/om_account_budget/models/account_budget.py:0
-#, python-format
+msgid "These lines spent more than planned:"
+msgstr "以下明細的支出超出計劃："
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "This budget has no line."
+msgstr "此預算沒有明細。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
+msgid "This document goes over budget"
+msgstr "此文件超出預算"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget_line__warning_level__threshold
+msgid "Threshold Reached"
+msgstr "已達門檻"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "To Approve"
+msgstr "待批准"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.report_budget_vs_actual
+msgid "Total"
+msgstr "總計"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__budget_type
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_position__budget_type
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_line_search
+msgid "Type"
+msgstr "類型"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_account_budget__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr "記錄的異常活動的類型。"
+
+#. module: om_account_budget
+#: model:ir.module.module,description:base.module_om_account_budget
+#: model_terms:ir.actions.act_window,help:om_account_budget.action_account_budget
+msgid "Use budgets to compare actual with expected revenues and costs"
+msgstr "使用預算來比較實際與預期的收入和成本"
+
+#. module: om_account_budget
+#: model:ir.model.fields.selection,name:om_account_budget.selection__account_budget__state__validate
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_search
+msgid "Validated"
+msgstr "已驗證"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.res_config_settings_view_form
+msgid ""
+"Vendor bills and purchase orders going over a budget always show a warning. "
+"When blocking, only accounting managers can post or confirm them."
+msgstr "超出預算的供應商帳單及採購訂單一律會顯示警告。啟用阻擋時，只有會計經理才能過賬或確認它們。"
+
+#. module: om_account_budget
+#: model:ir.model.fields,field_description:om_account_budget.field_account_budget_line__warning_level
+msgid "Warning Level"
+msgstr "警告等級"
+
+#. module: om_account_budget
+#: model:ir.model.fields,help:om_account_budget.field_res_company__budget_exceeded_email
+#: model:ir.model.fields,help:om_account_budget.field_res_config_settings__budget_exceeded_email
+msgid ""
+"When an expense line of a validated budget goes over its planned amount, its"
+" responsible gets an email besides the To-Do activity."
+msgstr "當已驗證預算的費用明細超出其計劃金額時，除了待辦事項活動外，其負責人還會收到電郵。"
+
+#. module: om_account_budget
+#. odoo-python
+#: code:addons/om_account_budget/models/account_budget_line.py:0
 msgid ""
 "You have to enter at least a budgetary position or analytic account on a "
 "budget line."
 msgstr "您必須在預算明細上至少輸入預算狀況或分析帳戶。"
+
+#. module: om_account_budget
+#: model_terms:ir.ui.view,arch_db:om_account_budget.view_account_budget_form
+msgid "e.g. Budget 2026"
+msgstr "例如：2026 年預算"
+
+#. module: om_account_budget
+#: model:mail.template,subject:om_account_budget.mail_template_budget_exceeded
+msgid "{{ object.name }}: over budget"
+msgstr "{{ object.name }}：超出預算"

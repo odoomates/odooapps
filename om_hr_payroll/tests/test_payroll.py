@@ -81,8 +81,12 @@ class TestPayroll(TransactionCase):
         self.assertEqual(self.employee.struct_id, self.structure)
 
     def test_employee_without_working_schedule(self):
-        employee = self.env['hr.employee'].create({'name': 'Flexible Employee', 'resource_calendar_id': False})
-        self.assertTrue(employee.current_version_id.is_fully_flexible)
+        # Odoo 20 requires a working schedule: a fully flexible one has no schedule nor hours target
+        flexible = self.env['resource.calendar'].create({
+            'name': 'Fully Flexible', 'calendar_type': 'undefined', 'hours_per_week': 0.0, 'hours_per_day': 0.0,
+        })
+        employee = self.env['hr.employee'].create({'name': 'Flexible Employee', 'resource_calendar_id': flexible.id})
+        self.assertTrue(employee.current_version_id._is_fully_flexible())
 
     def test_payslip_computation(self):
         payslip = self._new_payslip(self.employee)

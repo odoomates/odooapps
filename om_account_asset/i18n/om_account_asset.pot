@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 19.5a1\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-17 11:31+0000\n"
-"PO-Revision-Date: 2026-09-17 11:31+0000\n"
+"POT-Creation-Date: 2026-10-13 15:40+0000\n"
+"PO-Revision-Date: 2026-10-13 15:40+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -61,6 +61,20 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 msgid "\"%s\" has running value increases: sell or dispose of the whole asset."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid ""
+"\"%s\" is no longer in the books: only an asset that is running, paused or "
+"fully depreciated can be sold or disposed of."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid "\"%s\" is not depreciating: sell or dispose of the whole asset."
 msgstr ""
 
 #. module: om_account_asset
@@ -479,6 +493,11 @@ msgid "Asset Start Date"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__asset_state
+msgid "Asset Status"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_product_product__asset_category_id
 #: model:ir.model.fields,field_description:om_account_asset.field_product_template__asset_category_id
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_category_form
@@ -735,7 +754,6 @@ msgid "Code"
 msgstr ""
 
 #. module: om_account_asset
-#: model:ir.model,name:om_account_asset.model_res_company
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__company_id
@@ -755,11 +773,6 @@ msgstr ""
 #. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Compute Depreciation"
-msgstr ""
-
-#. module: om_account_asset
-#: model:ir.model,name:om_account_asset.model_res_config_settings
-msgid "Config Settings"
 msgstr ""
 
 #. module: om_account_asset
@@ -1072,8 +1085,7 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__display_name
-#: model:ir.model.fields,field_description:om_account_asset.field_account_move__display_name
-#: model:ir.model.fields,field_description:om_account_asset.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:om_account_asset.field_account_chart_template__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__display_name
@@ -1081,8 +1093,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_product_template__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_report_om_account_asset_report_depreciation_schedule__display_name
-#: model:ir.model.fields,field_description:om_account_asset.field_res_company__display_name
-#: model:ir.model.fields,field_description:om_account_asset.field_res_config_settings__display_name
 msgid "Display Name"
 msgstr ""
 
@@ -1291,8 +1301,6 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__id
-#: model:ir.model.fields,field_description:om_account_asset.field_account_move__id
-#: model:ir.model.fields,field_description:om_account_asset.field_account_move_line__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__id
@@ -1300,8 +1308,6 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__id
 #: model:ir.model.fields,field_description:om_account_asset.field_product_template__id
 #: model:ir.model.fields,field_description:om_account_asset.field_report_om_account_asset_report_depreciation_schedule__id
-#: model:ir.model.fields,field_description:om_account_asset.field_res_company__id
-#: model:ir.model.fields,field_description:om_account_asset.field_res_config_settings__id
 msgid "ID"
 msgstr ""
 
@@ -1403,14 +1409,8 @@ msgid "Journal Entries"
 msgstr ""
 
 #. module: om_account_asset
-#: model:ir.model,name:om_account_asset.model_account_move
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Journal Entry"
-msgstr ""
-
-#. module: om_account_asset
-#: model:ir.model,name:om_account_asset.model_account_move_line
-msgid "Journal Item"
 msgstr ""
 
 #. module: om_account_asset
@@ -1584,12 +1584,6 @@ msgid "New Values"
 msgstr ""
 
 #. module: om_account_asset
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__activity_calendar_event_id
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__activity_calendar_event_id
-msgid "Next Activity Calendar Event"
-msgstr ""
-
-#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__activity_date_deadline
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__activity_date_deadline
 msgid "Next Activity Deadline"
@@ -1731,12 +1725,6 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 msgid "Only running assets can be paused."
-msgstr ""
-
-#. module: om_account_asset
-#. odoo-python
-#: code:addons/om_account_asset/models/account_asset.py:0
-msgid "Only running or paused assets can be sold or disposed of."
 msgstr ""
 
 #. module: om_account_asset
@@ -2455,6 +2443,7 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__state
 #: model:ir.model.fields,help:om_account_asset.field_asset_pause__asset_state
+#: model:ir.model.fields,help:om_account_asset.field_asset_sell__asset_state
 msgid ""
 "When an asset is created, the status is 'Draft'.\n"
 "If the asset is confirmed, the status goes in 'Running': its depreciation entries are created and each one is posted on its date.\n"

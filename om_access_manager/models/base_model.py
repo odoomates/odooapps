@@ -40,7 +40,20 @@ class Base(models.AbstractModel):
         extra = [parse(terms) for terms in and_groups]
         if or_groups:
             extra.append(Domain.OR([parse(terms) for terms in or_groups]))
-        return domain & Domain.AND(extra)
+        restricted = Domain.AND(extra)
+        if operation == 'read' and (own := self._om_own_records_domain()):
+            # a user always reads their own user and contact: Odoo reads them for its own screens (the
+            # calendar, the preferences, the avatar...), and they reveal nothing the user does not know
+            restricted |= own
+        return domain & restricted
+
+    @api.model
+    def _om_own_records_domain(self):
+        if self._name == 'res.users':
+            return Domain('id', '=', self.env.uid)
+        if self._name == 'res.partner':
+            return Domain('id', '=', self.env['res.users'].sudo().browse(self.env.uid).partner_id.id)
+        return None
 
     def _make_access_error_message(self, operation, domain):
         # Say plainly that the profile refused, without naming the records:

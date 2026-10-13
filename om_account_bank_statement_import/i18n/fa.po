@@ -1,0 +1,633 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: fa\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,description:base.module_om_account_bank_statement_import
+msgid ""
+"\n"
+"Import the statements your bank gives you, in the format it offers: CAMT.053 (ISO 20022), MT940 (SWIFT), OFX or\n"
+"QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept for the next import.\n"
+"\n"
+"The journal is recognised from the account number in the file, the transactions already imported are skipped, and\n"
+"the file stays attached to the statement. The statements are then reconciled as usual.\n"
+msgstr ""
+"\n"
+"صورت حساب‌هایی را که بانک شما ارائه می‌دهد، در قالبی که ارائه می‌کند وارد کنید: CAMT.053 (ISO 20022)، MT940 (SWIFT)، OFX یا\n"
+"QFX، QIF، و CSV یا اکسل با نگاشت ستون‌های بانک شما که برای ورود بعدی نگهداری می‌شود.\n"
+"\n"
+"روزنامه از روی شماره حساب موجود در فایل شناسایی می‌شود، تراکنش‌هایی که قبلاً وارد شده‌اند رد می‌شوند و\n"
+"فایل به صورت حساب پیوست می‌ماند. سپس صورت حساب‌ها طبق روال معمول تطبیق داده می‌شوند.\n"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "%(imported)s transaction(s) imported, %(skipped)s already there."
+msgstr "%(imported)s تراکنش وارد شد، %(skipped)s مورد از قبل موجود بود."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid ""
+"A map tells Odoo how to read the CSV or Excel file of one bank: its separators, the format\n"
+"                    of its dates and which column holds the date, the label and the amount of a transaction.\n"
+"                    Set the map on the journal of the bank and import the file as usual."
+msgstr ""
+"یک نگاشت به اودو می‌گوید فایل CSV یا اکسل یک بانک را چگونه بخواند: جداکننده‌ها، قالب\n"
+"                    تاریخ‌ها و اینکه کدام ستون تاریخ، برچسب و مقدار یک تراکنش را در خود دارد.\n"
+"                    نگاشت را روی روزنامه بانک تنظیم کنید و فایل را طبق روال معمول وارد کنید."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "A statement is imported in a bank or cash journal, not in %s."
+msgstr "صورت حساب در روزنامه بانک یا صندوق وارد می‌شود، نه در %s."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.constraint,message:om_account_bank_statement_import.constraint_account_bank_statement_line_unique_import_id_uniq
+msgid "A transaction of a bank statement file is only imported once."
+msgstr "هر تراکنش فایل صورت حساب بانک فقط یک بار وارد می‌شود."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "Account Number Column"
+msgstr "ستون شماره حساب"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Amount"
+msgstr "مقدار"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid "Amount Column"
+msgstr "ستون مقدار"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Bank Statement File Map"
+msgstr "نگاشت فایل صورت حساب بانک"
+
+#. module: om_account_bank_statement_import
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_account_statement_import_map
+#: model:ir.ui.menu,name:om_account_bank_statement_import.menu_account_statement_import_map
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_list
+msgid "Bank Statement File Maps"
+msgstr "نگاشت‌های فایل صورت حساب بانک"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "سطر صورتحساب بانک"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Cancel"
+msgstr "لغو"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Columns"
+msgstr "ستون‌ها"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator__,
+msgid "Comma (1234,56)"
+msgstr "کاما (1234,56)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__company_id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Company"
+msgstr "شرکت"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_uid
+msgid "Created by"
+msgstr "ایجاد شده توسط"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__create_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__create_date
+msgid "Created on"
+msgstr "ایجادشده در"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "Credit Column"
+msgstr "ستون بستانکار"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "Currency Column"
+msgstr "ستون ارز"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_date
+msgid "Date Column"
+msgstr "ستون تاریخ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__date_format
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid "Date Format"
+msgstr "قالب تاریخ"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "Debit Column"
+msgstr "ستون بدهکار"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid "Debit is Positive"
+msgstr "بدهکار مثبت است"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__decimal_separator
+msgid "Decimal Separator"
+msgstr "جداساز شمارگانی"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid "Delimiter"
+msgstr "جداکننده"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.actions.act_window,help:om_account_bank_statement_import.action_account_statement_import_map
+msgid "Describe the file of your bank"
+msgstr "فایل بانک خود را توصیف کنید"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__display_name
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__display_name
+msgid "Display Name"
+msgstr "نام نمایشی"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields.selection,name:om_account_bank_statement_import.selection__account_statement_import_map__decimal_separator___
+msgid "Dot (1234.56)"
+msgstr "نقطه (1234.56)"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid "Encoding"
+msgstr "کدگذاری"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "Every transaction of %(count)s file(s) was already imported."
+msgstr "همه تراکنش‌های %(count)s فایل قبلاً وارد شده‌اند."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "File"
+msgstr "پرونده"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid "File Map"
+msgstr "نگاشت فایل"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid "Files"
+msgstr "فایل‌ها"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "For CSV and Excel files"
+msgstr "برای فایل‌های CSV و اکسل"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "From the account number in the file"
+msgstr "از شماره حساب موجود در فایل"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid "Has a Header Row"
+msgstr "دارای سطر سرستون"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__id
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__id
+msgid "ID"
+msgstr "شناسه"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Import"
+msgstr "ورود"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model,name:om_account_bank_statement_import.model_account_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "Import Bank Statement"
+msgstr "ورود صورت حساب بانک"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid "Import ID"
+msgstr "شناسه ورود"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_journal.py:0
+#: model:ir.actions.act_window,name:om_account_bank_statement_import.action_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_journal_dashboard_kanban_view
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_bank_statement_tree
+msgid "Import Statement"
+msgstr "ورود صورت حساب"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,summary:base.module_om_account_bank_statement_import
+msgid ""
+"Import the bank statements of your bank: CAMT, MT940, OFX, QIF, CSV and "
+"Excel"
+msgstr "ورود صورت حساب‌های بانک شما: CAMT، MT940، OFX، QIF، CSV و اکسل"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid "Journal"
+msgstr "روزنامه"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "Label Column"
+msgstr "ستون برچسب"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_uid
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_uid
+msgid "Last Updated by"
+msgstr "آخرین تغییر توسط"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import__write_date
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__write_date
+msgid "Last Updated on"
+msgstr "آخرین بروز رسانی در"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__company_id
+msgid "Leave empty to share the map with every company."
+msgstr "برای اشتراک نگاشت با همه شرکت‌ها خالی بگذارید."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__journal_id
+msgid ""
+"Leave empty to use the journal of the bank account written in the file."
+msgstr "برای استفاده از روزنامه حساب بانکی نوشته‌شده در فایل خالی بگذارید."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__name
+msgid "Name"
+msgstr "نام"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"No journal was found for the account %(account)s of the file %(file)s. "
+"Choose a journal, or write that account number on the bank account of its "
+"journal."
+msgstr ""
+"هیچ روزنامه‌ای برای حساب %(account)s در فایل %(file)s یافت نشد. یک روزنامه "
+"انتخاب کنید، یا آن شماره حساب را روی حساب بانکی روزنامه آن بنویسید."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "No transaction was found in the file(s)."
+msgstr "هیچ تراکنشی در فایل(ها) یافت نشد."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__note
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Notes"
+msgstr "یادداشت‌ها"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_narration
+msgid "Notes Column"
+msgstr "ستون یادداشت‌ها"
+
+#. module: om_account_bank_statement_import
+#: model:ir.module.module,shortdesc:base.module_om_account_bank_statement_import
+msgid "Odoo 20 Bank Statement Import"
+msgstr "ورود صورت حساب بانک اودو 20"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_amount
+msgid ""
+"One column with the sign of the transaction, negative when the money leaves "
+"the account."
+msgstr "یک ستون با علامت تراکنش، منفی هنگامی که وجه از حساب خارج می‌شود."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other"
+msgstr "دیگر"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Other Party"
+msgstr "طرف دیگر"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_partner
+msgid "Partner Column"
+msgstr "ستون همکار"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_ref
+msgid "Reference Column"
+msgstr "ستون مرجع"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Rows"
+msgstr "ردیفها"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid "Rows to Skip"
+msgstr "سطرهای قابل رد شدن"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid "Sheet"
+msgstr "برگه"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid "Statement File Map"
+msgstr "نگاشت فایل صورت حساب"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "Text Delimiter"
+msgstr "جداکننده متن"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_currency
+msgid "The ISO code of the currency, e.g. EUR."
+msgstr "کد ISO ارز، مثلاً EUR."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_account_number
+msgid "The bank account of the other party of the transaction."
+msgstr "حساب بانکی طرف دیگر تراکنش."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__quotechar
+msgid "The character around a value containing the delimiter. CSV only."
+msgstr ""
+"نویسه‌ای که در اطراف مقداری که شامل جداکننده است قرار می‌گیرد. فقط CSV."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__delimiter
+msgid ""
+"The character between two columns, CSV only. Write tab for a tabulation (TSV"
+" files)."
+msgstr ""
+"نویسه بین دو ستون، فقط CSV. برای تب (فایل‌های TSV) عبارت tab را بنویسید."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid ""
+"The character grouping the digits of the big numbers, if any: 1,234.56 or "
+"1.234,56 or 1 234,56."
+msgstr ""
+"نویسه گروه‌بندی ارقام اعداد بزرگ، در صورت وجود: 1,234.56 یا 1.234,56 یا 1 "
+"234,56."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__map_id
+msgid ""
+"The columns of the CSV or Excel files of your bank. Not needed for the other"
+" formats."
+msgstr "ستون‌های فایل‌های CSV یا اکسل بانک شما. برای سایر قالب‌ها لازم نیست."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_journal__statement_import_map_id
+msgid ""
+"The columns of the CSV or Excel statements of this bank, filled in by "
+"default when importing."
+msgstr ""
+"ستون‌های صورت حساب‌های CSV یا اکسل این بانک، که هنگام ورود به‌طور پیش‌فرض پر"
+" می‌شوند."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__debit_positive
+msgid ""
+"The debit column holds the money leaving the account as a positive number. "
+"Uncheck it when your bank writes the debits with a minus sign."
+msgstr ""
+"ستون بدهکار، وجه خارج‌شده از حساب را به‌صورت عدد مثبت نگه می‌دارد. اگر بانک "
+"شما بدهکاری‌ها را با علامت منفی می‌نویسد، تیک آن را بردارید."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_label
+msgid "The description of the transaction."
+msgstr "شرح تراکنش."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__file_encoding
+msgid ""
+"The encoding of the text of the file: utf-8, utf-8-sig, latin1, cp1252... "
+"CSV only."
+msgstr "کدگذاری متن فایل: utf-8، utf-8-sig، latin1، cp1252... فقط CSV."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is in %(file_currency)s, but the journal %(journal)s is in"
+" %(currency)s."
+msgstr ""
+"فایل %(file)s به ارز %(file_currency)s است، اما روزنامه %(journal)s به ارز "
+"%(currency)s است."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid ""
+"The file %(file)s is the statement of the account %(account)s, which belongs"
+" to the journal %(journal)s, not to %(chosen)s."
+msgstr ""
+"فایل %(file)s صورت حساب حساب %(account)s است که متعلق به روزنامه %(journal)s"
+" است، نه %(chosen)s."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__has_header
+msgid ""
+"The first row read holds the names of the columns. Without a header, the "
+"columns below are given by their number, the first column being 1."
+msgstr ""
+"اولین سطر خوانده‌شده شامل نام ستون‌هاست. بدون سرستون، ستون‌های زیر با شماره "
+"خود مشخص می‌شوند و اولین ستون 1 است."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__date_format
+msgid ""
+"The format of the dates of a QIF file, such as %d/%m/%Y. Left empty, the day"
+" and the month are told apart from the values themselves."
+msgstr ""
+"قالب تاریخ‌های فایل QIF، مانند %d/%m/%Y. اگر خالی بماند، روز و ماه از روی "
+"خود مقادیر تشخیص داده می‌شوند."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__date_format
+msgid ""
+"The format of the dates of the file, in the Python notation: %d/%m/%Y, "
+"%m/%d/%y, %Y-%m-%d..."
+msgstr ""
+"قالب تاریخ‌های فایل، با نمادگذاری Python: %d/%m/%Y، %m/%d/%y، %Y-%m-%d..."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "The format of the file %s is not supported."
+msgstr "قالب فایل %s پشتیبانی نمی‌شود."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid ""
+"The identifier of the transaction at the bank, to import the same file twice"
+" without duplicating its transactions."
+msgstr ""
+"شناسه تراکنش در بانک، برای اینکه بتوان یک فایل را دو بار وارد کرد بدون اینکه"
+" تراکنش‌های آن تکراری شوند."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_bank_statement_line__unique_import_id
+msgid ""
+"The identifier of the transaction in the file it was imported from: a "
+"transaction already imported in the journal is not imported again."
+msgstr ""
+"شناسه تراکنش در فایلی که از آن وارد شده است: تراکنشی که قبلاً در روزنامه "
+"وارد شده دوباره وارد نمی‌شود."
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/models/account_statement_import_map.py:0
+msgid ""
+"The map \"%s\" needs an amount column, or a debit column and a credit "
+"column."
+msgstr ""
+"نگاشت «%s» به یک ستون مقدار، یا یک ستون بدهکار و یک ستون بستانکار نیاز دارد."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_credit
+msgid "The money entering the account."
+msgstr "وجه ورودی به حساب."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__column_debit
+msgid "The money leaving the account."
+msgstr "وجه خروجی از حساب."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__sheet
+msgid ""
+"The name or the number (1 for the first one) of the sheet to read. Excel "
+"only, the first sheet by default."
+msgstr ""
+"نام یا شماره (1 برای اولین) برگه‌ای که باید خوانده شود. فقط اکسل، به‌طور "
+"پیش‌فرض اولین برگه."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__skip_rows
+msgid ""
+"The number of rows to ignore at the top of the file, before the header."
+msgstr ""
+"تعداد سطرهایی که باید در بالای فایل، پیش از سرستون، نادیده گرفته شوند."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import__attachment_ids
+msgid ""
+"The statement files of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or "
+"Excel."
+msgstr ""
+"فایل‌های صورت حساب بانک شما: CAMT.053، MT940، OFX، QFX، QIF، CSV یا اکسل."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__thousands_separator
+msgid "Thousands Separator"
+msgstr "جداساز هزارگان"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Transaction"
+msgstr "تراکنش"
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,field_description:om_account_bank_statement_import.field_account_statement_import_map__column_unique_id
+msgid "Unique ID Column"
+msgstr "ستون شناسه یکتا"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid ""
+"Upload the statements of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or Excel.\n"
+"                        The transactions already imported are left out."
+msgstr ""
+"صورت حساب‌های بانک خود را بارگذاری کنید: CAMT.053، MT940، OFX، QFX، QIF، CSV یا اکسل.\n"
+"                        تراکنش‌هایی که قبلاً وارد شده‌اند کنار گذاشته می‌شوند."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "Values"
+msgstr "مقادیر"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"Write the name of the column of the file when it has a header row, or the\n"
+"                                    number of the column otherwise, the first column being\n"
+"                                    <code>1</code>. Use either the amount column, or the debit and the credit\n"
+"                                    columns."
+msgstr ""
+"اگر فایل سطر سرستون دارد نام ستون را بنویسید، در غیر این صورت\n"
+"                                    شماره ستون را، که اولین ستون\n"
+"                                    <code>1</code> است. از ستون مقدار، یا از ستون‌های بدهکار و بستانکار\n"
+"                                    استفاده کنید."
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.account_statement_import_view_form
+msgid "e.g. %d/%m/%Y, for QIF files"
+msgstr "مثلاً %d/%m/%Y، برای فایل‌های QIF"
+
+#. module: om_account_bank_statement_import
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid ""
+"e.g. Export the transactions of the month from the website of the bank, in "
+"CSV."
+msgstr "مثلاً تراکنش‌های ماه را از وب‌سایت بانک به‌صورت CSV خروجی بگیرید."
+
+#. module: om_account_bank_statement_import
+#: model:ir.model.fields,help:om_account_bank_statement_import.field_account_statement_import_map__name
+#: model_terms:ir.ui.view,arch_db:om_account_bank_statement_import.view_account_statement_import_map_form
+msgid "e.g. My Bank - CSV export"
+msgstr "مثلاً بانک من - خروجی CSV"
+
+#. module: om_account_bank_statement_import
+#. odoo-python
+#: code:addons/om_account_bank_statement_import/wizard/account_statement_import.py:0
+msgid "of the file"
+msgstr "از فایل"

@@ -357,7 +357,21 @@ class TestAccessProfile(TransactionCase):
         other = self.env['res.partner'].create({'name': 'C', 'ref': 'keep'})
         self.assertFalse(other.with_user(self.user).has_access('unlink'))
         self.assertTrue(other.with_user(self.user).has_access('read'))
-        self.assertFalse(partners.search([('ref', '!=', 'keep')]))
+        # outside the filter, only the contact of the user: a user always reads their own
+        self.assertEqual(partners.search([('ref', '!=', 'keep')]), self.user.partner_id)
+
+    def test_a_user_always_reads_their_own_user_and_contact(self):
+        allowed = self.env['res.partner'].create({'name': 'Allowed'})
+        stranger = self.env['res.partner'].create({'name': 'Stranger'})
+        self._profile(model_ids=[(0, 0, {
+            'model_id': self.partner_model.id,
+            'domain': repr([('id', '=', allowed.id)]),
+        })])
+        self.assertTrue(self.user.partner_id.with_user(self.user).has_access('read'))
+        self.assertTrue(self.user.with_user(self.user).has_access('read'))
+        self.user.with_user(self.user).read(['name', 'partner_id'])
+        self.assertFalse(stranger.with_user(self.user).has_access('read'))
+        self.assertEqual(self._partner().search([]), allowed | self.user.partner_id)
 
     def test_block_import(self):
         self._profile(block_import=True)

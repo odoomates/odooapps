@@ -1,13 +1,8 @@
-# Translation of Odoo Server.
-# This file contains the translation of the following modules:
-# 	* om_fiscal_year
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 18.0\n"
+"Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-03-21 02:42+0000\n"
-"PO-Revision-Date: 2024-03-21 02:42+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: zh_TW\n"
@@ -17,15 +12,58 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_form
+msgid "<span class=\"o_stat_text\">Closing Entry</span>"
+msgstr "<span class=\"o_stat_text\">結帳分錄</span>"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "A closed fiscal year cannot be deleted. Reopen it first."
+msgstr "已結束的會計年度無法刪除。請先重新開啟。"
+
+#. module: om_fiscal_year
+#: model:ir.model,name:om_fiscal_year.model_account_chart_template
+msgid "Account Chart Template"
+msgstr "賬目總表範本"
+
+#. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
 msgid "Account Period Closing"
 msgstr "會計關帳日期"
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__fiscalyear_lock_date
-#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__fiscalyear_lock_date
-msgid "Lock Date for All Users"
-msgstr "所有使用者關帳日期"
+#: model:ir.model.fields,help:om_fiscal_year.field_account_fiscal_year_closing__unaffected_earnings_account_id
+msgid ""
+"Account of type Current Year Earnings debited (or credited for a loss) by "
+"the closing entry."
+msgstr "結帳分錄所借記（如為虧損則貸記）的「目前年度收益」類型帳戶。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_res_company__retained_earnings_account_id
+msgid ""
+"Account receiving the earnings of the fiscal years when they are closed."
+msgstr "會計年度結束時接收其收益的帳戶。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_needaction
+msgid "Action Needed"
+msgstr "需要採取行動"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__active
+msgid "Active"
+msgstr "啟用"
+
+#. module: om_fiscal_year
+#: model_terms:ir.actions.act_window,help:om_fiscal_year.action_account_period_closing_task
+msgid "Add the tasks of each closing"
+msgstr "加入每次結帳的工作"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_prepayments
+msgid "Adjust the prepaid expenses and the revenue received in advance"
+msgstr "調整預付費用及預收收入"
 
 #. module: om_fiscal_year
 #: model:res.groups,name:om_fiscal_year.group_fiscal_year
@@ -33,6 +71,100 @@ msgid "Allow to define fiscal years of more or less than a year"
 msgstr "允許定義多於或少於一年的會計年度"
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__hard_lock_date
+msgid ""
+"Any entry up to and including that date will be postponed to a later time, "
+"in accordance with its journal sequence. This lock date is irreversible and "
+"does not allow any exception."
+msgstr "在該日期及之前（包括該日期）的任何條目，都將根據其日記賬順序，推遲至較後的時間。此鎖定日期不可逆轉，亦不允許任何例外。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__fiscalyear_lock_date
+msgid ""
+"Any entry up to and including that date will be postponed to a later time, "
+"in accordance with its journal's sequence."
+msgstr "在該日期及之前（包括該日期）的任何條目，都將根據其日記賬順序，推遲至較後的時間。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__tax_lock_date
+msgid ""
+"Any entry with taxes up to and including that date will be postponed to a "
+"later time, in accordance with its journal's sequence. The tax lock date is "
+"automatically set when the tax closing entry is posted."
+msgstr "在該日期及之前（包括該日期）的任何連稅條目，都將根據其日記賬順序，推遲至較後的時間。稅務鎖定日期會在稅務結算記項過賬時自動設定。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__purchase_lock_date
+msgid ""
+"Any purchase entry prior to and including this date will be postponed to a "
+"later date, in accordance with its journal's sequence."
+msgstr "在此日期及之前（包括此日期）的任何採購條目，都將根據其日記賬順序，推遲至較後的日期。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__sale_lock_date
+msgid ""
+"Any sales entry prior to and including this date will be postponed to a "
+"later date, in accordance with its journal's sequence."
+msgstr "在此日期及之前（包括此日期）的任何銷售條目，都將根據其日記賬順序，推遲至較後的日期。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_attachment_count
+msgid "Attachment Count"
+msgstr "附件數目"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Bank and cash accounts with a negative balance"
+msgstr "餘額為負數的銀行及現金帳戶"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Bank transactions not reconciled"
+msgstr "尚未核銷的銀行交易"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Bills that might be duplicates"
+msgstr "可能重複的帳單"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__level__blocking
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__status__blocking
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_list
+msgid "Blocking"
+msgstr "阻擋"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__blocking_count
+msgid "Blocking Count"
+msgstr "阻擋數目"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__blocking_issues
+msgid "Blocking Issues"
+msgstr "阻擋問題"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid ""
+"Blocking points prevent the closing. The tasks come from the closing tasks set in the\n"
+"                                configuration; add yours there."
+msgstr ""
+"阻擋事項會阻止結帳。工作項目來自設定中的結帳工作；\n"
+"                                請在該處加入您自己的工作。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_fiscal_year_closing__date
+msgid ""
+"By default the first day after the fiscal year, so that the balance sheet at"
+" the end of the year still shows its earnings."
+msgstr "預設為會計年度結束後的第一天，使年底的資產負債表仍顯示其收益。"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
 msgid "Cancel"
 msgstr "取消"
@@ -43,37 +175,147 @@ msgid "Change Lock Date"
 msgstr "更改關帳日期"
 
 #. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "Check Again"
+msgstr "再次檢查"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_currencies
+msgid "Check the exchange rates and the balances in foreign currencies"
+msgstr "檢查匯率及外幣餘額"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__last_check_date
+msgid "Checked On"
+msgstr "檢查於"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__check_ids
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "Checklist"
+msgstr "檢查清單"
+
+#. module: om_fiscal_year
 #: model_terms:ir.actions.act_window,help:om_fiscal_year.actions_account_fiscal_year
 msgid "Click here to create a new fiscal year."
 msgstr "點選新增會計年度"
 
 #. module: om_fiscal_year
-#: model:ir.model,name:om_fiscal_year.model_res_company
-msgid "Companies"
-msgstr "公司"
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+#: model:ir.model,name:om_fiscal_year.model_account_fiscal_year_closing
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_form
+msgid "Close Fiscal Year"
+msgstr "結束會計年度"
 
 #. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "Close Period"
+msgstr "結算期間"
+
+#. module: om_fiscal_year
+#: model_terms:ir.actions.act_window,help:om_fiscal_year.action_account_period_closing
+msgid "Close a month"
+msgstr "結算月份"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_fiscal_year__state__closed
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing__state__closed
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_search
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_search
+msgid "Closed"
+msgstr "已結束"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__closed_by_id
+msgid "Closed By"
+msgstr "結束者"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__closed_on
+msgid "Closed On"
+msgstr "結束於"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__closing_id
+msgid "Closing"
+msgstr "正關閉"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__closing_move_id
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+msgid "Closing Entry"
+msgstr "結帳分錄"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__date
+msgid "Closing Entry Date"
+msgstr "結帳分錄日期"
+
+#. module: om_fiscal_year
+#: model:ir.actions.act_window,name:om_fiscal_year.action_account_period_closing_task
+#: model:ir.ui.menu,name:om_fiscal_year.menu_account_period_closing_task
+msgid "Closing Tasks"
+msgstr "結帳工作"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__code
+msgid "Code"
+msgstr "代碼"
+
+#. module: om_fiscal_year
+#: model:ir.model,name:om_fiscal_year.model_res_company
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__company_id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__company_id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__company_id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__company_id
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__company_id
 msgid "Company"
 msgstr "公司"
 
 #. module: om_fiscal_year
-#: model:ir.model,name:om_fiscal_year.model_res_config_settings
-msgid "Config Settings"
-msgstr "配置設定"
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__count
+msgid "Count"
+msgstr "個數"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__create_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__create_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__create_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__create_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__create_uid
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__create_uid
 msgid "Created by"
 msgstr "建立於"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__create_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__create_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__create_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__create_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__create_date
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__create_date
 msgid "Created on"
 msgstr "建立於"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__currency_id
+msgid "Currency"
+msgstr "貨幣"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid ""
+"Deal with these points before closing %(period)s:\n"
+"%(points)s"
+msgstr ""
+"結算 %(period)s 之前請處理以下事項：\n"
+"%(points)s"
 
 #. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
@@ -82,12 +324,66 @@ msgstr "定義多於或少於一年的會計年度"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__display_name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__display_name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__display_name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__display_name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__display_name
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__display_name
 msgid "Display Name"
 msgstr "顯示名稱"
 
 #. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing__lock_type__none
+msgid "Do not lock"
+msgstr "不鎖定"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__done
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__status__done
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "Done"
+msgstr "完成"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__done_by_id
+msgid "Done By"
+msgstr "完成者"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__done_on
+msgid "Done On"
+msgstr "完成於"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/fiscal_year_closing.py:0
+msgid "Draft Entries"
+msgstr "草稿分錄"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__draft_move_count
+msgid "Draft Move Count"
+msgstr "草稿分錄數目"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+msgid "Draft entries"
+msgstr "草稿分錄"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Draft entries dated up to the end of the period"
+msgstr "日期截至期間結束的草稿分錄"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__earnings
+msgid "Earnings to Transfer"
+msgstr "待結轉收益"
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__date_to
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__date_to
 msgid "End Date"
 msgstr "結束日期"
 
@@ -97,13 +393,27 @@ msgid "Ending Date, included in the fiscal year."
 msgstr "結束日期，包含在會計年度中"
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_fiscal_year__closing_move_id
+msgid ""
+"Entry transferring the earnings of the fiscal year to the retained earnings."
+msgstr "將會計年度收益結轉至保留盈餘的分錄。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_fiscal_year_closing__retained_earnings_account_id
+msgid ""
+"Equity account receiving the earnings. Accounts of type Current Year "
+"Earnings cannot be used: their balance is not carried forward to the next "
+"fiscal years."
+msgstr "接收收益的權益帳戶。不能使用「目前年度收益」類型的帳戶：其餘額不會結轉至後續會計年度。"
+
+#. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
 msgid "Fiscal Period Closing"
 msgstr "會計關帳期間"
 
 #. module: om_fiscal_year
 #: model:ir.model,name:om_fiscal_year.model_account_fiscal_year
-#: model:ir.ui.menu,name:om_fiscal_year.menu_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__fiscal_year_id
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
 msgid "Fiscal Year"
 msgstr "會計年度"
@@ -111,6 +421,7 @@ msgstr "會計年度"
 #. module: om_fiscal_year
 #: model:ir.actions.act_window,name:om_fiscal_year.actions_account_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__group_fiscal_year
+#: model:ir.ui.menu,name:om_fiscal_year.menu_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
 msgid "Fiscal Years"
 msgstr "會計年度"
@@ -126,20 +437,66 @@ msgid "Fiscalyear Last Month"
 msgstr "會計年度最後一月"
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_follower_ids
+msgid "Followers"
+msgstr "關注人"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_partner_ids
+msgid "Followers (Partners)"
+msgstr "關注人（業務夥伴）"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__fiscalyear_lock_date
+msgid "Global Lock Date"
+msgstr "全域鎖定日期"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__hard_lock_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__hard_lock_date
+msgid "Hard Lock Date"
+msgstr "硬性鎖定日期"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__has_message
+msgid "Has Message"
+msgstr "有訊息"
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__id
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__id
 msgid "ID"
 msgstr "ID"
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__period_lock_date
-msgid "Journal Entries Lock Date"
-msgstr "日記帳本關帳日期"
+#: model:ir.model.fields,help:om_fiscal_year.field_account_period_closing__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr "勾選代表有新訊息需要您留意。"
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__period_lock_date
-msgid "Journals Entries Lock Date"
-msgstr "日記帳本關帳日期"
+#: model:ir.model.fields,help:om_fiscal_year.field_account_period_closing__message_has_error
+#: model:ir.model.fields,help:om_fiscal_year.field_account_period_closing__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr "勾選代表有訊息發生傳送錯誤。"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_customer_invoices
+msgid "Invoice the goods delivered and the services provided in the period"
+msgstr "為本期間已交付的商品及已提供的服務開立發票"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_is_follower
+msgid "Is Follower"
+msgstr "是關注人"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__journal_id
+msgid "Journal"
+msgstr "日記賬"
 
 #. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
@@ -148,20 +505,63 @@ msgstr "最後一天"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__write_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__write_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__write_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__write_uid
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__write_uid
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__write_uid
 msgid "Last Updated by"
 msgstr "最後更新"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__write_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__write_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__write_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__write_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__write_date
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__write_date
 msgid "Last Updated on"
 msgstr "最後更新"
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__level
+msgid "Level"
+msgstr "層級"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__hard_lock_date
+msgid "Like the \"Global Lock Date\", but no exceptions are possible."
+msgstr "與「全域鎖定日期」相同，但不允許任何例外。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__fiscalyear_lock_date
+msgid "Lock Date for All Users"
+msgstr "所有使用者關帳日期"
+
+#. module: om_fiscal_year
 #: model:ir.ui.menu,name:om_fiscal_year.menu_action_change_lock_date
 msgid "Lock Dates"
 msgstr "會計關帳日期"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing__lock_type__fiscal
+msgid "Lock everything (except for the administrators)"
+msgstr "鎖定全部（管理員除外）"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__lock
+msgid "Lock the Fiscal Year"
+msgstr "鎖定會計年度"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing__lock_type__sale_purchase
+msgid "Lock the sales and purchases"
+msgstr "鎖定銷售及採購"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing__lock_type__tax
+msgid "Lock the taxes"
+msgstr "鎖定稅項"
 
 #. module: om_fiscal_year
 #: model:ir.actions.act_window,name:om_fiscal_year.action_view_change_lock_date
@@ -179,9 +579,45 @@ msgid "Management Closing"
 msgstr "管理關帳日期"
 
 #. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid ""
+"Mark these tasks as done before closing %(period)s:\n"
+"%(tasks)s"
+msgstr ""
+"結算 %(period)s 之前，請將以下工作標記為完成：\n"
+"%(tasks)s"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_receivables_payables
+msgid ""
+"Match the payments with their invoices and review the aged receivables and "
+"payables"
+msgstr "將付款與其發票匹配，並檢查應收及應付帳齡"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_has_error
+msgid "Message Delivery error"
+msgstr "訊息遞送錯誤"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_ids
+msgid "Messages"
+msgstr "訊息"
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__name
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__name
 msgid "Name"
 msgstr "名稱"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "New Closing"
+msgstr "新結帳"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__tax_lock_date
@@ -191,13 +627,6 @@ msgid ""
 msgstr "任何使用者都無法編輯與該日期之前（含該日期）的稅務相關的日記帳分錄。"
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__fiscalyear_lock_date
-msgid ""
-"No users, including Advisers, can edit accounts prior to and inclusive of "
-"this date. Use it for fiscal year locking for example."
-msgstr "任何使用者（包括管理者）都不能在「之前」（含）編輯帳戶這個日期。例如，將其用於會計年度關帳。”"
-
-#. module: om_fiscal_year
 #: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__fiscalyear_lock_date
 msgid ""
 "No users, including Advisers, can edit accounts prior to and inclusive of "
@@ -205,17 +634,252 @@ msgid ""
 msgstr "在此日期之前（包括該日期），任何使用者（包括管理者）都不能編輯帳戶。 使用它來關帳會計年度。"
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,help:om_fiscal_year.field_res_config_settings__period_lock_date
-msgid ""
-"Only users with the 'Adviser' role can edit accounts prior to and inclusive "
-"of this date. Use it for period locking inside an open fiscal year, for "
-"example."
-msgstr "只有具有「管理者」角色的使用者才能在此日期之前（含該日期）編輯帳戶。 例如，將其用於開放會計年度內的期間關帳。"
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__note
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__note
+msgid "Note"
+msgstr "備註"
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__period_lock_date
-msgid "Prevent posting of journal entries in this period."
-msgstr "防止在此期間過帳日記帳分錄"
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_needaction_counter
+msgid "Number of Actions"
+msgstr "動作數量"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_has_error_counter
+msgid "Number of errors"
+msgstr "錯誤數量"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_period_closing__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr "需要採取行動的訊息數目"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_period_closing__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr "有發送錯誤的郵件數量"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__status__ok
+msgid "OK"
+msgstr "確定"
+
+#. module: om_fiscal_year
+#: model:ir.module.module,shortdesc:base.module_om_fiscal_year
+msgid "Odoo 20 Fiscal Year & Lock Date"
+msgstr "Odoo 20 會計年度及鎖定日期"
+
+#. module: om_fiscal_year
+#: model:ir.module.module,description:base.module_om_fiscal_year
+msgid "Odoo 20 Fiscal Year, Fiscal Year in Odoo 20"
+msgstr "Odoo 20 會計年度、Odoo 20 中的會計年度"
+
+#. module: om_fiscal_year
+#: model:ir.module.module,summary:base.module_om_fiscal_year
+msgid "Odoo 20 Fiscal Year, Year-End Closing, Lock Date in Odoo 20"
+msgstr "Odoo 20 會計年度、年終結帳、Odoo 20 中的鎖定日期"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "Only accounting administrators can close or reopen a fiscal year."
+msgstr "只有會計管理員才能結束或重新開啟會計年度。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Only accounting administrators can close or reopen a period."
+msgstr "只有會計管理員才能結算或重新開啟期間。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_fiscal_year__state__open
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing__state__open
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_search
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_search
+msgid "Open"
+msgstr "開啟"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__open_previous_year_count
+msgid "Open Previous Year Count"
+msgstr "未結束的以前年度數目"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Payments and suspense items not matched"
+msgstr "尚未匹配的付款及暫記項目"
+
+#. module: om_fiscal_year
+#: model:ir.actions.act_window,name:om_fiscal_year.action_account_period_closing
+#: model:ir.model,name:om_fiscal_year.model_account_period_closing
+#: model:ir.ui.menu,name:om_fiscal_year.menu_account_period_closing
+msgid "Period Closing"
+msgstr "期間結帳"
+
+#. module: om_fiscal_year
+#: model:ir.model,name:om_fiscal_year.model_account_period_closing_check
+msgid "Period Closing Check"
+msgstr "期間結帳檢查"
+
+#. module: om_fiscal_year
+#: model:ir.model,name:om_fiscal_year.model_account_period_closing_task
+msgid "Period Closing Task"
+msgstr "期間結帳工作"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Period closed, locked until %s."
+msgstr "期間已結算，鎖定至 %s。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Period closed."
+msgstr "期間已結算。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Period reopened."
+msgstr "期間已重新開啟。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "Post or delete the draft journal entries of the fiscal year first."
+msgstr "請先過賬或刪除該會計年度的草稿日記賬記項。"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_depreciation
+msgid "Post the depreciation of the fixed assets"
+msgstr "過賬固定資產的折舊"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__purchase_lock_date
+msgid ""
+"Prevents creation and modification of entries in purchase journals up to the"
+" defined date inclusive."
+msgstr "禁止在採購日記賬中建立及修改截至所定義日期（含當日）的分錄。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__sale_lock_date
+msgid ""
+"Prevents creation and modification of entries in sales journals up to the "
+"defined date inclusive."
+msgstr "禁止在銷售日記賬中建立及修改截至所定義日期（含當日）的分錄。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__previous_lock_dates
+msgid "Previous Lock Dates"
+msgstr "先前的鎖定日期"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_fiscal_year_closing__earnings
+msgid ""
+"Profit (positive) or loss (negative) of this fiscal year and of the previous"
+" ones not transferred to the retained earnings yet."
+msgstr "本會計年度及以前年度尚未結轉至保留盈餘的利潤（正數）或虧損（負數）。"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
+msgid "Purchase Lock Date"
+msgstr "採購鎖定日期"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__purchase_lock_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__purchase_lock_date
+msgid "Purchase Lock date"
+msgstr "採購鎖定日期"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_bank
+msgid "Reconcile the bank and cash accounts with their statements"
+msgstr "將銀行及現金帳戶與其對帳單核對"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid ""
+"Reconcile the bank statement lines of the fiscal year before locking it."
+msgstr "鎖定會計年度之前，請先核銷該年度的銀行結單資料行。"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_accruals
+msgid "Record the accruals of the expenses not billed yet"
+msgstr "記錄尚未收到帳單之費用的應計項目"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_payroll
+msgid "Record the payroll with the salaries, social charges and taxes payable"
+msgstr "記錄薪資，包括薪金、社會保險費及應付稅款"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_vendor_bills
+msgid "Record the vendor bills received for the period"
+msgstr "記錄本期間收到的供應商帳單"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_form
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "Reopen"
+msgstr "重新開啟"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Reopen a closed period before deleting it."
+msgstr "刪除已結算期間之前，請先重新開啟。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "Reopen the later closed periods first."
+msgstr "請先重新開啟較後已結算的期間。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "Reopening of %s"
+msgstr "重新開啟 %s"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__responsible_id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__responsible_id
+msgid "Responsible"
+msgstr "負責人"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__retained_earnings_account_id
+#: model:ir.model.fields,field_description:om_fiscal_year.field_res_company__retained_earnings_account_id
+msgid "Retained Earnings Account"
+msgstr "保留盈餘帳戶"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_review
+msgid ""
+"Review the Profit and Loss and the Balance Sheet against the previous period"
+" and the budget"
+msgstr "將損益表及資產負債表與上一期間及預算比較檢查"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,name:om_fiscal_year.closing_task_taxes
+msgid "Review the tax accounts and prepare the tax return"
+msgstr "檢查稅項帳戶並準備稅務申報表"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr "簡訊發送錯誤"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__sale_lock_date
+#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__sale_lock_date
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
+msgid "Sales Lock Date"
+msgstr "銷售鎖定日期"
 
 #. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
@@ -223,14 +887,20 @@ msgid "Save"
 msgstr "保存"
 
 #. module: om_fiscal_year
-#. odoo-python
-#: code:addons/om_fiscal_year/models/res_company.py:0
-#, python-format
-msgid "Show unposted entries"
-msgstr "顯示未過帳的分錄"
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__sequence
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_task__sequence
+msgid "Sequence"
+msgstr "序列號"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_fiscal_year_closing__lock
+msgid ""
+"Set the global lock date to the end of the fiscal year once it is closed."
+msgstr "會計年度結束後，將全域鎖定日期設為該年度的最後一天。"
 
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__date_from
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__date_from
 msgid "Start Date"
 msgstr "開始日期"
 
@@ -240,47 +910,278 @@ msgid "Start Date, included in the fiscal year."
 msgstr "開始日期，包含在會計年度中。"
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__state
+msgid "State"
+msgstr "狀態"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year__state
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__status
+msgid "Status"
+msgstr "狀態"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing_check__is_manual
+msgid "Task"
+msgstr "工作"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__task_todo_count
+msgid "Task Todo Count"
+msgstr "待辦工作數目"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_list
+msgid "Tasks To Do"
+msgstr "待辦工作"
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__tax_lock_date
-msgid "Tax Lock Date"
-msgstr "稅額關帳日期"
+#: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__tax_lock_date
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.res_config_settings_view_form
+msgid "Tax Return Lock Date"
+msgstr "報稅鎖定日期"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,note:om_fiscal_year.closing_task_bank
+msgid ""
+"The balance of each bank account in the books matches its statement at the "
+"end of the period."
+msgstr "帳上每個銀行帳戶的餘額與期末對帳單相符。"
+
+#. module: om_fiscal_year
+#: model_terms:ir.actions.act_window,help:om_fiscal_year.action_account_period_closing
+msgid ""
+"The checklist shows what is left to do in the period, then the period is "
+"closed and locked."
+msgstr "檢查清單顯示期間內尚待完成的事項，完成後期間即會結算並鎖定。"
 
 #. module: om_fiscal_year
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
-#, python-format
+msgid "The closing entry cannot be dated before the end of the fiscal year."
+msgstr "結帳分錄的日期不能早於會計年度結束日。"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_form
+msgid ""
+"The closing entry will be reversed. Lower the lock dates first if its date "
+"is locked. Do you want to reopen this fiscal year?"
+msgstr "結帳分錄將被撤銷。如其日期已鎖定，請先調低鎖定日期。是否要重新開啟此會計年度？"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid ""
+"The dates and the company of a closed fiscal year cannot be changed. Reopen "
+"it first."
+msgstr "已結束會計年度的日期及公司無法變更。請先重新開啟。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid ""
+"The earnings are transferred from an account of type Current Year Earnings."
+msgstr "收益從「目前年度收益」類型的帳戶結轉。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
 msgid "The ending date must not be prior to the starting date."
 msgstr "結束日期不得早於開始日期。"
 
 #. module: om_fiscal_year
 #. odoo-python
-#: code:addons/om_fiscal_year/models/res_company.py:0
-#, python-format
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "The fiscal year %s is already closed."
+msgstr "會計年度 %s 已結束。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_account_period_closing__lock_type
 msgid ""
-"There are still unposted entries in the period you want to lock. You should "
-"either post or delete them."
-msgstr "在您想要關帳的期間內仍有未過帳的條目。 您應該發布或刪除它們。"
+"The lock date set on the company when the period is closed. The permanent "
+"lock is set from the lock dates of the company."
+msgstr "期間結算時在公司設定的鎖定日期。永久鎖定是依公司的鎖定日期設定。"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid ""
+"The lock dates set by this closing go back to their previous value. Reopen "
+"the period?"
+msgstr "此次結帳所設定的鎖定日期將恢復為先前的值。是否重新開啟期間？"
 
 #. module: om_fiscal_year
 #. odoo-python
-#: code:addons/om_fiscal_year/models/res_company.py:0
-#, python-format
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "The period %s is closed."
+msgstr "期間 %s 已結算。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "The period %s overlaps another closing."
+msgstr "期間 %s 與另一次結帳重疊。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "The period stays locked: it is before the permanent lock date."
+msgstr "期間仍保持鎖定：它早於永久鎖定日期。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "The retained earnings account %s must be an Equity account."
+msgstr "保留盈餘帳戶 %s 必須是權益帳戶。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "The start date of the closing must be before its end date."
+msgstr "結帳的開始日期必須早於結束日期。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "This check no longer exists, refresh the checklist."
+msgstr "此檢查已不存在，請重新整理檢查清單。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_move.py:0
 msgid ""
-"There are still unreconciled bank statement lines in the period you want to "
-"lock.You should either reconcile or delete them."
-msgstr "您想要關帳的期間內仍有未調整的銀行對帳單行。您應該調整或刪除它們"
+"This entry closes the fiscal year %s. Reopen the fiscal year instead of "
+"changing it."
+msgstr "此分錄結束會計年度 %s。請重新開啟會計年度，而非修改此分錄。"
+
+#. module: om_fiscal_year
+#: model:ir.model.constraint,message:om_fiscal_year.constraint_account_period_closing_company_period_uniq
+msgid "This period is already being closed."
+msgstr "此期間已在結帳中。"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__status__todo
+msgid "To Do"
+msgstr "待辦事項"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__unaffected_earnings_account_id
+msgid "Transfer From"
+msgstr "結轉來源"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "Undo"
+msgstr "復原"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/fiscal_year_closing.py:0
+msgid "Unreconciled Bank Transactions"
+msgstr "未核銷的銀行交易"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__unreconciled_statement_line_count
+msgid "Unreconciled Statement Line Count"
+msgstr "未核銷的銀行結單資料行數目"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+msgid "Unreconciled bank transactions"
+msgstr "未核銷的銀行交易"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+msgid "View"
+msgstr "檢視"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__level__warning
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__account_period_closing_check__status__warning
+msgid "Warning"
+msgstr "警告"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__warning_count
+msgid "Warning Count"
+msgstr "警告數目"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_list
+msgid "Warnings"
+msgstr "警告"
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__lock_type
+msgid "When Closed"
+msgstr "結束時"
+
+#. module: om_fiscal_year
+#: model:ir.ui.menu,name:om_fiscal_year.menu_fiscal_year_closing
+msgid "Year-End Closing"
+msgstr "年終結帳"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
+msgid "Year-end closing %s"
+msgstr "年終結帳 %s"
 
 #. module: om_fiscal_year
 #. odoo-python
 #: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
-#, python-format
 msgid "You Are Not Allowed To Perform This Operation"
 msgstr "您無權執行此操作"
 
 #. module: om_fiscal_year
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
-#, python-format
 msgid ""
 "You can not have an overlap between two fiscal years, please correct the "
 "start and/or end dates of your fiscal years."
 msgstr "兩個會計年度之間不能有重疊，請更正會計年度的開始和/或結束日期。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "You cannot change the lock dates of another company."
+msgstr "您不能變更其他公司的鎖定日期。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "company_id"
+msgstr "company_id"
+
+#. module: om_fiscal_year
+#: model_terms:ir.actions.act_window,help:om_fiscal_year.action_account_period_closing_task
+msgid ""
+"e.g. accrue the electricity, review the payroll: they are added to the "
+"checklist of each new closing."
+msgstr "例如：預提電費、檢查薪資：它們會加入每次新結帳的檢查清單。"
+
+#. module: om_fiscal_year
+#: model:account.period.closing.task,note:om_fiscal_year.closing_task_accruals
+msgid ""
+"e.g. the electricity, rent and services of the period not billed at its end."
+msgstr "例如：期間內至期末尚未收到帳單的電費、租金及服務費。"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_closing_form
+msgid ""
+"earlier fiscal year(s) are still open:\n"
+"                    their earnings not transferred yet are included in this closing."
+msgstr ""
+"個以前會計年度仍未結束：\n"
+"                    其尚未結轉的收益會包含在此次結帳中。"
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/models/account_period_closing.py:0
+msgid "id"
+msgstr "id"
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
+msgid "point(s) must be dealt with before closing."
+msgstr "個事項必須在結帳前處理。"
