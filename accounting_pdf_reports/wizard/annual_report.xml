@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_annual_report_view" model="ir.ui.view">
+        <field name="name">Annual Report</field>
+        <field name="model">account.annual.report</field>
+        <field name="inherit_id" ref="accounting_pdf_reports.account_common_report_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='target_move']" position="after">
+                <label for="include_balance_sheet" string="Include"/>
+                <div>
+                    <div>
+                        <field name="include_balance_sheet"/>
+                        <label for="include_balance_sheet"/>
+                    </div>
+                    <div>
+                        <field name="include_profit_and_loss"/>
+                        <label for="include_profit_and_loss"/>
+                    </div>
+                    <div>
+                        <field name="include_cash_flow"/>
+                        <label for="include_cash_flow"/>
+                    </div>
+                </div>
+                <label for="compare_previous_year" string="Comparison"/>
+                <div>
+                    <div>
+                        <field name="compare_previous_year"/>
+                        <label for="compare_previous_year"/>
+                    </div>
+                    <div invisible="not compare_previous_year">
+                        <field name="show_variance"/>
+                        <label for="show_variance"/>
+                    </div>
+                </div>
+                <label for="include_key_figures" string="Extras"/>
+                <div>
+                    <div>
+                        <field name="include_key_figures"/>
+                        <label for="include_key_figures"/>
+                    </div>
+                    <div>
+                        <field name="include_signatures"/>
+                        <label for="include_signatures"/>
+                    </div>
+                </div>
+                <field name="notes" placeholder="Notes to the financial statements, printed at the end of the report."/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_account_annual_report" model="ir.actions.act_window">
+        <field name="name">Annual Report</field>
+        <field name="res_model">account.annual.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="account_annual_report_view"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_account_report_annual"
+              name="Annual Report"
+              sequence="40"
+              action="action_account_annual_report"
+              parent="account.account_reports_legal_statements_menu"
+              groups="account.group_account_readonly,account.group_account_manager"/>
+
+</odoo>

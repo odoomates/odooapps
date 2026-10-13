@@ -6,26 +6,27 @@
         <field name="model">account.aged.trial.balance</field>
         <field name="arch" type="xml">
             <form string="Report Options">
-                <group col="4">
-                    <field name="date_from"/>
-                    <field name="period_length"/>
-                    <field name="company_id" invisible="1"/>
-                    <newline/>
-                    <field name="result_selection" widget="radio"
-                           invisible="context.get('hide_result_selection')"/>
-                    <field name="target_move" widget="radio"/>
-                </group>
-                <field name="journal_ids" required="0" invisible="1"/>
-                <xpath expr="//field[@name='journal_ids']" position="before">
-                    <group>
-                        <field name="partner_ids" widget="many2many_tags"
-                               options="{'no_open': True, 'no_create': True}"/>
+                <group>
+                    <group name="options">
+                        <field name="result_selection" widget="radio"
+                               invisible="context.get('hide_result_selection')"/>
+                        <field name="target_move" widget="radio"/>
                     </group>
-                </xpath>
+                    <group name="period">
+                        <field name="date_from"/>
+                        <field name="period_length"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                </group>
+                <group name="filters">
+                    <field name="partner_ids" widget="many2many_tags"
+                           options="{'no_open': True, 'no_create': True}"/>
+                    <field name="journal_ids" required="0" invisible="1"/>
+                </group>
                 <footer>
-                    <button name="check_report" class="oe_highlight"
-                            string="Print" type="object"/>
-                    <button string="Cancel" class="btn btn-default" special="cancel"/>
+                    <button name="check_report" class="btn-primary"
+                            string="Print" type="object" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="z"/>
                 </footer>
             </form>
         </field>
@@ -43,9 +44,10 @@
 
     <menuitem id="menu_aged_trial_balance"
               name="Aged Partner Balance"
-              sequence="10"
+              sequence="20"
               action="action_account_aged_balance_view"
-              parent="menu_finance_partner_reports"/>
+              parent="menu_finance_partner_reports"
+              groups="account.group_account_invoice,account.group_account_readonly"/>
 
     <record id="action_account_aged_receivable" model="ir.actions.act_window">
         <field name="name">Aged Receivable</field>
@@ -60,9 +62,10 @@
 
     <menuitem id="menu_aged_receivable"
               name="Aged Receivable"
-              sequence="20"
+              sequence="30"
               action="action_account_aged_receivable"
-              parent="menu_finance_partner_reports"/>
+              parent="menu_finance_partner_reports"
+              groups="account.group_account_invoice,account.group_account_readonly"/>
 
 
     <record id="action_account_aged_payable" model="ir.actions.act_window">
@@ -78,8 +81,9 @@
 
     <menuitem id="menu_aged_payable"
               name="Aged Payable"
-              sequence="30"
+              sequence="40"
               action="action_account_aged_payable"
-              parent="menu_finance_partner_reports"/>
+              parent="menu_finance_partner_reports"
+              groups="account.group_account_invoice,account.group_account_readonly"/>
 
 </odoo>

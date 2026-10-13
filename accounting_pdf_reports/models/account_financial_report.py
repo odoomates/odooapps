@@ -1,4 +1,5 @@
-from odoo import api, models, fields
+from odoo import _, api, models, fields
+from odoo.exceptions import ValidationError
 
 
 class AccountFinancialReport(models.Model):
@@ -17,7 +18,8 @@ class AccountFinancialReport(models.Model):
 
     def _get_children_by_order(self):
         res = self
-        children = self.search([('parent_id', 'in', self.ids)], order='sequence ASC')
+        # the id after the sequence: the sections without one keep the order they were created in
+        children = self.search([('parent_id', 'in', self.ids)], order='sequence ASC, id ASC')
         if children:
             for child in children:
                 res += child._get_children_by_order()
@@ -72,3 +74,34 @@ class AccountFinancialReport(models.Model):
              "financial reports hierarchy (auto-computed field 'level').")
     children_ids = fields.One2many('account.financial.report', 'parent_id', string='Children')
 
+    @api.constrains('parent_id')
+    def _check_parent_id(self):
+        if not self._check_recursion():
+            raise ValidationError(_('A section of a financial report cannot be placed under itself or under one of its sub-sections.'))
+
+    def _get_amount_sources(self):
+        """ The sections the amount of this one is computed from """
+        self.ensure_one()
+        if self.type == 'sum':
+            return self.children_ids
+        if self.type == 'account_report':
+            return self.account_report_id
+        return self.browse()
+
+    @api.constrains('type', 'account_report_id', 'parent_id')
+    def _check_amount_sources(self):
+        # the report computes the amount of a View from its children and the amount of a Report Value
+        # from the section it names: a section whose amount comes back to itself would never end
+        for report in self:
+            seen = set()
+            todo = report._get_amount_sources()
+            while todo:
+                section = todo[0]
+                todo = todo[1:]
+                if section == report:
+                    raise ValidationError(_(
+                        'The amount of the section "%s" depends on itself: a Report Value cannot name the '
+                        'section itself, nor a section that sums it.', report.name))
+                if section.id not in seen:
+                    seen.add(section.id)
+                    todo |= section._get_amount_sources()

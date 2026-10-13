@@ -1,32 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <data>
 
-        <record id="action_account_moves_ledger_general" model="ir.actions.act_window">
-            <field name="context">{'journal_type':'general', 'search_default_group_by_account': 1, 'search_default_posted':1}</field>
-            <field name="name">General Ledger</field>
-            <field name="res_model">account.move.line</field>
-            <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
-            <field name="view_id" ref="account.view_move_line_tree_grouped_general"/>
-            <field name="search_view_id" ref="account.view_account_move_line_filter"/>
-            <field name="view_mode">tree,pivot,graph</field>
-        </record>
+    <record id="action_account_moves_ledger_general" model="ir.actions.act_window">
+        <field name="context">{'journal_type':'general', 'search_default_group_by_account': 1, 'search_default_posted':1}</field>
+        <field name="name">General Ledger Items</field>
+        <field name="res_model">account.move.line</field>
+        <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
+        <field name="view_id" ref="account.view_move_line_tree_grouped_general"/>
+        <field name="search_view_id" ref="account.view_account_move_line_filter"/>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No journal item to show
+            </p>
+            <p>
+                The posted journal items of all the accounts, grouped by account. Post invoices, bills and entries to see them here.
+            </p>
+        </field>
+    </record>
 
-        <record id="action_account_moves_ledger_partner" model="ir.actions.act_window">
-            <field name="context">{'journal_type':'general', 'search_default_group_by_partner': 1, 'search_default_posted':1, 'search_default_payable':1, 'search_default_receivable':1, 'search_default_unreconciled':1}</field>
-            <field name="name">Partner Ledger</field>
-            <field name="res_model">account.move.line</field>
-            <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
-            <field name="view_id" ref="account.view_move_line_tree_grouped_partner"/>
-            <field name="search_view_id" ref="account.view_account_move_line_filter"/>
-            <field name="view_mode">tree,pivot,graph</field>
-        </record>
+    <record id="action_account_moves_ledger_partner" model="ir.actions.act_window">
+        <field name="context">{'journal_type':'general', 'search_default_group_by_partner': 1,
+            'search_default_posted':1, 'search_default_payable':1, 'search_default_receivable':1,
+            'search_default_unreconciled':1}
+        </field>
+        <field name="name">Partner Ledger Items</field>
+        <field name="res_model">account.move.line</field>
+        <field name="domain">[('display_type', 'not in', ('line_section', 'line_note'))]</field>
+        <field name="view_id" ref="account.view_move_line_tree_grouped_partner"/>
+        <field name="search_view_id" ref="account.view_account_move_line_filter"/>
+        <field name="view_mode">tree,pivot,graph</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No open receivable or payable
+            </p>
+            <p>
+                The unreconciled items of the customers and the vendors, grouped by partner.
+            </p>
+        </field>
+    </record>
 
-        <menuitem id="menu_finance_entries_accounting_ledgers" name="Ledgers" parent="account.menu_finance_entries" sequence="3">
-            <menuitem id="menu_action_account_moves_ledger_general" action="action_account_moves_ledger_general" groups="account.group_account_readonly" sequence="1"/>
-            <menuitem id="menu_action_account_moves_ledger_partner" action="action_account_moves_ledger_partner" groups="account.group_account_readonly" sequence="2"/>
-        </menuitem>
+    <!-- the journal items by account and by partner, apart from the General Ledger and Partner Ledger reports -->
+    <menuitem id="menu_finance_entries_accounting_ledgers" name="Ledgers" parent="account.menu_finance_entries"
+              sequence="20">
+        <menuitem id="menu_action_account_moves_ledger_general" action="action_account_moves_ledger_general"
+                  groups="account.group_account_readonly,account.group_account_manager" sequence="1"/>
+        <menuitem id="menu_action_account_moves_ledger_partner" action="action_account_moves_ledger_partner"
+                  groups="account.group_account_readonly,account.group_account_manager" sequence="2"/>
+    </menuitem>
 
-    </data>
 </odoo>
 
