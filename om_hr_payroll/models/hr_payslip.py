@@ -143,8 +143,8 @@ class HrPayslip(models.Model):
             copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + payslip.name})
             copied_payslip.compute_sheet()
             copied_payslip.action_payslip_done()
-        form_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_form', False)
-        list_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_tree', False)
+        form_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_form', False)
+        list_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_tree', False)
         return {
             'name': (_("Refund Payslip")),
             'view_mode': 'list, form',
@@ -341,15 +341,16 @@ class HrPayslip(models.Model):
             def __getattr__(self, attr):
                 return attr in self.dict and self.dict.__getitem__(attr) or 0.0
 
-        class EmptyLine(object):
-            """ The worked days or the input of a code the payslip has none of: every value of it is 0, and it
-            is false, so that worked_days.Unpaid.number_of_days is 0 instead of an error. """
+        class EmptyLine(float):
+            """ The worked days or the input of a code the payslip has none of: the number 0, false, and every
+            value of it 0. So worked_days.Unpaid.number_of_days is 0 instead of an error, and the rules written
+            for a missing code, worked_days.WORK100 and worked_days.WORK100.number_of_days, still get 0. """
+
+            def __new__(cls):
+                return super().__new__(cls, 0.0)
 
             def __getattr__(self, attr):
                 return 0.0
-
-            def __bool__(self):
-                return False
 
         class LinesByCode(BrowsableObject):
             def __getattr__(self, attr):
@@ -815,8 +816,8 @@ class HrPayslipRun(models.Model):
 #             copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + payslip.name})
 #             copied_payslip.compute_sheet()
 #             copied_payslip.action_payslip_done()
-#         form_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_form', False)
-#         list_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_tree', False)
+#         form_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_form', False)
+#         list_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_tree', False)
 #         return {
 #             'name': (_("Refund Payslip")),
 #             'view_mode': 'list, form',
@@ -1477,8 +1478,8 @@ class HrPayslipRun(models.Model):
 #             copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + payslip.name})
 #             copied_payslip.compute_sheet()
 #             copied_payslip.action_payslip_done()
-#         form_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_form', False)
-#         list_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_tree', False)
+#         form_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_form', False)
+#         list_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_tree', False)
 #         return {
 #             'name': (_("Refund Payslip")),
 #             'view_mode': 'list, form',
