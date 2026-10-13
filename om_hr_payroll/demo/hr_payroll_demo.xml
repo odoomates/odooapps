@@ -52,7 +52,7 @@
 
         <record id="rule_parameter_pension_rate_value" model="hr.rule.parameter.value">
             <field name="parameter_id" ref="rule_parameter_pension_rate"/>
-            <field name="date_from" eval="'2026-01-01'"/>
+            <field name="date_from" eval="(DateTime.today() + relativedelta(years=-1, month=1, day=1)).strftime('%Y-%m-%d')"/>
             <field name="value_number">5.0</field>
         </record>
 
@@ -67,7 +67,7 @@
 
         <record id="salary_bracket_income_tax_2026" model="hr.salary.bracket.version">
             <field name="bracket_id" ref="salary_bracket_income_tax"/>
-            <field name="date_from" eval="'2026-01-01'"/>
+            <field name="date_from" eval="(DateTime.today() + relativedelta(years=-1, month=1, day=1)).strftime('%Y-%m-%d')"/>
         </record>
 
         <record id="salary_bracket_income_tax_2026_band_1" model="hr.salary.bracket.line">
@@ -90,6 +90,109 @@
             <field name="upper">0</field>
             <field name="rate">20</field>
         </record>
+
+        <!-- A monthly structure built on the base one: it adds a bonus and union dues entered on the payslip,
+             the pension contribution read from the rate above and the income tax read from the scale above. -->
+
+        <record id="contrib_register_pension_fund" model="hr.contribution.register">
+            <field name="name">Pension Fund</field>
+            <field name="company_id" eval="False"/>
+            <field name="note">The contributions withheld from the salaries for the pension fund.</field>
+        </record>
+
+        <record id="contrib_register_tax_authority" model="hr.contribution.register">
+            <field name="name">Tax Authority</field>
+            <field name="company_id" eval="False"/>
+            <field name="note">The income tax withheld from the salaries.</field>
+        </record>
+
+        <record id="contrib_register_union" model="hr.contribution.register">
+            <field name="name">Trade Union</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="hr_rule_bonus" model="hr.salary.rule">
+            <field name="name">Bonus</field>
+            <field name="code">BONUS</field>
+            <field name="sequence" eval="55"/>
+            <field name="category_id" ref="om_hr_payroll.ALW"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = inputs.BONUS.amount != 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = inputs.BONUS.amount</field>
+            <field name="company_id" eval="False"/>
+            <field name="note">Pays the bonus entered in the Other Inputs of the payslip.</field>
+        </record>
+
+        <record id="hr_rule_input_bonus" model="hr.rule.input">
+            <field name="name">Bonus</field>
+            <field name="code">BONUS</field>
+            <field name="input_id" ref="hr_rule_bonus"/>
+        </record>
+
+        <record id="hr_rule_union_dues" model="hr.salary.rule">
+            <field name="name">Union Dues</field>
+            <field name="code">UNION</field>
+            <field name="sequence" eval="65"/>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="condition_select">python</field>
+            <field name="condition_python">result = inputs.UNION.amount != 0</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute"># entered positive on the payslip, deducted here
+result = -inputs.UNION.amount</field>
+            <field name="register_id" ref="contrib_register_union"/>
+            <field name="company_id" eval="False"/>
+            <field name="note">Deducts the union dues entered in the Other Inputs of the payslip.</field>
+        </record>
+
+        <record id="hr_rule_input_union_dues" model="hr.rule.input">
+            <field name="name">Union Dues</field>
+            <field name="code">UNION</field>
+            <field name="input_id" ref="hr_rule_union_dues"/>
+        </record>
+
+        <record id="hr_rule_pension" model="hr.salary.rule">
+            <field name="name">Pension Contribution</field>
+            <field name="code">PENSION</field>
+            <field name="sequence" eval="110"/>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = -categories.GROSS * parameters.PENSION_RATE / 100</field>
+            <field name="register_id" ref="contrib_register_pension_fund"/>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="hr_rule_income_tax" model="hr.salary.rule">
+            <field name="name">Income Tax</field>
+            <field name="code">INCOME_TAX</field>
+            <field name="sequence" eval="120"/>
+            <field name="category_id" ref="om_hr_payroll.DED"/>
+            <field name="condition_select">none</field>
+            <field name="amount_select">code</field>
+            <field name="amount_python_compute">result = -brackets.INCOME_TAX.compute(categories.GROSS)</field>
+            <field name="register_id" ref="contrib_register_tax_authority"/>
+            <field name="company_id" eval="False"/>
+        </record>
+
+        <record id="structure_monthly" model="hr.payroll.structure">
+            <field name="code">MONTHLY</field>
+            <field name="name">Monthly Employees</field>
+            <field name="parent_id" ref="structure_base"/>
+            <field name="rule_ids" eval="[Command.set([
+                ref('hr_rule_bonus'),
+                ref('hr_rule_union_dues'),
+                ref('hr_rule_pension'),
+                ref('hr_rule_income_tax'),
+            ])]"/>
+            <field name="company_id" eval="False"/>
+            <field name="note">The rules of the base structure, plus a bonus and union dues entered on the
+                payslip, the pension contribution and the income tax.</field>
+        </record>
+
+        <!-- The structure and the salary components on the running contracts of some employees, a confirmed
+             batch of payslips for last month and the payslips of this month in draft. -->
+        <function model="hr.payslip.run" name="_om_load_demo_payslips"/>
 
     </data>
 </odoo>

@@ -21,5 +21,4 @@
         'report/budget_report.xml',
     ],
     'images': ['static/description/banner.gif'],
-    'demo': ['data/account_budget_demo.xml'],
 }

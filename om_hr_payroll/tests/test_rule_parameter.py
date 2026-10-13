@@ -167,11 +167,13 @@ class TestParametersOnPayslip(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.env['hr.rule.parameter'].create({
-            'name': 'Pension Rate', 'code': 'PENSION_RATE',
+            'name': 'Pension Rate', 'code': 'PENSION_RATE', 'company_id': cls.env.company.id,
             'value_ids': [Command.create({'date_from': date(2026, 1, 1), 'value_number': 5.0})],
         })
         cls.env['hr.salary.bracket'].create({
             'name': 'Income Tax', 'code': 'INCOME_TAX', 'computation': 'marginal',
+            # the bracket of the company, which wins over the one the demo data shares between the companies
+            'company_id': cls.env.company.id,
             'version_ids': [Command.create({
                 'date_from': date(2026, 1, 1),
                 'line_ids': [

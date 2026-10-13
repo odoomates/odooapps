@@ -17,6 +17,9 @@
         'views/hr_payroll_account_views.xml',
         'wizard/hr_payslip_payment_register_views.xml',
     ],
+    'demo': [
+        'demo/hr_payroll_account_demo.xml',
+    ],
     'images': ['static/description/banner.gif'],
     'application': True,
 }
