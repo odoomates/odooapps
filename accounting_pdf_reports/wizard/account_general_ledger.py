@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import fields, models, api, _
 from odoo.exceptions import UserError
 
@@ -9,18 +7,20 @@ class AccountReportGeneralLedger(models.TransientModel):
     _inherit = "account.common.account.report"
     _description = "General Ledger Report"
 
-    initial_balance = fields.Boolean(string='Include Initial Balances',
-                                    help='If you selected date, this field allow'
-                                         ' you to add a row to display the amount '
-                                         'of debit/credit/balance that precedes'
-                                         ' the filter you\'ve set.')
-    sortby = fields.Selection([('sort_date', 'Date'), 
-                               ('sort_journal_partner', 'Journal & Partner')], 
-                              string='Sort by', required=True, default='sort_date')
-    journal_ids = fields.Many2many('account.journal',
-                                   'account_report_general_ledger_journal_rel',
-                                   'account_id', 'journal_id', 
-                                   string='Journals', required=True)
+    initial_balance = fields.Boolean(
+        string='Include Initial Balances',
+        help='If you selected date, this field allow you to add a row '
+             'to display the amount of debit/credit/balance that precedes '
+             'the filter you have set.'
+    )
+    sortby = fields.Selection(
+        [('sort_date', 'Date'), ('sort_journal_partner', 'Journal & Partner')],
+        string='Sort by', required=True, default='sort_date'
+    )
+    journal_ids = fields.Many2many(
+        'account.journal', 'account_report_general_ledger_journal_rel',
+        'account_id', 'journal_id', string='Journals', required=True
+    )
 
     def _get_report_data(self, data):
         data = self.pre_print_report(data)

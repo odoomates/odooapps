@@ -22,7 +22,7 @@
         <field name="parent_id" ref="account_financial_report_profitandloss0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('account.data_account_type_expenses')), (4,ref('account.data_account_type_direct_costs')), (4,ref('account.data_account_type_depreciation'))]"/>
+        <field name="account_type_ids" eval="[(4,ref('account.data_account_type_expenses')),(4,ref('account.data_account_type_direct_costs')), (4,ref('account.data_account_type_depreciation'))]"/>
     </record>
 
     <record id="account_financial_report_balancesheet0" model="account.financial.report">
@@ -35,7 +35,11 @@
         <field name="parent_id" ref="account_financial_report_balancesheet0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('account.data_account_type_receivable')), (4,ref('account.data_account_type_liquidity')), (4,ref('account.data_account_type_current_assets')), (4,ref('account.data_account_type_non_current_assets'), (4,ref('account.data_account_type_prepayments'))), (4,ref('account.data_account_type_fixed_assets'))]"/>
+        <field name="account_type_ids" eval="[(4,ref('account.data_account_type_receivable')),
+        (4,ref('account.data_account_type_liquidity')), (4,ref('account.data_account_type_current_assets')),
+        (4,ref('account.data_account_type_non_current_assets')), (4,ref('account.data_account_type_prepayments')),
+        (4,ref('account.data_account_type_fixed_assets'))]"/>
+
     </record>
 
     <record id="account_financial_report_liabilitysum0" model="account.financial.report">
@@ -50,7 +54,11 @@
         <field name="parent_id" ref="account_financial_report_liabilitysum0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(4,ref('account.data_account_type_payable')), (4,ref('account.data_account_type_equity')), (4,ref('account.data_account_type_current_liabilities')), (4,ref('account.data_account_type_non_current_liabilities'))]"/>
+        <field name="account_type_ids" eval="[(4,ref('account.data_account_type_payable')),
+        (4,ref('account.data_account_type_credit_card')),
+        (4,ref('account.data_account_type_equity')), (4,ref('account.data_account_type_current_liabilities')),
+        (4,ref('account.data_account_type_non_current_liabilities')),
+        (4,ref('account.data_unaffected_earnings'))]"/>
     </record>
 
     <record id="account_financial_report_profitloss_toreport0" model="account.financial.report">
@@ -64,25 +72,25 @@
     <record id="accounting_report_view" model="ir.ui.view">
         <field name="name">Accounting Report</field>
         <field name="model">accounting.report</field>
-        <field name="inherit_id" ref="account.account_common_report_view"/>
+        <field name="inherit_id" ref="accounting_pdf_reports.account_common_report_view"/>
         <field name="arch" type="xml">
             <field name="target_move" position="before">
                 <field name="account_report_id" domain="[('parent_id','=',False)]"/>
             </field>
             <field name="target_move" position="after">
                 <field name="enable_filter"/>
-                <field name="debit_credit" attrs="{'invisible': [('enable_filter','=',True)]}"/>
+                <field name="debit_credit" attrs="{'invisible': [('enable_filter', '=', True)]}"/>
             </field>
             <field name="journal_ids" position="after">
                 <notebook tabpos="up" colspan="4">
-                    <page string="Comparison" name="comparison" attrs="{'invisible': [('enable_filter','=',False)]}">
+                    <page string="Comparison" name="comparison" attrs="{'invisible': [('enable_filter', '=', False)]}">
                         <group>
                             <field name="label_filter" attrs="{'required': [('enable_filter', '=', True)]}"/>
                             <field name="filter_cmp"/>
                         </group>
-                        <group string="Dates" attrs="{'invisible':[('filter_cmp', '!=', 'filter_date')]}">
-                            <field name="date_from_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
-                            <field name="date_to_cmp" attrs="{'required':[('filter_cmp', '=', 'filter_date')]}"/>
+                        <group string="Dates" attrs="{'invisible': [('filter_cmp', '!=', 'filter_date')]}">
+                            <field name="date_from_cmp" attrs="{'required': [('filter_cmp', '=', 'filter_date')]}"/>
+                            <field name="date_to_cmp" attrs="{'required': [('filter_cmp', '=', 'filter_date')]}"/>
                         </group>
                     </page>
                 </notebook>
@@ -102,9 +110,9 @@
 
     <menuitem id="menu_account_report_bs"
               name="Balance Sheet"
-              sequence="5"
+              sequence="10"
               action="action_account_report_bs"
-              parent="menu_finance_legal_statement"
-              groups="account.group_account_user,account.group_account_manager"/>
+              parent="account.account_reports_legal_statements_menu"
+              groups="account.group_account_readonly,account.group_account_manager"/>
 
 </odoo>

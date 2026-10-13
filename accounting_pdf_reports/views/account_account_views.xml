@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_form_cash_flow" model="ir.ui.view">
+        <field name="name">account.account.form.cash.flow</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <field name="tag_ids" position="after">
+                <!-- not for the bank and cash accounts, whose lines are the cash itself -->
+                <field name="cash_flow_activity"
+                       placeholder="By account type"
+                       attrs="{'invisible': ['|', '&amp;', ('internal_type', '=', 'liquidity'), ('internal_group', '=', 'asset'), ('internal_group', '=', 'off_balance')]}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
