@@ -49,6 +49,19 @@ class TestCashForecast(AccountTestInvoicingCommon):
     def _rows(forecast):
         return {row['key']: row['amounts'] for section in forecast['sections'] for row in section['rows']}
 
+    def test_payments_not_in_the_bank_yet(self):
+        # the payment methods have no account of their own: the payments go to the outstanding accounts that
+        # Odoo chooses for them, and are in transit until the bank statement
+        self.bank.inbound_payment_method_line_ids.payment_account_id = False
+        invoice = self._invoice('out_invoice', 600.0, date(2026, 2, 20))
+        self.env['account.payment.register'].with_context(active_model='account.move', active_ids=invoice.ids).create({
+            'payment_date': date(2026, 2, 5), 'journal_id': self.bank.id,
+        })._create_payments()
+        _wizard, forecast = self._forecast(overdue='exclude')
+        rows = self._rows(forecast)
+        self.assertNotIn('customers', rows)
+        self.assertEqual(rows['transit_in'], [600.0, 0.0, 0.0])
+
     def test_forecast_by_month(self):
         self._invoice('out_invoice', 1000.0, date(2026, 2, 20))
         self._invoice('out_invoice', 300.0, date(2026, 1, 20))  # overdue

@@ -29,8 +29,12 @@ class ReportCashForecast(models.AbstractModel):
     def _get_transit_accounts(self, company):
         journals = self.env['account.journal'].sudo().search([('company_id', 'child_of', company.id)])
         method_lines = self.env['account.payment.method.line'].sudo().search([('journal_id', 'in', journals.ids)])
-        return method_lines.payment_account_id.filtered(
-            lambda account: account.account_type != 'asset_cash').sudo(False)
+        # the payment methods without an account of their own post to the outstanding accounts of the company
+        companies = self.env['res.company'].sudo().search([('id', 'child_of', company.id)])
+        accounts = method_lines.payment_account_id \
+            | companies.account_journal_payment_debit_account_id \
+            | companies.account_journal_payment_credit_account_id
+        return accounts.filtered(lambda account: account.account_type != 'asset_cash').sudo(False)
 
     def _get_forecast_items(self, wizard, date_to):
         """ The receipts (positive) and payments (negative) expected up to `date_to`, in company currency.
