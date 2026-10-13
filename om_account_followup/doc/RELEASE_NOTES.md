@@ -1,5 +1,11 @@
 ## Module <om_account_followup>
 
+#### 13.10.2026
+#### Version 15.0.3.0.0
+##### IMP
+- backport of 18.0: follow-up screen, automatic reminders, customer and vendor statements, promises to pay
+  and disputed invoices
+
 #### 19.05.2025
 #### Version 15.0.2.3.1
 ##### IMP
