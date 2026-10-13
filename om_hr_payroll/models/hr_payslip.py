@@ -96,8 +96,8 @@ class HrPayslip(models.Model):
             copied_payslip = payslip.copy({'credit_note': True, 'name': _('Refund: ') + payslip.name})
             copied_payslip.compute_sheet()
             copied_payslip.action_payslip_done()
-        form_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_form', False)
-        tree_view_ref = self.env.ref('om_om_hr_payroll.view_hr_payslip_tree', False)
+        form_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_form', False)
+        tree_view_ref = self.env.ref('om_hr_payroll.view_hr_payslip_tree', False)
         return {
             'name': (_("Refund Payslip")),
             'view_mode': 'tree, form',
@@ -273,7 +273,22 @@ class HrPayslip(models.Model):
             def __getattr__(self, attr):
                 return attr in self.dict and self.dict.__getitem__(attr) or 0.0
 
-        class InputLine(BrowsableObject):
+        class EmptyLine(float):
+            """ The worked days or the input of a code the payslip has none of: the number 0, false, and every
+            value of it 0. So worked_days.Unpaid.number_of_days is 0 instead of an error, and the rules written
+            for a missing code, worked_days.WORK100 and worked_days.WORK100.number_of_days, still get 0. """
+
+            def __new__(cls):
+                return super().__new__(cls, 0.0)
+
+            def __getattr__(self, attr):
+                return 0.0
+
+        class LinesByCode(BrowsableObject):
+            def __getattr__(self, attr):
+                return self.dict[attr] if attr in self.dict else EmptyLine()
+
+        class InputLine(LinesByCode):
             """a class that will be used into the python code, mainly for usability purposes"""
             def sum(self, code, from_date, to_date=None):
                 if to_date is None:
@@ -286,7 +301,7 @@ class HrPayslip(models.Model):
                     (self.employee_id, from_date, to_date, code))
                 return self.env.cr.fetchone()[0] or 0.0
 
-        class WorkedDays(BrowsableObject):
+        class WorkedDays(LinesByCode):
             """a class that will be used into the python code, mainly for usability purposes"""
             def _sum(self, code, from_date, to_date=None):
                 if to_date is None:

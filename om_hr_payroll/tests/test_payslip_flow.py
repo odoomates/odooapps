@@ -2,9 +2,12 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 
 import os
+from datetime import date
+
+from dateutil.relativedelta import relativedelta
 
 from odoo.tools import config, test_reports
-from odoo.addons.om_om_hr_payroll.tests.common import TestPayslipBase
+from odoo.addons.om_hr_payroll.tests.common import TestPayslipBase
 
 
 class TestPayslipFlow(TestPayslipBase):
@@ -27,8 +30,8 @@ class TestPayslipFlow(TestPayslipBase):
         context = {
             "lang": "en_US", "tz": False, "active_model": "ir.ui.menu",
             "department_id": False, "section_id": False,
-            "active_ids": [self.ref("om_om_hr_payroll.menu_department_tree")],
-            "active_id": self.ref("om_om_hr_payroll.menu_department_tree")
+            "active_ids": [self.ref("om_hr_payroll.menu_department_tree")],
+            "active_id": self.ref("om_hr_payroll.menu_department_tree")
         }
         # I click on 'Compute Sheet' button on payslip
         richard_payslip.with_context(context).compute_sheet()
@@ -47,9 +50,11 @@ class TestPayslipFlow(TestPayslipBase):
         self.assertTrue(bool(payslip_refund), "Payslip not refunded!")
 
         # I want to generate a payslip from Payslip run.
+        date_start = date.today().replace(day=1)
+        date_end = date_start + relativedelta(months=1, days=-1)
         payslip_run = self.env['hr.payslip.run'].create({
-            'date_end': '2011-09-30',
-            'date_start': '2011-09-01',
+            'date_end': date_end,
+            'date_start': date_start,
             'name': 'Payslip for Employee'
         })
 
@@ -64,16 +69,16 @@ class TestPayslipFlow(TestPayslipBase):
 
         # I open Contribution Register and from there I print the Payslip Lines report.
         self.env['payslip.lines.contribution.register'].create({
-            'date_from': '2011-09-30',
-            'date_to': '2011-09-01'
+            'date_from': date_start,
+            'date_to': date_end,
         })
 
         # I print the payslip report
-        data, data_format = self.env.ref('om_om_hr_payroll.action_report_payslip').render(richard_payslip.ids)
+        data, data_format = self.env.ref('om_hr_payroll.action_report_payslip')._render(richard_payslip.ids)
 
         # I print the payslip details report
-        data, data_format = self.env.ref('om_om_hr_payroll.payslip_details_report').render(richard_payslip.ids)
+        data, data_format = self.env.ref('om_hr_payroll.payslip_details_report')._render(richard_payslip.ids)
 
         # I print the contribution register report
-        context = {'model': 'hr.contribution.register', 'active_ids': [self.ref('om_om_hr_payroll.hr_houserent_register')]}
+        context = {'model': 'hr.contribution.register', 'active_ids': [self.ref('om_hr_payroll.hr_houserent_register')]}
         test_reports.try_report_action(self.env.cr, self.env.uid, 'action_payslip_lines_contribution_register', context=context, our_module='om_hr_payroll')
