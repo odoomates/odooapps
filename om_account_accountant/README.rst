@@ -2,15 +2,101 @@
 Odoo 15 Accounting
 ==================
 
-This Module will adds following accounting features to Odoo 15 community edition:
-Financial Reports, Asset Management, Budget Management, Credit Limit, Bank Statement Import,
-Daily Reports, Customer Follow Ups, Credit Limit and Recurring Payments
+Odoo 15 Community Edition ships Invoicing, not Accounting. This module turns it
+into a full accounting application: it installs the thirteen Odoo Mates
+accounting modules in one click and adds the menus, groups and settings that
+make them work as one system rather than thirteen separate apps.
+
+A 44-page user guide ships with the module, at
+``static/description/user_guide.pdf``. It covers setting up, the daily work,
+the bank statements, assets, budgets, closing and every report, with the
+screens shown at each step.
 
 
-Common FAQ
-==========
-1. How to skip in payment status and directly move to paid status ?
-a) https://www.youtube.com/watch?v=eWxfy86Byog
+Requirements
+============
+
+* Odoo 15.0 Community Edition.
+* No external Python library and no paid Odoo Enterprise module.
+
+
+What it installs
+================
+
+Reports and analysis
+--------------------
+
+* ``accounting_pdf_reports`` — Balance Sheet, Profit and Loss, Cash Flow
+  Statement, General Ledger, Partner Ledger, Trial Balance, Aged Partner
+  Balance, Journal Audit and Tax Report.
+* ``om_account_daily_reports`` — Day Book, Bank Book and Cash Book.
+* ``om_account_cash_forecast`` — a forecast of the cash position from the
+  receivables, the payables and the recurring entries.
+
+Management
+----------
+
+* ``om_account_asset`` — asset categories, asset registers, depreciation boards
+  and the assets analysis.
+* ``om_account_budget`` — budgets, budgetary positions and budget analysis.
+* ``om_recurring_payments`` — recurring entry templates and their generation.
+* ``om_account_followup`` — follow-up levels, follow-up reports and customer
+  statements.
+* ``om_credit_limit`` — a credit limit per company and per customer, with a
+  warning or a block on the invoices and the sales orders that go over it. It
+  relies on the Sales application, which it installs.
+
+Bank and payments
+-----------------
+
+* ``om_account_bank_statement_import`` — statement import with reusable file
+  maps.
+* ``om_account_check_printing`` — cheque formats and cheque printing.
+
+Currency and periods
+--------------------
+
+* ``om_currency_rate_update`` — automatic currency rates from the configured
+  provider.
+* ``om_currency_revaluation`` — the revaluation of the balances held in a
+  foreign currency.
+* ``om_fiscal_year`` — fiscal years, lock dates, year-end closing and period
+  closing.
+
+Odoo 15 Community has no bank reconciliation screen, and this release does not
+add one on 15: the imported bank transactions are reconciled with a tool of
+your choice.
+
+
+What this module adds on top
+============================
+
+* Renames the Invoicing application to Accounting.
+* Arranges the menus of all the installed apps into one coherent structure: the
+  daily work under Accounting, the reports under Reporting, the settings under
+  Configuration, and a Management section for the assets, budgets, recurring
+  payments and closing.
+* Adds a Journals menu grouping the sales, purchase, bank and cash, and
+  miscellaneous journal entries.
+* Adds a Bank and Cash menu with the bank statements and the cash registers.
+* Adds an Account Tags menu to the accounting configuration.
+* Adds a Payment Methods menu, read-only, for users in developer mode.
+* Shows the payment account column on the payment methods of a journal, so the
+  account used by each method is visible from the journal form.
+* Lets journals be created from their list; the accounting dashboard only shows
+  them.
+* Makes the Journal Items menu available to every accounting user and moves it
+  to the top of its menu.
+* Adds a Reconcile action on the journal items list, for accountants.
+* Adds a Review menu: the journals audit, the entries to review, the draft
+  entries and, under Regularization Entries, the unrealized currencies.
+* Renames the accounting groups to Accountant, Advisor and Auditor, and makes an
+  Advisor an Accountant as well.
+* Adds the Anglo-Saxon Accounting option to the accounting settings, to record
+  the cost of a good as an expense when it is invoiced to the customer.
+* Keeps the In Payment status on invoices, so a registered payment does not mark
+  the invoice paid before the payment is reconciled.
+
 
 Installation
 ============
@@ -22,20 +108,81 @@ your Odoo server and go to the Apps menu. Trigger the debug mode and update the
 list by clicking on the "Update Apps List" link. Now install the module by
 clicking on the install button.
 
-Upgrade
-============
+Installing this module installs the thirteen modules listed above, so make
+sure they are all present in your addons folder before you start.
 
-To upgrade this module, you need to:
 
-Download the module and add it to your Odoo addons folder. Restart the server
-and log on to your Odoo server. Select the Apps menu and upgrade the module by
-clicking on the upgrade button.
+Upgrading from an earlier release
+=================================
+
+This is release 1.3.0 (October 2026). It adds modules and changes several of
+the others, so upgrade the suite as a whole:
+
+1. Back up the database.
+2. Replace all the Odoo Mates accounting modules with this release, not only
+   this one. The new modules (``om_account_cash_forecast``,
+   ``om_account_check_printing``, ``om_currency_rate_update`` and
+   ``om_currency_revaluation``) must be in the addons path too, or the upgrade
+   stops.
+3. Restart Odoo and update the apps list in developer mode.
+4. Upgrade all the modules of the suite that are installed, together: Odoo
+   upgrades a module and the ones depending on it, not the modules it depends
+   on, so upgrading *Odoo 15 Accounting* alone is not enough. The new modules
+   install themselves with it. From the command line:
+   ``-u accounting_pdf_reports,om_account_accountant,om_account_asset,om_account_bank_statement_import,om_account_budget,om_account_daily_reports,om_account_followup,om_credit_limit,om_fiscal_year,om_recurring_payments``
+   (or ``-u all``).
+
+The data is kept: the upgrade only adds to it. Nothing new switches itself on:
+the automatic currency rates stay off until they are set up, and the customer
+credit limit keeps the settings it already had.
 
 
 Configuration
 =============
 
-There is Nothing to Configure
+There is nothing to configure in this module itself.
+
+1. Give your users the Accountant, Advisor or Auditor access rights.
+2. Install a chart of accounts from Accounting > Configuration > Settings.
+3. Configure the modules it installs from Accounting > Configuration: the fiscal
+   year, the cheque formats, the currency provider, the follow-up levels, the
+   customer credit limit and the statement import file maps.
+
+The user guide walks through each of these in order.
+
+
+Usage
+=====
+
+Open the Accounting application. The menus of the installed modules are grouped
+under Accounting, Review, Reporting and Configuration.
+
+
+Frequently asked questions
+==========================
+
+**The invoice stays In Payment after I register a payment. Why?**
+
+That is deliberate. An invoice is only marked Paid once the payment is
+reconciled with the bank statement, which on Odoo 15 Community needs a
+reconciliation tool. To skip that step and go straight to Paid,
+see https://www.youtube.com/watch?v=eWxfy86Byog
+
+**Do I need Odoo Enterprise?**
+
+No. Everything here runs on Community Edition.
+
+**Where are the reports?**
+
+Under Accounting > Reporting. The PDF financial reports, the ledgers, the day,
+bank and cash books, the tax report and the ageing reports are all there.
+
+
+Bug Tracker
+===========
+
+Please report issues to odoomates@gmail.com, or open an issue on
+https://github.com/odoomates/odooapps
 
 
 Credits
@@ -45,9 +192,13 @@ Contributors
 ------------
 
 * Odoo Mates <odoomates@gmail.com>
+* Odoo SA
 
 
 Author & Maintainer
 -------------------
 
 This module is maintained by the Odoo Mates
+
+* YouTube: https://www.youtube.com/c/OdooMates
+* Email: odoomates@gmail.com

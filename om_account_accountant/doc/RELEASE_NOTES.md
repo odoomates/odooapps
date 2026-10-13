@@ -1,5 +1,11 @@
 ## Module <om_account_accountant>
 
+#### 13.10.2026
+#### Version 15.0.6.4.0
+##### IMP
+- backport of the 16.0 version: cash forecast, cheque printing, automatic currency rates and currency
+  revaluation added to the suite, Review menu, user guide
+
 #### 15.04.2022
 #### Version 15.0.6.1.0
 ##### IMP

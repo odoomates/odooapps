@@ -6,11 +6,25 @@
         <field name="model">account.journal</field>
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
-            <xpath expr="//field[@name='inbound_payment_method_line_ids']/tree/field[@name='payment_account_id']" position="attributes">
+            <!-- descendant //field, so the xpath still matches if another module
+                 wraps or alters the <tree> (see PR #198) -->
+            <xpath expr="//field[@name='inbound_payment_method_line_ids']//field[@name='payment_account_id']" position="attributes">
                 <attribute name="optional">show</attribute>
             </xpath>
-            <xpath expr="//field[@name='outbound_payment_method_line_ids']/tree/field[@name='payment_account_id']" position="attributes">
+            <xpath expr="//field[@name='outbound_payment_method_line_ids']//field[@name='payment_account_id']" position="attributes">
                 <attribute name="optional">show</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- the dashboard shows the journals, they are created from the configuration -->
+    <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.om.account.accountant</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//kanban" position="attributes">
+                <attribute name="create">0</attribute>
             </xpath>
         </field>
     </record>
