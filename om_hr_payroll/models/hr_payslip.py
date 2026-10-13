@@ -411,15 +411,16 @@ class HrPayslip(models.Model):
             def __getattr__(self, attr):
                 return attr in self.dict and self.dict.__getitem__(attr) or 0.0
 
-        class EmptyLine(object):
-            """ The worked days or the input of a code the payslip has none of: every value of it is 0, and it
-            is false, so that worked_days.Unpaid.number_of_days is 0 instead of an error. """
+        class EmptyLine(float):
+            """ The worked days or the input of a code the payslip has none of: the number 0, false, and every
+            value of it 0. So worked_days.Unpaid.number_of_days is 0 instead of an error, and the rules written
+            for a missing code, worked_days.WORK100 and worked_days.WORK100.number_of_days, still get 0. """
+
+            def __new__(cls):
+                return super().__new__(cls, 0.0)
 
             def __getattr__(self, attr):
                 return 0.0
-
-            def __bool__(self):
-                return False
 
         class LinesByCode(BrowsableObject):
             def __getattr__(self, attr):

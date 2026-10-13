@@ -36,6 +36,10 @@ class TestPayroll(TransactionCase):
                 'account_credit': cls.env['account.account'].create({
                     'name': 'Payroll Payable Test', 'code': 'PAYPAYT', 'account_type': 'liability_current'}).id,
             })
+            # each rule of the test posts both sides: the shared rules post nothing, whatever the demo data set
+            (cls.env.ref('om_hr_payroll.hr_rule_taxable') | cls.env.ref('om_hr_payroll.hr_rule_net')).write({
+                'account_debit': False, 'account_credit': False,
+            })
         rules |= cls.env.ref('om_hr_payroll.hr_rule_taxable') | cls.env.ref('om_hr_payroll.hr_rule_net')
         cls.structure = cls.env['hr.payroll.structure'].create({
             'name': 'Test Structure', 'code': 'TEST', 'parent_id': False, 'rule_ids': [Command.set(rules.ids)],
@@ -103,7 +107,10 @@ class TestPayroll(TransactionCase):
             'amount_select': 'code',
             'amount_python_compute': 'result = -(contract.wage / worked_days.WORK100.number_of_days)'
                                      ' * worked_days.Unpaid.number_of_days + inputs.NOSUCH.amount'
-                                     ' + (1 if worked_days.Unpaid else 0)',
+                                     ' + (1 if worked_days.Unpaid else 0)'
+                                     # the way the rules of 1.x guarded a missing code
+                                     ' + (worked_days.Unpaid and worked_days.Unpaid.number_of_days)'
+                                     ' + (inputs.NOSUCH and inputs.NOSUCH.amount)',
         })
         self.structure.rule_ids |= rule
         payslip = self._new_payslip(self.employee)

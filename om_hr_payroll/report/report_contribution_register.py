@@ -12,6 +12,8 @@ class ContributionRegisterReport(models.AbstractModel):
         result = {}
         if not register_ids:
             return result
+        if not register_ids:
+            return result
         self.env['hr.payslip'].flush_model(['date_from', 'date_to', 'state'])
         self.env['hr.payslip.line'].flush_model(['slip_id', 'register_id', 'sequence'])
         self.env.cr.execute("""
@@ -33,7 +35,9 @@ class ContributionRegisterReport(models.AbstractModel):
         if not data.get('form'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
 
-        register_ids = self.env.context.get('active_ids', [])
+        # the registers chosen in the wizard come in the data of the report; the context of the printing
+        # request does not always carry them
+        register_ids = data.get('ids') or docids or self.env.context.get('active_ids', [])
         contrib_registers = self.env['hr.contribution.register'].browse(register_ids)
         date_from = data['form'].get('date_from') or fields.Date.context_today(self).replace(day=1)
         date_to = data['form'].get('date_to') or fields.Date.context_today(self) + relativedelta(day=31)

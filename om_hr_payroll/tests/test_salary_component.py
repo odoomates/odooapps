@@ -3,9 +3,12 @@ from datetime import date
 import importlib.util
 from pathlib import Path
 
+from psycopg2 import IntegrityError
+
 from odoo import Command
 from odoo.exceptions import ValidationError
 from odoo.tests import TransactionCase, tagged
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -65,7 +68,7 @@ class TestSalaryComponent(TransactionCase):
                 self.env['hr.salary.component'].create({'name': 'Wrong', 'code': code})
 
     def test_code_is_unique_per_company(self):
-        with self.assertRaises(Exception):
+        with self.assertRaises(IntegrityError), mute_logger('odoo.sql_db'):
             self.env['hr.salary.component'].create({'name': 'Housing again', 'code': 'HOUSING'})
 
     def test_component_set_once_per_version(self):
