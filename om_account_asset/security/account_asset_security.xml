@@ -17,5 +17,19 @@
             <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
         </record>
 
+        <record id="account_asset_depreciation_line_multi_company_rule" model="ir.rule">
+            <field name="name">Asset Depreciation Line multi-company</field>
+            <field ref="model_account_asset_depreciation_line" name="model_id"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('asset_id.company_id','=',False),('asset_id.company_id', 'in', company_ids)]</field>
+        </record>
+
+        <record id="asset_asset_report_multi_company_rule" model="ir.rule">
+            <field name="name">Assets Analysis multi-company</field>
+            <field ref="model_asset_asset_report" name="model_id"/>
+            <field eval="True" name="global"/>
+            <field name="domain_force">['|',('company_id','=',False),('company_id', 'in', company_ids)]</field>
+        </record>
+
     </data>
 </odoo>

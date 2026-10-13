@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 17 Assets Management',
-    'version': '17.0.1.1.0',
+    'version': '17.0.1.2.0',
     'author': 'Odoo Mates, Odoo SA',
     'depends': ['account'],
     'description': """Manage assets owned by a company or a person. 
@@ -13,7 +13,7 @@
     'sequence': 10,
     'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
-    'images': ['static/description/assets.gif'],
+    'images': ['static/description/banner.gif'],
     'data': [
         'data/account_asset_data.xml',
         'security/account_asset_security.xml',

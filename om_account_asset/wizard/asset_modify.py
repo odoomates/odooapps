@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
@@ -10,10 +7,12 @@ class AssetModify(models.TransientModel):
     _description = 'Modify Asset'
 
     name = fields.Text(string='Reason', required=True)
-    method_number = fields.Integer(string='Number of Depreciations', required=True)
+    method_number = fields.Integer(string='Number of Depreciation')
     method_period = fields.Integer(string='Period Length')
     method_end = fields.Date(string='Ending date')
-    asset_method_time = fields.Char(compute='_get_asset_method_time', string='Asset Method Time', readonly=True)
+    asset_method_time = fields.Char(
+        compute='_get_asset_method_time', string='Asset Method Time', readonly=True
+    )
 
     def _get_asset_method_time(self):
         if self.env.context.get('active_id'):
@@ -49,14 +48,22 @@ class AssetModify(models.TransientModel):
             'method_period': asset.method_period,
             'method_end': asset.method_end,
         }
-        asset_vals = {
-            'method_number': self.method_number,
-            'method_period': self.method_period,
-            'method_end': self.method_end,
-        }
-        if asset_vals['method_number'] <= asset.entry_count:
-            raise UserError(_('The number of depreciations must be greater than the number of posted or draft entries '
-                              'to allow for complete depreciation of the asset.'))
+        asset_vals = {'method_period': self.method_period}
+        # only write the duration field that matches the asset's own time method:
+        # method_number is hidden (and left at 0) for 'end' assets and vice-versa
+        if asset.method_time == 'end':
+            if not self.method_end:
+                raise UserError(_('Set an ending date to modify this asset.'))
+            if self.method_end <= asset.date:
+                raise UserError(_('The ending date must be after the purchase date of the asset.'))
+            asset_vals['method_end'] = self.method_end
+        else:
+            if self.method_number <= asset.entry_count:
+                raise UserError(_('The number of depreciations must be greater than the number of posted or draft entries '
+                                  'to allow for complete depreciation of the asset.'))
+            asset_vals['method_number'] = self.method_number
+        if self.method_period <= 0:
+            raise UserError(_('The period length must be greater than 0.'))
         asset.write(asset_vals)
         asset.compute_depreciation_board()
         tracked_fields = self.env['account.asset.asset'].fields_get(['method_number', 'method_period', 'method_end'])

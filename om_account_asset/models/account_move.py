@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# Part of Odoo. See LICENSE file for full copyright and licensing details.
-
 from dateutil.relativedelta import relativedelta
 from odoo import api, fields, models, _
 from odoo.exceptions import UserError, ValidationError
@@ -9,8 +6,9 @@ from odoo.exceptions import UserError, ValidationError
 class AccountMove(models.Model):
     _inherit = 'account.move'
 
-    asset_ids = fields.One2many('account.asset.asset', 'invoice_id',
-                                string="Assets")
+    asset_ids = fields.One2many(
+        'account.asset.asset', 'invoice_id', string="Assets"
+    )
 
     def button_draft(self):
         res = super(AccountMove, self).button_draft()
@@ -44,24 +42,37 @@ class AccountMove(models.Model):
                 asset.sudo().message_post(body=_("Vendor bill cancelled."))
         return res
 
-    def action_post(self):
-        result = super(AccountMove, self).action_post()
-        for inv in self:
-            context = dict(self.env.context)
-            context.pop('default_type', None)
+    def _post(self, soft=True):
+        # not action_post: the entries posted automatically on their date, and the recurring
+        # ones, are posted by _post only and create their assets too
+        posted = super()._post(soft=soft)
+        context = dict(self.env.context)
+        context.pop('default_type', None)
+        # credit notes keep the category of the reversed lines but do not create assets
+        for inv in posted.filtered(lambda m: m.move_type in ('in_invoice', 'out_invoice')):
             for mv_line in inv.invoice_line_ids:
                 mv_line.with_context(context).asset_create()
-        return result
+        return posted
 
 
 class AccountMoveLine(models.Model):
     _inherit = 'account.move.line'
 
-    asset_category_id = fields.Many2one('account.asset.category', string='Asset Category')
-    asset_start_date = fields.Date(string='Asset Start Date', compute='_get_asset_date', readonly=True, store=True)
-    asset_end_date = fields.Date(string='Asset End Date', compute='_get_asset_date', readonly=True, store=True)
-    asset_mrr = fields.Float(string='Monthly Recurring Revenue', compute='_get_asset_date', readonly=True,
-                             store=True)
+    asset_category_id = fields.Many2one(
+        'account.asset.category', string='Asset Category'
+    )
+    asset_start_date = fields.Date(
+        string='Asset Start Date', compute='_get_asset_date',
+        readonly=True, store=True
+    )
+    asset_end_date = fields.Date(
+        string='Asset End Date', compute='_get_asset_date',
+        readonly=True, store=True
+    )
+    asset_mrr = fields.Float(
+        string='Monthly Recurring Revenue', compute='_get_asset_date',
+        readonly=True, store=True
+    )
 
     @api.model
     def default_get(self, fields):
