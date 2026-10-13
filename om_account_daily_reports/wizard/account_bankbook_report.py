@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from odoo import fields, models, api, _
 from datetime import date
 
@@ -9,30 +7,26 @@ class AccountBankBookReport(models.TransientModel):
     _description = "Bank Book Report"
 
     def _get_default_account_ids(self):
-        journals = self.env['account.journal'].search([('type', '=', 'bank')])
-        accounts = []
+        journals = self.env['account.journal'].search([('type', '=', 'bank'), ('company_id', '=', self.env.company.id)])
+        accounts = self.env['account.account']
         for journal in journals:
             if journal.default_account_id.id:
-                accounts.append(journal.default_account_id.id)
-            if journal.company_id.account_journal_payment_credit_account_id.id:
-                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
-            if journal.company_id.account_journal_payment_debit_account_id.id:
-                accounts.append(journal.company_id.account_journal_payment_debit_account_id.id)
+                accounts += journal.default_account_id
             for acc_out in journal.outbound_payment_method_line_ids:
                 if acc_out.payment_account_id:
-                    accounts.append(acc_out.payment_account_id.id)
+                    accounts += acc_out.payment_account_id
             for acc_in in journal.inbound_payment_method_line_ids:
                 if acc_in.payment_account_id:
-                    accounts.append(acc_in.payment_account_id.id)
+                    accounts += acc_in.payment_account_id
         return accounts
 
-    date_from = fields.Date(string='Start Date', default=date.today(), required=True)
-    date_to = fields.Date(string='End Date', default=date.today(), required=True)
+    date_from = fields.Date(string='Start Date', default=fields.Date.context_today, required=True)
+    date_to = fields.Date(string='End Date', default=fields.Date.context_today, required=True)
     target_move = fields.Selection([('posted', 'Posted Entries'),
                                     ('all', 'All Entries')], string='Target Moves', required=True,
                                    default='posted')
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True,
-                                   default=lambda self: self.env['account.journal'].search([]))
+                                   default=lambda self: self.env['account.journal'].search([('company_id', '=', self.env.company.id)]))
     account_ids = fields.Many2many('account.account', 'account_account_bankbook_report', 'report_line_id',
                                    'account_id', 'Accounts', default=_get_default_account_ids)
 
@@ -48,17 +42,6 @@ class AccountBankBookReport(models.TransientModel):
                                      help='If you selected date, this field allow you to add a row '
                                           'to display the amount of debit/credit/balance that precedes the '
                                           'filter you\'ve set.')
-
-    @api.onchange('account_ids')
-    def onchange_account_ids(self):
-        if self.account_ids:
-            journals = self.env['account.journal'].search(
-                [('type', '=', 'bank')])
-            accounts = []
-            for journal in journals:
-                accounts.append(journal.company_id.account_journal_payment_credit_account_id.id)
-            domain = {'account_ids': [('id', 'in', accounts)]}
-            return {'domain': domain}
 
     def _build_comparison_context(self, data):
         result = {}
@@ -79,5 +62,5 @@ class AccountBankBookReport(models.TransientModel):
         data['form']['comparison_context'] = comparison_context
         return self.env.ref(
             'om_account_daily_reports.action_report_bank_book').report_action(self,
-                                                                     data=data)
+                                                                     data=data, config=False)
 

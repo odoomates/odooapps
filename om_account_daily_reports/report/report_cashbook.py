@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import time
 from odoo import api, models, _
 from odoo.exceptions import UserError
@@ -70,16 +68,10 @@ class ReportCashBook(models.AbstractModel):
         filters = " AND ".join(wheres)
         filters = filters.replace('account_move_line__move_id', 'm').replace('account_move_line', 'l')
         if not accounts:
-            journals = self.env['account.journal'].search([('type', '=', 'cash')])
-            accounts = []
-            for journal in journals:
-                for acc_out in journal.outbound_payment_method_line_ids:
-                    if acc_out.payment_account_id:
-                        accounts.append(acc_out.payment_account_id.id)
-                for acc_in in journal.inbound_payment_method_line_ids:
-                    if acc_in.payment_account_id:
-                        accounts.append(acc_in.payment_account_id.id)
-            accounts = self.env['account.account'].search([('id', 'in', accounts)])
+            # never rebuild "accounts" here: move_lines above is keyed on the accounts
+            # we were given, so any other account would raise a KeyError below
+            raise UserError(_('No cash account found: select the accounts to print or '
+                              'configure the accounts of your cash journals.'))
 
         sql = ('''SELECT l.id AS lid, l.account_id AS account_id, l.date AS ldate, j.code AS lcode, l.currency_id, l.amount_currency, l.ref AS lref, l.name AS lname, COALESCE(l.debit,0) AS debit, COALESCE(l.credit,0) AS credit, COALESCE(SUM(l.debit),0) - COALESCE(SUM(l.credit), 0) AS balance,\
                         m.name AS move_name, c.symbol AS currency_code, p.name AS partner_name\
@@ -103,7 +95,7 @@ class ReportCashBook(models.AbstractModel):
         # Calculate the debit, credit and balance for Accounts
         account_res = []
         for account in accounts:
-            currency = account.currency_id and account.currency_id or account.company_id.currency_id
+            currency = account.currency_id and account.currency_id or self.env.company.currency_id
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
             res['code'] = account.code
             res['name'] = account.name
@@ -124,6 +116,8 @@ class ReportCashBook(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         if not data.get('form') or not self.env.context.get('active_model'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         init_balance = data['form'].get('initial_balance', True)
@@ -134,20 +128,24 @@ class ReportCashBook(models.AbstractModel):
 
         if data['form'].get('journal_ids', False):
             codes = [journal.code for journal in
-                     self.env['account.journal'].search([('id', 'in', data['form']['journal_ids'])])]
+                     self.env['account.journal'].browse(data['form']['journal_ids'])]
         account_ids = data['form']['account_ids']
-        accounts = self.env['account.account'].search([('id', 'in', account_ids)])
+        accounts = self.env['account.account'].browse(account_ids)
         if not accounts:
             journals = self.env['account.journal'].search([('type', '=', 'cash')])
-            accounts = []
+            accounts = self.env['account.account']
             for journal in journals:
+                if journal.default_account_id:
+                    accounts += journal.default_account_id
                 for acc_out in journal.outbound_payment_method_line_ids:
                     if acc_out.payment_account_id:
-                        accounts.append(acc_out.payment_account_id.id)
+                        accounts += acc_out.payment_account_id
                 for acc_in in journal.inbound_payment_method_line_ids:
                     if acc_in.payment_account_id:
-                        accounts.append(acc_in.payment_account_id.id)
-            accounts = self.env['account.account'].search([('id', 'in', accounts)])
+                        accounts += acc_in.payment_account_id
+        if not accounts:
+            raise UserError(_('No cash account found: select the accounts to print or '
+                              'configure the accounts of your cash journals.'))
         record = self.with_context(data['form'].get('comparison_context', {}))._get_account_move_entry(accounts, init_balance, sortby, display_account)
         return {
             'doc_ids': docids,
