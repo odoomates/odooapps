@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from odoo import api, fields, models, _
+from odoo.exceptions import UserError
 
 RECEIPT_ROWS = ('customers', 'recurring_in', 'expected_in', 'transit_in', 'bank_in')
 PAYMENT_ROWS = ('suppliers', 'recurring_out', 'expected_out', 'transit_out', 'bank_out')
@@ -29,8 +30,17 @@ class ReportCashForecast(models.AbstractModel):
     def _get_transit_accounts(self, company):
         journals = self.env['account.journal'].sudo().search([('company_id', 'child_of', company.id)])
         method_lines = self.env['account.payment.method.line'].sudo().search([('journal_id', 'in', journals.ids)])
-        return method_lines.payment_account_id.filtered(
-            lambda account: account.account_type != 'asset_cash').sudo(False)
+        # the payment methods without an account of their own post to the outstanding accounts of the chart of
+        # accounts, the ones Odoo itself chooses for the payments
+        accounts = method_lines.payment_account_id
+        for company in self.env['res.company'].sudo().search([('id', 'child_of', company.id)]):
+            payment = self.env['account.payment'].sudo().with_company(company).new({'company_id': company.id})
+            for payment_type in ('inbound', 'outbound'):
+                try:
+                    accounts |= payment._get_outstanding_account(payment_type)
+                except UserError:
+                    continue
+        return accounts.filtered(lambda account: account.account_type != 'asset_cash').sudo(False)
 
     def _get_forecast_items(self, wizard, date_to):
         """ The receipts (positive) and payments (negative) expected up to `date_to`, in company currency.
