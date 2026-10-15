@@ -697,6 +697,22 @@ class AccountAssetAsset(models.Model):
                     date=operation_date, asset=asset.name, lock_date=lock_date,
                 ))
 
+    def _check_no_posted_entries_after(self, operation_date):
+        """ Refuse an operation dated before posted entries of the board: they would stay in the books
+        after the asset stopped depreciating. Reversed entries and their reversals cancel out. """
+        for asset in self:
+            later_moves = asset._get_board_moves().filtered(
+                lambda m: m.state == 'posted' and m.date > operation_date
+                and not m.reversed_entry_id and not m.asset_entry_reversed
+            )
+            if later_moves:
+                raise UserError(_(
+                    '"%(asset)s" has depreciation entries posted after %(date)s (%(entries)s): '
+                    'choose a date on or after the last posted entry.',
+                    asset=asset.name, date=operation_date,
+                    entries=', '.join(str(d) for d in sorted(set(later_moves.mapped('date')))),
+                ))
+
     def _close_if_depreciated(self):
         for asset in self.filtered(lambda a: a.state == 'open'):
             if asset.currency_id.is_zero(asset.value_residual) \
@@ -730,6 +746,7 @@ class AccountAssetAsset(models.Model):
             if on_date < asset.date - timedelta(days=1):
                 raise UserError(_('"%s" cannot be paused before its acquisition.', asset.name))
             asset._check_lock_date(on_date)
+            asset._check_no_posted_entries_after(on_date)
             asset._depreciate_until(on_date)
             if asset.state == 'open':  # else the last partial entry fully depreciated it
                 asset.write({'state': 'paused', 'pause_date': on_date})
@@ -907,6 +924,7 @@ class AccountAssetAsset(models.Model):
         if disposal_date > fields.Date.context_today(self):
             raise UserError(_('A partial disposal cannot be recorded in the future.'))
         self._check_lock_date(disposal_date)
+        self._check_no_posted_entries_after(disposal_date)
         if self.state == 'open':
             self._depreciate_until(disposal_date)
 
@@ -978,6 +996,7 @@ class AccountAssetAsset(models.Model):
         if disposal_date < self.date - timedelta(days=1):
             raise UserError(_('"%s" cannot be disposed of before its acquisition.', self.name))
         self._check_lock_date(disposal_date)
+        self._check_no_posted_entries_after(disposal_date)
         if self.state == 'open':
             self._depreciate_until(disposal_date)
         self._get_board_moves().filtered(lambda m: m.state == 'draft').with_context(om_asset_board_update=True).unlink()

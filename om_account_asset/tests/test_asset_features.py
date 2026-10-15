@@ -311,6 +311,28 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
             self.loss_account: 948.39,
         })
 
+    def test_operations_before_posted_entries(self):
+        """ Entries posted after the date would stay in the books once the asset is disposed of or paused. """
+        asset = self._create_asset(validate_on='2025-04-15')
+        with freeze_time('2025-04-15'):
+            with self.assertRaises(UserError):
+                asset.set_to_close(disposal_date=date(2025, 2, 15))
+            with self.assertRaises(UserError):
+                asset._dispose_partially(date(2025, 2, 15), 0.5)
+            with self.assertRaises(UserError):
+                asset.pause(date(2025, 2, 15))
+        self.assertEqual(asset.state, 'open')
+        self.assertEqual(asset.value_residual, 900.0)
+
+        # on the date of the last posted entry, nothing is left after it
+        with freeze_time('2025-04-15'):
+            asset.set_to_close(disposal_date=date(2025, 3, 31))
+        self.assertEqual(self._balances(asset.disposal_move_id), {
+            self.asset_account: -1200.0,
+            self.accumulated_account: 300.0,
+            self.loss_account: 900.0,
+        })
+
     def test_sell_fully_depreciated_asset(self):
         """ A written down asset is still in the books: selling it books the price as a gain. """
         asset = self._create_asset()
