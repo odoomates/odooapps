@@ -485,6 +485,16 @@ class AccountAssetAsset(models.Model):
                               'or fully depreciated can be sold or disposed of.', self.name))
         if disposal_date < self.date:
             raise UserError(_('"%s" cannot be disposed of before its acquisition.', self.name))
+        later_moves = self.depreciation_line_ids.filtered('move_check').mapped('move_id').filtered(
+            lambda move: move.date > disposal_date)
+        if later_moves:
+            # they would stay in the books after the asset left them
+            raise UserError(_(
+                '"%(asset)s" has depreciation entries after %(date)s (%(entries)s): '
+                'choose a date on or after the last one.',
+                asset=self.name, date=disposal_date,
+                entries=', '.join(str(d) for d in sorted(set(later_moves.mapped('date')))),
+            ))
 
         if self.state == 'open':
             self._depreciate_until(disposal_date)
