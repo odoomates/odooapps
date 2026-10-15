@@ -155,6 +155,18 @@ class TestAssetDisposal(AccountTestInvoicingCommon):
         with self.assertRaises(UserError):
             asset.dispose(disposal_date=date(2024, 12, 31))
 
+    def test_disposal_before_recorded_depreciation_is_refused(self):
+        asset = self._create_asset()
+        asset.depreciation_line_ids.sorted('depreciation_date')[:3].create_move(post_move=True)
+        # January to March depreciated: they would stay in the books after a disposal in February
+        with self.assertRaises(UserError):
+            asset.dispose(disposal_date=date(2025, 2, 15))
+        self.assertEqual(asset.state, 'open')
+
+        asset.dispose(disposal_date=date(2025, 3, 31))
+        self.assertEqual(asset.state, 'close')
+        self.assertEqual(asset.disposal_date, date(2025, 3, 31))
+
     def test_sale_without_an_invoice_is_refused(self):
         asset = self._depreciate_all(self._create_asset())
         wizard = self.env['asset.sell'].with_context(
