@@ -21,7 +21,7 @@ class TestBudget(AccountTestInvoicingCommon):
         Plan = cls.env['account.analytic.plan']
         # a plan other than the project plan stores its accounts in its own column of the analytic items
         cls.plan = next(
-            plan for plan in (Plan.create({'name': 'Departments'}), Plan.create({'name': 'Regions'}))
+            plan for plan in (Plan.create({'name': 'OM Budget Departments'}), Plan.create({'name': 'OM Budget Regions'}))
             if plan._column_name() != 'account_id'
         )
         cls.analytic_accounts = cls.env['account.analytic.account'].create([

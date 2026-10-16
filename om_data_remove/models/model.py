@@ -329,7 +329,7 @@ class OmDataRemoveReport(models.TransientModel):
     row_count = fields.Integer(string='Rows Left', readonly=True)
     transaction_row_count = fields.Integer(string='Transaction Rows Left', readonly=True)
     line_ids = fields.One2many('om.data.remove.table', 'report_id', string='All Tables')
-    nonempty_line_ids = fields.One2many('om.data.remove.table', 'report_id', string='Tables with Rows',
+    nonempty_line_ids = fields.One2many('om.data.remove.table', 'report_id', string='Non-Empty Tables',
                                         domain=[('row_count', '>', 0), ('kind', 'in', LISTED_KINDS)])
 
     def _compute_display_name(self):

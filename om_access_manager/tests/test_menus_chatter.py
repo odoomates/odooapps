@@ -4,6 +4,7 @@ from lxml import etree
 from odoo.exceptions import AccessError
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -74,6 +75,7 @@ class TestMenusAndChatter(HttpCase):
             'post_data': {'body': 'Hello', 'message_type': 'comment', 'subtype_xmlid': subtype},
         })
 
+    @mute_logger('odoo.http')
     def test_send_message_is_refused_and_log_note_is_not(self):
         self._profile(hide_send_message_all=True)
         self.authenticate(self.user.login, self.password)

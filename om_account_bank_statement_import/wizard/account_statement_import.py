@@ -195,7 +195,7 @@ class AccountStatementImport(models.TransientModel):
         if skipped:
             message = _('%(imported)s transaction(s) imported, %(skipped)s already there.',
                         imported=len(statements.line_ids), skipped=skipped)
-            self.env['bus.bus']._sendone(self.env.user.partner_id, 'simple_notification', {
+            self.env.user._bus_send('simple_notification', {
                 'type': 'info', 'message': message,
             })
         return action

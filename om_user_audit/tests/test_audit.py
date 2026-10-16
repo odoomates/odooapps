@@ -8,6 +8,7 @@ from odoo import fields
 from odoo.exceptions import AccessDenied
 from odoo.http.session import session_store
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_user_audit.models.ir_http import SEEN_KEY
 
@@ -136,6 +137,7 @@ class TestAuditHttp(AuditMixin, HttpCase):
         failed = self._logs(event='login_failed', login=self.user.login)
         self.assertEqual((len(failed), failed.user_id), (1, self.user))
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_xmlrpc_reads_are_logged_with_the_address(self):
         self.xmlrpc_object.execute_kw(self.env.cr.dbname, self.user.id, self.password,
                                       'res.partner', 'read', [self.partner.ids, ['name']])

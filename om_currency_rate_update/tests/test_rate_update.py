@@ -7,6 +7,7 @@ import requests
 
 from odoo import Command
 from odoo.tests import tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -115,6 +116,7 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         self.assertIn('could not be reached', self.company.rate_last_message)
         self.assertIn('Not quoted by the sources: AED, INR', self.company.rate_last_message)
 
+    @mute_logger('odoo.addons.om_currency_rate_update.models.res_company')
     def test_refused_key_and_failure_notification(self):
         self.company.write({'rate_provider': 'openexchangerates', 'rate_openexchangerates_key': 'WRONG',
                             'rate_interval': 'daily'})

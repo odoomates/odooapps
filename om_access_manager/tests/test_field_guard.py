@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 from .audit import lines_after_transaction
 
@@ -74,6 +75,7 @@ class TestFieldGuard(HttpCase):
         self.assertEqual(result[0]['parent_id']['name'], 'Guarded')
         self.assertIs(result[0]['parent_id']['email'], False)
 
+    @mute_logger('odoo.http')
     def test_hidden_fields_cannot_be_used_to_infer_them(self):
         attempts = [
             ('search_read', [[('email', 'ilike', 'secret')]], {'fields': ['name']}),
@@ -111,6 +113,7 @@ class TestFieldGuard(HttpCase):
         self.assertIn('email', self.env['res.partner'].with_user(self.user).search_read(
             [('email', '=', 'secret@example.com')], ['email'])[0])
 
+    @mute_logger('odoo.http')
     def test_blocked_button_cannot_be_called_by_hand(self):
         with lines_after_transaction(self.env) as lines, self.assertRaises(JsonRpcException):
             self._call('res.partner', 'action_archive', [self.partner.ids])
@@ -120,6 +123,7 @@ class TestFieldGuard(HttpCase):
                           for line in lines],
                          [('refused', self.user.id, 'res.partner', 'action_archive', str(self.partner.id))])
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_xmlrpc(self):
         uid = self.user.id
         rows = self.xmlrpc_object.execute_kw(
@@ -127,6 +131,7 @@ class TestFieldGuard(HttpCase):
             [self.partner.ids], {'fields': ['name', 'email']})
         self.assertIs(rows[0]['email'], False)
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc', 'odoo.http')
     def test_blocked_button_through_xmlrpc(self):
         with self.assertRaises(xmlrpc.client.Fault):
             self.xmlrpc_object.execute_kw(
@@ -134,6 +139,7 @@ class TestFieldGuard(HttpCase):
                 [self.partner.ids])
         self.assertTrue(self.partner.active)
 
+    @mute_logger('odoo.http')
     def test_json2(self):
         key = self.env['res.users.apikeys'].with_user(self.user)._generate(
             'rpc', 'guard test', datetime.now() + timedelta(days=1))

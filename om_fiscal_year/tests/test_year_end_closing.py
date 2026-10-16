@@ -3,6 +3,7 @@ from datetime import date
 from odoo import Command
 from odoo.exceptions import UserError
 from odoo.tests import Form, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 
@@ -194,6 +195,7 @@ class TestYearEndClosing(AccountTestInvoicingCommon):
         self.assertEqual(
             self.fy_2025.closing_move_id.line_ids.filtered(lambda line: line.balance > 0).account_id, other_unaffected)
 
+    @mute_logger('odoo.tests.form.onchange')
     def test_lock_date_settings_update_their_own_lock_date(self):
         settings = Form(self.env['res.config.settings'])
         settings.sale_lock_date = date(2025, 3, 31)
