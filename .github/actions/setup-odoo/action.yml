@@ -1,0 +1,30 @@
+name: Set up Odoo 20.0
+description: The latest Odoo 20.0 source, its Python requirements, and the libraries keeping the test logs quiet
+runs:
+  using: composite
+  steps:
+    - name: Odoo 20.0 commit
+      id: odoo
+      shell: bash
+      run: echo "sha=$(git ls-remote https://github.com/odoo/odoo refs/heads/20.0 | cut -f1)" >> "$GITHUB_OUTPUT"
+    - name: Odoo source cache
+      id: cache
+      uses: actions/cache@v6
+      with:
+        path: odoo
+        key: odoo-20.0-${{ steps.odoo.outputs.sha }}
+    - name: Odoo source
+      if: steps.cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: git clone --depth 1 --branch 20.0 https://github.com/odoo/odoo.git odoo
+    - name: System libraries
+      shell: bash
+      run: sudo apt-get update -q && sudo apt-get install -yq libldap2-dev libsasl2-dev libpq-dev libcairo2-dev pkg-config postgresql-client
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.13'
+        cache: pip
+        cache-dependency-path: odoo/requirements.txt
+    - name: Python requirements
+      shell: bash
+      run: pip install -r odoo/requirements.txt pdfminer.six markdown2 rlPyCairo websocket-client
