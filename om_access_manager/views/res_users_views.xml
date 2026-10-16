@@ -10,6 +10,9 @@
                 <button name="action_om_preview" type="object" string="Preview as User"
                         icon="visibility" groups="om_access_manager.group_access_manager"
                         invisible="share or not active"/>
+                <button name="%(om_access_manager.om_access_explain_action)d" type="action" string="Why?"
+                        icon="help" groups="om_access_manager.group_access_manager"
+                        invisible="share" context="{'default_user_id': id}"/>
             </xpath>
             <xpath expr="//notebook" position="inside">
                 <page string="Access Profiles" name="access_profiles" groups="om_access_manager.group_access_manager">
@@ -84,6 +87,20 @@
                 <filter name="group_by_access_profile" string="Access Profile"
                         context="{'group_by': 'access_profile_ids'}" groups="om_access_manager.group_access_manager"/>
             </filter>
+        </field>
+    </record>
+
+
+    <record id="om_user_audit_log_view_form_explain" model="ir.ui.view">
+        <field name="name">om.user.audit.log.form.explain</field>
+        <field name="model">om.user.audit.log</field>
+        <field name="inherit_id" ref="om_user_audit.om_user_audit_log_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="%(om_access_manager.om_access_explain_action)d" type="action" string="Why?"
+                        icon="help" invisible="event != 'refused' or not user_id"
+                        groups="om_access_manager.group_access_manager"/>
+            </xpath>
         </field>
     </record>
 

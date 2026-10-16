@@ -1,6 +1,6 @@
 {
     'name': 'User Access Manager',
-    'version': '0.9.10',
+    'version': '0.10.0',
     'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Decide what each group of users sees and does: apps and menus, data and records, fields, buttons, reports, actions, and when and from where they sign in. Beta.',
@@ -13,8 +13,10 @@
         'security/om_access_security.xml',
         'security/ir.access.csv',
         'data/ir_cron.xml',
+        'data/om_access_version_data.xml',
         'wizard/om_access_wizard_views.xml',
         'views/om_access_profile_views.xml',
+        'views/om_access_version_views.xml',
         'views/res_users_views.xml',
         'views/menu.xml',
     ],

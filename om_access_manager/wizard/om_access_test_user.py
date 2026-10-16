@@ -44,6 +44,17 @@ class OmAccessTestUser(models.TransientModel):
                               user=self.user_id.name, profile=self.profile_id.name))
         return self.user_id.action_om_preview(back_url=self.env.context.get('om_preview_back'))
 
+    def action_explain(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Why?"),
+            'res_model': 'om.access.explain',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_user_id': self.user_id.id},
+        }
+
     @api.depends('user_id')
     def _compute_result(self):
         Profile = self.env['om.access.profile']

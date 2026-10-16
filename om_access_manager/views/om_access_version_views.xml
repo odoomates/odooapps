@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_access_profile_version_view_list" model="ir.ui.view">
+        <field name="name">om.access.profile.version.list</field>
+        <field name="model">om.access.profile.version</field>
+        <field name="arch" type="xml">
+            <list string="Versions" create="0" edit="0" delete="0">
+                <field name="number"/>
+                <field name="create_date" string="Saved On"/>
+                <field name="create_uid" string="By" widget="many2one_avatar_user"/>
+                <field name="summary"/>
+                <field name="restored_from_id" optional="hide"/>
+                <field name="profile_id" column_invisible="context.get('default_profile_id')" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_access_profile_version_view_form" model="ir.ui.view">
+        <field name="name">om.access.profile.version.form</field>
+        <field name="model">om.access.profile.version</field>
+        <field name="arch" type="xml">
+            <form string="Version" create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_restore" type="object" string="Restore this Version"
+                            class="btn-primary" icon="history" invisible="is_current"
+                            confirm="The profile becomes what it was in this version: its menus, data, fields, buttons and switches. Its users stay as they are. The profile as it is now stays in its versions."/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="display_name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="profile_id"/>
+                            <field name="summary"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Saved On"/>
+                            <field name="create_uid" string="By" widget="many2one_avatar_user"/>
+                            <field name="restored_from_id" invisible="not restored_from_id"/>
+                        </group>
+                    </group>
+                    <field name="is_current" invisible="1"/>
+                    <notebook>
+                        <page string="Changes in this Version" name="changes">
+                            <field name="changes" nolabel="1"/>
+                        </page>
+                        <page string="Changed Since" name="since">
+                            <div class="text-muted mb-2" invisible="is_current">
+                                What changed on the profile after this version: restoring it undoes these changes.
+                            </div>
+                            <field name="changes_since" nolabel="1"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_access_profile_view_form_versions" model="ir.ui.view">
+        <field name="name">om.access.profile.form.versions</field>
+        <field name="model">om.access.profile</field>
+        <field name="inherit_id" ref="om_access_profile_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/widget[@name='web_ribbon']" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_open_versions" type="object" class="oe_stat_button" icon="history">
+                        <field name="version_count" widget="statinfo" string="Versions"/>
+                    </button>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

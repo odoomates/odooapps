@@ -27,10 +27,16 @@ class Base(models.AbstractModel):
             return domain
         if not rules.allows(self._name, operation):
             return Domain.FALSE
+        restricted = self._om_profile_domain(rules, operation)
+        return domain if restricted is None else domain & restricted
 
+    @api.model
+    def _om_profile_domain(self, rules, operation):
+        """ The records the profiles of the current user leave to ``operation``,
+        or None when they filter none. """
         or_groups, and_groups = rules.record_domains(self._name, operation)
         if not or_groups and not and_groups:
-            return domain
+            return None
 
         eval_context = self.env['om.access.profile']._om_eval_context()
 
@@ -45,7 +51,7 @@ class Base(models.AbstractModel):
             # a user always reads their own user and contact: Odoo reads them for its own screens (the
             # calendar, the preferences, the avatar...), and they reveal nothing the user does not know
             restricted |= own
-        return domain & restricted
+        return restricted
 
     @api.model
     def _om_own_records_domain(self):

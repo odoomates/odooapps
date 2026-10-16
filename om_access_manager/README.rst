@@ -118,10 +118,21 @@ Features
 * **History**: every change of a profile, of its switches and of its lines
   (data rules, fields, buttons, view elements, allowed records) is logged in
   its chatter, with who made it and when.
+* **Versions**: each save that changes a profile keeps a version of it, with
+  who saved it and a summary. A version shows what it changed and what has
+  changed since, line by line, and restores in one click: the profile becomes
+  what it was, its users stay. Versions cannot be edited nor deleted; the last
+  200 of each profile are kept.
+* **Why?**: pick a user, a data, an operation and, if you like, a record, and
+  see whether the user may do it and why: the access rules of their groups that
+  grant it (or the groups that would), the rules that limit everyone, then each
+  of their profiles, its menus and its record filter, the fields and buttons
+  restricted there, and their recent refusals. From the Access Manager menu,
+  the user form, the Effective Access window and every refusal of the audit log.
 * **Effective access on the user form**: what the user really ends up with, all
   of their profiles combined.
 * **Export and import** of profiles as a file, to build them on a test database
-  and load them on production. Menus, reports, actions and allowed records are
+  and load them on production, sign-in rules included. Menus, reports, actions and allowed records are
   matched by external id, else by name; what the other database lacks is
   skipped and listed in the chatter of the profile. Users are matched by login,
   if asked.

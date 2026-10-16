@@ -5,6 +5,7 @@ from . import om_access_profile
 from . import om_access_membership
 from . import om_access_login
 from . import om_access_transfer
+from . import om_access_version
 from . import om_access_profile_model
 from . import om_access_profile_menu
 from . import om_access_menu_panel

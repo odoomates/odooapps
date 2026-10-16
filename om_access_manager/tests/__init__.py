@@ -17,3 +17,4 @@ from . import test_more_switches
 from . import test_access_group
 from . import test_value_filters
 from . import test_preview
+from . import test_explain_versions

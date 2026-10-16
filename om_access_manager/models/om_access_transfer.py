@@ -19,6 +19,7 @@ PROFILE_FIELDS = (
     'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_followers_all',
     'hide_attachments_all', 'hide_costs', 'hide_sale_prices', 'note', 'block_custom_filter',
     'block_custom_group', 'block_favorites', 'block_properties', 'block_apps',
+    'login_tz', 'allowed_ips', 'single_session',
 )
 MODEL_LINE_FIELDS = (
     'perm_read', 'perm_write', 'perm_create', 'perm_unlink', 'domain', 'domain_read',
@@ -30,6 +31,7 @@ MENU_LINE_FIELDS = MODEL_LINE_FIELDS[:4] + MODEL_LINE_FIELDS[9:] + ('records', '
 FIELD_LINE_FIELDS = ('mode', 'no_open', 'no_create', 'no_export', 'field_domain', 'condition')
 BUTTON_LINE_FIELDS = ('view_type', 'button_type', 'button_id', 'button_label', 'mode', 'condition')
 ELEMENT_LINE_FIELDS = ('element_type', 'element_name', 'element_label', 'condition')
+LOGIN_SLOT_FIELDS = ('dayofweek', 'hour_from', 'hour_to')
 
 
 class OmAccessProfile(models.Model):
@@ -135,6 +137,9 @@ class OmAccessProfile(models.Model):
                 item['record'] = self._om_ref(self.env[line.res_model].sudo().browse(line.res_id).exists())
             allowed.append(item)
         data['allowed'] = allowed
+        data['login_slots'] = [
+            {name: slot[name] for name in LOGIN_SLOT_FIELDS} for slot in profile.login_slot_ids
+        ]
         if with_users:
             data['users'] = profile.user_ids.mapped('login')
         return data
@@ -183,18 +188,40 @@ class OmAccessProfile(models.Model):
 
     @api.model
     def _om_import_profile(self, data, replace, with_users):
-        notes = []
         name = data.get('name') or _("Imported Profile")
         existing = self.with_context(active_test=False).search([('name', '=', name)], limit=1)
         if existing and replace:
-            existing.write({
-                'model_ids': [(5,)], 'menu_rule_ids': [(5,)], 'field_ids': [(5,)], 'button_ids': [(5,)], 'element_ids': [(5,)],
-                'allowed_ids': [(5,)], 'group_ids': [(5,)], 'granted_group_ids': [(5,)], 'hidden_menu_ids': [(5,)], 'hidden_report_ids': [(5,)],
-                'hidden_action_ids': [(5,)], 'hidden_window_action_ids': [(5,)],
-            })
             profile = existing
         else:
             profile = self.create({'name': _("%s (imported)", name) if existing else name})
+        notes = profile._om_apply_export(data, with_users)
+        body = Markup('<p>%s</p>') % _("Imported from a file.")
+        if notes:
+            body += profile._om_notes_html(notes)
+        profile.message_post(body=body, subtype_xmlid='mail.mt_note')
+        return profile
+
+    @api.model
+    def _om_notes_html(self, notes):
+        return Markup('<p>%s</p><ul>%s</ul>') % (
+            _("Skipped, not found on this database:"),
+            Markup('').join(Markup('<li>%s</li>') % escape(note) for note in notes))
+
+    def _om_apply_export(self, data, with_users):
+        """ Make this profile what ``data``, an exported profile, describes: its
+        lines are replaced. Return what this database lacks, as notes. """
+        self.ensure_one()
+        profile = self
+        notes = []
+        clear = {
+            'model_ids': [(5,)], 'menu_rule_ids': [(5,)], 'field_ids': [(5,)], 'button_ids': [(5,)], 'element_ids': [(5,)],
+            'allowed_ids': [(5,)], 'group_ids': [(5,)], 'granted_group_ids': [(5,)], 'hidden_menu_ids': [(5,)], 'hidden_report_ids': [(5,)],
+            'hidden_action_ids': [(5,)], 'hidden_window_action_ids': [(5,)],
+        }
+        if 'login_slots' in data:
+            # exports made before the sign-in rules travelled leave them as they are
+            clear['login_slot_ids'] = [(5,)]
+        profile.write(clear)
 
         values = {key: data[key] for key in PROFILE_FIELDS if key in data and key in self._fields}
         home = self._om_find(data.get('home_action'), 'ir.actions.act_window')
@@ -304,6 +331,12 @@ class OmAccessProfile(models.Model):
             allowed_lines.append((0, 0, {'kind': line['kind'], 'res_id': record.id}))
         values['allowed_ids'] = allowed_lines
 
+        if 'login_slots' in data:
+            values['login_slot_ids'] = [
+                (0, 0, {key: slot[key] for key in LOGIN_SLOT_FIELDS if key in slot})
+                for slot in data['login_slots']
+            ]
+
         if with_users and data.get('users'):
             users = self.env['res.users'].sudo().search([('login', 'in', data['users'])])
             values['user_ids'] = [(6, 0, users.ids)]
@@ -311,10 +344,4 @@ class OmAccessProfile(models.Model):
                 notes.append(_("User not found: %s", login))
 
         profile.write(values)
-        body = Markup('<p>%s</p>') % _("Imported from a file.")
-        if notes:
-            body += Markup('<p>%s</p><ul>%s</ul>') % (
-                _("Skipped, not found on this database:"),
-                Markup('').join(Markup('<li>%s</li>') % escape(note) for note in notes))
-        profile.message_post(body=body, subtype_xmlid='mail.mt_note')
-        return profile
+        return notes
