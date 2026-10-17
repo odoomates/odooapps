@@ -1,0 +1,596 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: th\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_account_bill_ocr
+#: model:ir.module.module,description:base.module_om_account_bill_ocr
+msgid ""
+"\n"
+"Upload a vendor bill, or receive it by email, and the draft bill is filled from it: the vendor recognized by its tax\n"
+"number, bank account, email or name, the bill number, the bill and due dates, the currency, the taxes and the total,\n"
+"and the lines of its table when they add up. Everything is read on your own server: the text of the PDFs, and the\n"
+"scans and the photos with Tesseract. Each bill posted teaches the module where the vendor prints its fields and how\n"
+"its bills are booked.\n"
+msgstr ""
+"\n"
+"อัปโหลดใบเรียกเก็บเงินผู้จำหน่าย หรือรับทางอีเมล แล้วใบเรียกเก็บเงินฉบับร่างจะถูกกรอกจากเอกสารนั้น: ผู้จำหน่ายที่ระบุได้จากเลขประจำตัวผู้เสียภาษี\n"
+"บัญชีธนาคาร อีเมล หรือชื่อ เลขที่ใบเรียกเก็บเงิน วันที่ออกและวันครบกำหนด สกุลเงิน ภาษี และยอดรวม\n"
+"รวมถึงรายการในตารางเมื่อยอดตรงกัน ทุกอย่างอ่านบนเซิร์ฟเวอร์ของคุณเอง: ข้อความใน PDF และ\n"
+"เอกสารสแกนและรูปถ่ายด้วย Tesseract ใบเรียกเก็บเงินแต่ละใบที่ผ่านรายการจะสอนโมดูลว่าผู้จำหน่ายพิมพ์ฟิลด์ไว้ที่ใด และ\n"
+"ใบเรียกเก็บเงินของผู้จำหน่ายบันทึกบัญชีอย่างไร\n"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.constraint,message:om_account_bill_ocr.constraint_om_bill_ocr_profile_partner_company_unique
+msgid "A vendor has one recognition profile per company."
+msgstr "ผู้จำหน่ายหนึ่งรายมีโปรไฟล์การจดจำได้หนึ่งโปรไฟล์ต่อบริษัท"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__account_id
+msgid "Account"
+msgstr "บัญชี"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Attach the PDF or the image of the bill first."
+msgstr "แนบไฟล์ PDF หรือรูปภาพของใบเรียกเก็บเงินก่อน"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Bill"
+msgstr "ใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Bill %(reference)s"
+msgstr "ใบเรียกเก็บเงิน %(reference)s"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Bill Date"
+msgstr "วันที่ออกใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__anchor_invoice_date
+msgid "Bill Date Label"
+msgstr "ป้ายกำกับวันที่ออกใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__anchor_ref
+msgid "Bill Number Label"
+msgstr "ป้ายกำกับเลขที่ใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_bank_statement_line__om_ocr_state
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__om_ocr_state
+msgid "Bill Recognition"
+msgstr "การจดจำใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Bill Reference"
+msgstr "การอ้างอิงใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Bill of %(vendor)s"
+msgstr "ใบเรียกเก็บเงินของ %(vendor)s"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__bill_count
+msgid "Bills Learned From"
+msgstr "จำนวนใบเรียกเก็บเงินที่เรียนรู้"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_form
+msgid "Booking"
+msgstr "การบันทึกบัญชี"
+
+#. module: om_account_bill_ocr
+#: model:ir.model,name:om_account_bill_ocr.model_res_company
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__company_id
+msgid "Company"
+msgstr "บริษัท"
+
+#. module: om_account_bill_ocr
+#: model:ir.model,name:om_account_bill_ocr.model_res_config_settings
+msgid "Config Settings"
+msgstr "ตั้งค่าการกำหนดค่า"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__create_uid
+msgid "Created by"
+msgstr "สร้างโดย"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__create_date
+msgid "Created on"
+msgstr "สร้างเมื่อ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__date_order
+msgid "Date Order"
+msgstr "ลำดับวันที่"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__om_bill_ocr_profile__date_order__dmy
+msgid "Day / Month / Year"
+msgstr "วัน / เดือน / ปี"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__display_name
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__display_name
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_company__display_name
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_config_settings__display_name
+msgid "Display Name"
+msgstr "แสดงชื่อ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__anchor_invoice_date_due
+msgid "Due Date Label"
+msgstr "ป้ายกำกับวันครบกำหนด"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_bank_statement_line__om_ocr_to_check
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__om_ocr_to_check
+msgid "Fields to Check"
+msgstr "ฟิลด์ที่ต้องตรวจสอบ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_om_bill_ocr_profile__date_order
+msgid ""
+"How the vendor prints its dates, when a date such as 03/04 could be read "
+"both ways. Empty: the date format of the language of the user."
+msgstr ""
+"วิธีที่ผู้จำหน่ายพิมพ์วันที่ เมื่อวันที่เช่น 03/04 อ่านได้ทั้งสองแบบ "
+"ว่างไว้: ใช้รูปแบบวันที่ของภาษาผู้ใช้"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__id
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__id
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_company__id
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_config_settings__id
+msgid "ID"
+msgstr "ไอดี"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "It was booked on one line."
+msgstr "บันทึกเป็นรายการเดียว"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Its lines were read from its table."
+msgstr "อ่านรายการจากตารางของใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model,name:om_account_bill_ocr.model_account_move
+msgid "Journal Entry"
+msgstr "รายการสมุดรายวัน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__last_learned
+msgid "Last Learned"
+msgstr "เรียนรู้ล่าสุด"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__write_uid
+msgid "Last Updated by"
+msgstr "อัปเดตครั้งล่าสุดโดย"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__write_date
+msgid "Last Updated on"
+msgstr "อัปเดตครั้งล่าสุดเมื่อ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__om_bill_ocr_profile__line_mode__lines
+msgid "Line Items"
+msgstr "แยกรายการ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_om_bill_ocr_profile__line_mode
+msgid ""
+"Line Items: the lines of the bill are read, and kept when they add up to its"
+" untaxed amount, else one line is made. One Line: always one line with the "
+"untaxed amount."
+msgstr ""
+"แยกรายการ: อ่านรายการของใบเรียกเก็บเงิน "
+"และเก็บไว้เมื่อยอดรวมเท่ากับยอดก่อนรวมภาษี มิฉะนั้นจะสร้างรายการเดียว "
+"รายการเดียว: สร้างรายการเดียวด้วยยอดก่อนรวมภาษีเสมอ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__line_mode
+msgid "Lines"
+msgstr "รายการ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__om_bill_ocr_profile__date_order__mdy
+msgid "Month / Day / Year"
+msgstr "เดือน / วัน / ปี"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.actions.act_window,help:om_account_bill_ocr.action_om_bill_ocr_profile
+msgid "Nothing learned yet"
+msgstr "ยังไม่ได้เรียนรู้สิ่งใด"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_company__om_bill_ocr_languages
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_config_settings__om_bill_ocr_languages
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid "OCR Languages"
+msgstr "ภาษา OCR"
+
+#. module: om_account_bill_ocr
+#: model:ir.module.module,shortdesc:base.module_om_account_bill_ocr
+msgid "Odoo 20 Vendor Bill OCR"
+msgstr "Odoo 20 OCR ใบเรียกเก็บเงินผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__res_company__om_bill_ocr_mode__off
+msgid "Off"
+msgstr "ปิด"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_bank_statement_line__om_ocr_can_read
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__om_ocr_can_read
+msgid "Om Ocr Can Read"
+msgstr "อ่านด้วย OCR ได้"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_bank_statement_line__om_ocr_data
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__om_ocr_data
+msgid "Om Ocr Data"
+msgstr "ข้อมูล OCR"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__res_company__om_bill_ocr_mode__manual
+msgid "On Demand"
+msgstr "ตามต้องการ"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__om_bill_ocr_profile__line_mode__single
+msgid "One Line"
+msgstr "รายการเดียว"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Only a draft vendor bill can be read."
+msgstr "อ่านได้เฉพาะใบเรียกเก็บเงินผู้จำหน่ายฉบับร่างเท่านั้น"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__product_id
+msgid "Product"
+msgstr "สินค้า"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_om_bill_ocr_profile__product_id
+msgid "Put on the line of a bill read as a single line."
+msgstr "ใช้กับรายการของใบเรียกเก็บเงินที่อ่านเป็นรายการเดียว"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__account_move__om_ocr_state__done
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid "Read"
+msgstr "อ่าน"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_move_form_bill_ocr
+msgid "Read from the attached bill. Check"
+msgstr "อ่านจากใบเรียกเก็บเงินที่แนบมา โปรดตรวจสอบ"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_move_form_bill_ocr
+msgid ""
+"Read from the attached bill: the vendor, the reference, the dates and the "
+"totals all check out."
+msgstr ""
+"อ่านจากใบเรียกเก็บเงินที่แนบมา: ผู้จำหน่าย การอ้างอิง วันที่ "
+"และยอดรวมถูกต้องทั้งหมด"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_move_form_bill_ocr
+msgid "Read the Bill"
+msgstr "อ่านใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_company__om_bill_ocr_mode
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_config_settings__om_bill_ocr_mode
+msgid "Read the Vendor Bills"
+msgstr "อ่านใบเรียกเก็บเงินผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid ""
+"Read the uploaded vendor bills: PDFs, scans and photos, on your own server"
+msgstr ""
+"อ่านใบเรียกเก็บเงินผู้จำหน่ายที่อัปโหลด: PDF เอกสารสแกน และรูปถ่าย "
+"บนเซิร์ฟเวอร์ของคุณเอง"
+
+#. module: om_account_bill_ocr
+#: model:ir.module.module,summary:base.module_om_account_bill_ocr
+msgid ""
+"Read the uploaded vendor bills: vendor, number, dates, totals, taxes and "
+"lines, from PDFs, scans and photos, on your own server and for free"
+msgstr ""
+"อ่านใบเรียกเก็บเงินผู้จำหน่ายที่อัปโหลด: ผู้จำหน่าย เลขที่ วันที่ ยอดรวม "
+"ภาษี และรายการ จาก PDF เอกสารสแกน และรูปถ่าย "
+"บนเซิร์ฟเวอร์ของคุณเองโดยไม่มีค่าใช้จ่าย"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__account_move__om_ocr_state__to_check
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_account_invoice_filter_bill_ocr
+msgid "Read, To Check"
+msgstr "อ่านแล้ว รอตรวจสอบ"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_form
+msgid "Reading"
+msgstr "การอ่าน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__match_keys
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_form
+msgid "Recognized By"
+msgstr "ระบุโดย"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_form
+msgid ""
+"Tax numbers, bank accounts, email domains, letterhead lines: one per line"
+msgstr ""
+"เลขประจำตัวผู้เสียภาษี บัญชีธนาคาร โดเมนอีเมล บรรทัดหัวจดหมาย: "
+"บรรทัดละหนึ่งรายการ"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__tax_ids
+msgid "Taxes"
+msgstr "ภาษี"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_res_config_settings__om_bill_ocr_tesseract
+msgid "Tesseract Installed"
+msgstr "ติดตั้ง Tesseract แล้ว"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid "Tesseract is installed: the scans and the photos are read too."
+msgstr "ติดตั้ง Tesseract แล้ว: เอกสารสแกนและรูปถ่ายจะถูกอ่านด้วย"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_bank_statement_line__om_ocr_text
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_account_move__om_ocr_text
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_move_form_bill_ocr
+msgid "Text of the Bill"
+msgstr "ข้อความของใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid ""
+"The PDFs with text are read. To read the scans and the photos too, install the\n"
+"                            tesseract-ocr and poppler-utils packages on the server."
+msgstr ""
+"ไฟล์ PDF ที่มีข้อความจะถูกอ่าน หากต้องการอ่านเอกสารสแกนและรูปถ่ายด้วย ให้ติดตั้งแพ็กเกจ\n"
+"                            tesseract-ocr และ poppler-utils บนเซิร์ฟเวอร์"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_res_company__om_bill_ocr_languages
+#: model:ir.model.fields,help:om_account_bill_ocr.field_res_config_settings__om_bill_ocr_languages
+msgid ""
+"The Tesseract languages of the scanned bills, joined by +: eng, eng+fra, "
+"eng+ara... Each one needs its language pack on the server (tesseract-ocr-"
+"fra, tesseract-ocr-ara...)."
+msgstr ""
+"ภาษา Tesseract ของใบเรียกเก็บเงินที่สแกน คั่นด้วย +: eng, eng+fra, "
+"eng+ara... แต่ละภาษาต้องมีชุดภาษาบนเซิร์ฟเวอร์ (tesseract-ocr-fra, "
+"tesseract-ocr-ara...)"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_om_bill_ocr_profile__account_id
+msgid "The account of the lines of this vendor's bills."
+msgstr "บัญชีของรายการในใบเรียกเก็บเงินของผู้จำหน่ายรายนี้"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "The bill already has lines: delete them to read it again."
+msgstr "ใบเรียกเก็บเงินมีรายการอยู่แล้ว: ลบรายการเหล่านั้นเพื่ออ่านอีกครั้ง"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "The bill was not read: %(reason)s"
+msgstr "ไม่ได้อ่านใบเรียกเก็บเงิน: %(reason)s"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "The bill was read from its scan, by OCR."
+msgstr "อ่านใบเรียกเก็บเงินจากเอกสารสแกนด้วย OCR"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "The bill was read from its text."
+msgstr "อ่านใบเรียกเก็บเงินจากข้อความ"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_form
+msgid "The date format of the language"
+msgstr "รูปแบบวันที่ของภาษา"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_om_bill_ocr_profile__match_keys
+msgid ""
+"The tax numbers, bank accounts, email domains and letterhead lines read on "
+"the bills of this vendor, one per line: a bill showing one of them is this "
+"vendor's."
+msgstr ""
+"เลขประจำตัวผู้เสียภาษี บัญชีธนาคาร โดเมนอีเมล "
+"และบรรทัดหัวจดหมายที่อ่านได้จากใบเรียกเก็บเงินของผู้จำหน่ายรายนี้ "
+"บรรทัดละหนึ่งรายการ: "
+"ใบเรียกเก็บเงินที่แสดงรายการใดรายการหนึ่งเป็นของผู้จำหน่ายรายนี้"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "The vendor was recognized by %(how)s."
+msgstr "ระบุผู้จำหน่ายได้จาก%(how)s"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "To check: %(fields)s."
+msgstr "ต้องตรวจสอบ: %(fields)s"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "Total"
+msgstr "รวม"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__anchor_amount_total
+msgid "Total Label"
+msgstr "ป้ายกำกับยอดรวม"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.actions.act_window,help:om_account_bill_ocr.action_om_bill_ocr_profile
+msgid ""
+"Upload a vendor bill and post it: what it taught about its vendor shows here, and is used to read\n"
+"                the vendor's next bills."
+msgstr ""
+"อัปโหลดใบเรียกเก็บเงินผู้จำหน่ายแล้วผ่านรายการ: สิ่งที่ได้เรียนรู้เกี่ยวกับผู้จำหน่ายจะแสดงที่นี่ และใช้อ่าน\n"
+"                ใบเรียกเก็บเงินถัดไปของผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+#: model:ir.model.fields,field_description:om_account_bill_ocr.field_om_bill_ocr_profile__partner_id
+msgid "Vendor"
+msgstr "ผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid "Vendor Bill OCR"
+msgstr "OCR ใบเรียกเก็บเงินผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#: model:ir.actions.act_window,name:om_account_bill_ocr.action_om_bill_ocr_profile
+#: model:ir.ui.menu,name:om_account_bill_ocr.menu_om_bill_ocr_profile
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_form
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_om_bill_ocr_profile_list
+msgid "Vendor Bill Recognition"
+msgstr "การจดจำใบเรียกเก็บเงินผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#: model:ir.model,name:om_account_bill_ocr.model_om_bill_ocr_profile
+msgid "Vendor Bill Recognition Profile"
+msgstr "โปรไฟล์การจดจำใบเรียกเก็บเงินผู้จำหน่าย"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid "What the Bills Taught"
+msgstr "สิ่งที่เรียนรู้จากใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields.selection,name:om_account_bill_ocr.selection__res_company__om_bill_ocr_mode__auto
+msgid "When a Bill Is Uploaded"
+msgstr "เมื่ออัปโหลดใบเรียกเก็บเงิน"
+
+#. module: om_account_bill_ocr
+#: model:ir.model.fields,help:om_account_bill_ocr.field_res_company__om_bill_ocr_mode
+#: model:ir.model.fields,help:om_account_bill_ocr.field_res_config_settings__om_bill_ocr_mode
+msgid ""
+"When a Bill Is Uploaded: the bills uploaded or received by email are read at"
+" once. On Demand: with the Read the Bill button of a draft bill."
+msgstr ""
+"เมื่ออัปโหลดใบเรียกเก็บเงิน: "
+"ใบเรียกเก็บเงินที่อัปโหลดหรือได้รับทางอีเมลจะถูกอ่านทันที ตามต้องการ: "
+"ใช้ปุ่ม อ่านใบเรียกเก็บเงิน ในใบเรียกเก็บเงินฉบับร่าง"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.view_move_form_bill_ocr
+msgid "before posting it: posting teaches the vendor's bills."
+msgstr ""
+"ก่อนผ่านรายการ: การผ่านรายการจะสอนรูปแบบใบเรียกเก็บเงินของผู้จำหน่ายรายนี้"
+
+#. module: om_account_bill_ocr
+#: model_terms:ir.ui.view,arch_db:om_account_bill_ocr.res_config_settings_view_form_bill_ocr
+msgid "eng"
+msgstr "eng"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "its bank account"
+msgstr "บัญชีธนาคาร"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "its email"
+msgstr "อีเมล"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "its name"
+msgstr "ชื่อ"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "its tax number"
+msgstr "เลขประจำตัวผู้เสียภาษี"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "no text could be read on this bill."
+msgstr "ไม่สามารถอ่านข้อความใดๆ จากใบเรียกเก็บเงินนี้ได้"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "the bill could not be read: %(error)s"
+msgstr "ไม่สามารถอ่านใบเรียกเก็บเงินได้: %(error)s"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid ""
+"this bill is a scan or a photo, and reading it needs Tesseract on the "
+"server: install the tesseract-ocr package (and poppler-utils for the scanned"
+" PDFs)."
+msgstr ""
+"ใบเรียกเก็บเงินนี้เป็นเอกสารสแกนหรือรูปถ่าย และต้องมี Tesseract "
+"บนเซิร์ฟเวอร์จึงจะอ่านได้: ติดตั้งแพ็กเกจ tesseract-ocr (และ poppler-utils "
+"สำหรับ PDF ที่สแกน)"
+
+#. module: om_account_bill_ocr
+#. odoo-python
+#: code:addons/om_account_bill_ocr/models/account_move.py:0
+msgid "what its earlier bills taught"
+msgstr "สิ่งที่เรียนรู้จากใบเรียกเก็บเงินก่อนหน้า"
