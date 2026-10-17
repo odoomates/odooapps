@@ -1,17 +1,18 @@
 {
     'name': 'Odoo 20 Accounting Community',
-    'version': '1.3.1',
+    'version': '1.4.0',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Period Closing, Accounting Dashboard, Financial Reports, '
                'Cash Flow Statement, Cash Forecast, Customer Follow up Management, Bank Reconciliation, '
-               'Cheque Printing, Automatic Currency Rates, Currency Revaluation, Bank Statement Import',
+               'Cheque Printing, Automatic Currency Rates, Currency Revaluation, Bank Statement Import, '
+               'Vendor Bill OCR',
     'description': 'Odoo 20 Financial Reports, Asset Management and '
                    'Budget, Financial Reports, Cash Flow Statement, Cash Forecast, '
                    'Recurring Payments, Bank Reconciliation, Customer Follow Up Management, '
                    'Account Lock Date, Fiscal Year and Period Closing, Cheque Printing, '
-                   'Automatic Currency Rates, Accounting Dashboard',
+                   'Automatic Currency Rates, Accounting Dashboard, Vendor Bill OCR',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
     'sequence': '1',
     'author': 'Odoo Mates, Odoo SA',
@@ -32,6 +33,7 @@
         'om_currency_rate_update',
         'om_currency_revaluation',
         'om_account_bank_statement_import',
+        'om_account_bill_ocr',
         'om_spreadsheet_account',
         'om_spreadsheet_account_asset',
         'om_spreadsheet_account_budget',

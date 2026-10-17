@@ -19,6 +19,8 @@ Requirements
 
 * Odoo 20.0 Community Edition.
 * No external Python library and no paid Odoo Enterprise module.
+* To read scanned and photographed vendor bills: ``sudo apt install
+  tesseract-ocr poppler-utils``. The PDFs with a text layer need nothing more.
 
 
 What it installs
@@ -51,6 +53,8 @@ Bank and payments
 * ``om_account_bank_statement_import`` — statement import with reusable file
   maps.
 * ``om_account_check_printing`` — cheque formats and cheque printing.
+* ``om_account_bill_ocr`` — vendor bills read from their PDF, scan or photo,
+  on your own server.
 
 Currency and periods
 --------------------
