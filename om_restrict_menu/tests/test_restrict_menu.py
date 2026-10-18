@@ -4,7 +4,7 @@ from unittest.mock import patch
 from odoo import Command
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
 
-MENU_MODULE = 'odoo.addons.om_hide_menu.models.ir_ui_menu'
+MENU_MODULE = 'odoo.addons.om_restrict_menu.models.ir_ui_menu'
 
 
 class HideMenuCase(TransactionCase):
