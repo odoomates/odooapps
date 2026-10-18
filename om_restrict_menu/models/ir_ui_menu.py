@@ -11,11 +11,11 @@ class IrUiMenu(models.Model):
     _inherit = 'ir.ui.menu'
 
     om_hidden_user_ids = fields.Many2many(
-        'res.users', 'om_hide_menu_user_rel', 'menu_id', 'user_id', string='Hidden for Users',
+        'res.users', 'om_restrict_menu_user_rel', 'menu_id', 'user_id', string='Hidden for Users',
         groups='base.group_system',
         help="The menu and its sub-menus are hidden for these users, in every company.")
     om_hidden_company_ids = fields.Many2many(
-        'res.company', 'om_hide_menu_company_rel', 'menu_id', 'company_id', string='Hidden in Companies',
+        'res.company', 'om_restrict_menu_company_rel', 'menu_id', 'company_id', string='Hidden in Companies',
         groups='base.group_system',
         help="The menu and its sub-menus are hidden for every user while one of these companies "
              "is the current company.")
