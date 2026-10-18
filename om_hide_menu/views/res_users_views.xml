@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_users_form_om_hide_menu" model="ir.ui.view">
+        <field name="name">res.users.form.om.hide.menu</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <page name="access_rights" position="after">
+                <page name="om_hidden_menus" string="Hidden Menus" invisible="share" groups="base.group_system">
+                    <p class="text-muted">
+                        These menus and their sub-menus are hidden for the user, in every company. The menus
+                        hidden in the current company are hidden as well. Administrators always keep the
+                        Settings app.
+                    </p>
+                    <field name="om_hidden_menu_ids">
+                        <list>
+                            <field name="complete_name" string="Menu"/>
+                        </list>
+                    </field>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>
