@@ -127,7 +127,7 @@ class ReportFinancial(models.AbstractModel):
                     flag = False
                     account = self.env['account.account'].browse(account_id)
                     vals = {
-                        'name': account.code + ' ' + account.name,
+                        'name': ' '.join(part for part in (account.code, account.name) if part),
                         'balance': value['balance'] * float(report.sign) or 0.0,
                         'type': 'account',
                         # must never be False: the template skips rows whose level is 0/False
