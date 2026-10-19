@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_move_form_bill_ocr" model="ir.ui.view">
+        <field name="name">account.move.form.bill.ocr</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_post'][last()]" position="after">
+                <button name="action_om_ocr_read" type="object" string="Read the Bill"
+                        invisible="not om_ocr_can_read" groups="account.group_account_invoice"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="om_ocr_can_read" invisible="1"/>
+                <div class="alert alert-warning mb-0" role="alert"
+                     invisible="om_ocr_state != 'to_check' or state != 'draft'">
+                    Read from the attached bill. Check <strong><field name="om_ocr_to_check" class="d-inline"/></strong>
+                    before posting it: posting teaches the vendor's bills.
+                </div>
+                <div class="alert alert-info mb-0" role="alert"
+                     invisible="om_ocr_state != 'done' or state != 'draft'">
+                    Read from the attached bill: the vendor, the reference, the dates and the totals all check out.
+                </div>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Text of the Bill" name="om_ocr_text" groups="base.group_no_one"
+                      invisible="not om_ocr_text">
+                    <field name="om_ocr_text" class="font-monospace" style="white-space: pre; font-size: 12px;"/>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_account_invoice_filter_bill_ocr" model="ir.ui.view">
+        <field name="name">account.move.search.bill.ocr</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_invoice_filter"/>
+        <field name="arch" type="xml">
+            <filter name="draft" position="before">
+                <filter name="om_ocr_to_check" string="Read, To Check"
+                        domain="[('om_ocr_state', '=', 'to_check'), ('state', '=', 'draft')]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>
