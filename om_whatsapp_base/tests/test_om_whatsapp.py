@@ -59,8 +59,10 @@ class TestOmWhatsapp(TransactionCase):
         ])
 
     def _channel(self, number='+32470123456'):
-        return self.env['discuss.channel'].search(
-            [('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_number', '=', number)])
+        return self.env['discuss.channel'].search([
+            ('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.account.id),
+            ('om_whatsapp_number', '=', number),
+        ])
 
     def _post(self, document, body='Hi', partner=None, number='+32470123456'):
         return document._message_om_whatsapp(self.account, body, number, partner=partner or document)
@@ -366,7 +368,8 @@ class TestOmWhatsapp(TransactionCase):
         react.assert_not_called()
         self.assertEqual(len(copies[-1].reaction_ids), 1, "the copies are left alone")
         with patch.object(OmWhatsappAccount, '_om_whatsapp_react_link', create=True, side_effect=UserError('Not linked')), \
-             patch.object(type(self.env.user), '_bus_send', autospec=True) as bus_send:
+             patch.object(type(self.env.user), '_bus_send', autospec=True) as bus_send, \
+             self.assertLogs('odoo.addons.om_whatsapp_base.models.om_whatsapp_account', level='WARNING'):
             copies[-1].with_user(self.user).sudo()._message_reaction('🙏', 'add', self.user.partner_id, guest)
         self.assertIn('🙏', copies[-1].reaction_ids.mapped('content'))
         notification = [c.args for c in bus_send.call_args_list if c.args[1] == 'simple_notification']
@@ -554,7 +557,8 @@ class TestOmWhatsappAutomation(TransactionCase):
         problem logged. """
         self.action.om_whatsapp_account_id = False
         self.env['om.whatsapp.account'].search([]).user_ids = [Command.unlink(self.user.id)]
-        self._run(self.alice)
+        with self.assertLogs('odoo.addons.om_whatsapp_base.models.mail_thread', level='WARNING'):
+            self._run(self.alice)
         self.assertFalse(self._messages(self.alice))
         self.action.om_whatsapp_account_id = self.account
         with patch.object(OmWhatsappAccount, '_om_whatsapp_send_automated', side_effect=RuntimeError('down')), \
