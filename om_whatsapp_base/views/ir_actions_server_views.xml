@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_actions_server_view_form_om_whatsapp" model="ir.ui.view">
+        <field name="name">ir.actions.server.view.form.inherit.om.whatsapp</field>
+        <field name="model">ir.actions.server</field>
+        <field name="inherit_id" ref="base.view_server_action_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='link_field_id']" position="after">
+                <field name="om_whatsapp_template_id" string="Template" placeholder="Choose a template..."
+                       context="{'default_model': model_name}" invisible="state != 'om_whatsapp'"
+                       required="state == 'om_whatsapp'"/>
+                <field name="om_whatsapp_account_id" string="Account" placeholder="The one of the template, or of the user"
+                       options="{'no_create': True}" invisible="state != 'om_whatsapp'"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

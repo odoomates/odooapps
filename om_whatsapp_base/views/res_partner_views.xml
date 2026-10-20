@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_om_whatsapp" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.om.whatsapp</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_om_whatsapp_messages" type="object" class="oe_stat_button" icon="fa-whatsapp"
+                        groups="om_whatsapp_base.group_om_whatsapp_user" invisible="not om_whatsapp_message_count">
+                    <field name="om_whatsapp_message_count" widget="statinfo" string="WhatsApp"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id="res_partner_action_om_whatsapp_send" model="ir.actions.server">
+        <field name="name">Send WhatsApp</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="binding_model_id" ref="base.model_res_partner"/>
+        <field name="groups_id" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_om_whatsapp_send()</field>
+    </record>
+</odoo>
