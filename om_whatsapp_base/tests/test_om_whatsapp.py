@@ -122,6 +122,11 @@ class TestOmWhatsapp(TransactionCase):
         nophone = self.nophone.message_ids.filtered(lambda m: m.message_type == 'om_whatsapp')
         self.assertEqual(nophone.om_whatsapp_status, 'failed')
         self.assertTrue(nophone.has_om_whatsapp_error)
+        # the Failed filter of WhatsApp > Messages
+        Message = self.env['mail.message']
+        self.assertIn(nophone, Message.search([('has_om_whatsapp_error', '=', True)]))
+        self.assertNotIn(nophone, Message.search([('has_om_whatsapp_error', '=', False)]))
+        self.assertIn(queued.mail_message_id, Message.search([('has_om_whatsapp_error', '!=', True)]))
 
     def test_status_never_moves_back(self):
         message = self._post(self.alice)
