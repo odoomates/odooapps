@@ -75,9 +75,10 @@ class MailMessage(models.Model):
             message.has_om_whatsapp_error = message in failed
 
     def _search_has_om_whatsapp_error(self, operator, operand):
-        if operator != 'in':
-            return NotImplemented
-        return [('notification_ids', 'any', [
+        if operator not in ('=', '!='):
+            raise UserError(_("Search the failed WhatsApp messages with = or !=."))
+        failed = (operator == '=') == bool(operand)
+        return [('notification_ids', 'any' if failed else 'not any', [
             ('notification_status', '=', 'exception'),
             ('notification_type', '=', 'om_whatsapp'),
         ])]
