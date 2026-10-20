@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_demo" model="om.whatsapp.account">
+        <field name="name">Sales Team</field>
+        <field name="provider">link</field>
+        <field name="phone">+1 555 010 0200</field>
+        <field name="user_ids" eval="[Command.set([ref('base.user_admin'), ref('base.user_demo')])]"/>
+    </record>
+
+    <record id="om_whatsapp_template_demo_greeting" model="om.whatsapp.template">
+        <field name="name">Welcome</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="lang">{{ object.lang }}</field>
+        <field name="body">Hello {{ object.name }}, welcome! I am {{ user.name }}, your contact at {{ user.company_id.name }}. Write to us here whenever you need anything.</field>
+    </record>
+
+    <record id="om_whatsapp_template_demo_meeting" model="om.whatsapp.template">
+        <field name="name">Meeting Follow-up</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body">Hi {{ object.name }}, thank you for your time today. I will send you our proposal by tomorrow.</field>
+    </record>
+
+    <record id="om_whatsapp_template_demo_app" model="om.whatsapp.template">
+        <field name="name">Share the WhatsApp App</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="body">Hi {{ object.name }}, hurray! I have found a free, cool app for WhatsApp in Odoo. Check it out in the apps soon: https://apps.odoo.com/apps/modules/18.0/om_whatsapp_web</field>
+    </record>
+
+    <function model="om.whatsapp.template" name="action_create_sidebar_action"
+              eval="[[ref('om_whatsapp_template_demo_greeting'), ref('om_whatsapp_template_demo_app')]]"/>
+
+    <!-- saved replies, typed with :: in a WhatsApp conversation -->
+    <record id="om_whatsapp_canned_response_demo_thanks" model="mail.canned.response">
+        <field name="source">thanks</field>
+        <field name="substitution">Thank you for your message! We will get back to you shortly.</field>
+        <field name="group_ids" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+    </record>
+
+    <record id="om_whatsapp_canned_response_demo_hours" model="mail.canned.response">
+        <field name="source">hours</field>
+        <field name="substitution">We are open Monday to Friday, from 9:00 to 18:00.</field>
+        <field name="group_ids" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+    </record>
+
+    <record id="om_whatsapp_canned_response_demo_quote" model="mail.canned.response">
+        <field name="source">quote</field>
+        <field name="substitution">Your quotation is ready: I am sending it to you here as a PDF.</field>
+        <field name="group_ids" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+    </record>
+
+    <record id="om_whatsapp_blacklist_demo" model="phone.blacklist">
+        <field name="number">+18038736126</field>
+    </record>
+
+    <record id="om_whatsapp_message_demo_1" model="mail.message">
+        <field name="model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_1"/>
+        <field name="message_type">om_whatsapp</field>
+        <field name="subtype_id" ref="mail.mt_note"/>
+        <field name="author_id" ref="base.partner_admin"/>
+        <field name="om_whatsapp_account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body"><![CDATA[<p>Hello Wood Corner, welcome! I am Mitchell Admin, your contact at YourCompany. Write to us here whenever you need anything.</p>]]></field>
+        <field name="date" eval="(DateTime.today() - timedelta(days=6)).strftime('%Y-%m-%d 09:12:00')"/>
+    </record>
+
+    <record id="om_whatsapp_notification_demo_1" model="mail.notification">
+        <field name="mail_message_id" ref="om_whatsapp_message_demo_1"/>
+        <field name="author_id" ref="base.partner_admin"/>
+        <field name="res_partner_id" ref="base.res_partner_1"/>
+        <field name="notification_type">om_whatsapp</field>
+        <field name="om_whatsapp_number">+16238537197</field>
+        <field name="notification_status">sent</field>
+        <field name="is_read" eval="True"/>
+    </record>
+
+    <record id="om_whatsapp_message_demo_2" model="mail.message">
+        <field name="model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_2"/>
+        <field name="message_type">om_whatsapp</field>
+        <field name="subtype_id" ref="mail.mt_note"/>
+        <field name="author_id" ref="base.partner_demo"/>
+        <field name="om_whatsapp_account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body"><![CDATA[<p>Hi Acme Corporation, thank you for your time today. I will send you our proposal by tomorrow.</p>]]></field>
+        <field name="date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 16:40:00')"/>
+    </record>
+
+    <record id="om_whatsapp_notification_demo_2" model="mail.notification">
+        <field name="mail_message_id" ref="om_whatsapp_message_demo_2"/>
+        <field name="author_id" ref="base.partner_demo"/>
+        <field name="res_partner_id" ref="base.res_partner_2"/>
+        <field name="notification_type">om_whatsapp</field>
+        <field name="om_whatsapp_number">+16039963829</field>
+        <field name="notification_status">sent</field>
+    </record>
+
+    <record id="om_whatsapp_message_demo_3" model="mail.message">
+        <field name="model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_2"/>
+        <field name="message_type">om_whatsapp</field>
+        <field name="subtype_id" ref="mail.mt_comment"/>
+        <field name="author_id" ref="base.res_partner_2"/>
+        <field name="om_whatsapp_account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body"><![CDATA[<p>Thanks! Could you add the delivery costs to the proposal?</p>]]></field>
+        <field name="date" eval="(DateTime.today() - timedelta(days=3)).strftime('%Y-%m-%d 17:02:00')"/>
+    </record>
+
+    <record id="om_whatsapp_message_demo_4" model="mail.message">
+        <field name="model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_12"/>
+        <field name="message_type">om_whatsapp</field>
+        <field name="subtype_id" ref="mail.mt_note"/>
+        <field name="author_id" ref="base.partner_admin"/>
+        <field name="om_whatsapp_account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body"><![CDATA[<p>Hello Azure Interior, your new desks are ready. When can we deliver them?</p>]]></field>
+        <field name="date" eval="(DateTime.today() - timedelta(days=1)).strftime('%Y-%m-%d 11:05:00')"/>
+    </record>
+
+    <record id="om_whatsapp_notification_demo_4" model="mail.notification">
+        <field name="mail_message_id" ref="om_whatsapp_message_demo_4"/>
+        <field name="author_id" ref="base.partner_admin"/>
+        <field name="res_partner_id" ref="base.res_partner_12"/>
+        <field name="notification_type">om_whatsapp</field>
+        <field name="om_whatsapp_number">+18709310505</field>
+        <field name="notification_status">pending</field>
+    </record>
+
+    <record id="om_whatsapp_message_demo_5" model="mail.message">
+        <field name="model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_4"/>
+        <field name="message_type">om_whatsapp</field>
+        <field name="subtype_id" ref="mail.mt_note"/>
+        <field name="author_id" ref="base.partner_demo"/>
+        <field name="om_whatsapp_account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body"><![CDATA[<p>Hello Ready Mat, welcome! I am Marc Demo, your contact at YourCompany. Write to us here whenever you need anything.</p>]]></field>
+        <field name="date" eval="(DateTime.today() - timedelta(days=1)).strftime('%Y-%m-%d 14:30:00')"/>
+    </record>
+
+    <record id="om_whatsapp_notification_demo_5" model="mail.notification">
+        <field name="mail_message_id" ref="om_whatsapp_message_demo_5"/>
+        <field name="author_id" ref="base.partner_demo"/>
+        <field name="res_partner_id" ref="base.res_partner_4"/>
+        <field name="notification_type">om_whatsapp</field>
+        <field name="om_whatsapp_number">+18038736126</field>
+        <field name="notification_status">canceled</field>
+        <field name="failure_type">om_whatsapp_optout</field>
+        <field name="failure_reason">Number is opted out</field>
+    </record>
+
+    <record id="om_whatsapp_message_demo_6" model="mail.message">
+        <field name="model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_10"/>
+        <field name="message_type">om_whatsapp</field>
+        <field name="subtype_id" ref="mail.mt_note"/>
+        <field name="author_id" ref="base.partner_admin"/>
+        <field name="om_whatsapp_account_id" ref="om_whatsapp_account_demo"/>
+        <field name="body"><![CDATA[<p>Hello The Jackson Group, your order has shipped today.</p>]]></field>
+        <field name="date" eval="(DateTime.today() - timedelta(days=0)).strftime('%Y-%m-%d 08:15:00')"/>
+    </record>
+
+    <record id="om_whatsapp_notification_demo_6" model="mail.notification">
+        <field name="mail_message_id" ref="om_whatsapp_message_demo_6"/>
+        <field name="author_id" ref="base.partner_admin"/>
+        <field name="res_partner_id" ref="base.res_partner_10"/>
+        <field name="notification_type">om_whatsapp</field>
+        <field name="om_whatsapp_number">+13345021024</field>
+        <field name="notification_status">exception</field>
+        <field name="failure_type">om_whatsapp_error</field>
+        <field name="failure_reason">This number is not on WhatsApp.</field>
+    </record>
+</odoo>
