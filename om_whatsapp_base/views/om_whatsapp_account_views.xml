@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_list" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.list</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="phone"/>
+                <field name="provider"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_account_view_form" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.form</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_messages" type="object" class="oe_stat_button" icon="fa-whatsapp">
+                            <field name="message_count" widget="statinfo" string="Messages"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Sales Team"/></h1>
+                    </div>
+                    <group>
+                        <group name="account">
+                            <field name="provider"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group name="receiving">
+                            <field name="reply_days"/>
+                            <field name="receive_unknown"/>
+                            <field name="fetch_pictures"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Allowed Users" name="users">
+                            <field name="user_ids" widget="many2many_tags_avatar" options="{'no_create': True}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_account_action" model="ir.actions.act_window">
+        <field name="name">WhatsApp Accounts</field>
+        <field name="res_model">om.whatsapp.account</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add a WhatsApp account</p>
+            <p>An account is a WhatsApp number your users send from, and how messages reach it.</p>
+        </field>
+    </record>
+</odoo>

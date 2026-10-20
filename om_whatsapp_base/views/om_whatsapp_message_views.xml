@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_message_view_list" model="ir.ui.view">
+        <field name="name">mail.message.list.om.whatsapp</field>
+        <field name="model">mail.message</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" decoration-danger="om_whatsapp_status == 'failed'"
+                  decoration-muted="om_whatsapp_status == 'cancel'" decoration-info="om_whatsapp_status == 'queued'">
+                <field name="date"/>
+                <field name="author_id" widget="many2one_avatar"/>
+                <field name="record_name" string="Document"/>
+                <field name="preview" string="Message"/>
+                <field name="om_whatsapp_account_id" optional="hide"/>
+                <field name="om_whatsapp_status" widget="badge"
+                       decoration-success="om_whatsapp_status in ('delivered', 'read', 'received')"
+                       decoration-danger="om_whatsapp_status == 'failed'"
+                       decoration-info="om_whatsapp_status in ('queued', 'sent')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_message_view_form" model="ir.ui.view">
+        <field name="name">mail.message.form.om.whatsapp</field>
+        <field name="model">mail.message</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0" delete="0">
+                <header>
+                    <button name="action_om_whatsapp_retry" type="object" string="Send Again" class="btn-primary"
+                            invisible="om_whatsapp_status not in ('failed', 'cancel')"/>
+                    <button name="action_om_whatsapp_cancel" type="object" string="Cancel"
+                            invisible="om_whatsapp_status != 'queued'"/>
+                    <field name="om_whatsapp_status" widget="statusbar" statusbar_visible="queued,sent,delivered,read"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_document" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                string="Document" invisible="not model or not res_id"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="author_id"/>
+                            <field name="record_name" string="Document" invisible="not record_name"/>
+                            <field name="model" invisible="1"/>
+                            <field name="res_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="om_whatsapp_account_id"/>
+                            <field name="date"/>
+                        </group>
+                    </group>
+                    <field name="body" readonly="1"/>
+                    <field name="attachment_ids" widget="many2many_binary" readonly="1" invisible="not attachment_ids"/>
+                    <field name="notification_ids" readonly="1" invisible="om_whatsapp_status == 'received'"
+                           domain="[('notification_type', '=', 'om_whatsapp')]">
+                        <list>
+                            <field name="res_partner_id" string="Contact"/>
+                            <field name="om_whatsapp_number"/>
+                            <field name="notification_status" string="Status"/>
+                            <field name="failure_reason"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_message_view_search" model="ir.ui.view">
+        <field name="name">mail.message.search.om.whatsapp</field>
+        <field name="model">mail.message</field>
+        <field name="priority">100</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="body" string="Message"/>
+                <field name="author_id"/>
+                <field name="record_name" string="Document"/>
+                <field name="notification_ids" string="Number" filter_domain="[('notification_ids.om_whatsapp_number', 'ilike', self)]"/>
+                <filter name="outgoing" string="Sent"
+                        domain="[('notification_ids', 'any', [('notification_type', '=', 'om_whatsapp')])]"/>
+                <filter name="incoming" string="Received"
+                        domain="[('notification_ids', 'not any', [('notification_type', '=', 'om_whatsapp')])]"/>
+                <separator/>
+                <filter name="failed" string="Failed" domain="[('has_om_whatsapp_error', '=', True)]"/>
+                <filter name="queued" string="Queued"
+                        domain="[('notification_ids', 'any', [('notification_type', '=', 'om_whatsapp'), ('notification_status', '=', 'ready')])]"/>
+                <separator/>
+                <filter name="group_account" string="Account" context="{'group_by': 'om_whatsapp_account_id'}"/>
+                <filter name="group_model" string="Document Type" context="{'group_by': 'model'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_message_action" model="ir.actions.act_window">
+        <field name="name">WhatsApp Messages</field>
+        <field name="res_model">mail.message</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('message_type', '=', 'om_whatsapp')]</field>
+        <field name="search_view_id" ref="om_whatsapp_message_view_search"/>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'list', 'view_id': ref('om_whatsapp_message_view_list')}),
+            Command.create({'view_mode': 'form', 'view_id': ref('om_whatsapp_message_view_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No WhatsApp message yet</p>
+            <p>Send one from a contact or any document with the WhatsApp button of the chatter.</p>
+        </field>
+    </record>
+</odoo>
