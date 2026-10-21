@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_form_inherit_web" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.form.inherit.web</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_account_view_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="after">
+                <field name="om_whatsapp_web_seen" invisible="1"/>
+                <field name="om_whatsapp_web_seen_user_id" invisible="1"/>
+                <widget name="om_whatsapp_web_status" invisible="provider != 'web'"/>
+            </div>
+            <group name="account" position="after">
+                <group invisible="provider != 'web'">
+                    <field name="om_whatsapp_web_since" invisible="not om_whatsapp_web_since"/>
+                    <div class="text-muted" colspan="2">
+                        Messages go out from WhatsApp Web, open in another tab of the browser of the user, through
+                        the Odoo Mates WhatsApp Connector extension: on a page of this Odoo, click its icon and Allow this
+                        Odoo. Until then, Send asks for it, or opens the chat in WhatsApp Web for the user to send, without
+                        the files.
+                    </div>
+                </group>
+            </group>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_account_view_list_inherit_web" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.list.inherit.web</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_account_view_list"/>
+        <field name="arch" type="xml">
+            <field name="provider" position="after">
+                <widget name="om_whatsapp_web_status_dot"/>
+                <field name="om_whatsapp_web_seen" optional="show"/>
+                <field name="om_whatsapp_web_seen_user_id" widget="many2one_avatar_user" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_composer_view_form_inherit_web" model="ir.ui.view">
+        <field name="name">om.whatsapp.composer.form.inherit.web</field>
+        <field name="model">om.whatsapp.composer</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_composer_view_form"/>
+        <field name="arch" type="xml">
+            <field name="can_send_files" position="after">
+                <field name="account_provider" invisible="1"/>
+                <widget name="om_whatsapp_web_status_warning" invisible="account_provider != 'web'"/>
+            </field>
+        </field>
+    </record>
+</odoo>
