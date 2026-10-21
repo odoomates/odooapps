@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_whatsapp_web.StatusSystray">
+        <Dropdown t-if="this.status.ready and this.status.hasAccount" position="'bottom-end'">
+            <button type="button" class="o_nav_entry o_om_whatsapp_systray position-relative" t-att-data-tooltip="this.title">
+                <i class="oi fs-5" data-icon="oi_whatsapp" role="img" t-att-aria-label="this.title"/>
+                <span t-attf-class="o_om_whatsapp_dot o_om_whatsapp_dot_{{ this.status.level }}"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="o_om_whatsapp_systray_content px-3 py-2" style="min-width: 290px; max-width: 360px;">
+                    <div class="d-flex align-items-center gap-2 fw-bold mb-1">
+                        <span t-attf-class="o_om_whatsapp_dot o_om_whatsapp_dot_{{ this.status.level }}"/>
+                        <t t-out="this.title"/>
+                    </div>
+                    <div class="small mb-3" t-out="this.status.reason"/>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button t-if="this.status.action === 'open'" type="button" class="btn btn-sm btn-primary"
+                                t-on-click="() => this.openWhatsapp()">Open WhatsApp Web</button>
+                        <button type="button" class="btn btn-sm btn-secondary" t-att-disabled="this.status.checking"
+                                t-on-click="() => this.refresh()">Check again</button>
+                        <button type="button" class="btn btn-sm btn-link ms-auto px-0" t-on-click="() => this.openAccounts()">Accounts</button>
+                    </div>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+
+</templates>
