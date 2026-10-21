@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_whatsapp_web.ExtensionMissingDialog">
+        <Dialog size="'md'" title="title">
+            <p>The Odoo Mates WhatsApp Connector does not answer on this page, so the message is not sent yet.</p>
+            <ol>
+                <li class="mb-2"><b>Installed?</b> Click its icon in the toolbar of the browser (under the puzzle piece), then <b>Allow this Odoo</b>.</li>
+                <li><b>Not installed yet?</b> Install the Odoo Mates WhatsApp Connector from the <a href="https://chromewebstore.google.com/detail/odoo-mates-whatsapp-conne/kebcoplomgfmdjofjjlhnobldfechgmi" target="_blank" rel="noopener noreferrer">Chrome Web Store</a> (Firefox add-on coming soon).</li>
+            </ol>
+            <p class="mb-0">Then click Send: the message goes with its files, without leaving Odoo.</p>
+            <p t-if="state.stillMissing" class="o_om_whatsapp_still_missing text-danger mt-3 mb-0">Still no answer from the extension on this page: allow this Odoo in it, then click Send again.</p>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="state.busy" t-on-click="onRetry">Send</button>
+                <button class="btn btn-secondary" t-on-click="onOpenWhatsappWeb">Open in WhatsApp Web</button>
+                <button class="btn btn-secondary" t-on-click="onCancel">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>
