@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_whatsapp" model="ir.module.category">
+        <field name="name">WhatsApp</field>
+        <field name="parent_id" ref="base.module_category_marketing"/>
+        <field name="sequence">40</field>
+    </record>
+
+    <record id="group_om_whatsapp_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_whatsapp"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Sends WhatsApp messages from the accounts allowed to them, and sees the WhatsApp messages of the documents they can read.</field>
+    </record>
+
+    <record id="group_om_whatsapp_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="category_id" ref="module_category_whatsapp"/>
+        <field name="implied_ids" eval="[Command.link(ref('group_om_whatsapp_user'))]"/>
+        <field name="users" eval="[Command.link(ref('base.user_root')), Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Manages the WhatsApp accounts and templates, and sees every message.</field>
+    </record>
+</odoo>

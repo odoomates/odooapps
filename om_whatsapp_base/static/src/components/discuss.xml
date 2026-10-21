@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.DiscussSidebar" t-inherit-mode="extension">
+        <xpath expr="//*[@name='beforeCategoryChat']" position="before">
+            <t t-set="categoryOmWhatsapp" t-value="discussView.discuss.categoryOmWhatsapp"/>
+            <t t-if="categoryOmWhatsapp and categoryOmWhatsapp.categoryItems.length">
+                <DiscussSidebarCategory
+                    className="'o_DiscussSidebar_category o_DiscussSidebar_categoryOmWhatsapp'"
+                    record="categoryOmWhatsapp"
+                />
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.MessagingMenu" t-inherit-mode="extension">
+        <xpath expr="//MessagingMenuTab[@tabId=&quot;'channel'&quot;]" position="after">
+            <MessagingMenuTab t-if="messaging.currentUser" messagingMenu="messagingMenu" tabId="'om_whatsapp'"/>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.MessagingMenuTab" t-inherit-mode="extension">
+        <xpath expr="//t[@t-elif=&quot;props.tabId === 'channel'&quot;]" position="after">
+            <t t-elif="props.tabId === 'om_whatsapp'">WhatsApp</t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.MessageViewNotification" t-inherit-mode="extension">
+        <xpath expr="//span[@t-ref='notificationIcon']" position="after">
+            <span t-if="messageView.omWhatsappTicks" class="o_om_whatsapp_ticks ms-1" role="img"
+                  t-att-class="messageView.omWhatsappTicks.read ? 'text-info' : 'opacity-50'"
+                  t-att-title="messageView.omWhatsappTicks.title">
+                <i class="fa fa-check"/><i t-if="messageView.omWhatsappTicks.double" class="fa fa-check o_om_whatsapp_second"/>
+            </span>
+        </xpath>
+    </t>
+
+    <!-- the document a WhatsApp conversation last spoke about, and Create Contact for an unknown number -->
+    <t t-inherit="mail.ThreadViewTopbar" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='threadViewTopbar.thread and threadViewTopbar.thread.hasInviteFeature']" position="before">
+            <t t-set="omWhatsappChannel" t-value="threadViewTopbar.thread and threadViewTopbar.thread.channel and threadViewTopbar.thread.channel.channel_type === 'om_whatsapp' and threadViewTopbar.thread.channel"/>
+            <button t-if="omWhatsappChannel and omWhatsappChannel.om_whatsapp_has_contact === false"
+                    class="o_om_whatsapp_create_contact o_ThreadViewTopbar_button btn px-2 border-none rounded shadow-none"
+                    title="Create Contact" t-on-click="() => omWhatsappChannel.omWhatsappCreateContact()">
+                <i class="fa fa-lg fa-user-plus text-700"/>
+            </button>
+            <button t-if="omWhatsappChannel and omWhatsappChannel.om_whatsapp_document_name"
+                    class="o_om_whatsapp_open_document o_ThreadViewTopbar_button btn px-2 border-none rounded shadow-none"
+                    t-att-title="omWhatsappChannel.om_whatsapp_document_name" t-on-click="() => omWhatsappChannel.omWhatsappOpenDocument()">
+                <i class="fa fa-lg fa-file-text-o text-700"/>
+            </button>
+        </xpath>
+    </t>
+</templates>
