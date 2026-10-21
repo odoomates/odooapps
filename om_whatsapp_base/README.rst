@@ -45,7 +45,7 @@ Features
 * A number Odoo does not know, neither a contact nor a chat about a document, opens a conversation
   named by its number and WhatsApp name, where Create Contact makes the contact with its number. With
   Keep Chats of Unknown Numbers unchecked on the account, its messages are not kept.
-* Saved replies (canned responses) in the conversations: type ``::``.
+* Saved replies (canned responses) in the conversations: type ``:``.
 * Send WhatsApp from automation rules, contextual actions and scheduled actions: a server action of
   type Send WhatsApp sends a template, with its report as a PDF, for example when an order is
   confirmed. Providers that send from the server send every record; WhatsApp Web sends one message
