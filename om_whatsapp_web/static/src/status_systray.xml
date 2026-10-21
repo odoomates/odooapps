@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_whatsapp_web.StatusSystray">
+        <Dropdown t-if="status.ready and status.hasAccount" position="'bottom-end'">
+            <button type="button" class="o_nav_entry o_om_whatsapp_systray position-relative" t-att-data-tooltip="title">
+                <i class="fa fa-whatsapp fs-5" role="img" t-att-aria-label="title"/>
+                <span t-attf-class="o_om_whatsapp_dot o_om_whatsapp_dot_{{ status.level }}"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="o_om_whatsapp_systray_content px-3 py-2" style="min-width: 290px; max-width: 360px;">
+                    <div class="d-flex align-items-center gap-2 fw-bold mb-1">
+                        <span t-attf-class="o_om_whatsapp_dot o_om_whatsapp_dot_{{ status.level }}"/>
+                        <t t-out="title"/>
+                    </div>
+                    <div class="small mb-3" t-out="status.reason"/>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button t-if="status.action === 'open'" type="button" class="btn btn-sm btn-primary"
+                                t-on-click="openWhatsapp">Open WhatsApp Web</button>
+                        <button type="button" class="btn btn-sm btn-secondary" t-att-disabled="status.checking"
+                                t-on-click="refresh">Check again</button>
+                        <button type="button" class="btn btn-sm btn-link ms-auto px-0" t-on-click="openAccounts">Accounts</button>
+                    </div>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+
+</templates>
