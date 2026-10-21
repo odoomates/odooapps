@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-inherit="mail.DiscussSidebar" t-inherit-mode="extension">
+        <xpath expr="//DiscussSidebarCategory[contains(@class, 'o_DiscussSidebar_categoryChat')]" position="before">
+            <t t-set="categoryOmWhatsapp" t-value="messaging.discuss.categoryOmWhatsapp"/>
+            <t t-if="categoryOmWhatsapp and categoryOmWhatsapp.categoryItems.length">
+                <DiscussSidebarCategory
+                    class="o_DiscussSidebar_category o_DiscussSidebar_categoryOmWhatsapp"
+                    categoryLocalId="categoryOmWhatsapp.localId"
+                />
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.MessagingMenu" t-inherit-mode="extension">
+        <xpath expr="//t[@t-foreach=&quot;['all', 'chat', 'channel']&quot;]" position="attributes">
+            <attribute name="t-foreach">['all', 'chat', 'channel', 'om_whatsapp']</attribute>
+        </xpath>
+        <xpath expr="//t[@t-elif=&quot;tabId === 'channel'&quot;]" position="after">
+            <t t-elif="tabId === 'om_whatsapp'">WhatsApp</t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.Message" t-inherit-mode="extension">
+        <xpath expr="//*[@name='failureIcon']" position="replace">
+            <t t-if="messageView.message.message_type === 'om_whatsapp'">
+                <i class="o_Message_notificationIcon fa fa-whatsapp" role="img" aria-label="WhatsApp not sent"/>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+        <xpath expr="//*[@name='notificationIcon']" position="replace">
+            <t t-if="messageView.message.message_type === 'om_whatsapp'">
+                <i class="o_Message_notificationIcon fa fa-whatsapp" role="img" aria-label="WhatsApp"/>
+            </t>
+            <t t-else="">$0</t>
+        </xpath>
+        <xpath expr="//Popover[.//span[hasclass('o_Message_notificationIconClickable')]]" position="after">
+            <span t-if="messageView.message.omWhatsappTicks" class="o_om_whatsapp_ticks mr-1" role="img"
+                  t-att-class="messageView.message.omWhatsappTicks.read ? 'text-info' : 'o_om_whatsapp_ticks_unread'"
+                  t-att-title="messageView.message.omWhatsappTicks.title">
+                <i class="fa fa-check"/><i t-if="messageView.message.omWhatsappTicks.double" class="fa fa-check o_om_whatsapp_second"/>
+            </span>
+        </xpath>
+    </t>
+
+    <!-- the document a WhatsApp conversation last spoke about, and Create Contact for an unknown number -->
+    <t t-inherit="mail.ThreadViewTopbar" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='threadViewTopbar.thread and threadViewTopbar.thread.hasInviteFeature']" position="before">
+            <t t-if="omWhatsappThread">
+                <button t-if="omWhatsappThread.om_whatsapp_has_contact === false"
+                        class="o_om_whatsapp_create_contact o_ThreadViewTopbar_button" title="Create Contact"
+                        t-on-click="onClickOmWhatsappCreateContact">
+                    <i class="fa fa-lg fa-user-plus"/>
+                </button>
+                <button t-if="omWhatsappThread.om_whatsapp_document_name"
+                        class="o_om_whatsapp_open_document o_ThreadViewTopbar_button"
+                        t-att-title="omWhatsappThread.om_whatsapp_document_name" t-on-click="onClickOmWhatsappOpenDocument">
+                    <i class="fa fa-lg fa-file-text-o"/>
+                </button>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.ChatterTopbar" t-inherit-mode="extension">
+        <xpath expr="//button[hasclass('o_ChatterTopbar_buttonLogNote')]" position="after">
+            <button t-if="canWhatsapp" class="btn btn-link o_ChatterTopbar_button o_ChatterTopbar_buttonWhatsapp text-nowrap"
+                    type="button" title="Send a WhatsApp message"
+                    t-att-disabled="chatter.isDisabled" t-on-click="onClickWhatsapp">
+                <i class="fa fa-whatsapp mr-1"/>WhatsApp
+            </button>
+        </xpath>
+    </t>
+</templates>
