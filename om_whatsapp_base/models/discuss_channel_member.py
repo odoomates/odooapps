@@ -7,10 +7,10 @@ class DiscussChannelMember(models.Model):
     # the receipts of a reading go for the last messages only: older ones were read on the phone
     _OM_WHATSAPP_RECEIPT_LIMIT = 50
 
-    def _mark_as_read(self, last_message_id):
+    def _mark_as_read(self, last_message_id, **kwargs):
         """ A user of the account who reads a WhatsApp conversation: WhatsApp
         shows the messages of the contact read (blue ticks). """
-        super()._mark_as_read(last_message_id)
+        super()._mark_as_read(last_message_id, **kwargs)
         channel = self.channel_id
         if (channel.channel_type != 'om_whatsapp' or self.partner_id != self.env.user.partner_id
                 or self.env.user not in channel.om_whatsapp_account_id.user_ids):
