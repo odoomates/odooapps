@@ -122,6 +122,13 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         self.assertTrue(st_line.is_reconciled)
         self.assertTrue(all(state in ('paid', 'in_payment') for state in invoices.mapped('payment_state')))
 
+    def test_more_items_than_the_transaction(self):
+        invoices = self._invoice(600.0) + self._invoice(400.0)
+        st_line = self._transaction(600.0)
+        st_line._om_reconcile({'matches': [{'aml_id': line.id} for line in self._open_line(invoices)]})
+        self.assertTrue(st_line.is_reconciled)
+        self.assertEqual(invoices.mapped('amount_residual'), [0.0, 400.0])
+
     def test_overpayment_then_writeoff(self):
         invoice = self._invoice(1000.0)
         st_line = self._transaction(1200.0)
