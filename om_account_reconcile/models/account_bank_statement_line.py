@@ -207,15 +207,21 @@ class AccountBankStatementLine(models.Model):
         lines = []
         # what the counterparts still have to cover, as a journal item amount in transaction currency
         to_cover = -self.amount_residual
+        # the direction of the transaction: once covered, what is left to cover is 0, not the other way round
+        cover_sign = 1 if to_cover > 0 else -1
         for match in proposal.get('matches') or []:
             aml = AccountMoveLine.browse(match['aml_id'])
             amount = match.get('amount')
             aml_amount = self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency,
                                                         aml.amount_residual)
-            if amount is None and not trans_currency.is_zero(aml_amount) and (aml_amount > 0) == (to_cover > 0) \
-                    and trans_currency.compare_amounts(abs(aml_amount), abs(to_cover)) > 0:
+            left = max(to_cover * cover_sign, 0.0)
+            if amount is None and not trans_currency.is_zero(aml_amount) and (aml_amount > 0) == (cover_sign > 0) \
+                    and trans_currency.compare_amounts(abs(aml_amount), left) > 0:
+                if trans_currency.is_zero(left):
+                    # nothing left to cover: a line of zero cannot be reconciled
+                    continue
                 # by default an item is only matched up to the amount of the transaction
-                amount = aml.currency_id.round(abs(aml.amount_residual_currency) * abs(to_cover) / abs(aml_amount))
+                amount = aml.currency_id.round(abs(aml.amount_residual_currency) * left / abs(aml_amount))
             vals = self._om_prepare_match_line_vals(aml, amount)
             to_cover += self._om_to_transaction_amount(
                 self.env['res.currency'].browse(vals['currency_id']), vals['amount_currency'], vals['balance'])
