@@ -17,6 +17,44 @@ class TaskChecklist(models.Model):
     )
     sequence = fields.Integer(default=10)
 
+    def _recompute_project_tasks_progress(self, project_ids):
+        tasks = self.env["project.task"].search(
+            [("project_id", "in", list(project_ids))]
+        )
+        if tasks:
+            tasks._compute_checklist_progress()
+
+    def unlink(self):
+        project_ids = set(self.mapped("project_id.id"))
+        res = super().unlink()
+        self._recompute_project_tasks_progress(project_ids)
+        return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        # Detect projects that currently have 0 own checklists (first item being added)
+        gaining_first = {
+            v["project_id"]
+            for v in vals_list
+            if v.get("project_id")
+            and not self.search_count([("project_id", "=", v["project_id"])])
+        }
+        records = super().create(vals_list)
+        if gaining_first:
+            global_items = self.search([("project_id", "=", False)])
+            if global_items:
+                tasks = self.env["project.task"].search(
+                    [
+                        ("project_id", "in", list(gaining_first)),
+                        ("task_checklist", "in", global_items.ids),
+                    ]
+                )
+                for task in tasks:
+                    task.task_checklist -= global_items
+        project_ids = {v["project_id"] for v in vals_list if v.get("project_id")}
+        self._recompute_project_tasks_progress(project_ids)
+        return records
+
 
 class ProjectTask(models.Model):
     _inherit = "project.task"
@@ -33,6 +71,7 @@ class ProjectTask(models.Model):
     checklist_progress = fields.Float(
         compute="_compute_checklist_progress",
         string="Progress",
+        store=True,
     )
 
     def _project_checklist_domain(self, task):

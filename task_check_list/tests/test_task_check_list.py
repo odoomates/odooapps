@@ -92,3 +92,120 @@ class TestTaskCheckList(TransactionCase):
         )
         sequences = items.mapped("sequence")
         self.assertEqual(sequences, sorted(sequences))
+
+    def test_bug_progress_exceeds_100_after_project_gains_checklists(self):
+        """
+        Regression: marking global items then adding project-specific checklists
+        must not cause progress > 100%.
+        """
+        project_c = self.env["project.project"].create({"name": "Project C"})
+        task_c = self.env["project.task"].create(
+            {"name": "Task C", "project_id": project_c.id}
+        )
+        # Mark global item while project has no own checklists (valid use)
+        task_c.task_checklist = [(6, 0, [self.checklist_global.id])]
+        task_c._compute_checklist_progress()
+        self.assertAlmostEqual(task_c.checklist_progress, 100.0)
+
+        # Project gains its first own checklist
+        self.env["task.checklist"].create(
+            {"name": "Step C1", "project_id": project_c.id}
+        )
+        task_c._compute_checklist_progress()
+        # Bug: currently returns 100% because global item is still counted
+        self.assertAlmostEqual(task_c.checklist_progress, 0.0)
+
+    def test_bug_progress_resets_when_project_loses_all_checklists(self):
+        """
+        Regression: when all project-specific checklists are deleted, checklist_progress
+        must reflect the now-empty task_checklist (0%), not the stale stored value.
+        """
+        project_c = self.env["project.project"].create({"name": "Project C3"})
+        task_c = self.env["project.task"].create(
+            {"name": "Task C3", "project_id": project_c.id}
+        )
+        c1 = self.env["task.checklist"].create(
+            {"name": "Step C1", "project_id": project_c.id}
+        )
+        c2 = self.env["task.checklist"].create(
+            {"name": "Step C2", "project_id": project_c.id}
+        )
+        task_c.task_checklist = [(6, 0, [c1.id, c2.id])]
+        task_c._compute_checklist_progress()
+        self.assertAlmostEqual(task_c.checklist_progress, 100.0)
+
+        # Project loses all its own checklists
+        (c1 | c2).unlink()
+
+        # task_checklist should be empty (FK cascade) and progress = 0%
+        self.assertFalse(task_c.task_checklist)
+        self.assertAlmostEqual(task_c.checklist_progress, 0.0)
+
+    def test_progress_truly_partial(self):
+        """1 of 2 project checklists checked → 50%."""
+        checklist_a2 = self.env["task.checklist"].create(
+            {"name": "Step A2", "project_id": self.project_a.id}
+        )
+        self.task_a.task_checklist = [(6, 0, [self.checklist_a.id])]
+        self.task_a._compute_checklist_progress()
+        self.assertAlmostEqual(self.task_a.checklist_progress, 50.0)
+
+    def test_progress_updates_when_project_gains_additional_checklist(self):
+        """Adding a 2nd checklist to a project updates progress for existing tasks (denominator grows)."""
+        self.task_a.task_checklist = [(6, 0, [self.checklist_a.id])]
+        self.task_a._compute_checklist_progress()
+        self.assertAlmostEqual(self.task_a.checklist_progress, 100.0)
+
+        self.env["task.checklist"].create(
+            {"name": "Step A2", "project_id": self.project_a.id}
+        )
+        # Denominator is now 2, only 1 checked → 50%
+        self.assertAlmostEqual(self.task_a.checklist_progress, 50.0)
+
+    def test_progress_updates_when_one_checklist_deleted(self):
+        """Deleting one of two checklists raises progress for tasks that had it checked."""
+        checklist_a2 = self.env["task.checklist"].create(
+            {"name": "Step A2", "project_id": self.project_a.id}
+        )
+        self.task_a.task_checklist = [(6, 0, [self.checklist_a.id])]
+        self.task_a._compute_checklist_progress()
+        self.assertAlmostEqual(self.task_a.checklist_progress, 50.0)
+
+        checklist_a2.unlink()
+        # Denominator back to 1, still 1 checked → 100%
+        self.assertAlmostEqual(self.task_a.checklist_progress, 100.0)
+
+    def test_all_project_tasks_recomputed_on_checklist_create(self):
+        """Adding a checklist recomputes progress for ALL tasks of that project."""
+        task_a2 = self.env["project.task"].create(
+            {"name": "Task A2", "project_id": self.project_a.id}
+        )
+        self.task_a.task_checklist = [(6, 0, [self.checklist_a.id])]
+        task_a2.task_checklist = [(6, 0, [self.checklist_a.id])]
+        self.task_a._compute_checklist_progress()
+        task_a2._compute_checklist_progress()
+
+        self.env["task.checklist"].create(
+            {"name": "Step A2", "project_id": self.project_a.id}
+        )
+        self.assertAlmostEqual(self.task_a.checklist_progress, 50.0)
+        self.assertAlmostEqual(task_a2.checklist_progress, 50.0)
+
+    def test_bug_stale_globals_removed_when_project_gains_checklists(self):
+        """
+        Regression: global items must be removed from task_checklist when the
+        project gains its first own checklist.
+        """
+        project_c = self.env["project.project"].create({"name": "Project C2"})
+        task_c = self.env["project.task"].create(
+            {"name": "Task C2", "project_id": project_c.id}
+        )
+        task_c.task_checklist = [(6, 0, [self.checklist_global.id])]
+        self.assertIn(self.checklist_global, task_c.task_checklist)
+
+        # Project gains its first own checklist
+        self.env["task.checklist"].create(
+            {"name": "Step C1", "project_id": project_c.id}
+        )
+        # Bug: global item is still in task_checklist
+        self.assertNotIn(self.checklist_global, task_c.task_checklist)

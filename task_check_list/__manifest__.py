@@ -4,7 +4,7 @@
     "author": "Odoo Mates, Jenrax",
     "website": "https://www.jenrax.com",
     "category": "Project",
-    "version": "19.0.1.0.1",
+    "version": "19.0.1.0.2",
     "license": "Other proprietary",
     "depends": ["project"],
     "data": [
