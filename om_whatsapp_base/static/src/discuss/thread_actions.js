@@ -6,7 +6,7 @@ registerThreadAction("om-whatsapp-document", {
     condition: ({ thread }) => thread?.channel_type === "om_whatsapp" && Boolean(thread.om_whatsapp_document_name),
     icon: "fa fa-fw fa-file-text-o",
     name: ({ thread }) => _t("Open %(document)s", { document: thread.om_whatsapp_document_name }),
-    onSelected: async ({ thread, owner }) => {
+    open: async ({ thread, owner }) => {
         const action = await owner.env.services.orm.call(
             "discuss.channel",
             "om_whatsapp_action_open_document",
@@ -23,7 +23,7 @@ registerThreadAction("om-whatsapp-create-contact", {
     condition: ({ thread }) => thread?.channel_type === "om_whatsapp" && thread.om_whatsapp_has_contact === false,
     icon: "fa fa-fw fa-user-plus",
     name: _t("Create Contact"),
-    onSelected: async ({ thread, owner }) => {
+    open: async ({ thread, owner }) => {
         const { action, orm } = owner.env.services;
         const formAction = await orm.call("discuss.channel", "om_whatsapp_action_create_contact", [[thread.id]]);
         await action.doAction(formAction, {
