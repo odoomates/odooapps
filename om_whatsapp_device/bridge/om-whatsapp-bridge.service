@@ -1,0 +1,22 @@
+[Unit]
+Description=WhatsApp Bridge of Odoo (om_whatsapp_device)
+After=network-online.target
+
+[Service]
+User=odoo
+WorkingDirectory=/opt/odoo/addons/om_whatsapp_device/bridge
+# OM_WA_SECRET=<the secret shown on the account>, in a file only root reads (chmod 600)
+EnvironmentFile=/etc/om-whatsapp-bridge.env
+Environment=OM_WA_DATA=/var/lib/om-whatsapp-bridge
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=5
+# its own files only
+StateDirectory=om-whatsapp-bridge
+StateDirectoryMode=0700
+# the keys of the linked devices: the other users of the server keep out
+UMask=0077
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target
