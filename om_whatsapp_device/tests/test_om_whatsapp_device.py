@@ -8,6 +8,7 @@ from unittest.mock import patch
 from odoo import Command, fields
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_whatsapp_device.models import om_whatsapp_account as device_module
 
@@ -253,6 +254,7 @@ class TestOmWhatsappDeviceWebhook(HttpCase):
         return self.url_open('/om_whatsapp_device/webhook', data=body, headers={
             'Content-Type': 'application/json', 'X-Signature-256': signature, 'X-Odoo-Database': self.env.cr.dbname})
 
+    @mute_logger('odoo.addons.om_whatsapp_device.controllers.webhook')
     def test_only_the_bridge_signs(self):
         response = self._post([{'kind': 'state', 'state': 'open', 'me': '96555551234'}], secret='forged-secret')
         self.assertEqual(response.status_code, 403)
