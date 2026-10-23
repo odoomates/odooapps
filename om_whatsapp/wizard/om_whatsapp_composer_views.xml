@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_composer_view_form_inherit_meta" model="ir.ui.view">
+        <field name="name">om.whatsapp.composer.form.inherit.meta</field>
+        <field name="model">om.whatsapp.composer</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_composer_view_form"/>
+        <field name="arch" type="xml">
+            <field name="body" position="before">
+                <field name="meta_template_ready" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="not meta_template_ready">
+                    The template goes as Meta approved it, with the values of the document.
+                </div>
+            </field>
+            <field name="body" position="attributes">
+                <attribute name="readonly">(res_count &gt; 1 and template_id) or meta_template_ready</attribute>
+            </field>
+        </field>
+    </record>
+</odoo>
