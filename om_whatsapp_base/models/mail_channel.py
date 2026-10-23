@@ -190,6 +190,7 @@ class OmWhatsappAccount(models.Model):
         message. Without a contact, it is named by the number, and the name
         the person gave themselves in WhatsApp. """
         self.ensure_one()
+        number = self._om_whatsapp_clean_number(number)
         Channel = self.env['mail.channel'].sudo()
         channel = Channel.search([
             ('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.id), ('om_whatsapp_number', '=', number),
@@ -212,6 +213,8 @@ class OmWhatsappAccount(models.Model):
         elif partner and channel.om_whatsapp_partner_id != partner:
             channel._om_whatsapp_link_partner(partner)
         elif not partner and profile_name and profile_name != channel.om_whatsapp_profile_name:
-            channel.write({'om_whatsapp_profile_name': profile_name, 'name': name})
+            # a conversation with a contact keeps the name of the contact
+            channel.write({'om_whatsapp_profile_name': profile_name,
+                           **({} if channel.om_whatsapp_partner_id else {'name': name})})
         channel._om_whatsapp_sync_members()
         return channel

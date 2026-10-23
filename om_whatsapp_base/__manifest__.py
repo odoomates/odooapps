@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp Connector Base',
-    'version': '15.0.1.0.1',
+    'version': '15.0.1.1.0',
     'author': 'Odoo Mates',
     'category': 'Marketing',
     'description': 'WhatsApp templates, composer and message log for any document, ready for any WhatsApp provider.',
