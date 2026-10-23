@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_whatsapp.WindowStatus" owl="1">
+        <t t-set="windowStatus" t-value="status"/>
+        <span class="o-om-whatsapp-WindowStatus d-inline-flex align-items-center text-nowrap small ml-2 flex-shrink-0"
+              t-att-class="props.compact ? 'text-white' : { 'text-success': windowStatus.level === 'open', 'text-warning': windowStatus.level === 'ending', 'text-danger': windowStatus.level === 'closed' }"
+              t-att-title="windowStatus.title">
+            <i class="fa mr-1" t-att-class="windowStatus.level === 'closed' ? 'fa-ban' : 'fa-clock-o'"/>
+            <t t-esc="windowStatus.text"/>
+        </span>
+    </t>
+
+    <t t-inherit="mail.ThreadViewTopbar" t-inherit-mode="extension">
+        <xpath expr="//t[@t-if='!threadViewTopbar.isEditingThreadName']" position="after">
+            <t t-if="threadViewTopbar.thread.channel_type === 'om_whatsapp' and threadViewTopbar.thread.om_whatsapp_provider === 'meta'">
+                <OmWhatsappWindowStatus threadLocalId="threadViewTopbar.thread.localId"/>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.ChatWindowHeader" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o_ChatWindowHeader_name')]" position="after">
+            <t t-if="chatWindow.thread and chatWindow.thread.channel_type === 'om_whatsapp' and chatWindow.thread.om_whatsapp_provider === 'meta'">
+                <OmWhatsappWindowStatus threadLocalId="chatWindow.thread.localId" compact="true"/>
+            </t>
+        </xpath>
+    </t>
+</templates>
