@@ -13,6 +13,8 @@ Features
   menu. The number is found on the document or on its customer.
 * Templates per kind of document, filled with its values: ``Hello {{ object.partner_id.name }}``.
   A template can also print a report and send it as a PDF, with the providers that send files.
+  Under the text, a preview shows the message as WhatsApp shows it: the values of a document,
+  *bold*, _italic_ and ~strikethrough~, and the PDF of the report.
 * Send to several documents at once, with the template filled in for each of them, with the
   providers that send in batch. Numbers of the phone blacklist and documents without a valid number
   are skipped.
