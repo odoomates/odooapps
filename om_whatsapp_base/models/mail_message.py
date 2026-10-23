@@ -136,7 +136,7 @@ class MailMessage(models.Model):
         partner = partner or self.env['res.partner']
         values = {
             'author_id': self.author_id.id,
-            'om_whatsapp_number': number,
+            'om_whatsapp_number': self.env['om.whatsapp.account']._om_whatsapp_clean_number(number),
             'notification_type': 'om_whatsapp',
             'notification_status': status,
             'failure_type': failure_type,
