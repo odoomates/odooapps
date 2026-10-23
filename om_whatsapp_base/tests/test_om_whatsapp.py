@@ -2,6 +2,8 @@ from datetime import timedelta
 from unittest.mock import patch
 from urllib.parse import quote
 
+from markupsafe import escape
+
 from odoo import Command, fields
 from odoo.addons.om_whatsapp_base.models.om_whatsapp_account import OmWhatsappAccount
 from odoo.exceptions import AccessError, UserError
@@ -83,6 +85,22 @@ class TestOmWhatsapp(TransactionCase):
         self.assertEqual(message._om_whatsapp_text(), 'Hello Alice')
         self.assertEqual(self.alice.om_whatsapp_message_count, 1)
         self.assertEqual(message.display_name, 'WhatsApp to Alice')
+
+    def test_preview(self):
+        """ The template as WhatsApp shows it: the values of a document, the
+        formatting, the PDF of the report; the text escaped. """
+        first = self.env['res.partner'].search([], limit=1)
+        report = self.env['ir.actions.report'].create({
+            'name': 'Contact Card', 'model': 'res.partner', 'report_name': 'base.contact_card', 'report_type': 'qweb-pdf',
+        })
+        self.template.write({'body': 'Hi *{{ object.name }}* <3\n{{ object.no_such_field }}', 'report_id': report.id})
+        preview = str(self.template.preview)
+        self.assertIn('Contact Card.pdf', preview)
+        self.assertIn('Hi <b><span class="o_om_whatsapp_preview_value" title="object.name">%s</span></b> &lt;3<br/>'
+                      % escape(first.name), preview)
+        self.assertIn('>{{ object.no_such_field }}</span>', preview)
+        self.template.body = 'Hello {{ object.name'
+        self.assertIn('Hello {{ object.name', str(self.template.preview))
 
     def test_text_is_sent_as_typed(self):
         text = 'Hello Alice,\n\nyour order: https://example.com/my/orders/1?a=1&b=2\n<b>not bold</b>'
@@ -190,6 +208,27 @@ class TestOmWhatsapp(TransactionCase):
         self.assertEqual((channel.name, channel.om_whatsapp_partner_id, channel.om_whatsapp_account_id),
                          ('Alice', self.alice, self.account))
         self.assertEqual(channel.channel_member_ids.partner_id, self.user.partner_id | self.alice)
+
+    def test_one_conversation_however_the_number_is_typed(self):
+        """ Without the phonenumbers library, Odoo leaves numbers as typed:
+        the number of a contact with spaces and the one of their reply are
+        still one conversation, one number on the messages. """
+        typed = self.account._om_whatsapp_get_channel(' +32 (470) 12-34.56 ', self.alice)
+        self.assertEqual(typed.om_whatsapp_number, '+32470123456')
+        incoming = self.account._om_whatsapp_receive('+32470123456', 'Is it ready?', 'wamid.typed')
+        self.assertEqual((incoming.model, incoming.res_id), ('discuss.channel', typed.id))
+        message = self.alice.message_post(body='Hello', message_type='comment')
+        message._om_whatsapp_add_notification('+32 470 12 34 56', self.alice)
+        self.assertEqual(message.notification_ids.om_whatsapp_number, '+32470123456')
+        self.assertEqual(self.account._om_whatsapp_clean_number('0470 12 34 56'), '0470123456')
+        # the contact, its reaction, and the name of the conversation, with a phone typed with spaces
+        carol = self.env['res.partner'].create({'name': 'Carol', 'phone': '+32 470 77 88 99'})
+        channel = self.account._om_whatsapp_get_channel('+32 470 77 88 99', carol)
+        self.assertEqual(self.account._om_whatsapp_find_partner('+32470778899'), carol)
+        reply = self.account._om_whatsapp_receive('+32470778899', 'Yes', 'wamid.carol', profile_name='Caro')
+        self.assertEqual((reply.author_id, reply.res_id, channel.name), (carol, channel.id, 'Carol'))
+        self.assertTrue(self.account._om_whatsapp_receive_reaction('+32470778899', 'wamid.carol', '👍'))
+        self.assertEqual(reply.reaction_ids.partner_id, carol)
 
     def test_unknown_number(self):
         """ An unknown number opens a conversation named by its number and

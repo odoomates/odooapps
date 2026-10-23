@@ -1,5 +1,6 @@
 import base64
 import logging
+import re
 from datetime import timedelta
 from urllib.parse import quote
 
@@ -298,12 +299,25 @@ class OmWhatsappAccount(models.Model):
 
     def _om_whatsapp_format_number(self, number):
         self.ensure_one()
-        return self.env.user._phone_format(number=number, country=self.company_id.country_id) or number
+        return self._om_whatsapp_clean_number(
+            self.env.user._phone_format(number=number, country=self.company_id.country_id) or number)
+
+    @api.model
+    def _om_whatsapp_clean_number(self, number):
+        """ A number as conversations and messages keep it: the + and the
+        digits. Without the phonenumbers library, Odoo leaves a number as
+        typed; +32 470 55 51 23 and +32470555123 are one customer. """
+        return re.sub(r'(?!^\+)[^\d]', '', number.strip()) if number else number
 
     def _om_whatsapp_find_partner(self, number):
         self.ensure_one()
-        return self.env['res.partner'].sudo().search(
-            [('phone_sanitized', '=', number), ('company_id', 'in', [False, self.company_id.id])], limit=1)
+        Partner = self.env['res.partner'].sudo()
+        domain = [('company_id', 'in', [False, self.company_id.id])]
+        partner = Partner.search([('phone_sanitized', '=', number), *domain], limit=1)
+        if partner or not number:
+            return partner
+        # without the phonenumbers library, a phone keeps its spaces: compared without them
+        return Partner.search([('phone_mobile_search', '=', number), *domain], limit=1)
 
     def _om_whatsapp_find_document(self, number, quoted_id=False):
         """ The document a message of ``number`` belongs to: the one of the
