@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
     <t t-name="om_whatsapp.WindowStatus">
         <t t-set="windowStatus" t-value="this.status"/>
-        <span class="o-om-whatsapp-WindowStatus d-inline-flex align-items-center gap-1 text-nowrap small ms-2"
+        <span class="o-om-whatsapp-WindowStatus d-inline-flex align-items-center gap-1 text-nowrap small ms-2 flex-shrink-0"
               t-att-class="{ 'text-success': windowStatus.level === 'open', 'text-warning': windowStatus.level === 'ending', 'text-danger': windowStatus.level === 'closed' }"
               t-att-title="windowStatus.title">
             <i class="fa" t-att-class="windowStatus.level === 'closed' ? 'fa-ban' : 'fa-clock-o'"/>
@@ -18,7 +18,7 @@
 
     <t t-inherit="mail.ChatWindow.headerContent" t-inherit-mode="extension">
         <xpath expr="//div[@t-esc='props.chatWindow.displayName']" position="after">
-            <OmWhatsappWindowStatus t-if="thread?.channel_type === 'om_whatsapp' and thread.om_whatsapp_provider === 'meta'" thread="thread"/>
+            <OmWhatsappWindowStatus t-if="thread?.channel_type === 'om_whatsapp' and thread.om_whatsapp_provider === 'meta'" thread="thread" compact="true"/>
         </xpath>
     </t>
 </templates>
