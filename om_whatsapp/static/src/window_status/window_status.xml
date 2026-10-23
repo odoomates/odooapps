@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_whatsapp.WindowStatus">
+        <t t-set="status" t-value="this.status()"/>
+        <span class="o-om-whatsapp-WindowStatus d-inline-flex align-items-center gap-1 text-nowrap smaller"
+              t-att-class="{ 'text-success': status.level === 'open', 'text-warning': status.level === 'ending', 'text-danger': status.level === 'closed' }"
+              t-att-title="status.title">
+            <i class="oi" t-att-data-icon="status.level === 'closed' ? 'block' : 'schedule'"/>
+            <t t-out="status.text"/>
+        </span>
+    </t>
+
+    <t t-inherit="mail.DiscussContent" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o-mail-DiscussContent-localDateTime')]" position="after">
+            <div t-if="this.thread.channel?.channel_type === 'om_whatsapp' and this.thread.channel.om_whatsapp_provider === 'meta'" class="ms-1">
+                <OmWhatsappWindowStatus channel="this.thread.channel"/>
+            </div>
+        </xpath>
+    </t>
+
+    <t t-inherit="mail.ChatWindow.headerContent" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('o-mail-ChatWindow-nameBox')]" position="inside">
+            <div t-if="this.channel?.channel_type === 'om_whatsapp' and this.channel.om_whatsapp_provider === 'meta'" class="o-mx-0_5">
+                <OmWhatsappWindowStatus channel="this.channel"/>
+            </div>
+        </xpath>
+    </t>
+</templates>
