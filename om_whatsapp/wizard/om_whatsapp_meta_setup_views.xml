@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_meta_setup_view_form" model="ir.ui.view">
+        <field name="name">om.whatsapp.meta.setup.form</field>
+        <field name="model">om.whatsapp.meta.setup</field>
+        <field name="arch" type="xml">
+            <form string="Connect to Meta">
+                <field name="step" invisible="1"/>
+                <field name="account_id" invisible="1"/>
+                <field name="progress" nolabel="1" readonly="1" class="d-block mb-3"
+                       invisible="step in ('permanent', 'test')"/>
+
+                <!-- 1. CREATE THE APP -->
+                <div invisible="step != 'app'">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h3>Create your app in Meta</h3>
+                            <p>WhatsApp for companies goes through an app of Meta for Developers. It is free, and takes a minute.</p>
+                            <p class="mb-1"><b>A.</b> Your business in Meta: a <b>business portfolio</b>, the place of your company
+                                in Meta Business Suite. The app of WhatsApp must belong to one.</p>
+                            <p class="text-muted mb-1">Already managing your Facebook page or ads in Meta Business Suite? You have
+                                one: skip to B.</p>
+                            <field name="link_business" widget="url" text="Open Meta Business Suite" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-2"/>
+                            <ol>
+                                <li>Log in with your Facebook account.</li>
+                                <li>If Meta offers to <b>Create a business portfolio</b>: give the name of your company, your name
+                                    and your business email, then <b>Create</b>.</li>
+                            </ol>
+                            <p class="mb-1"><b>B.</b> The app:</p>
+                            <field name="link_create" widget="url" text="Open Meta for Developers" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-2"/>
+                            <ol>
+                                <li>Log in with the same Facebook account.</li>
+                                <li>Choose <b>Connect with customers through WhatsApp</b> (or the type <b>Business</b>, then add
+                                    the <b>WhatsApp</b> product).</li>
+                                <li>Give it a name, e.g. <i>Odoo</i>, and choose your business portfolio when Meta asks.</li>
+                            </ol>
+                            <p class="text-muted">No need to create a WhatsApp account: Meta makes one with the app, with a free
+                                test number to try everything first.</p>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="o_om_whatsapp_figure">
+                                <img src="/om_whatsapp/static/img/setup_app.svg" alt="Where to choose the use case WhatsApp in Meta for Developers"/>
+                                <div class="o_om_whatsapp_figure_caption">A simplified drawing: the page of Meta may look a
+                                    little different.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. APP ID -->
+                <div invisible="step != 'app_id'">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h3>Copy its App ID</h3>
+                            <p>In the list of your apps, or at the top of the page of your app, under its name: <b>App ID</b>, a long
+                                number.</p>
+                            <field name="link_apps" widget="url" text="Open my apps" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-3"/>
+                            <group>
+                                <field name="app_id" placeholder="e.g. 123456789012345"/>
+                            </group>
+                            <field name="app_id_check" nolabel="1" readonly="1" class="d-block mb-2" invisible="not app_id_check"/>
+                            <p class="text-muted small">Odoo keeps it on the account: you can close this window and come back.</p>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="o_om_whatsapp_figure">
+                                <img src="/om_whatsapp/static/img/setup_app_id.svg" alt="Where the App ID is, at the top of the page of the app"/>
+                                <div class="o_om_whatsapp_figure_caption">A simplified drawing: the page of Meta may look a
+                                    little different.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. APP SECRET -->
+                <div invisible="step != 'secret'">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h3>Copy its App Secret</h3>
+                            <p>On the settings page of your app, next to <b>App secret</b>: click <b>Show</b> (Meta may ask your
+                                Facebook password), then copy it. Odoo keeps it to check that the messages it receives come from
+                                Meta.</p>
+                            <field name="link_basic" widget="url" text="Open the settings of my app" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-3"/>
+                            <group>
+                                <field name="app_secret" password="True"/>
+                            </group>
+                            <field name="secret_check" nolabel="1" readonly="1" class="d-block mb-2" invisible="not secret_check"/>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="o_om_whatsapp_figure">
+                                <img src="/om_whatsapp/static/img/setup_secret.svg" alt="Where the App Secret is, in the basic settings of the app"/>
+                                <div class="o_om_whatsapp_figure_caption">A simplified drawing: the page of Meta may look a
+                                    little different.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. TOKEN -->
+                <div invisible="step != 'token'">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h3>Get a token, and try</h3>
+                            <p class="text-success"><b>✓</b> Your app <b><field name="app_name" class="oe_inline"/></b> is found.</p>
+                            <p class="mb-1"><b>A.</b> A token to try, from the Graph API Explorer of Meta:</p>
+                            <field name="link_explorer" widget="url" text="Open the Graph API Explorer" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-2"/>
+                            <ol>
+                                <li>On the right, <b>Meta App</b>: <i>your app</i>; <b>User or Page</b>: <i>User Token</i>.</li>
+                                <li>In <b>Permissions</b>, add <code>whatsapp_business_management</code> and
+                                    <code>whatsapp_business_messaging</code>.</li>
+                                <li>Click <b>Generate Access Token</b>, allow your WhatsApp account in the window of Meta, and copy
+                                    the token. It works a few hours: you make it permanent later, from the account.</li>
+                            </ol>
+                            <p class="mb-1"><b>B.</b> While you use the free test number of Meta, it sends only to the numbers you
+                                add to its list. Add your own:</p>
+                            <field name="link_api_setup" widget="url" text="Open WhatsApp › API Setup of my app" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-2"/>
+                            <ol>
+                                <li>In your app: <b>WhatsApp › API Setup</b> (on new apps: <i>Use cases › Connect with customers
+                                    through WhatsApp › Customize › API Setup</i>).</li>
+                                <li>In <b>Send and receive messages</b>, open the <b>To</b> list, and choose <b>Manage phone number
+                                    list</b>.</li>
+                                <li><b>Add phone number</b>: your country code, then your number, and <b>Next</b>.</li>
+                                <li>Meta sends a code to that number <b>on WhatsApp</b>: enter it, and <b>Verify</b>.</li>
+                                <li>Here, give exactly the same number, with its country code. Up to 5 numbers can be added.</li>
+                            </ol>
+                            <group>
+                                <field name="access_token" password="True"/>
+                                <field name="test_number" widget="phone" placeholder="e.g. +32 470 12 34 56"/>
+                            </group>
+                            <field name="token_check" nolabel="1" readonly="1" class="d-block mb-2" invisible="not token_check"/>
+                            <p class="text-muted">Your WhatsApp Number: once connected, Odoo sends a test message to it, to show it
+                                works. Reply on your phone, and the reply comes to Odoo. Leave it empty to send no test.</p>
+                            <details class="mb-2">
+                                <summary class="text-primary">Or the permanent token at once</summary>
+                                <div class="mt-2">
+                                    <p class="mb-1">The token of a <i>system user</i> of your business never expires:</p>
+                                    <field name="link_system_users" widget="url" text="Open the system users of my business"
+                                           readonly="1" nolabel="1" class="o_om_whatsapp_meta_link d-block mb-2"/>
+                                    <ol>
+                                        <li><b>Add</b> a system user: name <i>Odoo</i>, role <b>Admin</b>.</li>
+                                        <li><b>Assign assets</b>: your app and your WhatsApp account, with <b>Full control</b>.</li>
+                                        <li><b>Generate token</b>: your app, expiration <b>Never</b>, the two permissions above.</li>
+                                    </ol>
+                                </div>
+                            </details>
+                            <p class="text-muted">Connect finds the number, gets it ready, tells Meta to send the messages of WhatsApp
+                                to this Odoo, and sends you a test message.</p>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="o_om_whatsapp_figure">
+                                <img src="/om_whatsapp/static/img/setup_token.svg" alt="The Meta App, the permissions and Generate Access Token in the Graph API Explorer"/>
+                                <div class="o_om_whatsapp_figure_caption">A simplified drawing: the page of Meta may look a
+                                    little different.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WHEN THE TOKEN NAMES NO WHATSAPP ACCOUNT -->
+                <div invisible="step != 'waba'">
+                    <div class="row">
+                        <div class="col-lg-7">
+                            <h3>Which WhatsApp account?</h3>
+                            <p>Your token works, but Meta does not say which WhatsApp account it is for. Copy the ID of the account
+                                from the page of your app:</p>
+                            <field name="link_api_setup" widget="url" text="Open WhatsApp › API Setup of my app" readonly="1" nolabel="1"
+                                   class="o_om_whatsapp_meta_link d-block mb-2"/>
+                            <ol>
+                                <li>In your app: <b>WhatsApp › API Setup</b> (on new apps: <i>Use cases › Connect with customers
+                                    through WhatsApp › Customize › API Setup</i>).</li>
+                                <li>Under the number in <b>From</b>: <b>WhatsApp Business Account ID</b>, a long number. Copy it
+                                    (not the Phone number ID above it).</li>
+                            </ol>
+                            <group>
+                                <field name="waba_id" placeholder="e.g. 102938475610293"/>
+                            </group>
+                        </div>
+                        <div class="col-lg-5 d-none d-lg-block">
+                            <div class="o_om_whatsapp_figure">
+                                <img src="/om_whatsapp/static/img/setup_waba.svg" alt="Where the WhatsApp Business Account ID is, on the API Setup page"/>
+                                <div class="o_om_whatsapp_figure_caption">A simplified drawing: the page of Meta may look a
+                                    little different.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WHEN THE TOKEN REACHES SEVERAL NUMBERS -->
+                <div invisible="step != 'number'">
+                    <h3>Which number?</h3>
+                    <field name="number_ids" readonly="1" nolabel="1">
+                        <tree>
+                            <field name="display_phone_number"/>
+                            <field name="verified_name"/>
+                            <field name="waba_name"/>
+                            <field name="quality_rating"/>
+                        </tree>
+                    </field>
+                    <group>
+                        <field name="number_id" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+                </div>
+
+                <!-- DONE -->
+                <div invisible="step != 'done'">
+                    <field name="has_problems" invisible="1"/>
+                    <h3 invisible="has_problems">Connected</h3>
+                    <h3 invisible="not has_problems">Connected, a few things left</h3>
+                    <field name="report" nolabel="1"/>
+                    <p class="text-muted mt-3" invisible="has_problems">Reply to the test message on your phone: the reply
+                        comes to the WhatsApp tab of Odoo. When you are happy, click <b>Make it Permanent</b> below, before the
+                        token expires.</p>
+                    <p class="text-muted mt-3" invisible="not has_problems">Once each ✗ is fixed, finish from the account:
+                        <b>Set Webhook</b>, and <b>Send Test Message</b>. No need to connect again.</p>
+                </div>
+
+                <!-- LATER: PERMANENT TOKEN -->
+                <div invisible="step != 'permanent'">
+                    <h3>Keep WhatsApp working for good</h3>
+                    <p>A token that never expires belongs to a <i>system user</i> of your business: a user for Odoo, not a
+                        person.</p>
+                    <field name="link_system_users" widget="url" text="Open the system users of my business" readonly="1" nolabel="1"
+                           class="o_om_whatsapp_meta_link d-block mb-3"/>
+                    <ol>
+                        <li><b>Add</b> a system user: name <i>Odoo</i>, role <b>Admin</b>.</li>
+                        <li><b>Assign assets</b> to it: your app, and your WhatsApp account, both with <b>Full control</b>.</li>
+                        <li><b>Generate token</b>: your app, expiration <b>Never</b>, and the permissions
+                            <code>whatsapp_business_messaging</code> and <code>whatsapp_business_management</code>.
+                            Copy it.</li>
+                    </ol>
+                    <group>
+                        <field name="access_token" password="True"/>
+                    </group>
+                </div>
+
+                <!-- TEST MESSAGE, FROM THE ACCOUNT -->
+                <div invisible="step != 'test'">
+                    <p>Meta sends its template <i>hello_world</i>. With the test number of Meta, the number must be in its
+                        list first:</p>
+                    <field name="link_api_setup" widget="url" text="Open WhatsApp › API Setup of my app" readonly="1" nolabel="1"
+                           class="o_om_whatsapp_meta_link d-block mb-2"/>
+                    <ol>
+                        <li>In your app: <b>WhatsApp › API Setup</b> (on new apps: <i>Use cases › Connect with customers
+                            through WhatsApp › Customize › API Setup</i>).</li>
+                        <li>In <b>Send and receive messages</b>, open the <b>To</b> list, and choose <b>Manage phone number
+                            list</b>.</li>
+                        <li><b>Add phone number</b>: your country code, then your number, and <b>Next</b>.</li>
+                        <li>Meta sends a code to that number <b>on WhatsApp</b>: enter it, and <b>Verify</b>.</li>
+                        <li>Here, give exactly the same number, with its country code. Up to 5 numbers can be added.</li>
+                    </ol>
+                    <group>
+                        <field name="test_number" widget="phone"/>
+                    </group>
+                    <p class="text-muted">Your WhatsApp Number: the test message goes to it. Reply on your phone, and the
+                        reply comes to Odoo.</p>
+                </div>
+
+                <footer>
+                    <button name="action_send_test" type="object" string="Send" class="btn-primary"
+                            invisible="step != 'test'" data-hotkey="q"/>
+                    <button name="action_app_created" type="object" string="I created my app" class="btn-primary"
+                            invisible="step != 'app'" data-hotkey="q"/>
+                    <button name="action_check_app_id" type="object" string="Next" class="btn-primary"
+                            invisible="step != 'app_id'" data-hotkey="q"/>
+                    <button name="action_check_secret" type="object" string="Next" class="btn-primary"
+                            invisible="step != 'secret'" data-hotkey="q"/>
+                    <button name="action_check_token" type="object" string="Connect" class="btn-primary"
+                            invisible="step != 'token'" data-hotkey="q"/>
+                    <button name="action_check_waba" type="object" string="Connect" class="btn-primary"
+                            invisible="step != 'waba'" data-hotkey="q"/>
+                    <button name="action_connect" type="object" string="Connect" class="btn-primary"
+                            invisible="step != 'number'" data-hotkey="q"/>
+                    <button name="action_save_permanent" type="object" string="Save" class="btn-primary"
+                            invisible="step != 'permanent'" data-hotkey="q"/>
+                    <button name="action_back" type="object" string="Back"
+                            invisible="step not in ('app_id', 'secret', 'token', 'waba', 'number')"/>
+                    <button name="action_make_permanent" type="object" string="Make it Permanent" class="btn-primary"
+                            invisible="step != 'done' or has_problems"/>
+                    <button string="Close" special="cancel" invisible="step != 'done'" data-hotkey="x"/>
+                    <button string="Cancel" special="cancel" invisible="step == 'done'" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>
