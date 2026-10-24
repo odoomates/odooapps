@@ -698,6 +698,8 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
             self.env, login='asset_buttons', groups='account.group_account_invoice',
             company_id=self.env.company.id, company_ids=[Command.set(self.env.company.ids)])
         self.assertEqual(bill.with_user(billing_user).asset_count, 2)
+        # the count of the category has no dependency: drop the one read above, before the single bill
+        self.category.invalidate_recordset(['asset_count'])
         self.assertEqual(self.category.with_user(billing_user).asset_count, 4)
 
     def test_depreciation_expense_account_differs(self):
