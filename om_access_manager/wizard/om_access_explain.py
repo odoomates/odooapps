@@ -240,7 +240,7 @@ class OmAccessExplain(models.TransientModel):
     def _render_skipped(self, profile, user):
         if not profile.active:
             reason = _("archived")
-        elif profile.company_id and profile.company_id not in user.company_ids:
+        elif profile.company_ids and not (profile.company_ids & user.company_ids):
             reason = _("for a company the user is not in")
         elif not profile.apply_to_admin and user._has_group('base.group_system'):
             reason = _("not applied to administrators")

@@ -16,8 +16,8 @@ PROFILE_FIELDS = (
     'strictness', 'apply_to_admin', 'for_new_users', 'global_readonly', 'hide_chatter_all',
     'block_export', 'block_import', 'block_archive', 'block_duplicate', 'hide_activities',
     'hide_settings_menu', 'lock_statusbar', 'block_rpc', 'block_developer_mode', 'block_login',
-    'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_followers_all',
-    'hide_attachments_all', 'hide_costs', 'hide_sale_prices', 'note', 'block_custom_filter',
+    'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_log_note_all',
+    'hide_followers_all', 'hide_attachments_all', 'hide_costs', 'hide_sale_prices', 'note', 'block_custom_filter',
     'block_custom_group', 'block_favorites', 'block_properties', 'block_apps',
     'login_tz', 'allowed_ips', 'single_session',
 )
@@ -25,7 +25,7 @@ MODEL_LINE_FIELDS = (
     'perm_read', 'perm_write', 'perm_create', 'perm_unlink', 'domain', 'domain_read',
     'domain_write', 'domain_create', 'domain_unlink', 'hide_chatter', 'hide_export', 'hide_import',
     'hide_archive', 'hide_duplicate', 'hide_print', 'hide_action_menu', 'hide_send_message',
-    'hide_followers', 'hide_attachments',
+    'hide_followers', 'hide_attachments', 'hide_log_note', 'hide_activities',
 )
 MENU_LINE_FIELDS = MODEL_LINE_FIELDS[:4] + MODEL_LINE_FIELDS[9:] + ('records', 'edit_draft_only', 'include_shared')
 FIELD_LINE_FIELDS = ('mode', 'no_open', 'no_create', 'no_export', 'field_domain', 'condition')

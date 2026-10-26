@@ -317,15 +317,20 @@ class TestAccessProfile(TransactionCase):
             with self.assertRaises(AccessError, msg=method):
                 getattr(Report, method)(report.report_name, [1])
 
-    def test_profile_bound_to_a_company_only_applies_to_its_users(self):
-        other_company = self.env['res.company'].create({'name': 'Other Company'})
-        profile = self._profile(global_readonly=True, company_id=other_company.id)
+    def test_profile_bound_to_companies_only_applies_to_their_users(self):
+        other_company, third_company = self.env['res.company'].create([
+            {'name': 'Other Company'}, {'name': 'Third Company'}])
+        profile = self._profile(global_readonly=True, company_ids=[(6, 0, other_company.ids)])
         self.assertFalse(
             self._rules().enabled,
             "the user does not belong to the company of the profile")
-        self.user.write({'company_ids': [(4, other_company.id)]})
-        self.assertTrue(self._rules().enabled)
-        profile.company_id = False
+        profile.company_ids = [(4, third_company.id)]
+        self.assertFalse(self._rules().enabled, "nor to the second one")
+        self.assertIn("for a company the user is not in",
+                      self.env['om.access.explain']._render_skipped(profile, self.user))
+        self.user.write({'company_ids': [(4, third_company.id)]})
+        self.assertTrue(self._rules().enabled, "one company of the profile is enough")
+        profile.company_ids = [(5,)]
         self.assertTrue(self._rules().enabled)
 
     def test_edit_filter_does_not_restrict_reading(self):

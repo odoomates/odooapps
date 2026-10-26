@@ -18,3 +18,7 @@ from . import test_access_group
 from . import test_value_filters
 from . import test_preview
 from . import test_explain_versions
+from . import test_settings_apps
+from . import test_activities
+from . import test_health_check
+from . import test_robustness
