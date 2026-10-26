@@ -3,7 +3,8 @@
     'version': '0.9.0',
     'author': 'Odoo Mates',
     'category': 'Tools',
-    'description': 'Who signed in, from where, and what they read, changed, exported, imported and printed; the open sessions, ended in one click. Beta.',
+    'description': 'Completely free. Who signed in, from where, and what they read, changed, exported, '
+                   'imported and printed; the open sessions, ended in one click. Feedback is welcome.',
     'summary': 'User Activity Log, Audit Trail, Login History, Active Sessions, Kill Session, Idle Timeout, Sign-in Alerts, Export Log',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
