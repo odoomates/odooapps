@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_automation_studio.Preview">
+        <svg class="o_om_wd_preview m-auto flex-shrink-0" t-att-viewBox="this.viewBox()" t-att-width="this.width()"
+             t-att-height="this.height()">
+            <path t-foreach="this.edges()" t-as="edge" t-key="edge.id" t-att-d="edge.d" class="o_om_wd_preview_edge"/>
+            <g t-foreach="this.nodes" t-as="node" t-key="node.id"
+               t-att-class="'o_om_wd_type_' + node.type + (this.hasError(node) ? ' o_om_wd_has_error' : '')"
+               t-att-transform="'translate(' + node.x + ' ' + node.y + ')'">
+                <rect class="o_om_wd_preview_box" t-att-width="this.NODE_W" t-att-height="this.nodeHeight(node)" rx="8"/>
+                <rect class="o_om_wd_preview_bar" width="6" t-att-height="this.nodeHeight(node)" rx="3"/>
+                <text class="o_om_wd_preview_type" x="18" y="26" t-out="this.NODE_TYPES[node.type]?.label"/>
+                <text class="o_om_wd_preview_label" x="18" y="50" t-out="this.label(node)"/>
+            </g>
+        </svg>
+    </t>
+
+</templates>
