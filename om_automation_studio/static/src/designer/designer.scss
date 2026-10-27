@@ -1,0 +1,315 @@
+$-node-colors: (
+    start: #017e84,
+    condition: #714b67,
+    wait: #e4a900,
+    wait_until: #e4a900,
+    approval: #d9534f,
+    update: #3b82c4,
+    create: #3b82c4,
+    email: #28a745,
+    activity: #28a745,
+    note: #28a745,
+    end: #6c757d,
+);
+
+.o_om_wd_designer {
+    background-color: $o-view-background-color;
+    user-select: none;
+}
+
+.o_om_wd_toolbar {
+    background-color: $o-view-background-color;
+
+    .o_om_wd_name {
+        max-width: 320px;
+    }
+}
+
+.o_om_wd_palette {
+    flex: 0 0 190px;
+    background-color: $o-gray-100;
+}
+
+.o_om_wd_tool {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border: 1px solid $o-gray-300;
+    border-radius: 6px;
+    background-color: $o-view-background-color;
+    font-size: 0.875rem;
+    cursor: grab;
+
+    &:hover {
+        border-color: $o-brand-primary;
+    }
+}
+
+.o_om_wd_node_icon {
+    display: inline-flex;
+    flex: 0 0 28px;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    color: #fff;
+    background-color: var(--o-om-pd-color, #{$o-gray-600});
+}
+
+@each $-type, $-color in $-node-colors {
+    .o_om_wd_type_#{$-type} {
+        --o-om-pd-color: #{$-color};
+    }
+}
+
+.o_om_wd_canvas {
+    background-color: $o-gray-100;
+    background-image: radial-gradient(circle, $o-gray-400 1px, transparent 1px);
+    cursor: default;
+
+    &.o_om_wd_linking {
+        cursor: crosshair;
+    }
+}
+
+.o_om_wd_viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+}
+
+.o_om_wd_edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+}
+
+.o_om_wd_edge {
+    fill: none;
+    stroke: $o-gray-500;
+    stroke-width: 2;
+    pointer-events: none;
+}
+
+.o_om_wd_edge_hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 14;
+    cursor: pointer;
+}
+
+.o_om_wd_arrow {
+    fill: $o-gray-500;
+}
+
+.o_om_wd_edge_selected {
+    stroke: $o-brand-primary;
+    stroke-width: 3;
+}
+
+.o_om_wd_edge_draft {
+    stroke: $o-brand-primary;
+    stroke-dasharray: 6 4;
+}
+
+.o_om_wd_edge_taken {
+    stroke: $o-success;
+    stroke-width: 3;
+}
+
+.o_om_wd_edge_faded {
+    opacity: 0.35;
+}
+
+.o_om_wd_node {
+    position: absolute;
+    padding: 10px 12px;
+    border: 1px solid $o-gray-300;
+    border-left: 4px solid var(--o-om-pd-color, #{$o-gray-600});
+    border-radius: 8px;
+    background-color: $o-view-background-color;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    font-size: 0.875rem;
+    cursor: move;
+
+    &.o_om_wd_selected {
+        border-color: $o-brand-primary;
+        box-shadow: 0 0 0 3px rgba($o-brand-primary, 0.25);
+    }
+
+    &.o_om_wd_has_error {
+        border-color: $o-danger;
+    }
+
+    &.o_om_wd_unvisited {
+        opacity: 0.45;
+    }
+
+    &.o_om_wd_step_failed {
+        border-color: $o-danger;
+        background-color: rgba($o-danger, 0.06);
+    }
+
+    &.o_om_wd_current {
+        animation: o_om_wd_pulse 1.6s ease-in-out infinite;
+    }
+}
+
+@keyframes o_om_wd_pulse {
+    50% {
+        box-shadow: 0 0 0 6px rgba($o-brand-primary, 0.25);
+    }
+}
+
+.o_om_wd_node_head {
+    min-height: 32px;
+}
+
+.o_om_wd_node_text {
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.o_om_wd_in {
+    position: absolute;
+    top: 26px;
+    left: -7px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid $o-gray-500;
+    border-radius: 50%;
+    background-color: $o-view-background-color;
+}
+
+.o_om_wd_port {
+    position: absolute;
+    right: -7px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transform: translateY(-50%);
+    cursor: crosshair;
+}
+
+.o_om_wd_port_label {
+    font-size: 0.75rem;
+    color: $o-gray-600;
+}
+
+.o_om_wd_port_dot {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--o-om-pd-color, #{$o-gray-600});
+    border-radius: 50%;
+    background-color: $o-view-background-color;
+
+    .o_om_wd_port:hover & {
+        background-color: var(--o-om-pd-color, #{$o-gray-600});
+    }
+}
+
+.o_om_wd_zoom {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+}
+
+.o_om_wd_hint {
+    position: absolute;
+    right: 16px;
+    bottom: 12px;
+    pointer-events: none;
+}
+
+.o_om_wd_ghost {
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid $o-brand-primary;
+    border-radius: 6px;
+    background-color: $o-view-background-color;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.o_om_wd_panel {
+    flex: 0 0 340px;
+    background-color: $o-view-background-color;
+    user-select: text;
+
+    .o_om_wd_num {
+        max-width: 80px;
+    }
+
+    .o_om_wd_mode {
+        flex: 0 0 110px;
+    }
+
+    .o_om_wd_value_input {
+        min-width: 0;
+    }
+}
+
+.o_om_wd_issue_link {
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.o_om_wd_tag {
+    font-weight: normal;
+}
+
+.o_om_wd_step {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-left: 3px solid $o-gray-300;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover,
+    &.o_om_wd_step_selected {
+        background-color: $o-gray-100;
+    }
+
+    &.o_om_wd_step_done {
+        border-left-color: $o-success;
+    }
+
+    &.o_om_wd_step_waiting {
+        border-left-color: $o-info;
+    }
+
+    &.o_om_wd_step_failed {
+        border-left-color: $o-danger;
+    }
+}
+
+.o_om_wd_badge_running,
+.o_om_wd_badge_waiting {
+    color: #fff;
+    background-color: $o-info;
+}
+
+.o_om_wd_badge_done {
+    color: #fff;
+    background-color: $o-success;
+}
+
+.o_om_wd_badge_failed {
+    color: #fff;
+    background-color: $o-danger;
+}
+
+.o_om_wd_badge_cancelled {
+    color: #fff;
+    background-color: $o-gray-600;
+}
