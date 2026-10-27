@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_automation_studio.ApprovalBanner">
+        <div t-foreach="this.state.approvals" t-as="approval" t-key="approval.id"
+             class="alert alert-warning d-flex flex-wrap align-items-center gap-2 mb-0 rounded-0 border-0 border-bottom o_om_wd_banner"
+             role="status">
+            <i class="oi oi-lg" data-icon="hourglass_empty"/>
+            <div class="flex-grow-1">
+                <strong t-out="approval.name"/>
+                <span>: waiting for approval by <strong t-out="approval.user"/></span>
+                <span class="text-muted small ms-1">
+                    asked <t t-out="approval.asked"/><t t-if="approval.deadline">, answer by <t t-out="approval.deadline"/></t>
+                </span>
+                <div t-if="approval.lock" class="small">
+                    <t t-if="approval.locked.length">
+                        <t t-out="approval.locked.join(', ')"/> cannot change until it is answered.
+                    </t>
+                    <t t-else="">The record cannot change until it is answered.</t>
+                </div>
+                <div t-if="approval.can_decide and approval.on_behalf" class="small">
+                    As an administrator, you answer on behalf of <t t-out="approval.user"/>, who is told about it.
+                </div>
+                <div t-if="!approval.approver_can_read" class="small text-danger">
+                    <t t-out="approval.user"/> cannot open this record: they answer in Automation Studio, Approvals.
+                    Choose an approver who sees it.
+                </div>
+            </div>
+            <t t-if="approval.can_decide">
+                <button class="btn btn-sm btn-success" t-att-disabled="this.state.busy"
+                        t-on-click="() => this.decide(approval, 'action_approve')">
+                    <i class="oi me-1" data-icon="check"/>Approve
+                </button>
+                <button class="btn btn-sm btn-danger" t-att-disabled="this.state.busy"
+                        t-on-click="() => this.decide(approval, 'action_reject')">
+                    <i class="oi me-1" data-icon="close"/>Reject
+                </button>
+            </t>
+            <button class="btn btn-sm btn-link" t-on-click="() => this.open(approval)">Details</button>
+        </div>
+    </t>
+
+    <t t-inherit="web.FormView" t-inherit-mode="extension">
+        <xpath expr="//Layout/t[@t-component='this.props.Renderer']" position="before">
+            <WorkflowApprovalBanner t-if="!this.env.inDialog and this.model.root.resId" record="this.model.root"/>
+        </xpath>
+    </t>
+
+</templates>

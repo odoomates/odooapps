@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_workflow_run_view_list" model="ir.ui.view">
+        <field name="name">om.workflow.run.list</field>
+        <field name="model">om.workflow.run</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-danger="state == 'failed'" decoration-muted="state in ('done', 'cancelled')">
+                <field name="create_date" string="Started On"/>
+                <field name="workflow_id"/>
+                <field name="version" optional="hide"/>
+                <field name="res_name"/>
+                <field name="node_label"/>
+                <field name="wake_at" optional="show"/>
+                <field name="end_date" optional="hide"/>
+                <field name="state" widget="badge" decoration-info="state in ('running', 'waiting')"
+                       decoration-success="state == 'done'" decoration-danger="state == 'failed'"/>
+                <button name="action_view_path" type="object" string="Path" icon="account_tree"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_workflow_run_view_form" model="ir.ui.view">
+        <field name="name">om.workflow.run.form</field>
+        <field name="model">om.workflow.run</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <header>
+                    <button name="action_view_path" type="object" string="Show on Chart" class="btn-primary"/>
+                    <button name="action_retry" type="object" string="Retry" invisible="state != 'failed'"
+                            groups="om_automation_studio.om_automation_studio_group_supervisor"
+                            help="Run the failed step again and go on from there."/>
+                    <button name="action_cancel" type="object" string="Cancel Run"
+                            invisible="state not in ('running', 'waiting', 'failed')"
+                            groups="om_automation_studio.om_automation_studio_group_supervisor"
+                            confirm="Stop this run for good?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="running,waiting,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="article"
+                                string="Record"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="res_name"/></h1>
+                    </div>
+                    <div class="alert alert-danger" role="alert" invisible="not error">
+                        <field name="error"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="workflow_id"/>
+                            <field name="version"/>
+                            <field name="res_model" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="node_label"/>
+                            <field name="wake_at" invisible="not wake_at"/>
+                            <field name="create_date" string="Started On"/>
+                            <field name="end_date" invisible="not end_date"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Steps" name="steps">
+                            <field name="step_ids">
+                                <list decoration-danger="state == 'failed'" decoration-info="state == 'waiting'">
+                                    <field name="date_start"/>
+                                    <field name="node_label"/>
+                                    <field name="node_type" optional="hide"/>
+                                    <field name="port"/>
+                                    <field name="message"/>
+                                    <field name="date_end" optional="hide"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'"
+                                           decoration-danger="state == 'failed'" decoration-info="state == 'waiting'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Approvals" name="approvals" invisible="not approval_ids">
+                            <field name="approval_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="decided_on"/>
+                                    <field name="comment"/>
+                                    <field name="state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_workflow_run_view_search" model="ir.ui.view">
+        <field name="name">om.workflow.run.search</field>
+        <field name="model">om.workflow.run</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="res_name"/>
+                <field name="workflow_id"/>
+                <filter name="open" string="Running or Waiting" domain="[('state', 'in', ('running', 'waiting'))]"/>
+                <filter name="waiting" string="Waiting" domain="[('state', '=', 'waiting')]"/>
+                <filter name="failed" string="Failed" domain="[('state', '=', 'failed')]"/>
+                <filter name="done" string="Done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="create_date" string="Started On" date="create_date"/>
+                <group>
+                    <filter name="group_workflow" string="Workflow" context="{'group_by': 'workflow_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_workflow_run_action" model="ir.actions.act_window">
+        <field name="name">Runs</field>
+        <field name="res_model">om.workflow.run</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No run yet</p>
+            <p>A run starts each time a published workflow starts on a record.</p>
+        </field>
+    </record>
+</odoo>

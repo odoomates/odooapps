@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_groups_privilege_workflow_designer" model="res.groups.privilege">
+        <field name="name">Automation Studio</field>
+        <field name="category_id" ref="base.module_category_productivity"/>
+    </record>
+
+    <record id="om_automation_studio_group_supervisor" model="res.groups">
+        <field name="name">Supervisor</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_workflow_designer"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Follows the runs of every workflow and every approval, retries or cancels runs.</field>
+    </record>
+
+    <!-- designing a workflow writes on any record with full rights: only
+         administrators design, as for Automation Rules -->
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[Command.link(ref('om_automation_studio_group_supervisor'))]"/>
+    </record>
+</odoo>

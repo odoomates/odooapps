@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_workflow_demo_new_company" model="om.workflow">
+        <field name="name">New Contact Follow-up</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="description">When a contact is created with a phone: plan a welcome call, then ask for its email if it is still missing two days later.</field>
+        <field name="graph" eval="{
+            'nodes': [
+                {'id': 'start', 'type': 'start', 'x': 60, 'y': 220, 'label': 'Contact created',
+                 'config': {'trigger': 'create', 'domain': repr([('phone', '!=', False)]), 'policy': 'single'}},
+                {'id': 'call', 'type': 'activity', 'x': 320, 'y': 220, 'label': 'Welcome call',
+                 'config': {'activity_type_id': ref('mail.mail_activity_data_call'), 'summary': 'Welcome call to {{ object.name }}',
+                            'assign': 'user', 'user_id': ref('base.user_admin'), 'days': 1}},
+                {'id': 'wait', 'type': 'wait', 'x': 580, 'y': 220, 'label': 'Two days later',
+                 'config': {'mode': 'duration', 'amount': 2, 'unit': 'days'}},
+                {'id': 'has_email', 'type': 'condition', 'x': 840, 'y': 220, 'label': 'Has an email?',
+                 'config': {'domain': repr([('email', '!=', False)])}},
+                {'id': 'note', 'type': 'note', 'x': 1100, 'y': 120, 'label': 'Log it',
+                 'config': {'body': 'Contact complete: {{ object.email }}'}},
+                {'id': 'remind', 'type': 'activity', 'x': 1100, 'y': 340, 'label': 'Ask for the email',
+                 'config': {'activity_type_id': ref('mail.mail_activity_data_todo'), 'summary': 'Add the email of {{ object.name }}',
+                            'assign': 'user', 'user_id': ref('base.user_admin'), 'days': 0}},
+                {'id': 'end', 'type': 'end', 'x': 1360, 'y': 220, 'label': '', 'config': {}},
+            ],
+            'edges': [
+                {'id': 'e1', 'source': 'start', 'port': 'out', 'target': 'call'},
+                {'id': 'e2', 'source': 'call', 'port': 'out', 'target': 'wait'},
+                {'id': 'e3', 'source': 'wait', 'port': 'out', 'target': 'has_email'},
+                {'id': 'e4', 'source': 'has_email', 'port': 'yes', 'target': 'note'},
+                {'id': 'e5', 'source': 'has_email', 'port': 'no', 'target': 'remind'},
+                {'id': 'e6', 'source': 'note', 'port': 'out', 'target': 'end'},
+                {'id': 'e7', 'source': 'remind', 'port': 'out', 'target': 'end'},
+            ],
+        }"/>
+    </record>
+
+</odoo>

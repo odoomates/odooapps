@@ -1,0 +1,669 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_automation_studio.Designer">
+        <div class="o_om_wd_designer o_action d-flex flex-column h-100">
+            <t t-if="this.state.loaded">
+                <t t-call="om_automation_studio.Designer.Toolbar"/>
+                <div class="o_om_wd_main d-flex flex-grow-1 overflow-hidden">
+                    <t t-if="!this.readonly()" t-call="om_automation_studio.Designer.Palette"/>
+                    <t t-call="om_automation_studio.Designer.Canvas"/>
+                    <div class="o_om_wd_panel border-start overflow-auto">
+                        <t t-if="this.state.run" t-call="om_automation_studio.Designer.RunPanel"/>
+                        <t t-elif="this.selectedNode()">
+                            <t t-set="node" t-value="this.selectedNode()"/>
+                            <t t-call="om_automation_studio.Designer.NodePanel"/>
+                        </t>
+                        <t t-elif="this.state.selection?.kind === 'edge'" t-call="om_automation_studio.Designer.EdgePanel"/>
+                        <t t-else="" t-call="om_automation_studio.Designer.WorkflowPanel"/>
+                    </div>
+                </div>
+                <div t-if="this.state.paletteGhost" class="o_om_wd_ghost"
+                     t-att-style="'left:' + this.state.paletteGhost.x + 'px;top:' + this.state.paletteGhost.y + 'px;'">
+                    <i class="oi" t-att-data-icon="this.NODE_TYPES[this.state.paletteGhost.type].icon"/>
+                    <span t-out="this.NODE_TYPES[this.state.paletteGhost.type].label"/>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- toolbar ========================================================= -->
+    <t t-name="om_automation_studio.Designer.Toolbar">
+        <div class="o_om_wd_toolbar d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+            <button class="btn btn-light btn-sm" title="Back" t-on-click="() => this.close()">
+                <i class="oi" data-icon="arrow_back"/>
+            </button>
+            <t t-if="this.readonly()">
+                <span class="fw-bold text-truncate" t-out="this.state.workflow.name"/>
+                <span class="text-muted small text-nowrap">
+                    <t t-out="this.state.run.record"/> · v<t t-out="this.state.workflow.version"/>
+                </span>
+                <span class="badge" t-att-class="'o_om_wd_badge_' + this.state.run.state" t-out="this.RUN_STATES[this.state.run.state]"/>
+                <div class="ms-auto d-flex gap-2">
+                    <button class="btn btn-secondary btn-sm" t-on-click="() => this.openRecord()">
+                        <i class="oi me-1" data-icon="open_in_new"/>Open Record
+                    </button>
+                    <button class="btn btn-secondary btn-sm" t-on-click="() => this.openDesigner()">
+                        <i class="oi me-1" data-icon="edit"/>Edit Workflow
+                    </button>
+                </div>
+            </t>
+            <t t-else="">
+                <input class="form-control form-control-sm o_om_wd_name fw-bold" t-att-value="this.state.workflow.name"
+                       t-on-change="(ev) => this.setName(ev.target.value)" aria-label="Workflow name"/>
+                <span class="text-muted small text-nowrap" t-out="this.state.workflow.model_name"/>
+                <span t-if="this.state.workflow.state === 'active'" class="badge text-bg-success">
+                    Running v<t t-out="this.state.workflow.version"/>
+                </span>
+                <span t-elif="this.state.workflow.state === 'paused'" class="badge text-bg-warning">Paused</span>
+                <span t-else="" class="badge text-bg-secondary">Draft</span>
+                <span t-if="this.state.workflow.has_changes and !this.state.dirty" class="badge text-bg-info">Not published</span>
+                <span t-if="this.state.dirty" class="badge text-bg-warning">Unsaved</span>
+                <div class="btn-group ms-2">
+                    <button class="btn btn-light btn-sm" title="Undo (Ctrl+Z)" t-att-disabled="!this.state.undoCount"
+                            t-on-click="() => this.undo()"><i class="oi" data-icon="undo"/></button>
+                    <button class="btn btn-light btn-sm" title="Redo (Ctrl+Y)" t-att-disabled="!this.state.redoCount"
+                            t-on-click="() => this.redo()"><i class="oi" data-icon="redo"/></button>
+                </div>
+                <div class="ms-auto d-flex gap-2 align-items-center">
+                    <button class="btn btn-link btn-sm text-decoration-none" t-on-click="() => this.openRuns()">
+                        <i class="oi me-1" data-icon="format_list_bulleted"/>Runs
+                    </button>
+                    <button class="btn btn-link btn-sm text-decoration-none" t-att-disabled="this.state.saving"
+                            title="Keep the chart as a template, to start other workflows from"
+                            t-on-click="() => this.saveAsTemplate()">
+                        <i class="oi me-1" data-icon="bookmark"/>Save as Template
+                    </button>
+                    <button class="btn btn-secondary btn-sm" t-att-disabled="this.state.saving" t-on-click="() => this.save()">
+                        <i class="oi me-1" data-icon="save"/>Save
+                    </button>
+                    <button t-if="this.state.workflow.state === 'active'" class="btn btn-secondary btn-sm"
+                            t-on-click="() => this.pause()">
+                        <i class="oi me-1" data-icon="pause"/>Pause
+                    </button>
+                    <button class="btn btn-primary btn-sm" t-att-disabled="this.state.saving"
+                            title="Freeze the chart in a new version and start the workflow"
+                            t-on-click="() => this.publish()">
+                        <i class="oi me-1" data-icon="rocket_launch"/>Publish
+                    </button>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- palette ========================================================= -->
+    <t t-name="om_automation_studio.Designer.Palette">
+        <div class="o_om_wd_palette border-end overflow-auto p-2">
+            <t t-foreach="this.PALETTE" t-as="group" t-key="group[0]">
+                <div class="o_om_wd_palette_title small text-uppercase text-muted fw-bold mt-2 mb-1 px-1" t-out="group[1]"/>
+                <t t-foreach="Object.keys(this.NODE_TYPES)" t-as="type" t-key="type">
+                    <div t-if="this.NODE_TYPES[type].group === group[0]"
+                         class="o_om_wd_tool d-flex align-items-center gap-2" t-att-class="'o_om_wd_type_' + type"
+                         title="Click to add after the selected step, or drag onto the chart"
+                         t-on-pointerdown="(ev) => this.onPalettePointerDown(ev, type)">
+                        <span class="o_om_wd_node_icon"><i class="oi" t-att-data-icon="this.NODE_TYPES[type].icon"/></span>
+                        <span class="text-truncate" t-out="this.NODE_TYPES[type].label"/>
+                    </div>
+                </t>
+            </t>
+        </div>
+    </t>
+
+    <!-- canvas ========================================================== -->
+    <t t-name="om_automation_studio.Designer.Canvas">
+        <div class="o_om_wd_canvas flex-grow-1 position-relative overflow-hidden" t-ref="this.canvasRef"
+             t-att-class="{'o_om_wd_linking': this.state.link}" t-att-style="this.gridStyle()"
+             t-on-pointerdown="(ev) => this.onCanvasPointerDown(ev)">
+            <div class="o_om_wd_viewport" t-att-style="this.viewportStyle()">
+                <svg class="o_om_wd_edges" width="1" height="1">
+                    <defs>
+                        <marker id="o_om_wd_arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                                orient="auto-start-reverse">
+                            <path d="M 0 0 L 10 5 L 0 10 z" class="o_om_wd_arrow"/>
+                        </marker>
+                    </defs>
+                    <t t-foreach="this.state.graph.edges" t-as="edge" t-key="edge.id">
+                        <t t-set="d" t-value="this.edgeD(edge)"/>
+                        <t t-if="d">
+                            <path class="o_om_wd_edge_hit" t-att-d="d" t-on-pointerdown="(ev) => this.onEdgePointerDown(ev, edge)"/>
+                            <path class="o_om_wd_edge" t-att-d="d" marker-end="url(#o_om_wd_arrow)"
+                                  t-att-class="{'o_om_wd_edge_selected': this.isSelected('edge', edge.id),
+                                                'o_om_wd_edge_taken': this.state.run and this.edgeTaken(edge),
+                                                'o_om_wd_edge_faded': this.state.run and !this.edgeTaken(edge)}"/>
+                        </t>
+                    </t>
+                    <path t-if="this.state.link" class="o_om_wd_edge o_om_wd_edge_draft" t-att-d="this.linkD()"/>
+                </svg>
+                <t t-foreach="this.state.graph.nodes" t-as="node" t-key="node.id">
+                    <div class="o_om_wd_node" t-att-data-node-id="node.id" t-att-style="this.nodeStyle(node)"
+                         t-att-class="this.nodeClass(node)"
+                         t-on-pointerdown="(ev) => this.onNodePointerDown(ev, node)">
+                        <div t-if="node.type !== 'start'" class="o_om_wd_in"/>
+                        <div class="o_om_wd_node_head d-flex align-items-center gap-2">
+                            <span class="o_om_wd_node_icon"><i class="oi" t-att-data-icon="this.NODE_TYPES[node.type].icon"/></span>
+                            <div class="o_om_wd_node_text flex-grow-1">
+                                <div class="fw-semibold text-truncate" t-out="this.nodeLabel(node)"/>
+                                <div class="small text-muted text-truncate" t-out="this.nodeSummary(node)"/>
+                            </div>
+                            <i t-if="!this.state.run and this.nodeIssues(node).length" class="oi o_om_wd_node_warn"
+                               t-att-class="this.nodeIssues(node).some((i) => i.level === 'error') ? 'text-danger' : 'text-warning'"
+                               data-icon="error" t-att-title="this.nodeIssues(node).map((i) => i.message).join('\n')"/>
+                            <span t-if="this.state.run and this.nodeSteps(node).length > 1" class="badge rounded-pill text-bg-light"
+                                  t-out="'×' + this.nodeSteps(node).length"/>
+                        </div>
+                        <t t-foreach="this.portsOf(node)" t-as="port" t-key="port">
+                            <div class="o_om_wd_port" t-att-style="this.portStyle(node, port)" t-att-data-port="port"
+                                 t-on-pointerdown="(ev) => this.onPortPointerDown(ev, node, port)">
+                                <span class="o_om_wd_port_label" t-out="this.PORT_LABELS[port]"/>
+                                <span class="o_om_wd_port_dot"/>
+                            </div>
+                        </t>
+                    </div>
+                </t>
+            </div>
+            <div class="o_om_wd_zoom btn-group-vertical shadow-sm" t-on-pointerdown.stop="() => {}">
+                <button class="btn btn-light btn-sm" title="Zoom in" t-on-click="() => this.zoomBy(1.2)"><i class="oi" data-icon="zoom_in"/></button>
+                <button class="btn btn-light btn-sm" title="Zoom out" t-on-click="() => this.zoomBy(1 / 1.2)"><i class="oi" data-icon="zoom_out"/></button>
+                <button class="btn btn-light btn-sm" title="Fit the chart" t-on-click="() => this.fit()"><i class="oi" data-icon="fullscreen"/></button>
+            </div>
+            <div t-if="!this.readonly()" class="o_om_wd_hint small text-muted">
+                Drag from a dot to a step to draw an arrow · Ctrl + wheel to zoom · Delete removes the selection
+            </div>
+        </div>
+    </t>
+
+    <!-- side panels ===================================================== -->
+    <t t-name="om_automation_studio.Designer.WorkflowPanel">
+        <div class="p-3">
+            <h5 class="mb-1">Workflow</h5>
+            <p class="text-muted small">
+                Runs on <strong t-out="this.state.workflow.model_name"/>. Select a step to set it,
+                or add one from the left.
+            </p>
+            <t t-set="issues" t-value="this.state.issues"/>
+            <div t-if="!issues.length" class="alert alert-success small py-2">
+                <i class="oi me-1" data-icon="check_circle"/>Ready to publish.
+            </div>
+            <t t-else="">
+                <div class="small fw-bold mb-1">To fix before publishing</div>
+                <ul class="list-unstyled small o_om_wd_issues">
+                    <li t-foreach="issues" t-as="issue" t-key="issue_index" class="d-flex gap-2 mb-1"
+                        t-att-class="issue.node ? 'o_om_wd_issue_link' : ''"
+                        t-on-click="() => issue.node and (this.state.selection = { kind: 'node', id: issue.node })">
+                        <i class="oi" t-att-class="issue.level === 'error' ? 'text-danger' : 'text-warning'"
+                           t-att-data-icon="issue.level === 'error' ? 'error' : 'warning'"/>
+                        <span>
+                            <strong t-if="issue.node and this.nodeById(issue.node)" t-out="this.nodeLabel(this.nodeById(issue.node)) + ': '"/>
+                            <t t-out="issue.message"/>
+                        </span>
+                    </li>
+                </ul>
+                <div t-if="this.state.dirty" class="text-muted small">Save to check the chart again.</div>
+            </t>
+            <hr/>
+            <div class="small text-muted">
+                <p class="mb-1"><strong>Versions.</strong> Publishing freezes the chart in a new version. The runs
+                    already started go on with the version they started on.</p>
+                <p class="mb-1"><strong>Placeholders.</strong> Texts can show fields of the record:
+                    <code>{{ object.name }}</code>.</p>
+                <p class="mb-0"><strong>Shortcuts.</strong> Ctrl+S save, Ctrl+Z undo, Ctrl+D duplicate, Delete remove.</p>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Designer.EdgePanel">
+        <div class="p-3">
+            <h5>Arrow</h5>
+            <p class="text-muted small">Drag from the dot of an exit to another step to move the arrow.</p>
+            <button class="btn btn-outline-danger btn-sm" t-on-click="() => this.removeSelection()">
+                <i class="oi me-1" data-icon="delete"/>Remove Arrow
+            </button>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Designer.NodePanel">
+        <div class="p-3 o_om_wd_node_panel">
+            <div class="d-flex align-items-center gap-2 mb-3">
+                <span class="o_om_wd_node_icon" t-att-class="'o_om_wd_type_' + node.type">
+                    <i class="oi" t-att-data-icon="this.NODE_TYPES[node.type].icon"/>
+                </span>
+                <h5 class="mb-0 flex-grow-1" t-out="this.NODE_TYPES[node.type].label"/>
+                <t t-if="node.type !== 'start'">
+                    <button class="btn btn-light btn-sm" title="Duplicate (Ctrl+D)" t-on-click="() => this.duplicateSelection()">
+                        <i class="oi" data-icon="content_copy"/>
+                    </button>
+                    <button class="btn btn-light btn-sm text-danger" title="Remove (Delete)" t-on-click="() => this.removeSelection()">
+                        <i class="oi" data-icon="delete"/>
+                    </button>
+                </t>
+            </div>
+            <div t-foreach="this.nodeIssues(node)" t-as="issue" t-key="issue_index"
+                 class="alert py-1 px-2 small mb-2" t-att-class="issue.level === 'error' ? 'alert-danger' : 'alert-warning'"
+                 t-out="issue.message"/>
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Name on the chart</label>
+                <input class="form-control form-control-sm" t-att-value="node.label"
+                       t-att-placeholder="this.NODE_TYPES[node.type].label"
+                       t-on-change="(ev) => this.setLabel(node, ev.target.value)"/>
+            </div>
+            <t t-call="{{ 'om_automation_studio.Config.' + node.type }}"/>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Designer.RunPanel">
+        <t t-set="run" t-value="this.state.run"/>
+        <div class="p-3">
+            <h5 class="mb-1" t-out="run.record"/>
+            <div class="small text-muted mb-2">Version <t t-out="this.state.workflow.version"/></div>
+            <div t-if="run.error" class="alert alert-danger small py-2" t-out="run.error"/>
+            <div t-if="run.state === 'waiting' and run.wake_at" class="alert alert-info small py-2">
+                Waiting, goes on <t t-out="this.localDate(run.wake_at)"/>.
+            </div>
+            <div class="small fw-bold mb-2">Steps</div>
+            <ol class="list-unstyled o_om_wd_steps">
+                <li t-foreach="this.state.steps" t-as="step" t-key="step_index" class="o_om_wd_step"
+                    t-att-class="'o_om_wd_step_' + step.state + (this.isSelected('node', step.node) ? ' o_om_wd_step_selected' : '')"
+                    t-on-click="() => this.state.selection = { kind: 'node', id: step.node }">
+                    <div class="d-flex justify-content-between gap-2">
+                        <span class="fw-semibold text-truncate" t-out="step.label"/>
+                        <span class="small text-muted text-nowrap" t-out="this.localDate(step.date)"/>
+                    </div>
+                    <div class="small">
+                        <span t-if="step.port and this.PORT_LABELS[step.port]" class="badge text-bg-light me-1"
+                              t-out="this.PORT_LABELS[step.port]"/>
+                        <span class="text-muted" t-out="step.message"/>
+                    </div>
+                </li>
+            </ol>
+        </div>
+    </t>
+
+    <!-- step settings ==================================================== -->
+    <t t-name="om_automation_studio.Config.start">
+        <t t-set="config" t-value="node.config"/>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Starts when</label>
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'trigger', ev.target.value)">
+                <option t-foreach="this.TRIGGERS" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                        t-att-selected="config.trigger === item[0]" t-out="item[1]"/>
+            </select>
+        </div>
+        <t t-if="config.trigger === 'change'">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Watched fields</label>
+                <div class="small text-muted mb-1">Only a change of these fields starts it. None: any change, of the lines too.</div>
+                <select class="form-select form-select-sm mb-1"
+                        t-on-change="(ev) => { ev.target.value and this.toggleWatched(node, ev.target.value, true); ev.target.value = ''; }">
+                    <option value="">Add a field...</option>
+                    <option t-foreach="this.fieldsWhere((f) => f.store and f.type !== 'one2many' and !(config.fields || []).includes(f.name))" t-as="field"
+                            t-key="field.name" t-att-value="field.name" t-out="field.string"/>
+                </select>
+                <span t-foreach="config.fields || []" t-as="name" t-key="name" class="badge text-bg-light me-1 o_om_wd_tag">
+                    <t t-out="this.fieldOf(name)?.string || name"/>
+                    <i class="oi ms-1" data-icon="close_small" role="button" t-on-click="() => this.toggleWatched(node, name, false)"/>
+                </span>
+            </div>
+        </t>
+        <t t-if="config.trigger === 'date'">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Date</label>
+                <div class="d-flex gap-1 align-items-center">
+                    <input type="number" min="0" class="form-control form-control-sm o_om_wd_num" t-att-value="config.amount || 0"
+                           t-on-change="(ev) => this.setConfig(node, 'amount', this.numberValue(ev))"/>
+                    <t t-call="om_automation_studio.Config.unit"/>
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'direction', ev.target.value)">
+                        <option t-foreach="this.DIRECTIONS" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                                t-att-selected="(config.direction || 'after') === item[0]" t-out="item[1]"/>
+                    </select>
+                </div>
+                <select class="form-select form-select-sm mt-1" t-on-change="(ev) => this.setConfig(node, 'date_field', ev.target.value)">
+                    <option value="">Choose the date...</option>
+                    <option t-foreach="this.dateFields(true)" t-as="field" t-key="field.name" t-att-value="field.name"
+                            t-att-selected="config.date_field === field.name" t-out="field.string"/>
+                </select>
+            </div>
+        </t>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Only for records where</label>
+            <DomainSelector resModel="this.state.workflow.model" domain="config.domain || '[]'" readonly="false"
+                            update="(domain) => this.setConfig(node, 'domain', domain)"/>
+            <div t-if="config.trigger === 'change'" class="form-check mt-2">
+                <input type="checkbox" class="form-check-input" t-att-id="'om_wd_becomes_' + node.id"
+                       t-att-checked="config.becomes !== false"
+                       t-on-change="(ev) => this.setConfig(node, 'becomes', ev.target.checked)"/>
+                <label class="form-check-label small" t-att-for="'om_wd_becomes_' + node.id">
+                    Only when this becomes true (not at every change while true)
+                </label>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Runs per record</label>
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'policy', ev.target.value)">
+                <option t-foreach="this.POLICIES" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                        t-att-selected="(config.policy || 'single') === item[0]" t-out="item[1]"/>
+            </select>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" t-att-id="'om_wd_stop_' + node.id"
+                       t-att-checked="config.stop_domain !== undefined and config.stop_domain !== false"
+                       t-on-change="(ev) => this.setConfig(node, 'stop_domain', ev.target.checked ? '[]' : false)"/>
+                <label class="form-check-label small fw-bold" t-att-for="'om_wd_stop_' + node.id">Stop the run when</label>
+            </div>
+            <div class="small text-muted mb-1">Checked at every step and while waiting, e.g. when the invoice is paid.</div>
+            <DomainSelector t-if="config.stop_domain !== undefined and config.stop_domain !== false"
+                            resModel="this.state.workflow.model" domain="config.stop_domain" readonly="false"
+                            update="(domain) => this.setConfig(node, 'stop_domain', domain)"/>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.unit">
+        <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'unit', ev.target.value)">
+            <option t-foreach="this.UNITS" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                    t-att-selected="(config.unit || 'days') === item[0]" t-out="item[1]"/>
+        </select>
+    </t>
+
+    <t t-name="om_automation_studio.Config.timeout">
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" t-att-id="'om_wd_timeout_' + node.id"
+                       t-att-checked="config.timeout" t-on-change="(ev) => this.setConfig(node, 'timeout', ev.target.checked)"/>
+                <label class="form-check-label small fw-bold" t-att-for="'om_wd_timeout_' + node.id">Time limit</label>
+            </div>
+            <div t-if="config.timeout" class="d-flex gap-1 align-items-center mt-1">
+                <input type="number" min="1" class="form-control form-control-sm o_om_wd_num" t-att-value="config.amount || 0"
+                       t-on-change="(ev) => this.setConfig(node, 'amount', this.numberValue(ev))"/>
+                <t t-call="om_automation_studio.Config.unit"/>
+            </div>
+            <div t-if="config.timeout" class="small text-muted mt-1">After it, the run leaves by the Time limit exit.</div>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.condition">
+        <t t-set="config" t-value="node.config"/>
+        <label class="form-label small fw-bold">The record matches</label>
+        <DomainSelector resModel="this.state.workflow.model" domain="config.domain || '[]'" readonly="false"
+                        update="(domain) => this.setConfig(node, 'domain', domain)"/>
+        <div class="small text-muted mt-2">Matching records leave by Yes, the others by No.</div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.wait">
+        <t t-set="config" t-value="node.config"/>
+        <div class="btn-group btn-group-sm w-100 mb-3">
+            <button class="btn" t-att-class="config.mode !== 'date' ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.setConfig(node, 'mode', 'duration')">For a time</button>
+            <button class="btn" t-att-class="config.mode === 'date' ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.setConfig(node, 'mode', 'date')">Until a date</button>
+        </div>
+        <div class="d-flex gap-1 align-items-center">
+            <input type="number" min="0" class="form-control form-control-sm o_om_wd_num" t-att-value="config.amount || 0"
+                   t-on-change="(ev) => this.setConfig(node, 'amount', this.numberValue(ev))"/>
+            <t t-call="om_automation_studio.Config.unit"/>
+            <select t-if="config.mode === 'date'" class="form-select form-select-sm"
+                    t-on-change="(ev) => this.setConfig(node, 'direction', ev.target.value)">
+                <option t-foreach="this.DIRECTIONS" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                        t-att-selected="(config.direction || 'after') === item[0]" t-out="item[1]"/>
+            </select>
+        </div>
+        <select t-if="config.mode === 'date'" class="form-select form-select-sm mt-1"
+                t-on-change="(ev) => this.setConfig(node, 'date_field', ev.target.value)">
+            <option value="">Choose the date...</option>
+            <option t-foreach="this.dateFields()" t-as="field" t-key="field.name" t-att-value="field.name"
+                    t-att-selected="config.date_field === field.name" t-out="field.string"/>
+        </select>
+        <div class="small text-muted mt-2">A date already past goes on at once.</div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.wait_until">
+        <t t-set="config" t-value="node.config"/>
+        <label class="form-label small fw-bold">Wait until the record matches</label>
+        <DomainSelector resModel="this.state.workflow.model" domain="config.domain || '[]'" readonly="false"
+                        update="(domain) => this.setConfig(node, 'domain', domain)"/>
+        <div class="small text-muted mt-2 mb-3">Checked every few minutes. Leaves by Met when it matches.</div>
+        <t t-call="om_automation_studio.Config.timeout"/>
+    </t>
+
+    <t t-name="om_automation_studio.Config.user">
+        <div class="btn-group btn-group-sm w-100 mb-1">
+            <button class="btn" t-att-class="(config.assign || 'user') === 'user' ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.setConfig(node, 'assign', 'user')">A user</button>
+            <button class="btn" t-att-class="config.assign === 'field' ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.setConfig(node, 'assign', 'field')">The user of a field</button>
+        </div>
+        <RecordSelector t-if="(config.assign || 'user') === 'user'" resModel="'res.users'" resId="config.user_id || false"
+                        domain="[['share', '=', false]]" update="(id) => this.setConfig(node, 'user_id', id)"/>
+        <select t-else="" class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'user_field', ev.target.value)">
+            <option value="">Choose the field...</option>
+            <option t-foreach="this.userFields()" t-as="field" t-key="field.name" t-att-value="field.name"
+                    t-att-selected="config.user_field === field.name" t-out="field.string"/>
+        </select>
+    </t>
+
+    <t t-name="om_automation_studio.Config.approval">
+        <t t-set="config" t-value="node.config"/>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Approver</label>
+            <t t-call="om_automation_studio.Config.user"/>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Question</label>
+            <input class="form-control form-control-sm" t-att-value="config.title"
+                   placeholder="Approve {{ object.display_name }}"
+                   t-on-change="(ev) => this.setConfig(node, 'title', ev.target.value)"/>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Details for the approver</label>
+            <textarea class="form-control form-control-sm" rows="3" t-att-value="config.note"
+                      t-on-change="(ev) => this.setConfig(node, 'note', ev.target.value)"/>
+        </div>
+        <t t-call="om_automation_studio.Config.timeout"/>
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" t-att-id="'om_wd_approver_only_' + node.id"
+                       t-att-checked="config.approver_only"
+                       t-on-change="(ev) => this.setConfig(node, 'approver_only', ev.target.checked)"/>
+                <label class="form-check-label small fw-bold" t-att-for="'om_wd_approver_only_' + node.id">
+                    Only the approver can answer
+                </label>
+            </div>
+            <div class="small text-muted">
+                <t t-if="config.approver_only">Administrators cannot answer for the approver.</t>
+                <t t-else="">Administrators can answer for the approver, who is told about it.</t>
+            </div>
+        </div>
+        <div class="mb-3">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" t-att-id="'om_wd_lock_' + node.id"
+                       t-att-checked="config.lock !== false"
+                       t-on-change="(ev) => this.setConfig(node, 'lock', ev.target.checked)"/>
+                <label class="form-check-label small fw-bold" t-att-for="'om_wd_lock_' + node.id">
+                    Block the record until it is answered
+                </label>
+            </div>
+            <t t-if="config.lock !== false">
+                <div class="btn-group btn-group-sm w-100 my-1">
+                    <button class="btn" t-att-class="config.lock_mode !== 'all' ? 'btn-primary' : 'btn-light'"
+                            t-on-click="() => this.setConfig(node, 'lock_mode', 'fields')">These fields</button>
+                    <button class="btn" t-att-class="config.lock_mode === 'all' ? 'btn-primary' : 'btn-light'"
+                            t-on-click="() => this.setConfig(node, 'lock_mode', 'all')">Any change</button>
+                </div>
+                <t t-if="config.lock_mode !== 'all'">
+                    <select class="form-select form-select-sm mb-1"
+                            t-on-change="(ev) => { ev.target.value and this.toggleWatched(node, ev.target.value, true, 'lock_fields'); ev.target.value = ''; }">
+                        <option value="">Add a field...</option>
+                        <option t-foreach="this.fieldsWhere((f) => f.store and f.type !== 'one2many' and !(config.lock_fields || []).includes(f.name))"
+                                t-as="field" t-key="field.name" t-att-value="field.name" t-out="field.string"/>
+                    </select>
+                    <span t-foreach="config.lock_fields || []" t-as="name" t-key="name" class="badge text-bg-light me-1 o_om_wd_tag">
+                        <t t-out="this.fieldOf(name)?.string || name"/>
+                        <i class="oi ms-1" data-icon="close_small" role="button"
+                           t-on-click="() => this.toggleWatched(node, name, false, 'lock_fields')"/>
+                    </span>
+                    <div t-if="!(config.lock_fields || []).length and this.defaultLockLabel()" class="small text-muted">
+                        None chosen: <t t-out="this.defaultLockLabel()"/>, so the record cannot be confirmed or sent.
+                    </div>
+                </t>
+                <div class="small text-muted mt-1">The record shows the approval at its top; changing what is
+                    blocked is refused until the answer.</div>
+            </t>
+        </div>
+        <div class="small text-muted">The approver gets an activity, and answers on the record or in Automation Studio, Approvals.</div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.values">
+        <t t-set="fields" t-value="this.valueFields(node)"/>
+        <div t-foreach="config.values || []" t-as="row" t-key="row_index" class="o_om_wd_value border rounded p-2 mb-2">
+            <t t-set="field" t-value="this.fieldOf(row.field, fields)"/>
+            <div class="d-flex gap-1 mb-1">
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setRow(node, row_index, 'field', ev.target.value)">
+                    <option value="">Field...</option>
+                    <option t-foreach="this.settableFields(fields)" t-as="item" t-key="item.name" t-att-value="item.name"
+                            t-att-selected="row.field === item.name" t-out="item.string"/>
+                </select>
+                <button class="btn btn-light btn-sm text-danger" title="Remove" t-on-click="() => this.removeValueRow(node, row_index)">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+            <div t-if="field" class="d-flex gap-1 align-items-start">
+                <select class="form-select form-select-sm o_om_wd_mode" t-on-change="(ev) => this.setRow(node, row_index, 'mode', ev.target.value)">
+                    <option t-foreach="this.rowModes(field)" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                            t-att-selected="(row.mode || 'value') === item[0]" t-out="item[1]"/>
+                </select>
+                <div class="flex-grow-1 o_om_wd_value_input">
+                    <t t-if="(row.mode || 'value') === 'value'" t-call="om_automation_studio.Config.valueInput"/>
+                    <select t-elif="row.mode === 'field'" class="form-select form-select-sm"
+                            t-on-change="(ev) => this.setRow(node, row_index, 'source', ev.target.value)">
+                        <option value="">Field of the record...</option>
+                        <option t-foreach="this.sourceFields(field)" t-as="item" t-key="item.name" t-att-value="item.name"
+                                t-att-selected="row.source === item.name" t-out="item.string"/>
+                    </select>
+                    <div t-elif="row.mode === 'today'" class="d-flex gap-1 align-items-center">
+                        <input type="number" class="form-control form-control-sm o_om_wd_num" t-att-value="row.offset || 0"
+                               t-on-change="(ev) => this.setRow(node, row_index, 'offset', this.numberValue(ev))"/>
+                        <span class="small text-muted">days</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-link btn-sm px-0" t-on-click="() => this.addValueRow(node)">
+            <i class="oi me-1" data-icon="add"/>Add a field
+        </button>
+    </t>
+
+    <t t-name="om_automation_studio.Config.valueInput">
+        <t t-set="type" t-value="field.type"/>
+        <RecordSelector t-if="type === 'many2one'" resModel="field.relation" resId="row.value || false"
+                        update="(id) => this.setRow(node, row_index, 'value', id)"/>
+        <MultiRecordSelector t-elif="type === 'many2many'" resModel="field.relation" resIds="row.value || []"
+                             update="(ids) => this.setRow(node, row_index, 'value', ids)"/>
+        <div t-elif="type === 'boolean'" class="form-check form-switch mt-1">
+            <input type="checkbox" class="form-check-input" t-att-checked="row.value"
+                   t-on-change="(ev) => this.setRow(node, row_index, 'value', ev.target.checked)"/>
+        </div>
+        <select t-elif="type === 'selection'" class="form-select form-select-sm"
+                t-on-change="(ev) => this.setRow(node, row_index, 'value', ev.target.value)">
+            <option value="">-</option>
+            <option t-foreach="field.selection" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                    t-att-selected="row.value === item[0]" t-out="item[1]"/>
+        </select>
+        <input t-elif="['integer', 'float', 'monetary'].includes(type)" type="number" class="form-control form-control-sm"
+               t-att-value="row.value || 0" t-on-change="(ev) => this.setRow(node, row_index, 'value', this.numberValue(ev))"/>
+        <input t-elif="type === 'date'" type="date" class="form-control form-control-sm" t-att-value="row.value || ''"
+               t-on-change="(ev) => this.setRow(node, row_index, 'value', ev.target.value)"/>
+        <input t-elif="type === 'datetime'" type="datetime-local" class="form-control form-control-sm" t-att-value="row.value || ''"
+               t-on-change="(ev) => this.setRow(node, row_index, 'value', ev.target.value)"/>
+        <textarea t-elif="['text', 'html'].includes(type)" class="form-control form-control-sm" rows="2" t-att-value="row.value || ''"
+                  t-on-change="(ev) => this.setRow(node, row_index, 'value', ev.target.value)"/>
+        <input t-else="" class="form-control form-control-sm" t-att-value="row.value || ''"
+               t-on-change="(ev) => this.setRow(node, row_index, 'value', ev.target.value)"/>
+    </t>
+
+    <t t-name="om_automation_studio.Config.update">
+        <t t-set="config" t-value="node.config"/>
+        <label class="form-label small fw-bold">Set on the record</label>
+        <t t-call="om_automation_studio.Config.values"/>
+    </t>
+
+    <t t-name="om_automation_studio.Config.create">
+        <t t-set="config" t-value="node.config"/>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Record to create</label>
+            <RecordSelector resModel="'ir.model'" resId="config.model_id || false"
+                            domain="[['transient', '=', false], ['abstract', '=', false]]"
+                            update="(id) => this.setTargetModel(node, id)"/>
+        </div>
+        <t t-if="config.model">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Link it to the record by</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'link_field', ev.target.value)">
+                    <option value="">No link</option>
+                    <option t-foreach="this.linkFields(node)" t-as="field" t-key="field.name" t-att-value="field.name"
+                            t-att-selected="config.link_field === field.name" t-out="field.string"/>
+                </select>
+            </div>
+            <label class="form-label small fw-bold">Its values</label>
+            <t t-call="om_automation_studio.Config.values"/>
+        </t>
+    </t>
+
+    <t t-name="om_automation_studio.Config.email">
+        <t t-set="config" t-value="node.config"/>
+        <label class="form-label small fw-bold">Email template</label>
+        <RecordSelector resModel="'mail.template'" resId="config.template_id || false"
+                        domain="[['model', '=', this.state.workflow.model]]"
+                        update="(id) => this.setConfig(node, 'template_id', id)"/>
+        <div class="small text-muted mt-2">Sent to the recipients of the template, and logged in the chatter.</div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.activity">
+        <t t-set="config" t-value="node.config"/>
+        <div t-if="!this.state.workflow.has_activities" class="alert alert-warning small py-2">This model has no activities.</div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Activity type</label>
+            <RecordSelector resModel="'mail.activity.type'" resId="config.activity_type_id || false"
+                            update="(id) => this.setConfig(node, 'activity_type_id', id)"/>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Summary</label>
+            <input class="form-control form-control-sm" t-att-value="config.summary" placeholder="Call {{ object.name }}"
+                   t-on-change="(ev) => this.setConfig(node, 'summary', ev.target.value)"/>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Note</label>
+            <textarea class="form-control form-control-sm" rows="2" t-att-value="config.note"
+                      t-on-change="(ev) => this.setConfig(node, 'note', ev.target.value)"/>
+        </div>
+        <div class="mb-3">
+            <label class="form-label small fw-bold">Assigned to</label>
+            <t t-call="om_automation_studio.Config.user"/>
+        </div>
+        <div class="d-flex gap-1 align-items-center">
+            <span class="small fw-bold">Due in</span>
+            <input type="number" min="0" class="form-control form-control-sm o_om_wd_num" t-att-value="config.days || 0"
+                   t-on-change="(ev) => this.setConfig(node, 'days', this.numberValue(ev))"/>
+            <span class="small text-muted">days</span>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.note">
+        <t t-set="config" t-value="node.config"/>
+        <div t-if="!this.state.workflow.has_chatter" class="alert alert-warning small py-2">This model has no chatter.</div>
+        <label class="form-label small fw-bold">Message</label>
+        <textarea class="form-control form-control-sm" rows="4" t-att-value="config.body"
+                  placeholder="Order {{ object.name }} needs a look."
+                  t-on-change="(ev) => this.setConfig(node, 'body', ev.target.value)"/>
+        <div class="form-check mt-2">
+            <input type="checkbox" class="form-check-input" t-att-id="'om_wd_message_' + node.id" t-att-checked="config.message"
+                   t-on-change="(ev) => this.setConfig(node, 'message', ev.target.checked)"/>
+            <label class="form-check-label small" t-att-for="'om_wd_message_' + node.id">
+                Send it to the followers (otherwise an internal note)
+            </label>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.Config.end">
+        <div class="small text-muted">The run ends here. A step with no arrow on the exit it takes ends the run too.</div>
+    </t>
+
+</templates>
