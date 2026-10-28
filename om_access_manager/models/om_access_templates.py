@@ -9,8 +9,9 @@
 #   apps          [{'app': menu xmlid, 'level': ..., 'own_records': bool,
 #                   'optional': bool}], run through the Restrict an App engine
 #   hide_menus    menu xmlids
-#   models        {model: {perm_read/perm_create/perm_write/perm_unlink: bool}},
-#                 applied after the apps, for what an app level cannot know
+#   models        {model: {perm_read/perm_create/perm_write/perm_unlink: bool,
+#                 domain: str}}, applied after the apps, for what an app level
+#                 cannot know
 #   fields        [(model, field, mode)], mode as om.access.profile.field
 #   switches      {profile field: value}
 from odoo.tools.translate import LazyTranslate
@@ -107,6 +108,60 @@ TEMPLATES = [
         'apps': [{'app': 'hr.menu_hr_root', 'level': 'user'}],
         'hide_menus': ['om_hr_payroll.menu_hr_payroll_root'],
         'fields': [('hr.version', 'wage', 'hide')],
+    },
+    {
+        'key': 'crm_salesperson',
+        'name': _lt("CRM Salesperson"),
+        'description': _lt(
+            "Follows their own leads and opportunities. No CRM configuration, no CRM "
+            "reporting, no export."),
+        'requires': ['crm'],
+        'apps': [{'app': 'crm.crm_menu_root', 'level': 'user', 'own_records': True}],
+        'hide_menus': ['crm.crm_menu_report'],
+        'switches': {'block_export': True},
+    },
+    {
+        'key': 'project_member',
+        'name': _lt("Project Team Member"),
+        'description': _lt(
+            "Works on the projects and their tasks. The project configuration and the "
+            "project reporting are hidden, and projects cannot be deleted."),
+        'requires': ['project'],
+        'apps': [{'app': 'project.menu_main_pm', 'level': 'user'}],
+        'hide_menus': ['project.menu_project_report'],
+        'models': {'project.project': {'perm_unlink': False}},
+    },
+    {
+        'key': 'mrp_operator',
+        'name': _lt("Manufacturing Operator"),
+        'description': _lt(
+            "Runs the manufacturing orders. No manufacturing configuration, no reporting, "
+            "no costs."),
+        'requires': ['mrp'],
+        'apps': [{'app': 'mrp.menu_mrp_root', 'level': 'user'}],
+        'hide_menus': ['mrp.menu_mrp_reporting'],
+        'switches': {'hide_costs': True},
+    },
+    {
+        'key': 'timesheet_user',
+        'name': _lt("Timesheet User"),
+        'description': _lt(
+            "Records their time and sees their own timesheets only. The timesheet "
+            "configuration is hidden."),
+        'requires': ['hr_timesheet'],
+        'apps': [{'app': 'hr_timesheet.timesheet_menu_root', 'level': 'user', 'own_records': True}],
+        # timesheets are analytic lines, shared with Project: a level leaves them alone
+        'models': {'account.analytic.line': {'domain': "[('user_id', '=', uid)]"}},
+    },
+    {
+        'key': 'expense_user',
+        'name': _lt("Expenses User"),
+        'description': _lt(
+            "Records and submits their expenses. The expense configuration and reporting "
+            "are hidden."),
+        'requires': ['hr_expense'],
+        'apps': [{'app': 'hr_expense.menu_hr_expense_root', 'level': 'user'}],
+        'hide_menus': ['hr_expense.menu_hr_expense_reports'],
     },
     {
         'key': 'app_user',

@@ -4,6 +4,7 @@ import xmlrpc.client
 
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 from odoo.addons.om_access_manager.models.value_filters import and_domains, or_domains
 
@@ -64,6 +65,7 @@ class TestValueFilters(HttpCase):
         self.assertEqual(and_domains(["context.get('d', [])", "[('a', '=', 1)]"]),
                          "(context.get('d', [])) + ([('a', '=', 1)])")
 
+    @mute_logger('odoo.http')
     def test_additive_profiles_widen_the_values(self):
         self._carry(self.profile_be, self.profile_fr)
         for country in (self.be, self.fr):
@@ -77,6 +79,7 @@ class TestValueFilters(HttpCase):
         self._call('res.partner', 'write', [self.partner.ids, {'country_id': self.fr.id}])
         self.assertEqual(self.partner.country_id, self.fr)
 
+    @mute_logger('odoo.http')
     def test_override_profiles_narrow_the_values(self):
         override = self._profile('Not France', [('country_id', "[('id', '!=', %d)]" % self.fr.id)],
                                  strictness='override')
@@ -86,6 +89,7 @@ class TestValueFilters(HttpCase):
         self._call('res.partner', 'write', [self.partner.ids, {'country_id': self.be.id}])
         self.assertEqual(self.partner.country_id, self.be)
 
+    @mute_logger('odoo.http')
     def test_creating_and_python_code(self):
         self._carry(self.profile_be)
         with self.assertRaises(JsonRpcException):
@@ -96,6 +100,7 @@ class TestValueFilters(HttpCase):
         self.partner.with_user(self.user).country_id = self.fr
         self.assertEqual(self.partner.country_id, self.fr)
 
+    @mute_logger('odoo.http')
     def test_filter_reading_the_record(self):
         self._carry(self._profile('Own states', [('state_id', "[('country_id', '=', country_id)]")]))
         self.partner.country_id = self.be
@@ -107,6 +112,7 @@ class TestValueFilters(HttpCase):
                                                                   'country_id': self.fr.id}], {'specification': {}})
         self.assertEqual(self.partner.state_id, self.state_fr)
 
+    @mute_logger('odoo.http')
     def test_lines_and_many2many(self):
         self._carry(self._profile('Tag A', [('category_id', [self.tag_a])]))
         with self.assertRaises(JsonRpcException):
@@ -118,6 +124,7 @@ class TestValueFilters(HttpCase):
         self._call('res.partner', 'write', [self.partner.ids, {'category_id': [(4, self.tag_a.id)]}])
         self.assertEqual(self.partner.category_id, self.tag_a)
 
+    @mute_logger('odoo.http')
     def test_filter_reading_the_parent(self):
         self._carry(self._profile('Parent country', [('country_id', "[('id', '=', parent.country_id)]")]))
         self.partner.country_id = self.be
@@ -130,6 +137,7 @@ class TestValueFilters(HttpCase):
         ]}], {'specification': {}})
         self.assertEqual(self.partner.child_ids.country_id, self.be)
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc', 'odoo.http')
     def test_xmlrpc(self):
         self._carry(self.profile_be)
         with self.assertRaises(xmlrpc.client.Fault):

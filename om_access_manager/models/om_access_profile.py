@@ -21,6 +21,7 @@ from .value_filters import and_domains, names_read, or_domains
 from .login_tools import parse_networks
 
 from .om_access_profile_model import DOMAIN_FIELD_OF_OPERATION, DOMAIN_FIELDS
+from .om_access_profile_element import SETTINGS_MODEL
 
 _logger = logging.getLogger(__name__)
 
@@ -41,22 +42,26 @@ GLOBAL_FLAG_OF_MODEL_FLAG = {
     'hide_print': 'hide_print_all',
     'hide_action_menu': 'hide_action_menu_all',
     'hide_send_message': 'hide_send_message_all',
+    'hide_log_note': 'hide_log_note_all',
     'hide_followers': 'hide_followers_all',
     'hide_attachments': 'hide_attachments_all',
+    'hide_activities': 'hide_activities',
 }
 # chatter parts a profile can hide, and the form class read by chatter_parts.scss
 CHATTER_CLASSES = (
     ('hide_send_message', 'o_om_hide_send_message'),
+    ('hide_log_note', 'o_om_hide_log_note'),
     ('hide_followers', 'o_om_hide_followers'),
     ('hide_attachments', 'o_om_hide_attachments'),
+    ('hide_activities', 'o_om_hide_activities'),
 )
 MODEL_FLAGS = tuple(GLOBAL_FLAG_OF_MODEL_FLAG)
 GLOBAL_FLAGS = (
     'global_readonly', 'hide_chatter_all', 'block_export', 'block_import',
     'block_archive', 'block_duplicate', 'hide_activities', 'hide_settings_menu',
     'lock_statusbar', 'block_rpc', 'block_developer_mode', 'block_login',
-    'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_followers_all',
-    'hide_attachments_all', 'single_session', 'block_custom_filter', 'block_custom_group',
+    'hide_print_all', 'hide_action_menu_all', 'hide_send_message_all', 'hide_log_note_all',
+    'hide_followers_all', 'hide_attachments_all', 'single_session', 'block_custom_filter', 'block_custom_group',
     'block_favorites', 'block_properties', 'block_apps',
 )
 # switches of the search bar and the forms, hidden in the web client by a class
@@ -70,9 +75,11 @@ BODY_CLASSES = {
 
 FIELD_MODES = (None, 'required', 'readonly', 'hide')  # ordered by severity
 HIDE_MODES = ('hide', 'hide_block')
+# the buttons of a view: <button>, and the links calling a method or an action (kanban cards...)
+BUTTON_XPATH = "//button[@name and not(@special)] | //a[@name and (@type='object' or @type='action')]"
 BLOCK_MODES = ('block', 'hide_block')
 # what the hidden group of a profile carries (_group_values)
-GROUP_FIELDS = frozenset({'name', 'user_ids', 'active', 'company_id', 'granted_group_ids'})
+GROUP_FIELDS = frozenset({'name', 'user_ids', 'active', 'company_ids', 'granted_group_ids'})
 # never granted by a profile: they would make its users administrators, or
 # access managers, beyond what the profile itself can undo
 UNGRANTABLE_GROUPS = ('base.group_system', 'base.group_erp_manager', 'om_access_manager.group_access_manager',
@@ -132,12 +139,14 @@ FIELD_OPTIONS = ('no_open', 'no_create', 'no_export')
 
 ACTIVITY_FIELDS = frozenset({'activity_ids', 'activity_state', 'activity_date_deadline'})
 ACTIVITY_WIDGETS = frozenset({'list_activity', 'mail_activity'})
+# the attributes of a view node reading fields, for the fields of the Settings
+MODIFIER_ATTRIBUTES = ('invisible', 'readonly', 'required', 'column_invisible')
 
 # the global switches that make a view worth rewriting
 VIEW_FLAGS = frozenset({
     'hide_chatter_all', 'block_export', 'block_import', 'block_archive',
     'block_duplicate', 'hide_activities', 'lock_statusbar',
-    'hide_send_message_all', 'hide_followers_all', 'hide_attachments_all',
+    'hide_send_message_all', 'hide_log_note_all', 'hide_followers_all', 'hide_attachments_all',
 })
 
 
@@ -524,7 +533,10 @@ class AccessRules:
             for model, element_type, name in profile.elements
             if model == model_name and element_type == 'view'
         }
-        return {name for name in types if self.hides_element(model_name, 'view', name)}
+        hidden = {name for name in types if self.hides_element(model_name, 'view', name)}
+        if self.model_flag(model_name, 'hide_activities'):
+            hidden.add('activity')
+        return hidden
 
     def fields_in_modes(self, model_name, modes):
         """ The fields of a model whose combined mode is one of ``modes``,
@@ -590,12 +602,13 @@ class OmAccessProfile(models.Model):
     active = fields.Boolean(default=True, tracking=True)
     sequence = fields.Integer(default=10)
     note = fields.Html(string='Notes')
-    company_id = fields.Many2one(
-        'res.company', string='Restrict to Company',
+    company_ids = fields.Many2many(
+        'res.company', 'om_access_profile_company_rel', 'profile_id', 'company_id',
+        string='Restrict to Companies',
         help="Left empty, the profile applies to all of its users. Set, it only "
-             "applies to the users who have this company among theirs. It "
-             "follows the companies a user belongs to, not the company they are "
-             "currently working in.", tracking=True)
+             "applies to the users who have one of these companies among theirs. "
+             "It follows the companies a user belongs to, not the company they "
+             "are currently working in.", tracking=True)
 
     strictness = fields.Selection(
         [('additive', 'Additive'), ('override', 'Override')],
@@ -625,7 +638,11 @@ class OmAccessProfile(models.Model):
     block_import = fields.Boolean(string='Block Import', tracking=True)
     block_archive = fields.Boolean(string='Block Archiving', tracking=True)
     block_duplicate = fields.Boolean(string='Block Duplication', tracking=True)
-    hide_activities = fields.Boolean(string='Hide Activities', tracking=True)
+    hide_activities = fields.Boolean(
+        string='Hide Activities',
+        help="The activities leave the chatter, the lists, the kanban cards, the activity "
+             "views and the systray, and scheduling, editing or marking one done is refused. "
+             "Odoo itself still schedules them.", tracking=True)
     hide_settings_menu = fields.Boolean(string='Hide the Settings App', tracking=True)
     lock_statusbar = fields.Boolean(string='Lock the Status Bars', tracking=True)
     block_rpc = fields.Boolean(
@@ -648,6 +665,10 @@ class OmAccessProfile(models.Model):
         string='Hide Send Message',
         help="In the chatter, only Log note remains: messages to the followers and the "
              "customers cannot be sent from it.", tracking=True)
+    hide_log_note_all = fields.Boolean(
+        string='Hide Log Note',
+        help="In the chatter, internal notes cannot be logged. With Hide Send Message "
+             "too, the chatter can only be read.", tracking=True)
     hide_followers_all = fields.Boolean(string='Hide the Followers', tracking=True)
     hide_attachments_all = fields.Boolean(string='Hide the Attachments', tracking=True)
     home_action_id = fields.Many2one(
@@ -733,6 +754,9 @@ class OmAccessProfile(models.Model):
     view_element_ids = fields.One2many(
         'om.access.profile.element', 'profile_id', string='Views',
         domain=[('element_type', '=', 'view')])
+    settings_element_ids = fields.One2many(
+        'om.access.profile.element', 'profile_id', string='Settings Apps',
+        domain=[('element_type', '=', 'settings')])
 
     user_count = fields.Integer(compute='_compute_user_count', string='# Users')
 
@@ -787,8 +811,11 @@ class OmAccessProfile(models.Model):
         return result
 
     def unlink(self):
-        self._om_revoke_grants(everything=True)
         groups = self.group_id.sudo()
+        # the hidden group implies what the profile grants: emptied first, or Odoo 18
+        # gives the granted groups back to its users as soon as they are taken away
+        groups.write({'users': [(5,)]})
+        self._om_revoke_grants(everything=True)
         result = super().unlink()
         groups.unlink()
         return result
@@ -817,7 +844,7 @@ class OmAccessProfile(models.Model):
                     raise ValidationError(_("A profile cannot grant its own group."))
 
     @api.constrains('hide_settings_menu', 'block_login', 'login_slot_ids', 'allowed_ips',
-                    'user_ids', 'group_ids', 'apply_to_admin', 'active', 'hidden_menu_ids')
+                    'user_ids', 'group_ids', 'apply_to_admin', 'active', 'hidden_menu_ids', 'company_ids')
     def _check_last_administrator(self):
         """ Refuse a change leaving no access manager able to undo it: every one
         locked out of signing in, of the Access Manager app or of the access
@@ -1083,6 +1110,13 @@ class OmAccessProfile(models.Model):
             for line in profile.element_ids
             if line.model_id.model and (line.condition or '').strip()
         }
+        settings_apps = {name for model_name, element_type, name in elements if element_type == 'settings'}
+        if settings_apps:
+            # what a hidden app of the Settings holds cannot be saved from a client either
+            for field_name in self._om_settings_fields(settings_apps):
+                key = (SETTINGS_MODEL, field_name)
+                if FIELD_MODES.index(field_modes.get(key)) < FIELD_MODES.index('hide'):
+                    field_modes[key] = 'hide'
 
         buttons = tuple(
             (line.model_id.model, line.view_type, line.button_type,
@@ -1123,6 +1157,23 @@ class OmAccessProfile(models.Model):
         )
 
     @api.model
+    def _om_settings_fields(self, app_names):
+        """ The fields of the Settings that only the apps ``app_names`` hold: a
+        field another app shows or reads, or one outside of every app, stays. """
+        settings = self.env[SETTINGS_MODEL].sudo()
+        arch, _view = settings._get_view(view_type='form')
+        inside, outside = set(), set()
+        for node in arch.iter(tag=etree.Element):
+            names = {node.get('name')} if node.tag == 'field' else set()
+            for attribute in MODIFIER_ATTRIBUTES:
+                names.update(re.findall(r'[A-Za-z_]\w*', node.get(attribute) or ''))
+            in_hidden_app = any(
+                ancestor.tag == 'app' and ancestor.get('name') in app_names
+                for ancestor in (node, *node.iterancestors()))
+            (inside if in_hidden_app else outside).update(names)
+        return frozenset(name for name in inside - outside if name in settings._fields)
+
+    @api.model
     @tools.ormcache('uid')
     def _resolve(self, uid):
         """ The profiles that apply to ``uid``, frozen and cached per user. """
@@ -1137,7 +1188,7 @@ class OmAccessProfile(models.Model):
             # caches menus per user without the company in the key.
             companies = set(user.company_ids._ids)
             profiles = profiles.filtered(
-                lambda profile: not profile.company_id or profile.company_id.id in companies)
+                lambda profile: not profile.company_ids or not companies.isdisjoint(profile.company_ids._ids))
         if profiles and user._has_group('base.group_system'):
             profiles = profiles.filtered('apply_to_admin')
         if not profiles:
@@ -1380,7 +1431,7 @@ class OmAccessProfile(models.Model):
         guard and the controllers.
         """
         lock_statusbar = rules.has_flag('lock_statusbar')
-        hide_activities = rules.has_flag('hide_activities')
+        activities_hidden = {}
         chatter_hidden = {}
         # the fields a condition reads, per view (the root of a view or of the
         # sub-view of an x2many): they must be in it for the client to evaluate it
@@ -1415,10 +1466,12 @@ class OmAccessProfile(models.Model):
 
             if tag == 'field':
                 field_name = node.get('name')
-                if hide_activities and (field_name in ACTIVITY_FIELDS
-                                        or node.get('widget') in ACTIVITY_WIDGETS):
-                    self._drop(node)
-                    continue
+                if node_model and (field_name in ACTIVITY_FIELDS or node.get('widget') in ACTIVITY_WIDGETS):
+                    if node_model not in activities_hidden:
+                        activities_hidden[node_model] = rules.model_flag(node_model, 'hide_activities')
+                    if activities_hidden[node_model]:
+                        self._drop(node)
+                        continue
                 if node_model:
                     mode = rules.field_mode(node_model, field_name)
                     if mode == 'hide':
@@ -1447,7 +1500,8 @@ class OmAccessProfile(models.Model):
                     self._set_option(node, 'clickable', False)
                 continue
 
-            if tag == 'button' and node.get('name') and not node.get('special') and node_model:
+            if (tag == 'button' or (tag == 'a' and node.get('type') in ('object', 'action'))) \
+                    and node.get('name') and not node.get('special') and node_model:
                 condition = rules.button_condition(
                     HIDE_MODES, node_model, node.get('type') or 'object', node.get('name'), view_type,
                     node.get('id') or '')
@@ -1455,6 +1509,11 @@ class OmAccessProfile(models.Model):
                     self._drop(node)
                 elif condition:
                     self._add_condition(node, 'invisible', condition, node_model, view_type, needed)
+                continue
+
+            if tag == 'app' and node_model == SETTINGS_MODEL:
+                if rules.hides_element(node_model, 'settings', node.get('name') or ''):
+                    self._drop(node)
                 continue
 
             if tag == 'page' and node_model:

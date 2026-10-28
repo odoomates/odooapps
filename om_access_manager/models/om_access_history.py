@@ -20,6 +20,10 @@ class OmAccessHistoryMixin(models.AbstractModel):
         lines = self.filtered(lambda line: line.profile_id)
         if not lines:
             return
+        lines.profile_id._om_version_later()
+        if self.env.context.get('om_access_no_history'):
+            # a restore or an import notes itself once, not line by line
+            return
         detail = ''
         if changed:
             detail = ' (%s)' % ', '.join(
