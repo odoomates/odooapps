@@ -646,8 +646,10 @@ class TestOmWhatsappMetaWebhook(HttpCase):
         self.assertEqual(refused.status_code, 403)
 
     def test_only_meta_signs(self):
-        response = self._post({'messages': [{'from': '32470123456', 'id': 'wamid.in1', 'type': 'text', 'text': {'body': 'Hi'}}]},
-                              secret='forged')
+        # the forged call is refused, and logged for the administrator
+        with self.assertLogs('odoo.addons.om_whatsapp.controllers.webhook', 'WARNING'):
+            response = self._post({'messages': [{'from': '32470123456', 'id': 'wamid.in1', 'type': 'text', 'text': {'body': 'Hi'}}]},
+                                  secret='forged')
         self.assertEqual(response.status_code, 403)
         self.assertFalse(self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in1')]))
 
