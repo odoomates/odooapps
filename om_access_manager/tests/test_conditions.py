@@ -3,6 +3,7 @@ from lxml import etree
 
 from odoo.exceptions import ValidationError
 from odoo.tests import new_test_user, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_access_manager.models.conditions import ConditionError, condition_domain
 
@@ -78,6 +79,7 @@ class TestConditions(HttpCase):
         # the fields the conditions read are loaded with the record
         self.assertTrue(arch.xpath("/form//field[@name='ref']"))
 
+    @mute_logger('odoo.http')
     def test_hidden_only_on_matching_records(self):
         rows = self._call('res.partner', 'read', [(self.company | self.person).ids, ['email']])
         emails = {row['id']: row['email'] for row in rows}
@@ -95,6 +97,7 @@ class TestConditions(HttpCase):
         self.assertEqual(self.person.phone, '222')
         self.assertIn('kept', str(self.person.comment))
 
+    @mute_logger('odoo.http')
     def test_button_blocked_on_matching_records(self):
         with self.assertRaises(JsonRpcException):
             self.make_jsonrpc_request('/web/dataset/call_button', {

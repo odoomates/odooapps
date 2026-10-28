@@ -5,6 +5,7 @@ import json
 from odoo.exceptions import AccessError
 from odoo import http
 from odoo.tests import new_test_user, tagged
+from odoo.tools import mute_logger
 
 from .audit import HttpCase, JsonRpcException
 
@@ -34,6 +35,7 @@ class TestMoreSwitches(HttpCase):
         self.assertIn('o_om_no_favorites', page)
         self.assertNotIn('o_om_no_custom_group', page)
 
+    @mute_logger('odoo.http')
     def test_saving_a_search_is_refused(self):
         self.authenticate(self.user.login, self.password)
         # Odoo 16 saves a search with create_or_replace, for one user
@@ -66,6 +68,7 @@ class TestMoreSwitches(HttpCase):
             module.with_user(admin).button_install()
         self.assertEqual(module.state, 'uninstalled')
 
+    @mute_logger('odoo.addons.web.controllers.export')
     def test_a_field_kept_out_of_the_exports(self):
         self.env['om.access.profile.field'].create({
             'profile_id': self.profile.id, 'model_id': self.env['ir.model']._get('res.partner').id,

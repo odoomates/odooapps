@@ -60,18 +60,8 @@ class IrRule(models.Model):
             return domain
         if not rules.allows(model_name, mode):
             return expression.FALSE_DOMAIN
-        or_groups, and_groups = rules.record_domains(model_name, mode)
-        if not or_groups and not and_groups:
-            return domain
-        eval_context = self.env['om.access.profile']._om_eval_context()
-
-        def parse(terms):
-            return expression.AND([expression.normalize_domain(safe_eval(term, eval_context)) for term in terms])
-
-        extra = [parse(terms) for terms in and_groups]
-        if or_groups:
-            extra.append(expression.OR([parse(terms) for terms in or_groups]))
-        return expression.AND([domain or [], *extra])
+        restricted = self.env[model_name]._om_profile_domain(rules, mode)
+        return domain if restricted is None else expression.AND([domain or [], restricted])
 
     def _om_today(self):
         """ The date the access domains are computed for: filters on the date
@@ -96,6 +86,37 @@ class IrRule(models.Model):
 
 class Base(models.AbstractModel):
     _inherit = 'base'
+
+    @api.model
+    def _om_profile_domain(self, rules, operation):
+        """ The records the profiles of the current user leave to ``operation``,
+        or None when they filter none. """
+        or_groups, and_groups = rules.record_domains(self._name, operation)
+        if not or_groups and not and_groups:
+            return None
+
+        eval_context = self.env['om.access.profile']._om_eval_context()
+
+        def parse(terms):
+            return expression.AND([expression.normalize_domain(safe_eval(term, eval_context)) for term in terms])
+
+        extra = [parse(terms) for terms in and_groups]
+        if or_groups:
+            extra.append(expression.OR([parse(terms) for terms in or_groups]))
+        restricted = expression.AND(extra)
+        if operation == 'read' and (own := self._om_own_records_domain()):
+            # a user always reads their own user and contact: Odoo reads them for its own screens (the
+            # calendar, the preferences, the avatar...), and they reveal nothing the user does not know
+            restricted = expression.OR([restricted, own])
+        return restricted
+
+    @api.model
+    def _om_own_records_domain(self):
+        if self._name == 'res.users':
+            return [('id', '=', self.env.uid)]
+        if self._name == 'res.partner':
+            return [('id', '=', self.env['res.users'].sudo().browse(self.env.uid).partner_id.id)]
+        return None
 
     # Odoo 16 turns the attributes of a view into modifiers when it post-processes
     # it, then caches it: the rules apply before, to a view cached per user.

@@ -3,6 +3,7 @@ from lxml import etree
 
 from odoo.exceptions import AccessError
 from odoo.tests import new_test_user, tagged
+from odoo.tools import mute_logger
 
 from .audit import HttpCase, JsonRpcException
 
@@ -75,6 +76,11 @@ class TestMenusAndChatter(HttpCase):
             'post_data': {'body': 'Hello', 'message_type': 'comment', 'subtype_xmlid': subtype},
         })
 
+    def _posted(self, result):
+        # Odoo 18 answers with the store of the message, later versions with its id
+        return result.get('message_id') or result.get('mail.message') or result.get('id')
+
+    @mute_logger('odoo.http')
     def test_send_message_is_refused_and_log_note_is_not(self):
         self._profile(hide_send_message_all=True)
         self.authenticate(self.user.login, self.password)
@@ -85,6 +91,52 @@ class TestMenusAndChatter(HttpCase):
         self.assertTrue(self.env['mail.message'].search_count([
             ('model', '=', 'res.partner'), ('res_id', '=', self.partner.id),
             ('subtype_id', '=', self.env.ref('mail.mt_note').id), ('body', 'ilike', 'Hello')]))
+
+    @mute_logger('odoo.http')
+    def test_log_note_is_refused_and_send_message_is_not(self):
+        self._profile(**self._rule(hide_log_note=True))
+        arch = etree.fromstring(self.env['res.partner'].with_user(self.user).get_view(view_type='form')['arch'])
+        self.assertIn('o_om_hide_log_note', (arch.get('class') or '').split())
+        self.authenticate(self.user.login, self.password)
+        with self.assertRaises(JsonRpcException):
+            self._post('mail.mt_note')
+        self.assertTrue(self._posted(self._post('mail.mt_comment')))
+        # through the API too
+        with self.assertRaises(JsonRpcException):
+            self.make_jsonrpc_request('/web/dataset/call_kw/res.partner/message_post', {
+                'model': 'res.partner', 'method': 'message_post', 'args': [self.partner.ids],
+                'kwargs': {'body': 'A note'},
+            })
+        # from Python, business code still logs its notes
+        self.partner.with_user(self.user).message_post(body='Logged by the code')
+
+    def test_hidden_log_note_in_the_browser(self):
+        self._profile(hide_log_note_all=True)
+        code = """(async () => {
+            const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+            const until = async (selector) => {
+                for (let tries = 0; tries < 75; tries++) {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        return element;
+                    }
+                    await wait(200);
+                }
+                throw new Error('not found: ' + selector);
+            };
+            const visible = (element) => element && element.offsetParent !== null;
+            if (!visible(await until('.o_ChatterTopbar_buttonSendMessage'))) {
+                throw new Error('Send message is hidden');
+            }
+            if (visible(document.querySelector('.o_ChatterTopbar_buttonLogNote'))) {
+                throw new Error('Log note is shown');
+            }
+            console.log('test successful');
+        })()"""
+        # Odoo 17 signs the browser in with the login as the password
+        self.user.password = self.user.login
+        self.browser_js(f'/web#model=res.partner&id={self.partner.id}&view_type=form', code,
+                        login=self.user.login, timeout=90)
 
     def test_home_page(self):
         action = self.env['ir.actions.act_window'].create({'name': 'Landing', 'res_model': 'res.partner'})
