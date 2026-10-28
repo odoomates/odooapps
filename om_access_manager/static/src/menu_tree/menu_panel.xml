@@ -210,6 +210,15 @@
                                     <div class="form-check"><input type="checkbox" class="form-check-input" t-att-checked="!element.hidden" t-att-disabled="props.readonly" t-on-change="onCheck('setElement', element)"/><label class="form-check-label"><t t-esc="element.label"/></label></div>
                                 </div>
                                 <div t-if="!elements.length" class="text-muted small" t-esc="section.empty"/>
+                                <t t-if="section.elementType === 'settings'">
+                                    <div class="small text-muted">
+                                        A hidden app leaves the Settings, and what only it holds cannot be saved.
+                                    </div>
+                                    <div t-if="!panel.apply_to_admin" class="small text-warning">
+                                        Only Settings users open the Settings: tick Apply to Settings Users on the
+                                        Options tab for this to apply.
+                                    </div>
+                                </t>
                             </t>
                             <t t-elif="section.entries">
                                 <div t-foreach="section.entries" t-as="entry" t-key="entry.type + entry.id"

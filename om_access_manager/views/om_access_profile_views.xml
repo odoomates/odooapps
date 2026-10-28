@@ -32,7 +32,7 @@
                 <field name="user_ids" widget="many2many_tags"/>
                 <field name="hide_chatter_all" string="No Chatter" optional="hide"/>
                 <field name="block_export" string="No Export" optional="hide"/>
-                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="company_ids" widget="many2many_tags" groups="base.group_multi_company" optional="hide"/>
             </tree>
         </field>
     </record>
@@ -113,8 +113,10 @@
                     <group string="Chatter">
                         <group>
                             <field name="hide_send_message"/>
+                            <field name="hide_log_note"/>
                             <field name="hide_followers"/>
                             <field name="hide_attachments"/>
+                            <field name="hide_activities"/>
                         </group>
                     </group>
                 </sheet>
@@ -134,6 +136,8 @@
                 <header>
                     <button name="action_test_user" type="object" string="Preview as User"
                             class="btn-primary" icon="fa-eye"/>
+                    <button name="action_health_check" type="object" string="Health Check"
+                            icon="fa-heartbeat" attrs="{'invisible': [('id', '=', False)]}"/>
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="bg-danger"
@@ -142,6 +146,13 @@
                     <div class="oe_title">
                         <label for="name"/>
                         <h1><field name="name" placeholder="e.g. Warehouse Staff"/></h1>
+                    </div>
+                    <field name="health_issue_count" invisible="1"/>
+                    <div class="alert alert-warning d-flex align-items-center gap-2" role="alert"
+                         attrs="{'invisible': [('health_issue_count', '=', 0)]}">
+                        <span>The Health Check found rules of this profile that need a look.</span>
+                        <button name="action_health_check" type="object" string="Review"
+                                class="btn btn-link p-0"/>
                     </div>
                     <div class="alert alert-warning" role="alert" attrs="{'invisible': [('block_login', '=', False)]}">
                         The users of this profile cannot sign in, and their open
@@ -185,6 +196,7 @@
                                     <field name="hide_print_all"/>
                                     <field name="hide_action_menu_all"/>
                                     <field name="hide_send_message_all"/>
+                                    <field name="hide_log_note_all"/>
                                     <field name="hide_followers_all"/>
                                     <field name="hide_attachments_all"/>
                                 </group>
@@ -257,7 +269,7 @@
                             <button name="action_load_models" type="object" string="Load Models"
                                     class="btn-link" icon="fa-download"/>
                             <div class="text-muted mb-2">
-                                Click the <i class="oi" data-icon="fa-filter"/> of a line to pick its records
+                                Click the <i class="fa fa-filter"/> of a line to pick its records
                                 in one click (their own, their team, their companies...) or with
                                 the filter editor. The Record Filter applies to all four operations. The per
                                 operation filters narrow one of them further, which is how
@@ -287,8 +299,10 @@
                                     <field name="hide_print" optional="hide"/>
                                     <field name="hide_action_menu" optional="hide"/>
                                     <field name="hide_send_message" optional="hide"/>
+                                    <field name="hide_log_note" optional="hide"/>
                                     <field name="hide_followers" optional="hide"/>
                                     <field name="hide_attachments" optional="hide"/>
+                                    <field name="hide_activities" optional="hide"/>
                                 </tree>
                             </field>
                             <div class="mt-3 mb-1 font-weight-bold">Rights set on menus</div>
@@ -314,8 +328,10 @@
                                     <field name="hide_print" optional="hide"/>
                                     <field name="hide_action_menu" optional="hide"/>
                                     <field name="hide_send_message" optional="hide"/>
+                                    <field name="hide_log_note" optional="hide"/>
                                     <field name="hide_followers" optional="hide"/>
                                     <field name="hide_attachments" optional="hide"/>
+                                    <field name="hide_activities" optional="hide"/>
                                 </tree>
                             </field>
                         </page>
@@ -409,6 +425,19 @@
                                     <field name="element_type" invisible="1"/>
                                 </tree>
                             </field>
+                            <div class="text-muted mt-4 mb-2">
+                                The apps of the Settings (Sales, Inventory...) removed from the screen;
+                                what only they hold cannot be saved either. Only Settings users open the
+                                Settings: tick Apply to Settings Users for these to apply.
+                            </div>
+                            <field name="settings_element_ids" nolabel="1" context="{'default_element_type': 'settings'}">
+                                <tree string="Settings Apps" editable="bottom">
+                                    <field name="model_id" invisible="1"/>
+                                    <field name="element_name" string="App"/>
+                                    <field name="element_label" string="Label" optional="show"/>
+                                    <field name="element_type" invisible="1"/>
+                                </tree>
+                            </field>
                         </page>
                         <page string="Reports" name="reports" groups="base.group_no_one">
                             <div class="text-muted mb-2">
@@ -473,7 +502,8 @@
                                 <group>
                                     <field name="group_ids" widget="many2many_tags" string="Also Given To"
                                            options="{'no_create': True}" placeholder="Odoo groups, e.g. Sales / User"/>
-                                    <field name="company_id" groups="base.group_multi_company"/>
+                                    <field name="company_ids" widget="many2many_tags" groups="base.group_multi_company"
+                                           options="{'no_create': True}" placeholder="All companies"/>
                                     <field name="group_id" groups="base.group_no_one" readonly="1"/>
                                 </group>
                             </group>
@@ -516,7 +546,7 @@
                 reports they may print.
             </p>
             <p class="text-muted">
-                This app is in beta: your feedback shapes version 1.0. Write to
+                Free and open source: your feedback makes it better. Write to
                 <a href="mailto:odoomates@gmail.com">odoomates@gmail.com</a> or open an issue on
                 <a href="https://github.com/odoomates/odooapps/issues" target="_blank">GitHub</a>.
             </p>
