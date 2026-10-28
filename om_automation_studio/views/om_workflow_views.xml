@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_workflow_view_list" model="ir.ui.view">
+        <field name="name">om.workflow.list</field>
+        <field name="model">om.workflow</field>
+        <field name="arch" type="xml">
+            <tree js_class="om_workflow_list">
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="trigger_summary"/>
+                <field name="active_run_count" optional="show"/>
+                <field name="failed_run_count" optional="show" decoration-danger="failed_run_count"/>
+                <field name="version_id" optional="hide"/>
+                <field name="has_changes" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'"
+                       decoration-warning="state == 'paused'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="om_workflow_view_form" model="ir.ui.view">
+        <field name="name">om.workflow.form</field>
+        <field name="model">om.workflow</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_designer" type="object" string="Open Designer" class="btn-primary"/>
+                    <button name="action_publish" type="object" string="Publish" attrs="{'invisible': [('state', '=', 'active'), ('has_changes', '=', False)]}"
+                            help="Freeze the chart in a new version and start the workflow."/>
+                    <button name="action_pause" type="object" string="Pause" attrs="{'invisible': [('state', '!=', 'active')]}"
+                            help="No new run starts, and the waiting runs stay where they are until published again."/>
+                    <button name="action_save_as_template" type="object" string="Save as Template"
+                            help="Keep the chart as a template, to start other workflows from."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_runs" type="object" class="oe_stat_button" icon="fa-play-circle">
+                            <div class="o_field_widget o_stat_info">
+                                <span class="o_stat_value"><field name="active_run_count"/></span>
+                                <span class="o_stat_text">Running</span>
+                            </div>
+                        </button>
+                        <button name="action_view_runs" type="object" class="oe_stat_button" icon="fa-list-ul">
+                            <field name="run_count" widget="statinfo" string="Runs"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" attrs="{'invisible': [('active', '!=', False)]}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Overdue Invoice Reminders"/></h1>
+                    </div>
+                    <div class="alert alert-info mb-3" role="status" attrs="{'invisible': [('has_changes', '=', False)]}">
+                        The chart has changes that are not published yet: the runs follow version
+                        <field name="version_id" class="oe_inline" options="{'no_open': True}"/>.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"
+                                   attrs="{'readonly': [('version_id', '!=', False)]}"/>
+                            <field name="model" invisible="1"/>
+                            <field name="trigger_summary"/>
+                            <field name="has_changes" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="description" placeholder="What the workflow does, for the next person reading it."
+                                   nolabel="1" colspan="2"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Versions" name="versions" attrs="{'invisible': [('version_ids', '=', [])]}">
+                            <field name="version_ids">
+                                <tree create="0" delete="0">
+                                    <field name="number" string="Version"/>
+                                    <field name="create_date" string="Published On"/>
+                                    <field name="create_uid" string="Published By"/>
+                                    <field name="run_count" string="Runs"/>
+                                </tree>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_workflow_view_search" model="ir.ui.view">
+        <field name="name">om.workflow.search</field>
+        <field name="model">om.workflow</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="model_id"/>
+                <filter name="running" string="Running" domain="[('state', '=', 'active')]"/>
+                <filter name="paused" string="Paused" domain="[('state', '=', 'paused')]"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_workflow_action" model="ir.actions.act_window">
+        <field name="name">Workflows</field>
+        <field name="res_model">om.workflow</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first workflow</p>
+            <p>Start from a template, such as an approval above a limit or reminders once a date is
+                passed, and choose the model it runs on. Or draw one from scratch: conditions, waits,
+                approvals, emails and updates. Publish it and follow every record on the chart.</p>
+        </field>
+    </record>
+</odoo>

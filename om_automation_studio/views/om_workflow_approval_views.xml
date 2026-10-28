@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_workflow_approval_view_list" model="ir.ui.view">
+        <field name="name">om.workflow.approval.list</field>
+        <field name="model">om.workflow.approval</field>
+        <field name="arch" type="xml">
+            <tree create="0" decoration-muted="state not in ('pending',)">
+                <field name="create_date" string="Asked On"/>
+                <field name="name"/>
+                <field name="res_name"/>
+                <field name="workflow_id" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="deadline" optional="show"/>
+                <field name="can_decide" invisible="1"/>
+                <button name="action_approve" type="object" string="Approve" icon="fa-check" class="text-success"
+                        attrs="{'invisible': [('can_decide', '=', False)]}"/>
+                <button name="action_reject" type="object" string="Reject" icon="fa-times" class="text-danger"
+                        attrs="{'invisible': [('can_decide', '=', False)]}"/>
+                <field name="state" widget="badge" decoration-info="state == 'pending'"
+                       decoration-success="state == 'approved'" decoration-danger="state == 'rejected'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="om_workflow_approval_view_form" model="ir.ui.view">
+        <field name="name">om.workflow.approval.form</field>
+        <field name="model">om.workflow.approval</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            attrs="{'invisible': [('can_decide', '=', False)]}"/>
+                    <button name="action_reject" type="object" string="Reject" attrs="{'invisible': [('can_decide', '=', False)]}"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,approved,rejected"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="fa-file-text-o"
+                                string="Record"/>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="res_name"/>
+                            <field name="workflow_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="approver_only" attrs="{'invisible': [('approver_only', '=', False)]}"/>
+                            <field name="can_decide" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Asked On"/>
+                            <field name="deadline" attrs="{'invisible': [('deadline', '=', False)]}"/>
+                            <field name="decided_by_id" attrs="{'invisible': [('decided_by_id', '=', False)]}"/>
+                            <field name="decided_on" attrs="{'invisible': [('decided_on', '=', False)]}"/>
+                        </group>
+                    </group>
+                    <field name="note" attrs="{'invisible': [('note', '=', False)]}"/>
+                    <field name="comment" placeholder="A comment for your answer (optional)"
+                           attrs="{'readonly': [('state', '!=', 'pending')]}"/>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_workflow_approval_view_search" model="ir.ui.view">
+        <field name="name">om.workflow.approval.search</field>
+        <field name="model">om.workflow.approval</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="res_name"/>
+                <field name="user_id"/>
+                <filter name="mine" string="Mine" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="pending" string="To Approve" domain="[('state', '=', 'pending')]"/>
+                <filter name="approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <filter name="rejected" string="Rejected" domain="[('state', '=', 'rejected')]"/>
+                <group>
+                    <filter name="group_workflow" string="Workflow" context="{'group_by': 'workflow_id'}"/>
+                    <filter name="group_user" string="Approver" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_workflow_approval_action" model="ir.actions.act_window">
+        <field name="name">Approvals</field>
+        <field name="res_model">om.workflow.approval</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_mine': 1, 'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to approve</p>
+            <p>The Approval steps of workflows ask here, and as an activity.</p>
+        </field>
+    </record>
+</odoo>

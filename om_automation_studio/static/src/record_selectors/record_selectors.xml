@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_automation_studio.RecordSelector" owl="1">
+        <div class="o_om_wd_record_selector">
+            <AutoComplete value="state.name" sources="[source]" onSelect.bind="onSelect" onChange.bind="onChange"
+                          placeholder="props.placeholder || ''" autoSelect="true"/>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.MultiRecordSelector" owl="1">
+        <div class="o_om_wd_record_selector">
+            <span t-foreach="props.resIds" t-as="id" t-key="id" class="badge text-bg-light me-1 mb-1 o_om_wd_tag">
+                <t t-out="state.names[id] || '...'"/>
+                <i class="fa fa-times ms-1" role="button" t-on-click="() => this.remove(id)"/>
+            </span>
+            <AutoComplete value="''" sources="[source]" onSelect.bind="onSelect" placeholder="placeholder"
+                          resetOnSelect="true" autoSelect="true"/>
+        </div>
+    </t>
+
+</templates>
