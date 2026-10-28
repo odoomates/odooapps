@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_access_health_issue_view_list" model="ir.ui.view">
+        <field name="name">om.access.health.issue.list</field>
+        <field name="model">om.access.health.issue</field>
+        <field name="arch" type="xml">
+            <list string="Health Check" create="0" edit="0" delete="0"
+                  decoration-danger="kind == 'broken'" decoration-warning="kind in ('lost', 'missing')">
+                <field name="profile_id" optional="hide"/>
+                <field name="kind" widget="badge"
+                       decoration-danger="kind == 'broken'" decoration-warning="kind in ('lost', 'missing')"
+                       decoration-info="kind == 'unmatched'"/>
+                <field name="rule"/>
+                <field name="name"/>
+                <field name="details"/>
+                <field name="restorable" column_invisible="1"/>
+                <button name="action_restore" type="object" string="Restore" icon="fa-undo"
+                        invisible="kind != 'lost' or not restorable"
+                        help="Restore the last version of the profile: the rules lost come back."/>
+                <button name="action_remove" type="object" string="Accept" icon="fa-check"
+                        invisible="kind != 'lost'"
+                        help="Keep the profile as it is now: the rules lost are forgotten."/>
+                <button name="action_remove" type="object" string="Remove" icon="fa-trash"
+                        invisible="kind == 'lost'" help="Remove this rule from the profile."/>
+                <button name="action_open_profile" type="object" string="Open" icon="fa-external-link"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_access_health_issue_view_search" model="ir.ui.view">
+        <field name="name">om.access.health.issue.search</field>
+        <field name="model">om.access.health.issue</field>
+        <field name="arch" type="xml">
+            <search string="Health Check">
+                <field name="profile_id"/>
+                <field name="name"/>
+                <filter name="broken" string="Broken Filters" domain="[('kind', '=', 'broken')]"/>
+                <filter name="lost" string="Rules Lost" domain="[('kind', '=', 'lost')]"/>
+                <group>
+                    <filter name="group_profile" string="Profile" context="{'group_by': 'profile_id'}"/>
+                    <filter name="group_kind" string="Kind" context="{'group_by': 'kind'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_access_health_issue_action" model="ir.actions.act_window">
+        <field name="name">Health Check</field>
+        <field name="res_model">om.access.health.issue</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_profile': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">All good</p>
+            <p>
+                Every rule of the profiles checked still applies as it was set. The Health
+                Check runs every week on its own, and on demand from this menu or from a profile.
+            </p>
+        </field>
+    </record>
+
+    <!-- the menu checks every profile, then lists what needs a look -->
+    <record id="om_access_health_check_server_action" model="ir.actions.server">
+        <field name="name">Health Check</field>
+        <field name="model_id" ref="model_om_access_profile"/>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = model.action_health_check()</field>
+    </record>
+
+    <record id="om_access_health_check_selected_action" model="ir.actions.server">
+        <field name="name">Health Check</field>
+        <field name="model_id" ref="model_om_access_profile"/>
+        <field name="binding_model_id" ref="model_om_access_profile"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('group_access_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_health_check()</field>
+    </record>
+
+</odoo>

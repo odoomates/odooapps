@@ -7,6 +7,7 @@ from lxml import etree
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from odoo.addons.om_access_manager.models.om_access_profile import BUTTON_XPATH
 from odoo.addons.om_access_manager.models.om_access_profile_element import ELEMENT_TYPES
 
 _logger = logging.getLogger(__name__)
@@ -54,7 +55,7 @@ class OmAccessScanButtons(models.TransientModel):
             except Exception:  # noqa: BLE001 - the model may have no such view
                 _logger.debug("no %s view for %s", view_type, model_name, exc_info=True)
                 continue
-            for node in etree.fromstring(arch).xpath('//button[@name and not(@special)]'):
+            for node in etree.fromstring(arch).xpath(BUTTON_XPATH):
                 if any(ancestor.tag == 'field' for ancestor in node.iterancestors()):
                     continue  # belongs to the nested view of an x2many
                 button_type = node.get('type') or 'object'
@@ -81,6 +82,8 @@ class OmAccessScanButtons(models.TransientModel):
             child = node.find('field')
             if child is not None:
                 label = child.get('string')
+        if not label and node.tag == 'a':
+            label = ' '.join(''.join(node.itertext()).split())
         if not label and button_type == 'action':
             try:
                 action = self.env['ir.actions.actions'].sudo().browse(int(name)).exists()

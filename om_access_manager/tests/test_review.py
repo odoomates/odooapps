@@ -7,6 +7,7 @@ from odoo.exceptions import AccessError, ValidationError
 from odoo import http
 from odoo.tests import HttpCase, new_test_user, tagged
 from odoo.tests.common import JsonRpcException
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -43,11 +44,13 @@ class TestReview(HttpCase):
         return self.make_jsonrpc_request(route, {
             'model': model, 'method': method, 'args': args, 'kwargs': kwargs or {}})
 
+    @mute_logger('odoo.addons.web.controllers.utils')
     def test_call_button_carries_the_field_guard(self):
         result = self._rpc('/web/dataset/call_button', 'res.partner', 'web_search_read',
                            [[('id', '=', self.partner.id)], {'email': {}}])
         self.assertIs(result['records'][0]['email'], False)
 
+    @mute_logger('odoo.addons.web.controllers.export')
     def test_the_export_dialog_and_file(self):
         fields = self.make_jsonrpc_request('/web/export/get_fields', {'model': 'res.partner', 'domain': []})
         self.assertNotIn('email', [field['id'] for field in fields])
@@ -58,6 +61,7 @@ class TestReview(HttpCase):
         self.assertNotIn('secret@example.com', response.text)
         self.assertIn('does not allow using the field', response.text)
 
+    @mute_logger('odoo.http')
     def test_a_language_or_an_aggregate_does_not_hide_a_field(self):
         for method, args, kwargs in (
             ('export_data', [self.partner.ids, ['email@en_US']], {}),
@@ -99,6 +103,7 @@ class TestReview(HttpCase):
         with self.assertRaises(AccessError):
             self.partner.with_user(self.user).write({'name': 'Not mine'})
 
+    @mute_logger('odoo.http')
     def test_an_api_key_follows_the_sign_in_rules(self):
         key = self.env['res.users.apikeys'].with_user(self.user)._generate(
             'rpc', 'review', datetime.now() + timedelta(days=1))
@@ -109,6 +114,7 @@ class TestReview(HttpCase):
         self.assertNotEqual(self.url_open('/json/2/res.partner/search_count', json={'domain': []},
                                           headers=headers).status_code, 200)
 
+    @mute_logger('odoo.addons.rpc.controllers.xmlrpc')
     def test_xmlrpc_and_the_allowed_networks(self):
         from odoo.addons.om_user_audit.models.client_call import RPC_ADDRESS
         from odoo.exceptions import AccessDenied
@@ -143,6 +149,7 @@ class TestReview(HttpCase):
         with self.assertRaises(AccessError):
             other.with_user(self.user).read(['access_effective'])
 
+    @mute_logger('odoo.http')
     def test_a_note_naming_partners_is_a_message(self):
         self.profile.hide_send_message_all = True
         with self.assertRaises(JsonRpcException):

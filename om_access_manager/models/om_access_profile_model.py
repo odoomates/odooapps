@@ -45,8 +45,10 @@ class OmAccessRightsMixin(models.AbstractModel):
     hide_print = fields.Boolean(string='Hide Print Menu')
     hide_action_menu = fields.Boolean(string='Hide Action Menu')
     hide_send_message = fields.Boolean(string='Hide Send Message')
+    hide_log_note = fields.Boolean(string='Hide Log Note')
     hide_followers = fields.Boolean(string='Hide Followers')
     hide_attachments = fields.Boolean(string='Hide Attachments')
+    hide_activities = fields.Boolean(string='Hide Activities')
 
 
 class OmAccessProfileModel(models.Model):
@@ -236,8 +238,8 @@ class OmAccessProfileModel(models.Model):
         return not any(self[name] for name in DOMAIN_FIELDS[1:]) and not any(
             self[name] for name in ('hide_chatter', 'hide_export', 'hide_import',
                                     'hide_archive', 'hide_duplicate', 'hide_print',
-                                    'hide_action_menu', 'hide_send_message', 'hide_followers',
-                                    'hide_attachments'))
+                                    'hide_action_menu', 'hide_send_message', 'hide_log_note',
+                                    'hide_followers', 'hide_attachments', 'hide_activities'))
 
     def _set_perms(self, **values):
         return self.write(values)
