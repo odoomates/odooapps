@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_automation_studio" model="ir.module.category">
+        <field name="name">Automation Studio</field>
+        <field name="parent_id" ref="base.module_category_productivity"/>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="om_automation_studio_group_supervisor" model="res.groups">
+        <field name="name">Supervisor</field>
+        <field name="category_id" ref="module_category_automation_studio"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Follows the runs of every workflow and every approval, retries or cancels runs.</field>
+    </record>
+
+    <!-- designing a workflow writes on any record with full rights: only
+         administrators design, as for Automation Rules -->
+    <record id="base.group_system" model="res.groups">
+        <field name="implied_ids" eval="[Command.link(ref('om_automation_studio_group_supervisor'))]"/>
+    </record>
+
+    <!-- every user reads their own approvals and answers them while pending;
+         supervisors and administrators see them all -->
+    <record id="om_workflow_approval_rule_user_read" model="ir.rule">
+        <field name="name">Approvals: own</field>
+        <field name="model_id" ref="model_om_workflow_approval"/>
+        <field name="groups" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="om_workflow_approval_rule_user_write" model="ir.rule">
+        <field name="name">Approvals: own, pending</field>
+        <field name="model_id" ref="model_om_workflow_approval"/>
+        <field name="groups" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id), ('state', '=', 'pending')]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="om_workflow_approval_rule_supervisor" model="ir.rule">
+        <field name="name">Approvals: all</field>
+        <field name="model_id" ref="model_om_workflow_approval"/>
+        <field name="groups" eval="[Command.link(ref('om_automation_studio_group_supervisor'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- the templates of the companies of the user, and those shared -->
+    <record id="om_workflow_template_rule_company" model="ir.rule">
+        <field name="name">Workflow Templates: companies</field>
+        <field name="model_id" ref="model_om_workflow_template"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

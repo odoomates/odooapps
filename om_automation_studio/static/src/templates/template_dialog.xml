@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_automation_studio.TemplateDialog">
+        <Dialog size="'xl'" title="this.title()"
+                contentClass="'o_om_wd_template_dialog'">
+            <t t-if="!this.state.template" t-call="om_automation_studio.TemplateDialog.pick"/>
+            <t t-else="" t-call="om_automation_studio.TemplateDialog.setup"/>
+            <t t-set-slot="footer">
+                <t t-if="this.state.template">
+                    <button class="btn btn-primary" t-att-disabled="!this.canCreate()" t-on-click="() => this.create()">
+                        Create and Open the Designer
+                    </button>
+                    <button class="btn btn-secondary" t-on-click="() => this.back()">Back</button>
+                </t>
+                <button t-else="" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateDialog.pick">
+        <p class="text-muted">Start from a template and choose the model it runs on, or draw a workflow from scratch.</p>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4">
+                <button class="o_om_wd_template_card o_om_wd_template_blank card h-100 w-100 text-start p-3"
+                        t-on-click="() => this.blank()">
+                    <span class="o_om_wd_template_icon mb-2"><i class="fa fa-plus"/></span>
+                    <strong>Start from blank</strong>
+                    <span class="small text-muted">A Start and an End: draw the rest.</span>
+                </button>
+            </div>
+            <div t-foreach="this.state.templates" t-as="template" t-key="template.key" class="col-md-6 col-lg-4">
+                <button class="o_om_wd_template_card card h-100 w-100 text-start p-3" t-on-click="() => this.pick(template)">
+                    <span class="o_om_wd_template_icon mb-2"><i class="fa" t-att-class="template.icon"/></span>
+                    <strong t-out="template.name"/>
+                    <span class="small text-muted" t-out="template.description"/>
+                </button>
+            </div>
+        </div>
+        <t t-if="this.state.saved.length">
+            <h5 class="mt-4 mb-1">Your templates</h5>
+            <p class="small text-muted">Saved from your workflows, or imported: they start as they were saved.</p>
+            <div class="row g-3">
+                <div t-foreach="this.state.saved" t-as="saved" t-key="saved.id" class="col-md-6 col-lg-4">
+                    <button class="o_om_wd_template_card o_om_wd_template_saved card h-100 w-100 text-start p-3"
+                            t-on-click="() => this.pickSaved(saved)">
+                        <span class="o_om_wd_template_icon mb-2"><i class="fa fa-bookmark"/></span>
+                        <strong t-out="saved.name"/>
+                        <span class="small text-muted mb-1" t-out="saved.model_name"/>
+                        <span class="small text-muted" t-out="saved.description"/>
+                    </button>
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateDialog.setup">
+        <div class="row g-4">
+            <div t-if="this.state.template.saved" class="col-lg-5 o_om_wd_template_form">
+                <p class="small text-muted" t-out="this.state.template.description"/>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Runs on</label>
+                    <div t-out="this.state.template.model_name"/>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Name</label>
+                    <input class="form-control form-control-sm" t-att-value="this.state.name"
+                           t-on-change="(ev) => { this.state.name = ev.target.value; }"/>
+                </div>
+            </div>
+            <div t-else="" class="col-lg-5 o_om_wd_template_form">
+                <p class="small text-muted" t-out="this.state.template.description"/>
+                <div class="mb-3">
+                    <label class="form-label small fw-bold">Runs on</label>
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.chooseModel(ev.target.value)">
+                        <option value="" t-att-selected="!this.state.model">Choose the model...</option>
+                        <option t-foreach="this.state.models" t-as="model" t-key="model.model" t-att-value="model.model"
+                                t-att-selected="model.model === this.state.model" t-out="model.name"/>
+                    </select>
+                    <div t-if="this.state.models.some((model) => model.preset)" class="mt-1">
+                        <span class="small text-muted me-1">Ready for:</span>
+                        <button t-foreach="this.state.models.filter((model) => model.preset)" t-as="model" t-key="model.model"
+                                class="btn btn-sm me-1 mb-1"
+                                t-att-class="model.model === this.state.model ? 'btn-primary' : 'btn-light'"
+                                t-on-click="() => this.chooseModel(model.model)" t-out="model.name"/>
+                    </div>
+                </div>
+                <t t-if="this.state.model and !this.state.loading">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Name</label>
+                        <input class="form-control form-control-sm" t-att-value="this.state.name"
+                               t-on-change="(ev) => { this.state.name = ev.target.value; }"/>
+                    </div>
+                    <t t-foreach="this.state.slots" t-as="slot" t-key="this.state.model + slot.name">
+                        <div t-if="this.slotVisible(slot)" class="mb-3">
+                            <label t-if="slot.type !== 'boolean'" class="form-label small fw-bold mb-1">
+                                <t t-out="slot.label"/><span t-if="slot.required" class="text-danger"> *</span>
+                            </label>
+                            <t t-call="{{ 'om_automation_studio.TemplateSlot.' + slot.type }}"/>
+                            <div t-if="slot.help" class="small text-muted mt-1" t-out="slot.help"/>
+                        </div>
+                    </t>
+                </t>
+            </div>
+            <div class="col-lg-7">
+                <div class="o_om_wd_template_preview border rounded">
+                    <WorkflowPreview t-if="this.state.preview?.graph" graph="this.state.preview.graph"
+                                     issues="this.state.preview.issues"/>
+                    <div t-elif="!this.state.model" class="h-100 d-flex align-items-center justify-content-center text-muted">
+                        Choose the model the workflow runs on.
+                    </div>
+                    <div t-elif="this.state.preview?.missing?.length" class="h-100 d-flex align-items-center justify-content-center text-muted text-center p-3">
+                        <span>Fill in: <t t-out="this.state.preview.missing.join(', ')"/></span>
+                    </div>
+                </div>
+                <ul t-if="this.errors().length" class="small text-danger mt-2 mb-0">
+                    <li t-foreach="this.errors()" t-as="issue" t-key="issue_index" t-out="issue.message"/>
+                </ul>
+                <div t-elif="this.state.preview?.graph" class="small text-muted mt-2">
+                    The workflow is created as a draft: adjust it in the designer, then publish it.
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.field">
+        <select class="form-select form-select-sm" t-on-change="(ev) => this.set(slot.name, ev.target.value || false)">
+            <option t-if="!slot.required" value="" t-att-selected="!this.state.values[slot.name]">None</option>
+            <option t-foreach="slot.options" t-as="option" t-key="option.name" t-att-value="option.name"
+                    t-att-selected="option.name === this.state.values[slot.name]" t-out="option.string"/>
+        </select>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.values">
+        <t t-set="field" t-value="this.sourceField(slot)"/>
+        <div t-if="field?.selection" class="d-flex flex-wrap gap-1">
+            <button t-foreach="field.selection" t-as="item" t-key="item[0]" class="btn btn-sm"
+                    t-att-class="(this.state.values[slot.name] || []).includes(item[0]) ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.toggleValue(slot, item[0])" t-out="item[1]"/>
+        </div>
+        <MultiRecordSelector t-elif="field?.relation" resModel="field.relation" resIds="this.state.values[slot.name] || []"
+                             update="(ids) => this.set(slot.name, ids)"/>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.value">
+        <t t-set="field" t-value="this.sourceField(slot)"/>
+        <select t-if="field?.selection" class="form-select form-select-sm"
+                t-on-change="(ev) => this.set(slot.name, ev.target.value || false)">
+            <option value="">Choose...</option>
+            <option t-foreach="field.selection" t-as="item" t-key="item[0]" t-att-value="item[0]"
+                    t-att-selected="item[0] === this.state.values[slot.name]" t-out="item[1]"/>
+        </select>
+        <div t-elif="field?.type === 'boolean'" class="form-check">
+            <input type="checkbox" class="form-check-input" t-att-id="'om_wd_tpl_' + slot.name"
+                   t-att-checked="this.state.values[slot.name]" t-on-change="(ev) => this.set(slot.name, ev.target.checked)"/>
+            <label class="form-check-label small" t-att-for="'om_wd_tpl_' + slot.name">Checked</label>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.user">
+        <t t-set="value" t-value="this.state.values[slot.name] || {}"/>
+        <div class="btn-group btn-group-sm w-100 mb-1">
+            <button class="btn" t-att-class="value.mode === 'field' ? 'btn-primary' : 'btn-light'"
+                    t-att-disabled="!slot.options.length" t-on-click="() => this.setUserMode(slot, 'field')">From the record</button>
+            <button class="btn" t-att-class="value.mode !== 'field' ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.setUserMode(slot, 'user')">A user</button>
+        </div>
+        <select t-if="value.mode === 'field'" class="form-select form-select-sm"
+                t-on-change="(ev) => this.set(slot.name, { mode: 'field', field: ev.target.value })">
+            <option t-foreach="slot.options" t-as="option" t-key="option.name" t-att-value="option.name"
+                    t-att-selected="option.name === value.field" t-out="option.string"/>
+        </select>
+        <RecordSelector t-else="" resModel="'res.users'" resId="value.id || false" domain="[['share', '=', false]]"
+                        update="(id) => this.set(slot.name, { mode: 'user', id: id || false })"/>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.number">
+        <input type="number" class="form-control form-control-sm" step="any" t-att-value="this.state.values[slot.name]"
+               t-on-change="(ev) => this.set(slot.name, this.numberValue(ev))"/>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.days">
+        <input type="number" class="form-control form-control-sm" min="0" step="1" t-att-value="this.state.values[slot.name]"
+               t-on-change="(ev) => this.set(slot.name, Math.max(0, Math.round(this.numberValue(ev))))"/>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.template">
+        <select class="form-select form-select-sm" t-on-change="(ev) => this.set(slot.name, parseInt(ev.target.value) || false)">
+            <option value="" t-att-selected="!this.state.values[slot.name]">None</option>
+            <option t-foreach="slot.options" t-as="option" t-key="option.id" t-att-value="option.id"
+                    t-att-selected="option.id === this.state.values[slot.name]" t-out="option.name"/>
+        </select>
+        <div t-if="!slot.options.length" class="small text-muted mt-1">This model has no email template yet.</div>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.domain">
+        <DomainSelector resModel="this.state.model" domain="this.state.values[slot.name] || '[]'" readonly="false"
+                        update="(domain) => this.set(slot.name, domain)"/>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.boolean">
+        <div class="form-check">
+            <input type="checkbox" class="form-check-input" t-att-id="'om_wd_tpl_' + slot.name"
+                   t-att-checked="this.state.values[slot.name]" t-on-change="(ev) => this.set(slot.name, ev.target.checked)"/>
+            <label class="form-check-label small fw-bold" t-att-for="'om_wd_tpl_' + slot.name" t-out="slot.label"/>
+        </div>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.fields">
+        <select class="form-select form-select-sm mb-1" t-on-change="(ev) => { this.addField(slot, ev.target.value); ev.target.value = ''; }">
+            <option value="">Add a field...</option>
+            <option t-foreach="slot.options.filter((option) => !(this.state.values[slot.name] || []).includes(option.name))"
+                    t-as="option" t-key="option.name" t-att-value="option.name" t-out="option.string"/>
+        </select>
+        <span t-foreach="this.state.values[slot.name] || []" t-as="name" t-key="name" class="badge text-bg-light me-1 o_om_wd_tag">
+            <t t-out="this.optionLabel(slot, name)"/>
+            <i class="fa fa-times ms-1" role="button" t-on-click="() => this.removeField(slot, name)"/>
+        </span>
+    </t>
+
+</templates>
