@@ -10,7 +10,8 @@ from odoo import _, api, models
 from odoo.exceptions import AccessError, UserError
 
 from .om_access_allowed import ALLOWED_KINDS
-from .om_access_profile import MODEL_FLAGS, PERM_FIELDS, UNGRANTABLE_GROUPS
+from .om_access_profile import BUTTON_XPATH, MODEL_FLAGS, PERM_FIELDS, UNGRANTABLE_GROUPS
+from .om_access_profile_element import SETTINGS_MODEL
 from .om_access_profile_menu import RECORD_CHOICES
 from .om_access_profile_model import DOMAIN_FIELDS, DRAFT_DOMAIN
 
@@ -18,8 +19,9 @@ _logger = logging.getLogger(__name__)
 
 # the switches of some data, in the order of the panel
 SWITCHES = (
-    'hide_chatter', 'hide_send_message', 'hide_followers', 'hide_attachments', 'hide_export',
-    'hide_import', 'hide_archive', 'hide_duplicate', 'hide_print', 'hide_action_menu',
+    'hide_chatter', 'hide_send_message', 'hide_log_note', 'hide_followers', 'hide_attachments',
+    'hide_activities', 'hide_export', 'hide_import', 'hide_archive', 'hide_duplicate', 'hide_print',
+    'hide_action_menu',
 )
 FIELD_MODES = ('keep', 'readonly', 'hide', 'required')
 # the module that brings the data an allowed record kind filters: the kind is
@@ -326,7 +328,7 @@ class OmAccessProfile(models.Model):
             lines.setdefault((line.button_type, line.button_name), line)
         found = {}
         for view_type, root in archs:
-            for node in root.xpath('//button[@name and not(@special)]'):
+            for node in root.xpath(BUTTON_XPATH):
                 button_type = node.get('type') or 'object'
                 key = (button_type, node.get('name'))
                 if button_type not in ('object', 'action') or key in found or not self._om_top_level(node):
@@ -347,6 +349,9 @@ class OmAccessProfile(models.Model):
         for view_type, root in archs:
             if view_type == 'form':
                 nodes = [('page', node) for node in root.iter('page')]
+                if model_name == SETTINGS_MODEL:
+                    # an app noted notApp="1" is not shown on the screen
+                    nodes += [('settings', node) for node in root.iter('app') if node.get('notApp') != '1']
             elif view_type == 'search':
                 nodes = [('filter', node) for node in root.iter('filter')]
             else:
@@ -493,6 +498,8 @@ class OmAccessProfile(models.Model):
                 'buttons': profile._om_panel_buttons(archs, model_name),
                 'elements': profile._om_panel_elements(menu, archs, model_name),
                 'print': profile._om_panel_print(model_name),
+                # only Settings users open the Settings
+                'apply_to_admin': profile.apply_to_admin,
             })
         return data
 

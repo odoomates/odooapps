@@ -33,6 +33,7 @@ const ELEMENT_SECTIONS = [
     ["pages", "page", _t("Pages"), _t("No page (tab) on the form of this menu.")],
     ["filters", "filter", _t("Filters"), _t("No filter in the search of this menu.")],
     ["views", "view", _t("Views"), _t("This menu opens a single view.")],
+    ["settings", "settings", _t("Settings Apps"), ""],
 ];
 
 /**
@@ -156,11 +157,14 @@ export class MenuPanel extends Component {
                 this.count(panel.fields, (field) => field.mode !== "keep"), _t("Fields")) },
             { key: "buttons", label: this.countLabel(
                 this.count(panel.buttons, (button) => button.mode !== "visible"), _t("Buttons")) },
-            ...ELEMENT_SECTIONS.map(([key, type, label, empty]) => ({
-                key, elementType: type, empty,
-                label: this.countLabel(
-                    this.count(this.elementsOf(type), (element) => element.hidden), label),
-            })),
+            ...ELEMENT_SECTIONS
+                // the apps of the Settings, only on the menus opening them
+                .filter(([key, type]) => type !== "settings" || this.elementsOf(type).length)
+                .map(([key, type, label, empty]) => ({
+                    key, elementType: type, empty,
+                    label: this.countLabel(
+                        this.count(this.elementsOf(type), (element) => element.hidden), label),
+                })),
             { key: "print", entries: this.reports, empty: _t("No report for this data."),
               label: this.countLabel(this.count(this.reports, (entry) => entry.hidden), _t("Print")) },
             { key: "actions", entries: this.actions, empty: _t("Nothing in the Action menu of this data."),

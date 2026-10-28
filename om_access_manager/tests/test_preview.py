@@ -6,6 +6,7 @@ import time
 from odoo.exceptions import UserError
 from odoo.http import root
 from odoo.tests import HttpCase, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from .audit import lines_after_transaction
 
@@ -101,6 +102,7 @@ class TestPreview(HttpCase):
         self.assertEqual(self.make_jsonrpc_request('/web/session/get_session_info', {})['uid'], self.manager.id)
         self.assertIn(self.discuss.id, self._menu_ids())
 
+    @mute_logger('odoo.http')
     def test_nothing_is_saved(self):
         self._start()
         self.assertIn('preview', self._error('res.partner', 'web_save', [self.mine.ids, {'name': 'Changed'}],
@@ -109,6 +111,7 @@ class TestPreview(HttpCase):
         self.assertIn('preview', self._error('res.partner', 'create', [{'name': 'Created in a preview'}]))
         self.assertFalse(self.env['res.partner'].search([('name', '=', 'Created in a preview')]))
 
+    @mute_logger('odoo.http')
     def test_buttons_say_what_the_user_may_do(self):
         self._start()
         # blocked for the user: the profile's refusal
@@ -119,6 +122,7 @@ class TestPreview(HttpCase):
                       self._error('res.partner', 'action_unarchive', [self.mine.ids], route='call_button'))
         self.assertTrue(self.mine.active)
 
+    @mute_logger('odoo.http')
     def test_server_actions_run_read_only(self):
         """ Menus open server actions that pick a view: they run in a preview,
         and what one would save is refused. """
