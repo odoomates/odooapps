@@ -10,6 +10,7 @@ import subprocess
 import tempfile
 from pathlib import Path
 
+from PIL import Image
 from pypdf import PdfReader
 
 _logger = logging.getLogger(__name__)
@@ -19,11 +20,20 @@ MIN_TEXT_PER_PAGE = 40
 # the pages read: a bill is on the first ones, and reading a long scan takes time
 MAX_PAGES = 5
 TIMEOUT = 120
+# the size of a page read by OCR, its longer side in pixels: 300 dpi on an A4 or a Letter page, and no more on a
+# page drawn huge, which would need gigabytes of memory to render
+MAX_PAGE_PIXELS = 3508
+# a photo larger than this, in pixels, is a mistake or an attack, not a bill
+MAX_IMAGE_PIXELS = 60_000_000
 IMAGE_MIMETYPES = ('image/png', 'image/jpeg', 'image/jpg', 'image/tiff', 'image/bmp', 'image/gif', 'image/webp')
 
 
 class OcrUnavailable(Exception):
     """ The bill is a scan or a photo, and Tesseract is not installed. """
+
+
+class BillTooLarge(Exception):
+    """ The image of the bill is too large to be read. """
 
 
 def tesseract_available():
@@ -73,12 +83,22 @@ def _ocr_pdf(raw, languages):
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / 'bill.pdf'
         path.write_bytes(raw)
-        _run(['pdftoppm', '-r', '300', '-gray', '-png', '-l', str(MAX_PAGES), str(path), str(Path(tmp) / 'page')])
+        _run(['pdftoppm', '-scale-to', str(MAX_PAGE_PIXELS), '-gray', '-png', '-l', str(MAX_PAGES), str(path),
+              str(Path(tmp) / 'page')])
         pages = sorted(Path(tmp).glob('page*.png'))
         return '\n\f'.join(_ocr_image(page, languages) for page in pages)
 
 
 def _ocr_raw_image(raw, languages):
+    try:
+        with Image.open(io.BytesIO(raw)) as image:
+            width, height = image.size
+    except Image.DecompressionBombError as error:
+        raise BillTooLarge(str(error)) from error
+    except Exception:  # noqa: BLE001 Tesseract says what it makes of a file Pillow cannot open
+        width = height = 0
+    if width * height > MAX_IMAGE_PIXELS:
+        raise BillTooLarge(f"{width} x {height}")
     with tempfile.TemporaryDirectory() as tmp:
         path = Path(tmp) / 'bill.img'
         path.write_bytes(raw)

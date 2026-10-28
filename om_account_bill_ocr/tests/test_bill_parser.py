@@ -115,3 +115,19 @@ class TestBillParser(BaseCase):
             ('Archive boxes (pack of 10)', 3.0, 18.9),
             ('On-site printer maintenance', 2.0, 95.0),
         ])
+
+    def test_a_clear_date_settles_the_order_of_the_others(self):
+        # 13/10 is day first: 12/11 is then the 12th of November, whatever the language of the user
+        text = "Date de facture : 13/10/2026\nDate d'échéance : 12/11/2026\nTotal TTC 120,00"
+        bill = bill_parser.parse_bill(text, date_order='mdy')
+        self.assertEqual(bill['invoice_date'], date(2026, 10, 13))
+        self.assertEqual(bill['invoice_date_due'], date(2026, 11, 12))
+        self.assertFalse(bill['ambiguous_dates'])
+        self.assertEqual(bill_parser.printed_date_order("10/13/2026 and 11/12/2026"), 'mdy')
+        self.assertIsNone(bill_parser.printed_date_order("13/10/2026 and 10/13/2026"))
+        self.assertIsNone(bill_parser.printed_date_order("03/04/2026"))
+
+    def test_a_bill_number_starting_with_n(self):
+        for line, number in (("Invoice No:  NW-26-0977", 'NW-26-0977'), ("Invoice No. N-55", 'N-55'),
+                             ("Facture n° : FA-2026-1187", 'FA-2026-1187'), ("Invoice No: no. 4410", '4410')):
+            self.assertEqual(bill_parser.parse_bill(line + "\nTotal 10.00")['ref'], number, line)

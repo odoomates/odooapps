@@ -2,6 +2,7 @@ import io
 from datetime import date
 from unittest.mock import patch
 
+from PIL import Image
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 
@@ -11,6 +12,7 @@ from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
 from odoo.addons.om_account_bill_ocr.tests import bills
+from odoo.addons.om_account_bill_ocr.tools import text_extract
 
 TEXT_EXTRACT = 'odoo.addons.om_account_bill_ocr.tools.text_extract'
 
@@ -82,6 +84,16 @@ class TestBillOcr(AccountTestInvoicingCommon):
         bill = self._upload(bills.EU.replace('USt-IdNr.: DE 123 456 789', ''))
         self.assertEqual(bill.partner_id, vendor)
         self.assertEqual(bill.om_ocr_data['found_by'], 'iban')
+
+    def test_a_bank_account_the_vendor_never_gave(self):
+        self.env['res.partner.bank'].create({'partner_id': self.mueller.id, 'account_number': 'DE02 1203 0000 0000 2020 51'})
+        bill = self._upload(bills.EU)
+        self.assertEqual(bill.partner_id, self.mueller)
+        self.assertIn('Bank Account', bill.om_ocr_to_check)
+        self.assertTrue(any('not one of the vendor' in message.body for message in bill.message_ids))
+        # the account of the vendor printed on the bill: nothing to check about it
+        self.env['res.partner.bank'].create({'partner_id': self.mueller.id, 'account_number': 'DE89 3704 0044 0532 0130 00'})
+        self.assertNotIn('Bank Account', self._upload(bills.EU).om_ocr_to_check or '')
 
     def test_the_own_tax_number_is_not_the_vendor(self):
         # the bill printing the tax number of the company receiving it, and no other
@@ -182,6 +194,15 @@ class TestBillOcr(AccountTestInvoicingCommon):
         ocr.assert_called_once()
         self.assertEqual(bill.ref, 'GS-7781')
         self.assertEqual(bill.om_ocr_data['source'], 'ocr')
+
+    def test_a_huge_photo_is_not_read(self):
+        # an upload is shrunk by Odoo when it is stored: a photo received another way is checked before Tesseract
+        buffer = io.BytesIO()
+        Image.new('1', (9000, 9000)).save(buffer, 'PNG')
+        with patch(f'{TEXT_EXTRACT}.tesseract_available', return_value=True), \
+                patch(f'{TEXT_EXTRACT}._ocr_image') as ocr, self.assertRaises(text_extract.BillTooLarge):
+            text_extract.extract_text(buffer.getvalue(), 'image/png', 'bill.png')
+        ocr.assert_not_called()
 
     def test_reading_on_demand(self):
         self.company.om_bill_ocr_mode = 'manual'

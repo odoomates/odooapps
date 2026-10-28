@@ -144,6 +144,21 @@ def find_dates(text, date_order='dmy'):
     return sorted(found, key=lambda item: item[1])
 
 
+def printed_date_order(text):
+    """ The order the bill itself prints its numeric dates in, 'dmy' or 'mdy', when one of them leaves no doubt
+    (13/10/2026 is day first): the other dates of the bill follow it. None when no date tells, or they disagree. """
+    orders = set()
+    for match in dict(DATE_RES)['num'].finditer(text):
+        if '.' in match.group(0):
+            continue
+        first, second = int(match.group(1)), int(match.group(2))
+        if first > 12 and 1 <= second <= 12:
+            orders.add('dmy')
+        elif second > 12 and 1 <= first <= 12:
+            orders.add('mdy')
+    return orders.pop() if len(orders) == 1 else None
+
+
 # ------------------------------------------------------------------------------------------------------------
 # labels
 # ------------------------------------------------------------------------------------------------------------
@@ -315,7 +330,8 @@ def header_lines(text, count=12):
 # ------------------------------------------------------------------------------------------------------------
 
 def _reference_finder(rest):
-    rest = re.sub(r'^[\s:#.\-n°º]*', '', rest, flags=re.IGNORECASE)
+    # the separators and a 'N°' or 'No.' left after the label, not the N of a number such as NW-26-0977
+    rest = re.sub(r'^(?:[\s:#.\-]|n[°º]|no(?=[\s.:]))*', '', rest, flags=re.IGNORECASE)
     for match in REFERENCE_RE.finditer(rest[:60]):
         value = match.group(1) or match.group(2)
         if NOT_A_REFERENCE.match(value) or find_dates(value):
@@ -556,6 +572,9 @@ def parse_bill(text, date_order='dmy', decimals=2, anchors=None, known_currencie
     anchors = anchors or {}
     lines = _lines(text)
     result = {'text_lines': len([line for line in lines if line.strip()])}
+    # a date of the bill that can be read only one way settles the order of the others
+    printed_order = printed_date_order(text)
+    date_order = printed_order or date_order
 
     reference = _anchored(lines, anchors.get('ref'), _reference_finder)
     reference_label = anchors.get('ref') if reference else None
@@ -583,7 +602,7 @@ def parse_bill(text, date_order='dmy', decimals=2, anchors=None, known_currencie
     result.update(invoice_date=invoice_date, invoice_date_label=date_label, invoice_date_due=due,
                   invoice_date_due_label=due_label)
     # whether the numeric dates could be read both ways: the printed order of the vendor is then worth learning
-    result['ambiguous_dates'] = any(kind for _value, _start, kind in find_dates(text, date_order))
+    result['ambiguous_dates'] = not printed_order and any(kind for _value, _start, kind in find_dates(text, date_order))
 
     totals = _totals(lines, decimals)
     if anchors.get('amount_total'):

@@ -9,7 +9,7 @@ from odoo.exceptions import UserError
 from odoo.tools import float_compare, float_is_zero
 
 from ..tools import bill_parser
-from ..tools.text_extract import OcrUnavailable, extract_text, is_image
+from ..tools.text_extract import BillTooLarge, OcrUnavailable, extract_text, is_image
 
 _logger = logging.getLogger(__name__)
 
@@ -91,6 +91,8 @@ class AccountMove(models.Model):
         try:
             text, source = extract_text(file_data['raw'], file_data.get('mimetype'), file_data.get('name'),
                                         self.company_id.om_bill_ocr_languages or 'eng')
+        except BillTooLarge:
+            return self.env._("this image is too large to be read as a bill.")
         except OcrUnavailable:
             return self.env._(
                 "this bill is a scan or a photo, and reading it needs Tesseract on the server: install the "
@@ -256,6 +258,12 @@ class AccountMove(models.Model):
         values = {}
         if partner:
             values['partner_id'] = partner.id
+            # a bill of a known vendor asking to be paid to an account the vendor never gave: the usual fraud
+            known_ibans = {bill_parser.normalize_vat(number) for number in
+                           partner.bank_ids.mapped('sanitized_account_number') if number}
+            printed_ibans = set(preliminary['ibans']) - own_ibans
+            if known_ibans and printed_ibans and not printed_ibans & known_ibans:
+                to_check.append(self.env._("Bank Account"))
         else:
             to_check.append(self.env._("Vendor"))
         if result['ref']:
@@ -377,6 +385,10 @@ class AccountMove(models.Model):
             parts.append(self.env._("The vendor was recognized by %(how)s.", how=how[found_by]))
         parts.append(self.env._("Its lines were read from its table.") if line_mode == 'lines'
                      else self.env._("It was booked on one line."))
+        if self.env._("Bank Account") in to_check:
+            parts.append(self.env._(
+                "The bill asks to be paid to a bank account that is not one of the vendor's: confirm it with the "
+                "vendor, by a number you already know, before paying it."))
         if to_check:
             parts.append(self.env._("To check: %(fields)s.", fields=', '.join(to_check)))
         self.message_post(body=Markup('<br/>').join(parts))
