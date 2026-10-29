@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_certificate" model="report.paperformat">
+        <field name="name">Academy Certificate</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">8</field>
+        <field name="margin_bottom">8</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_spacing">0</field>
+        <field name="dpi">96</field>
+    </record>
+
+    <record id="action_report_certificate" model="ir.actions.report">
+        <field name="name">Certificate</field>
+        <field name="model">academy.progress</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_academy.report_certificate</field>
+        <field name="print_report_name">'Certificate - %s' % (object.author_name or 'Odoo Mates Academy')</field>
+        <field name="paperformat_id" ref="paperformat_certificate"/>
+    </record>
+
+    <template id="report_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+              <t t-call="web.basic_layout">
+                <t t-set="cert" t-value="doc._certificate()"/>
+                <div class="page" style="font-family: Helvetica, Arial, sans-serif; color: #2b2b3a;">
+                    <div style="border: 10px solid #714B67; padding: 6px; height: 905px;">
+                        <div style="border: 2px solid #C9B6D3; height: 100%; padding: 70px 60px 30px; text-align: center; position: relative;">
+                            <img t-att-src="cert['academy_icon']" style="height: 96px;"/>
+                            <div style="font-size: 14px; letter-spacing: 4px; color: #715782; margin-top: 8px;">ODOO MATES ACADEMY</div>
+                            <div style="font-size: 54px; font-weight: bold; color: #3E2D4F; margin: 16px 0 10px 0;">Certificate of Completion</div>
+                            <div style="font-size: 16px; color: #5c5c6b;">This certifies that</div>
+                            <div style="font-size: 60px; font-weight: bold; color: #714B67; margin: 12px 0;" t-out="cert['name']"/>
+                            <div style="font-size: 22px; color: #3E2D4F;">built <b t-out="cert['app']"/>, an Odoo app of their own, step by step:</div>
+                            <div style="font-size: 16px; color: #5c5c6b; margin: 22px 90px; line-height: 1.7;" t-out="cert['learned']"/>
+                            <table class="table-borderless" style="width: 100%; margin-top: 60px; border: none !important; border-collapse: collapse;">
+                                <tr>
+                                    <td style="border: none !important; width: 33%; text-align: left; vertical-align: bottom; font-size: 13px; color: #5c5c6b;">
+                                        <div style="font-size: 16px; color: #3E2D4F;" t-out="cert['date']"/>
+                                        <div style="border-top: 1px solid #C9B6D3; padding-top: 4px; margin-top: 4px;">Date</div>
+                                    </td>
+                                    <td style="border: none !important; width: 34%; text-align: center;">
+                                        <img t-att-src="cert['app_icon']" style="height: 88px; border-radius: 16px;"/>
+                                        <div style="font-size: 12px; color: #5c5c6b; margin-top: 4px;" t-out="cert['how']"/>
+                                    </td>
+                                    <td style="border: none !important; width: 33%; text-align: right; vertical-align: bottom; font-size: 13px; color: #5c5c6b;">
+                                        <div style="font-size: 16px; color: #3E2D4F;">Odoo Mates Academy</div>
+                                        <div style="border-top: 1px solid #C9B6D3; padding-top: 4px; margin-top: 4px;">Issued by</div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <div style="position: absolute; bottom: 14px; left: 0; right: 0; font-size: 11px; color: #8A8A9E;">
+                                Nothing is too big. Nothing is impossible. You dream, and you fly. &#8212;
+                                apps.odoo.com/apps/modules/20.0/om_academy
+                            </div>
+                        </div>
+                    </div>
+                </div>
+              </t>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_certificate_all" model="ir.actions.report">
+        <field name="name">Certificate of All Courses</field>
+        <field name="model">academy.progress</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_academy.report_certificate_all</field>
+        <field name="print_report_name">'Academy Certificate - %s' % (object.author_name or object.user_id.name)</field>
+        <field name="paperformat_id" ref="paperformat_certificate"/>
+    </record>
+
+    <template id="report_certificate_all">
+        <t t-call="web.html_container">
+          <t t-call="web.basic_layout">
+            <t t-set="cert" t-value="docs._certificate_all()"/>
+            <div class="page" style="font-family: Helvetica, Arial, sans-serif; color: #2b2b3a;">
+                <div style="border: 10px solid #714B67; padding: 6px; height: 905px;">
+                    <div style="border: 2px solid #C9B6D3; height: 100%; padding: 46px 60px 30px; text-align: center; position: relative;">
+                        <img t-att-src="cert['academy_icon']" style="height: 80px;"/>
+                        <div style="font-size: 14px; letter-spacing: 4px; color: #715782; margin-top: 8px;">ODOO MATES ACADEMY</div>
+                        <div style="font-size: 48px; font-weight: bold; color: #3E2D4F; margin: 12px 0 8px 0;">Certificate of Achievement</div>
+                        <div style="font-size: 16px; color: #5c5c6b;">This certifies that</div>
+                        <div style="font-size: 54px; font-weight: bold; color: #714B67; margin: 8px 0;" t-out="cert['name']"/>
+                        <div style="font-size: 20px; color: #3E2D4F;">completed <b t-out="cert['count']"/> <t t-if="cert['count'] == 1">course</t><t t-else="">courses</t> of the Odoo Mates Academy, building:</div>
+                        <table class="table-borderless" style="margin: 26px auto 0 auto; border: none !important; border-collapse: collapse;">
+                            <tr>
+                                <td t-foreach="cert['apps']" t-as="app" style="border: none !important; padding: 0 22px; text-align: center; vertical-align: top; width: 150px;">
+                                    <img t-att-src="app['icon']" style="height: 72px; border-radius: 14px;"/>
+                                    <div style="font-size: 17px; font-weight: bold; color: #3E2D4F; margin-top: 6px;" t-out="app['name']"/>
+                                    <div style="font-size: 12px; color: #5c5c6b;" t-out="app['course']"/>
+                                    <div style="font-size: 12px; color: #8A8A9E;" t-out="app['date']"/>
+                                </td>
+                            </tr>
+                        </table>
+                        <div t-if="cert['trophies']" style="font-size: 15px; color: #3E2D4F; margin-top: 26px;">
+                            Trophies: <t t-out="cert['trophies']"/>
+                        </div>
+                        <table class="table-borderless" style="width: 100%; margin-top: 40px; border: none !important; border-collapse: collapse;">
+                            <tr>
+                                <td style="border: none !important; width: 50%; text-align: left; vertical-align: bottom; font-size: 13px; color: #5c5c6b;">
+                                    <div style="font-size: 16px; color: #3E2D4F;" t-out="cert['date']"/>
+                                    <div style="border-top: 1px solid #C9B6D3; padding-top: 4px; margin-top: 4px; width: 60%;">Date</div>
+                                </td>
+                                <td style="border: none !important; width: 50%; text-align: right; vertical-align: bottom; font-size: 13px; color: #5c5c6b;">
+                                    <div style="font-size: 16px; color: #3E2D4F;">Odoo Mates Academy</div>
+                                    <div style="border-top: 1px solid #C9B6D3; padding-top: 4px; margin-top: 4px; width: 60%; margin-left: 40%;">Issued by</div>
+                                </td>
+                            </tr>
+                        </table>
+                        <div style="position: absolute; bottom: 14px; left: 0; right: 0; font-size: 11px; color: #8A8A9E;">
+                            Nothing is too big. Nothing is impossible. You dream, and you fly. &#8212;
+                            apps.odoo.com/apps/modules/20.0/om_academy
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </t>
+        </t>
+    </template>
+
+</odoo>

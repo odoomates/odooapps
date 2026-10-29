@@ -1,0 +1,1016 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_academy.Academy">
+        <div class="o_academy h-100 overflow-auto">
+            <t t-if="this.state.course and this.state.step" t-call="om_academy.AcademyCourse"/>
+            <t t-elif="this.state.home" t-call="om_academy.AcademyHome"/>
+            <t t-if="this.state.welcome !== null" t-call="om_academy.AcademyWelcome"/>
+            <t t-if="this.state.warmup" t-call="om_academy.AcademyWarmup"/>
+        </div>
+    </t>
+
+    <!-- the welcome guide: a few screens, the first time, and from the home screen after -->
+    <t t-name="om_academy.AcademyWelcome">
+        <t t-set="screen" t-value="this.welcomeScreens[this.state.welcome]"/>
+        <div class="o_academy_welcome_backdrop">
+            <div class="o_academy_welcome" role="dialog" aria-modal="true" t-att-data-screen="screen">
+                <button class="btn btn-link o_academy_welcome_skip" t-on-click="() => this.closeWelcome()">Skip</button>
+
+                <div t-if="screen === 'welcome'" class="o_academy_welcome_body text-center">
+                    <img src="/om_academy/static/description/icon.png" alt="Odoo Mates Academy" class="o_academy_welcome_icon"/>
+                    <h2>Welcome to Odoo development</h2>
+                    <p class="o_academy_motto_big">Nothing is too big. Nothing is impossible.<br/>You dream, and you fly.</p>
+                    <p>Every Odoo app you use was once an empty folder and a first line of code.
+                        In a few steps, you write yours: a real app, in this very Odoo.</p>
+                </div>
+
+                <div t-if="screen === 'ways'" class="o_academy_welcome_body">
+                    <h2 class="text-center">Two ways to build</h2>
+                    <div class="row mt-3">
+                        <div class="col-md-6 mb-3">
+                            <div class="o_academy_welcome_way h-100">
+                                <h4>&#9889; Build it live</h4>
+                                <p class="mb-0">We build your app <b>directly in the database</b>, step by step:
+                                    no editor, nothing to install. You read the code of each step, click Build,
+                                    and see it in Odoo at once.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="o_academy_welcome_way h-100">
+                                <h4>&#128187; Code it</h4>
+                                <p class="mb-0">Your module goes in an <b>addons folder of your Odoo</b>: write the
+                                    code yourself in your editor, or let us write it for you. The Academy installs
+                                    your module and checks every step.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <img src="/om_academy/static/description/hero.gif" alt="A step of a course" class="o_academy_welcome_gif"/>
+                </div>
+
+                <div t-if="screen === 'path'" class="o_academy_welcome_body">
+                    <h2 class="text-center">From the basics, and further</h2>
+                    <div class="o_academy_welcome_path">
+                        <div><b>Your first app</b>: a module, models, access rights, menus, form, list
+                            and search views, links between models, buttons, computed fields.</div>
+                        <div><b>A little more</b>: fields read-only or required when it depends, a chatter,
+                            the history of changes.</div>
+                        <div><b>Extend Odoo</b>: your fields in Odoo's own contacts, with inheritance and XPath.</div>
+                        <div><b>A Kanban board</b> with stages and drag and drop, and <b>a PDF report</b> in the
+                            Print menu.</div>
+                        <div><b>Security, the Odoo 20 way</b>: groups, access rights, record domains, menus and
+                            fields for some only.</div>
+                    </div>
+                    <p class="text-center text-muted mb-0">Pick an app, a library, a car rental, a hotel..., and it is
+                        yours: your name as its author, your icon, in Apps.</p>
+                </div>
+
+                <div t-if="screen === 'us'" class="o_academy_welcome_body text-center">
+                    <img src="/om_academy/static/description/odoo_mates.png" alt="Odoo Mates" class="o_academy_welcome_logo"/>
+                    <h2>Brought to you by Odoo Mates</h2>
+                    <p>Made with care by <b>Niyas Raphy</b> and Odoo Mates, completely free.
+                        If it helps you, a follow or a thumbs up means a lot to us.</p>
+                    <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
+                        <a t-foreach="this.links" t-as="link" t-key="link[1]" t-att-href="link[1]" target="_blank"
+                           rel="noopener" class="btn btn-light" t-out="link[0]"/>
+                        <a href="https://apps.odoo.com/apps/modules/20.0/om_academy" target="_blank" rel="noopener"
+                           class="btn btn-light">&#128077; Thumbs up on the Apps store</a>
+                    </div>
+                    <button class="btn btn-link btn-sm text-muted o_academy_warmup_open" t-on-click="() => this.openWarmup()">
+                        Psst: a warm-up first? How well do you know Odoo?
+                    </button>
+                </div>
+
+                <div class="o_academy_welcome_footer d-flex align-items-center justify-content-between">
+                    <button class="btn btn-link" t-att-class="{'invisible': !this.state.welcome}"
+                            t-on-click="() => this.state.welcome--">Back</button>
+                    <div class="o_academy_welcome_dots">
+                        <span t-foreach="this.welcomeScreens" t-as="dot" t-key="dot"
+                              t-att-class="{'active': dot_index === this.state.welcome}"
+                              t-on-click="() => this.state.welcome = dot_index"/>
+                    </div>
+                    <button t-if="this.state.welcome &lt; this.welcomeScreens.length - 1"
+                            class="btn btn-primary o_academy_welcome_next" t-on-click="() => this.state.welcome++">Next</button>
+                    <button t-else="" class="btn btn-primary o_academy_welcome_start"
+                            t-on-click="() => this.closeWelcome()">Ready? Let's build</button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_academy.AcademyHome">
+        <div class="o_academy_home o_academy_dash">
+            <!-- the learner: who we are, how far they got, what they earned -->
+            <aside class="o_academy_side">
+                <div class="o_academy_brand">
+                    <h1 class="mb-1">Odoo Mates Academy</h1>
+                    <p class="mb-0">Learn Odoo development by building real apps, step by step: in your
+                        editor, or live in this database.</p>
+                </div>
+                <div class="o_academy_ring_box">
+                    <div class="o_academy_ring" t-att-style="'--o-academy-pct: ' + this.homeStats.percent">
+                        <span><t t-out="this.homeStats.percent"/>%</span>
+                    </div>
+                    <div>
+                        <div class="fw-bold"><t t-out="this.homeStats.stepsDone"/> / <t t-out="this.homeStats.steps"/> steps</div>
+                        <div class="small o_academy_side_muted">
+                            <t t-out="this.homeStats.coursesDone"/> of <t t-out="this.homeStats.courses"/> courses done
+                        </div>
+                    </div>
+                </div>
+                <div class="o_academy_trophies">
+                    <div class="o_academy_side_title">Trophies
+                        <span class="o_academy_side_muted">
+                            <t t-out="this.state.home.trophies.filter((trophy) => trophy.earned).length"/> /
+                            <t t-out="this.state.home.trophies.length"/>
+                        </span>
+                    </div>
+                    <div class="o_academy_trophy_grid">
+                        <div t-foreach="this.state.home.trophies" t-as="trophy" t-key="trophy.key" class="o_academy_trophy"
+                             t-att-class="{'earned': trophy.earned}" t-att-title="trophy.title + ': ' + trophy.description"
+                             t-att-data-trophy="trophy.key">
+                            <span class="o_academy_trophy_emoji" t-out="trophy.emoji"/>
+                            <span class="o_academy_trophy_name" t-out="trophy.title"/>
+                        </div>
+                    </div>
+                </div>
+                <div t-if="this.state.home.shelf.length" class="o_academy_shelf">
+                    <div class="o_academy_side_title">Your apps</div>
+                    <div class="d-flex flex-wrap gap-2">
+                        <div t-foreach="this.state.home.shelf" t-as="app" t-key="app.key" class="o_academy_shelf_app">
+                            <img t-att-src="app.icon_url" t-att-alt="app.name" t-att-title="app.name"/>
+                            <button class="btn btn-link btn-sm p-0 o_academy_certificate" t-on-click="() => this.certificate(app.key)"
+                                    t-att-title="'Certificate: ' + app.name">
+                                &#127891;
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="o_academy_side_actions">
+                    <button t-if="this.state.home.shelf.length" class="btn btn-light btn-sm o_academy_certificate_all"
+                            t-on-click="() => this.certificateAll()">
+                        &#127891; Certificate of all your courses
+                    </button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm o_academy_ghost o_academy_welcome_open flex-fill" t-on-click="() => this.state.welcome = 0">
+                            Welcome guide
+                        </button>
+                        <button class="btn btn-sm o_academy_ghost o_academy_warmup_open flex-fill" t-on-click="() => this.openWarmup()">
+                            Warm-up quiz
+                        </button>
+                    </div>
+                </div>
+                <div class="o_academy_side_foot">
+                    <p class="o_academy_motto mb-2">Nothing is too big. Nothing is impossible. You dream, and you fly.</p>
+                    <div class="o_academy_links d-flex flex-wrap gap-1">
+                        <a t-foreach="this.links" t-as="link" t-key="link[1]" t-att-href="link[1]" target="_blank"
+                           rel="noopener" t-out="link[0]"/>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- the path: the first app, then the courses that go further -->
+            <main class="o_academy_journey">
+                <section t-if="this.nextCourse" class="o_academy_next_up"
+                         t-att-data-next="this.nextCourse.key">
+                    <img t-if="this.nextCourse.icon_url and this.nextCourse.family === 'first_app'" t-att-src="this.nextCourse.icon_url"
+                         alt="" class="o_academy_next_icon"/>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="o_academy_next_label">
+                            <t t-if="this.nextCourse.started">Continue where you left off</t>
+                            <t t-else="">Next up</t>
+                        </div>
+                        <h2 class="mb-1">
+                            <t t-if="this.nextCourse.family === 'first_app'">Your first app: <t t-out="this.nextCourse.subject"/></t>
+                            <t t-else="" t-out="this.nextCourse.name"/>
+                        </h2>
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="progress o_academy_progress flex-grow-1">
+                                <div class="progress-bar" t-att-style="'width: ' + (100 * this.nextCourse.done / this.nextCourse.steps) + '%'"/>
+                            </div>
+                            <span class="small text-nowrap">
+                                <t t-out="this.nextCourse.done"/> / <t t-out="this.nextCourse.steps"/> steps ·
+                                <t t-out="this.nextCourse.minutes"/> min
+                            </span>
+                        </div>
+                    </div>
+                    <button class="btn btn-lg o_academy_next_go"
+                            t-on-click="() => this.openCourse(this.nextCourse.key, this.nextCourse.started)">
+                        <t t-if="this.nextCourse.started">Continue</t><t t-else="">Start</t> &#8594;
+                    </button>
+                </section>
+                <section t-else="" class="o_academy_next_up o_academy_all_done">
+                    <div class="flex-grow-1">
+                        <div class="o_academy_next_label">All done</div>
+                        <h2 class="mb-0">&#127881; Every course is built. You dream, and you fly.</h2>
+                    </div>
+                </section>
+                <section class="o_academy_stage">
+                    <div class="o_academy_stage_head">
+                        <span class="o_academy_stage_num">1</span>
+                        <div>
+                            <h4 class="o_academy_choice_title mb-0">Build your first app</h4>
+                            <div class="text-muted small">Pick what it is about: the steps are the same, the app is yours.
+                                Done? Build the next one.</div>
+                        </div>
+                    </div>
+                    <div class="o_academy_grid">
+                        <div t-foreach="this.firstApps" t-as="course" t-key="course.key"
+                             class="o_academy_card o_academy_subject" t-att-class="{'done': course.done === course.steps}"
+                             t-att-data-course="course.key" t-on-click="() => this.openCourse(course.key, course.started)">
+                            <img t-att-src="course.icon_url" t-att-alt="course.subject" class="o_academy_subject_icon"/>
+                            <div class="flex-grow-1 min-w-0">
+                                <h3 class="mb-1" t-out="course.subject"/>
+                                <div class="progress o_academy_progress mb-1">
+                                    <div class="progress-bar" t-att-style="'width: ' + (100 * course.done / course.steps) + '%'"/>
+                                </div>
+                                <div class="small text-muted">
+                                    <t t-if="course.done === course.steps">&#10003; built</t>
+                                    <t t-else=""><t t-out="course.done"/> / <t t-out="course.steps"/> steps</t>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <section class="o_academy_stage o_academy_stage_grow">
+                    <div class="o_academy_stage_head">
+                        <span class="o_academy_stage_num">2</span>
+                        <div>
+                            <h4 class="o_academy_choice_title mb-0">Then go further</h4>
+                            <div class="text-muted small">Extend Odoo, organize, print and secure: each course on its own.</div>
+                        </div>
+                    </div>
+                    <div class="o_academy_grid o_academy_grid_courses">
+                        <div t-foreach="this.otherCourses" t-as="course" t-key="course.key" class="o_academy_card o_academy_more_card"
+                             t-att-class="{'done': course.done === course.steps}"
+                             t-att-data-course="course.key" t-on-click="() => this.openCourse(course.key, course.started)">
+                            <div class="o_academy_cover" t-att-data-cover="course.key">
+                                <span t-out="{contacts: '👥', kanban: '🗂️', report: '🖨️', security: '🛡️'}[course.key] or '🎓'"/>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge o_academy_badge" t-out="course.level"/>
+                                <span class="text-muted small"><t t-out="course.minutes"/> min</span>
+                            </div>
+                            <h3 t-out="course.name"/>
+                            <p class="text-muted o_academy_summary" t-out="course.summary" t-att-title="course.summary"/>
+                            <div class="mt-auto">
+                                <div class="progress o_academy_progress mb-2">
+                                    <div class="progress-bar" t-att-style="'width: ' + (100 * course.done / course.steps) + '%'"/>
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <span class="small text-muted"><t t-out="course.done"/> / <t t-out="course.steps"/> steps</span>
+                                    <button class="btn btn-primary btn-sm o_academy_start">
+                                        <t t-if="course.started">Continue</t><t t-else="">Start</t>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </t>
+
+    <t t-name="om_academy.AcademyWarmup">
+        <t t-set="warmup" t-value="this.state.warmup"/>
+        <div class="o_academy_welcome_backdrop">
+            <div class="o_academy_welcome o_academy_warmup" role="dialog" aria-modal="true">
+                <button class="btn btn-link o_academy_welcome_skip" t-on-click="() => this.state.warmup = null">Close</button>
+                <h2 class="text-center">Warm-up: how well do you know Odoo?</h2>
+                <div class="d-flex justify-content-center gap-2 mb-3">
+                    <button class="btn btn-sm o_academy_warmup_quiz_tab" t-att-class="warmup.tab === 'quiz' ? 'btn-primary' : 'btn-light'"
+                            t-on-click="() => warmup.tab = 'quiz'">Quiz</button>
+                    <button class="btn btn-sm o_academy_warmup_tasks_tab" t-att-class="warmup.tab === 'tasks' ? 'btn-primary' : 'btn-light'"
+                            t-on-click="() => warmup.tab = 'tasks'">Hands-on</button>
+                    <button class="btn btn-sm o_academy_warmup_finds_tab" t-att-class="warmup.tab === 'finds' ? 'btn-primary' : 'btn-light'"
+                            t-on-click="() => warmup.tab = 'finds'">
+                        Find it <span class="ms-1">(<t t-out="warmup.data.finds.filter((find) => find.done).length"/> / <t t-out="warmup.data.finds.length"/>)</span>
+                    </button>
+                </div>
+
+                <!-- Find it: what developers look for every day, explained, then found -->
+                <div t-if="warmup.tab === 'finds'" class="o_academy_finds">
+                    <p class="text-center text-muted">What every Odoo developer looks for, every day. Read what it is,
+                        find it in Odoo in another tab, then Check.</p>
+                    <div t-foreach="warmup.data.finds" t-as="find" t-key="find.key" class="o_academy_task o_academy_find"
+                         t-att-class="{'done': find.done}" t-att-data-find="find.key">
+                        <div class="fw-bold mb-1"><t t-if="find.done">&#10003; </t><t t-out="find_index + 1"/>. <t t-out="find.title"/></div>
+                        <div class="o_academy_find_what"><b>What is it?</b> <t t-out="this.html(find.what)"/></div>
+                        <div class="mt-2"><b>Find it:</b> <t t-out="this.html(find.todo)"/></div>
+                        <details class="small text-muted mt-1"><summary>A hint</summary><t t-out="find.hint"/></details>
+                        <div t-if="!find.done" class="d-flex gap-2 mt-2">
+                            <input t-if="find.placeholder" class="form-control form-control-sm w-auto o_academy_find_input"
+                                   t-att-placeholder="find.placeholder"
+                                   t-on-input="(ev) => warmup.found[find.key] = ev.target.value"
+                                   t-on-keydown="(ev) => ev.key === 'Enter' and this.checkFind(find)"/>
+                            <button class="btn btn-sm btn-primary o_academy_find_check" t-on-click="() => this.checkFind(find)">Check</button>
+                        </div>
+                        <div t-if="find.done" class="small text-success mt-1" t-out="find.done"/>
+                        <div t-elif="warmup.findResults[find.key]" class="small text-danger mt-1" t-out="warmup.findResults[find.key].message"/>
+                    </div>
+                </div>
+
+                <!-- the quiz: pick a topic, answer a round, see your score -->
+                <div t-if="warmup.tab === 'quiz' and warmup.view === 'pick'" class="o_academy_quiz_pick">
+                    <p t-if="warmup.data.history.length" class="text-center o_academy_quiz_back">
+                        Welcome back! Last round: <b><t t-out="warmup.data.history[0].score"/> / <t t-out="warmup.data.history[0].total"/></b>.
+                        <span class="text-muted">You have answered <t t-out="warmup.data.right"/> of the
+                            <t t-out="warmup.data.total"/> questions right so far.</span>
+                    </p>
+                    <p t-else="" class="text-center text-muted">8 questions a round, a different set each time. Pick a topic:</p>
+                    <div class="o_academy_quiz_topics">
+                        <button t-foreach="warmup.data.topics" t-as="topic" t-key="topic.key" type="button"
+                                class="o_academy_quiz_topic" t-att-data-topic="topic.key"
+                                t-att-disabled="!topic.count" t-on-click="() => this.startRound(topic.key)">
+                            <span class="o_academy_quiz_topic_emoji" t-out="topic.emoji"/>
+                            <b t-out="topic.title"/>
+                            <span class="small text-muted" t-out="topic.description"/>
+                            <span class="small o_academy_quiz_topic_count">
+                                <t t-if="topic.count"><t t-out="topic.count"/> questions</t>
+                                <t t-else="">Do a few steps of a course first</t>
+                                <t t-if="topic.best"> · best <t t-out="topic.best[0]"/> / <t t-out="topic.best[1]"/></t>
+                            </span>
+                        </button>
+                    </div>
+                    <div t-if="warmup.data.history.length" class="o_academy_quiz_history">
+                        <div class="fw-bold small mb-1">Your last rounds</div>
+                        <div t-foreach="warmup.data.history" t-as="round" t-key="round_index" class="o_academy_quiz_history_row">
+                            <span class="text-muted" t-out="round.date"/>
+                            <span t-out="(warmup.data.topics.find((topic) => topic.key === round.topic) || {}).title"/>
+                            <b><t t-out="round.score"/> / <t t-out="round.total"/></b>
+                        </div>
+                    </div>
+                </div>
+
+                <div t-if="warmup.tab === 'quiz' and warmup.view === 'round' and this.warmupQuestion" class="o_academy_quiz">
+                    <t t-set="round" t-value="warmup.data.round"/>
+                    <t t-set="question" t-value="this.warmupQuestion"/>
+                    <div class="d-flex justify-content-between align-items-center small mb-2">
+                        <span class="o_academy_quiz_chip"><t t-out="this.warmupTopic.emoji"/> <t t-out="this.warmupTopic.title"/></span>
+                        <span>Question <b><t t-out="warmup.current + 1"/></b> of <t t-out="round.questions.length"/>
+                            · score <b class="o_academy_quiz_score" t-out="round.score"/></span>
+                    </div>
+                    <div class="progress o_academy_quiz_progress mb-3">
+                        <div class="progress-bar" t-att-style="'width: ' + (100 * (warmup.current + (question.answer ? 1 : 0)) / round.questions.length) + '%'"/>
+                    </div>
+                    <div class="o_academy_question" t-att-data-question="question.key">
+                        <div t-if="question.built" class="small text-muted mb-1">&#128736; From what you built</div>
+                        <div class="o_academy_question_text" t-out="question.question"/>
+                        <div class="o_academy_options">
+                            <button t-foreach="question.options" t-as="option" t-key="option_index" type="button"
+                                    class="btn o_academy_option"
+                                    t-att-class="!question.answer ? 'btn-light' : option_index === question.answer.right ? 'btn-success' : option_index === question.answer.choice ? 'btn-danger' : 'btn-light opacity-50'"
+                                    t-att-disabled="question.answer and 'disabled'"
+                                    t-on-click="() => this.answer(question, option_index)" t-out="option"/>
+                        </div>
+                        <div t-if="question.answer" class="o_academy_quiz_why" t-att-class="question.answer.correct ? 'ok' : 'ko'">
+                            <b><t t-if="question.answer.correct">Right! </t><t t-else="">Not quite. </t></b>
+                            <t t-out="question.answer.why"/>
+                        </div>
+                    </div>
+                    <div class="text-end mt-3">
+                        <button t-if="question.answer" class="btn btn-primary o_academy_quiz_next" t-on-click="() => this.nextQuestion()">
+                            <t t-if="warmup.result">See your score</t><t t-else="">Next question</t>
+                            <i class="oi oi-chevron-right ms-1"/>
+                        </button>
+                    </div>
+                </div>
+
+                <div t-if="warmup.tab === 'quiz' and warmup.view === 'done'" class="o_academy_quiz_done text-center">
+                    <t t-set="cheer" t-value="this.warmupCheer"/>
+                    <div class="o_academy_quiz_done_emoji" t-out="cheer.emoji"/>
+                    <h3 t-out="cheer.title"/>
+                    <div class="o_academy_quiz_done_score">
+                        <t t-out="warmup.result.score"/> <span>/ <t t-out="warmup.result.total"/></span>
+                    </div>
+                    <p t-if="warmup.result.record" class="o_academy_quiz_record">&#11088; A new best in this topic!</p>
+                    <p class="text-muted" t-out="cheer.text"/>
+                    <p class="small text-muted">Your score is kept: find it here next time.</p>
+                    <div class="d-flex justify-content-center gap-2">
+                        <button class="btn btn-primary o_academy_quiz_again" t-on-click="() => this.startRound(warmup.data.round.topic)">
+                            Another round, other questions
+                        </button>
+                        <button class="btn btn-light o_academy_quiz_topics_open" t-on-click="() => warmup.view = 'pick'">
+                            Pick a topic
+                        </button>
+                    </div>
+                </div>
+
+                <div t-if="warmup.tab === 'tasks'" class="o_academy_tasks">
+                    <p class="text-center text-muted">Do it in Odoo, in another tab, then click Done? The Academy checks.</p>
+                    <div t-foreach="warmup.data.tasks" t-as="task" t-key="task.key" class="o_academy_task"
+                         t-att-class="{'done': task.done}" t-att-data-task="task.key">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <div class="fw-bold"><t t-if="task.done">&#10003; </t><t t-out="task.title"/></div>
+                                <div t-out="task.todo"/>
+                                <div class="small text-muted" t-out="task.hint"/>
+                            </div>
+                            <button t-if="!task.done" class="btn btn-sm btn-primary o_academy_task_check"
+                                    t-on-click="() => this.checkTask(task)">Done?</button>
+                        </div>
+                        <select t-if="task.key === 'app' and !task.done" class="form-select form-select-sm mt-2 w-auto"
+                                t-on-change="(ev) => warmup.app = ev.target.value">
+                            <option value="">The app you installed...</option>
+                            <option t-foreach="warmup.data.apps" t-as="app" t-key="app.name" t-att-value="app.name" t-out="app.title"/>
+                        </select>
+                        <input t-if="task.key === 'technical' and !task.done" class="form-control form-control-sm mt-2 w-auto"
+                               placeholder="Its technical name" t-on-change="(ev) => warmup.technical = ev.target.value"/>
+                        <div t-if="task.done" class="small text-success mt-1" t-out="task.done"/>
+                        <div t-elif="warmup.results[task.key]" class="small text-danger mt-1" t-out="warmup.results[task.key].message"/>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- Code it is newer than Build it live: said, with a wink -->
+    <t t-name="om_academy.AcademyFreshOven">
+        <div class="o_academy_fresh_oven">
+            &#129514; <b>Fresh out of the oven:</b> Code it is not tested as much as Build it live yet.
+            Something may break here and there... and that is your chance: fix it for us, and open a
+            <a href="https://github.com/odoomates/odooapps/pulls" target="_blank" rel="noopener">pull request</a>.
+        </div>
+    </t>
+
+    <t t-name="om_academy.AcademyLinks">
+        <div class="o_academy_links d-flex flex-wrap align-items-center gap-2 mt-3">
+            <span class="text-muted small me-1">Follow us:</span>
+            <a t-foreach="this.links" t-as="link" t-key="link[1]" t-att-href="link[1]" target="_blank"
+               rel="noopener" class="btn btn-sm btn-light">
+                <t t-out="link[0]"/>
+            </a>
+        </div>
+    </t>
+
+    <!-- after a step: what it changed, in Odoo -->
+    <t t-name="om_academy.AcademyResult">
+        <div t-if="step.result_gif" class="o_academy_result_gif mb-3">
+            <b>In Odoo, it looks like this</b>
+            <img t-att-src="step.result_gif" alt="What the step changed, in Odoo"/>
+        </div>
+    </t>
+
+    <t t-name="om_academy.AcademyCourse">
+        <t t-set="course" t-value="this.state.course"/>
+        <t t-set="step" t-value="this.state.step"/>
+        <div class="o_academy_course d-flex h-100">
+            <!-- the steps -->
+            <div class="o_academy_steps">
+                <button class="btn btn-link px-0 mb-2" t-on-click="() => this.showHome()">
+                    <i class="oi oi-chevron-left"/> All courses
+                </button>
+                <h4 class="mb-3" t-out="course.name"/>
+                <div t-foreach="course.steps" t-as="item" t-key="item.key"
+                     class="o_academy_step_item" t-att-data-step="item.key"
+                     t-att-class="{'active': item.index === step.index, 'done': item.done, 'locked': this.isLocked(item)}"
+                     t-att-title="this.isLocked(item) ? 'Build the steps before it first' : ''"
+                     t-on-click="() => this.openStepItem(item)">
+                    <span class="o_academy_step_mark">
+                        <t t-if="item.done">&#10003;</t>
+                        <t t-elif="this.isLocked(item)">&#128274;</t>
+                        <t t-elif="item.intro">&#9733;</t>
+                        <t t-else="" t-out="item.index"/>
+                    </span>
+                    <span t-out="item.title"/>
+                    <span t-if="item.more" class="badge o_academy_extra ms-1">+</span>
+                </div>
+                <div class="mt-4 small">
+                    <button t-if="!this.state.askReset" class="btn btn-link btn-sm px-0 text-muted o_academy_reset"
+                            t-on-click="() => this.state.askReset = true">
+                        Start this course over
+                    </button>
+                    <div t-else="" class="o_academy_reset_choice">
+                        <t t-if="step.mode === 'live'">
+                            <div class="mb-2">Your app is installed, in Apps. What about it?</div>
+                            <button class="btn btn-sm btn-secondary w-100 mb-1 o_academy_reset_uninstall"
+                                    t-att-disabled="this.state.busy" t-on-click="() => this.reset(false)">
+                                Uninstall it and start over
+                            </button>
+                            <button class="btn btn-sm btn-light w-100 mb-1 o_academy_reset_keep"
+                                    t-att-disabled="this.state.busy" t-on-click="() => this.reset(true)">
+                                Keep it, and build another app
+                            </button>
+                        </t>
+                        <t t-else="">
+                            <div class="mb-2">Your files stay in your folder. Your module <code t-out="course.module"/>?</div>
+                            <button class="btn btn-sm btn-secondary w-100 mb-1 o_academy_reset_uninstall"
+                                    t-att-disabled="this.state.busy" t-on-click="() => this.reset(false)">
+                                Uninstall it and start over
+                            </button>
+                            <button class="btn btn-sm btn-light w-100 mb-1 o_academy_reset_keep"
+                                    t-att-disabled="this.state.busy" t-on-click="() => this.reset(true)">
+                                Start over, keep it installed
+                            </button>
+                        </t>
+                        <button class="btn btn-sm btn-link w-100 text-muted" t-on-click="() => this.state.askReset = false">
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- the step -->
+            <div class="o_academy_main flex-grow-1">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <h2 class="mb-0 o_academy_step_title">
+                        <span class="text-muted me-2" t-if="!step.intro">Step <t t-out="step.index"/></span>
+                        <t t-if="this.introPreview">This is what you are going to build</t>
+                        <t t-elif="this.introYours">Make it yours</t>
+                        <t t-else="" t-out="step.title"/>
+                    </h2>
+                    <div class="btn-group o_academy_modes" role="group">
+                        <button t-foreach="this.modes" t-as="mode" t-key="mode[0]" type="button"
+                                class="btn btn-sm" t-att-data-mode="mode[0]" t-att-title="mode[2]"
+                                t-att-class="step.mode === mode[0] ? 'btn-primary' : 'btn-outline-secondary'"
+                                t-on-click="() => this.setMode(mode[0])" t-out="mode[1]"/>
+                    </div>
+                </div>
+
+                <!-- the intro, first page: the app the learner is about to build -->
+                <div t-if="this.introPreview" class="o_academy_intro_preview mb-3">
+                    <p class="o_academy_intro_preview_lead">
+                        By the end of this course, <b t-out="course.app_name or course.name"/> runs in your Odoo,
+                        built by you. Here it is:
+                    </p>
+                    <div class="o_academy_intro_preview_frame">
+                        <img t-att-src="step.preview" alt="The app you will build"/>
+                    </div>
+                    <p class="text-muted text-center mt-3 mb-0">Next: what it is made of, and how you want to build it.</p>
+                </div>
+                <t t-else="">
+                <!-- read first: the idea of the step, then where its files go -->
+                <section t-if="!this.introYours" class="o_academy_understand mb-4">
+                    <div class="o_academy_section_label">
+                        <span class="o_academy_section_num">1</span>
+                        <t t-if="step.intro">What you will do</t><t t-else="">Understand</t>
+                        <span class="o_academy_read_time">&#128214; <t t-out="this.readMinutes(step.explain)"/> min read</span>
+                    </div>
+                    <div class="o_academy_understand_body">
+                        <div class="o_academy_explain o_academy_lesson" t-out="this.lesson(step.explain)"/>
+                        <aside t-if="step.tree and step.tree.length" class="o_academy_tree">
+                            <div class="o_academy_tree_title">Where it goes</div>
+                            <div t-foreach="this.treeRows" t-as="row" t-key="row.key" class="o_academy_tree_row"
+                                 t-att-class="row.status ? 'o_academy_tree_' + row.status : ''"
+                                 t-att-style="'padding-left: ' + (row.depth * 16 + 8) + 'px'"
+                                 t-att-title="row.status and row.status !== 'same' ? 'Open it in the code' : ''"
+                                 t-on-click="() => this.openTreeFile(row)">
+                                <span class="o_academy_tree_icon"><t t-if="row.folder">&#128193;</t><t t-else="">&#128196;</t></span>
+                                <span class="o_academy_tree_name" t-out="row.name"/>
+                                <span t-if="row.status === 'new'" class="o_academy_tree_badge">new</span>
+                                <span t-if="row.status === 'changed'" class="o_academy_tree_badge">changed</span>
+                            </div>
+                        </aside>
+                    </div>
+                </section>
+
+                <!-- the finish -->
+                <div t-if="step.finish" class="o_academy_fly mb-3">
+                    <h3 class="mb-1">You did it.</h3>
+                    <p class="mb-0">Nothing is too big. Nothing is impossible. You dream, and you fly:
+                        the next app is yours to imagine.</p>
+                    <t t-call="om_academy.AcademyLinks"/>
+                </div>
+                <!-- the certificate first; how Odoo made it, once it is downloaded -->
+                <div t-if="step.finish and step.completed" class="mb-3">
+                    <button class="btn btn-primary btn-lg o_academy_certificate" t-on-click="() => this.certificate()">
+                        &#127891; Download your certificate
+                    </button>
+                </div>
+                <details t-if="step.finish and step.completed and this.certificateDownloaded" class="o_academy_behind mb-3">
+                    <summary><b>Behind your certificate</b>: how did Odoo make this PDF?</summary>
+                    <ol class="mt-2 mb-2">
+                        <li>A <b>report</b> is a record of <code>ir.actions.report</code>: its name, the model it
+                            prints (here <code>academy.progress</code>), the type <code>qweb-pdf</code>, and a
+                            paper format, landscape A4.
+                            <button class="btn btn-link btn-sm p-0" t-on-click="() => this.certificateBehind('report')">See the record</button>
+                            <span class="text-muted">(Settings &gt; Technical &gt; Reports)</span></li>
+                        <li>The button <i>Download your certificate</i> calls the method
+                            <code>report_action()</code> of that record, for your progress.</li>
+                        <li>The report renders a <b>QWeb template</b>: HTML with <code>t-out</code>,
+                            <code>t-foreach</code>, <code>t-att-src</code>... filled with your name and your app.
+                            wkhtmltopdf turns that HTML into the PDF.
+                            <button class="btn btn-link btn-sm p-0" t-on-click="() => this.certificateBehind('template')">See the template</button>
+                            <span class="text-muted">(Settings &gt; Technical &gt; Views, developer mode)</span></li>
+                    </ol>
+                    <div class="small text-muted">Every PDF of Odoo, invoices and quotations included, is made this way.</div>
+                </details>
+                <div t-if="step.finish and step.challenges.length" class="o_academy_challenges mb-3">
+                    <h4 class="mb-1">Your turn</h4>
+                    <p class="text-muted mb-2">No code shown this time: do it on your own, then click Done?
+                        <t t-if="step.mode === 'live'">Built live, you do it in Odoo's technical menus.</t>
+                        <t t-else="">In your module, then Upgrade.</t></p>
+                    <div t-foreach="step.challenges" t-as="challenge" t-key="challenge.key" class="o_academy_task"
+                         t-att-class="{'done': challenge.done}" t-att-data-challenge="challenge.key">
+                        <div class="d-flex justify-content-between align-items-start gap-2">
+                            <div>
+                                <div class="fw-bold"><t t-if="challenge.done">&#10003; </t><t t-out="challenge.title"/></div>
+                                <div t-out="challenge.todo"/>
+                                <details class="small text-muted mt-1">
+                                    <summary>A hint</summary>
+                                    <t t-out="challenge.hint"/>
+                                </details>
+                            </div>
+                            <button t-if="!challenge.done" class="btn btn-sm btn-primary o_academy_challenge_check"
+                                    t-on-click="() => this.checkChallenge(challenge)">Done?</button>
+                        </div>
+                        <div t-if="challenge.result" class="small mt-1"
+                             t-att-class="challenge.result.ok ? 'text-success' : 'text-danger'" t-out="challenge.result.message"/>
+                    </div>
+                </div>
+                <div t-if="step.finish" class="o_academy_share mb-3">
+                    <b>Share it: you built an Odoo app!</b>
+                    <p class="o_academy_share_text my-2" t-out="this.shareText + ' ' + course.share_url"/>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a t-foreach="this.shareLinks" t-as="link" t-key="link[0]" t-att-href="link[1]" target="_blank"
+                           rel="noopener" class="btn btn-sm btn-light o_academy_share_link" t-out="link[0]"/>
+                        <button class="btn btn-sm btn-light o_academy_share_copy" t-on-click="() => this.copyShare()">Copy</button>
+                    </div>
+                </div>
+                <div t-if="step.finish" class="o_academy_actions d-flex flex-wrap gap-2 mb-3">
+                    <button class="btn btn-primary o_academy_export" t-on-click="() => this.exportApp()">
+                        Export as app
+                    </button>
+                    <button t-if="course.family === 'first_app'" class="btn btn-secondary o_academy_another"
+                            t-on-click="() => this.showHome()">
+                        Build another app
+                    </button>
+                    <button t-if="step.mode === 'live'" class="btn btn-secondary o_academy_continue"
+                            t-att-disabled="this.state.busy or !course.module_path"
+                            t-att-title="course.module_path ? '' : 'Choose the addons folder for your module first.'"
+                            t-on-click="() => this.continueInCode()">
+                        Continue in code
+                    </button>
+                    <select t-if="step.mode === 'live' and course.addons_paths.length and !course.module_path"
+                            class="form-select form-select-sm w-auto o_academy_path" t-on-change="(ev) => this.setPath(ev)">
+                        <option value="" selected="selected" disabled="disabled">Addons folder for Continue in code...</option>
+                        <option t-foreach="course.addons_paths" t-as="path" t-key="path" t-att-value="path" t-out="path"/>
+                    </select>
+                    <button t-if="step.mode === 'code'" class="btn btn-secondary o_academy_compare"
+                            t-att-disabled="this.state.busy" t-on-click="() => this.compare()">
+                        Compare with the reference
+                    </button>
+                    <button t-if="step.mode === 'live' and !step.built" class="btn btn-light o_academy_build"
+                            t-att-disabled="this.state.busy" t-on-click="() => this.build()">
+                        Build all the steps
+                    </button>
+                    <button t-if="step.can_see" class="btn btn-light o_academy_see" t-on-click="() => this.see()">See it in Odoo</button>
+                </div>
+                <div t-if="this.state.compare" class="o_academy_compare_result mb-3">
+                    <div t-foreach="this.state.compare" t-as="file" t-key="file.path" class="mb-2">
+                        <div class="o_academy_compare_head" t-att-class="file.status">
+                            <code t-out="file.path"/>
+                            <span class="ms-2">
+                                <t t-if="file.status === 'same'">&#10003; same as the course</t>
+                                <t t-elif="file.status === 'missing'">&#10007; missing in your module</t>
+                                <t t-else="">differs: <span class="o_academy_plus">+ the course</span>,
+                                    <span class="o_academy_minus">&#8722; yours</span></t>
+                            </span>
+                        </div>
+                        <pre t-if="file.lines.length" class="o_academy_diff mb-0"><t t-foreach="file.lines" t-as="line" t-key="line_index"><span class="o_academy_diff_line" t-att-class="line.kind === '+' ? 'plus' : line.kind === '-' ? 'minus' : line.kind === '@' ? 'hunk' : ''"><t t-out="line.kind === '@' ? '' : line.kind"/> <t t-out="line.text"/>
+</span></t></pre>
+                    </div>
+                </div>
+
+                <!-- the choice of the level, on the first step: what each builds -->
+                <t t-if="step.intro and !this.introYours and course.levels.length">
+                    <h5 class="o_academy_choice_title">How much do you want to build?</h5>
+                    <div class="row mb-3">
+                        <div t-foreach="course.levels" t-as="level" t-key="level.key" class="col-md-6 mb-2">
+                            <div class="o_academy_level_card h-100" t-att-data-level="level.key"
+                                 t-att-class="{'selected': course.level === level.key}"
+                                 t-on-click="() => course.level !== level.key and this.setLevel(level.key)">
+                                <div class="d-flex justify-content-between">
+                                    <h4 t-out="level.label"/>
+                                    <span class="text-muted small"><t t-out="level.minutes"/> min</span>
+                                </div>
+                                <p t-if="!level.extra.length" class="o_academy_level_steps mb-0"
+                                   t-out="level.steps.join(' · ')"/>
+                                <t t-else="">
+                                    <p class="o_academy_level_steps mb-1">Everything in Basic, plus:</p>
+                                    <ul class="o_academy_level_steps mb-0">
+                                        <li t-foreach="level.extra" t-as="title" t-key="title_index"
+                                            class="o_academy_level_extra">+ <t t-out="title"/></li>
+                                    </ul>
+                                </t>
+                                <div t-if="level.installs.length" class="small text-muted mt-2">
+                                    Installs Discuss (<t t-out="level.installs.join(', ')"/>) for the chatter.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <h5 class="o_academy_choice_title">How do you want to build it?</h5>
+                </t>
+
+                <!-- the choice of the mode, on the first step -->
+                <div t-if="step.intro and !this.introYours" class="row mb-3">
+                    <div t-foreach="this.modes" t-as="mode" t-key="mode[0]" class="col-md-6 mb-2">
+                        <div class="o_academy_mode_card h-100" t-att-class="{'selected': step.mode === mode[0]}"
+                             t-on-click="() => this.setMode(mode[0])">
+                            <h4 t-out="mode[1]"/>
+                            <p class="mb-0 text-muted" t-out="mode[2]"/>
+                            <t t-if="mode[0] === 'code'" t-call="om_academy.AcademyFreshOven"/>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- make it yours: the author and the icon of the learner's module -->
+                <t t-if="this.introYours">
+                    <p class="text-muted">Your app, your name, your icon: they go in its manifest, and in Apps.</p>
+                    <div class="o_academy_yours mb-3">
+                        <div class="row">
+                            <div class="col-lg-5 mb-3">
+                                <label class="fw-bold" for="o_academy_author_name">You are the author of this app</label>
+                                <div class="small text-muted mb-2">Your name goes in its manifest as the author, and Apps shows it.</div>
+                                <input id="o_academy_author_name" class="form-control o_academy_author_name" type="text"
+                                       placeholder="Your name" required="required" autocomplete="name"
+                                       t-att-value="course.author_name" t-att-class="{'is-invalid': this.state.needName and !course.author_name}"
+                                       t-on-change="(ev) => this.saveName(ev.target.value.trim())"/>
+                                <div class="invalid-feedback">Write your name: you are the author of this app.</div>
+                                <div class="form-check mt-3">
+                                    <input id="o_academy_coauthor" class="form-check-input o_academy_coauthor" type="checkbox"
+                                           t-att-checked="course.coauthor"
+                                           t-on-change="(ev) => this.setIdentity({ coauthor: ev.target.checked })"/>
+                                    <label class="form-check-label" for="o_academy_coauthor">
+                                        Can <t t-out="course.coauthor_name"/> be your co-author? We would be proud.
+                                    </label>
+                                </div>
+                                <div class="small text-muted mt-2">In your manifest:
+                                    <code class="o_academy_author_line">'author': '<t t-out="course.author_name or 'Your name'"/><t t-if="course.coauthor">, <t t-out="course.coauthor_name"/></t>',</code></div>
+                            </div>
+                            <div class="col-lg-7">
+                                <div class="fw-bold mb-2">Pick an icon for your app, or upload yours</div>
+                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                    <img t-foreach="course.icons" t-as="icon" t-key="icon"
+                                         t-att-src="'/om_academy/static/img/icons/' + icon + '.png'" t-att-alt="icon"
+                                         t-att-data-icon="icon" class="o_academy_icon_pick"
+                                         t-att-class="{'selected': course.icon === icon}"
+                                         t-on-click="() => this.setIdentity({ icon })"/>
+                                    <img t-if="course.icon === 'custom'" t-att-src="course.icon_url" alt="Your icon"
+                                         class="o_academy_icon_pick selected"/>
+                                    <label class="btn btn-light btn-sm o_academy_icon_upload mb-0">
+                                        Upload...
+                                        <input type="file" accept="image/png" class="d-none"
+                                               t-on-change="(ev) => this.uploadIcon(ev)"/>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <div t-if="this.introYours" class="o_academy_note o_academy_tabs_tip mb-3">
+                    <b><i class="fa fa-clone me-1"/>Before you start: duplicate this tab</b>
+                    <div>Right-click this browser tab, then <b>Duplicate</b>. Follow the course here, and
+                        watch your app in the other tab: after each step, <b>refresh it</b> (F5) and see
+                        what changed.</div>
+                </div>
+
+
+                <!-- the files -->
+                <div t-if="step.files.length" class="o_academy_section_label">
+                    <span class="o_academy_section_num">2</span> The code
+                </div>
+                <div t-if="step.files.length" class="o_academy_code mb-3">
+                    <div class="o_academy_tabs d-flex flex-wrap" t-att-class="{'flash': this.state.flashTabs}">
+                        <button t-foreach="step.files" t-as="file" t-key="file.path" type="button"
+                                class="o_academy_tab" t-att-class="{'active': file_index === this.state.file, 'unseen': this.unseen.includes(file_index)}"
+                                t-on-click="() => this.selectFile(file_index)" t-out="file.path"/>
+                    </div>
+                    <div t-if="this.unseen.length" class="o_academy_unseen_hint">
+                        <t t-out="step.files.length"/> files in this step: open each one.
+                        <b><t t-out="this.unseen.length"/> to go.</b>
+                    </div>
+                    <t t-set="file" t-value="step.files[this.state.file]"/>
+                    <div class="o_academy_file">
+                        <button t-if="!file.image" class="btn btn-sm btn-light o_academy_copy" t-on-click="() => this.copy(file)">Copy</button>
+                        <div t-if="file.image" class="o_academy_file_image">
+                            <img t-att-src="file.image" alt="The icon of your app"/>
+                            <span>The icon you picked, an image file. Write it for me writes it; or save your own here.</span>
+                        </div>
+                        <pre t-elif="file.empty" class="mb-0"><span class="text-muted"># empty, for now</span></pre>
+                        <pre t-else="" class="mb-0"><t t-foreach="file.lines" t-as="line" t-key="line.number"><span class="o_academy_line" t-att-class="{'new': line.new, 'has-note': line.note, 'open': this.isNoteOpen(line), 'o_academy_author_row': line.author}" t-att-title="line.note ? 'Click: what does this line do?' : ''" t-on-click="() => this.toggleNote(line)"><span class="o_academy_ln" t-out="line.number"/><t t-out="line.text"/><span t-if="line.note" class="o_academy_note_mark">?</span>
+</span><span t-if="this.isNoteOpen(line)" class="o_academy_line_note" t-out="line.note"/></t></pre>
+                        <div class="o_academy_note_hint">Click a line: what does it do?</div>
+                    </div>
+                </div>
+
+                <!-- Build it live -->
+                <t t-if="step.mode === 'live' and step.buildable">
+                    <div class="o_academy_section_label"><span class="o_academy_section_num">3</span> Build it</div>
+                    <div class="o_academy_actions d-flex flex-wrap gap-2 mb-3">
+                        <button t-if="!step.built" class="btn btn-primary o_academy_build"
+                                t-att-disabled="this.state.busy" t-on-click="() => this.build()">
+                            Build this step
+                        </button>
+                        <button t-if="step.can_see" class="btn btn-secondary o_academy_see" t-on-click="() => this.see()">
+                            See it in Odoo
+                        </button>
+                        <button t-if="step.is_last_built" class="btn btn-link o_academy_undo"
+                                t-att-disabled="this.state.busy" t-on-click="() => this.undo()">
+                            Undo this step
+                        </button>
+                    </div>
+                    <t t-if="step.built" t-call="om_academy.AcademyResult"/>
+                    <div t-if="step.built and step.live_note" class="o_academy_note mb-3">
+                        <b>What just happened</b>
+                        <div t-out="this.html(step.live_note)"/>
+                        <div class="mt-1 text-muted"><i class="fa fa-refresh me-1"/>Refresh your other tab to see it.</div>
+                    </div>
+                </t>
+
+                <!-- Under the hood: the database, live -->
+                <details t-if="this.state.hood and (this.state.hood.tables.length or this.state.hood.records.length)"
+                         class="o_academy_hood mb-3" t-att-open="this.state.hoodOpen"
+                         t-on-toggle="(ev) => this.toggleHood(ev.target.open)">
+                    <summary><b>Under the hood</b>: your database, PostgreSQL, live</summary>
+                    <pre t-if="this.hoodSql" class="o_academy_hood_sql"><t t-out="this.hoodSql.slice(0, this.state.sqlTyped)"/><span t-if="this.state.sqlTyped &lt; this.hoodSql.length" class="o_academy_caret">&#9612;</span></pre>
+                    <div t-foreach="this.state.hood.tables" t-as="table" t-key="table.table" class="o_academy_hood_table">
+                        <div class="o_academy_hood_head">
+                            <code t-out="table.table"/>
+                            <span t-if="table.exists" class="badge o_academy_hood_count" t-att-class="{'grew': table.grew}">
+                                <t t-out="table.count"/> rows
+                            </span>
+                            <span t-else="" class="text-muted small">not in the database yet: build the step</span>
+                        </div>
+                        <div class="o_academy_hood_grid">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th t-foreach="table.columns" t-as="column" t-key="column.name"
+                                            t-att-class="{'new': column.new, 'computed': !column.stored}">
+                                            <div t-out="column.name"/>
+                                            <small t-if="column.stored" t-out="column.type"/>
+                                            <small t-else="">computed: no column</small>
+                                            <small t-if="column.link" class="o_academy_hood_link">&#8594; <t t-out="column.link"/></small>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody t-if="table.exists">
+                                    <tr t-foreach="table.rows" t-as="row" t-key="row_index" t-att-class="{'grew': table.grew and !row_index}">
+                                        <t t-foreach="table.columns" t-as="column" t-key="column.name">
+                                            <td t-if="column.stored" t-out="row[table.shown.indexOf(column.name)] === null ? '' : row[table.shown.indexOf(column.name)]"/>
+                                            <td t-else="" class="computed">&#8212;</td>
+                                        </t>
+                                    </tr>
+                                    <tr t-if="!table.rows.length"><td t-att-colspan="table.columns.length" class="text-muted">
+                                        No row yet: add a record in your other tab, it appears here.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div t-foreach="this.state.hood.records" t-as="records" t-key="records.table" class="o_academy_hood_table">
+                        <div class="o_academy_hood_head"><code t-out="records.table"/>
+                            <span class="text-muted small">a record of Odoo's own table</span></div>
+                        <div class="o_academy_hood_grid">
+                            <table>
+                                <thead><tr><th t-foreach="records.columns" t-as="column" t-key="column"><div t-out="column"/></th></tr></thead>
+                                <tbody><tr t-foreach="records.rows" t-as="row" t-key="row_index">
+                                    <td t-foreach="row" t-as="cell" t-key="cell_index" t-out="cell === false or cell === null ? '' : cell"/>
+                                </tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="small text-muted">Refreshed every few seconds: add or change a record in your other tab,
+                        and watch it here.</div>
+                </details>
+
+                <!-- Code it -->
+                <t t-if="step.mode === 'code' and step.buildable">
+                    <div class="o_academy_section_label"><span class="o_academy_section_num">3</span> Write it, then check</div>
+                    <t t-call="om_academy.AcademyFreshOven"/>
+                    <div t-if="step.code_note" class="o_academy_note mb-3">
+                        <div t-out="this.html(step.code_note)"/>
+                        <div t-if="step.python_changed and course.auto_reload" class="small text-muted mt-1">
+                            Odoo runs with --dev=reload: it restarted by itself when the Python file was saved.
+                        </div>
+                    </div>
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2 small text-muted">
+                        <span>Your module:</span>
+                        <code t-out="course.module_path or course.module"/>
+                        <select t-if="course.addons_paths.length and !course.module_path_found"
+                                class="form-select form-select-sm w-auto o_academy_path"
+                                t-on-change="(ev) => this.setPath(ev)">
+                            <option value="" t-att-selected="!course.addons_path" disabled="disabled">
+                                Choose the addons folder for your module...
+                            </option>
+                            <option t-foreach="course.addons_paths" t-as="path" t-key="path" t-att-value="path"
+                                    t-att-selected="path === course.addons_path" t-out="path"/>
+                        </select>
+                    </div>
+                    <details class="small text-muted mb-2 o_academy_path_help">
+                        <summary>How do I add my own folder?</summary>
+                        Odoo reads its addons folders when it starts. Add yours to <code>addons_path</code> in
+                        <code>odoo.conf</code> (or to <code>--addons-path</code>), put your module folder in it, and
+                        restart Odoo: it then shows in this list. Odoo skips a folder that holds no module yet.
+                        Its own folder for your modules, <code>~/.local/share/Odoo/addons/&lt;version&gt;</code>, is
+                        always there when it can be written to.
+                    </details>
+                    <div t-if="!course.addons_paths.length" class="o_academy_note mb-3 o_academy_no_path">
+                        Odoo has no addons folder of your own it can write to. Create the folder
+                        <code t-out="course.module"/> yourself in the addons folder of your other modules,
+                        and write the files there. Odoo ignores an addons folder that holds no module yet.
+                    </div>
+                    <div class="o_academy_actions d-flex flex-wrap gap-2 mb-3">
+                        <button class="btn btn-light o_academy_write" t-att-disabled="this.state.busy or !course.module_path"
+                                t-on-click="() => this.writeFiles()">Write it for me</button>
+                        <button t-if="step.python_changed and course.can_restart and !course.auto_reload"
+                                class="btn btn-secondary o_academy_restart" t-att-disabled="this.state.busy"
+                                title="Python changed: Odoo loads it when it starts"
+                                t-on-click="() => this.restartAndUpgrade()">Restart Odoo &amp; Upgrade</button>
+                        <button class="btn btn-secondary o_academy_install" t-att-disabled="this.state.busy"
+                                t-on-click="() => this.install()">Install / Upgrade</button>
+                        <button class="btn btn-primary o_academy_check" t-att-disabled="this.state.busy"
+                                t-on-click="() => this.check()">Check</button>
+                        <button t-if="step.can_see" class="btn btn-secondary o_academy_see" t-on-click="() => this.see()">
+                            See it in Odoo
+                        </button>
+                    </div>
+                    <div t-if="this.state.results" class="o_academy_results mb-3">
+                        <div t-foreach="this.failures" t-as="result" t-key="result_index" class="o_academy_result ko">
+                            <span class="me-2">&#10007;</span>
+                            <span t-out="result.text"/>
+                            <div t-if="result.hint" class="o_academy_hint" t-out="result.hint"/>
+                        </div>
+                        <div t-if="this.successes.length" class="o_academy_result ok o_academy_passes"
+                             t-on-click="() => this.state.showPasses = !this.state.showPasses">
+                            <span class="me-2">&#10003;</span>
+                            <t t-out="this.successes.length"/> checks passed
+                            <i class="oi ms-1" t-att-class="this.state.showPasses ? 'oi-chevron-up' : 'oi-chevron-down'"/>
+                        </div>
+                        <t t-if="this.state.showPasses">
+                            <div t-foreach="this.successes" t-as="result" t-key="result_index"
+                                 class="o_academy_result ok o_academy_pass">
+                                <span class="me-2">&#10003;</span><span t-out="result.text"/>
+                            </div>
+                        </t>
+                        <div t-if="this.state.results.passed" class="o_academy_passed mt-2">
+                            All good! This step is done. Refresh your other tab to see it.
+                        </div>
+                    </div>
+                    <t t-if="step.done" t-call="om_academy.AcademyResult"/>
+                </t>
+
+                <div t-if="step.see_text and (step.built or step.done)" class="text-muted mb-3 o_academy_see_text">
+                    <i class="oi oi-arrow-right me-1"/><t t-out="step.see_text"/>
+                </div>
+
+                </t>
+                <div class="o_academy_nav d-flex align-items-center justify-content-between gap-3">
+                    <button class="btn btn-link px-0" t-att-disabled="!step.index and this.state.introPage &lt;= this.introFirstPage"
+                            t-on-click="() => this.previous()">
+                        <i class="oi oi-chevron-left"/> Previous
+                    </button>
+                    <div t-if="this.hasNext" class="d-flex align-items-center gap-3">
+                        <span t-if="!this.canNext" class="o_academy_next_hint">
+                            <t t-if="step.mode === 'live'">Build this step to go on</t>
+                            <t t-else="">Write it, then Check, to go on</t>
+                        </span>
+                        <button class="btn btn-primary o_academy_next" t-att-disabled="!this.canNext"
+                                t-on-click="() => this.next()">
+                            Next <i class="oi oi-chevron-right"/>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- the code tree: the whole module as it is after this step; a file clicked shows its code -->
+            <aside t-if="step.tree and step.tree.length" class="o_academy_codetree"
+                   t-att-style="this.state.treeWidth ? 'flex: 0 0 ' + this.state.treeWidth + 'px; max-width: none;' : ''">
+                <div class="o_academy_codetree_grip" title="Drag to resize; double-click to reset"
+                     t-on-pointerdown="(ev) => this.resizeTree(ev)" t-on-dblclick="() => this.resetTreeWidth()"/>
+                <div class="o_academy_codetree_head">
+                    <span>Your module</span>
+                    <span t-if="!step.intro" class="o_academy_codetree_step">after step <t t-out="step.index"/></span>
+                </div>
+                <div class="o_academy_codetree_files">
+                    <div t-foreach="this.treeRows" t-as="row" t-key="row.key" class="o_academy_tree_row"
+                         t-att-class="(row.status ? 'o_academy_tree_' + row.status : '') + (row.key === this.state.treeFile ? ' active' : '')"
+                         t-att-data-path="row.key"
+                         t-att-style="'padding-left: ' + (row.depth * 16 + 8) + 'px'"
+                         t-on-click="() => this.showTreeFile(row)">
+                        <span class="o_academy_tree_icon"><t t-if="row.folder">&#128193;</t><t t-else="">&#128196;</t></span>
+                        <span class="o_academy_tree_name" t-out="row.name"/>
+                        <span t-if="row.status === 'new'" class="o_academy_tree_badge">new</span>
+                        <span t-if="row.status === 'changed'" class="o_academy_tree_badge">changed</span>
+                    </div>
+                </div>
+                <t t-set="treeFile" t-value="this.codeTreeFile"/>
+                <div t-if="treeFile" class="o_academy_codetree_code">
+                    <div class="o_academy_codetree_path">
+                        <t t-out="treeFile.path"/>
+                        <span t-if="treeFile.status === 'same'" class="o_academy_codetree_same">unchanged in this step</span>
+                    </div>
+                    <div t-if="treeFile.image" class="o_academy_codetree_image">
+                        <img t-att-src="treeFile.image" alt="The icon of your app"/>
+                    </div>
+                    <pre t-elif="!treeFile.lines.length" class="mb-0"><span class="text-muted"># empty, for now</span></pre>
+                    <pre t-else="" class="mb-0"><t t-foreach="treeFile.lines" t-as="line" t-key="line.number"><span class="o_academy_line" t-att-class="{'new': line.new}"><span class="o_academy_ln" t-out="line.number"/><t t-out="line.text"/>
+</span></t></pre>
+                </div>
+                <div class="o_academy_codetree_hint">Click a file: its code after this step. <span class="o_academy_codetree_new">Green</span>: what this step adds.</div>
+            </aside>
+        </div>
+    </t>
+
+</templates>
