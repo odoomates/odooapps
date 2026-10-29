@@ -8,7 +8,6 @@
     'version': '13.0.2.1.0',
     'description': """Use budgets to compare actual with expected revenues and costs""",
     'summary': 'Odoo 13 Budget Management',
-    'website': 'http://odoomates.tech',
     'depends': ['account'],
     'license': 'LGPL-3',
     'data': [

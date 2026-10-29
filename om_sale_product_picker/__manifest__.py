@@ -10,7 +10,6 @@
     'license': "AGPL-3",
     'live_test_url': '',
     'description': "Sale Product Picker",
-    'website': 'https://www.odoomates.tech',
     'depends': [
         'sale',
         'sale_management',

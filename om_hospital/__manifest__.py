@@ -7,7 +7,6 @@
     'license': 'AGPL-3',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
-    'website': 'http://odoomates.tech',
     'live_test_url': 'https://www.youtube.com/watch?v=0PDqeUG3azo&list=PLqRRLx0cl0hoazEhpDfXYRlizUyZmvOsb',
     'depends': ['sale',
                 'mail',

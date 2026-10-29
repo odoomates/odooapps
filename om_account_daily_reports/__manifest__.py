@@ -13,7 +13,6 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'website': 'https://www.odoomates.tech',
     'depends': ['account'],
     'live_test_url': '',
     'demo': [],

@@ -10,7 +10,6 @@
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
-    'website': 'http://odoomates.tech',
     'support': 'odoomates@gmail.com',
     'data': [
         'views/pos.xml',

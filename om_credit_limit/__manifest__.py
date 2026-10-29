@@ -11,7 +11,6 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'website': 'http://odoomates.tech',
     'depends': ['account', 'sale'],
     'license': 'LGPL-3',
     'data': [
