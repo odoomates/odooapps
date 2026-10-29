@@ -7,7 +7,6 @@ and disputed invoices.""",
     'summary': """Customer payment follow-ups and reminders""",
     'author': 'Odoo Mates, Odoo S.A',
     'license': 'LGPL-3',
-    'website': 'https://www.odoomates.tech',
     'depends': ['account', 'mail'],
     'data': [
         'security/security.xml',
