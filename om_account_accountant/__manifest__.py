@@ -14,7 +14,6 @@
                    'Automatic Currency Rates, Bank Statement Import',
     'live_test_url': 'https://www.youtube.com/watch?v=6gB-05E5kNg',
     'sequence': '1',
-    'website': 'https://www.odoomates.tech',
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',

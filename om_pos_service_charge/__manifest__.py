@@ -10,7 +10,7 @@
     'author': 'Odoo Mates, Sempai Space',
     'company': 'Odoo Mates, Sempai Space',
     'maintainer': 'Odoo Mates, Sempai Space',
-    'website': 'http://odoomates.tech, https://www.sempai.space',
+    'website': 'https://www.sempai.space',
     'support': 'odoomates@gmail.com, sempaispace@gmail.com',
     'data': [
         'views/pos.xml',
