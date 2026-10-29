@@ -8,7 +8,6 @@
     'author': 'Odoo Mates',
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
-    'website': 'http://odoomates.tech',
     'depends': ['project'],
     'live_test_url': 'https://www.youtube.com/watch?v=bEhhlB2dNT0',
     'data': [
