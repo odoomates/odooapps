@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_patient_card" model="ir.actions.report">
+        <field name="name">Patient Card</field>
+        <field name="model">hospital.patient</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_hospital.report_patient_card</field>
+        <field name="report_file">om_hospital.report_patient_card</field>
+        <field name="print_report_name">'Patient Card - %s' % object.name</field>
+        <field name="binding_model_id" ref="model_hospital_patient"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_patient_card">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="patient">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h2>Patient Card</h2>
+                        <div class="row mt-4">
+                            <div class="col-3">
+                                <img t-if="patient.image" t-att-src="image_data_uri(patient.image)" style="max-width: 140px;"/>
+                            </div>
+                            <div class="col-9">
+                                <table class="table table-sm">
+                                    <tr><th>Reference</th><td><span t-field="patient.reference"/></td></tr>
+                                    <tr><th>Name</th><td><span t-field="patient.name"/></td></tr>
+                                    <tr><th>Age</th><td><span t-field="patient.age"/></td></tr>
+                                    <tr><th>Gender</th><td><span t-field="patient.gender"/></td></tr>
+                                    <tr><th>Responsible</th><td><span t-field="patient.responsible_id"/></td></tr>
+                                </table>
+                            </div>
+                        </div>
+                        <h4 class="mt-4">Appointments</h4>
+                        <table class="table table-sm">
+                            <thead><tr><th>#</th><th>Reference</th><th>Doctor</th><th>Date</th><th>Status</th></tr></thead>
+                            <tbody>
+                                <tr t-foreach="patient.appointment_ids" t-as="appointment">
+                                    <td t-out="appointment_index + 1"/>
+                                    <td><span t-field="appointment.name"/></td>
+                                    <td><span t-field="appointment.doctor_id"/></td>
+                                    <td><span t-field="appointment.date_appointment"/></td>
+                                    <td><span t-field="appointment.state"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div t-field="patient.reference" t-options="{'widget': 'barcode', 'symbology': 'QR', 'width': 120, 'height': 120}"/>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>

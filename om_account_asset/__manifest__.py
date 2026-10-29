@@ -11,7 +11,6 @@
     'summary': 'Odoo 17 Assets Management',
     'category': 'Accounting',
     'sequence': 10,
-    'website': 'https://www.odoomates.tech',
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
     'data': [
