@@ -4,9 +4,11 @@ User Audit & Sessions
 
 .. note::
 
-   **Beta.** Reviews and feedback are welcome. Every feature is covered by
-   automated tests; try it on a copy of your database first and watch how fast
-   the logs grow. Report what you find at odoomates@gmail.com or on GitHub.
+   **Completely free, and open source (LGPL-3).** Reviews and feedback are
+   welcome: tell us what works, what does not and what you miss, at
+   odoomates@gmail.com or on GitHub. Every feature is covered by automated
+   tests; try it on a copy of your database first and watch how fast the logs
+   grow.
 
 Who signed in, from where, and what they read, changed, exported, imported and
 printed; the open sessions of every user, ended in one click.
