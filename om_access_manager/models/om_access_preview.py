@@ -134,6 +134,16 @@ class IrHttp(models.AbstractModel):
             request.env.cr.rollback()
         return result
 
+    def webclient_rendering_context(self):
+        # /odoo is served without a user: switch to the previewed one before
+        # session_info, whose overrides in other modules read env.user
+        data = None
+        if not preview_of_request() and request and self.env.uid and self.env.uid == request.session.uid:
+            data = valid_preview(self.env)
+        if data and self.env.uid == data['by']:
+            return super(IrHttp, self.with_user(data['uid']).with_context(om_preview=True)).webclient_rendering_context()
+        return super().webclient_rendering_context()
+
     def session_info(self):
         data = preview_of_request()
         if not data and request and self.env.uid and self.env.uid == request.session.uid:
