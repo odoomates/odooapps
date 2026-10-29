@@ -10,7 +10,6 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'website': 'https://www.odoomates.tech',
     'depends': ['account', 'accounting_pdf_reports'],
     'data': [
         'security/ir.model.access.csv',

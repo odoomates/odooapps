@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_hospital_root" name="Hospital" web_icon="om_hospital,static/description/icon.png" sequence="10"/>
+
+    <menuitem id="menu_patient_root" name="Patients" parent="menu_hospital_root" sequence="10"/>
+    <menuitem id="menu_patient" name="Patients" parent="menu_patient_root" action="action_hospital_patient" sequence="10"/>
+    <menuitem id="menu_kids" name="Kids" parent="menu_patient_root" action="action_hospital_kids" sequence="20"/>
+    <menuitem id="menu_female" name="Female Patients" parent="menu_patient_root" action="action_hospital_female" sequence="30"/>
+
+    <menuitem id="menu_appointment_root" name="Appointments" parent="menu_hospital_root" sequence="20"/>
+    <menuitem id="menu_appointment" name="Appointments" parent="menu_appointment_root" action="action_hospital_appointment" sequence="10"/>
+    <menuitem id="menu_create_appointment" name="Create Appointment" parent="menu_appointment_root" action="action_create_appointment" sequence="20"/>
+    <menuitem id="menu_search_appointment" name="Search Appointments" parent="menu_appointment_root" action="action_search_appointment" sequence="30"/>
+
+    <menuitem id="menu_doctor" name="Doctors" parent="menu_hospital_root" action="action_hospital_doctor" sequence="30"/>
+
+    <menuitem id="menu_configuration" name="Configuration" parent="menu_hospital_root" sequence="100"/>
+    <menuitem id="menu_settings" name="Settings" parent="menu_configuration" action="action_hospital_settings" sequence="10" groups="base.group_system"/>
+    <menuitem id="menu_patient_tag" name="Tags" parent="menu_configuration" action="action_patient_tag" sequence="20"/>
+
+    <!-- an existing menu of Odoo, with an action of this module -->
+    <menuitem id="menu_sale_appointment" name="Appointments" parent="sale.sale_order_menu" action="action_hospital_appointment" sequence="90"/>
+
+</odoo>

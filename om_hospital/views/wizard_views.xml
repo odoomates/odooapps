@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_create_appointment_wizard_form" model="ir.ui.view">
+        <field name="name">create.appointment.wizard.form</field>
+        <field name="model">create.appointment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Appointment">
+                <group>
+                    <field name="patient_id"/>
+                    <field name="doctor_id"/>
+                    <field name="date_appointment"/>
+                </group>
+                <footer>
+                    <button name="action_create_appointment" type="object" string="Create" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_create_appointment" model="ir.actions.act_window">
+        <field name="name">Create Appointment</field>
+        <field name="res_model">create.appointment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="model_hospital_patient"/>
+        <field name="binding_view_types">list,form</field>
+    </record>
+
+    <record id="view_search_appointment_wizard_form" model="ir.ui.view">
+        <field name="name">search.appointment.wizard.form</field>
+        <field name="model">search.appointment.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Search Appointments">
+                <group>
+                    <field name="patient_id"/>
+                </group>
+                <footer>
+                    <button name="action_search_ref" type="object" string="Search (action of the menu)" class="btn-primary"/>
+                    <button name="action_search_dict" type="object" string="Search (dictionary)" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_search_appointment" model="ir.actions.act_window">
+        <field name="name">Search Appointments</field>
+        <field name="res_model">search.appointment.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>
