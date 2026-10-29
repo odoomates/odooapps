@@ -93,10 +93,10 @@ class TestMoreCourses(TransactionCase):
         report = live.record('action_report_contact_card')
         self.assertEqual(report.binding_model_id.model, 'res.partner', "in the Print menu of the contacts")
         self.assertEqual(report.paperformat_id.format, 'A5')
-        company = self.env['res.partner'].create({'name': 'Odoo Mates', 'is_company': True, 'website': 'https://odoomates.tech'})
+        company = self.env['res.partner'].create({'name': 'Odoo Mates', 'is_company': True, 'website': 'https://www.example.com'})
         self.env['res.partner'].create({'name': 'Niyas', 'parent_id': company.id, 'email': 'niyas@example.com'})
         html = self.env['ir.actions.report']._render_qweb_html(report, company.ids)[0]
-        for text in (b'Odoo Mates', b'odoomates.tech', b'niyas@example.com'):
+        for text in (b'Odoo Mates', b'example.com', b'niyas@example.com'):
             self.assertIn(text, html)
         self.assertFalse(self.Progress.academy_challenge_check('report', 'second')['ok'])
         self.Progress.academy_reset('report')
