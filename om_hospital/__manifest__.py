@@ -8,7 +8,6 @@
     'category': 'Tutorials',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
-    'website': 'https://www.odoomates.tech',
     'license': 'AGPL-3',
     'depends': [
         'sale',

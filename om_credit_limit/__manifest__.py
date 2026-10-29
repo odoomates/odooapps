@@ -6,7 +6,6 @@
     'description': """Customer Credit Limit""",
     'summary': """Customer Credit Limit""",
     'sequence': 11,
-    'website': 'https://www.odoomates.tech',
     'depends': ['account', 'sale'],
     'license': 'LGPL-3',
     'data': [

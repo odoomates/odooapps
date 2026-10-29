@@ -5,7 +5,6 @@
     'version': '14.0.3.0.0',
     'category': 'Accounting',
     'depends': ['account'],
-    'website': 'https://www.odoomates.tech',
     'author': 'Odoo Mates, Odoo SA',
     'support': 'odoomates@gmail.com',
     'maintainer': 'Odoo Mates',

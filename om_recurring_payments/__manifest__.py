@@ -9,7 +9,6 @@
     'description': """Odoo 14 Recurring Payment, Recurring Payment In Odoo, Odoo 14 Accounting""",
     'summary': 'Use recurring payments to handle periodically repeated payments',
     'sequence': 11,
-    'website': 'https://www.odoomates.tech',
     'depends': ['account'],
     'license': 'LGPL-3',
     'data': [
