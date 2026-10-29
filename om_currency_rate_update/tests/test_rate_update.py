@@ -15,6 +15,8 @@ GET = 'odoo.addons.om_currency_rate_update.models.rate_providers.requests.get'
 
 FRANKFURTER = {'amount': 1.0, 'base': 'EUR', 'date': '2026-09-15',
                'rates': {'USD': 1.1539, 'GBP': 0.8558, 'INR': 110.7285}}
+ALLRATESTODAY = {'result': 'success', 'base_code': 'EUR', 'date': '2026-09-15',
+                 'rates': {'USD': 1.1539, 'GBP': 0.8558, 'INR': 110.7285}}
 OPEN_EXCHANGE_RATES = {'timestamp': 1789430551, 'base': 'USD',
                        'rates': {'USD': 1.0, 'EUR': 0.8666, 'GBP': 0.7416, 'INR': 95.96, 'AED': 3.6725}}
 ECB = (b"""<?xml version="1.0" encoding="UTF-8"?>
@@ -102,6 +104,21 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         # changed by hand
         self._rate(self.eur).company_rate = 0.9
         self.assertFalse(self._rate(self.eur).rate_source)
+
+    def test_update_from_allratestoday(self):
+        self.company.rate_provider = 'allratestoday'
+        with patch(GET, fake_get({'allratestoday': FakeResponse(ALLRATESTODAY)})):
+            self.assertTrue(self.company._update_currency_rates())
+        self.assertAlmostEqual(self._rate(self.eur).company_rate, 1 / 1.1539, places=6)
+        self.assertAlmostEqual(self._rate(self.gbp).company_rate, 0.8558 / 1.1539, places=6)
+        self.assertEqual(self._rate(self.eur).rate_source, 'AllRatesToday')
+        self.assertIn('Not quoted by the sources: AED', self.company.rate_last_message)
+
+        refused = FakeResponse({'result': 'error', 'error-type': 'unsupported-code',
+                                'message': 'XXX is not in the ECB reference table.'}, status_code=404)
+        with patch(GET, fake_get({'allratestoday': refused})):
+            self.assertFalse(self.company._update_currency_rates())
+        self.assertIn('XXX is not in the ECB reference table.', self.company.rate_last_message)
 
     def test_main_source_fails(self):
         self.company.write({'rate_provider': 'openexchangerates', 'rate_openexchangerates_key': 'SECRET',

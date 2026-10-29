@@ -13,6 +13,7 @@ _logger = logging.getLogger(__name__)
 PROVIDER_SELECTION = [
     ('frankfurter', 'Frankfurter'),
     ('ecb', 'European Central Bank'),
+    ('allratestoday', 'AllRatesToday'),
     ('openexchangerates', 'Open Exchange Rates'),
     ('exchangerate_api', 'ExchangeRate-API'),
 ]

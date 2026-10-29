@@ -8,8 +8,8 @@ daily, weekly or monthly, with a backup source for the currencies the main one d
 Features
 ========
 
-* Four rate sources are supported: Frankfurter and the European Central Bank, which need no key and
-  quote about thirty major currencies; Open Exchange Rates, which quotes every currency and needs an
+* Five rate sources are supported: Frankfurter, the European Central Bank and AllRatesToday, which need
+  no key and quote about thirty major currencies; Open Exchange Rates, which quotes every currency and needs an
   App ID from openexchangerates.org; and ExchangeRate-API, which works on its free feed without a key
   and uses your key when you enter one.
 * A second source can be set as backup: it gives the rates of the currencies the main source does not

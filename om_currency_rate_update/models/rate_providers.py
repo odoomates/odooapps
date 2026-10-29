@@ -83,6 +83,20 @@ class FrankfurterProvider(RateProvider):
         return datetime.strptime(data['date'], '%Y-%m-%d').date(), data['base'], data['rates']
 
 
+class AllRatesTodayProvider(RateProvider):
+    code = 'allratestoday'
+    name = 'AllRatesToday'
+    # the keyless feed of the ECB reference rates, rebased by the server; dated rates need a key and are not used
+    url = 'https://allratestoday.com/api/open/latest/EUR'
+
+    def fetch(self):
+        data = self._get_json(self.url)
+        if data.get('result') != 'success' or not isinstance(data.get('rates'), dict):
+            raise UserError(self.company.env._('%(provider)s refused the request: %(message)s', provider=self.name,
+                              message=data.get('message') or data.get('error-type') or data))
+        return datetime.strptime(data['date'], '%Y-%m-%d').date(), data['base_code'], data['rates']
+
+
 class OpenExchangeRatesProvider(RateProvider):
     code = 'openexchangerates'
     name = 'Open Exchange Rates'
@@ -123,5 +137,5 @@ class ExchangeRateApiProvider(RateProvider):
 
 
 PROVIDERS = {provider.code: provider for provider in (
-    EcbProvider, FrankfurterProvider, OpenExchangeRatesProvider, ExchangeRateApiProvider,
+    EcbProvider, FrankfurterProvider, AllRatesTodayProvider, OpenExchangeRatesProvider, ExchangeRateApiProvider,
 )}
