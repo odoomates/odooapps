@@ -106,6 +106,10 @@ and on each step the ones that explain it. Recorded on Odoo 17: most of it is
 the same in Odoo 18, 19 and 20, and the courses show the Odoo 20 way where it
 changed.
 
+Before *Code it*, the first videos of the Odoo 16 playlist set up Odoo on your
+own computer: Odoo with PyCharm, a custom addons path, a first module. Like
+them? Subscribe to the channel: https://www.youtube.com/@OdooMates
+
 And more
 ========
 
@@ -116,6 +120,14 @@ And more
   fields, views and menus you wrote.
 * **Interview round**: a topic of the warm-up with the questions of a job
   interview for an Odoo developer.
+
+In your language
+================
+
+The whole Academy, its courses, the bug hunt and the quiz included, is
+translated into Arabic, Chinese (Simplified), Dutch, French, German,
+Indonesian, Italian, Japanese, Portuguese (Brazil), Russian, Spanish and
+Turkish. The code stays in English, and so do the names of the app you build.
 
 Usage
 =====
