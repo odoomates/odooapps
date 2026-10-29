@@ -151,6 +151,7 @@ class AcademyWarmup(models.AbstractModel):
         answer = {'choice': choice, 'correct': choice == right, 'right': right, 'why': str(question['why'])}
         item['answer'] = answer
         state['seen'][key] = state['seen'].get(key, 0) + 1
+        self.env.user._academy_active()
         if answer['correct'] and key not in state['right']:
             state['right'].append(key)
         result = False

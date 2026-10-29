@@ -63,7 +63,7 @@ class TestHood(TransactionCase):
     def test_every_step_of_every_course(self):
         from odoo.addons.om_academy.courses import COURSES
         for course in COURSES:
-            self.Progress.academy_set_mode(course['key'], 'live')
+            self.Progress.academy_set_mode(course['key'], (course.get('modes') or ['live'])[0])
             for step in self.Progress.academy_open(course['key'])['steps']:
                 with self.subTest(course=course['key'], step=step['key']):
                     self.Progress.academy_hood(course['key'], step['index'])

@@ -19,10 +19,12 @@ from odoo.tools import config, file_open
 import odoo.addons
 
 from ..courses import COURSES, COURSES_BY_KEY
+from ..courses.videos import PLAYLIST_URL, SETUP_PLAYLIST_URL, setup_videos, step_videos, videos
+from .bugs import BUGS
 from .challenges import ChallengeChecker
 from .code_checker import CodeChecker
 from .hood import Hood
-from .course_files import ICON, changed_lines, files_at
+from .course_files import ICON, changed_lines, csv_accesses, files_at, models_at, xml_records
 from .line_notes import line_note
 from .live_builder import LiveBuilder, live_model
 
@@ -106,7 +108,9 @@ class AcademyProgress(models.Model):
             return progress
         # the author of their last course, for a start, and the icon of the subject
         last = self.search([('user_id', '=', self.env.uid)], limit=1)
-        values = {'course_key': course_key, 'icon': self._course(course_key).get('default_icon') or 'book'}
+        course = self._course(course_key)
+        values = {'course_key': course_key, 'icon': course.get('default_icon') or 'book',
+                  'mode': (course.get('modes') or ['live'])[0]}
         if last:
             values.update(author_name=last.author_name, coauthor=last.coauthor)
         return self.create(values)
@@ -238,7 +242,11 @@ class AcademyProgress(models.Model):
                 'shelf': [{'key': progress.course_key, 'name': progress._app_name(), 'icon_url': progress._icon_url(),
                            'date': fields.Date.to_string(progress.completed_on)}
                           for progress in sorted(completed, key=lambda progress: progress.completed_on)],
-                'trophies': self._trophies(progresses)}
+                'trophies': self._trophies(progresses),
+                'streak': self.env.user._academy_streak(),
+                'bugs': {'found': len((self.env.user.academy_bugs or {}).get('found') or []), 'total': len(BUGS)},
+                'videos': videos(), 'playlist_url': PLAYLIST_URL,
+                'setup_videos': setup_videos(), 'setup_playlist_url': SETUP_PLAYLIST_URL}
 
     @api.model
     def _trophies(self, progresses):
@@ -277,6 +285,15 @@ class AcademyProgress(models.Model):
              'description': _("12 right answers in the warm-up, or all its tasks done."),
              'earned': len(right) >= 12
                        or len(warmup.get('tasks') or {}) >= 5},
+            {'key': 'bug_hunter', 'emoji': '🐞', 'title': _("Bug hunter"),
+             'description': _("Every bug of the bug hunt found."),
+             'earned': len((self.env.user.academy_bugs or {}).get('found') or []) >= len(BUGS)},
+            {'key': 'owl', 'emoji': '🦉', 'title': _("Owl tamer"),
+             'description': _("Your first Owl components, in JavaScript."),
+             'earned': any(progress.course_key == 'owl' for progress in completed)},
+            {'key': 'streak', 'emoji': '📅', 'title': _("Steady"),
+             'description': _("5 days in a row in the Academy."),
+             'earned': self.env.user._academy_streak()['best'] >= 5},
         ]
 
     def _learner_name(self):
@@ -424,7 +441,8 @@ class AcademyProgress(models.Model):
         done = self._done_keys()
         return {
             'key': course['key'], 'name': str(course['name']), 'module': course['module'],
-            'family': course.get('family') or False, 'mode': self.mode, 'current': self.current, 'level': self.level, 'levels': self._levels(),
+            'family': course.get('family') or False, 'mode': self.mode,
+            'modes': course.get('modes') or [mode for mode, _label in MODES], 'current': self.current, 'level': self.level, 'levels': self._levels(),
             'author_name': self.author_name or '', 'coauthor': self.coauthor,
             'share_url': STORE_URL,
             'app_name': course.get('subject') or course.get('app_name') or str(course['name']),
@@ -505,6 +523,28 @@ class AcademyProgress(models.Model):
             'challenges': progress._challenges() if step.get('finish') else [],
             'buildable': not step.get('intro') and not step.get('finish'),
             'mode': progress.mode,
+            'videos': step_videos(course, step['key']),
+            # Code it: Odoo on the learner's computer first
+            'setup_videos': setup_videos() if step.get('intro') and progress.mode == 'code' else [],
+            'numbers': progress._numbers(course, index) if step.get('finish') else False,
+        }
+
+    @api.model
+    def _numbers(self, course, index):
+        """ Your app in numbers: what the module holds after the step. """
+        files = files_at(course, index)
+        texts = [content for content in files.values() if isinstance(content, str)]
+        models = models_at(course, index)
+        records = [record for _path, record in xml_records(files)]
+        return {
+            'files': len(files),
+            'lines': sum(len([line for line in content.splitlines() if line.strip()]) for content in texts),
+            'models': len([spec for spec in models.values() if not spec.get('existing')]),
+            'fields': sum(len(spec['fields']) for spec in models.values()),
+            'views': len([record for record in records if record['model'] == 'ir.ui.view']),
+            'menus': len([record for record in records if record['model'] == 'ir.ui.menu']),
+            'accesses': len(csv_accesses(files)),
+            'scripts': len([path for path in files if path.endswith('.js')]),
         }
 
     @api.model
@@ -541,6 +581,8 @@ class AcademyProgress(models.Model):
         if mode not in dict(MODES):
             raise UserError(_("Unknown mode."))
         progress = self._get(course_key)
+        if mode not in (progress._course(course_key).get('modes') or dict(MODES)):
+            raise UserError(_("This course is written in your editor only: Code it."))
         progress.mode = mode
         return progress._course_payload()
 
@@ -562,6 +604,7 @@ class AcademyProgress(models.Model):
         ok, message = ChallengeChecker(progress, course).check(challenge)
         if ok and key not in (progress.challenges_done or []):
             progress.challenges_done = list(progress.challenges_done or []) + [key]
+            self.env.user._academy_active()
         keys = {challenge['key'] for challenge in course['challenges']}
         return {'ok': ok, 'message': message, 'all_done': keys <= set(progress.challenges_done or [])}
 
@@ -679,7 +722,7 @@ class AcademyProgress(models.Model):
         if not action:
             raise UserError(_("The app has no menu yet: finish the step 'An action and a menu' first."))
         xmlid = action.get_external_id().get(action.id)
-        result = self.env['ir.actions.act_window']._for_xml_id(xmlid) if xmlid else {
+        result = self.env['ir.actions.actions']._for_xml_id(xmlid) if xmlid else {
             'type': 'ir.actions.act_window', 'id': action.id, 'name': action.name, 'res_model': action.res_model,
             'views': [[False, 'list'], [False, 'form']], 'target': 'current'}
         if kind == 'form':
@@ -740,6 +783,7 @@ class AcademyProgress(models.Model):
             built.append(step['key'])
             progress.built = built
         progress._mark_completed()
+        self.env.user._academy_active()
         return progress.academy_step(course_key, index) | {'course': progress._course_payload()}
 
     @api.model
@@ -924,4 +968,5 @@ class AcademyProgress(models.Model):
                     done.append(step['key'])
             progress.done = done
             progress._mark_completed()
+            self.env.user._academy_active()
         return {'results': results, 'passed': passed, 'course': progress._course_payload()}

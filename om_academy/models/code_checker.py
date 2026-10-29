@@ -2,7 +2,9 @@
 # asks for? The expectations come from the course files themselves: the
 # models and fields of the Python part, and every record of the XML and CSV
 # files, compared with what Odoo has under the module's external ids.
+import ast
 import os
+import re
 import sys
 
 import psutil
@@ -188,6 +190,45 @@ class CodeChecker:
             if parent and found.parent_id != parent:
                 self.fail(_lt("The menu %(xmlid)s should be under %(parent)s."),
                           xmlid=record['xmlid'], parent=values['parent'])
+
+    def _read(self, path):
+        """ The learner's file, as it is on disk: None when it is not there. """
+        root = get_module_path(self.module)
+        full = os.path.join(root, path) if root else None
+        if not full or not os.path.isfile(full):
+            return None
+        with open(full, encoding='utf-8') as handle:
+            return handle.read()
+
+    def _check_files(self, extra):
+        """ A file of the module holds what the step writes in it (JavaScript, templates). """
+        content = self._read(extra['path'])
+        if content is None:
+            self.fail(_lt("The file %(path)s is missing."), _lt("Create it, or click Write it for me."),
+                      path=extra['path'])
+            return
+        flat = re.sub(r'\s+', ' ', content)
+        missing = [needle for needle in extra['needles'] if re.sub(r'\s+', ' ', needle) not in flat]
+        if missing:
+            self.fail(_lt("%(path)s lacks %(code)s."), _lt("Compare your file with the code of the step."),
+                      path=extra['path'], code=', '.join(missing))
+        else:
+            self.ok(_lt("%(path)s is right."), path=extra['path'])
+
+    def _check_assets(self, extra):
+        """ The manifest puts the files of static/src in a bundle the browser loads. """
+        content = self._read('__manifest__.py')
+        try:
+            manifest = ast.literal_eval(content) if content else {}
+        except (SyntaxError, ValueError):
+            manifest = {}
+        bundles = manifest.get('assets') or {}
+        if any('%s/static/src' % self.module in str(item) for item in bundles.get(extra['bundle']) or ()):
+            self.ok(_lt("The manifest loads static/src in %(bundle)s."), bundle=extra['bundle'])
+        else:
+            self.fail(_lt("The manifest does not load static/src in %(bundle)s."),
+                      _lt("Add the 'assets' of the step to __manifest__.py, then restart Odoo."),
+                      bundle=extra['bundle'])
 
     def _check_mail_thread(self, extra):
         model = extra['model']

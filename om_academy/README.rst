@@ -1,6 +1,6 @@
-==================
-Odoo Mates Academy
-==================
+====================================
+Odoo Mates Academy: Odoo Development
+====================================
 
 .. note::
 
@@ -68,6 +68,10 @@ Courses
 * **Secure an app, the Odoo 20 way** (intermediate, 7 steps): groups under a
   privilege, access rights per group, a domain so that users see only their own
   records, menus and fields for managers only.
+* **Your first Owl components** (intermediate, 5 steps, Code it only): a client
+  action of your own, its state, a child component with props, data read with
+  the ORM service, a notification and an action. Odoo 20's Owl: ``proxy``,
+  ``useProps``.
 
 At the end of a course: your certificate (PDF), trophies, challenges to do on
 your own, and the app to export.
@@ -84,6 +88,34 @@ Warm-up
 * **Find it**: what a developer looks for every day, explained, then found by
   you: the browser console, the developer mode, the model of a page, the id of
   a record, an external id, the id of a view.
+
+Bug hunt
+========
+
+Fourteen errors every Odoo developer meets: a missing comma in the manifest, a
+model never imported, a field the view does not know, *Expected singleton*, a
+compute that forgets a record, a template that does not exist... For each one:
+the code, the error exactly as Odoo shows it, and four reasons. Pick the right
+one: wrong, you get a hint and try again; right, you read why, and the fix.
+
+Videos
+======
+
+The Odoo development videos of Odoo Mates on YouTube, all on the home screen,
+and on each step the ones that explain it. Recorded on Odoo 17: most of it is
+the same in Odoo 18, 19 and 20, and the courses show the Odoo 20 way where it
+changed.
+
+And more
+========
+
+* **Your journey**: the courses as stops on a path, the next one glowing, the
+  ones done stamped.
+* **Day streak**: the days in a row you learned something, and your best.
+* **Your app in numbers**: at the end of a course, the lines, files, models,
+  fields, views and menus you wrote.
+* **Interview round**: a topic of the warm-up with the questions of a job
+  interview for an Odoo developer.
 
 Usage
 =====

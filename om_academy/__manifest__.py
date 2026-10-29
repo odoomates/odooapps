@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo Mates Academy',
+    'name': 'Odoo Mates Academy: Odoo Development',
     'version': '0.1.0',
     'author': 'Odoo Mates',
     'category': 'Tools',

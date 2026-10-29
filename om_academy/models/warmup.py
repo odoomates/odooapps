@@ -21,6 +21,7 @@ TOPICS = [
     ('odoo', '🌍', _lt("About Odoo"), _lt("Its story, its editions, where it runs.")),
     ('fields', '🧱', _lt("Field types"), _lt("Char, Many2one, One2many... which one is which?")),
     ('built', '🛠️', _lt("What you built"), _lt("The steps of the courses you have done.")),
+    ('interview', '💼', _lt("Interview round"), _lt("What a job interview for an Odoo developer asks.")),
 ]
 ROUND_SIZE = 8
 
@@ -252,6 +253,111 @@ QUESTIONS = [
               _lt("Sorts the records"), _lt("Translates it")], 0,
              _lt("Only users in those groups see it."),
              needs=('security', 'menus')),
+
+    # the interview round: what a job interview for an Odoo developer asks
+    question('i_inherit_kinds', 'interview', _lt("_inherit = 'sale.order' without a _name..."),
+             [_lt("Creates a copy of the model with another name"),
+              _lt("Adds your fields and methods to the existing model, in the same table"),
+              _lt("Links two models through a Many2one, like _inherits"),
+              _lt("Is not allowed on Odoo's own models")], 1,
+             _lt("Classic inheritance extends the model in place: same model, same table. With a new "
+                 "_name, it copies it into a new model; _inherits (with an s) links to a parent by a "
+                 "Many2one, its fields shown as if they were yours.")),
+    question('i_inherits', 'interview', _lt("What does _inherits do (with an s), as res.users does with res.partner?"),
+             [_lt("Delegation: each record links to a parent record, and shows its fields as its own"),
+              _lt("The same as _inherit"), _lt("It copies the parent's data once"),
+              _lt("It inherits the views only")], 0,
+             _lt("Delegation inheritance: a user is linked to a partner by partner_id, and user.name is "
+                 "the partner's name, stored in the partner's table.")),
+    question('i_sudo', 'interview', _lt("When is sudo() the right tool?"),
+             [_lt("Always, so that no user gets an access error"),
+              _lt("Never: it is deprecated"),
+              _lt("For a precise operation the user may not do themselves, after checking it is allowed"),
+              _lt("To make the code faster")], 2,
+             _lt("sudo() bypasses the access rights and rules: use it for a precise, checked operation, "
+                 "never to hide an access error. A user may otherwise read or change what they should not.")),
+    question('i_env_ref', 'interview', _lt("self.env.ref('base.main_company') gives..."),
+             [_lt("The record with the external id base.main_company"),
+              _lt("The id 1, always"), _lt("The model res.company"), _lt("A search of companies by name")], 0,
+             _lt("env.ref reads ir.model.data: the record an external id points to, whatever its database id.")),
+    question('i_noupdate', 'interview', _lt("Records in a data file with noupdate=\"1\"..."),
+             [_lt("Are never loaded"), _lt("Are created at install and left as they are by later upgrades"),
+              _lt("Are deleted at each upgrade"), _lt("Can only be read")], 1,
+             _lt("noupdate: created once, then the upgrade leaves them alone, so users may change them. "
+                 "Typical for sequences, stages and default data.")),
+    question('i_depends', 'interview', _lt("A stored computed field is not updated when a field changes. Why?"),
+             [_lt("Stored fields are never recomputed"),
+              _lt("That field is missing from @api.depends"),
+              _lt("The field needs readonly=False"), _lt("The cron did not run")], 1,
+             _lt("A stored compute is recomputed only when a field of @api.depends changes: list every field "
+                 "it reads, dotted paths included (partner_id.country_id).")),
+    question('i_onchange', 'interview', _lt("@api.onchange versus a computed field: which is true?"),
+             [_lt("onchange runs in the form only, before saving; a compute also runs from code and imports"),
+              _lt("They are exactly the same"), _lt("onchange is stored, compute is not"),
+              _lt("A compute only runs in the form")], 0,
+             _lt("onchange reacts in the form only. A computed field (store or not, readonly=False to "
+                 "let users change it) is right everywhere: code, imports, the API. Prefer computes.")),
+    question('i_related', 'interview', _lt("fields.Char(related='partner_id.email') is..."),
+             [_lt("A copy made once, at creation"),
+              _lt("A field that reads, and writes, the email of the linked partner"),
+              _lt("A new column filled by a cron"), _lt("Only allowed on Many2many fields")], 1,
+             _lt("A related field follows the path: it shows the partner's email, and writing it changes the "
+                 "partner. Not stored unless store=True.")),
+    question('i_ensure_one', 'interview', _lt("What does self.ensure_one() do?"),
+             [_lt("Keeps the first record of self"),
+              _lt("Raises an error unless self holds exactly one record"),
+              _lt("Creates a record if self is empty"), _lt("Locks the record")], 1,
+             _lt("It raises Expected singleton unless self is one record: a method meant for one record "
+                 "says so at its start.")),
+    question('i_api_model', 'interview', _lt("A method decorated with @api.model..."),
+             [_lt("Does not work on records: self is the model, empty, as for a create"),
+              _lt("Runs as the superuser"), _lt("Is called at each upgrade"), _lt("Is private")], 0,
+             _lt("@api.model: the method does not depend on records, self is an empty recordset of the "
+                 "model. Default values and create helpers are written this way.")),
+    question('i_search_count', 'interview', _lt("To know how many confirmed orders there are, the best is..."),
+             [_lt("len(self.env['sale.order'].search([]))"),
+              _lt("self.env['sale.order'].search_count([('state', '=', 'sale')])"),
+              _lt("A loop over all the orders"), _lt("A SQL query, always")], 1,
+             _lt("search_count asks the database for the number only; searching every record and counting "
+                 "them in Python is slower.")),
+    question('i_mapped', 'interview', _lt("orders.mapped('partner_id') returns..."),
+             [_lt("A list of ids"), _lt("The partners of the orders, as a recordset, without duplicates"),
+              _lt("The first partner"), _lt("A dictionary")], 1,
+             _lt("mapped follows the field on every record and gives a recordset, each partner once. "
+                 "filtered and sorted are its siblings.")),
+    question('i_context', 'interview', _lt("with_context(lang='fr_FR')..."),
+             [_lt("Changes the language of the user for good"),
+              _lt("Gives the same records with a new context: here, names read in French"),
+              _lt("Translates the code"), _lt("Is only for reports")], 1,
+             _lt("with_context returns the recordset with another context, for the calls made on it: the "
+                 "language, a default value, a flag your code reads.")),
+    question('i_invisible', 'interview', _lt("Since Odoo 17, how do you hide a field when the state is done?"),
+             [_lt("attrs=\"{'invisible': [('state', '=', 'done')]}\""),
+              _lt("invisible=\"state == 'done'\""), _lt("Only with JavaScript"),
+              _lt("states=\"done\"")], 1,
+             _lt("attrs and states are gone since Odoo 17: invisible, readonly and required take a Python "
+                 "expression on the fields of the record.")),
+    question('i_t_out', 'interview', _lt("In QWeb, which directive prints a value, escaped?"),
+             [_lt("t-out"), _lt("t-raw"), _lt("t-print"), _lt("t-value")], 0,
+             _lt("t-out, escaped unless the value is marked safe (Markup). t-esc and t-raw are the names of "
+                 "before.")),
+    question('i_route', 'interview', _lt("A web page or a JSON endpoint of a module is a..."),
+             [_lt("Method of a model with @api.route"),
+              _lt("Method of a controller, decorated with @http.route"),
+              _lt("Record of ir.ui.menu"), _lt("Scheduled action")], 1,
+             _lt("A controller: a class of odoo.http.Controller, its methods decorated with @http.route, "
+                 "with type='http' or 'jsonrpc' and auth='user', 'public' or 'none'.")),
+    question('i_cron', 'interview', _lt("To run a method of your module every night, you add..."),
+             [_lt("A Python thread"), _lt("An ir.cron record, a scheduled action"),
+              _lt("A loop in the method"), _lt("A server restart")], 1,
+             _lt("A scheduled action, ir.cron: the model, the code to run, and the interval. Odoo's cron "
+                 "workers run it.")),
+    question('i_upgrade', 'interview', _lt("You renamed a field. What keeps the data of the old column?"),
+             [_lt("Nothing to do: Odoo renames it"),
+              _lt("A migration script (or keeping the old name)"),
+              _lt("Restarting Odoo twice"), _lt("Uninstalling the module first")], 1,
+             _lt("Odoo sees a field removed and a new one added: the new column is empty. A migration script "
+                 "in migrations/<version>/ moves the data, or the field keeps its name.")),
 ]
 
 

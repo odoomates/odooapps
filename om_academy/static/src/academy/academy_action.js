@@ -49,6 +49,8 @@ export class Academy extends Component {
             sqlTyped: 0,
             note: null,
             warmup: null,
+            bugs: null,
+            watched: JSON.parse(localStorage.getItem("om_academy_watched") || "[]"),
             askReset: false,
             busy: false,
         });
@@ -67,10 +69,13 @@ export class Academy extends Component {
     }
 
     get modes() {
-        return [
+        const modes = [
             ["live", _t("Build it live"), _t("No editor needed: see each step appear in Odoo.")],
             ["code", _t("Code it"), _t("Write the files in your editor; the Academy checks them.")],
         ];
+        // a course of JavaScript is written in the editor only
+        const allowed = this.state.course?.modes;
+        return allowed ? modes.filter((mode) => allowed.includes(mode[0])) : modes;
     }
 
     html(value) {
@@ -490,6 +495,115 @@ export class Academy extends Component {
         );
     }
 
+    /** The journey: the first app, then each course, as stops on a path. */
+    get journey() {
+        const firstDone = this.firstApps.some((course) => course.done === course.steps);
+        const firstStarted = this.firstApps.some((course) => course.started);
+        const next = this.nextCourse;
+        const stops = [{
+            key: "first_app", emoji: "🚀", title: _t("Your first app"),
+            done: firstDone, started: firstStarted,
+            current: Boolean(next && next.family === "first_app"),
+            course: next && next.family === "first_app" ? next : this.firstApps[0],
+        }];
+        for (const course of this.otherCourses) {
+            stops.push({
+                key: course.key, emoji: this.courseEmoji(course.key), title: course.name,
+                done: course.done === course.steps, started: course.started,
+                current: Boolean(next && next.key === course.key), course,
+            });
+        }
+        stops.push({
+            key: "bugs", emoji: "🐞", title: _t("Bug hunt"),
+            done: this.state.home.bugs.found === this.state.home.bugs.total,
+            started: this.state.home.bugs.found > 0, current: false, bugs: true,
+        });
+        return stops;
+    }
+
+    courseEmoji(key) {
+        return { contacts: "👥", kanban: "🗂️", report: "🖨️", security: "🛡️", owl: "🦉" }[key] || "🎓";
+    }
+
+    openStop(stop) {
+        if (stop.bugs) {
+            return this.openBugs();
+        }
+        return this.openCourse(stop.course.key, stop.course.started);
+    }
+
+    get streakText() {
+        const streak = this.state.home.streak;
+        if (!streak.current) {
+            return _t("Learn something today to start a streak.");
+        }
+        return streak.today
+            ? _t("Done for today. Come back tomorrow!")
+            : _t("Do a step today to keep it going.");
+    }
+
+    // the videos of Odoo Mates
+
+    openVideo(video) {
+        window.open(video.url, "_blank", "noopener");
+        if (!this.state.watched.includes(video.id)) {
+            this.state.watched = [...this.state.watched, video.id];
+            localStorage.setItem("om_academy_watched", JSON.stringify(this.state.watched));
+        }
+    }
+
+    isWatched(video) {
+        return this.state.watched.includes(video.id);
+    }
+
+    // the bug hunt: why does it break?
+
+    async openBugs() {
+        this.state.welcome = null;
+        const data = await this.orm.call("academy.bugs", "academy_bugs", []);
+        const current = data.bugs.findIndex((bug) => !bug.found);
+        this.state.bugs = { data, current: current < 0 ? 0 : current, picked: null, wrong: [] };
+    }
+
+    get bug() {
+        return this.state.bugs.data.bugs[this.state.bugs.current];
+    }
+
+    async answerBug(choice) {
+        const bugs = this.state.bugs;
+        const bug = this.bug;
+        if (bug.answer || bugs.wrong.includes(choice)) {
+            return;
+        }
+        const result = await this.orm.call("academy.bugs", "academy_bug_answer", [bug.key, choice]);
+        if (!result.correct) {
+            bugs.wrong = [...bugs.wrong, choice];
+            bug.tries += 1;
+            return;
+        }
+        bug.found = true;
+        bug.answer = result;
+        bugs.data.found = bugs.data.bugs.filter((item) => item.found).length;
+        if (result.all_found) {
+            this.effect.add({
+                type: "rainbow_man",
+                message: _t("Every bug found! Errors do not scare you anymore."),
+                fadeout: "slow",
+            });
+        }
+    }
+
+    openBug(index) {
+        Object.assign(this.state.bugs, { current: index, wrong: [] });
+    }
+
+    async closeBugs() {
+        this.state.bugs = null;
+        if (this.state.home && !this.state.course) {
+            this.state.home = await this.orm.call(MODEL, "academy_home", []);
+        }
+    }
+
     get homeStats() {
         const courses = this.state.home.courses;
         const steps = courses.reduce((total, course) => total + course.steps, 0);
@@ -621,6 +735,13 @@ export class Academy extends Component {
         }
     }
 
+    async closeWarmup() {
+        this.state.warmup = null;
+        if (this.state.home && !this.state.course) {
+            this.state.home = await this.orm.call(MODEL, "academy_home", []);
+        }
+    }
+
     /** A new round of the topic: other questions, in another order. */
     async startRound(topic) {
         const warmup = this.state.warmup;
@@ -735,6 +856,7 @@ export class Academy extends Component {
 
     get links() {
         return [
+            ["YouTube: Odoo Mates", "https://www.youtube.com/@OdooMates?sub_confirmation=1"],
             ["GitHub: odoomates", "https://github.com/odoomates"],
             ["GitHub: niyasraphy", "https://github.com/niyasraphy"],
             ["LinkedIn: Niyas Raphy", "https://www.linkedin.com/in/niyasraphy/"],

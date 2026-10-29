@@ -11,3 +11,4 @@ from . import test_subjects
 from . import test_warmup
 from . import test_challenges
 from . import test_hood
+from . import test_more_to_learn

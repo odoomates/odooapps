@@ -3,7 +3,12 @@
 # live), and the Academy checks what Odoo has: a field by its label and type,
 # a field in a view, a filter, a required field, an operation of an access
 # right. The same checks work on the module's model and on the live one.
+import os
+import re
+
 from lxml import etree
+
+from odoo.modules.module import get_module_path
 
 from odoo.tools.translate import LazyTranslate
 
@@ -86,6 +91,22 @@ class ChallengeChecker:
         if any(challenge['operation'] in (access.operation or '') for access in accesses):
             return True, str(_lt("Yes: the group may %(what)s.")) % {'what': challenge['what']}
         return False, str(_lt("The group may not %(what)s yet.")) % {'what': challenge['what']}
+
+    def _check_code(self, challenge):
+        """ Code of the learner's own, in their files (JavaScript): read on disk. """
+        root = get_module_path(self.course['module'])
+        wanted = [(challenge['path'], challenge['needles']), (challenge.get('xml'), challenge.get('xml_needles') or [])]
+        for path, needles in wanted:
+            if not path or not needles:
+                continue
+            full = os.path.join(root, path) if root else None
+            if not full or not os.path.isfile(full):
+                return False, str(_lt("%(path)s is not in your module yet.")) % {'path': path}
+            with open(full, encoding='utf-8') as handle:
+                content = handle.read()
+            if not all(re.search(needle, content) for needle in needles):
+                return False, str(_lt("Not yet: %(path)s does not do it.")) % {'path': path}
+        return True, str(_lt("Yes: done, in your own code."))
 
     def _check_report(self, challenge):
         report = self.env['ir.actions.report'].sudo().search([('model', '=', challenge['model']),

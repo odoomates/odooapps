@@ -7,6 +7,7 @@
             <t t-elif="this.state.home" t-call="om_academy.AcademyHome"/>
             <t t-if="this.state.welcome !== null" t-call="om_academy.AcademyWelcome"/>
             <t t-if="this.state.warmup" t-call="om_academy.AcademyWarmup"/>
+            <t t-if="this.state.bugs" t-call="om_academy.AcademyBugs"/>
         </div>
     </t>
 
@@ -60,6 +61,9 @@
                             Print menu.</div>
                         <div><b>Security, the Odoo 20 way</b>: groups, access rights, record domains, menus and
                             fields for some only.</div>
+                        <div><b>Your first Owl components</b>: JavaScript in Odoo, a screen of your own.</div>
+                        <div><b>The bug hunt</b>: real errors of Odoo, and why they happen. And the
+                            <b>videos</b> of Odoo Mates, step by step.</div>
                     </div>
                     <p class="text-center text-muted mb-0">Pick an app, a library, a car rental, a hotel..., and it is
                         yours: your name as its author, your icon, in Apps.</p>
@@ -68,7 +72,7 @@
                 <div t-if="screen === 'us'" class="o_academy_welcome_body text-center">
                     <img src="/om_academy/static/description/odoo_mates.png" alt="Odoo Mates" class="o_academy_welcome_logo"/>
                     <h2>Brought to you by Odoo Mates</h2>
-                    <p>Made with care by <b>Niyas Raphy</b> and Odoo Mates, completely free.
+                    <p>Made with care by Odoo Mates, completely free.
                         If it helps you, a follow or a thumbs up means a lot to us.</p>
                     <div class="d-flex flex-wrap justify-content-center gap-2 mb-2">
                         <a t-foreach="this.links" t-as="link" t-key="link[1]" t-att-href="link[1]" target="_blank"
@@ -118,6 +122,19 @@
                         </div>
                     </div>
                 </div>
+                <div class="o_academy_streak" t-att-class="{'on': this.state.home.streak.current}">
+                    <span class="o_academy_streak_fire">&#128293;</span>
+                    <div>
+                        <div class="fw-bold">
+                            <t t-if="this.state.home.streak.current === 1">1 day in a row</t>
+                            <t t-else=""><t t-out="this.state.home.streak.current"/> days in a row</t>
+                        </div>
+                        <div class="small o_academy_side_muted">
+                            <t t-out="this.streakText"/>
+                            <t t-if="this.state.home.streak.best &gt; 1"> Best: <t t-out="this.state.home.streak.best"/>.</t>
+                        </div>
+                    </div>
+                </div>
                 <div class="o_academy_trophies">
                     <div class="o_academy_side_title">Trophies
                         <span class="o_academy_side_muted">
@@ -159,6 +176,9 @@
                             Warm-up quiz
                         </button>
                     </div>
+                    <button class="btn btn-sm o_academy_ghost o_academy_bugs_open w-100" t-on-click="() => this.openBugs()">
+                        &#128030; Bug hunt
+                    </button>
                 </div>
                 <div class="o_academy_side_foot">
                     <p class="o_academy_motto mb-2">Nothing is too big. Nothing is impossible. You dream, and you fly.</p>
@@ -205,6 +225,23 @@
                         <h2 class="mb-0">&#127881; Every course is built. You dream, and you fly.</h2>
                     </div>
                 </section>
+                <section class="o_academy_map" aria-label="Your journey">
+                    <div class="o_academy_map_title">Your journey</div>
+                    <div class="o_academy_map_path">
+                        <t t-foreach="this.journey" t-as="stop" t-key="stop.key">
+                            <div t-if="stop_index" class="o_academy_map_road" t-att-class="{'done': this.journey[stop_index - 1].done}"/>
+                            <button type="button" class="o_academy_map_stop" t-att-data-stop="stop.key"
+                                    t-att-class="{'done': stop.done, 'current': stop.current, 'started': stop.started}"
+                                    t-att-title="stop.title" t-on-click="() => this.openStop(stop)">
+                                <span class="o_academy_map_dot">
+                                    <span t-out="stop.emoji"/>
+                                    <span t-if="stop.done" class="o_academy_map_stamp">&#10003;</span>
+                                </span>
+                                <span class="o_academy_map_name" t-out="stop.title"/>
+                            </button>
+                        </t>
+                    </div>
+                </section>
                 <section class="o_academy_stage">
                     <div class="o_academy_stage_head">
                         <span class="o_academy_stage_num">1</span>
@@ -245,7 +282,7 @@
                              t-att-class="{'done': course.done === course.steps}"
                              t-att-data-course="course.key" t-on-click="() => this.openCourse(course.key, course.started)">
                             <div class="o_academy_cover" t-att-data-cover="course.key">
-                                <span t-out="{contacts: '👥', kanban: '🗂️', report: '🖨️', security: '🛡️'}[course.key] or '🎓'"/>
+                                <span t-out="this.courseEmoji(course.key)"/>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <span class="badge o_academy_badge" t-out="course.level"/>
@@ -267,6 +304,88 @@
                         </div>
                     </div>
                 </section>
+                <section class="o_academy_stage o_academy_stage_bugs">
+                    <div class="o_academy_stage_head">
+                        <span class="o_academy_stage_num">3</span>
+                        <div>
+                            <h4 class="o_academy_choice_title mb-0">Hunt the bugs</h4>
+                            <div class="text-muted small">Real errors of Odoo: read the code and the message, and
+                                find why it breaks. Found it? On to the next one.</div>
+                        </div>
+                    </div>
+                    <div class="o_academy_card o_academy_bugs_card" t-on-click="() => this.openBugs()">
+                        <div class="o_academy_bugs_emoji">&#128030;</div>
+                        <div class="flex-grow-1">
+                            <h3 class="mb-1">The bug hunt</h3>
+                            <div class="progress o_academy_progress mb-1">
+                                <div class="progress-bar" t-att-style="'width: ' + (100 * this.state.home.bugs.found / this.state.home.bugs.total) + '%'"/>
+                            </div>
+                            <div class="small text-muted"><t t-out="this.state.home.bugs.found"/> / <t t-out="this.state.home.bugs.total"/> bugs found</div>
+                        </div>
+                        <button class="btn btn-primary o_academy_start">
+                            <t t-if="this.state.home.bugs.found">Continue</t><t t-else="">Start hunting</t>
+                        </button>
+                    </div>
+                </section>
+                <section class="o_academy_stage o_academy_stage_videos">
+                    <div class="o_academy_stage_head">
+                        <span class="o_academy_stage_num">4</span>
+                        <div class="flex-grow-1">
+                            <h4 class="o_academy_choice_title mb-0">Watch and learn</h4>
+                            <div class="text-muted small">The Odoo development videos of Odoo Mates on YouTube. Made
+                                for Odoo 17: most of it is the same in Odoo 18, 19 and 20, and the courses here
+                                show the Odoo 20 way where it changed.</div>
+                        </div>
+                        <div class="d-flex flex-column gap-2">
+                            <a href="https://www.youtube.com/@OdooMates?sub_confirmation=1" target="_blank" rel="noopener"
+                               class="btn btn-sm o_academy_subscribe">&#9654; Subscribe on YouTube</a>
+                            <a t-att-href="this.state.home.playlist_url" target="_blank" rel="noopener"
+                               class="btn btn-sm btn-light o_academy_playlist">The playlist on YouTube</a>
+                        </div>
+                    </div>
+                    <div class="o_academy_setup_videos">
+                        <div class="o_academy_setup_title">
+                            <b>&#128187; Before you code: set up Odoo on your computer</b>
+                            <span class="text-muted">The first videos of the Odoo 16 playlist, for Code it.</span>
+                            <a t-att-href="this.state.home.setup_playlist_url" target="_blank" rel="noopener"
+                               class="ms-auto small">The Odoo 16 playlist &#8594;</a>
+                        </div>
+                        <div class="o_academy_videos">
+                            <button t-foreach="this.state.home.setup_videos" t-as="video" t-key="video.id" type="button"
+                                    class="o_academy_video" t-att-data-video="video.id"
+                                    t-att-class="{'watched': this.isWatched(video)}" t-on-click="() => this.openVideo(video)">
+                                <span class="o_academy_video_thumb">
+                                    <img t-att-src="video.thumbnail" t-att-alt="video.title" loading="lazy"/>
+                                    <span class="o_academy_video_play">&#9654;</span>
+                                    <span class="o_academy_video_length" t-out="video.length"/>
+                                </span>
+                                <span class="o_academy_video_title">
+                                    <span class="o_academy_video_num" t-out="video.number"/>
+                                    <t t-out="video.title"/>
+                                    <span t-if="this.isWatched(video)" class="o_academy_video_seen">&#10003; watched</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="o_academy_setup_title"><b>&#127909; Odoo development, step by step</b>
+                        <span class="text-muted">The Odoo 17 playlist.</span></div>
+                    <div class="o_academy_videos">
+                        <button t-foreach="this.state.home.videos" t-as="video" t-key="video.id" type="button"
+                                class="o_academy_video" t-att-data-video="video.id"
+                                t-att-class="{'watched': this.isWatched(video)}" t-on-click="() => this.openVideo(video)">
+                            <span class="o_academy_video_thumb">
+                                <img t-att-src="video.thumbnail" t-att-alt="video.title" loading="lazy"/>
+                                <span class="o_academy_video_play">&#9654;</span>
+                                <span class="o_academy_video_length" t-out="video.length"/>
+                            </span>
+                            <span class="o_academy_video_title">
+                                <span class="o_academy_video_num" t-out="video.number"/>
+                                <t t-out="video.title"/>
+                                <span t-if="this.isWatched(video)" class="o_academy_video_seen">&#10003; watched</span>
+                            </span>
+                        </button>
+                    </div>
+                </section>
             </main>
         </div>
     </t>
@@ -275,7 +394,7 @@
         <t t-set="warmup" t-value="this.state.warmup"/>
         <div class="o_academy_welcome_backdrop">
             <div class="o_academy_welcome o_academy_warmup" role="dialog" aria-modal="true">
-                <button class="btn btn-link o_academy_welcome_skip" t-on-click="() => this.state.warmup = null">Close</button>
+                <button class="btn btn-link o_academy_welcome_skip" t-on-click="() => this.closeWarmup()">Close</button>
                 <h2 class="text-center">Warm-up: how well do you know Odoo?</h2>
                 <div class="d-flex justify-content-center gap-2 mb-3">
                     <button class="btn btn-sm o_academy_warmup_quiz_tab" t-att-class="warmup.tab === 'quiz' ? 'btn-primary' : 'btn-light'"
@@ -424,6 +543,63 @@
         </div>
     </t>
 
+    <!-- the bug hunt: the code, the error, and why -->
+    <t t-name="om_academy.AcademyBugs">
+        <t t-set="bugs" t-value="this.state.bugs"/>
+        <t t-set="bug" t-value="this.bug"/>
+        <div class="o_academy_welcome_backdrop">
+            <div class="o_academy_welcome o_academy_bughunt" role="dialog" aria-modal="true">
+                <button class="btn btn-link o_academy_welcome_skip" t-on-click="() => this.closeBugs()">Close</button>
+                <h2 class="text-center mb-1">&#128030; The bug hunt</h2>
+                <p class="text-center text-muted">Every developer meets these errors. Read the code and what Odoo says:
+                    why does it break?</p>
+                <div class="o_academy_bug_dots">
+                    <button t-foreach="bugs.data.bugs" t-as="item" t-key="item.key" type="button"
+                            t-att-class="{'found': item.found, 'active': item_index === bugs.current}"
+                            t-att-title="item.title" t-on-click="() => this.openBug(item_index)">
+                        <t t-if="item.found">&#10003;</t><t t-else="" t-out="item_index + 1"/>
+                    </button>
+                </div>
+                <div class="o_academy_bug" t-att-data-bug="bug.key">
+                    <div class="d-flex justify-content-between align-items-baseline mb-2">
+                        <h4 class="mb-0">Bug <t t-out="bugs.current + 1"/>: <t t-out="bug.title"/></h4>
+                        <span class="small text-muted"><t t-out="bugs.data.found"/> / <t t-out="bugs.data.bugs.length"/> found</span>
+                    </div>
+                    <div class="o_academy_bug_label">The code <code t-out="bug.path"/></div>
+                    <pre class="o_academy_bug_code" t-out="bug.code"/>
+                    <div class="o_academy_bug_label">What Odoo says</div>
+                    <pre class="o_academy_bug_error" t-out="bug.error"/>
+                    <div class="o_academy_bug_label">Why does it break?</div>
+                    <div class="o_academy_options">
+                        <button t-foreach="bug.options" t-as="option" t-key="option_index" type="button"
+                                class="btn o_academy_option o_academy_bug_option"
+                                t-att-class="bug.answer ? (option_index === bug.answer.right ? 'btn-success' : 'btn-light opacity-50') : bugs.wrong.includes(option_index) ? 'btn-danger' : 'btn-light'"
+                                t-att-disabled="(bug.answer or bugs.wrong.includes(option_index)) and 'disabled'"
+                                t-on-click="() => this.answerBug(option_index)" t-out="option"/>
+                    </div>
+                    <div t-if="!bug.answer and bugs.wrong.length" class="o_academy_quiz_why ko">
+                        <b>Not this one.</b> A hint: <t t-out="bug.hint"/>
+                    </div>
+                    <div t-if="bug.answer" class="o_academy_quiz_why ok">
+                        <b>Found it!</b> <t t-out="bug.answer.why"/>
+                        <div class="o_academy_bug_label mt-2">The fix</div>
+                        <pre class="o_academy_bug_fix mb-0" t-out="bug.answer.fix"/>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-3">
+                    <button class="btn btn-link" t-att-class="{'invisible': !bugs.current}"
+                            t-on-click="() => this.openBug(bugs.current - 1)">Previous bug</button>
+                    <button t-if="bugs.current &lt; bugs.data.bugs.length - 1" class="btn o_academy_bug_next"
+                            t-att-class="bug.answer ? 'btn-primary' : 'btn-light'" t-on-click="() => this.openBug(bugs.current + 1)">
+                        <t t-if="bug.answer">Next bug</t><t t-else="">Skip it for now</t>
+                        <i class="oi oi-chevron-right ms-1"/>
+                    </button>
+                    <button t-else="" class="btn btn-primary" t-on-click="() => this.closeBugs()">Done</button>
+                </div>
+            </div>
+        </div>
+    </t>
+
     <!-- Code it is newer than Build it live: said, with a wink -->
     <t t-name="om_academy.AcademyFreshOven">
         <div class="o_academy_fresh_oven">
@@ -547,7 +723,27 @@
                         <span class="o_academy_read_time">&#128214; <t t-out="this.readMinutes(step.explain)"/> min read</span>
                     </div>
                     <div class="o_academy_understand_body">
-                        <div class="o_academy_explain o_academy_lesson" t-out="this.lesson(step.explain)"/>
+                        <div class="flex-grow-1 min-w-0">
+                            <div class="o_academy_explain o_academy_lesson" t-out="this.lesson(step.explain)"/>
+                            <div t-if="step.videos and step.videos.length" class="o_academy_step_videos">
+                                <div class="o_academy_step_videos_title d-flex justify-content-between align-items-center">
+                                    <span>&#9654; Watch it explained
+                                        <span class="text-muted">(Odoo 17, the same idea in Odoo 20)</span></span>
+                                    <a href="https://www.youtube.com/@OdooMates?sub_confirmation=1" target="_blank" rel="noopener"
+                                       class="btn btn-sm o_academy_subscribe">Subscribe on YouTube</a>
+                                </div>
+                                <button t-foreach="step.videos" t-as="video" t-key="video.id" type="button"
+                                        class="o_academy_step_video" t-att-class="{'watched': this.isWatched(video)}"
+                                        t-on-click="() => this.openVideo(video)">
+                                    <img t-att-src="video.thumbnail" t-att-alt="video.title" loading="lazy"/>
+                                    <span>
+                                        <b t-out="video.title"/>
+                                        <span class="d-block small text-muted"><t t-out="video.length"/> on YouTube
+                                            <t t-if="this.isWatched(video)"> · &#10003; watched</t></span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
                         <aside t-if="step.tree and step.tree.length" class="o_academy_tree">
                             <div class="o_academy_tree_title">Where it goes</div>
                             <div t-foreach="this.treeRows" t-as="row" t-key="row.key" class="o_academy_tree_row"
@@ -570,6 +766,22 @@
                     <p class="mb-0">Nothing is too big. Nothing is impossible. You dream, and you fly:
                         the next app is yours to imagine.</p>
                     <t t-call="om_academy.AcademyLinks"/>
+                </div>
+                <!-- your app in numbers -->
+                <div t-if="step.finish and step.numbers" class="o_academy_numbers mb-3">
+                    <div class="o_academy_numbers_title">Your app in numbers</div>
+                    <div class="o_academy_numbers_grid">
+                        <div><b t-out="step.numbers.lines"/><span>lines of code</span></div>
+                        <div><b t-out="step.numbers.files"/><span>files</span></div>
+                        <div t-if="step.numbers.models"><b t-out="step.numbers.models"/><span>models</span></div>
+                        <div t-if="step.numbers.fields"><b t-out="step.numbers.fields"/><span>fields</span></div>
+                        <div t-if="step.numbers.views"><b t-out="step.numbers.views"/><span>views</span></div>
+                        <div t-if="step.numbers.menus"><b t-out="step.numbers.menus"/><span>menus</span></div>
+                        <div t-if="step.numbers.accesses"><b t-out="step.numbers.accesses"/><span>access rights</span></div>
+                        <div t-if="step.numbers.scripts"><b t-out="step.numbers.scripts"/><span>JavaScript files</span></div>
+                    </div>
+                    <div class="small text-muted mt-2">Every app of Odoo, Sales and Inventory included, began like
+                        this: a few files, a model, a view. Yours is real.</div>
                 </div>
                 <!-- the certificate first; how Odoo made it, once it is downloaded -->
                 <div t-if="step.finish and step.completed" class="mb-3">
@@ -712,6 +924,20 @@
                             <t t-if="mode[0] === 'code'" t-call="om_academy.AcademyFreshOven"/>
                         </div>
                     </div>
+                </div>
+                <div t-if="step.setup_videos and step.setup_videos.length and !this.introYours" class="o_academy_step_videos mb-3">
+                    <div class="o_academy_step_videos_title">&#128187; Odoo on your computer first: an editor, an addons
+                        folder, a module <span class="text-muted">(Odoo 16, the same setup today)</span></div>
+                    <button t-foreach="step.setup_videos" t-as="video" t-key="video.id" type="button"
+                            class="o_academy_step_video" t-att-class="{'watched': this.isWatched(video)}"
+                            t-on-click="() => this.openVideo(video)">
+                        <img t-att-src="video.thumbnail" t-att-alt="video.title" loading="lazy"/>
+                        <span>
+                            <b t-out="video.title"/>
+                            <span class="d-block small text-muted"><t t-out="video.length"/> on YouTube
+                                <t t-if="this.isWatched(video)"> · &#10003; watched</t></span>
+                        </span>
+                    </button>
                 </div>
 
                 <!-- make it yours: the author and the icon of the learner's module -->
