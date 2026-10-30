@@ -76,6 +76,23 @@ class TestStatementImport(AccountTestInvoicingCommon):
         self.assertTrue(self.env['ir.attachment'].search_count([
             ('res_model', '=', 'account.bank.statement'), ('res_id', '=', statement.id)]))
 
+    def test_import_in_a_credit_card_journal(self):
+        """ A credit card journal takes its statements as a bank journal does, chosen or found by its account. """
+        card = self.env['account.journal'].create({
+            'name': 'Company Card', 'type': 'credit', 'code': 'CARD',
+            'bank_account_id': self.env['res.partner.bank'].create({
+                'account_number': '555500001111', 'partner_id': self.env.company.partner_id.id}).id,
+        })
+        action = self._import(QIF_FILE, 'card.qif', journal_id=card.id, date_format='%d/%m/%Y')
+        statement = self._statements_of(action)
+        self.assertEqual(statement.journal_id, card)
+        self.assertEqual(statement.line_ids.mapped('journal_id'), card)
+        self.assertEqual(sorted(statement.line_ids.mapped('amount')), [-100.5, 2500.0])
+
+        # the account number of the file finds the card journal
+        action = self._import(OFX_FILE.replace('987654321', '555500001111'), 'card.ofx')
+        self.assertEqual(self._statements_of(action).journal_id, card)
+
     def test_the_same_transactions_are_imported_once(self):
         self._import(QIF_FILE, 'statement.qif', journal_id=self.journal.id, date_format='%d/%m/%Y')
         with self.assertRaisesRegex(UserError, 'already imported'):
