@@ -1,5 +1,10 @@
 ## Module <om_account_bank_statement_import>
 
+#### 30.10.2026
+#### Version 1.1.0
+##### IMP
+- the statements are imported in the credit card journals too, as in the bank journals
+
 #### 18.09.2026
 #### Version 1.0.0
 ##### ADD
