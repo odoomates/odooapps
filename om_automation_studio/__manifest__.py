@@ -10,6 +10,7 @@
                'Reminders, No-Code Automation, Business Workflow',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
+    'live_test_url': 'https://www.youtube.com/watch?v=hD0A9-cpaWw',
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
     'depends': ['base_automation', 'web'],

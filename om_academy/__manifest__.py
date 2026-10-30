@@ -10,6 +10,7 @@
                    'editor or building it live in the database.',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
+    'live_test_url': 'https://www.youtube.com/watch?v=wj2-RPl18Sw',
     'license': 'LGPL-3',
     'depends': ['base', 'web', 'base_import_module'],
     'data': [
