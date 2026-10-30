@@ -7,7 +7,7 @@
         <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
         <field name="arch" type="xml">
             <xpath expr="//div[@id='action_card_statements']" position="inside">
-                <a t-if="journal_type == 'bank' || journal_type == 'cash'" role="menuitem" type="object"
+                <a t-if="['bank', 'cash', 'credit'].includes(journal_type)" role="menuitem" type="object"
                    name="action_import_statement">Import Statement</a>
             </xpath>
         </field>
@@ -19,7 +19,7 @@
         <field name="inherit_id" ref="account.view_account_journal_form"/>
         <field name="arch" type="xml">
             <field name="currency_id" position="after">
-                <field name="statement_import_map_id" invisible="type not in ('bank', 'cash')"
+                <field name="statement_import_map_id" invisible="type not in ('bank', 'cash', 'credit')"
                        options="{'no_create_edit': True}"/>
             </field>
         </field>

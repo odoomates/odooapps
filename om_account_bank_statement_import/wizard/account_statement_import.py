@@ -17,7 +17,7 @@ class AccountStatementImport(models.TransientModel):
         'ir.attachment', string='Files', required=True,
         help="The statement files of your bank: CAMT.053, MT940, OFX, QFX, QIF, CSV or Excel.")
     journal_id = fields.Many2one(
-        'account.journal', string='Journal', check_company=True, domain="[('type', 'in', ('bank', 'cash'))]",
+        'account.journal', string='Journal', check_company=True, domain="[('type', 'in', ('bank', 'cash', 'credit'))]",
         help="Leave empty to use the journal of the bank account written in the file.")
     company_id = fields.Many2one('res.company', default=lambda self: self.env.company)
     map_id = fields.Many2one(
@@ -78,7 +78,7 @@ class AccountStatementImport(models.TransientModel):
         if account_number:
             sanitized = sanitize_account_number(account_number)
             matching = self.env['account.journal'].search([
-                ('type', 'in', ('bank', 'cash')),
+                ('type', 'in', ('bank', 'cash', 'credit')),
                 ('company_id', 'in', self.env.companies.ids),
                 ('bank_account_id.sanitized_acc_number', '=', sanitized),
             ], limit=1)
@@ -96,8 +96,9 @@ class AccountStatementImport(models.TransientModel):
                 'write that account number on the bank account of its journal.',
                 account=account_number or _('of the file'), file=filename,
             ))
-        if journal.type not in ('bank', 'cash'):
-            raise UserError(_('A statement is imported in a bank or cash journal, not in %s.', journal.display_name))
+        if journal.type not in ('bank', 'cash', 'credit'):
+            raise UserError(_('A statement is imported in a bank, cash or credit card journal, not in %s.',
+                              journal.display_name))
         return journal
 
     def _check_currency(self, statement, journal, filename):
