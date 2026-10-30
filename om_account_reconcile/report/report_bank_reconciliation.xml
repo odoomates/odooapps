@@ -39,10 +39,10 @@
                                     <tr>
                                         <td>
                                             <t t-if="section['opening_is_ledger']">
-                                                Balance per <t t-if="section['is_cash']">cash book</t><t t-else="">bank ledger</t>
+                                                Balance per <t t-if="section['is_cash']">cash book</t><t t-elif="section['is_card']">card ledger</t><t t-else="">bank ledger</t>
                                             </t>
                                             <t t-else="">
-                                                Balance per bank statement
+                                                Balance per <t t-if="section['is_card']">card</t><t t-else="">bank</t> statement
                                                 <small class="text-muted">
                                                     (<span t-out="section['statement'].name"/>,
                                                     <span t-out="section['statement'].date" t-options="{'widget': 'date'}"/>)
@@ -54,7 +54,7 @@
                                         </td>
                                     </tr>
                                     <tr t-if="not section['opening_is_ledger']">
-                                        <td class="ps-4 text-muted">Balance per <t t-if="section['is_cash']">cash book</t><t t-else="">bank ledger</t></td>
+                                        <td class="ps-4 text-muted">Balance per <t t-if="section['is_cash']">cash book</t><t t-elif="section['is_card']">card ledger</t><t t-else="">bank ledger</t></td>
                                         <td class="text-end text-nowrap text-muted">
                                             <span t-out="section['ledger']" t-options="{'widget': 'monetary', 'display_currency': currency}"/>
                                         </td>

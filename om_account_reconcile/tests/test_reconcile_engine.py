@@ -67,6 +67,21 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         with self.assertRaises(UserError):
             st_line._om_reconcile({})
 
+    def test_credit_card_transaction(self):
+        """ A vendor bill paid by card: the transaction of the card statement reconciles it, and is undone. """
+        card = self.env['account.journal'].create({'name': 'Company Card', 'code': 'CRD8', 'type': 'credit'})
+        bill = self._invoice(250.0, move_type='in_invoice')
+        st_line = self._transaction(-250.0, label='Office supplies', journal_id=card.id)
+        st_line._om_reconcile({'matches': [{'aml_id': self._open_line(bill).id}]})
+        self.assertTrue(st_line.is_reconciled)
+        self.assertIn(bill.payment_state, ('paid', 'in_payment'))
+        self.assertFalse(st_line.move_id.line_ids.filtered(
+            lambda line: line.account_id == card.suspense_account_id))
+
+        st_line._om_undo()
+        self.assertFalse(st_line.is_reconciled)
+        self.assertEqual(bill.payment_state, 'not_paid')
+
     def test_payment_in_process(self):
         outstanding = self.env['account.account'].create({
             'code': 'OUTREC', 'name': 'Outstanding Receipts', 'account_type': 'asset_current', 'reconcile': True,
