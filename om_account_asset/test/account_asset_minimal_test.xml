@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- The accounts and the journal the test data of the assets refers to, which Odoo 14 no longer ships in
+         account/test/account_minimal_test.xml -->
+    <data noupdate="1">
+
+        <record id="xfa" model="account.account">
+            <field name="code">X1000</field>
+            <field name="name">Fixed Assets - (test)</field>
+            <field name="user_type_id" ref="account.data_account_type_fixed_assets"/>
+        </record>
+
+        <record id="a_expense" model="account.account">
+            <field name="code">X2120</field>
+            <field name="name">Expenses - (test)</field>
+            <field name="user_type_id" ref="account.data_account_type_expenses"/>
+        </record>
+
+        <record id="expenses_journal" model="account.journal">
+            <field name="name">Vendor Bills - Test</field>
+            <field name="code">TEXJ</field>
+            <field name="type">purchase</field>
+            <field name="default_account_id" ref="a_expense"/>
+            <field name="refund_sequence" eval="True"/>
+        </record>
+
+    </data>
+</odoo>
