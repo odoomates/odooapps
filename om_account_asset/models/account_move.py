@@ -127,7 +127,8 @@ class AccountMoveLine(models.Model):
             self.price_subtotal, currency, self.company_id, move.invoice_date or fields.Date.context_today(self)))
         base_vals = {
             'name': self.name or self.product_id.display_name or category.name,
-            'code': self.name or False,
+            # the first line of the label: the product, without its description
+            'code': (self.name or '').split('\n')[0].strip() or False,
             'category_id': category.id,
             'value': price_subtotal,
             'partner_id': move.partner_id.id,

@@ -529,6 +529,17 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
         self.assertFalse(refund.asset_ids)
         self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 3)
 
+    def test_asset_from_a_bill_line_with_a_long_label(self):
+        """ A label longer than 32 characters, on several lines: the bill posts, the reference of the asset is the
+        first line of the label. """
+        self.category.create_from_bill = True
+        label = '[FURN_6667] Acoustic Bloc Screens for the open space\nNoise-reducing panels, 3 m wide'
+        bill = self._create_bill(name=label)
+        with freeze_time('2025-01-15'):
+            bill.action_post()
+        self.assertEqual(bill.asset_ids.code, '[FURN_6667] Acoustic Bloc Screens for the open space')
+        self.assertEqual(bill.asset_ids.name, label)
+
     def test_assets_from_auto_posted_bill(self):
         """ A bill posted on its date by the auto-post job creates its assets like a bill posted by hand """
         self.category.create_from_bill = True
