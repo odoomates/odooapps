@@ -111,7 +111,7 @@ class AccountAssetAsset(models.Model):
     entry_count = fields.Integer(compute='_entry_count', string='# Asset Entries')
     name = fields.Char(string='Asset Name', required=True,
                        readonly=True, states={'draft': [('readonly', False)]})
-    code = fields.Char(string='Reference', size=32, readonly=True,
+    code = fields.Char(string='Reference', readonly=True,
                        states={'draft': [('readonly', False)]})
     value = fields.Monetary(string='Gross Value', required=True, readonly=True,
                          states={'draft': [('readonly', False)]})
