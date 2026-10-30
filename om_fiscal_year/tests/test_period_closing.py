@@ -1,7 +1,7 @@
 from datetime import date
 
 from odoo import Command
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import RedirectWarning, UserError, ValidationError
 from odoo.tests import new_test_user, tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingCommon
@@ -23,6 +23,25 @@ class TestPeriodClosing(AccountTestInvoicingCommon):
 
     def _check(self, closing, code):
         return closing.check_ids.filtered(lambda check: check.code == code)
+
+    def test_lock_with_unreconciled_transactions_shows_them(self):
+        """ Locking a period with unreconciled bank transactions warns with a button opening them: its action has
+        the views the web client needs. """
+        journal = self.company_data['default_journal_bank']
+        Line = self.env['account.bank.statement.line']
+        lines = Line.create([{'journal_id': journal.id, 'date': '2026-02-10', 'payment_ref': ref, 'amount': amount}
+                             for ref, amount in (('Fee', -12.0), ('Refund', 30.0))])
+        wizard = self.env['change.lock.date'].create({'fiscalyear_lock_date': '2026-03-31'})
+        with self.assertRaises(RedirectWarning) as warning:
+            wizard.update_lock_date()
+        action = warning.exception.args[1]
+        self.assertEqual(action['views'], [(False, 'list'), (False, 'form')])
+        self.assertEqual(set(action['domain'][0][2]), set(lines.ids))
+
+        lines[1].unlink()
+        with self.assertRaises(RedirectWarning) as warning:
+            wizard.update_lock_date()
+        self.assertEqual(warning.exception.args[1]['views'], [(False, 'form')], 'a single transaction opens its form')
 
     def test_checklist_and_close(self):
         draft = self.init_invoice('out_invoice', amounts=[100.0], taxes=[], invoice_date='2026-03-10')
