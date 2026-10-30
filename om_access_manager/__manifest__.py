@@ -12,6 +12,7 @@
                'Read Only User, Allowed Journals and Warehouses, Login Hours, IP Restriction, Preview as User',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
+    'live_test_url': 'https://www.youtube.com/watch?v=0RubHfvZWoM',
     'license': 'LGPL-3',
     'depends': ['base', 'web', 'mail', 'om_user_audit'],
     'data': [
