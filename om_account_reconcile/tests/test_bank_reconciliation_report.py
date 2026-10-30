@@ -167,7 +167,21 @@ class TestBankReconciliationReport(AccountTestInvoicingCommon):
 
         self.assertIn(self.bank_journal, wizard.journal_ids)
         self.assertNotIn(cash_journal, wizard.journal_ids)
-        self.assertTrue(all(journal.type == 'bank' for journal in wizard.journal_ids))
+        self.assertTrue(all(journal.type in ('bank', 'credit') for journal in wizard.journal_ids))
+
+    def test_a_credit_card_journal_is_offered_and_described_as_a_card(self):
+        """ A credit card is reconciled against its statement, as a bank account is. """
+        card = self.env['account.journal'].create({'name': 'Company Card', 'code': 'CRD9', 'type': 'credit'})
+        wizard = self.env['om.bank.reconciliation.report'].create({'date': '2026-12-31'})
+        self.assertIn(card, wizard.journal_ids, 'offered by default, with the bank journals')
+
+        wizard.journal_ids = card
+        data = {'form': wizard.read(
+            ['date', 'journal_ids', 'target_move', 'show_details', 'company_id'])[0]}
+        section = self.env['report.om_account_reconcile.report_bank_reconciliation'] \
+            ._get_report_values(wizard.ids, data)['sections'][0]
+        self.assertTrue(section['is_card'])
+        self.assertFalse(section['is_cash'])
 
     def test_a_cash_journal_is_described_as_cash(self):
         """If one is chosen anyway, it must not claim to be reconciled to a bank."""

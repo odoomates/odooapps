@@ -12,7 +12,7 @@ class OmBankReconciliationReport(models.TransientModel):
                        help='The reconciliation is drawn up as at the close of this day.')
     journal_ids = fields.Many2many('account.journal', string='Journals', required=True,
                                    check_company=True,
-                                   domain="[('type', 'in', ('bank', 'cash')), ('company_id', '=', company_id)]",
+                                   domain="[('type', 'in', ('bank', 'cash', 'credit')), ('company_id', '=', company_id)]",
                                    default=lambda self: self._default_journal_ids())
     target_move = fields.Selection([('posted', 'All Posted Entries'),
                                     ('all', 'All Entries')],
@@ -23,7 +23,7 @@ class OmBankReconciliationReport(models.TransientModel):
 
     @api.model
     def _default_journal_ids(self):
-        """ Bank journals only.
+        """ Bank and credit card journals: both are reconciled against a statement.
 
         A cash journal has no third party to reconcile against - cash in hand is
         counted, not matched to a statement - so its section would only restate the
@@ -31,7 +31,7 @@ class OmBankReconciliationReport(models.TransientModel):
         cash account against a statement, but it is not the default.
         """
         return self.env['account.journal'].search([
-            ('type', '=', 'bank'),
+            ('type', 'in', ('bank', 'credit')),
             ('company_id', '=', self.env.company.id),
         ])
 
