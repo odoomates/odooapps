@@ -180,3 +180,27 @@ class TestAssetDisposal(AccountTestInvoicingCommon):
         asset = self._depreciate_all(self._create_asset(salvage_value=200.0))
         with self.assertRaises(UserError):
             asset.dispose(disposal_date=date(2025, 12, 31))
+
+    # -------------------------------------------------------------------------
+    # Assets from vendor bills
+    # -------------------------------------------------------------------------
+
+    def test_asset_from_a_bill_line_with_a_long_label(self):
+        """ A label longer than 32 characters, on several lines: the bill posts, the reference of the asset is the
+        first line of the label. """
+        label = '[FURN_6667] Acoustic Bloc Screens for the open space\nNoise-reducing panels, 3 m wide'
+        bill = self.env['account.move'].create({
+            'move_type': 'in_invoice',
+            'partner_id': self.partner_a.id,
+            'invoice_date': date(2025, 1, 1),
+            'invoice_line_ids': [Command.create({
+                'name': label,
+                'price_unit': 1000.0,
+                'account_id': self.asset_account.id,
+                'asset_category_id': self.category.id,
+                'tax_ids': [],
+            })],
+        })
+        bill.action_post()
+        self.assertEqual(bill.asset_ids.code, '[FURN_6667] Acoustic Bloc Screens for the open space')
+        self.assertEqual(bill.asset_ids.name, label)
