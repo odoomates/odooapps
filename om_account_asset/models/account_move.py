@@ -113,7 +113,8 @@ class AccountMoveLine(models.Model):
                     self))
             vals = {
                 'name': self.name,
-                'code': self.name or False,
+                # the first line of the label: the product, without its description
+                'code': (self.name or '').split('\n')[0].strip() or False,
                 'category_id': self.asset_category_id.id,
                 'value': price_subtotal,
                 'partner_id': self.move_id.partner_id.id,
