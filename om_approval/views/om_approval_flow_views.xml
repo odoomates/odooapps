@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_approval_flow_view_list" model="ir.ui.view">
+        <field name="name">approval.rule.view.list</field>
+        <field name="model">approval.rule</field>
+        <field name="arch" type="xml">
+            <list string="Approval Flows" js_class="approval_flow_list">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="button_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="active" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_approval_flow_view_search" model="ir.ui.view">
+        <field name="name">approval.rule.view.search</field>
+        <field name="model">approval.rule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="model_id"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_approval_flow_view_form" model="ir.ui.view">
+        <field name="name">approval.rule.view.form</field>
+        <field name="model">approval.rule</field>
+        <field name="arch" type="xml">
+            <form string="Approval Flow">
+                <header>
+                    <button name="action_open_designer" string="Open the Designer" type="object" class="btn-primary"
+                            invisible="not id"/>
+                    <button name="action_simulate" string="Test on a Record" type="object" class="btn-secondary"
+                            invisible="not id or not model_id"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Sale orders above 10,000"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                            <label for="button_id" invisible="not model_id"/>
+                            <div class="o_row" invisible="not model_id">
+                                <field name="button_id" options="{'no_create': True, 'no_open': True}"
+                                       required="not is_document"/>
+                                <button name="action_refresh_buttons" type="object" icon="refresh"
+                                        title="List the buttons of the model again" class="btn-link"/>
+                            </div>
+                            <field name="model" invisible="1"/>
+                            <field name="is_document" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="fallback_group_id"/>
+                            <field name="self_approve"/>
+                            <field name="run_on_approval" invisible="not button_id"/>
+                        </group>
+                    </group>
+                    <group invisible="not model">
+                        <field name="domain" widget="domain" options="{'model': 'model', 'in_dialog': True}"/>
+                        <label for="amount_field"/>
+                        <div class="o_row">
+                            <field name="amount_field" placeholder="e.g. amount_total"/>
+                            <span invisible="not amount_field">above</span>
+                            <field name="amount_min" invisible="not amount_field"/>
+                            <field name="amount_currency_id" invisible="not amount_field" groups="base.group_multi_currency"/>
+                        </div>
+                        <field name="note" placeholder="Shown when the button is stopped" invisible="not button_id"/>
+                    </group>
+                    <group invisible="not button_id" string="While It Waits">
+                        <group>
+                            <field name="lock_record"/>
+                            <field name="lock_after" widget="radio" invisible="not lock_record"/>
+                        </group>
+                    </group>
+                    <group string="Notes">
+                        <group>
+                            <field name="request_note" widget="radio" options="{'horizontal': true}"
+                                   invisible="not button_id"/>
+                            <field name="approve_note" widget="radio" options="{'horizontal': true}"/>
+                            <field name="refuse_note" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                    </group>
+                    <field name="step_ids" context="{'default_flow_id': id}">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="approver_type"/>
+                            <field name="group_id" invisible="approver_type != 'group'"
+                                   required="approver_type == 'group'"/>
+                            <field name="user_ids" widget="many2many_avatar_user" invisible="approver_type != 'user'"
+                                   required="approver_type == 'user'"/>
+                            <field name="field_path" invisible="approver_type != 'field'"
+                                   required="approver_type == 'field'" placeholder="e.g. user_id"/>
+                            <field name="model" column_invisible="1"/>
+                            <field name="domain" widget="domain" options="{'model': 'model', 'in_dialog': True}"
+                                   optional="show"/>
+                            <field name="amount_min" optional="hide"/>
+                            <field name="approval_mode" optional="show"/>
+                            <field name="approval_count" optional="show" invisible="approval_mode != 'count'"/>
+                            <field name="remind_days" optional="show"/>
+                            <field name="escalate_days" optional="show"/>
+                            <field name="escalate_type" optional="show" invisible="not escalate_days"/>
+                            <field name="escalate_user_ids" widget="many2many_avatar_user" optional="show"
+                                   invisible="not escalate_days or escalate_type != 'user'"
+                                   required="escalate_days and escalate_type == 'user'"/>
+                            <field name="escalate_group_id" optional="show"
+                                   invisible="not escalate_days or escalate_type != 'group'"
+                                   required="escalate_days and escalate_type == 'group'"/>
+                        </list>
+                    </field>
+                    <div class="text-muted">
+                        The steps are approved in turn. A step finding nobody is approved by the approvers when
+                        nobody is found. Without a step, the approval administrators approve.
+                    </div>
+                    <div class="alert alert-light border mt-3 mb-0" role="status" invisible="not summary">
+                        <div class="fw-bold mb-1">In short</div>
+                        <field name="summary" nolabel="1"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_approval_flow_action" model="ir.actions.act_window">
+        <field name="name">Approval Flows</field>
+        <field name="res_model">approval.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an approval flow</p>
+            <p>Choose a button of any app, e.g. Confirm on the sale orders, and who approves it before it runs.
+               Start from a template: the flow opens in the Approval Designer.</p>
+        </field>
+    </record>
+
+</odoo>

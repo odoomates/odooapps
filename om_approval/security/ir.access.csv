@@ -1,0 +1,20 @@
+id,name,model_id,group_id/id,operation,domain
+access_om_approval_flow_user,approval.rule.user,approval.rule,base.group_user,r,
+access_om_approval_flow_manager,approval.rule.manager,approval.rule,group_approval_manager,crud,
+access_om_approval_step_user,approval.step.user,approval.step,base.group_user,r,
+access_om_approval_step_manager,approval.step.manager,approval.step,group_approval_manager,crud,
+access_om_approval_button_user,approval.button.user,approval.button,base.group_user,r,
+access_om_approval_button_manager,approval.button.manager,approval.button,group_approval_manager,crud,
+access_om_approval_request_user,approval.request.user,approval.request,base.group_user,r,"['|', ('requester_id', '=', user.id), ('line_ids.approver_user_ids', 'in', user.id)]"
+access_om_approval_request_manager,approval.request.manager,approval.request,group_approval_manager,r,
+om_approval_request_company_rule,Approval requests: multi-company,approval.request,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_om_approval_line_user,approval.line.user,approval.line,base.group_user,r,"['|', ('request_id.requester_id', '=', user.id), ('request_id.line_ids.approver_user_ids', 'in', user.id)]"
+access_om_approval_line_manager,approval.line.manager,approval.line,group_approval_manager,r,
+access_approval_decide_user,approval.decide.user,approval.decide,base.group_user,crud,
+access_approval_ask_user,approval.ask.user,approval.ask,base.group_user,crud,
+access_approval_delegation_own,approval.delegation.own,approval.delegation,base.group_user,crud,"[('user_id', '=', user.id)]"
+access_approval_delegation_substitute,approval.delegation.substitute,approval.delegation,base.group_user,r,"[('delegate_id', '=', user.id)]"
+access_approval_delegation_manager,approval.delegation.manager,approval.delegation,group_approval_manager,crud,
+approval_rule_company_rule,Approval flows: multi-company,approval.rule,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+approval_line_company_rule,Approvals: multi-company,approval.line,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_approval_simulate_manager,approval.simulate.manager,approval.simulate,group_approval_manager,crud,

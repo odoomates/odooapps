@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="mail_act_approval" model="mail.activity.type">
+            <field name="name">Approval</field>
+            <field name="summary">Approve</field>
+            <field name="icon">task_alt</field>
+            <field name="delay_count">3</field>
+            <field name="res_model">approval.request</field>
+        </record>
+
+        <record id="seq_om_approval_request" model="ir.sequence">
+            <field name="name">Approval Request</field>
+            <field name="code">approval.request</field>
+            <field name="prefix">APR/%(year)s/</field>
+            <field name="padding">5</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
+    </data>
+
+    <record id="ir_cron_approval_follow_up" model="ir.cron">
+        <field name="name">Approvals: Substitutes, Reminders and Escalations</field>
+        <field name="model_id" ref="model_approval_line"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_follow_up()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+</odoo>

@@ -1,0 +1,522 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_approval.Designer">
+        <div class="o_approval_designer o_action d-flex flex-column h-100">
+            <t t-if="this.state.loaded">
+                <t t-call="om_approval.Designer.Toolbar"/>
+                <div class="d-flex flex-grow-1 overflow-hidden">
+                    <div class="o_approval_designer_chain flex-grow-1 overflow-auto">
+                        <div class="o_approval_designer_layout py-4">
+                        <div class="o_approval_designer_column">
+                            <t t-call="om_approval.Designer.Chain"/>
+                        </div>
+                        <aside class="o_approval_designer_aside">
+                            <div class="o_approval_designer_summary">
+                                <div class="o_approval_summary_head d-flex align-items-center gap-2">
+                                    <span class="o_approval_summary_icon"><i class="oi" data-icon="info"/></span>
+                                    <span class="fw-bold">In short</span>
+                                    <span class="text-muted small ms-auto">Updated as you edit</span>
+                                </div>
+                                <div class="o_approval_summary_body" t-out="this.html(this.state.preview.summary)"/>
+                            </div>
+                        </aside>
+                        </div>
+                    </div>
+                    <div class="o_approval_designer_panel border-start overflow-auto">
+                        <t t-if="this.state.selected === 'trigger'" t-call="om_approval.Designer.TriggerPanel"/>
+                        <t t-elif="this.state.selected === 'end'" t-call="om_approval.Designer.EndPanel"/>
+                        <t t-elif="this.selectedStep">
+                            <t t-set="step" t-value="this.selectedStep"/>
+                            <t t-set="index" t-value="this.state.selected"/>
+                            <t t-call="om_approval.Designer.StepPanel"/>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- toolbar ========================================================= -->
+    <t t-name="om_approval.Designer.Toolbar">
+        <div class="o_approval_designer_toolbar d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+            <button class="btn btn-light btn-sm" title="Back to the approval flows" t-on-click="() => this.close()">
+                <i class="oi" data-icon="arrow_back"/>
+            </button>
+            <div class="d-flex flex-column min-w-0 flex-grow-1 o_approval_designer_title">
+                <input class="form-control o_approval_designer_name" t-att-value="this.flow.name"
+                       placeholder="e.g. Quotations above 10,000" aria-label="Name of the flow"
+                       title="Click to rename the flow" t-on-change="(ev) => this.set('name', ev.target.value)"/>
+                <div class="d-flex align-items-center gap-2 small ps-2">
+                    <span class="text-muted text-nowrap">
+                        <i class="oi me-1" data-icon="description"/><t t-out="this.state.choices.model_name"/>
+                    </span>
+                    <span t-if="this.flow.active" class="badge o_approval_status o_approval_status_on">Active</span>
+                    <span t-else="" class="badge o_approval_status">Inactive</span>
+                    <span t-if="this.state.dirty" class="badge o_approval_status o_approval_status_dirty">Unsaved</span>
+                </div>
+            </div>
+            <div class="ms-auto d-flex gap-2 align-items-center flex-shrink-0">
+                <button class="btn btn-link btn-sm text-decoration-none" t-att-disabled="this.state.saving"
+                        title="The usual form of the flow" t-on-click="() => this.openForm()">
+                    <i class="oi me-1" data-icon="edit_square"/>Form View
+                </button>
+                <button class="btn btn-outline-secondary btn-sm o_approval_designer_test" t-att-disabled="this.state.saving"
+                        title="See what the flow does for a record, without asking anything"
+                        t-on-click="() => this.test()">
+                    <i class="oi me-1" data-icon="play_arrow"/>Test on a Record
+                </button>
+                <button class="btn btn-secondary btn-sm o_approval_designer_save" t-att-disabled="this.state.saving"
+                        t-on-click="() => this.save()">
+                    <i class="oi me-1" data-icon="save"/>Save
+                </button>
+                <button t-if="this.flow.active" class="btn btn-secondary btn-sm" t-att-disabled="this.state.saving"
+                        t-on-click="() => this.setActive(false)">
+                    <i class="oi me-1" data-icon="pause"/>Deactivate
+                </button>
+                <button t-else="" class="btn btn-primary btn-sm o_approval_designer_activate"
+                        t-att-disabled="this.state.saving" title="Save the flow and let it stop its button"
+                        t-on-click="() => this.setActive(true)">
+                    <i class="oi me-1" data-icon="rocket_launch"/>Activate
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <!-- chain ============================================================ -->
+    <t t-name="om_approval.Designer.Chain">
+        <t t-set="problems" t-value="this.triggerProblems()"/>
+        <div class="o_approval_card o_approval_card_trigger card" t-att-class="{
+                'o_approval_card_selected': this.state.selected === 'trigger',
+                'o_approval_card_error': problems.length}"
+             t-on-click="() => this.select('trigger')">
+            <div class="card-body d-flex gap-3">
+                <span class="o_approval_card_icon"><i class="oi" data-icon="play_arrow"/></span>
+                <div class="flex-grow-1 min-w-0">
+                    <div class="o_approval_eyebrow">Trigger</div>
+                    <div class="o_approval_card_title">
+                        <t t-if="this.isDocument">When a <t t-out="this.state.choices.model_name"/> is submitted</t>
+                        <t t-else="">When <t t-out="this.buttonName"/> is clicked</t>
+                    </div>
+                    <div class="o_approval_card_sub">
+                        on <t t-out="this.state.choices.model_name"/>
+                        <t t-if="this.state.preview.conditions"> with <span t-out="this.html(this.state.preview.conditions)"/></t>
+                    </div>
+                    <div t-if="this.flow.button_id and this.flow.lock_record" class="d-flex flex-wrap gap-1 mt-2">
+                        <span class="o_approval_chip"><i class="oi" data-icon="lock"/>Locks the record</span>
+                    </div>
+                    <ul t-if="problems.length" class="o_approval_card_problems small mb-0 mt-1 ps-3">
+                        <li t-foreach="problems" t-as="problem" t-key="problem_index" t-out="problem"/>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <t t-set="at" t-value="0"/>
+        <t t-call="om_approval.Designer.Insert"/>
+        <t t-foreach="this.flow.steps" t-as="step" t-key="step_index">
+            <t t-set="problems" t-value="this.stepProblems(step)"/>
+            <t t-set="preview" t-value="this.stepPreview(step_index)"/>
+            <div class="o_approval_card o_approval_card_step card" t-att-class="{
+                    'o_approval_card_selected': this.state.selected === step_index,
+                    'o_approval_card_error': problems.length}"
+                 t-on-click="() => this.select(step_index)">
+                <div class="card-body d-flex gap-3">
+                    <span class="o_approval_card_icon"><i class="oi" data-icon="thumb_up"/></span>
+                    <div class="flex-grow-1 min-w-0">
+                        <div class="o_approval_eyebrow">Step <t t-out="step_index + 1"/></div>
+                        <div class="o_approval_card_title text-truncate" t-out="step.name"/>
+                        <div class="o_approval_card_sub">
+                            <i class="oi me-1" data-icon="group"/>
+                            <t t-out="preview.who or this.label(this.state.choices.approver_types, step.approver_type)"/>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 mt-2">
+                            <span t-if="preview.when" class="o_approval_chip">
+                                <i class="oi" data-icon="filter_alt"/><span>only when <span t-out="this.html(preview.when)"/></span>
+                            </span>
+                            <span t-if="step.approval_mode === 'all'" class="o_approval_chip">
+                                <i class="oi" data-icon="checklist"/>all of them
+                            </span>
+                            <span t-if="step.approval_mode === 'count'" class="o_approval_chip">
+                                <i class="oi" data-icon="checklist"/><t t-out="step.approval_count"/> of them
+                            </span>
+                            <span t-if="step.remind_days" class="o_approval_chip">
+                                <i class="oi" data-icon="notifications"/>reminded after <t t-out="step.remind_days"/> d
+                            </span>
+                            <span t-if="step.escalate_days" class="o_approval_chip">
+                                <i class="oi" data-icon="schedule"/>escalated after <t t-out="step.escalate_days"/> d
+                            </span>
+                        </div>
+                        <ul t-if="problems.length" class="o_approval_card_problems small mb-0 mt-1 ps-3">
+                            <li t-foreach="problems" t-as="problem" t-key="problem_index" t-out="problem"/>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <t t-set="at" t-value="step_index + 1"/>
+            <t t-call="om_approval.Designer.Insert"/>
+        </t>
+        <div t-if="!this.flow.steps.length" class="o_approval_card_empty text-center small text-muted mb-2">
+            No step: the approval administrators, or the fallback group, approve.
+        </div>
+        <div class="o_approval_card o_approval_card_end card" t-att-class="{
+                'o_approval_card_selected': this.state.selected === 'end'}"
+             t-on-click="() => this.select('end')">
+            <div class="card-body d-flex gap-3">
+                <span class="o_approval_card_icon"><i class="oi" data-icon="flag"/></span>
+                <div class="flex-grow-1">
+                    <div class="o_approval_eyebrow">Outcome</div>
+                    <div class="o_approval_card_title">
+                        <t t-if="this.isDocument">The <t t-out="this.state.choices.model_name"/> is approved</t>
+                        <t t-elif="this.flow.run_on_approval"><t t-out="this.buttonName"/> runs as the requester</t>
+                        <t t-else="">The requester clicks <t t-out="this.buttonName"/> again</t>
+                    </div>
+                    <div t-if="!this.isDocument and this.flow.lock_record" class="o_approval_card_sub">
+                        <t t-if="this.flow.lock_after === 'keep'">The record stays locked until an approval manager unlocks it.</t>
+                        <t t-else="">The record unlocks once <t t-out="this.buttonName"/> has run.</t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_approval.Designer.Insert">
+        <div class="o_approval_insert d-flex justify-content-center">
+            <button class="btn o_approval_insert_button" title="Add a step here" t-att-data-at="at"
+                    t-on-click="(ev) => this.insertAt(ev)">
+                <i class="oi" data-icon="add"/>
+            </button>
+        </div>
+    </t>
+
+    <!-- panels =========================================================== -->
+    <!-- a section of the panel: its head says what is set, a click opens it -->
+    <t t-name="om_approval.Designer.SectionHead">
+        <button type="button" class="o_approval_section_head" t-att-class="{'o_approval_section_open': this.isOpen(sec)}"
+                t-att-data-section="sec" t-on-click="(ev) => this.toggle(ev.currentTarget.dataset.section)">
+            <span class="o_approval_section_icon"><i class="oi" t-att-data-icon="secIcon"/></span>
+            <span class="o_approval_section_text">
+                <span class="o_approval_section_title" t-out="secTitle"/>
+                <span class="o_approval_section_value" t-out="secValue"/>
+            </span>
+            <i class="oi o_approval_section_chevron" t-att-data-icon="this.isOpen(sec) ? 'expand_less' : 'expand_more'"/>
+        </button>
+    </t>
+
+    <t t-name="om_approval.Designer.TriggerPanel">
+        <div class="o_approval_panel_head o_approval_tone_trigger">
+            <span class="o_approval_card_icon"><i class="oi" data-icon="play_arrow"/></span>
+            <div><div class="o_approval_eyebrow">Trigger</div><div class="o_approval_panel_title">When it asks for approval</div></div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'button'"/><t t-set="secIcon" t-value="'radio_button_checked'"/>
+            <t t-set="secTitle" t-value="this.texts.button"/><t t-set="secValue" t-value="this.buttonValue"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('button')" class="o_approval_section_body">
+                <div class="d-flex flex-wrap gap-1 o_approval_buttons">
+                    <button t-if="this.state.choices.is_document" class="btn btn-sm"
+                            t-att-class="this.choiceClass(!this.flow.button_id)"
+                            t-on-click="() => this.chooseButton(false)">Submit (its own approval)</button>
+                    <button t-foreach="this.visibleButtons" t-as="button" t-key="button.id" class="btn btn-sm"
+                            t-att-class="this.choiceClass(this.flow.button_id === button.id)"
+                            t-att-title="button.method" t-on-click="() => this.chooseButton(button.id)"
+                            t-out="button.name"/>
+                    <button t-if="this.hiddenButtonCount" class="btn btn-sm btn-link px-1"
+                            t-on-click="() => { this.state.allButtons = true; }">
+                        +<t t-out="this.hiddenButtonCount"/> more
+                    </button>
+                </div>
+                <button class="btn btn-link btn-sm px-0 mt-1 o_approval_hint_link" t-on-click="() => this.refreshButtons()">
+                    <i class="oi me-1" data-icon="refresh"/>A button is missing? List them again
+                </button>
+            </div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'conditions'"/><t t-set="secIcon" t-value="'filter_alt'"/>
+            <t t-set="secTitle" t-value="this.texts.conditions"/><t t-set="secValue" t-value="this.conditionsValue"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('conditions')" class="o_approval_section_body">
+                <div t-if="this.state.choices.quick.length" class="d-flex flex-wrap gap-1 mb-2">
+                    <button t-foreach="this.state.choices.quick" t-as="quick" t-key="quick.path" class="btn btn-sm o_approval_choice"
+                            t-on-click="() => this.openQuick(quick)"><i class="oi me-1" data-icon="add"/><t t-out="quick.label"/></button>
+                </div>
+                <div t-if="this.state.quick" class="input-group input-group-sm mb-2">
+                    <span class="input-group-text" t-out="this.state.quick.label"/>
+                    <input type="number" class="form-control o_approval_quick_value" t-att-value="this.state.quickValue"
+                           t-on-input="(ev) => { this.state.quickValue = ev.target.value; }"
+                           t-on-keydown="(ev) => ev.key === 'Enter' and this.applyQuick()"/>
+                    <button class="btn btn-primary" t-on-click="() => this.applyQuick()">Apply</button>
+                </div>
+                <DomainSelector resModel="this.flow.model" domain="this.flow.domain || '[]'" readonly="false"
+                                update="(domain) => this.set('domain', domain)"/>
+                <div class="o_approval_hint">Empty: every record. The first active flow matching a record is used.</div>
+            </div>
+        </div>
+
+        <div class="o_approval_section o_approval_amount">
+            <t t-set="sec" t-value="'amount'"/><t t-set="secIcon" t-value="'payments'"/>
+            <t t-set="secTitle" t-value="this.texts.amount"/><t t-set="secValue" t-value="this.amountValue"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('amount')" class="o_approval_section_body">
+                <ModelFieldSelector resModel="this.flow.model" path="this.flow.amount_field || ''" readonly="false" allowEmpty="true"
+                                    filter.bind="this.amountFilter"
+                                    update="(path) => this.set('amount_field', path)"/>
+                <div t-if="this.flow.amount_field" class="input-group input-group-sm mt-2">
+                    <span class="input-group-text">above</span>
+                    <input type="number" min="0" class="form-control o_approval_amount_min" t-att-value="this.flow.amount_min"
+                           t-on-change="(ev) => this.setNumber(this.flow, 'amount_min', ev.target.value)"/>
+                    <button class="btn btn-light border" title="No amount" t-on-click="() => this.clearAmount()">
+                        <i class="oi" data-icon="close"/>
+                    </button>
+                </div>
+                <div t-if="this.flow.amount_field and this.state.choices.multi_currency" class="mt-2">
+                    <RecordSelector resModel="'res.currency'" resId="this.flow.amount_currency_id || false"
+                                    update="(id) => this.set('amount_currency_id', id)"/>
+                </div>
+                <div class="o_approval_hint">In the currency of the flow; other currencies are converted first.</div>
+            </div>
+        </div>
+
+        <t t-if="this.flow.button_id">
+            <div class="o_approval_section">
+                <t t-set="sec" t-value="'requester'"/><t t-set="secIcon" t-value="'chat_bubble'"/>
+                <t t-set="secTitle" t-value="this.texts.requester"/><t t-set="secValue" t-value="this.requesterValue"/>
+                <t t-call="om_approval.Designer.SectionHead"/>
+                <div t-if="this.isOpen('requester')" class="o_approval_section_body">
+                    <label class="o_approval_label">Message shown when the button is stopped</label>
+                    <textarea class="form-control form-control-sm" rows="2" t-att-value="this.flow.note"
+                              placeholder="e.g. Orders above 10,000 need the approval of the sales director."
+                              t-on-change="(ev) => this.set('note', ev.target.value)"/>
+                </div>
+            </div>
+            <div class="o_approval_section">
+                <t t-set="sec" t-value="'lock'"/><t t-set="secIcon" t-value="'lock'"/>
+                <t t-set="secTitle" t-value="this.texts.lock"/><t t-set="secValue" t-value="this.lockValue"/>
+                <t t-call="om_approval.Designer.SectionHead"/>
+                <div t-if="this.isOpen('lock')" class="o_approval_section_body">
+                    <div class="form-check form-switch">
+                        <input type="checkbox" class="form-check-input" id="o_approval_lock"
+                               t-att-checked="this.flow.lock_record"
+                               t-on-change="(ev) => this.set('lock_record', ev.target.checked)"/>
+                        <label class="form-check-label" for="o_approval_lock">Lock the record: nobody changes it</label>
+                    </div>
+                    <div class="o_approval_hint">Once approved: set on the Outcome card.</div>
+                </div>
+            </div>
+        </t>
+
+        <div class="o_approval_section o_approval_notes">
+            <t t-set="sec" t-value="'notes'"/><t t-set="secIcon" t-value="'mode_comment'"/>
+            <t t-set="secTitle" t-value="this.texts.notes"/><t t-set="secValue" t-value="this.notesValue"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('notes')" class="o_approval_section_body o_approval_section_body_wide">
+                <div t-foreach="this.noteSettings" t-as="note" t-key="note[0]" class="o_approval_note_row">
+                    <span class="o_approval_note_icon"><i class="oi" t-att-data-icon="note[2]"/></span>
+                    <span class="o_approval_note_label" t-out="note[1]"/>
+                    <div class="o_approval_tristate" t-att-data-note="note[0]">
+                        <button t-foreach="this.state.choices.note_modes" t-as="mode" t-key="mode[0]" type="button"
+                                t-att-class="'o_approval_tri o_approval_tri_' + mode[0] + (this.flow[note[0]] === mode[0] ? ' active' : '')"
+                                t-on-click="() => this.set(note[0], mode[0])" t-out="mode[1]"/>
+                    </div>
+                </div>
+                <div class="o_approval_hint">The requester can attach files with the note.</div>
+            </div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'advanced'"/><t t-set="secIcon" t-value="'tune'"/>
+            <t t-set="secTitle" t-value="this.texts.advanced"/><t t-set="secValue" t-value="this.advancedValue"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('advanced')" class="o_approval_section_body">
+                <label class="o_approval_label">When a step finds nobody</label>
+                <RecordSelector resModel="'res.groups'" resId="this.flow.fallback_group_id || false"
+                                update="(id) => this.set('fallback_group_id', id)"/>
+                <div class="form-check form-switch mt-3">
+                    <input type="checkbox" class="form-check-input" id="o_approval_self"
+                           t-att-checked="this.flow.self_approve"
+                           t-on-change="(ev) => this.set('self_approve', ev.target.checked)"/>
+                    <label class="form-check-label" for="o_approval_self">
+                        The requester approves the steps they are an approver of
+                    </label>
+                </div>
+                <t t-if="this.state.choices.multi_company">
+                    <label class="o_approval_label mt-3">Company</label>
+                    <RecordSelector resModel="'res.company'" resId="this.flow.company_id || false"
+                                    update="(id) => this.set('company_id', id)"/>
+                    <div class="o_approval_hint">Empty: every company.</div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_approval.Designer.StepPanel">
+        <div class="o_approval_panel_head o_approval_tone_step">
+            <span class="o_approval_card_icon"><i class="oi" data-icon="thumb_up"/></span>
+            <div class="flex-grow-1 min-w-0">
+                <div class="o_approval_eyebrow">Step <t t-out="index + 1"/> of <t t-out="this.flow.steps.length"/></div>
+                <input class="form-control o_approval_step_name o_approval_panel_title_input" t-att-value="step.name"
+                       title="Click to rename the step" aria-label="Name of the step"
+                       t-on-change="(ev) => this.setStep(step, 'name', ev.target.value)"/>
+            </div>
+            <div class="btn-group">
+                <button class="btn btn-light btn-sm" title="Move up" t-att-disabled="index === 0"
+                        t-on-click="() => this.moveStep(index, -1)"><i class="oi" data-icon="arrow_upward"/></button>
+                <button class="btn btn-light btn-sm" title="Move down"
+                        t-att-disabled="index === this.flow.steps.length - 1"
+                        t-on-click="() => this.moveStep(index, 1)"><i class="oi" data-icon="arrow_downward"/></button>
+                <button class="btn btn-light btn-sm text-danger" title="Remove the step"
+                        t-on-click="() => this.removeStep(index)"><i class="oi" data-icon="delete"/></button>
+            </div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'who'"/><t t-set="secIcon" t-value="'group'"/>
+            <t t-set="secTitle" t-value="this.texts.who"/>
+            <t t-set="secValue" t-value="this.stepPreview(index).who or this.label(this.state.choices.approver_types, step.approver_type)"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('who')" class="o_approval_section_body">
+                <div class="o_approval_segments d-flex flex-wrap gap-1 mb-2">
+                    <button t-foreach="this.state.choices.approver_types" t-as="choice" t-key="choice[0]" class="btn btn-sm"
+                            t-att-class="this.choiceClass(step.approver_type === choice[0])"
+                            t-on-click="() => this.setStep(step, 'approver_type', choice[0])" t-out="choice[1]"/>
+                </div>
+                <RecordSelector t-if="step.approver_type === 'group'" resModel="'res.groups'" resId="step.group_id || false"
+                                update="(id) => this.setStep(step, 'group_id', id)"/>
+                <MultiRecordSelector t-elif="step.approver_type === 'user'" resModel="'res.users'" resIds="step.user_ids"
+                                     domain="[['share', '=', false]]"
+                                     update="(ids) => this.setStep(step, 'user_ids', ids)"/>
+                <t t-elif="step.approver_type === 'field'">
+                    <ModelFieldSelector resModel="this.flow.model" path="step.field_path || ''" readonly="false" allowEmpty="true"
+                                        filter.bind="this.fieldFilter"
+                                        update="(path) => this.setStep(step, 'field_path', path)"/>
+                    <div class="o_approval_hint">A field leading to a user or a contact, e.g. Sales Team › Team Leader.</div>
+                </t>
+            </div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'mode'"/><t t-set="secIcon" t-value="'checklist'"/>
+            <t t-set="secTitle" t-value="this.texts.mode"/><t t-set="secValue" t-value="this.modeValue(step)"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('mode')" class="o_approval_section_body">
+                <div class="o_approval_modes o_approval_choices d-flex gap-1">
+                    <button t-foreach="this.state.choices.approval_modes" t-as="mode" t-key="mode[0]" class="btn btn-sm"
+                            t-att-class="this.choiceClass(step.approval_mode === mode[0])"
+                            t-on-click="() => this.setStep(step, 'approval_mode', mode[0])" t-out="mode[1]"/>
+                </div>
+                <div t-if="step.approval_mode === 'count'" class="input-group input-group-sm mt-2">
+                    <input type="number" min="1" class="form-control o_approval_count" t-att-value="step.approval_count"
+                           t-on-change="(ev) => this.setNumber(step, 'approval_count', ev.target.value, { integer: true, minimum: 1 })"/>
+                    <span class="input-group-text">of them approve</span>
+                </div>
+                <div class="o_approval_hint">A refusal by any of them refuses the step.</div>
+            </div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'when'"/><t t-set="secIcon" t-value="'filter_alt'"/>
+            <t t-set="secTitle" t-value="this.texts.when"/><t t-set="secValue" t-value="this.whenValue(index)"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('when')" class="o_approval_section_body">
+                <t t-if="this.flow.amount_field">
+                    <label class="o_approval_label">Only above</label>
+                    <div class="input-group input-group-sm mb-3">
+                        <input type="number" min="0" class="form-control o_approval_step_amount" t-att-value="step.amount_min"
+                               t-on-change="(ev) => this.setNumber(step, 'amount_min', ev.target.value)"/>
+                        <span class="input-group-text">0: any amount</span>
+                    </div>
+                </t>
+                <label class="o_approval_label">Only for the records</label>
+                <DomainSelector resModel="this.flow.model" domain="step.domain || '[]'" readonly="false"
+                                update="this.stepDomainUpdate(step)"/>
+                <div class="o_approval_hint">Empty: always. The records outside skip the step.</div>
+            </div>
+        </div>
+
+        <div class="o_approval_section">
+            <t t-set="sec" t-value="'followup'"/><t t-set="secIcon" t-value="'notifications'"/>
+            <t t-set="secTitle" t-value="this.texts.followup"/><t t-set="secValue" t-value="this.followupValue(step)"/>
+            <t t-call="om_approval.Designer.SectionHead"/>
+            <div t-if="this.isOpen('followup')" class="o_approval_section_body">
+                <div class="input-group input-group-sm mb-2">
+                    <span class="input-group-text">Remind after</span>
+                    <input type="number" min="0" class="form-control o_approval_remind_days" t-att-value="step.remind_days"
+                           t-on-change="(ev) => this.setDays(step, 'remind_days', ev.target.value)"/>
+                    <span class="input-group-text">days</span>
+                </div>
+                <div class="input-group input-group-sm mb-2">
+                    <span class="input-group-text">Escalate after</span>
+                    <input type="number" min="0" class="form-control" t-att-value="step.escalate_days"
+                           t-on-change="(ev) => this.setDays(step, 'escalate_days', ev.target.value)"/>
+                    <span class="input-group-text">days</span>
+                </div>
+                <t t-if="step.escalate_days">
+                    <div class="o_approval_sublabel">Then ask</div>
+                    <div class="d-flex flex-wrap gap-1 mb-2">
+                        <button t-foreach="this.state.choices.escalate_types" t-as="choice" t-key="choice[0]" class="btn btn-sm"
+                                t-att-class="this.choiceClass(step.escalate_type === choice[0])"
+                                t-on-click="() => this.setStep(step, 'escalate_type', choice[0])" t-out="choice[1]"/>
+                    </div>
+                    <MultiRecordSelector t-if="step.escalate_type === 'user'" resModel="'res.users'"
+                                         resIds="step.escalate_user_ids" domain="[['share', '=', false]]"
+                                         update="(ids) => this.setStep(step, 'escalate_user_ids', ids)"/>
+                    <RecordSelector t-elif="step.escalate_type === 'group'" resModel="'res.groups'"
+                                    resId="step.escalate_group_id || false"
+                                    update="(id) => this.setStep(step, 'escalate_group_id', id)"/>
+                </t>
+                <div class="o_approval_hint">0: never. Escalating asks other people to decide too.</div>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_approval.Designer.EndPanel">
+        <div class="o_approval_panel_head o_approval_tone_end">
+            <span class="o_approval_card_icon"><i class="oi" data-icon="flag"/></span>
+            <div><div class="o_approval_eyebrow">Outcome</div><div class="o_approval_panel_title">Once approved</div></div>
+        </div>
+        <p t-if="this.isDocument" class="text-muted">
+            The <t t-out="this.state.choices.model_name"/> is approved, as its app decides.
+        </p>
+        <t t-else="">
+            <div class="o_approval_section">
+                <t t-set="sec" t-value="'run'"/><t t-set="secIcon" t-value="'play_circle'"/>
+                <t t-set="secTitle" t-value="this.texts.run"/><t t-set="secValue" t-value="this.runValue"/>
+                <t t-call="om_approval.Designer.SectionHead"/>
+                <div t-if="this.isOpen('run')" class="o_approval_section_body">
+                    <label class="o_approval_option" t-att-class="{'active': this.flow.run_on_approval}">
+                        <input type="radio" class="form-check-input" name="o_approval_run" id="o_approval_run_yes"
+                               t-att-checked="this.flow.run_on_approval" t-on-change="() => this.set('run_on_approval', true)"/>
+                        <span><strong>Runs by itself</strong><br/><t t-out="this.buttonName"/> runs as the requester once the last approval comes.</span>
+                    </label>
+                    <label class="o_approval_option" t-att-class="{'active': !this.flow.run_on_approval}">
+                        <input type="radio" class="form-check-input" name="o_approval_run" id="o_approval_run_no"
+                               t-att-checked="!this.flow.run_on_approval" t-on-change="() => this.set('run_on_approval', false)"/>
+                        <span><strong>Clicked again</strong><br/>The requester clicks <t t-out="this.buttonName"/> again.</span>
+                    </label>
+                </div>
+            </div>
+            <div class="o_approval_section">
+                <t t-set="sec" t-value="'record'"/><t t-set="secIcon" t-value="'lock_open'"/>
+                <t t-set="secTitle" t-value="this.texts.record"/><t t-set="secValue" t-value="this.lockValue"/>
+                <t t-call="om_approval.Designer.SectionHead"/>
+                <div t-if="this.isOpen('record')" class="o_approval_section_body">
+                    <t t-if="this.flow.lock_record">
+                        <label class="o_approval_option" t-att-class="{'active': this.flow.lock_after === 'unlock'}">
+                            <input type="radio" class="form-check-input" name="o_approval_after" id="o_approval_unlock"
+                                   t-att-checked="this.flow.lock_after === 'unlock'" t-on-change="() => this.set('lock_after', 'unlock')"/>
+                            <span><strong>Unlocks</strong><br/>Editable again once <t t-out="this.buttonName"/> has run.</span>
+                        </label>
+                        <label class="o_approval_option" t-att-class="{'active': this.flow.lock_after === 'keep'}">
+                            <input type="radio" class="form-check-input" name="o_approval_after" id="o_approval_keep"
+                                   t-att-checked="this.flow.lock_after === 'keep'" t-on-change="() => this.set('lock_after', 'keep')"/>
+                            <span><strong>Stays locked</strong><br/>Until an approval manager unlocks it.</span>
+                        </label>
+                    </t>
+                    <p t-else="" class="o_approval_hint mt-0">The record is not locked: lock it on the Trigger card.</p>
+                </div>
+            </div>
+        </t>
+    </t>
+
+</templates>

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_approval.GalleryDialog">
+        <Dialog size="'xl'" title="this.title" contentClass="'o_approval_gallery'">
+            <t t-if="!this.state.template" t-call="om_approval.GalleryDialog.pick"/>
+            <t t-else="" t-call="om_approval.GalleryDialog.setup"/>
+            <t t-set-slot="footer">
+                <t t-if="this.state.template">
+                    <button class="btn btn-primary o_approval_gallery_create" t-att-disabled="!this.state.model or this.state.busy"
+                            t-on-click="() => this.create()">
+                        Create and Open the Designer
+                    </button>
+                    <button class="btn btn-secondary" t-on-click="() => this.back()">Back</button>
+                </t>
+                <button t-else="" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_approval.GalleryDialog.pick">
+        <p class="text-muted">
+            Start from a template, or from blank. The flow is created inactive: check it in the designer, then
+            activate it.
+        </p>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-4">
+                <button class="o_approval_gallery_card o_approval_gallery_blank card h-100 w-100 text-start p-3"
+                        t-on-click="() => this.blank()">
+                    <span class="o_approval_gallery_icon mb-2"><i class="oi" data-icon="add"/></span>
+                    <strong>Start from blank</strong>
+                    <span class="small text-muted">Choose the button and add the steps yourself.</span>
+                </button>
+            </div>
+            <div t-foreach="this.state.templates" t-as="template" t-key="template.key" class="col-md-6 col-lg-4">
+                <button class="o_approval_gallery_card card h-100 w-100 text-start p-3" t-att-data-template="template.key"
+                        t-on-click="() => this.pick(template)">
+                    <span class="o_approval_gallery_icon mb-2"><i class="oi" t-att-data-icon="template.icon"/></span>
+                    <strong t-out="template.name"/>
+                    <span class="small text-muted" t-out="template.description"/>
+                    <span t-if="template.models.length" class="small mt-2">
+                        Ready for <t t-out="template.models.map((m) => m.name).join(', ')"/>
+                    </span>
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_approval.GalleryDialog.setup">
+        <p class="text-muted" t-out="this.state.template.description"/>
+        <label class="form-label small fw-bold">Applies to</label>
+        <div t-if="this.state.template.models.length" class="d-flex flex-wrap gap-1 mb-2">
+            <button t-foreach="this.state.template.models" t-as="model" t-key="model.model" class="btn btn-sm"
+                    t-att-class="model.model === this.state.model ? 'btn-primary' : 'btn-light border'"
+                    t-on-click="() => this.chooseModel(model.model, model.name)" t-out="model.name"/>
+        </div>
+        <div class="o_approval_gallery_model">
+            <ModelSelector value="this.state.modelName" placeholder="this.state.template.models.length ? 'Or another kind of record...' : 'Choose the kind of record...'"
+                           onModelSelected="(model) => this.chooseModel(model.technical, model.label)"/>
+        </div>
+        <p t-if="!this.state.template.blank" class="small text-muted mt-2 mb-0">
+            The button, the amounts and the approvers are set for the records listed above; for another kind of
+            record they are guessed. You change them in the designer.
+        </p>
+    </t>
+
+</templates>

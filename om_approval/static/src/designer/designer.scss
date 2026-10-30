@@ -1,0 +1,604 @@
+$o-approval-trigger: #017e84;
+$o-approval-step: #c2410c;
+$o-approval-end: #5b6472;
+$o-approval-accent: $o-action;
+
+.o_approval_designer {
+    background-color: $o-view-background-color;
+}
+
+// toolbar ===================================================================
+.o_approval_designer_toolbar {
+    min-height: 64px;
+    background-color: $o-view-background-color;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+
+    .o_approval_designer_title {
+        max-width: 520px;
+    }
+
+    .o_approval_designer_name {
+        padding: 2px 8px;
+        border-color: transparent;
+        background-color: transparent;
+        font-size: 1.15rem;
+        font-weight: 600;
+
+        &:hover {
+            border-color: $o-gray-300;
+        }
+
+        &:focus {
+            border-color: $o-approval-accent;
+            background-color: $o-view-background-color;
+        }
+    }
+}
+
+.o_approval_status {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    color: $o-gray-700;
+    background-color: $o-gray-200;
+    font-weight: 600;
+
+    &::before {
+        content: "";
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background-color: $o-gray-500;
+    }
+
+    &.o_approval_status_on {
+        color: #0f7a4f;
+        background-color: #e3f6ec;
+
+        &::before {
+            background-color: #16a34a;
+        }
+    }
+
+    &.o_approval_status_dirty {
+        color: #8a5a00;
+        background-color: #fff3d6;
+
+        &::before {
+            background-color: #f59e0b;
+        }
+    }
+}
+
+// canvas ====================================================================
+.o_approval_designer_chain {
+    background-color: #f6f5f9;
+    background-image: radial-gradient(circle, rgba(113, 75, 103, 0.13) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+}
+
+.o_approval_designer_layout {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 28px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.o_approval_designer_column {
+    flex: 0 1 560px;
+    min-width: 0;
+}
+
+// the summary beside the chain, always in sight
+.o_approval_designer_aside {
+    position: sticky;
+    top: 16px;
+    flex: 0 0 330px;
+    max-height: calc(100vh - 200px);
+    overflow-y: auto;
+    border-radius: 14px;
+}
+
+// too narrow for three columns: the summary goes below the chain
+@media (max-width: 1399.98px) {
+    .o_approval_designer_layout {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .o_approval_designer_column {
+        flex: 0 0 auto;
+        width: 100%;
+        max-width: 560px;
+    }
+
+    .o_approval_designer_aside {
+        position: static;
+        flex: 0 0 auto;
+        order: 2;
+        width: 100%;
+        max-width: 560px;
+        max-height: none;
+    }
+}
+
+// cards =====================================================================
+.o_approval_card {
+    --o-approval-color: #{$o-approval-end};
+    cursor: pointer;
+    border: 1px solid $o-gray-200;
+    border-radius: 14px;
+    background-color: $o-view-background-color;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 4px 14px rgba(16, 24, 40, 0.05);
+    transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+
+    .card-body {
+        padding: 16px 18px;
+    }
+
+    &:hover {
+        border-color: $o-gray-300;
+        box-shadow: 0 2px 4px rgba(16, 24, 40, 0.06), 0 10px 24px rgba(16, 24, 40, 0.08);
+        transform: translateY(-1px);
+    }
+
+    &.o_approval_card_selected {
+        border-color: $o-approval-accent;
+        box-shadow: 0 0 0 3px rgba(113, 75, 103, 0.18), 0 10px 24px rgba(16, 24, 40, 0.08);
+    }
+
+    &.o_approval_card_error {
+        border-color: $o-danger;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.15);
+    }
+
+    .o_approval_card_problems {
+        color: $o-danger;
+    }
+}
+
+.o_approval_card_trigger,
+.o_approval_tone_trigger {
+    --o-approval-color: #{$o-approval-trigger};
+}
+
+.o_approval_card_step,
+.o_approval_tone_step {
+    --o-approval-color: #{$o-approval-step};
+}
+
+.o_approval_card_end,
+.o_approval_tone_end {
+    --o-approval-color: #{$o-approval-end};
+}
+
+.o_approval_card_icon {
+    display: inline-flex;
+    flex: 0 0 40px;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    color: var(--o-approval-color);
+    background-color: color-mix(in srgb, var(--o-approval-color) 12%, transparent);
+    font-size: 1.15rem;
+}
+
+.o_approval_eyebrow {
+    margin-bottom: 1px;
+    color: var(--o-approval-color, #{$o-gray-600});
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.o_approval_card_title {
+    color: $o-gray-900;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
+}
+
+.o_approval_card_sub {
+    margin-top: 2px;
+    color: $o-gray-600;
+    font-size: 0.85rem;
+}
+
+.o_approval_chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    max-width: 100%;
+    padding: 3px 9px;
+    border-radius: 20px;
+    color: $o-gray-700;
+    background-color: $o-gray-100;
+    font-size: 0.78rem;
+    line-height: 1.35;
+
+    .oi {
+        color: $o-gray-500;
+        font-size: 0.9rem;
+    }
+}
+
+// the line between the cards ================================================
+.o_approval_insert {
+    position: relative;
+    padding: 10px 0;
+
+    &::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        border-left: 2px solid $o-gray-300;
+    }
+
+    .o_approval_insert_button {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border: 1px solid $o-gray-300;
+        border-radius: 50%;
+        color: $o-gray-600;
+        background-color: $o-view-background-color;
+        transition: all 0.15s;
+
+        &:hover {
+            border-color: $o-approval-accent;
+            color: #fff;
+            background-color: $o-approval-accent;
+            transform: scale(1.12);
+        }
+    }
+}
+
+.o_approval_card_empty {
+    padding: 4px 0 10px;
+}
+
+// summary ===================================================================
+.o_approval_designer_summary {
+    overflow: hidden;
+    border: 1px solid #e6dcea;
+    border-radius: 14px;
+    background-color: #fbf9fc;
+
+    .o_approval_summary_head {
+        padding: 12px 18px;
+        border-bottom: 1px solid #ece4ef;
+        background-color: #f4eef6;
+    }
+
+    .o_approval_summary_icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        border-radius: 8px;
+        color: #fff;
+        background-color: $o-approval-accent;
+    }
+
+    .o_approval_summary_body {
+        padding: 14px 16px 12px;
+        color: $o-gray-800;
+        font-size: 0.88rem;
+        line-height: 1.6;
+
+        ol, ul {
+            padding-left: 1.2rem;
+        }
+
+        li {
+            margin-bottom: 3px;
+        }
+    }
+}
+
+// side panel ================================================================
+.o_approval_designer_panel {
+    flex: 0 0 400px;
+    padding: 0 20px 20px;
+    background-color: $o-view-background-color;
+
+    .o_approval_panel_head {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 0 -20px 18px;
+        padding: 16px 20px;
+        border-bottom: 1px solid $o-gray-200;
+        background-color: $o-view-background-color;
+    }
+
+    .o_approval_panel_title {
+        color: $o-gray-900;
+        font-size: 1.05rem;
+        font-weight: 600;
+    }
+
+    .o_approval_label {
+        display: block;
+        margin-bottom: 6px;
+        color: $o-gray-600;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+    }
+
+    > .mb-3, > div > .mb-3 {
+        margin-bottom: 1.4rem !important;
+    }
+}
+
+.o_approval_choice {
+    border: 1px solid $o-gray-300;
+    border-radius: 8px;
+    color: $o-gray-700;
+    background-color: $o-view-background-color;
+    font-weight: 500;
+
+    &:hover {
+        border-color: $o-approval-accent;
+        color: $o-approval-accent;
+    }
+
+    &.active {
+        border-color: $o-approval-accent;
+        color: $o-approval-accent;
+        background-color: rgba(113, 75, 103, 0.09);
+        box-shadow: inset 0 0 0 1px $o-approval-accent;
+    }
+}
+
+.o_approval_choices {
+    padding: 3px;
+    border-radius: 10px;
+    background-color: $o-gray-100;
+
+    .o_approval_choice {
+        flex: 1 1 0;
+        border-color: transparent;
+        background-color: transparent;
+
+        &.active {
+            border-color: transparent;
+            color: $o-gray-900;
+            background-color: $o-view-background-color;
+            box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12);
+        }
+    }
+}
+
+// sections of the panel ======================================================
+.o_approval_section {
+    margin: 0 -8px 6px;
+    border: 1px solid transparent;
+    border-radius: 12px;
+    transition: border-color 0.15s, background-color 0.15s;
+
+    &:has(.o_approval_section_open) {
+        border-color: $o-gray-200;
+        background-color: #fcfbfd;
+    }
+}
+
+.o_approval_section_head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 8px;
+    border: 0;
+    border-radius: 12px;
+    background-color: transparent;
+    text-align: left;
+
+    &:hover {
+        background-color: $o-gray-100;
+    }
+
+    .o_approval_section_icon {
+        display: inline-flex;
+        flex: 0 0 32px;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 9px;
+        color: $o-approval-accent;
+        background-color: rgba(113, 75, 103, 0.09);
+    }
+
+    .o_approval_section_text {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .o_approval_section_title {
+        color: $o-gray-900;
+        font-size: 0.92rem;
+        font-weight: 600;
+    }
+
+    .o_approval_section_value {
+        overflow: hidden;
+        color: $o-gray-600;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .o_approval_section_chevron {
+        color: $o-gray-500;
+    }
+}
+
+.o_approval_section_body {
+    padding: 4px 12px 14px 52px;
+}
+
+.o_approval_hint {
+    margin-top: 6px;
+    color: $o-gray-500;
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.o_approval_hint_link {
+    font-size: 0.8rem;
+}
+
+.o_approval_sublabel {
+    margin: 4px 0 4px;
+    color: $o-gray-700;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.o_approval_panel_title_input {
+    padding: 0 4px;
+    margin-left: -4px;
+    border-color: transparent;
+    background-color: transparent;
+    color: $o-gray-900;
+    font-size: 1.05rem;
+    font-weight: 600;
+
+    &:hover {
+        border-color: $o-gray-300;
+    }
+
+    &:focus {
+        border-color: $o-approval-accent;
+        background-color: $o-view-background-color;
+    }
+}
+
+// a choice told in two lines, e.g. how the button runs
+.o_approval_option {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    padding: 10px 12px;
+    border: 1px solid $o-gray-200;
+    border-radius: 10px;
+    background-color: $o-view-background-color;
+    color: $o-gray-600;
+    font-size: 0.84rem;
+    cursor: pointer;
+
+    strong {
+        color: $o-gray-900;
+    }
+
+    .form-check-input {
+        flex: 0 0 auto;
+        margin-top: 3px;
+    }
+
+    &.active {
+        border-color: $o-approval-accent;
+        background-color: rgba(113, 75, 103, 0.05);
+    }
+}
+
+// the notes: a row each, with a switch of three ===========================
+.o_approval_note_row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed $o-gray-200;
+
+    &:last-of-type {
+        border-bottom: 0;
+    }
+
+    .o_approval_note_icon {
+        display: inline-flex;
+        flex: 0 0 auto;
+        color: $o-gray-500;
+        font-size: 1.05rem;
+    }
+
+    .o_approval_note_label {
+        flex: 1 1 auto;
+        min-width: 0;
+        color: $o-gray-800;
+        font-size: 0.84rem;
+        line-height: 1.25;
+    }
+}
+
+.o_approval_tristate {
+    display: inline-flex;
+    flex: 0 0 auto;
+    padding: 2px;
+    border: 1px solid $o-gray-200;
+    border-radius: 20px;
+    background-color: $o-gray-100;
+
+    .o_approval_tri {
+        padding: 3px 9px;
+        border: 0;
+        border-radius: 20px;
+        background-color: transparent;
+        color: $o-gray-500;
+        font-size: 0.72rem;
+        font-weight: 600;
+        line-height: 1.4;
+        white-space: nowrap;
+        transition: background-color 0.15s, color 0.15s;
+
+        &:hover {
+            color: $o-gray-900;
+        }
+
+        &.active {
+            box-shadow: 0 1px 2px rgba(16, 24, 40, 0.14);
+        }
+
+        &.o_approval_tri_none.active {
+            background-color: $o-view-background-color;
+            color: $o-gray-700;
+        }
+
+        &.o_approval_tri_optional.active {
+            background-color: #ede5f3;
+            color: $o-approval-accent;
+        }
+
+        &.o_approval_tri_required.active {
+            background-color: #fdecc8;
+            color: #9a5b00;
+        }
+    }
+}
+
+.o_approval_section_body_wide {
+    padding-left: 14px;
+}

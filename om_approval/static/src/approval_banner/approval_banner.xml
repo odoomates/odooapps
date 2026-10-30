@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_approval.ApprovalBanner">
+        <div t-foreach="this.state.requests" t-as="request" t-key="request.id"
+             t-attf-class="alert {{ this.alertClass(request) }} mb-0 rounded-0 border-0 border-bottom o_approval_banner"
+             role="status">
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <i class="oi oi-lg" t-att-data-icon="this.icon(request)"/>
+                <div class="flex-grow-1">
+                    <t t-if="request.state === 'to_approve'">
+                        <strong t-out="request.button"/> waits for approval:
+                        <strong t-out="request.step"/>
+                        <t t-if="request.approvers.length"> by <t t-out="request.approvers.join(', ')"/></t>
+                        <span t-if="request.progress" class="badge text-bg-light ms-1">
+                            <t t-out="request.progress"/> approved
+                        </span>
+                        <span class="text-muted small ms-1">
+                            <t t-out="request.name"/> · asked by <t t-out="request.requester"/> on <t t-out="request.asked"/>
+                            <t t-if="request.step_count > 1"> · step <t t-out="request.step_index"/> of <t t-out="request.step_count"/></t>
+                        </span>
+                    </t>
+                    <t t-elif="request.state === 'refused'">
+                        <strong t-out="request.button"/> was refused
+                        <t t-if="request.refused_by"> by <strong t-out="request.refused_by"/></t>
+                        <t t-if="request.refused_step"> at <t t-out="request.refused_step"/></t>
+                        <span class="text-muted small ms-1">(<t t-out="request.name"/>)</span>
+                        <div t-if="request.refused_reason" class="small o_approval_banner_reason" t-out="request.refused_reason"/>
+                        <div class="small">Change what is needed, then click <t t-out="request.button"/> again to ask anew.</div>
+                    </t>
+                    <t t-elif="request.state === 'approved'">
+                        <strong t-out="request.button"/> is approved (<t t-out="request.name"/>):
+                        <t t-out="request.requester"/> clicks <strong t-out="request.button"/> to finish.
+                    </t>
+                    <t t-else="">
+                        Approved with <t t-out="request.name"/>, and kept locked.
+                    </t>
+                    <div t-if="request.request_note and request.state !== 'refused'" class="small o_approval_banner_note">
+                        <i class="oi me-1" data-icon="chat_bubble"/><t t-out="request.request_note"/>
+                    </div>
+                    <div t-if="request.attachments.length and request.state !== 'refused'" class="small">
+                        <a t-foreach="request.attachments" t-as="attachment" t-key="attachment.id" class="me-2"
+                           t-att-href="this.attachmentUrl(attachment)">
+                            <i class="oi me-1" data-icon="attach_file"/><t t-out="attachment.name"/>
+                        </a>
+                    </div>
+                    <div t-if="request.locking" class="small">
+                        <t t-if="request.state === 'done'">The record is read-only until an approval manager unlocks it.</t>
+                        <t t-elif="request.keep_locked">The record is read-only, and stays so once approved until an approval manager unlocks it.</t>
+                        <t t-else="">The record is read-only until <t t-out="request.button"/> has run.</t>
+                    </div>
+                </div>
+                <t t-if="request.can_approve">
+                    <button class="btn btn-sm btn-success" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.approve(request)">
+                        <i class="oi me-1" data-icon="check"/>Approve
+                    </button>
+                    <button class="btn btn-sm btn-danger" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.refuse(request)">
+                        <i class="oi me-1" data-icon="close"/>Refuse
+                    </button>
+                </t>
+                <button t-if="request.can_withdraw" class="btn btn-sm btn-secondary" t-att-disabled="this.state.busy"
+                        t-on-click="() => this.withdraw(request)">Withdraw</button>
+                <button t-if="request.can_unlock" class="btn btn-sm btn-secondary" t-att-disabled="this.state.busy"
+                        t-on-click="() => this.unlock(request)">Unlock</button>
+                <button t-if="request.can_dismiss" class="btn btn-sm btn-secondary o_approval_dismiss"
+                        t-att-disabled="this.state.busy" t-on-click="() => this.dismiss(request)">Dismiss</button>
+                <button t-if="request.lines.length" class="btn btn-sm btn-link" t-on-click="() => this.toggle(request)">
+                    Details
+                </button>
+            </div>
+            <div t-if="this.state.expanded[request.id]" class="mt-2 small o_approval_banner_steps">
+                <table class="table table-sm mb-1">
+                    <tbody>
+                        <tr t-foreach="request.lines" t-as="line" t-key="line_index">
+                            <td class="fw-bold" t-out="line.name"/>
+                            <td><span t-attf-class="badge {{ line.state === 'approved' ? 'text-bg-success' : line.state === 'refused' ? 'text-bg-danger' : line.state === 'pending' ? 'text-bg-info' : 'text-bg-light' }}" t-out="line.state_label"/></td>
+                            <td>
+                                <t t-out="line.approvers.join(', ')"/>
+                                <span t-if="line.progress" class="text-muted"> · <t t-out="line.progress"/> approved<t t-if="line.approved.length">: <t t-out="line.approved.join(', ')"/></t></span>
+                            </td>
+                            <td><t t-if="line.user"><t t-out="line.user"/>, <t t-out="line.date"/></t></td>
+                            <td class="text-muted" t-out="line.note or ''"/>
+                        </tr>
+                    </tbody>
+                </table>
+                <button t-if="request.can_open" class="btn btn-sm btn-link p-0" t-on-click="() => this.open(request)">
+                    Open <t t-out="request.name"/>
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <t t-inherit="web.FormView" t-inherit-mode="extension">
+        <xpath expr="//Layout/t[@t-component='this.props.Renderer']" position="before">
+            <ApprovalBanner t-if="!this.env.inDialog and this.model.root.resId" record="this.model.root"
+                            canEdit="this.canEdit"/>
+        </xpath>
+    </t>
+
+</templates>
