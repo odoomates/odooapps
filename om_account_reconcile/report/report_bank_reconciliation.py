@@ -97,6 +97,8 @@ class ReportBankReconciliation(models.AbstractModel):
             'currency': currency,
             # a cash journal is reconciled against a count, not against a bank
             'is_cash': journal.type == 'cash',
+            # a credit card journal is reconciled against the statement of the card
+            'is_card': journal.type == 'credit',
             # a journal with no outstanding account never posts its payments to the
             # ledger at all, so the totals below would be quietly wrong: say so instead
             'misconfigured': not (inbound or outbound),
