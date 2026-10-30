@@ -43,6 +43,14 @@ Features
   company; the module installs eleven tasks for a month-end closing.
 * Set the tax, sales, purchase, global and permanent lock dates of the company
   from a single wizard, reserved to accounting administrators.
+* Removing or moving back a lock date (all but the permanent one) does not
+  change it: the wizard opens the period through an exception of Odoo, for you
+  or everyone, for 5 minutes up to forever, with a reason logged in the chatter
+  of the company. Accounting > Closing > Lock Date Exceptions lists them and
+  revokes the active ones.
+* Only the lock dates changed in the wizard are written.
+* Locking a period with unreconciled bank transactions shows them from the
+  warning.
 * Fiscal years, period closings, their checks and the closing tasks are
   restricted to the allowed companies by record rules.
 
@@ -96,7 +104,8 @@ To close a month, go to Accounting > Accounting > Closing > Period Closing,
 create the closing of the period, work through the checklist and close it.
 
 Lock dates can also be changed directly from Accounting > Accounting > Closing >
-Lock Dates.
+Lock Dates. To reopen a locked period, remove or move back its lock date there,
+choose for whom and how long, and write the reason.
 
 
 Credits
