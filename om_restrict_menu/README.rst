@@ -14,6 +14,16 @@ Features
 * Hiding a menu hides its sub-menus. A folder left with nothing to open is hidden too, and an app
   whose first menu is hidden opens the next one.
 * The Hidden For tab of a menu shows and changes the same rules, from the side of the menu.
+* Visible Apps: show a user only the apps chosen, in every company. Every other app is hidden, also an
+  app installed later, and the hidden menus still hide menus inside the visible apps.
+* Set the hidden menus and the visible apps of several users at once from the users list (Action > Set
+  Hidden Menus), typed in or copied from another user, replacing theirs or adding to them.
+* Menus are shown with their full path, and the menu pickers search the menus of an app with In App or
+  Menu.
+* A Home Action opening only from hidden menus is not opened: the first visible app opens instead, and the
+  form of the user warns about it.
+* The Hidden Menus tab of a user lists everything hidden for them, and why: hidden for the user, in one of
+  their companies, or out of their Visible Apps.
 * Settings > Users & Companies > Hidden Menus lists every hidden menu with its users and companies.
 * The rules apply to the administrators as well, but they always keep the Settings app, so that no
   rule can lock them out of it.
@@ -51,7 +61,8 @@ Usage
 
 Open a user in Settings > Users & Companies > Users, go to the Hidden Menus tab, add the menus to hide
 and save. To hide menus in a company, do the same in the Hidden Menus tab of the company. The user sees
-the change on the next page load.
+the change on the next page load. To show a user only some apps, choose them in Visible Apps on the same
+tab. To set several users at once, select them in the users list and use Action > Set Hidden Menus.
 
 Credits
 =======
