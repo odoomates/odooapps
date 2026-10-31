@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="sequence_sign_request" model="ir.sequence">
+        <field name="name">Signature Request</field>
+        <field name="code">sign.request</field>
+        <field name="prefix">SIGN/%(year)s/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <record id="ir_cron_sign_remind_expire" model="ir.cron">
+        <field name="name">Sign: Reminders and Expiry</field>
+        <field name="model_id" ref="model_sign_request"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_remind_and_expire()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+
+    <record id="ir_cron_sign_send_queued" model="ir.cron">
+        <field name="name">Sign: Send the Requests Queued</field>
+        <field name="model_id" ref="model_sign_request"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_send_queued()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+    </record>
+
+    <record id="portal_entry_signatures" model="portal.entry">
+        <field name="name">Signatures</field>
+        <field name="description">Documents sent to you for signature</field>
+        <field name="url">/my/signatures</field>
+        <field name="image" type="bytes" file="om_sign/static/img/sign.svg"/>
+        <field name="placeholder_count">sign_count</field>
+        <field name="sequence" eval="40"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_document_type_view_list" model="ir.ui.view">
+        <field name="name">document.type.view.list</field>
+        <field name="model">document.type</field>
+        <field name="arch" type="xml">
+            <list string="Document Types">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code" optional="show"/>
+                <field name="model_id"/>
+                <field name="has_expiry_date"/>
+                <field name="reminder_days" invisible="not has_expiry_date"/>
+                <field name="notify_holder" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_document_type_view_form" model="ir.ui.view">
+        <field name="name">document.type.view.form</field>
+        <field name="model">document.type</field>
+        <field name="arch" type="xml">
+            <form string="Document Type">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Passport"/></h1>
+                    </div>
+                    <group>
+                        <group string="Document">
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="code"/>
+                            <field name="has_number"/>
+                            <field name="has_issue_date"/>
+                            <field name="has_expiry_date"/>
+                        </group>
+                        <group string="Reminders" invisible="not has_expiry_date">
+                            <field name="reminder_days" placeholder="30,7,0"/>
+                            <field name="notify_holder"/>
+                            <field name="user_ids" widget="many2many_avatar_user"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Explain the document to the people filling it in"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_document_type_action" model="ir.actions.act_window">
+        <field name="name">Document Types</field>
+        <field name="res_model">document.type</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_sign.TemplateEditor">
+        <div class="o_sign_editor o_action d-flex flex-column h-100" t-ref="this.root">
+            <t t-if="this.state.loaded and this.state.template">
+                <t t-call="om_sign.TemplateEditor.Toolbar"/>
+                <div class="d-flex flex-grow-1 overflow-hidden">
+                    <div class="o_sign_editor_canvas flex-grow-1 overflow-auto" t-ref="this.scroller"
+                         t-on-pointerdown="(ev) => this.onCanvasPointerDown(ev)">
+                        <div t-if="this.state.pdfError" class="alert alert-warning m-4">
+                            The PDF could not be shown in this browser.
+                        </div>
+                        <div class="o_sign_editor_pages py-4">
+                            <t t-foreach="this.state.pages" t-as="page" t-key="page.number">
+                                <div class="o_sign_page" t-att-data-page="page.number" t-att-style="this.pageStyle(page)">
+                                    <canvas class="o_sign_page_canvas" t-att-data-page="page.number"/>
+                                    <t t-foreach="this.fieldsOf(page)" t-as="field" t-key="field.id">
+                                        <div class="o_sign_field" t-att-class="this.fieldClass(field)"
+                                             t-att-style="this.fieldStyle(field)" t-att-data-type="field.type"
+                                             t-att-title="this.fieldText(field)"
+                                             t-on-pointerdown="(ev) => this.startMove(ev, field)">
+                                            <i class="oi" t-att-data-icon="this.icon(field.type)"/>
+                                            <span class="o_sign_field_text text-truncate" t-out="this.fieldText(field)"/>
+                                            <span t-if="field.required" class="o_sign_field_required">*</span>
+                                            <span t-if="this.state.canEdit" class="o_sign_field_resize"
+                                                  title="Drag to resize"
+                                                  t-on-pointerdown.stop="(ev) => this.startResize(ev, field)"/>
+                                        </div>
+                                    </t>
+                                    <div class="o_sign_page_number">
+                                        <t t-out="page.number"/> / <t t-out="this.pageCount"/>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="o_sign_editor_panel border-start overflow-auto">
+                        <t t-call="om_sign.TemplateEditor.Palette"/>
+                        <t t-if="this.selected">
+                            <t t-set="field" t-value="this.selected"/>
+                            <t t-call="om_sign.TemplateEditor.FieldPanel"/>
+                        </t>
+                        <t t-else="" t-call="om_sign.TemplateEditor.RolesPanel"/>
+                    </div>
+                </div>
+                <div t-if="this.state.ghost" class="o_sign_field o_sign_field_ghost" t-att-style="this.ghostStyle">
+                    <i class="oi" t-att-data-icon="this.icon(this.state.ghost.type)"/>
+                    <span class="o_sign_field_text" t-out="this.typeLabel(this.state.ghost.type)"/>
+                </div>
+            </t>
+            <div t-elif="this.state.loaded" class="alert alert-warning m-4">
+                Open a template from its form to place its fields.
+            </div>
+        </div>
+    </t>
+
+    <!-- toolbar ========================================================= -->
+    <t t-name="om_sign.TemplateEditor.Toolbar">
+        <div class="o_sign_editor_toolbar d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+            <button class="btn btn-light btn-sm" title="Back to the templates" t-on-click="() => this.close()">
+                <i class="oi" data-icon="arrow_back"/>
+            </button>
+            <div class="d-flex flex-column min-w-0 flex-grow-1">
+                <div class="o_sign_editor_title text-truncate" t-out="this.state.template.name"/>
+                <div class="d-flex align-items-center gap-2 small">
+                    <span class="text-muted text-nowrap text-truncate">
+                        <i class="oi me-1" data-icon="description"/><t t-out="this.state.template.filename"/>
+                        · <t t-out="this.pageCount"/> page(s) · <t t-out="this.state.fields.length"/> field(s)
+                    </span>
+                    <span t-if="this.state.dirty" class="badge o_sign_status_dirty">Unsaved</span>
+                    <span t-if="!this.state.canEdit" class="badge text-bg-light">Read only</span>
+                </div>
+            </div>
+            <div class="btn-group btn-group-sm" role="group" aria-label="Zoom">
+                <button class="btn btn-light" title="Zoom out" t-att-disabled="!this.canZoomOut"
+                        t-on-click="() => this.zoomBy(-1)"><i class="oi" data-icon="zoom_out"/></button>
+                <button class="btn btn-light o_sign_zoom_label" title="Actual size" t-on-click="() => this.setZoom(1)"
+                        t-out="this.zoomLabel"/>
+                <button class="btn btn-light" title="Zoom in" t-att-disabled="!this.canZoomIn"
+                        t-on-click="() => this.zoomBy(1)"><i class="oi" data-icon="zoom_in"/></button>
+            </div>
+            <div class="ms-2 d-flex gap-2 align-items-center flex-shrink-0">
+                <button class="btn btn-link btn-sm text-decoration-none" t-att-disabled="this.state.saving"
+                        title="The form of the template" t-on-click="() => this.openForm()">
+                    <i class="oi me-1" data-icon="edit_square"/>Form View
+                </button>
+                <button t-if="this.state.canEdit" class="btn btn-secondary btn-sm o_sign_editor_save"
+                        t-att-disabled="this.state.saving" t-on-click="() => this.save()">
+                    <i class="oi me-1" data-icon="save"/>Save
+                </button>
+                <button class="btn btn-light btn-sm o_sign_editor_share" t-att-disabled="this.state.saving"
+                        title="Share a public link anyone signs from"
+                        t-att-class="{'active': this.state.share.enabled}" t-on-click="() => this.share()">
+                    <i class="oi me-1" data-icon="link"/>Share
+                </button>
+                <button t-if="this.state.template.active" class="btn btn-secondary btn-sm o_sign_editor_send_bulk"
+                        t-att-disabled="this.state.saving" title="Save and send one request per contact"
+                        t-on-click="() => this.sendBulk()">
+                    <i class="oi me-1" data-icon="group"/>Send in Bulk
+                </button>
+                <button class="btn btn-primary btn-sm o_sign_editor_send" t-att-disabled="this.state.saving"
+                        title="Save and choose who signs" t-on-click="() => this.send()">
+                    <i class="oi me-1" data-icon="send"/>Send
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <!-- palette ========================================================= -->
+    <t t-name="om_sign.TemplateEditor.Palette">
+        <div class="o_sign_panel_section">
+            <div class="o_sign_panel_title">Add fields for</div>
+            <div class="d-flex flex-wrap gap-1 mb-3 o_sign_role_choices">
+                <t t-foreach="this.rolesBySequence" t-as="role" t-key="role.id">
+                    <button class="btn btn-sm o_sign_role_choice"
+                            t-att-class="{'active': role.id === this.state.roleId}"
+                            t-att-style="'--o-sign-role-color: ' + this.roleColor(role)"
+                            t-on-click="() => this.chooseRole(role)">
+                        <span class="o_sign_role_dot"/><t t-out="role.name"/>
+                    </button>
+                </t>
+            </div>
+            <div class="o_sign_palette" t-att-style="'--o-sign-role-color: ' + this.roleColor(this.activeRole)">
+                <t t-foreach="this.state.types" t-as="type" t-key="type[0]">
+                    <button class="o_sign_palette_item" t-att-data-type="type[0]" t-att-disabled="!this.state.canEdit"
+                            title="Drag onto a page, or click to add to the page in view"
+                            t-on-pointerdown="(ev) => this.startNew(ev, type[0])">
+                        <i class="oi" t-att-data-icon="this.icon(type[0])"/>
+                        <span t-out="type[1]"/>
+                    </button>
+                </t>
+            </div>
+            <div class="o_sign_hint">Drag a field onto a page, or click it to add it to the page in view.</div>
+        </div>
+    </t>
+
+    <!-- the field selected ============================================== -->
+    <t t-name="om_sign.TemplateEditor.FieldPanel">
+        <div class="o_sign_panel_section o_sign_field_panel">
+            <div class="d-flex align-items-center mb-2">
+                <div class="o_sign_panel_title mb-0 flex-grow-1">
+                    <i class="oi me-1" t-att-data-icon="this.icon(field.type)"/><t t-out="this.typeLabel(field.type)"/>
+                </div>
+                <button class="btn btn-link btn-sm text-muted" title="Close" t-on-click="() => this.select(false)">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </div>
+            <label class="form-label small text-muted">Filled by</label>
+            <select class="form-select form-select-sm mb-3 o_sign_field_role" t-att-disabled="!this.state.canEdit"
+                    t-on-change="(ev) => this.setFieldRole(field, ev.target.value)">
+                <t t-foreach="this.rolesBySequence" t-as="role" t-key="role.id">
+                    <option t-att-value="role.id" t-att-selected="role.id === field.role_id" t-out="role.name"/>
+                </t>
+            </select>
+            <label class="form-label small text-muted">Type</label>
+            <select class="form-select form-select-sm mb-3 o_sign_field_type" t-att-disabled="!this.state.canEdit"
+                    t-on-change="(ev) => this.setField(field, 'type', ev.target.value)">
+                <t t-foreach="this.state.types" t-as="type" t-key="type[0]">
+                    <option t-att-value="type[0]" t-att-selected="type[0] === field.type" t-out="type[1]"/>
+                </t>
+            </select>
+            <label class="form-label small text-muted">Label</label>
+            <input class="form-control form-control-sm mb-3 o_sign_field_label" t-att-value="field.label"
+                   t-att-disabled="!this.state.canEdit" placeholder="e.g. Job title"
+                   t-on-change="(ev) => this.setField(field, 'label', ev.target.value)"/>
+            <div class="form-check form-switch mb-3">
+                <input type="checkbox" class="form-check-input o_sign_field_required_input" id="o_sign_field_required"
+                       t-att-checked="field.required" t-att-disabled="!this.state.canEdit"
+                       t-on-change="(ev) => this.setField(field, 'required', ev.target.checked)"/>
+                <label class="form-check-label" for="o_sign_field_required">
+                    Required<t t-if="field.type === 'checkbox'"> (must be ticked)</t>
+                </label>
+            </div>
+            <div class="o_sign_hint mb-3">
+                Page <t t-out="field.page"/>, <t t-out="this.percent(field.pos_x)"/> from the left,
+                <t t-out="this.percent(field.pos_y)"/> from the top.
+            </div>
+            <button t-if="this.state.canEdit" class="btn btn-outline-danger btn-sm o_sign_field_delete"
+                    t-on-click="() => this.removeField(field)">
+                <i class="oi me-1" data-icon="delete"/>Delete the Field
+            </button>
+        </div>
+    </t>
+
+    <!-- roles ============================================================ -->
+    <t t-name="om_sign.TemplateEditor.RolesPanel">
+        <div class="o_sign_panel_section o_sign_roles_panel">
+            <div class="o_sign_panel_title">Roles</div>
+            <div class="o_sign_hint mb-2">They sign in this order; those of the same number sign together.</div>
+            <t t-foreach="this.rolesBySequence" t-as="role" t-key="role.id">
+                <div class="o_sign_role card mb-2" t-att-style="'--o-sign-role-color: ' + this.roleColor(role)"
+                     t-att-class="{'o_sign_role_active': role.id === this.state.roleId}">
+                    <div class="card-body p-2">
+                        <div class="d-flex align-items-center gap-1">
+                            <button class="btn btn-sm p-0 o_sign_role_color" title="Change the colour"
+                                    t-att-disabled="!this.state.canEdit" t-on-click="() => this.nextColor(role)">
+                                <span class="o_sign_role_dot"/>
+                            </button>
+                            <input class="form-control form-control-sm o_sign_role_order" type="number" min="1"
+                                   title="Order of signing" t-att-value="role.sequence"
+                                   t-att-disabled="!this.state.canEdit"
+                                   t-on-change="(ev) => this.setSequence(role, ev.target.value)"/>
+                            <input class="form-control form-control-sm o_sign_role_name flex-grow-1"
+                                   t-att-value="role.name" t-att-disabled="!this.state.canEdit"
+                                   placeholder="e.g. Customer" t-on-change="(ev) => this.setRole(role, 'name', ev.target.value)"
+                                   t-on-focus="() => this.chooseRole(role)"/>
+                            <t t-if="this.state.canEdit">
+                                <button class="btn btn-light btn-sm px-1" title="Signs earlier"
+                                        t-on-click="() => this.moveRole(role, -1)"><i class="oi" data-icon="keyboard_arrow_up"/></button>
+                                <button class="btn btn-light btn-sm px-1" title="Signs later"
+                                        t-on-click="() => this.moveRole(role, 1)"><i class="oi" data-icon="keyboard_arrow_down"/></button>
+                                <button class="btn btn-light btn-sm px-1 o_sign_role_delete" title="Delete the role"
+                                        t-on-click="() => this.removeRole(role)"><i class="oi" data-icon="delete"/></button>
+                            </t>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <select class="form-select form-select-sm o_sign_role_signer" t-att-disabled="!this.state.canEdit"
+                                    t-on-change="(ev) => this.setRole(role, 'signer_type', ev.target.value)">
+                                <t t-foreach="this.state.signerTypes" t-as="signerType" t-key="signerType[0]">
+                                    <option t-att-value="signerType[0]" t-att-selected="signerType[0] === role.signer_type"
+                                            t-out="signerType[1]"/>
+                                </t>
+                            </select>
+                            <span class="text-muted small text-nowrap"><t t-out="this.roleFieldCount(role)"/> field(s)</span>
+                        </div>
+                        <div t-if="role.signer_type === 'partner'" class="mt-2 o_sign_role_partner">
+                            <RecordSelector resModel="'res.partner'" resId="role.partner_id || false"
+                                            placeholder="'Contact signing'"
+                                            update="(id) => this.setRole(role, 'partner_id', id)"/>
+                        </div>
+                    </div>
+                </div>
+            </t>
+            <button t-if="this.state.canEdit" class="btn btn-link btn-sm px-0 o_sign_role_add"
+                    t-on-click="() => this.addRole()">
+                <i class="oi me-1" data-icon="add"/>Add a Role
+            </button>
+        </div>
+    </t>
+
+    <!-- sharing by a link ================================================ -->
+    <t t-name="om_sign.ShareDialog">
+        <Dialog title.translate="Share a Link" size="'md'" contentClass="'o_sign_share_dialog'">
+            <p class="text-muted">
+                Anyone with the link signs this template: they give their name and email, confirm it with a code
+                emailed to them, and sign as <strong t-out="this.state.role or '?'"/>. The other roles sign next,
+                as set on the template.
+            </p>
+            <div t-if="this.state.problem" class="alert alert-warning o_sign_share_problem" role="status"
+                 t-out="this.state.problem"/>
+            <div class="form-check form-switch mb-3">
+                <input type="checkbox" class="form-check-input o_sign_share_toggle" id="o_sign_share_toggle"
+                       t-att-checked="this.state.enabled"
+                       t-att-disabled="this.state.busy or !this.props.canEdit or (this.state.problem and !this.state.enabled)"
+                       t-on-change="(ev) => this.onToggle(ev)"/>
+                <label class="form-check-label" for="o_sign_share_toggle">Share link</label>
+            </div>
+            <t t-if="this.state.enabled and this.state.url">
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control o_sign_share_url" readonly="1" t-att-value="this.state.url"
+                           aria-label="Link"/>
+                    <button type="button" class="btn btn-primary o_sign_share_copy" t-on-click="() => this.copy()">
+                        <i class="oi me-1" data-icon="content_copy"/>Copy
+                    </button>
+                </div>
+                <button t-if="this.props.canEdit" type="button" class="btn btn-link btn-sm px-0 o_sign_share_regenerate"
+                        t-att-disabled="this.state.busy" t-on-click="() => this.update({ regenerate: true })">
+                    New link: the one given so far stops working
+                </button>
+            </t>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

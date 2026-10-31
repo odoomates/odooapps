@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_print_template_view_form_document" model="ir.ui.view">
+        <field name="name">print.template.view.form.document</field>
+        <field name="model">print.template</field>
+        <field name="inherit_id" ref="om_print_template.om_print_template_view_form"/>
+        <field name="arch" type="xml">
+            <page name="signature" position="after">
+                <page string="Filing" name="filing">
+                    <group>
+                        <group>
+                            <field name="document_type_id" options="{'no_create': True}"/>
+                            <field name="validity_days" invisible="not document_type_id"/>
+                        </group>
+                        <div class="text-muted" colspan="2">
+                            Each print is also kept as a document of the record printed, e.g. a No Objection
+                            Certificate valid for 30 days shows on the documents of the employee and is reminded
+                            before it expires.
+                        </div>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <record id="om_print_issue_view_form_document" model="ir.ui.view">
+        <field name="name">print.issue.view.form.document</field>
+        <field name="model">print.issue</field>
+        <field name="inherit_id" ref="om_print_template.om_print_issue_view_form"/>
+        <field name="arch" type="xml">
+            <field name="attachment_id" position="after">
+                <field name="document_id" invisible="not document_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

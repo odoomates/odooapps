@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_document_view_form" model="ir.ui.view">
+        <field name="name">document.document.view.form</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <header>
+                    <button name="action_renew" string="Renew" type="object" class="btn-primary"
+                            invisible="not id or not active or next_id or state not in ('expiring', 'expired')"/>
+                    <button name="action_renew" string="Renew" type="object"
+                            invisible="not id or not active or next_id or state in ('expiring', 'expired')"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="open_in_new"
+                                invisible="not id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text"><field name="res_name"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Renewed" bg_color="text-bg-info" invisible="active or not next_id"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active or next_id"/>
+                    <widget name="web_ribbon" title="Expired" bg_color="text-bg-danger"
+                            invisible="not active or state != 'expired'"/>
+                    <widget name="web_ribbon" title="Expiring" bg_color="text-bg-warning"
+                            invisible="not active or state != 'expiring'"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Passport A1234567"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="record_ref" readonly="id" required="not res_id"
+                                   invisible="id and not record_ref"/>
+                            <field name="type_id" options="{'no_create': True}"/>
+                            <field name="number" invisible="not has_number"/>
+                            <field name="country_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="date_issue" invisible="not has_issue_date"/>
+                            <field name="date_expiry" invisible="not has_expiry_date"
+                                   decoration-danger="state == 'expired'" decoration-warning="state == 'expiring'"/>
+                            <field name="state" widget="badge" invisible="not has_expiry_date"
+                                   decoration-success="state == 'valid'" decoration-warning="state == 'expiring'"
+                                   decoration-danger="state == 'expired'"/>
+                            <field name="previous_id" invisible="not previous_id"/>
+                            <field name="next_id" invisible="not next_id"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="res_model" invisible="1" force_save="1"/>
+                            <field name="res_id" invisible="1" force_save="1"/>
+                            <field name="has_number" invisible="1"/>
+                            <field name="has_issue_date" invisible="1"/>
+                            <field name="has_expiry_date" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Files" name="files">
+                            <field name="attachment_ids" widget="many2many_binary"/>
+                        </page>
+                        <page string="Note" name="note">
+                            <field name="note" placeholder="Anything worth knowing about this document"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_document_view_kanban" model="ir.ui.view">
+        <field name="name">document.document.view.kanban</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <kanban string="Documents" class="o_om_document_kanban" sample="1">
+                <field name="state"/>
+                <field name="days_left"/>
+                <field name="preview_url"/>
+                <templates>
+                    <t t-name="card" class="p-0">
+                        <div class="o_om_document_kanban_preview">
+                            <img t-if="record.preview_url.raw_value" t-att-src="record.preview_url.raw_value"
+                                 alt="Preview" loading="lazy"/>
+                            <i t-elif="record.attachment_count.raw_value" class="oi text-muted" data-icon="description" title="File"/>
+                            <i t-else="" class="oi text-muted" data-icon="upload_file" title="No file yet"/>
+                        </div>
+                        <div class="p-2">
+                            <field name="type_id" class="fw-bold text-truncate d-block"/>
+                            <field name="res_name" class="text-truncate d-block"/>
+                            <field name="number" class="small text-muted text-truncate d-block"/>
+                            <div class="d-flex align-items-center mt-1 gap-1">
+                                <field name="state" widget="badge" decoration-success="state == 'valid'"
+                                       decoration-warning="state == 'expiring'" decoration-danger="state == 'expired'"/>
+                                <field name="date_expiry" class="small text-muted"/>
+                                <span class="flex-grow-1"/>
+                                <span t-if="record.attachment_count.raw_value" class="small text-muted">
+                                    <i class="oi" data-icon="attach_file" title="Files"/><field name="attachment_count"/>
+                                </span>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="om_document_view_list" model="ir.ui.view">
+        <field name="name">document.document.view.list</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <list string="Documents" decoration-danger="state == 'expired'" decoration-warning="state == 'expiring'">
+                <field name="res_name"/>
+                <field name="type_id"/>
+                <field name="number" optional="show"/>
+                <field name="date_issue" optional="hide"/>
+                <field name="date_expiry"/>
+                <field name="days_left" optional="show" invisible="state == 'none'"/>
+                <field name="country_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'valid'"
+                       decoration-warning="state == 'expiring'" decoration-danger="state == 'expired'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_document_view_search" model="ir.ui.view">
+        <field name="name">document.document.view.search</field>
+        <field name="model">document.document</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="number"/>
+                <field name="type_id"/>
+                <filter name="expiring" string="Expiring" domain="[('state', 'in', ['expiring'])]"/>
+                <filter name="expired" string="Expired" domain="[('state', 'in', ['expired'])]"/>
+                <filter name="valid" string="Valid" domain="[('state', 'in', ['valid', 'none'])]"/>
+                <separator/>
+                <filter name="date_expiry" string="Expiry Date" date="date_expiry"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <searchpanel>
+                    <field name="type_id" string="Type" icon="folder" enable_counters="1"/>
+                </searchpanel>
+                <group>
+                    <filter name="group_type" string="Type" context="{'group_by': 'type_id'}"/>
+                    <filter name="group_model" string="Kind of Record" context="{'group_by': 'res_model'}"/>
+                    <filter name="group_expiry" string="Expiry Month" context="{'group_by': 'date_expiry:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_document_action" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">document.document</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Keep a document with its expiry date</p>
+            <p>A passport, a license or a permit: you are reminded before it expires.</p>
+        </field>
+    </record>
+
+    <record id="om_document_action_expiring" model="ir.actions.act_window">
+        <field name="name">Expiring Documents</field>
+        <field name="res_model">document.document</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('state', 'in', ['expiring'])]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing is about to expire</p>
+        </field>
+    </record>
+
+    <record id="om_document_action_expired" model="ir.actions.act_window">
+        <field name="name">Expired Documents</field>
+        <field name="res_model">document.document</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('state', 'in', ['expired'])]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing has expired</p>
+        </field>
+    </record>
+
+</odoo>

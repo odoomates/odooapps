@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_sign.ThumbnailField">
+        <div class="o_sign_thumbnail" t-ref="this.box">
+            <img t-if="this.url" class="o_sign_thumbnail_image" t-att-src="this.url" alt="The first page" loading="lazy"/>
+            <div t-else="" class="o_sign_thumbnail_empty" aria-hidden="true">
+                <i class="oi" t-att-data-icon="this.state.failed ? 'description' : 'picture_as_pdf'"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_sign.SignersField">
+        <div class="o_sign_signers d-flex flex-wrap gap-1">
+            <t t-foreach="this.signers" t-as="signer" t-key="signer.id">
+                <span class="o_sign_signer position-relative" t-att-title="this.title(signer)"
+                      t-att-data-state="signer.state">
+                    <img t-if="this.avatar(signer)" class="o_sign_signer_avatar rounded" t-att-src="this.avatar(signer)"
+                         t-att-alt="signer.name"/>
+                    <span t-else="" class="o_sign_signer_avatar rounded d-inline-flex align-items-center justify-content-center text-bg-light">?</span>
+                    <span class="o_sign_signer_state" t-attf-class="text-bg-{{ this.status(signer).color }}">
+                        <i class="oi" t-att-data-icon="this.status(signer).icon"/>
+                    </span>
+                </span>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="om_sign.TimelineField">
+        <ol class="o_sign_timeline list-unstyled mb-0">
+            <t t-foreach="this.signers" t-as="signer" t-key="signer.id">
+                <li class="o_sign_timeline_signer" t-att-data-state="signer.state">
+                    <div class="o_sign_timeline_who d-flex align-items-center gap-2">
+                        <img t-if="this.avatar(signer)" class="o_sign_timeline_avatar rounded" t-att-src="this.avatar(signer)"
+                             t-att-alt="signer.name"/>
+                        <div class="min-w-0">
+                            <div class="fw-bold text-truncate">
+                                <t t-out="signer.name"/>
+                                <span t-if="signer.role" class="text-muted fw-normal"> · <t t-out="signer.role"/></span>
+                            </div>
+                            <div class="small text-muted text-truncate" t-out="signer.email"/>
+                        </div>
+                        <span class="badge rounded-pill ms-auto"
+                              t-attf-class="text-bg-{{ this.status(signer).color }}" t-out="signer.state_label"/>
+                    </div>
+                    <ul class="o_sign_timeline_steps list-unstyled d-flex flex-wrap gap-2 mt-2 mb-0">
+                        <t t-foreach="this.steps(signer)" t-as="step" t-key="step.key">
+                            <li class="o_sign_timeline_step small" t-att-data-step="step.key"
+                                t-att-class="{'o_sign_timeline_step_done': step.date or step.key === 'declined'}">
+                                <i class="oi me-1" t-att-data-icon="step.icon"/>
+                                <span t-out="step.label"/>
+                                <span t-if="step.date" class="text-muted ms-1" t-out="this.date(step.date)"/>
+                            </li>
+                        </t>
+                        <li t-if="signer.reminders" class="o_sign_timeline_step small text-muted">
+                            <i class="oi me-1" data-icon="notifications"/>Reminded <t t-out="signer.reminders"/> time(s)
+                        </li>
+                    </ul>
+                    <div t-if="signer.decline_reason" class="small text-danger mt-1 o_sign_timeline_reason"
+                         t-out="signer.decline_reason"/>
+                </li>
+            </t>
+        </ol>
+    </t>
+
+</templates>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the verification page of a print lists its signatures -->
+    <template id="print_verify_page" inherit_id="om_print_template.verify_page" name="Print Verification: Signatures">
+        <xpath expr="//table" position="after">
+            <t t-set="sign_requests" t-value="issue.sign_request_ids.filtered(lambda r: r.state == 'signed')"/>
+            <t t-foreach="sign_requests" t-as="sign_request">
+                <h5>Signed by</h5>
+                <table class="table table-sm">
+                    <tr t-foreach="sign_request.signer_ids" t-as="signer">
+                        <td t-out="signer.signed_name or signer.partner_id.name"/>
+                        <td t-out="signer.role_name"/>
+                        <td><t t-out="signer.date_signed"/> UTC</td>
+                    </tr>
+                </table>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>

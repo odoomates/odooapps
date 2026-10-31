@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sign_request_view_form" model="ir.ui.view">
+        <field name="name">sign.request.view.form.print</field>
+        <field name="model">sign.request</field>
+        <field name="inherit_id" ref="om_sign.sign_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//button[@name='action_open_record']" position="attributes">
+                <attribute name="invisible">not issue_id and not res_name</attribute>
+            </xpath>
+            <xpath expr="//group/group/field[@name='sign_template_id']" position="before">
+                <field name="issue_id" invisible="not issue_id"/>
+            </xpath>
+            <!-- the print is the document: shown once it is sent, as it was sent -->
+            <xpath expr="//field[@name='document_file']" position="attributes">
+                <attribute name="readonly">state != 'draft' or issue_id</attribute>
+                <attribute name="invisible">issue_id and state == 'draft'</attribute>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

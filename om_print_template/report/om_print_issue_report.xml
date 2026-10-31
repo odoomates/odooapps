@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_print_issue" model="ir.actions.report">
+        <field name="name">Print</field>
+        <field name="model">print.issue</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_print_template.report_print_issue</field>
+        <field name="print_report_name">object.name.replace('/', '_')</field>
+    </record>
+
+    <template id="report_print_issue_document">
+        <t t-call="web.external_layout">
+            <div class="page o_om_print_issue">
+                <div t-if="o.state == 'draft'"
+                     style="position: absolute; top: 40%; width: 100%; text-align: center; font-size: 110px; color: rgba(0, 0, 0, 0.08); transform: rotate(-30deg);">
+                    DRAFT
+                </div>
+                <div t-if="o.state == 'cancelled'"
+                     style="position: absolute; top: 40%; width: 100%; text-align: center; font-size: 90px; color: rgba(200, 0, 0, 0.15); transform: rotate(-30deg);">
+                    CANCELLED
+                </div>
+                <div class="row mb-4">
+                    <div class="col-6">
+                        <t t-if="o.state != 'draft'">Ref: <strong t-field="o.name"/></t>
+                    </div>
+                    <div class="col-6 text-end">
+                        Date: <strong t-field="o.date"/>
+                    </div>
+                </div>
+                <p t-if="o.addressee" class="mb-4"><strong t-out="o.addressee"/></p>
+                <h4 t-if="o.subject" class="text-center mb-4"><u t-out="o.subject"/></h4>
+                <div t-field="o.body_html"/>
+                <div class="row mt-5" style="page-break-inside: avoid;">
+                    <div class="col-7">
+                        <img t-if="o.signature" t-att-src="image_data_uri(o.signature)" style="max-height: 90px; max-width: 220px;"/>
+                        <div t-if="o.signatory_name" class="fw-bold" t-out="o.signatory_name"/>
+                        <div t-if="o.signatory_title" t-out="o.signatory_title"/>
+                        <div t-out="o.company_id.name"/>
+                    </div>
+                    <div t-if="o.show_qr and o.state != 'draft'" class="col-5 text-end">
+                        <img t-att-src="o._get_qr_src()" style="width: 110px; height: 110px;"/>
+                        <div class="small text-muted">Scan to verify</div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_print_issue">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="om_print_template.report_print_issue_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="verify_page" name="Print Verification">
+        <t t-call="web.frontend_layout">
+            <t t-set="title">Verification</t>
+            <div class="container py-5" style="max-width: 36rem;">
+                <t t-if="issue">
+                    <div t-if="issue.state == 'issued'" class="alert alert-success">
+                        <h4 class="alert-heading">Genuine</h4>
+                        This print was issued by <strong t-out="issue.company_id.name"/> and is valid.
+                    </div>
+                    <div t-else="" class="alert alert-danger">
+                        <h4 class="alert-heading">Cancelled</h4>
+                        This print was issued by <strong t-out="issue.company_id.name"/> and has been cancelled:
+                        it is no longer valid.
+                    </div>
+                    <table class="table">
+                        <tr><th>Reference</th><td t-out="issue.name"/></tr>
+                        <tr><th>Document</th><td t-out="issue.subject or issue.template_id.name"/></tr>
+                        <tr><th>Issued For</th><td t-out="issue.res_name"/></tr>
+                        <tr><th>Date</th><td t-out="issue.date"/></tr>
+                    </table>
+                </t>
+                <div t-else="" class="alert alert-warning">
+                    <h4 class="alert-heading">Not found</h4>
+                    No print matches this code. It may not have been issued by this company.
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

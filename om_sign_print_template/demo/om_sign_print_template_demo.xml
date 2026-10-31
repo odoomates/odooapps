@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- sent and signed once, when installed: not again on an update -->
+    <data noupdate="1">
+
+        <!-- a visitor signs a non-disclosure agreement, then the company countersigns -->
+        <record id="demo_template_nda" model="print.template">
+            <field name="name">Visitor Non-Disclosure Agreement</field>
+            <field name="model_id" ref="base.model_res_partner"/>
+            <field name="code">NDA/</field>
+            <field name="subject">Non-Disclosure Agreement</field>
+            <field name="print_menu" eval="False"/>
+            <field name="body_html" type="html"><p><t t-out="object.name"/> visits our offices and agrees to keep
+    what they see and hear there confidential, during the visit and after it.</p>
+    <p>[signature: Visitor]</p>
+    <p>For the company:</p>
+    <p>[signature: Company]</p></field>
+            <field name="sign_validity_days">14</field>
+            <field name="sign_reminder_days">3</field>
+        </record>
+        <record id="demo_role_visitor" model="sign.role">
+            <field name="template_id" ref="demo_template_nda"/>
+            <field name="sequence">10</field>
+            <field name="name">Visitor</field>
+            <field name="signer_type">field</field>
+        </record>
+        <record id="demo_role_company" model="sign.role">
+            <field name="template_id" ref="demo_template_nda"/>
+            <field name="sequence">20</field>
+            <field name="name">Company</field>
+            <field name="signer_type">partner</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+
+        <record id="demo_issue_nda" model="print.issue">
+            <field name="template_id" ref="demo_template_nda"/>
+            <field name="res_model">res.partner</field>
+            <field name="res_id" ref="base.res_partner_address_15"/>
+            <field name="subject">Non-Disclosure Agreement</field>
+            <field name="body_html" type="html"><p>Brandon Freeman visits our offices and agrees to keep what they see
+    and hear there confidential, during the visit and after it.</p>
+    <p>[signature: Visitor]</p>
+    <p>For the company:</p>
+    <p>[signature: Company]</p></field>
+        </record>
+        <function model="print.issue" name="action_issue" eval="[ref('demo_issue_nda')]"/>
+
+        <!-- sent: the visitor is asked, the company waits for them -->
+        <record id="demo_request_nda" model="sign.request">
+            <field name="name">Non-Disclosure Agreement</field>
+            <field name="issue_id" ref="demo_issue_nda"/>
+            <field name="res_model">res.partner</field>
+            <field name="res_id" ref="base.res_partner_address_15"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="message">Please sign before your visit on Monday.</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_signer_visitor" model="sign.request.signer">
+            <field name="request_id" ref="demo_request_nda"/>
+            <field name="sequence">10</field>
+            <field name="role_name">Visitor</field>
+            <field name="partner_id" ref="base.res_partner_address_15"/>
+        </record>
+        <record id="demo_signer_company" model="sign.request.signer">
+            <field name="request_id" ref="demo_request_nda"/>
+            <field name="sequence">20</field>
+            <field name="role_name">Company</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_request_nda')]"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,413 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the signature blocks of the signed documents: entries of sign.request._signer_entries(), or roles only for
+         blank blocks waiting for their signatures -->
+    <template id="signature_blocks" name="Signature Blocks">
+        <div class="row mt-4 mb-2" style="page-break-inside: avoid;">
+            <div t-foreach="entries" t-as="entry" class="col-6 mb-3">
+                <div style="height: 80px;" class="d-flex align-items-end">
+                    <img t-if="entry.get('signature')" t-att-src="image_data_uri(entry['signature'])"
+                         style="max-height: 80px; max-width: 240px;" alt="Signature"/>
+                </div>
+                <div style="border-top: 1px solid #333; width: 240px;" class="pt-1">
+                    <div t-if="entry.get('name')" class="fw-bold" t-out="entry['name']"/>
+                    <div t-if="entry.get('role')" class="small" t-out="entry['role']"/>
+                    <div t-if="entry.get('date')" class="small text-muted">
+                        Signed on <t t-out="entry['date']"/> UTC
+                    </div>
+                </div>
+            </div>
+        </div>
+    </template>
+
+    <!-- emails -->
+
+    <template id="mail_sign_invitation" name="Signature Request Email">
+        <div>
+            <p>Hello <t t-out="signer.partner_id.name"/>,</p>
+            <p t-if="reminder">This is a reminder.</p>
+            <p>
+                <t t-out="sign_request.requested_by_id.name"/> of <t t-out="sign_request.company_id.name"/> asks you to sign
+                <strong t-out="sign_request.name"/>.
+            </p>
+            <p t-if="sign_request.message" style="white-space: pre-line;" t-out="sign_request.message"/>
+            <p t-if="sign_request.date_deadline">Please sign by <t t-out="sign_request.date_deadline"/>.</p>
+            <p style="margin: 24px 0;">
+                <a t-att-href="sign_url"
+                   style="background-color: #00796b; color: #ffffff; padding: 10px 18px; text-decoration: none; border-radius: 4px;">
+                    Review and Sign
+                </a>
+            </p>
+            <p style="color: #6c757d; font-size: 12px;">This link is yours only: do not forward this email.</p>
+        </div>
+    </template>
+
+    <template id="mail_sign_code" name="Signature Code Email">
+        <div>
+            <p>Hello <t t-out="signer.partner_id.name"/>,</p>
+            <p>Your code to sign <strong t-out="sign_request.name"/>:</p>
+            <p style="font-size: 24px; letter-spacing: 4px; font-weight: bold;" t-out="code"/>
+            <p>It is valid for <t t-out="minutes"/> minutes. If you did not ask for it, ignore this email.</p>
+        </div>
+    </template>
+
+    <template id="mail_sign_completed" name="Signed Email">
+        <div>
+            <p>Hello,</p>
+            <p>Everyone signed <strong t-out="sign_request.name"/>. The signed PDF is attached.</p>
+            <p t-if="copy_url" style="margin: 24px 0;">
+                <a t-att-href="copy_url"
+                   style="background-color: #00796b; color: #ffffff; padding: 10px 18px; text-decoration: none; border-radius: 4px;">
+                    View the Signed Document
+                </a>
+            </p>
+        </div>
+    </template>
+
+    <template id="mail_sign_cc_sent" name="Sent for Signature Email to the Copy Recipients">
+        <div>
+            <p>Hello <t t-out="partner.name"/>,</p>
+            <p>
+                <t t-out="sign_request.requested_by_id.name"/> of <t t-out="sign_request.company_id.name"/> sent
+                <strong t-out="sign_request.name"/> for signature to
+                <t t-out="', '.join(sign_request.signer_ids.partner_id.mapped('name'))"/>.
+            </p>
+            <p>You receive a copy: we email you the signed PDF once everyone signed.</p>
+            <p style="margin: 24px 0;">
+                <a t-att-href="copy_url"
+                   style="background-color: #00796b; color: #ffffff; padding: 10px 18px; text-decoration: none; border-radius: 4px;">
+                    View the Document
+                </a>
+            </p>
+            <p style="color: #6c757d; font-size: 12px;">This link is yours only: do not forward this email.</p>
+        </div>
+    </template>
+
+    <template id="mail_sign_share_code" name="Shared Link Code Email">
+        <div>
+            <p>Hello <t t-out="visit.name"/>,</p>
+            <p>Your code to sign <strong t-out="template.name"/> of <t t-out="company.name"/>:</p>
+            <p style="font-size: 24px; letter-spacing: 4px; font-weight: bold;" t-out="code"/>
+            <p>It is valid for <t t-out="minutes"/> minutes. If you did not ask for it, ignore this email.</p>
+        </div>
+    </template>
+
+    <template id="mail_sign_cancelled" name="Signature Cancelled Email">
+        <div>
+            <p>Hello <t t-out="signer.partner_id.name"/>,</p>
+            <p><strong t-out="sign_request.name"/> no longer needs your signature: the request was cancelled.</p>
+        </div>
+    </template>
+
+    <!-- the bar on top of the signing pages: the company, instead of the header of the website -->
+    <template id="sign_page_bar" name="Sign: Company Bar">
+        <div class="o_sign_page_bar border-bottom bg-white">
+            <div class="container d-flex align-items-center gap-2 py-2">
+                <img class="o_sign_page_bar_logo" t-att-src="'/logo.png?company=%s' % company.id"
+                     t-att-alt="company.name"/>
+                <span class="fw-bold text-truncate" t-out="company.name"/>
+            </div>
+        </div>
+    </template>
+
+    <!-- the signing page -->
+
+    <template id="sign_page" name="Sign">
+        <t t-call="web.frontend_layout" title="sign_request.name" no_header="True" no_footer="True">
+            <!-- the fields of a template are filled on the pages of the document, once the email is confirmed -->
+            <t t-set="fill_fields" t-value="sign_request.sign_template_id and signer.sudo().value_ids
+                and sign_request.state == 'sent' and signer.state == 'to_sign' and not signer._needs_code()"/>
+            <!-- signed, waiting for the others or completed: the document with the fields filled so far -->
+            <t t-set="show_fields" t-value="sign_request.sign_template_id and sign_request.sudo().value_ids
+                and signer._readonly_status()"/>
+            <t t-set="readonly" t-value="not fill_fields"/>
+            <t t-if="fill_fields or show_fields" t-call="om_sign.sign_page_fields"/>
+            <t t-else="" t-call="om_sign.sign_page_bar" company="sign_request.company_id"/>
+            <div t-if="not (fill_fields or show_fields)" class="container py-4">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-3">
+                    <div>
+                        <h3 class="mb-1" t-out="sign_request.name"/>
+                        <div class="text-muted">
+                            <t t-out="sign_request.company_id.name"/> · <t t-out="sign_request.reference"/>
+                        </div>
+                    </div>
+                    <a class="btn btn-secondary" t-att-href="base_url + '/document?download=1'">
+                        <i class="oi me-1" data-icon="download"/>Download
+                    </a>
+                </div>
+                <div t-if="sign_request.message" class="alert alert-light border" style="white-space: pre-line;"
+                     t-out="sign_request.message"/>
+                <div class="row g-4">
+                    <div class="col-lg-8">
+                        <iframe t-att-src="base_url + '/document'" class="w-100 border rounded bg-white"
+                                style="height: 78vh;" title="Document"/>
+                    </div>
+                    <div class="col-lg-4">
+                        <div t-if="error" class="alert alert-danger">
+                            <t t-if="error == 'code_wrong'">The code is wrong or no longer valid. Ask for a new
+                                one if needed.</t>
+                            <t t-else="" t-out="error"/>
+                        </div>
+                        <div t-if="message == 'code_sent'" class="alert alert-info">
+                            We sent a code to <strong t-out="signer.email"/>.
+                        </div>
+                        <div t-if="message == 'code_wait'" class="alert alert-info">
+                            A code was sent less than a minute ago: check your email.
+                        </div>
+
+                        <t t-if="sign_request.state == 'sent' and signer.state == 'to_sign'">
+                            <div t-if="signer._needs_code()" class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Confirm your email</h5>
+                                    <p class="small text-muted">
+                                        Before you sign, enter the code we send to <t t-out="signer.email"/>.
+                                    </p>
+                                    <form t-att-action="base_url + '/code'" method="post" class="mb-3">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <button type="submit" class="btn btn-secondary w-100">Email Me a Code</button>
+                                    </form>
+                                    <form t-att-action="base_url + '/code'" method="post" class="d-flex gap-2">
+                                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                        <input type="text" name="code" class="form-control" inputmode="numeric"
+                                               autocomplete="one-time-code" maxlength="6" placeholder="Code" required="1"/>
+                                        <button type="submit" class="btn btn-primary">Confirm</button>
+                                    </form>
+                                </div>
+                            </div>
+                            <div t-else="" class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">Sign</h5>
+                                    <p class="small text-muted">
+                                        By signing, you agree that this electronic signature is as valid as your
+                                        handwritten one.
+                                    </p>
+                                    <t t-call="portal.signature_form">
+                                        <t t-set="call_url" t-value="base_url + '/accept'"/>
+                                        <t t-set="default_name" t-value="signer.partner_id.name"/>
+                                        <t t-set="send_label">Sign</t>
+                                    </t>
+                                </div>
+                            </div>
+                            <details class="mb-3">
+                                <summary class="text-muted">Decline to sign</summary>
+                                <form t-att-action="base_url + '/decline'" method="post" class="mt-2">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <textarea name="reason" class="form-control mb-2" rows="3" required="1"
+                                              placeholder="Why do you decline?"/>
+                                    <button type="submit" class="btn btn-outline-danger">Decline</button>
+                                </form>
+                            </details>
+                        </t>
+                        <div t-elif="signer.state == 'signed'" class="alert alert-success">
+                            <h5 class="alert-heading">Signed</h5>
+                            You signed on <t t-out="signer.date_signed"/> UTC.
+                            <t t-if="sign_request.state == 'signed'">
+                                Everyone signed:
+                                <a t-att-href="base_url + '/document?download=1'">download the signed PDF</a>.
+                            </t>
+                            <t t-elif="sign_request.state == 'sent'">The others sign next: we email you the signed
+                                PDF once everyone signed.</t>
+                        </div>
+                        <div t-elif="signer.state == 'declined'" class="alert alert-warning">
+                            <h5 class="alert-heading">Declined</h5>
+                            <span t-out="signer.decline_reason"/>
+                        </div>
+                        <div t-elif="sign_request.state == 'sent'" class="alert alert-info">
+                            Others sign before you. We email you when it is your turn.
+                        </div>
+                        <div t-if="sign_request.state in ('declined', 'cancelled', 'expired') and signer.state != 'declined'"
+                             class="alert alert-secondary">
+                            <t t-if="sign_request.state == 'declined'">A signer declined: this request is closed.</t>
+                            <t t-elif="sign_request.state == 'cancelled'">This request was cancelled.</t>
+                            <t t-else="">This request expired.</t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- the signing page of a request of a template: the pages of the document with the fields to fill on them -->
+    <template id="sign_page_fields" name="Sign: Fill In the Fields">
+        <t t-set="signing_props" t-value="{
+            'baseUrl': base_url,
+            'documentName': sign_request.name,
+            'companyName': sign_request.company_id.name,
+            'companyId': sign_request.company_id.id,
+            'reference': sign_request.reference or '',
+            'message': sign_request.message or '',
+            'signerName': (signer.partner_id.name if signer else '') or '',
+            'readonly': bool(readonly),
+        }"/>
+        <div class="o_sign_signing_root">
+            <owl-component name="om_sign.signing_page" t-att-props="json.dumps(signing_props)"/>
+        </div>
+    </template>
+
+    <!-- the document as a copy recipient sees it, read-only -->
+    <template id="copy_page" name="Sign: Copy">
+        <t t-call="web.frontend_layout" title="sign_request.name" no_header="True" no_footer="True">
+            <t t-set="signer" t-value="None"/>
+            <t t-set="readonly" t-value="True"/>
+            <t t-call="om_sign.sign_page_fields"/>
+        </t>
+    </template>
+
+    <!-- the shared link of a template: the visitor's name and email, then the code emailed to them -->
+    <template id="share_page" name="Sign: Shared Link">
+        <t t-call="web.frontend_layout" title="template.name" no_header="True" no_footer="True">
+            <t t-call="om_sign.sign_page_bar" company="company"/>
+            <div class="container py-4 py-md-5 o_sign_share" style="max-width: 32rem;">
+                <div class="mb-4">
+                    <div class="text-muted small" t-out="company.name"/>
+                    <h3 class="mb-1" t-out="template.name"/>
+                    <div class="text-muted small">
+                        <t t-out="template.page_count"/> page(s) · you sign as
+                        <strong t-out="template.share_role_id.name"/>
+                    </div>
+                </div>
+                <div t-if="template.message" class="alert alert-light border" style="white-space: pre-line;"
+                     t-out="template.message"/>
+                <div t-if="error" class="alert alert-danger o_sign_share_error" role="alert">
+                    <t t-if="error == 'code_wrong'">The code is wrong or no longer valid. Ask for a new one if
+                        needed.</t>
+                    <t t-elif="error == 'start_again'">This step is no longer valid: start again.</t>
+                    <t t-else="" t-out="error"/>
+                </div>
+                <div t-if="message == 'code_sent'" class="alert alert-info o_sign_share_sent" role="status">
+                    We sent a code to <strong t-out="email"/>.
+                </div>
+                <div t-if="message == 'code_wait'" class="alert alert-info" role="status">
+                    A code was sent a moment ago: check your email.
+                </div>
+                <div class="card">
+                    <div t-if="step == 'code'" class="card-body">
+                        <h5 class="card-title">Confirm your email</h5>
+                        <p class="small text-muted">Enter the code we emailed you to open the document.</p>
+                        <form t-att-action="base_url + '/verify'" method="post" class="o_sign_share_verify">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="visit" t-att-value="visit_token"/>
+                            <label for="o_sign_share_code" class="form-label">Code</label>
+                            <input type="text" id="o_sign_share_code" name="code" class="form-control mb-3"
+                                   inputmode="numeric" autocomplete="one-time-code" maxlength="6" required="1"
+                                   autofocus="1"/>
+                            <button type="submit" class="btn btn-primary w-100">Confirm and Open</button>
+                        </form>
+                        <form t-if="visit_token" t-att-action="base_url + '/code'" method="post" class="mt-2">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <input type="hidden" name="visit" t-att-value="visit_token"/>
+                            <button type="submit" class="btn btn-link btn-sm px-0">Email me a new code</button>
+                        </form>
+                    </div>
+                    <div t-else="" class="card-body">
+                        <h5 class="card-title">Your details</h5>
+                        <p class="small text-muted">We email you a code to confirm your email address, then you
+                            sign the document.</p>
+                        <form t-att-action="base_url + '/code'" method="post" class="o_sign_share_start">
+                            <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                            <label for="o_sign_share_name" class="form-label">Full name</label>
+                            <input type="text" id="o_sign_share_name" name="name" class="form-control mb-3"
+                                   autocomplete="name" maxlength="128" required="1" t-att-value="name"/>
+                            <label for="o_sign_share_email" class="form-label">Email</label>
+                            <input type="email" id="o_sign_share_email" name="email" class="form-control mb-3"
+                                   autocomplete="email" required="1" t-att-value="email"/>
+                            <!-- left empty by people: they do not see it -->
+                            <div class="o_sign_share_website" aria-hidden="true">
+                                <label for="o_sign_share_website">Website</label>
+                                <input type="text" id="o_sign_share_website" name="website" tabindex="-1"
+                                       autocomplete="off"/>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Email Me a Code</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="verify_page" name="Signature Verification">
+        <t t-call="web.frontend_layout">
+            <t t-set="title">Verification</t>
+            <div class="container py-5" style="max-width: 44rem;">
+                <t t-if="sign_request">
+                    <div t-if="sign_request.state == 'signed'" class="alert alert-success">
+                        <h4 class="alert-heading">Signed</h4>
+                        This document was signed by everyone on <t t-out="sign_request.date_signed"/> UTC, through
+                        <strong t-out="sign_request.company_id.name"/>.
+                    </div>
+                    <div t-else="" class="alert alert-warning">
+                        <h4 class="alert-heading">Not signed</h4>
+                        This request is not signed by everyone.
+                    </div>
+                    <table class="table">
+                        <tr><th>Reference</th><td t-out="sign_request.reference"/></tr>
+                        <tr><th>Document</th><td t-out="sign_request.name"/></tr>
+                        <tr><th>Fingerprint of the document sent</th>
+                            <td class="text-break font-monospace small" t-out="sign_request.document_hash"/></tr>
+                        <tr t-if="sign_request.signed_hash"><th>Fingerprint of the signed PDF</th>
+                            <td class="text-break font-monospace small" t-out="sign_request.signed_hash"/></tr>
+                    </table>
+                    <h5>Signers</h5>
+                    <table class="table table-sm">
+                        <tr t-foreach="sign_request.signer_ids" t-as="signer">
+                            <td><t t-out="signer.signed_name or signer.partner_id.name"/>
+                                <div class="small text-muted" t-out="signer.role_name"/></td>
+                            <td t-if="signer.state == 'signed'">Signed on <t t-out="signer.date_signed"/> UTC</td>
+                            <td t-else="" t-out="dict(signer._fields['state'].selection).get(signer.state)"/>
+                        </tr>
+                    </table>
+                    <p class="small text-muted">
+                        The fingerprint is the SHA-256 of the file: a copy of the signed PDF giving another one was
+                        changed after signing.
+                    </p>
+                </t>
+                <div t-else="" class="alert alert-warning">
+                    <h4 class="alert-heading">Not found</h4>
+                    No signed document matches this code.
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <!-- the portal: My Signatures -->
+
+    <template id="portal_breadcrumbs" inherit_id="portal.portal_breadcrumbs" name="Signatures Breadcrumbs">
+        <xpath expr="//ol/li[1]" position="after">
+            <li t-if="page_name == 'signatures'" class="breadcrumb-item active">Signatures</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_signatures" name="My Signatures">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">Signatures</h3>
+            <p t-if="not signers" class="text-muted">Nothing was sent to you for signature.</p>
+            <t t-else="" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th>Document</th>
+                        <th>From</th>
+                        <th>Asked On</th>
+                        <th class="text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="signers" t-as="signer">
+                        <td><a t-att-href="'/sign/%s/%s' % (signer.id, signer.access_token)"
+                               t-out="signer.request_id.name"/></td>
+                        <td t-out="signer.request_id.company_id.name"/>
+                        <td><t t-out="signer.date_invited and signer.date_invited.date()"/></td>
+                        <td class="text-end">
+                            <span t-if="signer.state == 'to_sign' and signer.request_id.state == 'sent'"
+                                  class="badge text-bg-warning">To Sign</span>
+                            <span t-elif="signer.request_id.state == 'signed'" class="badge text-bg-success">Signed</span>
+                            <span t-else="" class="badge text-bg-secondary"
+                                  t-out="dict(signer.request_id._fields['state'].selection).get(signer.request_id.state)"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+</odoo>

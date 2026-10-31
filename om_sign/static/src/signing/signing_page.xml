@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_sign.SigningPage">
+        <div class="o_sign_signing" t-ref="this.root">
+            <t t-call="om_sign.SigningPage.Bar"/>
+            <div t-if="!this.state.loaded" class="o_sign_signing_loading text-center text-muted py-5" role="status">
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"/>Loading the document...
+            </div>
+            <div t-elif="this.state.loadError" class="container-xl py-4">
+                <div class="alert alert-warning" role="alert">
+                    The document could not be loaded. <a t-att-href="this.props.baseUrl">Reload the page</a>.
+                </div>
+            </div>
+            <div t-elif="this.state.stale" class="container-xl py-4">
+                <div class="alert alert-info" role="status">
+                    This document changed since you opened it. <a t-att-href="this.props.baseUrl">Reload the page</a>.
+                </div>
+            </div>
+            <main t-else="" class="o_sign_signing_document"
+                  t-att-class="{'o_sign_signing_readonly': this.props.readonly}">
+                <div class="o_sign_signing_column">
+                    <t t-if="this.props.readonly" t-call="om_sign.SigningPage.Status"/>
+                    <div t-if="this.props.message" class="alert alert-light border o_sign_signing_message"
+                         t-out="this.props.message"/>
+                    <div t-if="this.state.pdfError" class="alert alert-warning" role="status">
+                        The pages could not be shown in this browser: fill in the fields on the blank pages below, and
+                        <a t-att-href="this.downloadUrl">download the document</a> to read it.
+                    </div>
+                    <t t-foreach="this.state.pages" t-as="page" t-key="page.number">
+                        <section class="o_sign_signing_page" t-att-data-page="page.number"
+                                 t-att-style="this.pageStyle(page)"
+                                 t-att-aria-label="this.pageLabel(page)">
+                            <canvas class="o_sign_signing_canvas" t-att-data-page="page.number" aria-hidden="true"/>
+                            <t t-foreach="this.othersOf(page)" t-as="other" t-key="other.id">
+                                <t t-call="om_sign.SigningPage.Other"/>
+                            </t>
+                            <t t-foreach="this.fieldsOf(page)" t-as="field" t-key="field.id">
+                                <t t-call="om_sign.SigningPage.Field"/>
+                            </t>
+                            <div class="o_sign_signing_page_number" aria-hidden="true">
+                                <t t-out="page.number"/> / <t t-out="this.state.pages.length"/>
+                            </div>
+                        </section>
+                    </t>
+                    <div t-if="!this.props.readonly" class="o_sign_signing_footer card">
+                        <div class="card-body d-flex flex-column flex-sm-row align-items-sm-center gap-3">
+                            <p class="small text-muted mb-0 flex-grow-1">
+                                By clicking Finish, you agree that this electronic signature is as valid as your
+                                handwritten one, and you sign this document.
+                            </p>
+                            <button type="button" class="btn btn-primary o_sign_signing_finish_bottom"
+                                    t-att-disabled="!this.canFinish" t-on-click="() => this.finish()">
+                                <i class="oi me-1" data-icon="check"/>Finish
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </t>
+
+    <!-- the bar on top: the document, the progress, the way to the next field and the end ================= -->
+    <t t-name="om_sign.SigningPage.Bar">
+        <header class="o_sign_signing_bar">
+            <div class="container-xl d-flex flex-wrap align-items-center gap-2 py-2">
+                <img t-if="this.logoUrl" class="o_sign_signing_logo d-none d-sm-block" t-att-src="this.logoUrl"
+                     t-att-alt="this.props.companyName"/>
+                <div class="o_sign_signing_heading flex-grow-1 min-w-0">
+                    <h1 class="o_sign_signing_title text-truncate mb-0" t-out="this.props.documentName"/>
+                    <div t-if="this.subtitle" class="small text-muted text-truncate" t-out="this.subtitle"/>
+                </div>
+                <div t-if="this.props.readonly" class="o_sign_signing_actions d-flex align-items-center gap-2">
+                    <span t-if="this.state.loaded" class="badge rounded-pill o_sign_signing_status_badge"
+                          t-att-class="this.isCompleted ? 'text-bg-success' : 'text-bg-light'"
+                          t-out="this.statusBadge"/>
+                    <a class="btn btn-light text-nowrap o_sign_signing_download_button"
+                       t-att-href="this.downloadUrl">
+                        <i class="oi me-1" data-icon="download"/>Download
+                    </a>
+                </div>
+                <div t-else="" class="o_sign_signing_actions d-flex align-items-center gap-2">
+                    <span t-if="this.state.loaded and this.requiredFields.length"
+                          class="o_sign_signing_progress small text-nowrap" role="status" aria-live="polite"
+                          t-out="this.progressText"/>
+                    <button t-if="this.state.loaded and this.nextField" type="button"
+                            class="btn o_sign_signing_next text-nowrap"
+                            t-att-class="this.toFill.length ? 'btn-primary' : 'btn-secondary'"
+                            t-on-click="() => this.goNext()">
+                        <t t-out="this.nextLabel"/><i class="oi ms-1" data-icon="arrow_forward"/>
+                    </button>
+                    <button type="button" class="btn o_sign_signing_finish text-nowrap"
+                            t-att-class="this.toFill.length ? 'btn-secondary' : 'btn-primary'"
+                            t-att-disabled="!this.state.loaded or !this.canFinish"
+                            t-att-title="this.finishTitle"
+                            t-on-click="() => this.finish()">
+                        <span t-if="this.state.submitting" class="spinner-border spinner-border-sm me-1"
+                              aria-hidden="true"/>
+                        Finish
+                    </button>
+                    <Dropdown position="'bottom-end'">
+                        <button type="button" class="btn btn-light o_sign_signing_more" title="More actions"
+                                aria-label="More actions">
+                            <i class="oi" data-icon="more_vert"/>
+                        </button>
+                        <t t-set-slot="content">
+                            <DropdownItem class="'o_sign_signing_download'" onSelected="() => this.download()">
+                                <i class="oi me-2" data-icon="download"/>Download
+                            </DropdownItem>
+                            <DropdownItem class="'o_sign_signing_decline text-danger'"
+                                          onSelected="() => this.openDecline()">
+                                <i class="oi me-2" data-icon="close"/>Decline to sign
+                            </DropdownItem>
+                        </t>
+                    </Dropdown>
+                </div>
+            </div>
+            <div t-if="this.state.error" class="container-xl pb-2">
+                <div class="alert alert-danger d-flex align-items-start gap-2 mb-0 py-2 o_sign_signing_error"
+                     role="alert">
+                    <i class="oi mt-1" data-icon="info"/>
+                    <div class="flex-grow-1">
+                        <span class="fw-bold">The document is not signed.</span>
+                        <t t-out="this.state.error"/>
+                    </div>
+                    <button type="button" class="btn-close" aria-label="Close" t-on-click="() => this.dismissError()"/>
+                </div>
+            </div>
+            <div t-if="!this.props.readonly" class="o_sign_signing_progress_bar" aria-hidden="true">
+                <div t-att-style="'width: ' + this.progressPercent + '%'"/>
+            </div>
+        </header>
+    </t>
+
+    <!-- read-only: where the document stands ============================================================ -->
+    <t t-name="om_sign.SigningPage.Status">
+        <div t-if="this.state.status === 'signed'" class="alert alert-success o_sign_signing_status" role="status">
+            <h5 class="alert-heading">Signed</h5>
+            You signed this document. The others sign next: we email you the signed PDF once everyone signed.
+        </div>
+        <div t-elif="this.state.status === 'waiting'" class="alert alert-info o_sign_signing_status" role="status">
+            Others sign before you. We email you when it is your turn.
+        </div>
+        <div t-elif="this.isCompleted" class="alert alert-success o_sign_signing_status" role="status">
+            <h5 class="alert-heading">Everyone signed</h5>
+            This is the signed document, with its signature certificate at the end:
+            <a t-att-href="this.downloadUrl">download the signed PDF</a>.
+        </div>
+        <div t-elif="this.state.status === 'copy_waiting'" class="alert alert-info o_sign_signing_status"
+             role="status">
+            You receive a copy of this document. <t t-out="this.statusBadge"/>: we email you the signed PDF once
+            everyone signed.
+        </div>
+        <div t-elif="this.state.status === 'copy_closed'" class="alert alert-secondary o_sign_signing_status"
+             role="status">
+            This request is closed: it was declined, cancelled or it expired before everyone signed.
+        </div>
+    </t>
+
+    <!-- a field of the signer ============================================================================ -->
+    <t t-name="om_sign.SigningPage.Field">
+        <div class="o_sign_signing_field" t-att-class="this.fieldClass(field)" t-att-style="this.boxStyle(field, page)"
+             t-att-data-id="field.id" t-att-data-type="field.type">
+            <button t-if="this.isImage(field)" type="button" class="o_sign_signing_target o_sign_signing_image"
+                    t-att-aria-label="this.ariaLabel(field)" t-att-title="this.label(field)"
+                    t-on-focus="() => this.activate(field)" t-on-click="() => this.onClickImage(field)">
+                <img t-if="this.value(field)" t-att-src="this.value(field)" t-att-alt="this.label(field)"/>
+                <span t-else="" class="o_sign_signing_placeholder text-truncate">
+                    <i class="oi me-1" data-icon="edit"/><t t-out="this.label(field)"/>
+                </span>
+            </button>
+            <button t-elif="field.type === 'checkbox'" type="button" role="checkbox"
+                    class="o_sign_signing_target o_sign_signing_check"
+                    t-att-aria-checked="this.value(field) ? 'true' : 'false'" t-att-aria-label="this.ariaLabel(field)"
+                    t-att-title="this.label(field)"
+                    t-on-focus="() => this.activate(field)" t-on-click="() => this.toggle(field)">
+                <i t-if="this.value(field)" class="oi" data-icon="check"/>
+            </button>
+            <input t-elif="field.type === 'date'" type="text" class="o_sign_signing_target o_sign_signing_input"
+                   readonly="1" t-att-value="this.displayDate(this.value(field))"
+                   t-att-aria-label="this.ariaLabel(field)" t-att-title="this.label(field)"
+                   t-on-focus="() => this.activate(field)"/>
+            <input t-else="" class="o_sign_signing_target o_sign_signing_input"
+                   t-att-type="field.type === 'email' ? 'email' : 'text'"
+                   t-att-readonly="this.isReadonly(field) ? 'readonly' : undefined"
+                   t-att-value="this.value(field)" t-att-placeholder="this.label(field)"
+                   t-att-aria-label="this.ariaLabel(field)" t-att-title="this.label(field)"
+                   t-att-autocomplete="field.type === 'name' ? 'name' : field.type === 'company' ? 'organization' : 'off'"
+                   maxlength="1000"
+                   t-on-focus="() => this.activate(field)" t-on-input="(ev) => this.onInput(field, ev)"
+                   t-on-keydown="(ev) => this.onKeydownInput(field, ev)"/>
+            <span t-if="field.required and !this.isFilled(field)" class="o_sign_signing_required" aria-hidden="true">*</span>
+        </div>
+    </t>
+
+    <!-- a field another signer filled, as it is ============================================================ -->
+    <t t-name="om_sign.SigningPage.Other">
+        <div class="o_sign_signing_other" t-att-style="this.boxStyle(other, page)" t-att-data-type="other.type"
+             t-att-title="other.role">
+            <img t-if="other.image" t-att-src="other.image" t-att-alt="other.role"/>
+            <i t-elif="other.type === 'checkbox'" class="oi" data-icon="check"/>
+            <span t-else="" class="text-truncate" t-out="other.text"/>
+        </div>
+    </t>
+
+    <!-- the signature pad of the portal, its modes named as signers expect: Type, Draw, Upload ============== -->
+    <t t-name="om_sign.NameAndSignature" t-inherit="web.NameAndSignature" t-inherit-mode="primary">
+        <xpath expr="//a[contains(@t-attf-class, 'o_web_sign_auto_button')]" position="replace">
+            <a role="button" href="#" t-on-click.prevent="this.onClickSignAuto"
+               t-attf-class="o_web_sign_auto_button me-2 btn btn-light {{ this.state.signMode === 'auto' ? 'active': '' }}">
+                Type
+            </a>
+        </xpath>
+        <xpath expr="//a[contains(@t-attf-class, 'o_web_sign_load_button')]" position="replace">
+            <a role="button" href="#" t-on-click.prevent="this.onClickSignLoad"
+               t-attf-class="o_web_sign_load_button me-2 btn btn-light {{ this.state.signMode === 'load' ? 'active': '' }}">
+                Upload
+            </a>
+        </xpath>
+    </t>
+
+    <!-- the signature and the initials ===================================================================== -->
+    <t t-name="om_sign.SignFieldDialog">
+        <Dialog title="this.title" size="'md'" fullscreen="this.ui.isSmall" contentClass="'o_sign_field_dialog'">
+            <SignNameAndSignature t-props="this.nameAndSignatureProps"/>
+            <p class="small text-muted mt-3 mb-0">
+                By clicking Adopt and Sign, I agree that this signature and these initials are as valid as my
+                handwritten ones, for all purposes when used on documents, including legally binding contracts.
+            </p>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary o_sign_field_adopt"
+                        t-att-disabled="this.signature.isSignatureEmpty" t-on-click="() => this.adopt()">
+                    Adopt and Sign
+                </button>
+                <button t-if="this.props.onClear" type="button" class="btn btn-secondary o_sign_field_clear"
+                        t-on-click="() => this.clear()">Remove</button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <!-- declining ========================================================================================== -->
+    <t t-name="om_sign.SignDeclineDialog">
+        <Dialog title.translate="Decline to Sign" size="'md'" fullscreen="this.ui.isSmall"
+                contentClass="'o_sign_decline_dialog'">
+            <form id="o_sign_decline_form" t-att-action="this.props.action" method="post">
+                <input type="hidden" name="csrf_token" t-att-value="this.csrfToken"/>
+                <label for="o_sign_decline_reason" class="form-label">Why do you decline?</label>
+                <textarea id="o_sign_decline_reason" name="reason" class="form-control" rows="4" required="1"/>
+                <p class="small text-muted mt-2 mb-0">The person who sent the document is told; nobody can sign it
+                    any longer.</p>
+            </form>
+            <t t-set-slot="footer">
+                <button type="submit" form="o_sign_decline_form" class="btn btn-danger o_sign_decline_confirm">
+                    Decline
+                </button>
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

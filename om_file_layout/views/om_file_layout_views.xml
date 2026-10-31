@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_file_layout_column_view_list" model="ir.ui.view">
+        <field name="name">file.layout.column.view.list</field>
+        <field name="model">file.layout.column</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="section" column_invisible="1"/>
+                <field name="name"/>
+                <field name="expression" widget="code" options="{'mode': 'python'}"/>
+                <field name="value_type"/>
+                <field name="width" optional="show"/>
+                <field name="align" optional="show"/>
+                <field name="pad_char" optional="show"/>
+                <field name="decimals" optional="show" invisible="value_type != 'decimal'"/>
+                <field name="decimal_separator" optional="hide" invisible="value_type != 'decimal'"/>
+                <field name="implied_decimals" optional="show" invisible="value_type != 'decimal'"/>
+                <field name="date_format" optional="show" invisible="value_type != 'date'"/>
+                <field name="upper" optional="hide"/>
+                <field name="required" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_file_layout_view_form" model="ir.ui.view">
+        <field name="name">file.layout.view.form</field>
+        <field name="model">file.layout</field>
+        <field name="arch" type="xml">
+            <form string="File Layout">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_exports" type="object" class="oe_stat_button" icon="download">
+                            <field name="export_count" widget="statinfo" string="Exports"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Salary Transfer (Bank)"/></h1>
+                    </div>
+                    <group>
+                        <group string="File">
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="file_format" widget="radio" options="{'horizontal': true}"/>
+                            <field name="csv_separator" invisible="file_format != 'csv'" required="file_format == 'csv'"/>
+                            <field name="csv_quoting" invisible="file_format != 'csv'"/>
+                            <field name="column_titles" invisible="file_format == 'fixed'"/>
+                            <field name="encoding" invisible="file_format == 'xlsx'"/>
+                            <field name="line_ending" invisible="file_format == 'xlsx'"/>
+                        </group>
+                        <group string="Name">
+                            <field name="file_name"/>
+                            <field name="extension" placeholder="csv, txt, xlsx, sif, ..."/>
+                            <field name="action_menu"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Lines" name="lines">
+                            <field name="line_column_ids" context="{'default_section': 'line'}"/>
+                        </page>
+                        <page string="Header" name="header">
+                            <p class="text-muted">Written once, before the lines, e.g. the account of the company and the
+                                date. It reads <code>count</code>, <code>total</code>, <code>today</code> and
+                                <code>company</code>.</p>
+                            <field name="header_column_ids" context="{'default_section': 'header'}"/>
+                        </page>
+                        <page string="Footer" name="footer">
+                            <p class="text-muted">Written once, after the lines, e.g. the number of lines and their total.</p>
+                            <field name="footer_column_ids" context="{'default_section': 'footer'}"/>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Which bank or office takes this file, and how"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_file_layout_view_list" model="ir.ui.view">
+        <field name="name">file.layout.view.list</field>
+        <field name="model">file.layout</field>
+        <field name="arch" type="xml">
+            <list string="File Layouts">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="file_format"/>
+                <field name="export_count" string="Exports"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_file_layout_action" model="ir.actions.act_window">
+        <field name="name">File Layouts</field>
+        <field name="res_model">file.layout</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Design a file to send out of Odoo</p>
+            <p>A bank transfer file, a declaration to an office: CSV, fixed width or Excel, exported from the
+                Action menu of the records.</p>
+        </field>
+    </record>
+
+    <record id="om_file_export_view_list" model="ir.ui.view">
+        <field name="name">file.export.view.list</field>
+        <field name="model">file.export</field>
+        <field name="arch" type="xml">
+            <list string="Exports" create="0" decoration-warning="problems">
+                <field name="create_date" string="Exported On"/>
+                <field name="name"/>
+                <field name="layout_id"/>
+                <field name="create_uid" string="By" widget="many2one_avatar_user"/>
+                <field name="record_count"/>
+                <field name="line_count"/>
+                <field name="total" optional="show"/>
+                <field name="problems" column_invisible="1"/>
+                <button name="action_download" type="object" icon="download" title="Download"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_file_export_view_form" model="ir.ui.view">
+        <field name="name">file.export.view.form</field>
+        <field name="model">file.export</field>
+        <field name="arch" type="xml">
+            <form string="Export" create="0" edit="0">
+                <header>
+                    <button name="action_download" string="Download" type="object" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_records" type="object" class="oe_stat_button" icon="list">
+                            <field name="record_count" widget="statinfo" string="Records"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="layout_id"/>
+                            <field name="create_uid" string="Exported By" widget="many2one_avatar_user"/>
+                            <field name="create_date" string="Exported On"/>
+                        </group>
+                        <group>
+                            <field name="line_count"/>
+                            <field name="total"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="problems" invisible="not problems" class="text-warning"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_file_export_view_search" model="ir.ui.view">
+        <field name="name">file.export.view.search</field>
+        <field name="model">file.export</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="layout_id"/>
+                <filter name="mine" string="Exported by Me" domain="[('create_uid', '=', uid)]"/>
+                <filter name="with_problems" string="With Problems" domain="[('problems', '!=', False)]"/>
+                <group>
+                    <filter name="group_layout" string="Layout" context="{'group_by': 'layout_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_file_export_action" model="ir.actions.act_window">
+        <field name="name">Exports</field>
+        <field name="res_model">file.export</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing exported yet</p>
+            <p>Each file exported with a layout is kept here, to download it again as it was sent.</p>
+        </field>
+    </record>
+
+    <record id="om_file_export_wizard_view_form" model="ir.ui.view">
+        <field name="name">file.export.wizard.view.form</field>
+        <field name="model">file.export.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Export">
+                <field name="res_model" invisible="1"/>
+                <field name="res_ids" invisible="1"/>
+                <field name="has_problems" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="layout_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="record_count" string="Records"/>
+                    </group>
+                    <group>
+                        <field name="line_count"/>
+                        <field name="total" invisible="not total"/>
+                    </group>
+                </group>
+                <div class="alert alert-warning" role="status" invisible="not has_problems">
+                    <strong>Check before sending the file:</strong>
+                    <field name="problems" nolabel="1" readonly="1"/>
+                </div>
+                <label for="preview" string="Preview"/>
+                <field name="preview" nolabel="1" readonly="1" class="font-monospace small o_om_file_preview"/>
+                <footer>
+                    <button string="Download" name="action_download" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

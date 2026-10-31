@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- a contact list, from the Action menu of the contacts -->
+    <record id="demo_layout_contacts" model="file.layout">
+        <field name="name">Contact List (CSV)</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="file_format">csv</field>
+        <field name="file_name">contacts_{date}</field>
+        <field name="description">Name, email, phone, city and country of the contacts selected.</field>
+        <field name="column_ids" eval="[
+            (0, 0, {'sequence': 10, 'name': 'Name', 'expression': 'record.name', 'required': True}),
+            (0, 0, {'sequence': 20, 'name': 'Email', 'expression': &quot;record.email or ''&quot;}),
+            (0, 0, {'sequence': 30, 'name': 'Phone', 'expression': &quot;record.phone or ''&quot;}),
+            (0, 0, {'sequence': 40, 'name': 'City', 'expression': &quot;record.city or ''&quot;}),
+            (0, 0, {'sequence': 50, 'name': 'Country', 'expression': &quot;record.country_id.name or ''&quot;}),
+        ]"/>
+    </record>
+
+</odoo>

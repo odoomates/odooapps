@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- upload -->
+
+    <record id="sign_template_upload_view_form" model="ir.ui.view">
+        <field name="name">sign.template.upload.view.form</field>
+        <field name="model">sign.template.upload</field>
+        <field name="arch" type="xml">
+            <form string="Upload a PDF">
+                <p class="text-muted">
+                    The PDF becomes a template: place the fields of each signer on its pages, then send it.
+                </p>
+                <group>
+                    <field name="document_file" filename="document_filename" accept=".pdf,application/pdf"/>
+                    <field name="document_filename" invisible="1"/>
+                    <field name="name" placeholder="The name of the file"/>
+                </group>
+                <footer>
+                    <button name="action_upload" string="Upload" type="object" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Discard" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="sign_template_upload_action" model="ir.actions.act_window">
+        <field name="name">Upload a PDF</field>
+        <field name="res_model">sign.template.upload</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="sign_template_view_form" model="ir.ui.view">
+        <field name="name">sign.template.view.form</field>
+        <field name="model">sign.template</field>
+        <field name="arch" type="xml">
+            <form string="Sign Template">
+                <header>
+                    <button name="action_open_editor" string="Edit Fields" type="object" class="btn-primary"
+                            invisible="not id"/>
+                    <button name="action_send" string="Send" type="object" invisible="not id or not active"/>
+                    <button name="action_send_bulk" string="Send in Bulk" type="object"
+                            invisible="not id or not active"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_requests" type="object" class="oe_stat_button" icon="edit_square"
+                                invisible="not request_count">
+                            <field name="request_count" widget="statinfo" string="Requests"/>
+                        </button>
+                        <button name="action_open_signed_requests" type="object" class="oe_stat_button"
+                                icon="check_circle" invisible="not signed_request_count">
+                            <field name="signed_request_count" widget="statinfo" string="Signed"/>
+                        </button>
+                        <button name="action_open_share_requests" type="object" class="oe_stat_button" icon="link"
+                                invisible="not share_request_count">
+                            <field name="share_request_count" widget="statinfo" string="From the Link"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Non-Disclosure Agreement"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="document_file" filename="document_filename"/>
+                            <field name="document_filename" invisible="1"/>
+                            <field name="page_count" invisible="not page_count"/>
+                            <field name="field_count" invisible="not id"/>
+                        </group>
+                        <group>
+                            <field name="email_code"/>
+                            <label for="validity_days"/>
+                            <div class="o_row">
+                                <field name="validity_days"/> days
+                            </div>
+                            <label for="reminder_days"/>
+                            <div class="o_row">
+                                <field name="reminder_days"/> days
+                            </div>
+                            <field name="company_id" groups="base.group_multi_company"
+                                   placeholder="All the companies"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Roles" name="roles">
+                            <p class="text-muted">
+                                Who signs, in this order: the roles of the same sequence sign together. Place the
+                                fields of each role on the PDF with Edit Fields.
+                            </p>
+                            <field name="role_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="signer_type"/>
+                                    <field name="partner_id" invisible="signer_type != 'partner'"
+                                           required="signer_type == 'partner'"/>
+                                    <field name="color" widget="color_picker"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Fields" name="fields" invisible="not field_ids">
+                            <field name="field_ids" readonly="1">
+                                <list>
+                                    <field name="page"/>
+                                    <field name="role_id"/>
+                                    <field name="type"/>
+                                    <field name="label"/>
+                                    <field name="required"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Message" name="message">
+                            <field name="message"
+                                   placeholder="A note proposed to the person sending, for the signers."/>
+                        </page>
+                        <page string="Copies" name="copies">
+                            <p class="text-muted">
+                                Proposed when sending, in bulk too, and given to the requests of the shared link:
+                                these contacts do not sign, they are told and get the signed PDF.
+                            </p>
+                            <group>
+                                <field name="cc_partner_ids" widget="many2many_tags_avatar"
+                                       placeholder="Contacts getting a copy"/>
+                                <field name="cc_notify_sent"/>
+                            </group>
+                        </page>
+                        <page string="Share" name="share" invisible="not id">
+                            <p class="text-muted">
+                                Anyone with the link signs this template: they give their name and email, confirm
+                                it with a code emailed to them, then sign as the role chosen when sending. The other
+                                roles, a given contact or the person sending, sign next as usual.
+                            </p>
+                            <div class="alert alert-warning" role="status" invisible="not share_problem">
+                                <field name="share_problem"/>
+                            </div>
+                            <group>
+                                <field name="share_enabled" widget="boolean_toggle"
+                                       readonly="share_problem and not share_enabled"/>
+                                <field name="share_role_id" invisible="not share_role_id"/>
+                                <field name="share_url" widget="CopyClipboardChar" invisible="not share_enabled"/>
+                                <field name="share_user_id" invisible="not share_enabled"/>
+                            </group>
+                            <button name="action_regenerate_share_token" type="object" string="New Link"
+                                    class="btn-link px-0" icon="refresh" invisible="not share_enabled"
+                                    confirm="The link given so far stops working. Make a new one?"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="sign_template_view_list" model="ir.ui.view">
+        <field name="name">sign.template.view.list</field>
+        <field name="model">sign.template</field>
+        <field name="arch" type="xml">
+            <list string="Sign Templates">
+                <header>
+                    <button name="%(sign_template_upload_action)d" string="Upload a PDF" type="action"
+                            class="btn-primary" display="always"/>
+                </header>
+                <field name="name"/>
+                <field name="role_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
+                <field name="page_count" optional="show"/>
+                <field name="field_count" string="Fields" optional="show"/>
+                <field name="request_count" string="Requests" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <button name="action_open_editor" type="object" string="Edit Fields" icon="edit_square"/>
+                <button name="action_send" type="object" string="Send" icon="send"/>
+                <field name="share_enabled" string="Shared" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sign_template_view_kanban" model="ir.ui.view">
+        <field name="name">sign.template.view.kanban</field>
+        <field name="model">sign.template</field>
+        <field name="arch" type="xml">
+            <kanban class="o_sign_template_kanban" sample="1">
+                <header>
+                    <button name="%(sign_template_upload_action)d" string="Upload a PDF" type="action"
+                            class="btn-primary" display="always"/>
+                </header>
+                <field name="active"/>
+                <field name="document_checksum"/>
+                <field name="share_enabled"/>
+                <templates>
+                    <t t-name="card" class="flex-row p-0 o_sign_template_card">
+                        <aside class="o_sign_template_kanban_aside">
+                            <field name="thumbnail" widget="om_sign_thumbnail"/>
+                        </aside>
+                        <main class="flex-grow-1 min-w-0 p-3 d-flex flex-column gap-1">
+                            <div class="d-flex align-items-start gap-2">
+                                <field name="name" class="fw-bold fs-5 text-truncate flex-grow-1"/>
+                                <span t-if="record.share_enabled.raw_value"
+                                      class="badge rounded-pill text-bg-info flex-shrink-0 o_sign_template_shared"
+                                      title="Shared by a link: anyone with it can sign">
+                                    <i class="oi me-1" data-icon="link"/>Link
+                                </span>
+                            </div>
+                            <div class="text-muted small">
+                                <field name="page_count"/> page(s) · <field name="field_count"/> field(s)
+                            </div>
+                            <field name="role_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <div class="d-flex flex-wrap gap-3 small mt-1 o_sign_template_counts">
+                                <a name="action_open_sent_requests" type="object" class="text-reset"
+                                   title="Requests sent">
+                                    <i class="oi me-1 text-muted" data-icon="send"/><field name="sent_request_count"/> sent
+                                </a>
+                                <a name="action_open_signed_requests" type="object" class="text-reset"
+                                   title="Requests signed by everyone">
+                                    <i class="oi me-1 text-success" data-icon="check_circle"/><field name="signed_request_count"/> signed
+                                </a>
+                                <a t-if="record.share_enabled.raw_value or record.share_request_count.raw_value"
+                                   name="action_open_share_requests" type="object" class="text-reset"
+                                   title="Requests made from the shared link">
+                                    <i class="oi me-1 text-info" data-icon="link"/><field name="share_request_count"/> from the link
+                                </a>
+                            </div>
+                            <footer class="mt-auto pt-2 d-flex flex-wrap gap-1">
+                                <button name="action_open_editor" type="object" class="btn btn-sm btn-primary">
+                                    Edit Fields
+                                </button>
+                                <button name="action_send" type="object" class="btn btn-sm btn-secondary"
+                                        invisible="not active">
+                                    Send
+                                </button>
+                                <button name="action_send_bulk" type="object" class="btn btn-sm btn-secondary"
+                                        invisible="not active">
+                                    Send in Bulk
+                                </button>
+                            </footer>
+                        </main>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="sign_template_view_search" model="ir.ui.view">
+        <field name="name">sign.template.view.search</field>
+        <field name="model">sign.template</field>
+        <field name="arch" type="xml">
+            <search string="Sign Templates">
+                <field name="name"/>
+                <field name="role_ids" string="Role"/>
+                <filter name="mine" string="My Templates" domain="[('create_uid', '=', uid)]"/>
+                <filter name="shared" string="Shared by a Link" domain="[('share_enabled', '=', True)]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="sign_template_action" model="ir.actions.act_window">
+        <field name="name">Templates</field>
+        <field name="res_model">sign.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Upload a PDF to sign</p>
+            <p>Place the fields each signer fills on its pages, then send it as many times as needed.</p>
+        </field>
+    </record>
+
+    <!-- send -->
+
+    <record id="sign_send_view_form" model="ir.ui.view">
+        <field name="name">sign.send.view.form</field>
+        <field name="model">sign.send</field>
+        <field name="arch" type="xml">
+            <form string="Send for Signature">
+                <field name="template_id" invisible="1"/>
+                <field name="bulk" invisible="1"/>
+                <group>
+                    <field name="name"/>
+                </group>
+                <field name="line_ids">
+                    <list editable="bottom" create="0" delete="0">
+                        <field name="sequence" column_invisible="1"/>
+                        <field name="role_id" readonly="1" force_save="1"/>
+                        <field name="partner_id" required="1"/>
+                        <field name="email"/>
+                    </list>
+                </field>
+                <group>
+                    <group>
+                        <field name="date_deadline"/>
+                        <label for="reminder_days"/>
+                        <div class="o_row">
+                            <field name="reminder_days"/> days
+                        </div>
+                    </group>
+                    <group>
+                        <field name="email_code"/>
+                    </group>
+                </group>
+                <group name="copies">
+                    <field name="cc_partner_ids" widget="many2many_tags_avatar"
+                           placeholder="Contacts getting a copy, who do not sign"/>
+                    <field name="cc_notify_sent" invisible="not cc_partner_ids"/>
+                </group>
+                <field name="message" placeholder="A note for the signers, shown in the email and on the signing page."/>
+                <footer>
+                    <button name="action_send" string="Send" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="sign_send_view_form_bulk" model="ir.ui.view">
+        <field name="name">sign.send.view.form.bulk</field>
+        <field name="model">sign.send</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="Send in Bulk">
+                <field name="template_id" invisible="1"/>
+                <field name="name" invisible="1"/>
+                <field name="bulk" invisible="1"/>
+                <p class="text-muted">
+                    Each contact gets a request of their own, signing as the role chosen; the other roles are
+                    signed by the same people in every request.
+                </p>
+                <group>
+                    <field name="bulk_role_id" options="{'no_create': True, 'no_open': True}" required="1"/>
+                    <field name="bulk_partner_ids" widget="many2many_tags_avatar"
+                           placeholder="The contacts to send it to, e.g. your customers"/>
+                    <field name="bulk_count" invisible="not bulk_count"/>
+                </group>
+                <field name="line_ids">
+                    <list editable="bottom" create="0" delete="0">
+                        <field name="sequence" column_invisible="1"/>
+                        <field name="varied" column_invisible="1"/>
+                        <field name="role_id" readonly="1" force_save="1"/>
+                        <field name="partner_id" invisible="varied" required="not varied"/>
+                        <field name="email" invisible="varied"/>
+                    </list>
+                </field>
+                <group>
+                    <group>
+                        <field name="date_deadline"/>
+                        <label for="reminder_days"/>
+                        <div class="o_row">
+                            <field name="reminder_days"/> days
+                        </div>
+                    </group>
+                    <group>
+                        <field name="email_code"/>
+                    </group>
+                </group>
+                <group name="copies">
+                    <field name="cc_partner_ids" widget="many2many_tags_avatar"
+                           placeholder="Contacts getting a copy of every request, who do not sign"/>
+                    <field name="cc_notify_sent" invisible="not cc_partner_ids"/>
+                </group>
+                <field name="message" placeholder="A note for the signers, shown in the email and on the signing page."/>
+                <footer>
+                    <button name="action_send_bulk" string="Send" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

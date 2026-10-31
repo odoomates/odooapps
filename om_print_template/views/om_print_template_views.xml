@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_print_template_view_list" model="ir.ui.view">
+        <field name="name">print.template.view.list</field>
+        <field name="model">print.template</field>
+        <field name="arch" type="xml">
+            <list string="Print Templates">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="code" optional="show"/>
+                <field name="print_menu" optional="show"/>
+                <field name="show_qr" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_print_template_view_form" model="ir.ui.view">
+        <field name="name">print.template.view.form</field>
+        <field name="model">print.template</field>
+        <field name="arch" type="xml">
+            <form string="Print Template">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_issues" type="object" class="oe_stat_button" icon="print">
+                            <field name="issue_count" widget="statinfo" string="Issued"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Salary Certificate"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="render_model" invisible="1"/>
+                            <field name="subject" options="{'dynamic_placeholder': true}"
+                                   placeholder="e.g. Salary Certificate"/>
+                            <field name="addressee" options="{'dynamic_placeholder': true}"/>
+                            <field name="lang" options="{'dynamic_placeholder': true}"
+                                   placeholder="e.g. {{ object.partner_id.lang }}"/>
+                        </group>
+                        <group>
+                            <field name="code" placeholder="e.g. CERT/"/>
+                            <field name="print_menu"/>
+                            <field name="show_qr"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Content" name="content">
+                            <field name="body_html" widget="html_mail" class="oe-bordered-editor"
+                                   options="{'codeview': true, 'dynamic_placeholder': true, 'allowVideo': false}"
+                                   placeholder="Write the text. Type {{ to insert a field of the record."/>
+                        </page>
+                        <page string="Signature" name="signature">
+                            <group>
+                                <group>
+                                    <field name="signatory_name"/>
+                                    <field name="signatory_title"/>
+                                </group>
+                                <group>
+                                    <field name="signature" widget="image" options="{'size': [220, 110]}"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_print_template_view_search" model="ir.ui.view">
+        <field name="name">print.template.view.search</field>
+        <field name="model">print.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="model_id"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_model" string="Applies To" context="{'group_by': 'model_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_print_template_action" model="ir.actions.act_window">
+        <field name="name">Print Templates</field>
+        <field name="res_model">print.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Write a template to print from any record</p>
+            <p>A certificate, a confirmation, a letter: it appears in the Print menu of the records it applies to.</p>
+        </field>
+    </record>
+
+</odoo>

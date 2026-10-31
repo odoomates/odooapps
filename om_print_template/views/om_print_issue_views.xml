@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_print_issue_view_form" model="ir.ui.view">
+        <field name="name">print.issue.view.form</field>
+        <field name="model">print.issue</field>
+        <field name="arch" type="xml">
+            <form string="Issued Print">
+                <header>
+                    <button name="action_issue" string="Issue" type="object" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_download" string="Download" type="object" class="btn-primary"
+                            invisible="state == 'draft'"/>
+                    <button name="action_download" string="Preview" type="object" invisible="state != 'draft'"/>
+                    <button name="action_cancel" string="Cancel" type="object"
+                            invisible="state != 'issued' or not can_cancel"
+                            confirm="The print will show as cancelled when its QR code is checked. Cancel it?"/>
+                    <field name="can_cancel" invisible="1"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,issued"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="open_in_new">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text"><field name="res_name"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Cancelled" bg_color="text-bg-danger" invisible="state != 'cancelled'"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="template_id" readonly="1"/>
+                            <field name="addressee" readonly="state != 'draft'"/>
+                            <field name="subject" readonly="state != 'draft'"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"/>
+                            <field name="issued_by_id" invisible="not issued_by_id"/>
+                            <field name="date_issued" invisible="not date_issued"/>
+                            <field name="attachment_id" invisible="not attachment_id"/>
+                            <field name="cancel_reason" invisible="not cancel_reason"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                            <field name="res_model" invisible="1"/>
+                            <field name="res_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="body_html" widget="html" class="oe-bordered-editor" readonly="state != 'draft'"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_print_issue_view_list" model="ir.ui.view">
+        <field name="name">print.issue.view.list</field>
+        <field name="model">print.issue</field>
+        <field name="arch" type="xml">
+            <list string="Issued Prints" create="0" decoration-muted="state == 'cancelled'"
+                  decoration-info="state == 'draft'">
+                <field name="name"/>
+                <field name="date"/>
+                <field name="template_id"/>
+                <field name="res_name"/>
+                <field name="addressee" optional="hide"/>
+                <field name="issued_by_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'issued'"
+                       decoration-danger="state == 'cancelled'"/>
+                <button name="action_download" type="object" icon="download" title="Download"
+                        invisible="state == 'draft'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_print_issue_view_search" model="ir.ui.view">
+        <field name="name">print.issue.view.search</field>
+        <field name="model">print.issue</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="template_id"/>
+                <field name="addressee"/>
+                <filter name="mine" string="Printed by Me" domain="[('issued_by_id', '=', uid)]"/>
+                <separator/>
+                <filter name="draft" string="Drafts" domain="[('state', '=', 'draft')]"/>
+                <filter name="issued" string="Issued" domain="[('state', '=', 'issued')]"/>
+                <filter name="cancelled" string="Cancelled" domain="[('state', '=', 'cancelled')]"/>
+                <separator/>
+                <filter name="date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_template" string="Template" context="{'group_by': 'template_id'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_print_issue_action" model="ir.actions.act_window">
+        <field name="name">Issued Prints</field>
+        <field name="res_model">print.issue</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing printed yet</p>
+            <p>Print a template from the Print menu of a record: each print is kept here with its reference.</p>
+        </field>
+    </record>
+
+</odoo>

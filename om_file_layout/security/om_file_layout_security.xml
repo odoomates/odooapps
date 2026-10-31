@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="privilege_file_layout" model="res.groups.privilege">
+            <field name="name">File Layouts</field>
+        </record>
+
+        <record id="group_file_layout_manager" model="res.groups">
+            <field name="name">Administrator</field>
+            <field name="privilege_id" ref="privilege_file_layout"/>
+            <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+        </record>
+
+    </data>
+</odoo>

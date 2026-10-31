@@ -1,0 +1,474 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- sent and signed once, when installed: not again on an update, nor made by an update of an older version -->
+    <data noupdate="1">
+
+        <!-- Sign templates: PDF files with the fields of each role placed on their pages -->
+        <record id="demo_sign_template_nda" model="sign.template" forcecreate="0">
+            <field name="name">Mutual Non-Disclosure Agreement</field>
+            <field name="document_file" type="bytes" file="om_sign/demo/nda.pdf"/>
+            <field name="document_filename">nda.pdf</field>
+            <field name="color">4</field>
+            <field name="message">Please read and sign this agreement before our first meeting.</field>
+            <field name="cc_partner_ids" eval="[Command.set([ref('base.partner_demo')])]"/>
+        </record>
+        <record id="demo_sign_role_nda_partner" model="sign.template.role" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="name">Partner</field>
+            <field name="sequence">10</field>
+            <field name="color">2</field>
+            <field name="signer_type">choose</field>
+        </record>
+        <record id="demo_sign_role_nda_company" model="sign.template.role" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="name">Company</field>
+            <field name="sequence">20</field>
+            <field name="color">4</field>
+            <field name="signer_type">partner</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <record id="demo_sign_field_nda_partner_signature" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="type">signature</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.5463</field>
+            <field name="width">0.336</field>
+            <field name="height">0.0594</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_nda_partner_name" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="type">name</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.6342</field>
+            <field name="width">0.2184</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_nda_partner_date" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="type">date</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.3192</field>
+            <field name="pos_y">0.6342</field>
+            <field name="width">0.1176</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_nda_partner_company" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="type">company</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.6983</field>
+            <field name="width">0.3528</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="False"/>
+            <field name="label">Company</field>
+        </record>
+        <record id="demo_sign_field_nda_company_signature" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_company"/>
+            <field name="type">signature</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.5544</field>
+            <field name="pos_y">0.5463</field>
+            <field name="width">0.336</field>
+            <field name="height">0.0594</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_nda_company_name" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_company"/>
+            <field name="type">name</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.5544</field>
+            <field name="pos_y">0.6342</field>
+            <field name="width">0.2184</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_nda_company_date" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_nda"/>
+            <field name="role_id" ref="demo_sign_role_nda_company"/>
+            <field name="type">date</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.7896</field>
+            <field name="pos_y">0.6342</field>
+            <field name="width">0.1176</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <!-- shared by a link, as the administrator: a visitor signs as the partner -->
+        <function model="sign.template" name="write" eval="[[ref('demo_sign_template_nda')], {'share_enabled': True}]"/>
+        <function model="sign.template" name="write" eval="[[ref('demo_sign_template_nda')], {'share_user_id': ref('base.user_admin')}]"/>
+
+        <record id="demo_sign_template_offer" model="sign.template" forcecreate="0">
+            <field name="name">Employment Offer Letter</field>
+            <field name="document_file" type="bytes" file="om_sign/demo/offer.pdf"/>
+            <field name="document_filename">offer_letter.pdf</field>
+            <field name="color">10</field>
+            <field name="email_code" eval="True"/>
+            <field name="message">We are glad to offer you this position. Sign the letter to accept it.</field>
+        </record>
+        <record id="demo_sign_role_offer_candidate" model="sign.template.role" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="name">Candidate</field>
+            <field name="sequence">10</field>
+            <field name="color">10</field>
+            <field name="signer_type">choose</field>
+        </record>
+        <record id="demo_sign_role_offer_hr" model="sign.template.role" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="name">HR Manager</field>
+            <field name="sequence">20</field>
+            <field name="color">5</field>
+            <field name="signer_type">requester</field>
+        </record>
+        <record id="demo_sign_field_offer_initials" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="type">initials</field>
+            <field name="page">1</field>
+            <field name="pos_x">0.7682</field>
+            <field name="pos_y">0.8622</field>
+            <field name="width">0.1277</field>
+            <field name="height">0.0404</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_offer_start" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="type">text</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.3004</field>
+            <field name="width">0.252</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="False"/>
+            <field name="label">Start date</field>
+        </record>
+        <record id="demo_sign_field_offer_candidate_signature" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="type">signature</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.4394</field>
+            <field name="width">0.336</field>
+            <field name="height">0.0594</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_offer_hr_signature" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_hr"/>
+            <field name="type">signature</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.5544</field>
+            <field name="pos_y">0.4394</field>
+            <field name="width">0.336</field>
+            <field name="height">0.0594</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_offer_candidate_name" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="type">name</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.5273</field>
+            <field name="width">0.2184</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_offer_hr_name" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_hr"/>
+            <field name="type">name</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.5544</field>
+            <field name="pos_y">0.5273</field>
+            <field name="width">0.2184</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_offer_candidate_date" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="type">date</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.3192</field>
+            <field name="pos_y">0.5273</field>
+            <field name="width">0.1176</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_offer_hr_date" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_offer"/>
+            <field name="role_id" ref="demo_sign_role_offer_hr"/>
+            <field name="type">date</field>
+            <field name="page">2</field>
+            <field name="pos_x">0.7896</field>
+            <field name="pos_y">0.5273</field>
+            <field name="width">0.1176</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+
+        <record id="demo_sign_template_handover" model="sign.template" forcecreate="0">
+            <field name="name">Equipment Handover</field>
+            <field name="document_file" type="bytes" file="om_sign/demo/handover.pdf"/>
+            <field name="document_filename">equipment_handover.pdf</field>
+            <field name="color">7</field>
+            <field name="validity_days">7</field>
+        </record>
+        <record id="demo_sign_role_handover_employee" model="sign.template.role" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_handover"/>
+            <field name="name">Employee</field>
+            <field name="sequence">10</field>
+            <field name="color">7</field>
+            <field name="signer_type">choose</field>
+        </record>
+        <record id="demo_sign_field_handover_check" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_handover"/>
+            <field name="role_id" ref="demo_sign_role_handover_employee"/>
+            <field name="type">checkbox</field>
+            <field name="page">1</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.4275</field>
+            <field name="width">0.0202</field>
+            <field name="height">0.0143</field>
+            <field name="required" eval="True"/>
+            <field name="label">Received in good condition</field>
+        </record>
+        <record id="demo_sign_field_handover_employee_signature" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_handover"/>
+            <field name="role_id" ref="demo_sign_role_handover_employee"/>
+            <field name="type">signature</field>
+            <field name="page">1</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.5106</field>
+            <field name="width">0.336</field>
+            <field name="height">0.0594</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_handover_employee_name" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_handover"/>
+            <field name="role_id" ref="demo_sign_role_handover_employee"/>
+            <field name="type">name</field>
+            <field name="page">1</field>
+            <field name="pos_x">0.084</field>
+            <field name="pos_y">0.5985</field>
+            <field name="width">0.2184</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+        <record id="demo_sign_field_handover_employee_date" model="sign.template.field" forcecreate="0">
+            <field name="template_id" ref="demo_sign_template_handover"/>
+            <field name="role_id" ref="demo_sign_role_handover_employee"/>
+            <field name="type">date</field>
+            <field name="page">1</field>
+            <field name="pos_x">0.3192</field>
+            <field name="pos_y">0.5985</field>
+            <field name="width">0.1176</field>
+            <field name="height">0.019</field>
+            <field name="required" eval="True"/>
+        </record>
+
+        <!-- in progress: the partner signed, the administrator signs next -->
+        <record id="demo_sign_request_nda_progress" model="sign.request" forcecreate="0">
+            <field name="name">Mutual Non-Disclosure Agreement - Douglas Fletcher</field>
+            <field name="sign_template_id" ref="demo_sign_template_nda"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">send</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+            <field name="message">Please read and sign this agreement before our first meeting.</field>
+            <field name="cc_partner_ids" eval="[Command.set([ref('base.partner_demo')])]"/>
+        </record>
+        <record id="demo_sign_signer_nda_progress_partner" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_progress"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="role_name">Partner</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_3"/>
+        </record>
+        <record id="demo_sign_signer_nda_progress_company" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_progress"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_company"/>
+            <field name="role_name">Company</field>
+            <field name="sequence">20</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_nda_progress')]"/>
+        <function model="sign.request.signer" name="_sign" eval="[ref('demo_sign_signer_nda_progress_partner'), 'Douglas Fletcher', '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']"/>
+
+        <!-- completed: everyone signed, the signed PDF is built -->
+        <record id="demo_sign_request_nda_signed" model="sign.request" forcecreate="0">
+            <field name="name">Mutual Non-Disclosure Agreement - Edwin Hansen</field>
+            <field name="sign_template_id" ref="demo_sign_template_nda"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">send</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_sign_signer_nda_signed_partner" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_signed"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="role_name">Partner</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_5"/>
+        </record>
+        <record id="demo_sign_signer_nda_signed_company" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_signed"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_company"/>
+            <field name="role_name">Company</field>
+            <field name="sequence">20</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_nda_signed')]"/>
+        <function model="sign.request.signer" name="_sign" eval="[ref('demo_sign_signer_nda_signed_partner'), 'Edwin Hansen', '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']"/>
+        <function model="sign.request.signer" name="_sign" eval="[ref('demo_sign_signer_nda_signed_company'), 'Mitchell Admin', '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']"/>
+
+        <!-- made from the shared link: the visitor signs first -->
+        <record id="demo_sign_request_nda_link" model="sign.request" forcecreate="0">
+            <field name="name">Mutual Non-Disclosure Agreement - Sandra Neal</field>
+            <field name="sign_template_id" ref="demo_sign_template_nda"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">share_link</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_sign_signer_nda_link_partner" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_link"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="role_name">Partner</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_32"/>
+        </record>
+        <record id="demo_sign_signer_nda_link_company" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_link"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_company"/>
+            <field name="role_name">Company</field>
+            <field name="sequence">20</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_nda_link')]"/>
+
+        <!-- a draft, not sent yet -->
+        <record id="demo_sign_request_nda_draft" model="sign.request" forcecreate="0">
+            <field name="name">Mutual Non-Disclosure Agreement - Kim Snyder</field>
+            <field name="sign_template_id" ref="demo_sign_template_nda"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">send</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_sign_signer_nda_draft_partner" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_draft"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_partner"/>
+            <field name="role_name">Partner</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_13"/>
+        </record>
+        <record id="demo_sign_signer_nda_draft_company" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_nda_draft"/>
+            <field name="template_role_id" ref="demo_sign_role_nda_company"/>
+            <field name="role_name">Company</field>
+            <field name="sequence">20</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+
+        <!-- waiting for the candidate, then the person who sent it -->
+        <record id="demo_sign_request_offer" model="sign.request" forcecreate="0">
+            <field name="name">Employment Offer Letter - Julie Richards</field>
+            <field name="sign_template_id" ref="demo_sign_template_offer"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">send</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=5)).strftime('%Y-%m-%d')"/>
+            <field name="message">We are glad to offer you this position. Sign the letter to accept it.</field>
+        </record>
+        <record id="demo_sign_signer_offer_candidate" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_offer"/>
+            <field name="template_role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="role_name">Candidate</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_33"/>
+        </record>
+        <record id="demo_sign_signer_offer_hr" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_offer"/>
+            <field name="template_role_id" ref="demo_sign_role_offer_hr"/>
+            <field name="role_name">HR Manager</field>
+            <field name="sequence">20</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_offer')]"/>
+
+        <!-- declined by the candidate -->
+        <record id="demo_sign_request_offer_declined" model="sign.request" forcecreate="0">
+            <field name="name">Employment Offer Letter - Travis Mendoza</field>
+            <field name="sign_template_id" ref="demo_sign_template_offer"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">send</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_sign_signer_offer_declined_candidate" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_offer_declined"/>
+            <field name="template_role_id" ref="demo_sign_role_offer_candidate"/>
+            <field name="role_name">Candidate</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_34"/>
+        </record>
+        <record id="demo_sign_signer_offer_declined_hr" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_offer_declined"/>
+            <field name="template_role_id" ref="demo_sign_role_offer_hr"/>
+            <field name="role_name">HR Manager</field>
+            <field name="sequence">20</field>
+            <field name="partner_id" ref="base.partner_admin"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_offer_declined')]"/>
+        <function model="sign.request.signer" name="_decline" eval="[ref('demo_sign_signer_offer_declined_candidate'), 'I accepted another offer, thank you.']"/>
+
+        <!-- sent in bulk: one request per employee -->
+        <record id="demo_sign_request_handover_toni" model="sign.request" forcecreate="0">
+            <field name="name">Equipment Handover - Toni Rhodes</field>
+            <field name="sign_template_id" ref="demo_sign_template_handover"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">bulk</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=7)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_sign_signer_handover_toni" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_handover_toni"/>
+            <field name="template_role_id" ref="demo_sign_role_handover_employee"/>
+            <field name="role_name">Employee</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_17"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_handover_toni')]"/>
+        <record id="demo_sign_request_handover_gordon" model="sign.request" forcecreate="0">
+            <field name="name">Equipment Handover - Gordon Owens</field>
+            <field name="sign_template_id" ref="demo_sign_template_handover"/>
+            <field name="requested_by_id" ref="base.user_admin"/>
+            <field name="source">bulk</field>
+            <field name="reminder_days">3</field>
+            <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=7)).strftime('%Y-%m-%d')"/>
+        </record>
+        <record id="demo_sign_signer_handover_gordon" model="sign.request.signer" forcecreate="0">
+            <field name="request_id" ref="demo_sign_request_handover_gordon"/>
+            <field name="template_role_id" ref="demo_sign_role_handover_employee"/>
+            <field name="role_name">Employee</field>
+            <field name="sequence">10</field>
+            <field name="partner_id" ref="base.res_partner_address_18"/>
+        </record>
+        <function model="sign.request" name="action_send" eval="[ref('demo_sign_request_handover_gordon')]"/>
+    </data>
+</odoo>

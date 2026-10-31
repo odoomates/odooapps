@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_document.DocumentBoardField">
+        <div class="o_om_document_board">
+            <div t-if="!this.resId" class="text-muted">
+                Save the record to keep its documents.
+            </div>
+            <t t-else="">
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <span class="text-muted small flex-grow-1">
+                        <t t-if="this.editable">Drop a file on a card to attach it.</t>
+                    </span>
+                    <button t-if="this.editable" type="button" class="btn btn-secondary btn-sm o_om_document_add"
+                            t-on-click="() => this.add()">
+                        <i class="oi me-1" data-icon="add"/>Add a Document
+                    </button>
+                </div>
+                <div t-if="!this.state.documents.length and !this.state.missing.length" class="text-muted">
+                    No document yet.
+                </div>
+                <div class="o_om_document_grid" t-att-class="{'opacity-50': this.state.busy}">
+                    <t t-foreach="this.state.documents" t-as="doc" t-key="doc.id">
+                        <t t-set="badge" t-value="this.badge(doc)"/>
+                        <div class="card o_om_document_card" t-att-data-state="doc.state"
+                             t-att-class="{'o_om_drag_over': this.state.dragOver === 'doc' + doc.id}"
+                             t-on-dragover="(ev) => this.onDragOver(ev, 'doc' + doc.id)"
+                             t-on-dragleave="(ev) => this.onDragLeave(ev, 'doc' + doc.id)"
+                             t-on-drop="(ev) => this.onDrop(ev, {doc})">
+                            <div class="o_om_document_preview" t-on-click="() => this.open(doc)">
+                                <t t-set="first" t-value="doc.attachments[0]"/>
+                                <img t-if="first and this.isImage(first)" class="o_om_document_thumb"
+                                     t-att-src="'/web/image/' + first.id + '/320x200'" t-att-alt="first.name"
+                                     loading="lazy"/>
+                                <i t-elif="first" class="oi o_om_document_icon" t-att-data-icon="this.fileIcon(first)"/>
+                                <i t-else="" class="oi o_om_document_icon text-muted" data-icon="upload_file"/>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="d-flex align-items-start gap-1">
+                                    <a href="#" class="fw-bold text-truncate flex-grow-1 text-reset"
+                                       t-on-click.prevent="() => this.open(doc)" t-out="doc.type_name"/>
+                                </div>
+                                <div class="small text-muted text-truncate" t-out="doc.number or ' '"/>
+                                <span class="badge mt-1" t-att-class="badge.cls" t-out="badge.label"/>
+                            </div>
+                            <div class="card-footer d-flex align-items-center gap-1 p-1 px-2">
+                                <t t-foreach="doc.attachments" t-as="attachment" t-key="attachment.id">
+                                    <button type="button" class="btn btn-link btn-sm p-0 o_om_document_file"
+                                            t-att-title="attachment.name"
+                                            t-on-click="() => this.preview(doc, attachment)">
+                                        <i class="oi" t-att-data-icon="this.fileIcon(attachment)"/>
+                                    </button>
+                                </t>
+                                <span class="flex-grow-1"/>
+                                <button t-if="this.editable and ['expiring', 'expired'].includes(doc.state)" type="button"
+                                        class="btn btn-primary btn-sm py-0 o_om_document_renew"
+                                        t-on-click="() => this.renew(doc)">Renew</button>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-foreach="this.state.missing" t-as="type" t-key="type.id">
+                        <div class="card o_om_document_card o_om_document_missing" t-att-title="type.description"
+                             t-att-class="{'o_om_drag_over': this.state.dragOver === 'type' + type.id}"
+                             t-on-dragover="(ev) => this.onDragOver(ev, 'type' + type.id)"
+                             t-on-dragleave="(ev) => this.onDragLeave(ev, 'type' + type.id)"
+                             t-on-drop="(ev) => this.onDrop(ev, {type})">
+                            <div class="o_om_document_preview" t-on-click="() => this.editable and this.add(type)">
+                                <i class="oi o_om_document_icon text-muted" data-icon="upload_file"/>
+                            </div>
+                            <div class="card-body p-2">
+                                <div class="fw-bold text-truncate text-muted" t-out="type.name"/>
+                                <div class="small text-muted">Missing</div>
+                            </div>
+                            <div t-if="this.editable" class="card-footer p-1 px-2">
+                                <button type="button" class="btn btn-link btn-sm p-0" t-on-click="() => this.add(type)">
+                                    <i class="oi me-1" data-icon="add"/>Add
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="demo_template_balance" model="print.template">
+        <field name="name">Balance Confirmation</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="code">CONF/</field>
+        <field name="subject">Balance Confirmation</field>
+        <field name="body_html" type="html"><p>Dear <t t-out="object.name"/>,</p>
+<p>For our yearly audit, please confirm the balance of your account with us at the end of last month.</p>
+<p>Thank you for your help.</p></field>
+        <field name="signatory_name">Mitchell Admin</field>
+        <field name="signatory_title">Finance Manager</field>
+        <field name="show_qr" eval="True"/>
+    </record>
+
+    <record id="demo_issue_balance" model="print.issue">
+        <field name="template_id" ref="demo_template_balance"/>
+        <field name="res_model">res.partner</field>
+        <field name="res_id" ref="base.res_partner_12"/>
+        <field name="subject">Balance Confirmation</field>
+        <field name="addressee">Azure Interior</field>
+        <field name="body_html" type="html"><p>Dear Azure Interior,</p>
+<p>For our yearly audit, please confirm the balance of your account with us at the end of last month.</p>
+<p>Thank you for your help.</p></field>
+    </record>
+    <function model="print.issue" name="action_issue" eval="[ref('demo_issue_balance')]"/>
+
+</odoo>

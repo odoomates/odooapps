@@ -1,0 +1,262 @@
+// the signing page of a request of a template
+$o-sign-signing-empty: #fff4c2;
+$o-sign-signing-empty-border: #e3a008;
+$o-sign-signing-ink: #14205a;
+
+.o_sign_signing_root {
+    min-height: 100vh;
+    background-color: #f1f2f5;
+}
+
+.o_sign_signing_bar {
+    position: sticky;
+    top: 0;
+    z-index: $zindex-sticky;
+    background-color: $white;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08), 0 2px 8px rgba(16, 24, 40, 0.06);
+
+    .o_sign_signing_logo {
+        max-height: 36px;
+        max-width: 120px;
+        object-fit: contain;
+    }
+
+    .o_sign_signing_title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        line-height: 1.3;
+    }
+
+    .o_sign_signing_progress {
+        color: $gray-700;
+    }
+
+    .o_sign_signing_progress_bar {
+        height: 3px;
+        background-color: $gray-200;
+
+        > div {
+            height: 100%;
+            background-color: $success;
+            transition: width 0.25s ease;
+        }
+    }
+}
+
+.o_sign_signing_document {
+    padding: 1.5rem 0.75rem 3rem;
+}
+
+.o_sign_signing_column {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.25rem;
+    max-width: 920px;
+    margin: 0 auto;
+
+    > .alert, > .o_sign_signing_footer {
+        width: 100%;
+        margin-bottom: 0;
+    }
+}
+
+.o_sign_signing_message {
+    white-space: pre-line;
+}
+
+.o_sign_signing_page {
+    // the fields are placed and their text sized by the width of the page
+    container-type: inline-size;
+    position: relative;
+    width: 100%;
+    background-color: $white;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.12), 0 6px 20px rgba(16, 24, 40, 0.08);
+
+    .o_sign_signing_canvas {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .o_sign_signing_page_number {
+        position: absolute;
+        right: 0.5rem;
+        bottom: 0.35rem;
+        font-size: 0.75rem;
+        color: $gray-500;
+        pointer-events: none;
+    }
+}
+
+.o_sign_signing_field, .o_sign_signing_other {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    line-height: 1.1;
+    color: $o-sign-signing-ink;
+}
+
+.o_sign_signing_other {
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+    }
+
+    .oi {
+        margin: auto;
+        font-size: inherit;
+    }
+}
+
+.o_sign_signing_field {
+    border-radius: 3px;
+    background-color: rgba($primary, 0.06);
+    outline: 1px solid rgba($primary, 0.35);
+
+    &.o_sign_signing_field_empty {
+        background-color: rgba($o-sign-signing-empty, 0.9);
+        outline: 1px dashed $o-sign-signing-empty-border;
+    }
+
+    &.o_sign_signing_field_readonly {
+        background-color: rgba($gray-200, 0.55);
+        outline-color: $gray-400;
+    }
+
+    &.o_sign_signing_field_active, &:focus-within {
+        z-index: 1;
+        outline: 2px solid $primary;
+        box-shadow: 0 0 0 4px rgba($primary, 0.18);
+    }
+
+    .o_sign_signing_target {
+        width: 100%;
+        height: 100%;
+        min-width: 0;
+        padding: 0 0.2em;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font: inherit;
+        // a small field still takes a finger
+        position: relative;
+
+        &:focus {
+            outline: none;
+        }
+    }
+
+    .o_sign_signing_input {
+        &[readonly] {
+            cursor: default;
+        }
+
+        &::placeholder {
+            color: rgba($o-sign-signing-ink, 0.45);
+        }
+    }
+
+    .o_sign_signing_image {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        cursor: pointer;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .o_sign_signing_placeholder {
+            font-size: #{"max(0.6em, 11px)"};
+            font-weight: 600;
+            color: darken($o-sign-signing-empty-border, 20%);
+        }
+    }
+
+    .o_sign_signing_check {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        cursor: pointer;
+
+        .oi {
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+    }
+
+    .o_sign_signing_required {
+        position: absolute;
+        top: -0.15em;
+        right: 0.1em;
+        font-size: #{"max(0.8em, 10px)"};
+        color: $danger;
+        pointer-events: none;
+    }
+
+    // on a touch screen, the field takes a tap around it too
+    @media (pointer: coarse) {
+        .o_sign_signing_target::after {
+            content: "";
+            position: absolute;
+            inset: -8px;
+        }
+    }
+}
+
+.o_sign_signing_footer {
+    max-width: 100%;
+}
+
+// small screens: the bar on two lines, the pages edge to edge
+@include media-breakpoint-down(sm) {
+    .o_sign_signing_bar {
+        .o_sign_signing_heading {
+            flex-basis: 100%;
+        }
+
+        .o_sign_signing_actions {
+            width: 100%;
+
+            .o_sign_signing_progress {
+                margin-right: auto;
+            }
+        }
+    }
+
+    .o_sign_signing_document {
+        padding: 0.75rem 0.25rem 2rem;
+    }
+
+    .o_sign_signing_column {
+        gap: 0.75rem;
+    }
+}
+
+// the field of the shared link left to robots
+.o_sign_share_website {
+    position: absolute;
+    left: -10000px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+}
+
+// the bar of the pages without the document: the company, instead of the header of the website
+.o_sign_page_bar_logo {
+    max-height: 36px;
+    max-width: 140px;
+    object-fit: contain;
+}

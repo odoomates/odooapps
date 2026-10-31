@@ -1,0 +1,34 @@
+id,name,model_id,group_id/id,operation,domain
+access_sign_request_signed_by,sign.request.signed.by,sign.request,base.group_user,r,"[('signer_ids.partner_id', '=', user.partner_id.id), ('state', '!=', 'draft')]"
+access_sign_request_user,sign.request.user,sign.request,om_sign.group_sign_user,crud,"[('requested_by_id', '=', user.id)]"
+access_sign_request_manager,sign.request.manager,sign.request,om_sign.group_sign_manager,crud,
+sign_request_company_rule,Signature requests: multi-company,sign.request,,crud,"[('company_id', 'in', company_ids)]"
+access_sign_request_signer_signer,sign.request.signer.signer,sign.request.signer,base.group_user,r,"[('request_id.signer_ids.partner_id', '=', user.partner_id.id), ('request_id.state', '!=', 'draft')]"
+access_sign_request_signer_user,sign.request.signer.user,sign.request.signer,om_sign.group_sign_user,crud,"[('request_id.requested_by_id', '=', user.id)]"
+access_sign_request_signer_manager,sign.request.signer.manager,sign.request.signer,om_sign.group_sign_manager,crud,
+access_sign_log_signer,sign.log.signer,sign.log,base.group_user,r,"[('request_id.signer_ids.partner_id', '=', user.partner_id.id), ('request_id.state', '!=', 'draft')]"
+access_sign_log_user,sign.log.user,sign.log,om_sign.group_sign_user,r,"[('request_id.requested_by_id', '=', user.id)]"
+access_sign_log_manager,sign.log.manager,sign.log,om_sign.group_sign_manager,r,
+sign_request_signer_company_rule,Signers: multi-company,sign.request.signer,,crud,"[('company_id', 'in', company_ids)]"
+sign_log_company_rule,Signature evidence: multi-company,sign.log,,crud,"[('company_id', 'in', company_ids)]"
+access_sign_template_user,sign.template.user,sign.template,om_sign.group_sign_user,r,
+access_sign_template_user_own,sign.template.user.own,sign.template,om_sign.group_sign_user,cud,"[('create_uid', '=', user.id)]"
+access_sign_template_manager,sign.template.manager,sign.template,om_sign.group_sign_manager,crud,
+sign_template_company_rule,Sign templates: multi-company,sign.template,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_sign_template_role_user,sign.template.role.user,sign.template.role,om_sign.group_sign_user,r,
+access_sign_template_role_user_own,sign.template.role.user.own,sign.template.role,om_sign.group_sign_user,cud,"[('template_id.create_uid', '=', user.id)]"
+access_sign_template_role_manager,sign.template.role.manager,sign.template.role,om_sign.group_sign_manager,crud,
+sign_template_role_company_rule,Sign template roles: multi-company,sign.template.role,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_sign_template_field_user,sign.template.field.user,sign.template.field,om_sign.group_sign_user,r,
+access_sign_template_field_user_own,sign.template.field.user.own,sign.template.field,om_sign.group_sign_user,cud,"[('template_id.create_uid', '=', user.id)]"
+access_sign_template_field_manager,sign.template.field.manager,sign.template.field,om_sign.group_sign_manager,crud,
+sign_template_field_company_rule,Sign template fields: multi-company,sign.template.field,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"
+access_sign_request_value_signer,sign.request.value.signer,sign.request.value,base.group_user,r,"[('signer_id.partner_id', '=', user.partner_id.id), ('request_id.state', '!=', 'draft')]"
+access_sign_request_value_user,sign.request.value.user,sign.request.value,om_sign.group_sign_user,r,"[('request_id.requested_by_id', '=', user.id)]"
+access_sign_request_value_manager,sign.request.value.manager,sign.request.value,om_sign.group_sign_manager,r,
+sign_request_value_company_rule,Signature request fields: multi-company,sign.request.value,,crud,"[('company_id', 'in', company_ids)]"
+access_sign_send_user,sign.send.user,sign.send,om_sign.group_sign_user,crud,
+access_sign_send_line_user,sign.send.line.user,sign.send.line,om_sign.group_sign_user,crud,
+access_sign_template_upload_user,sign.template.upload.user,sign.template.upload,om_sign.group_sign_user,crud,
+access_sign_share_visit_manager,sign.share.visit.manager,sign.share.visit,om_sign.group_sign_manager,r,
+sign_share_visit_company_rule,Shared link visits: multi-company,sign.share.visit,,crud,"['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]"

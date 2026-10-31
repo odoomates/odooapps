@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="print_template_view_form" model="ir.ui.view">
+        <field name="name">print.template.view.form.sign</field>
+        <field name="model">print.template</field>
+        <field name="inherit_id" ref="om_print_template.om_print_template_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='signature']" position="after">
+                <page string="Signers" name="signers">
+                    <p class="text-muted">
+                        The people who sign the prints of the template, sent for signature from the issued print.
+                        Write the placeholder of a role in the text where its signature goes; the others sign below
+                        the text.
+                    </p>
+                    <field name="sign_role_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="signer_type"/>
+                            <field name="partner_id" invisible="signer_type != 'partner'"
+                                   required="signer_type == 'partner'"/>
+                            <field name="field_path" invisible="signer_type != 'field'" placeholder="e.g. partner_id"/>
+                            <field name="placeholder"/>
+                        </list>
+                    </field>
+                    <group>
+                        <group>
+                            <field name="sign_email_code"/>
+                        </group>
+                        <group>
+                            <label for="sign_validity_days"/>
+                            <div class="o_row">
+                                <field name="sign_validity_days"/> days
+                            </div>
+                            <label for="sign_reminder_days"/>
+                            <div class="o_row">
+                                <field name="sign_reminder_days"/> days
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="print_issue_view_form" model="ir.ui.view">
+        <field name="name">print.issue.view.form.sign</field>
+        <field name="model">print.issue</field>
+        <field name="inherit_id" ref="om_print_template.om_print_issue_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_cancel']" position="before">
+                <field name="has_sign_roles" invisible="1"/>
+                <button name="action_request_signature" string="Send for Signature" type="object"
+                        groups="om_sign.group_sign_user" invisible="state != 'issued' or not has_sign_roles"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_sign_requests" type="object" class="oe_stat_button" icon="edit_square"
+                        invisible="not sign_request_count">
+                    <field name="sign_request_count" widget="statinfo" string="Signatures"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="print_wizard_view_form" model="ir.ui.view">
+        <field name="name">print.wizard.view.form.sign</field>
+        <field name="model">print.wizard</field>
+        <field name="inherit_id" ref="om_print_template.om_print_wizard_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//footer/button[@name='action_draft']" position="before">
+                <field name="has_sign_roles" invisible="1"/>
+                <button string="Issue &amp; Send for Signature" name="action_issue_sign" type="object"
+                        class="btn-secondary" groups="om_sign.group_sign_user"
+                        invisible="not has_sign_roles or record_count != 1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- a print shows its signature blocks: blank before it is signed, signed in the signed PDF -->
+    <template id="report_print_issue_document" inherit_id="om_print_template.report_print_issue_document"
+              name="Print: Signatures">
+        <xpath expr="//div[@t-field='o.body_html']" position="replace">
+            <t t-set="sign_body" t-value="o._sign_body(sign_request)"/>
+            <div t-out="sign_body[0]"/>
+            <t t-if="sign_body[1]" t-call="om_sign.signature_blocks">
+                <t t-set="entries" t-value="sign_body[1]"/>
+            </t>
+        </xpath>
+    </template>
+
+    <record id="action_report_sign_document" model="ir.actions.report">
+        <field name="name">Signed Print</field>
+        <field name="model">sign.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_sign_print_template.report_sign_document</field>
+    </record>
+
+    <template id="report_sign_document">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="sign_request">
+                <t t-set="o" t-value="sign_request.issue_id"/>
+                <t t-call="om_print_template.report_print_issue_document"/>
+            </t>
+        </t>
+    </template>
+
+    <!-- the certificate names the print signed -->
+    <template id="report_sign_audit" inherit_id="om_sign.report_sign_audit" name="Signature Certificate: Print">
+        <xpath expr="//tr[th[text()='Document']]" position="after">
+            <tr t-if="o.issue_id"><th>Print</th><td t-out="o.issue_id.name"/></tr>
+        </xpath>
+    </template>
+
+</odoo>
