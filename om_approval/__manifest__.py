@@ -7,6 +7,7 @@
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
+    'live_test_url': 'https://www.youtube.com/watch?v=jnorKxRlGOY',
     'license': 'LGPL-3',
     'depends': ['base', 'mail', 'web', 'rpc'],
     'excludes': ['approvals'],
