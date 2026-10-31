@@ -1,6 +1,6 @@
 {
     'name': 'Hide Menus by User and Company',
-    'version': '1.0',
+    'version': '1.0.1',
     'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Hide any menu or app for a user, or for everyone while a company is the current company.',
