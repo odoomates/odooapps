@@ -8,6 +8,7 @@
     'summary': 'Hide Menu, Hide Menu for User, Hide Menu by Company, Hide Apps, Hide Submenu, Restrict Menu',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
+    'live_test_url': 'https://www.youtube.com/watch?v=vArtxfp2mLo',
     'license': 'LGPL-3',
     'depends': ['base', 'web'],
     'data': [
