@@ -19,6 +19,10 @@ class IrUiMenu(models.Model):
         groups='base.group_system',
         help="The menu and its sub-menus are hidden for every user while one of these companies "
              "is the current company.")
+    om_visible_user_ids = fields.Many2many(
+        'res.users', 'om_restrict_menu_visible_rel', 'menu_id', 'user_id', string='Visible App of Users',
+        groups='base.group_system',
+        help="An app in the Visible Apps of these users: they see it, and no app out of their Visible Apps.")
 
     @api.model
     def load_menus(self, debug):
@@ -69,16 +73,37 @@ class IrUiMenu(models.Model):
 
     @api.model
     def _om_hidden_menu_ids(self):
-        """ The menus hidden for the user and in the current company. The administrators always
-        keep the Settings app, so that no rule can lock them out of this one. """
+        """ The menus hidden for the user and in the current company. """
         user = self.env.user.sudo()
-        hidden = set(user.om_hidden_menu_ids._ids) | set(self._om_current_company().sudo().om_hidden_menu_ids._ids)
-        if hidden and user._is_system():
+        return self._om_hidden_menu_ids_for(user, self._om_current_company().sudo(), user._is_system())
+
+    @api.model
+    def _om_hidden_menu_ids_for(self, user, company, is_system):
+        """ The menus hidden for ``user`` while ``company`` is the current company: the menus hidden for the user
+        and in the company, and the apps out of the Visible Apps of the user when they are set. The administrators
+        always keep the Settings app, so that no rule can lock them out of this one. ``user`` may be the record
+        of a form not saved yet. """
+        hidden = set(user.om_hidden_menu_ids._origin.ids) | set(company.om_hidden_menu_ids.ids)
+        visible_apps = user.om_visible_menu_ids._origin
+        if visible_apps:
+            hidden |= set(self.sudo().search([('parent_id', '=', False)]).ids) - set(visible_apps.ids)
+        if hidden and is_system:
             settings = self.env.ref(SETTINGS_MENU, raise_if_not_found=False)
             if settings:
                 hidden -= set(self.sudo().with_context(active_test=False).search(
                     [('id', 'child_of', settings.id)])._ids)
         return hidden
+
+    @api.model
+    def _om_action_hidden(self, action, hidden):
+        """ Whether ``action`` opens from menus that are all hidden, themselves or one of their parents. An
+        action opened from no menu is not hidden. """
+        if not action or not hidden:
+            return False
+        menus = self.sudo().search([('action', '=', f'{action.type},{action.id}')])
+        return bool(menus) and all(
+            hidden.intersection(int(menu_id) for menu_id in menu.parent_path.split('/') if menu_id)
+            for menu in menus)
 
     @api.model
     def _om_prune(self, menus, hidden):
