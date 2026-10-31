@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the administrator away next week: Marc approves for them -->
+    <record id="demo_delegation_admin" model="approval.delegation">
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="delegate_id" ref="base.user_demo"/>
+        <field name="date_from" eval="(DateTime.today() + relativedelta(days=7)).strftime('%Y-%m-%d')"/>
+        <field name="date_to" eval="(DateTime.today() + relativedelta(days=14)).strftime('%Y-%m-%d')"/>
+        <field name="note">On a business trip, back the week after.</field>
+    </record>
+
+    <!-- Marc was away last month -->
+    <record id="demo_delegation_demo" model="approval.delegation">
+        <field name="user_id" ref="base.user_demo"/>
+        <field name="delegate_id" ref="base.user_admin"/>
+        <field name="date_from" eval="(DateTime.today() - relativedelta(days=35)).strftime('%Y-%m-%d')"/>
+        <field name="date_to" eval="(DateTime.today() - relativedelta(days=30)).strftime('%Y-%m-%d')"/>
+        <field name="note">Training.</field>
+    </record>
+
+</odoo>
