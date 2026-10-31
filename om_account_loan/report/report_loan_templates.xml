@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_loan" model="ir.actions.report">
+        <field name="name">Loan and Schedule</field>
+        <field name="model">account.loan</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_loan.report_loan</field>
+        <field name="print_report_name">'Loan - %s' % object.name.replace('/', '-')</field>
+        <field name="binding_model_id" ref="model_account_loan"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_loan_position" model="ir.actions.report">
+        <field name="name">Loan Report</field>
+        <field name="model">account.loan.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_loan.report_loan_position</field>
+        <field name="print_report_name">'Loans at %s' % object.date</field>
+    </record>
+
+    <template id="report_loan_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang or o.env.lang)"/>
+            <div class="page o_loan_report">
+                <h2>Loan <span t-field="o.name"/></h2>
+                <div class="row mb-3" id="loan_terms">
+                    <div class="col-4">
+                        <strong>Lender</strong>
+                        <div t-field="o.partner_id"/>
+                        <div t-if="o.lender_ref">Reference: <span t-field="o.lender_ref"/></div>
+                    </div>
+                    <div class="col-4">
+                        <strong>Terms</strong>
+                        <div>Principal: <span t-field="o.principal"/></div>
+                        <div><span t-field="o.payment_count"/> <span t-field="o.payment_frequency"/> payments
+                            from <span t-field="o.date_first_payment"/></div>
+                        <div><span t-field="o.schedule_method"/>, <span t-field="o.interest_method"/></div>
+                    </div>
+                    <div class="col-4">
+                        <strong>Rate</strong>
+                        <div><span t-field="o.rate_type"/>: <span t-out="o.rate"
+                                t-options="{'widget': 'float', 'precision': 4}"/> % a year</div>
+                        <div t-foreach="o.rate_line_ids" t-as="rate_change">
+                            From <span t-field="rate_change.date"/>: <span t-out="rate_change.rate"
+                                t-options="{'widget': 'float', 'precision': 4}"/> %
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-3" id="loan_position" t-if="o.state != 'draft'">
+                    <div class="col-3"><strong>Drawn</strong><div t-field="o.drawn_amount"/></div>
+                    <div class="col-3"><strong>Outstanding</strong><div t-field="o.outstanding_amount"/></div>
+                    <div class="col-3" t-if="o.next_line_id">
+                        <strong>Next Instalment</strong>
+                        <div><span t-field="o.next_amount"/> on <span t-field="o.next_date"/></div>
+                    </div>
+                    <div class="col-3"><strong>Status</strong><div t-field="o.state"/></div>
+                </div>
+                <h4>Schedule</h4>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th class="text-start">#</th>
+                            <th class="text-start">Due Date</th>
+                            <th class="text-end">Opening Balance</th>
+                            <th class="text-end">Principal</th>
+                            <th class="text-end">Interest</th>
+                            <th class="text-end">Instalment</th>
+                            <th class="text-end">Closing Balance</th>
+                            <th class="text-start">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.line_ids.sorted('sequence')" t-as="line">
+                            <td><span t-field="line.sequence"/></td>
+                            <td><span t-field="line.date"/></td>
+                            <td class="text-end"><span t-field="line.opening_balance"/></td>
+                            <td class="text-end"><span t-field="line.principal"/></td>
+                            <td class="text-end"><span t-field="line.interest"/></td>
+                            <td class="text-end"><span t-field="line.amount"/></td>
+                            <td class="text-end"><span t-field="line.closing_balance"/></td>
+                            <td>
+                                <span t-field="line.state"/>
+                                <t t-if="line.payment_date"> <span t-field="line.payment_date"/></t>
+                            </td>
+                        </tr>
+                        <tr class="fw-bold">
+                            <td colspan="3">Total</td>
+                            <td class="text-end"><span t-out="sum(o.line_ids.mapped('principal'))"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                            <td class="text-end"><span t-out="sum(o.line_ids.mapped('interest'))"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                            <td class="text-end"><span t-out="sum(o.line_ids.mapped('amount'))"
+                                    t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                            <td colspan="2"/>
+                        </tr>
+                    </tbody>
+                </table>
+                <t t-set="operations" t-value="o.operation_ids.filtered(lambda op: op.state == 'posted')"/>
+                <t t-if="operations">
+                    <h4>Drawdowns and Early Repayments</h4>
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th class="text-start">Date</th>
+                                <th class="text-start">Type</th>
+                                <th class="text-end">Principal</th>
+                                <th class="text-end">Interest</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="operations" t-as="operation">
+                                <td><span t-field="operation.date"/></td>
+                                <td><span t-field="operation.operation_type"/></td>
+                                <td class="text-end"><span t-field="operation.amount"/></td>
+                                <td class="text-end"><span t-field="operation.interest"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_loan">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="om_account_loan.report_loan_document"/>
+            </t>
+        </t>
+    </template>
+
+    <template id="report_loan_position">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="report">
+                <t t-call="web.internal_layout">
+                    <div class="page o_loan_position_report">
+                        <h2>Loans at <span t-field="report.date"/></h2>
+                        <div t-if="not report.line_ids" class="text-muted">No loan at this date.</div>
+                        <table t-else="" class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Loan</th>
+                                    <th class="text-start">Lender</th>
+                                    <th class="text-end">Rate (%)</th>
+                                    <th class="text-end">Outstanding Principal</th>
+                                    <th class="text-end">Accrued Interest</th>
+                                    <th class="text-start">Next Due Date</th>
+                                    <th class="text-end">Next Instalment</th>
+                                    <th class="text-end">Due within 12 Months</th>
+                                    <th class="text-end">Due after 12 Months</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="report.line_ids" t-as="line">
+                                    <td><span t-field="line.loan_id.name"/></td>
+                                    <td><span t-field="line.partner_id"/></td>
+                                    <td class="text-end"><span t-out="line.rate"
+                                            t-options="{'widget': 'float', 'precision': 4}"/></td>
+                                    <td class="text-end"><span t-field="line.outstanding"/></td>
+                                    <td class="text-end"><span t-field="line.accrued_interest"/></td>
+                                    <td><span t-field="line.next_date"/></td>
+                                    <td class="text-end"><span t-field="line.next_amount"/></td>
+                                    <td class="text-end"><span t-field="line.due_within"/></td>
+                                    <td class="text-end"><span t-field="line.due_after"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <t t-set="currencies" t-value="report.line_ids.company_currency_id"/>
+                        <p t-if="len(currencies) == 1 and report.line_ids">
+                            <strong>Outstanding in the books:</strong>
+                            <span t-out="sum(report.line_ids.mapped('outstanding_company'))"
+                                  t-options="{'widget': 'monetary', 'display_currency': currencies}"/>
+                        </p>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
