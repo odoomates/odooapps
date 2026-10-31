@@ -8,17 +8,32 @@
         <field name="arch" type="xml">
             <page name="access_rights" position="after">
                 <page name="om_hidden_menus" string="Hidden Menus" invisible="share" groups="base.group_system">
+                    <field name="om_home_action_hidden" invisible="1"/>
+                    <div class="alert alert-warning" role="alert" invisible="not om_home_action_hidden">
+                        The Home Action of this user opens only from hidden menus: the first visible app opens
+                        instead.
+                    </div>
+                    <group>
+                        <field name="om_visible_menu_ids" widget="many2many_tags" options="{'no_create': True}"
+                               placeholder="Every app"/>
+                    </group>
                     <p class="text-muted">
                         These menus and their sub-menus are hidden for the user, in every company. The menus
                         hidden in the current company are hidden as well. Administrators always keep the
                         Settings app.
                     </p>
                     <field name="share" invisible="1"/>
-                    <field name="om_hidden_menu_ids">
+                    <field name="om_hidden_menu_ids" context="{'search_view_ref': 'om_restrict_menu.view_om_menu_search'}">
                         <list>
                             <field name="complete_name" string="Menu"/>
                         </list>
                     </field>
+                    <separator string="Everything Hidden for This User"/>
+                    <p class="text-muted">
+                        The menus above, those hidden in the companies of the user, while each is the current
+                        company, and the apps out of the Visible Apps.
+                    </p>
+                    <field name="om_hidden_menus_summary" nolabel="1" readonly="1"/>
                 </page>
             </page>
         </field>

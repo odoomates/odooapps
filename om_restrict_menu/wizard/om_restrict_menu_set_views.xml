@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_restrict_menu_set_form" model="ir.ui.view">
+        <field name="name">om.restrict.menu.set.form</field>
+        <field name="model">om.restrict.menu.set</field>
+        <field name="arch" type="xml">
+            <form string="Set Hidden Menus">
+                <group>
+                    <field name="user_ids" widget="many2many_tags"/>
+                    <field name="source_user_id"/>
+                    <field name="mode" widget="radio" options="{'horizontal': true}"/>
+                </group>
+                <group string="Visible Apps">
+                    <p class="text-muted" colspan="2">
+                        When set, the users see these apps only, in every company. Leave it empty to keep every app.
+                    </p>
+                    <field name="visible_menu_ids" nolabel="1" colspan="2" widget="many2many_tags"
+                           context="{'search_view_ref': 'om_restrict_menu.view_om_menu_search'}"/>
+                </group>
+                <group string="Hidden Menus">
+                    <field name="hidden_menu_ids" nolabel="1" colspan="2"
+                           context="{'search_view_ref': 'om_restrict_menu.view_om_menu_search'}">
+                        <list>
+                            <field name="complete_name" string="Menu"/>
+                        </list>
+                    </field>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Apply" class="btn-primary"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_restrict_menu_set" model="ir.actions.act_window">
+        <field name="name">Set Hidden Menus</field>
+        <field name="res_model">om.restrict.menu.set</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="base.model_res_users"/>
+        <field name="binding_view_types">list,form</field>
+        <field name="groups_id" eval="[Command.link(ref('base.group_system'))]"/>
+    </record>
+
+</odoo>
