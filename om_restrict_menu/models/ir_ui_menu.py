@@ -29,6 +29,28 @@ class IrUiMenu(models.Model):
     @api.model
     def load_menus_root(self):
         root = super().load_menus_root()
+        # the hidden roots are taken out above the modules that cache it again, see _register_hook()
+        if self.env.context.get('om_menus_unpruned'):
+            return root
+        return self._om_prune_roots(root)
+
+    def _register_hook(self):
+        """ website caches load_menus_root() again, per user, above this module: the roots hidden in the company
+        asking first would stay hidden in the others. When a module above this one overrides load_menus_root(),
+        the final class of the registry gets one more override, above all of them, that takes the hidden roots
+        out of a cache holding the roots of every company. """
+        super()._register_hook()
+        cls = type(self)
+        if 'load_menus_root' in vars(cls):
+            return
+        mro = cls.__mro__
+        mine = next(index for index, klass in enumerate(mro) if klass.__module__ == __name__)
+        if any('load_menus_root' in vars(klass) for klass in mro[:mine]):
+            cls.load_menus_root = _load_menus_root_above_caches
+
+    @api.model
+    def _om_prune_roots(self, root):
+        """ A copy of the root of load_menus_root() without the hidden apps; ``root`` is never changed. """
         hidden = self._om_hidden_menu_ids()
         if not hidden:
             return root
@@ -75,3 +97,10 @@ class IrUiMenu(models.Model):
 
         keep('root')
         return pruned
+
+
+@api.model
+def _load_menus_root_above_caches(self):
+    """ load_menus_root() of the final class of the registry, set by IrUiMenu._register_hook() """
+    root = super(type(self), self.with_context(om_menus_unpruned=True)).load_menus_root()
+    return self._om_prune_roots(root)
