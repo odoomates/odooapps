@@ -3,6 +3,7 @@
 # made required, an access right changed.
 from odoo.exceptions import UserError
 from odoo.tests import TransactionCase, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_academy.courses import COURSES_BY_KEY
 from odoo.addons.om_academy.tests.common import modules_on_disk, named_learner
@@ -50,7 +51,13 @@ class TestChallenges(TransactionCase):
         self.assertTrue(self.check('library', 'filter')['ok'])
 
         self.assertFalse(self.check('library', 'required')['ok'])
-        progress._live().record('field:library.book.author_id').write({'required': True, 'on_delete': 'restrict'})
+        # as a learner does first: no book left without its author, or Odoo cannot make the column NOT NULL
+        author = self.env['x_library_author'].create({'x_name': 'Tolkien'})
+        self.env['x_library_book'].search([('x_author_id', '=', False)]).x_author_id = author
+        self.env.flush_all()  # in the database before Odoo adds the constraint with SQL
+        # Odoo checks the constraint while it reloads, before it adds it: a passing warning, as when a learner does it
+        with mute_logger('odoo.schema'):
+            progress._live().record('field:library.book.author_id').write({'required': True, 'on_delete': 'restrict'})
         result = self.check('library', 'required')
         self.assertTrue(result['ok'])
         self.assertTrue(result['all_done'])

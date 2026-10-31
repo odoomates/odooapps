@@ -5,17 +5,23 @@
 # Every change is logged per step, so that a step can be undone exactly.
 import ast
 import re
+from contextlib import nullcontext
 
 from lxml import etree
 
 from odoo.exceptions import UserError
 from odoo.modules.module import get_module_path
+from odoo.tools import mute_logger
 from odoo.tools.binary import BinaryBytes
 from odoo.tools.translate import LazyTranslate
 
 from .course_files import course_models, csv_accesses, files_at, models_at, xml_records
 
 _lt = LazyTranslate(__name__)
+
+# a step replacing a field, e.g. the text Author by a link Author, adds the new field before the views stop using the
+# old one: for a moment both have the same label, which Odoo logs as a warning that means nothing here
+SAME_LABEL_LOGGER = 'odoo.addons.base.models.ir_model'
 
 # the external ids of the groups built live, for the groups="..." of views
 LIVE_MODULE = 'om_academy_live'
@@ -178,8 +184,18 @@ class LiveBuilder:
     # building a step
     #
 
+    def _replacing_fields(self, step):
+        """ Mutes the warning on two fields of the same label while a step replaces a field (see above). """
+        if any(op['op'] == 'drop_field' for op in (step or {}).get('live') or ()):
+            return mute_logger(SAME_LABEL_LOGGER)
+        return nullcontext()
+
     def build(self, index):
         step = self.course['steps'][index]
+        with self._replacing_fields(step):
+            self._build(step, index)
+
+    def _build(self, step, index):
         step_key = step['key']
         self.log[step_key] = []
         self._sync_module(step_key, index)
@@ -559,6 +575,11 @@ class LiveBuilder:
                     view.write({'arch': arch})
 
     def undo(self, step_key):
+        step = next((step for step in self.course['steps'] if step['key'] == step_key), None)
+        with self._replacing_fields(step):
+            self._undo(step_key)
+
+    def _undo(self, step_key):
         self._restore_views(step_key)
         for entry in reversed(self.log.pop(step_key, [])):
             if entry['do'] == 'create':

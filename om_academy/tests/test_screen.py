@@ -59,7 +59,7 @@ class TestScreen(HttpCase):
         progresses = self.env['academy.progress'].search([])
         progresses._reset()
         progresses.unlink()
-        code = """(async () => {
+        code = r"""(async () => {
             const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
             const until = async (selector) => {
                 for (let tries = 0; tries < 75; tries++) {
