@@ -13,12 +13,44 @@
                                 <field name="company_id"
                                        options="{'no_create': True, 'no_open': True}"
                                        groups="base.group_multi_company"/>
-                                <field name="sale_lock_date"/>
-                                <field name="purchase_lock_date"/>
-                                <field name="tax_lock_date"/>
+                                <label for="sale_lock_date"/>
+                                <div class="o_row">
+                                    <field name="sale_lock_date"/>
+                                    <button name="action_remove_lock_date" type="object" icon="lock_open"
+                                            aria-label="Remove date"
+                                            class="btn btn-link p-0 text-muted o_lock_date_remove" invisible="not sale_lock_date"
+                                            context="{'lock_date_field': 'sale_lock_date'}"
+                                            title="Remove date"/>
+                                </div>
+                                <label for="purchase_lock_date"/>
+                                <div class="o_row">
+                                    <field name="purchase_lock_date"/>
+                                    <button name="action_remove_lock_date" type="object" icon="lock_open"
+                                            aria-label="Remove date"
+                                            class="btn btn-link p-0 text-muted o_lock_date_remove" invisible="not purchase_lock_date"
+                                            context="{'lock_date_field': 'purchase_lock_date'}"
+                                            title="Remove date"/>
+                                </div>
+                                <label for="tax_lock_date"/>
+                                <div class="o_row">
+                                    <field name="tax_lock_date"/>
+                                    <button name="action_remove_lock_date" type="object" icon="lock_open"
+                                            aria-label="Remove date"
+                                            class="btn btn-link p-0 text-muted o_lock_date_remove" invisible="not tax_lock_date"
+                                            context="{'lock_date_field': 'tax_lock_date'}"
+                                            title="Remove date"/>
+                                </div>
                             </group>
                             <group string="Account Period Closing">
-                                <field name="fiscalyear_lock_date"/>
+                                <label for="fiscalyear_lock_date"/>
+                                <div class="o_row">
+                                    <field name="fiscalyear_lock_date"/>
+                                    <button name="action_remove_lock_date" type="object" icon="lock_open"
+                                            aria-label="Remove date"
+                                            class="btn btn-link p-0 text-muted o_lock_date_remove" invisible="not fiscalyear_lock_date"
+                                            context="{'lock_date_field': 'fiscalyear_lock_date'}"
+                                            title="Remove date"/>
+                                </div>
                                 <field name="hard_lock_date"/>
                             </group>
                         </group>
@@ -33,8 +65,7 @@
                                 <field name="exception_needed" invisible="1"/>
                                 <field name="exception_applies_to" widget="radio" options="{'horizontal': true}"/>
                                 <field name="exception_duration" widget="radio" options="{'horizontal': true}"/>
-                                <field name="exception_reason" required="exception_needed"
-                                       placeholder="e.g. Late vendor bill of December"/>
+                                <field name="exception_reason" placeholder="Required, e.g. Late vendor bill of December"/>
                             </group>
                         </div>
                     </sheet>
