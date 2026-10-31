@@ -4,7 +4,7 @@ from odoo.exceptions import UserError
 
 class AccountLoanOperation(models.Model):
     _name = 'account.loan.operation'
-    _description = 'Loan Drawdown or Early Repayment'
+    _description = 'Loan Drawdown, Early Repayment or Lease Recognition'
     _order = 'loan_id, date, id'
     _check_company_auto = True
 
@@ -12,12 +12,15 @@ class AccountLoanOperation(models.Model):
     company_id = fields.Many2one(related='loan_id.company_id', store=True, index=True)
     currency_id = fields.Many2one(related='loan_id.currency_id', store=True)
     operation_type = fields.Selection(
-        [('drawdown', 'Drawdown'), ('repayment', 'Early Repayment')], string='Type', required=True, readonly=True)
+        [('drawdown', 'Drawdown'), ('recognition', 'Initial Recognition'), ('repayment', 'Early Repayment')],
+        string='Type', required=True, readonly=True)
     date = fields.Date(string='Date', required=True, readonly=True)
     amount = fields.Monetary(string='Principal', readonly=True)
     interest = fields.Monetary(string='Interest', readonly=True, help="The interest paid with an early repayment.")
+    withholding = fields.Monetary(
+        string='Withholding Tax', readonly=True, help="The tax withheld on the interest of an early repayment.")
     total = fields.Monetary(string='Total', compute='_compute_total')
-    journal_id = fields.Many2one('account.journal', string='Bank Journal', readonly=True, check_company=True)
+    journal_id = fields.Many2one('account.journal', string='Journal', readonly=True, check_company=True)
     move_id = fields.Many2one('account.move', string='Journal Entry', readonly=True, check_company=True)
     after_repayment = fields.Selection(
         [('term', 'Shorter Term'), ('instalment', 'Lower Instalment')], string='Then', readonly=True)
@@ -48,7 +51,7 @@ class AccountLoanOperation(models.Model):
                 lambda op: op.state == 'posted' and (op.date, op.id) > (operation.date, operation.id))
             if later:
                 raise UserError(self.env._('Cancel the later operations of the loan first.'))
-            if operation.operation_type == 'drawdown':
+            if operation.operation_type in ('drawdown', 'recognition'):
                 if loan.currency_id.compare_amounts(loan.outstanding_amount, operation.amount) < 0:
                     raise UserError(self.env._('Without the drawdown, the loan would repay more than it draws.'))
             if operation.move_id:

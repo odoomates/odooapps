@@ -34,6 +34,8 @@ class AccountLoanDrawdown(models.TransientModel):
         currency = loan.currency_id
         if loan.state != 'running':
             raise UserError(self.env._('Confirm the loan %s first.', loan.display_name))
+        if loan.loan_type == 'lease':
+            raise UserError(self.env._('A lease is not drawn down: its liability is recognized on confirmation.'))
         if currency.compare_amounts(self.amount, 0.0) <= 0:
             raise UserError(self.env._('The amount of a drawdown must be positive.'))
         if currency.compare_amounts(self.amount, loan.undrawn_amount) > 0:

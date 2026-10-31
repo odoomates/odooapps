@@ -15,3 +15,11 @@ class ResCompany(models.Model):
     loan_bank_journal_id = fields.Many2one(
         'account.journal', string='Loan Bank Journal', check_company=True,
         domain="[('type', 'in', ('bank', 'cash'))]")
+    lease_long_term_account_id = fields.Many2one(
+        'account.account', string='Long-term Lease Liability Account', check_company=True)
+    lease_short_term_account_id = fields.Many2one(
+        'account.account', string='Short-term Lease Liability Account', check_company=True)
+    lease_rou_account_id = fields.Many2one(
+        'account.account', string='Right-of-use Asset Account', check_company=True)
+    lease_bill_journal_id = fields.Many2one(
+        'account.journal', string='Lease Bill Journal', check_company=True, domain="[('type', '=', 'purchase')]")

@@ -9,15 +9,16 @@
                 <group>
                     <group>
                         <field name="date"/>
+                        <field name="loan_type" placeholder="Loans and leases"/>
                         <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                     </group>
                     <group>
                         <field name="loan_ids" widget="many2many_tags" options="{'no_create': True}"
-                               placeholder="Every loan"/>
+                               placeholder="Every loan and lease"/>
                     </group>
                 </group>
                 <div class="text-muted">
-                    Per loan at the date: the outstanding principal, the interest accrued since the last due date,
+                    Per loan or lease at the date: the outstanding principal (the lease liability), the interest accrued since the last due date,
                     the next instalment, and the principal due within 12 months and after.
                 </div>
                 <footer>
@@ -44,6 +45,7 @@
                 <field name="currency_id" column_invisible="True"/>
                 <field name="company_currency_id" column_invisible="True"/>
                 <field name="loan_id"/>
+                <field name="loan_type" optional="show"/>
                 <field name="partner_id"/>
                 <field name="company_id" groups="base.group_multi_company" optional="hide"/>
                 <field name="rate" optional="show"/>
@@ -54,6 +56,7 @@
                 <field name="next_amount"/>
                 <field name="due_within"/>
                 <field name="due_after"/>
+                <field name="withheld" optional="hide"/>
                 <field name="outstanding_company" sum="Total" optional="show"/>
             </list>
         </field>
@@ -70,6 +73,7 @@
                 <field name="accrued_interest" type="measure"/>
                 <field name="due_within" type="measure"/>
                 <field name="due_after" type="measure"/>
+                <field name="withheld" type="measure"/>
             </pivot>
         </field>
     </record>
@@ -81,7 +85,10 @@
             <search string="Loan Report">
                 <field name="loan_id"/>
                 <field name="partner_id"/>
+                <filter name="loans" string="Loans" domain="[('loan_type', '=', 'loan')]"/>
+                <filter name="leases" string="Leases" domain="[('loan_type', '=', 'lease')]"/>
                 <group>
+                    <filter name="group_type" string="Type" context="{'group_by': 'loan_type'}"/>
                     <filter name="group_partner" string="Lender" context="{'group_by': 'partner_id'}"/>
                     <filter name="group_currency" string="Currency" context="{'group_by': 'currency_id'}"/>
                 </group>

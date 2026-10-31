@@ -22,6 +22,10 @@ class AccountLoanRepay(models.TransientModel):
     interest = fields.Monetary(
         string='Interest Due', compute='_compute_interest', store=True, readonly=False, precompute=True,
         help="The interest accrued since the last due date, paid with the principal.")
+    withholding_tax_id = fields.Many2one(related='loan_id.withholding_tax_id')
+    withholding = fields.Monetary(
+        string='Withholding Tax', compute='_compute_withholding', store=True, readonly=False, precompute=True,
+        help="The tax withheld on the interest, deducted from the payment to the lender.")
     total = fields.Monetary(string='Total', compute='_compute_total')
     is_full = fields.Boolean(string='Full Repayment', compute='_compute_total')
     after_repayment = fields.Selection(
@@ -45,6 +49,11 @@ class AccountLoanRepay(models.TransientModel):
             loan = wizard.loan_id
             wizard.interest = loan._accrued_interest_at(wizard.date) if loan and wizard.date else 0.0
 
+    @api.depends('loan_id', 'interest')
+    def _compute_withholding(self):
+        for wizard in self:
+            wizard.withholding = wizard.loan_id._withholding_amount(wizard.interest) if wizard.loan_id else 0.0
+
     @api.depends('amount', 'interest', 'outstanding_amount')
     def _compute_total(self):
         for wizard in self:
@@ -61,6 +70,11 @@ class AccountLoanRepay(models.TransientModel):
         currency = loan.currency_id
         if loan.state != 'running':
             raise UserError(self.env._('The loan %s is not running.', loan.display_name))
+        if loan.loan_type == 'lease':
+            raise UserError(self.env._('A lease is not repaid early: its payments are billed by the lessor.'))
+        if currency.compare_amounts(self.withholding, 0.0) < 0 or \
+                currency.compare_amounts(self.withholding, max(self.interest, 0.0)) > 0:
+            raise UserError(self.env._('The tax withheld must be between zero and the interest.'))
         if currency.compare_amounts(self.amount, 0.0) <= 0 or currency.compare_amounts(self.interest, 0.0) < 0:
             raise UserError(self.env._('The principal repaid must be positive, the interest too or zero.'))
         if currency.compare_amounts(self.amount, loan.outstanding_amount) > 0:
@@ -91,7 +105,7 @@ class AccountLoanRepay(models.TransientModel):
         return len(paid) + min(count or len(unpaid), len(unpaid))
 
     def action_confirm(self):
-        """ Post Dr loan (principal) + Dr interest / Cr bank (outstanding payments), then compute the unpaid
+        """ Post Dr loan (principal) + Dr interest / Cr withholding tax + Cr bank, then compute the unpaid
         lines again: fewer of them for a shorter term, lower ones otherwise. A full repayment closes the
         loan. """
         self.ensure_one()
@@ -101,7 +115,11 @@ class AccountLoanRepay(models.TransientModel):
         label = self.env._('%(loan)s - Early repayment', loan=loan.name)
         lines = loan._principal_lines(self.amount, self.date, label)
         lines.append((loan.account_interest_id, self.interest,
-                      self.env._('%(loan)s - Interest to %(date)s', loan=loan.name, date=self.date)))
+                      self.env._('%(loan)s - Interest to %(date)s', loan=loan.name, date=self.date),
+                      loan._interest_line_values() if self.withholding else {}))
+        lines += loan._withholding_lines(
+            self.interest, self.withholding, self.date,
+            self.env._('%(loan)s - Withholding tax to %(date)s', loan=loan.name, date=self.date))
         lines.append((loan._bank_account(self.journal_id, 'outbound'), 0.0, label))
         move = loan._create_move(self.journal_id, self.date, lines, 'repayment', label)
         balance = currency.round(loan.outstanding_amount - self.amount)
@@ -114,6 +132,7 @@ class AccountLoanRepay(models.TransientModel):
             'date': self.date,
             'amount': self.amount,
             'interest': self.interest,
+            'withholding': self.withholding,
             'journal_id': self.journal_id.id,
             'move_id': move.id,
             'after_repayment': self.after_repayment,
