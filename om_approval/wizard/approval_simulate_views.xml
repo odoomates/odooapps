@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="approval_simulate_view_form" model="ir.ui.view">
+        <field name="name">approval.simulate.view.form</field>
+        <field name="model">approval.simulate</field>
+        <field name="arch" type="xml">
+            <form string="Test an Approval Flow">
+                <p class="text-muted">
+                    What the flow would do for a record, if this user asked. Nothing is asked nor changed.
+                </p>
+                <group>
+                    <group>
+                        <field name="flow_id" invisible="1"/>
+                        <field name="model_id" invisible="1"/>
+                        <field name="record_ref" options="{'model_field': 'model_id', 'hide_model': True}"
+                               required="1"/>
+                        <field name="user_id" widget="many2one_avatar_user" options="{'no_create': True}"/>
+                    </group>
+                </group>
+                <field name="result" nolabel="1"/>
+                <footer>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

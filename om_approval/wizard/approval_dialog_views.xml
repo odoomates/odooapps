@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="approval_decide_view_form" model="ir.ui.view">
+        <field name="name">approval.decide.view.form</field>
+        <field name="model">approval.decide</field>
+        <field name="arch" type="xml">
+            <form string="Approve or Refuse">
+                <field name="request_id" invisible="1"/>
+                <field name="decision" invisible="1"/>
+                <field name="note_mode" invisible="1"/>
+                <field name="note" required="note_mode == 'required'" invisible="note_mode == 'none'"
+                       placeholder="A note for the requester and the other approvers."/>
+                <footer>
+                    <button name="action_confirm" string="Approve" type="object" class="btn-primary"
+                            invisible="decision != 'approve'" data-hotkey="q"/>
+                    <button name="action_confirm" string="Refuse" type="object" class="btn-danger"
+                            invisible="decision != 'refuse'" data-hotkey="q"/>
+                    <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="approval_ask_view_form" model="ir.ui.view">
+        <field name="name">approval.ask.view.form</field>
+        <field name="model">approval.ask</field>
+        <field name="arch" type="xml">
+            <form string="Ask for Approval">
+                <div class="alert alert-warning" role="status" invisible="not message">
+                    <field name="message" nolabel="1"/>
+                </div>
+                <field name="summary" nolabel="1" class="text-muted"/>
+                <group>
+                    <field name="note_required" invisible="1"/>
+                    <field name="note" required="note_required"
+                           placeholder="Why is this needed? The approvers read it."/>
+                    <field name="attachment_ids" widget="many2many_binary"/>
+                </group>
+                <footer>
+                    <button name="action_ask" string="Ask for Approval" type="object" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

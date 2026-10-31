@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="approval_delegation_view_list" model="ir.ui.view">
+        <field name="name">approval.delegation.view.list</field>
+        <field name="model">approval.delegation</field>
+        <field name="arch" type="xml">
+            <list string="Delegations" decoration-muted="state == 'ended'" decoration-success="state == 'active'">
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="delegate_id" widget="many2one_avatar_user"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="flow_ids" widget="many2many_tags" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'active'"
+                       decoration-info="state == 'upcoming'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="approval_delegation_view_form" model="ir.ui.view">
+        <field name="name">approval.delegation.view.form</field>
+        <field name="model">approval.delegation</field>
+        <field name="arch" type="xml">
+            <form string="Delegation">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="user_id" options="{'no_create': True}"
+                                   readonly="id and not context.get('approval_manager')"/>
+                            <field name="delegate_id" options="{'no_create': True}"/>
+                            <field name="flow_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="date_from"/>
+                            <field name="date_to"/>
+                            <field name="state"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="e.g. On leave, back on the 20th."/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="approval_delegation_view_search" model="ir.ui.view">
+        <field name="name">approval.delegation.view.search</field>
+        <field name="model">approval.delegation</field>
+        <field name="arch" type="xml">
+            <search string="Delegations">
+                <field name="user_id"/>
+                <field name="delegate_id"/>
+                <filter name="mine" string="Mine" domain="[('user_id', '=', uid)]"/>
+                <filter name="for_me" string="For Me" domain="[('delegate_id', '=', uid)]"/>
+                <separator/>
+                <filter name="current" string="Active or Upcoming" domain="[('state', 'in', ('active', 'upcoming'))]"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="approval_delegation_action_my" model="ir.actions.act_window">
+        <field name="name">My Delegations</field>
+        <field name="res_model">approval.delegation</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">['|', ('user_id', '=', uid), ('delegate_id', '=', uid)]</field>
+        <field name="context">{'search_default_current': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Away soon?</p>
+            <p>Name who approves for you while you are away: they decide the approvals waiting for you meanwhile,
+                and you still can.</p>
+        </field>
+    </record>
+
+    <record id="approval_delegation_action" model="ir.actions.act_window">
+        <field name="name">Delegations</field>
+        <field name="res_model">approval.delegation</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_current': 1, 'approval_manager': True}</field>
+    </record>
+
+    <record id="res_users_view_form_preferences" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.approval</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='email']" position="after">
+                <field name="approval_substitute_id" options="{'no_create': True}" invisible="share"/>
+                <field name="share" invisible="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
