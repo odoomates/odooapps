@@ -8,7 +8,7 @@
 Update the currency rates of each company automatically, daily, weekly or monthly, from the source of your choice:
 European Central Bank, Frankfurter, Open Exchange Rates (every currency, with an App ID), ExchangeRate-API or the
 official rates of a central bank (36 countries, among them the United Kingdom, Switzerland, the Nordics, India, Saudi
-Arabia, the UAE, Türkiye, Poland, Brazil, Canada, Australia and Singapore), with a backup source for the currencies the
+Arabia, the UAE, Turkey, Poland, Brazil, Canada, Australia and Singapore), with a backup source for the currencies the
 main one does not quote.
     """,
     'sequence': '1',
