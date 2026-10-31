@@ -53,7 +53,7 @@ class TestLockDates(AccountTestInvoicingCommon):
         self.company.fiscalyear_lock_date = '2026-03-31'
         wizard = self.env['change.lock.date'].create({'fiscalyear_lock_date': False})
         self.assertTrue(wizard.exception_needed)
-        self.assertEqual(wizard.exception_fields, 'Lock Date for All Users')
+        self.assertEqual(wizard.exception_fields, 'Global Lock Date')
         with self.assertRaises(UserError):
             wizard.update_lock_date()
 
@@ -92,3 +92,45 @@ class TestLockDates(AccountTestInvoicingCommon):
         self.assertEqual(str(self.company.fiscalyear_lock_date), '2026-06-30', 'moved forward: written')
         self.assertEqual(str(self.company.tax_lock_date), '2026-03-31', 'moved back: kept, through an exception')
         self.assertEqual(self._exceptions().lock_date_field, 'tax_lock_date')
+
+    def test_remove_button_opens_an_exception(self):
+        """ Remove empties the date in the wizard and shows it again with the panel, whatever the date widget does;
+        Save opens the period through an exception and the company keeps its date. """
+        self.company.write({'fiscalyear_lock_date': '2026-12-31', 'sale_lock_date': '2026-06-30'})
+        wizard = self.env['change.lock.date'].create({})
+        self.assertEqual(str(wizard.fiscalyear_lock_date), '2026-12-31', 'the dates of the company')
+        action = wizard.with_context(lock_date_field='fiscalyear_lock_date').action_remove_lock_date()
+        self.assertEqual((action['res_model'], action['res_id'], action['target']), (wizard._name, wizard.id, 'new'))
+        self.assertFalse(wizard.fiscalyear_lock_date)
+        self.assertEqual(str(wizard.sale_lock_date), '2026-06-30', 'the other dates are kept')
+        self.assertTrue(wizard.exception_needed)
+        self.assertEqual(wizard.exception_fields, 'Global Lock Date')
+
+        wizard.exception_reason = 'Late vendor bill of December'
+        wizard.update_lock_date()
+        self.assertEqual(str(self.company.fiscalyear_lock_date), '2026-12-31', 'the company keeps its date')
+        exception = self._exceptions()
+        self.assertEqual(exception.lock_date_field, 'fiscalyear_lock_date')
+        self.assertFalse(exception.lock_date, 'removed: the whole period is open')
+        self.assertEqual(exception.reason, 'Late vendor bill of December')
+
+    def test_remove_button_twice_then_save(self):
+        """ Two dates removed one after the other, before the reason is written. """
+        self.company.write({'fiscalyear_lock_date': '2026-12-31', 'tax_lock_date': '2026-12-31'})
+        wizard = self.env['change.lock.date'].create({})
+        wizard.with_context(lock_date_field='fiscalyear_lock_date').action_remove_lock_date()
+        wizard.with_context(lock_date_field='tax_lock_date').action_remove_lock_date()
+        self.assertEqual(wizard.exception_fields, 'Global Lock Date and Tax Return Lock Date')
+        with self.assertRaisesRegex(UserError,
+                                    'Fill in the Reason field to reopen the Global Lock Date and Tax Return Lock Date'):
+            wizard.update_lock_date()
+        wizard.exception_reason = 'Year-end corrections'
+        wizard.update_lock_date()
+        self.assertEqual(sorted(self._exceptions().mapped('lock_date_field')),
+                         ['fiscalyear_lock_date', 'tax_lock_date'])
+
+    def test_the_hard_lock_date_cannot_be_removed(self):
+        wizard = self.env['change.lock.date'].create({})
+        for field in ('hard_lock_date', 'company_id', None):
+            with self.assertRaises(UserError):
+                wizard.with_context(lock_date_field=field).action_remove_lock_date()

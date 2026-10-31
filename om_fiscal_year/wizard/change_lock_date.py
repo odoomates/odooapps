@@ -56,7 +56,7 @@ class ChangeLockDate(models.TransientModel):
         help='Like the "Global Lock Date", but no exceptions are possible.'
     )
     fiscalyear_lock_date = fields.Date(
-        string='Lock Date for All Users',
+        string='Global Lock Date',
         default=lambda self: self.env.company.fiscalyear_lock_date,
         help='No users, including Advisers, can edit accounts prior to and inclusive of '
              'this date. Use it for fiscal year locking.'
@@ -78,8 +78,14 @@ class ChangeLockDate(models.TransientModel):
         for wizard in self:
             opened = wizard._opened_lock_dates()
             wizard.exception_needed = bool(opened)
-            wizard.exception_fields = ', '.join(
-                wizard._fields[field]._description_string(self.env) for field in opened) or False
+            wizard.exception_fields = wizard._lock_date_labels(opened) or False
+
+    def _lock_date_labels(self, lock_date_fields):
+        """ :return: the labels of the lock dates, e.g. 'Global Lock Date and Tax Return Lock Date' """
+        labels = [self._fields[field]._description_string(self.env) for field in lock_date_fields]
+        if len(labels) < 2:
+            return ''.join(labels)
+        return _('%(dates)s and %(last)s', dates=', '.join(labels[:-1]), last=labels[-1])
 
     def _opened_lock_dates(self):
         """ :return: the soft lock dates the wizard removes or moves back from the dates of the company """
@@ -93,6 +99,18 @@ class ChangeLockDate(models.TransientModel):
         self.ensure_one()
         return [field for field in LOCK_DATE_FIELDS if self[field] != self.company_id[field]]
 
+    def action_remove_lock_date(self):
+        """ Remove a soft lock date from the wizard, as clearing the field does, and show it again with the panel
+        of the exception: reopening a period does not depend on how the date widget can be emptied. """
+        self.ensure_one()
+        field = self.env.context.get('lock_date_field')
+        if field not in SOFT_LOCK_DATE_FIELDS:
+            raise UserError(_('Only the soft lock dates can be removed: the hard lock date cannot be undone.'))
+        self[field] = False
+        action = self.env['ir.actions.act_window']._for_xml_id('om_fiscal_year.action_view_change_lock_date')
+        action['res_id'] = self.id
+        return action
+
     def update_lock_date(self):
         self.ensure_one()
         has_manager_group = self.env.user.has_group('account.group_account_manager')
@@ -102,8 +120,8 @@ class ChangeLockDate(models.TransientModel):
             raise UserError(_("You cannot change the lock dates of another company."))
         opened = self._opened_lock_dates()
         if opened and not (self.exception_reason or '').strip():
-            raise UserError(_('Tell why %s are opened: the reason is logged with the exception.',
-                              self.exception_fields))
+            raise UserError(_('Fill in the Reason field to reopen the %s. It says why the period is reopened '
+                              'and is logged with the exception.', self.exception_fields))
         # sudo() is required because setting lock dates writes on res.company,
         # which accounting managers are not allowed to write on.
         values = {field: self[field] for field in self._changed_lock_dates() if field not in opened}
