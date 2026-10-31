@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_loan_reclassify_form" model="ir.ui.view">
+        <field name="name">account.loan.reclassify.form</field>
+        <field name="model">account.loan.reclassify</field>
+        <field name="arch" type="xml">
+            <form string="Reclassification">
+                <group>
+                    <group>
+                        <field name="date"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                </group>
+                <field name="loan_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                <div class="text-muted mt-2">
+                    For each loan, moves between the long-term and the short-term accounts what makes the
+                    short-term account hold the principal due within 12 months after the date, taking into account
+                    the earlier reclassifications.
+                </div>
+                <footer>
+                    <button name="action_confirm" type="object" string="Reclassify" class="btn-primary"/>
+                    <button string="Discard" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_loan_reclassify" model="ir.actions.act_window">
+        <field name="name">Loan Reclassification</field>
+        <field name="res_model">account.loan.reclassify</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

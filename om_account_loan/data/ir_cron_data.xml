@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="ir_cron_lease_bills" model="ir.cron">
+        <field name="name">Leases: bill the lease payments due</field>
+        <field name="model_id" ref="model_account_loan_line"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_create_lease_bills()</field>
+        <field name="user_id" ref="base.user_root"/>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+
+    <record id="action_account_loan_line_create_bills" model="ir.actions.server">
+        <field name="name">Create Bills</field>
+        <field name="model_id" ref="model_account_loan_line"/>
+        <field name="binding_model_id" ref="model_account_loan_line"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_create_bills()</field>
+    </record>
+
+</odoo>

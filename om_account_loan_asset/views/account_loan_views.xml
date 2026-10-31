@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_loan_form" model="ir.ui.view">
+        <field name="name">account.loan.form.inherit.om_account_loan_asset</field>
+        <field name="model">account.loan</field>
+        <field name="inherit_id" ref="om_account_loan.view_account_loan_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_rou_asset" type="object" class="oe_stat_button" icon="book"
+                        string="Right of Use" invisible="not asset_id" groups="account.group_account_invoice"/>
+            </div>
+            <field name="account_rou_id" position="after">
+                <field name="asset_category_id" invisible="loan_type != 'lease'" readonly="state != 'draft'"
+                       options="{'no_create': True}" groups="account.group_account_invoice"/>
+                <field name="asset_id" invisible="not asset_id" groups="account.group_account_invoice"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

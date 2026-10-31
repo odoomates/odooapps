@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_loan_drawdown_form" model="ir.ui.view">
+        <field name="name">account.loan.drawdown.form</field>
+        <field name="model">account.loan.drawdown</field>
+        <field name="arch" type="xml">
+            <form string="Drawdown">
+                <group>
+                    <group>
+                        <field name="loan_id" readonly="1"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="undrawn_amount"/>
+                    </group>
+                    <group>
+                        <field name="date"/>
+                        <field name="amount"/>
+                        <field name="journal_id"/>
+                    </group>
+                </group>
+                <div class="text-muted">
+                    Posts the bank receipt against the long-term loan account, then computes the unpaid instalments
+                    again from the principal drawn.
+                </div>
+                <footer>
+                    <button name="action_confirm" type="object" string="Draw Down" class="btn-primary"/>
+                    <button string="Discard" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
