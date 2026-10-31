@@ -3,10 +3,10 @@ import logging
 from dateutil.relativedelta import relativedelta
 from markupsafe import Markup
 
-from odoo import api, fields, models, _
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
-from .rate_providers import PROVIDERS
+from .rate_providers import CENTRAL_BANKS, PROVIDERS
 
 _logger = logging.getLogger(__name__)
 
@@ -15,7 +15,12 @@ PROVIDER_SELECTION = [
     ('ecb', 'European Central Bank'),
     ('openexchangerates', 'Open Exchange Rates'),
     ('exchangerate_api', 'ExchangeRate-API'),
+    ('central_bank', 'Central Bank (official rates)'),
 ]
+# by country: "Kenya - Central Bank of Kenya"
+CENTRAL_BANK_SELECTION = sorted(
+    ((bank.code, '%s - %s' % (bank.country_name, bank.name)) for bank in CENTRAL_BANKS.values()),
+    key=lambda item: item[1])
 INTERVAL_STEPS = {
     'daily': relativedelta(days=1),
     'weekly': relativedelta(weeks=1),
@@ -35,6 +40,10 @@ class ResCompany(models.Model):
     rate_fallback_provider = fields.Selection(
         PROVIDER_SELECTION, string='Backup Source',
         help="Gives the rates of the currencies the main source does not quote, or all of them when it fails.")
+    rate_central_bank = fields.Selection(
+        CENTRAL_BANK_SELECTION, string='Central Bank', compute='_compute_rate_central_bank', store=True, readonly=False,
+        help="The bank whose official rates the Central Bank source reads; by default the bank of the country of the "
+             "company.")
     rate_openexchangerates_key = fields.Char(string='Open Exchange Rates App ID', groups='base.group_system')
     rate_exchangerate_api_key = fields.Char(string='ExchangeRate-API Key', groups='base.group_system')
     rate_currency_ids = fields.Many2many(
@@ -44,13 +53,26 @@ class ResCompany(models.Model):
         [('source', 'Date of the rates at the source'), ('today', 'Day of the update')],
         string='Date of the Rates', default='source', required=True)
     rate_max_change = fields.Float(
-        string='Maximum Change (%)',
-        help="A rate changing more than this percentage from the previous one is not saved, but reported. "
-             "0 saves every rate.")
+        string='Hold Back Changes Above (%)', default=20.0,
+        help="A rate moving more than this percentage from the latest rate of the currency is not saved but reported "
+             "in the result of the update, to be checked and entered by hand. 0 saves every rate.")
     rate_next_date = fields.Date(string='Next Update')
     rate_last_update = fields.Datetime(string='Last Update', readonly=True)
     rate_last_message = fields.Text(string='Last Update Result', readonly=True)
     rate_failure_count = fields.Integer(readonly=True)
+
+    @api.depends('rate_provider', 'rate_fallback_provider', 'country_id')
+    def _compute_rate_central_bank(self):
+        for company in self:
+            company.rate_central_bank = company.rate_central_bank or self._get_default_central_bank(
+                (company.rate_provider, company.rate_fallback_provider), company.country_id)
+
+    @api.model
+    def _get_default_central_bank(self, providers, country):
+        """ The bank of `country` when the Central Bank source is among `providers` """
+        if 'central_bank' not in providers:
+            return False
+        return next((bank.code for bank in CENTRAL_BANKS.values() if bank.country == country.code), False)
 
     # -------------------------------------------------------------------------
     # Fetching
@@ -129,10 +151,16 @@ class ResCompany(models.Model):
                 date = fields.Date.context_today(company)
             saved, skipped = company._save_currency_rates(date, rates, sources)
             if skipped:
-                messages.append(_('Not saved, changed more than %(max)s%%: %(currencies)s',
-                                  max=company.rate_max_change, currencies=', '.join(skipped)))
+                held = [_('%(currency)s %(old)s → %(new)s from %(source)s', currency=name, old='%.6g' % old,
+                          new='%.6g' % new, source=source) for name, old, new, source in skipped]
+                messages.append(_('Held back, more than %(max)s%% away from the latest rate (check them and enter '
+                                  'them by hand if they are right): %(currencies)s',
+                                  max=company.rate_max_change, currencies='; '.join(held)))
             summary = (_('%(count)s rate(s) saved for %(date)s.', count=len(saved), date=date)
                        if saved else _('No rate saved.'))
+            if saved:
+                messages.insert(0, _('From %s', ', '.join(sorted({sources[currency] for currency in rates
+                                                                    if currency.name in saved}))))
             company.sudo().write({
                 'rate_last_update': fields.Datetime.now(),
                 'rate_last_message': '\n'.join([summary] + messages),
@@ -146,7 +174,8 @@ class ResCompany(models.Model):
         return saved_any
 
     def _save_currency_rates(self, date, rates, sources):
-        """ :return: (names of the currencies saved, names of the currencies skipped by the maximum change) """
+        """ :return: (names of the currencies saved,
+                      [(name, latest rate, new rate, source)] of the currencies held back by the maximum change) """
         self.ensure_one()
         Rate = self.env['res.currency.rate'].sudo()
         # the technical rate is relative to the rate of the company currency, usually 1
@@ -155,11 +184,12 @@ class ResCompany(models.Model):
         for currency, rate in rates.items():
             existing = Rate.search([('currency_id', '=', currency.id), ('company_id', '=', self.id),
                                     ('name', '=', date)], limit=1)
-            previous = Rate.search([('currency_id', '=', currency.id), ('company_id', 'in', (self.id, False)),
-                                    ('name', '<', date)], order='name desc', limit=1)
-            if self.rate_max_change and previous.company_rate and \
-                    abs(rate / previous.company_rate - 1.0) * 100.0 > self.rate_max_change:
-                skipped.append(currency.name)
+            # the latest rate of the currency, whatever its date; the first rate is always saved
+            latest = Rate.search([('currency_id', '=', currency.id), ('company_id', 'in', (self.id, False))],
+                                 order='name desc, company_id', limit=1).with_company(self)
+            if self.rate_max_change and latest.company_rate and \
+                    abs(rate / latest.company_rate - 1.0) * 100.0 > self.rate_max_change:
+                skipped.append((currency.name, latest.company_rate, rate, sources[currency]))
                 continue
             values = {'rate': rate * reference, 'rate_source': sources[currency]}
             if existing:
@@ -198,7 +228,7 @@ class ResCompany(models.Model):
             try:
                 with self.env.cr.savepoint():
                     company._update_currency_rates()
-            except Exception:  # noqa: BLE001 one company never stops the others
+            except Exception:
                 _logger.exception('Currency rates of %s not updated', company.name)
             company.rate_next_date = today + INTERVAL_STEPS[company.rate_interval]
 
@@ -213,4 +243,5 @@ class ResCompany(models.Model):
                            count=len(rates), date=date,
                            sample=', '.join('1 %s = %.6f %s' % (self.currency_id.name, rate, currency.name)
                                             for currency, rate in sample)))
+            lines.append(_('From %s', ', '.join(sorted(set(sources.values())))))
         return '\n'.join(lines + messages) or _('No rate available.')

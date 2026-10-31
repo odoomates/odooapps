@@ -1,9 +1,8 @@
 from datetime import date
 from unittest.mock import patch
 
-from freezegun import freeze_time
-
 import requests
+from freezegun import freeze_time
 
 from odoo import Command
 from odoo.tests import tagged
@@ -41,8 +40,8 @@ class FakeResponse:
 
 
 def fake_get(responses):
-    """ requests.get answering by the host of the URL, an exception for the hosts given one """
-    def get(url, params=None, timeout=None):
+    """ requests.get (or post) answering by the host of the URL, an exception for the hosts given one """
+    def get(url, params=None, timeout=None, **kwargs):
         for host, response in responses.items():
             if host in url:
                 if isinstance(response, Exception):
@@ -136,16 +135,45 @@ class TestRateUpdate(AccountTestInvoicingCommon):
         notification = self.env['mail.message'].search([('subject', '=', 'Currency rates not updated')])
         self.assertIn(self.env.user.partner_id, notification.partner_ids)
 
-    def test_maximum_change(self):
+    def _previous_eur(self, company_rate):
         self.env['res.currency.rate'].create({
-            'currency_id': self.eur.id, 'company_id': self.company.id, 'name': date(2026, 9, 1), 'company_rate': 0.5,
+            'currency_id': self.eur.id, 'company_id': self.company.id, 'name': date(2026, 9, 1),
+            'company_rate': company_rate,
         })
-        self.company.rate_max_change = 10.0
+
+    def test_held_back_change(self):
+        # 20% by default: 0.5 EUR for 1 USD, then 0.8666 from the source, is held back
+        self.assertEqual(self.company.rate_max_change, 20.0)
+        self._previous_eur(0.5)
+        with patch(GET, fake_get({'frankfurter': FakeResponse(FRANKFURTER)})):
+            self.assertTrue(self.company._update_currency_rates())
+        self.assertFalse(self._rate(self.eur))
+        # the others are saved, the first rate of a currency always
+        self.assertTrue(self._rate(self.gbp))
+        self.assertIn('2 rate(s) saved', self.company.rate_last_message)
+        self.assertIn('Held back, more than 20.0% away from the latest rate', self.company.rate_last_message)
+        self.assertIn('EUR 0.5 → %.6g from Frankfurter' % (1 / 1.1539), self.company.rate_last_message)
+
+    def test_normal_change_saved(self):
+        self._previous_eur(0.85)
+        with patch(GET, fake_get({'frankfurter': FakeResponse(FRANKFURTER)})):
+            self.company._update_currency_rates()
+        self.assertAlmostEqual(self._rate(self.eur).company_rate, 1 / 1.1539, places=6)
+        self.assertNotIn('Held back', self.company.rate_last_message)
+
+    def test_held_back_threshold(self):
+        # a lower threshold holds back a smaller change; 0 saves every rate
+        self._previous_eur(0.85)
+        self.company.rate_max_change = 1.0
         with patch(GET, fake_get({'frankfurter': FakeResponse(FRANKFURTER)})):
             self.company._update_currency_rates()
         self.assertFalse(self._rate(self.eur))
-        self.assertTrue(self._rate(self.gbp))
-        self.assertIn('changed more than 10.0%: EUR', self.company.rate_last_message)
+        self.assertIn('more than 1.0% away', self.company.rate_last_message)
+        self.company.rate_max_change = 0
+        with patch(GET, fake_get({'frankfurter': FakeResponse(FRANKFURTER)})):
+            self.company._update_currency_rates()
+        self.assertAlmostEqual(self._rate(self.eur).company_rate, 1 / 1.1539, places=6)
+        self.assertNotIn('Held back', self.company.rate_last_message)
 
     def test_exchangerate_api_without_key_and_test_connection(self):
         self.company.rate_provider = 'exchangerate_api'

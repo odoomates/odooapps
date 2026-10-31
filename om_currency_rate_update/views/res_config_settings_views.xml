@@ -27,6 +27,19 @@
                             <label for="rate_fallback_provider" string="Backup Source" class="col-lg-4 o_light_label"/>
                             <field name="rate_fallback_provider" placeholder="None"/>
                         </div>
+                        <div class="row" invisible="'central_bank' not in (rate_provider, rate_fallback_provider)">
+                            <label for="rate_central_bank" string="Central Bank" class="col-lg-4 o_light_label"/>
+                            <field name="rate_central_bank" placeholder="Choose a bank"/>
+                        </div>
+                        <div class="text-muted small mb8">
+                            Missing the rate you are looking for? Let us know, we will be happy to add it:
+                            <a href="https://github.com/odoomates/odooapps/issues" target="_blank">open an issue</a> or
+                            write to <a href="mailto:odoomates@gmail.com">odoomates@gmail.com</a>.
+                        </div>
+                        <div class="row">
+                            <label for="rate_max_change" string="Hold Back Changes Above (%)" class="col-lg-4 o_light_label"/>
+                            <field name="rate_max_change"/>
+                        </div>
                         <div class="row" groups="base.group_system"
                              invisible="'openexchangerates' not in (rate_provider, rate_fallback_provider)">
                             <label for="rate_openexchangerates_key" string="App ID" class="col-lg-4 o_light_label"/>
@@ -46,10 +59,6 @@
                             <label for="rate_date_policy" string="Rate Date" class="col-lg-4 o_light_label"/>
                             <field name="rate_date_policy"/>
                         </div>
-                        <div class="row">
-                            <label for="rate_max_change" string="Maximum Change (%)" class="col-lg-4 o_light_label"/>
-                            <field name="rate_max_change"/>
-                        </div>
                         <div class="row" invisible="rate_interval == 'manual'">
                             <label for="rate_next_date" string="Next Update" class="col-lg-4 o_light_label"/>
                             <field name="rate_next_date"/>
@@ -57,6 +66,141 @@
                         <div class="text-muted small mt8" invisible="rate_provider not in ('frankfurter', 'ecb')">
                             This source quotes about 30 major currencies, without key. For every currency, choose Open
                             Exchange Rates (App ID from openexchangerates.org) or ExchangeRate-API as source or backup.
+                        </div>
+                        <div class="text-muted small mt8"
+                             invisible="'central_bank' not in (rate_provider, rate_fallback_provider) or not rate_central_bank">
+                            <span invisible="rate_central_bank != 'rbi'">
+                                The reference rates of the RBI, computed by FBIL each working day around 1:30 PM IST, for 7
+                                currencies (USD, GBP, EUR, JPY, AED, IDR, RUB).
+                            </span>
+                            <span invisible="rate_central_bank != 'sama'">
+                                The exchange rates of the Saudi Central Bank, for about 70 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbuae'">
+                                The exchange rates of the Central Bank of the UAE, published each working day around 6 PM
+                                (UAE), for about 75 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbo'">
+                                The exchange rates of the Central Bank of Oman (mid of its buying and selling rates), for about
+                                45 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbk_kuwait'">
+                                The exchange rates of the Central Bank of Kuwait, for about 120 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbb'">
+                                The exchange rates of the Central Bank of Bahrain, for about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbj'">
+                                The exchange rates of the Central Bank of Jordan (mid of its lowest and highest rates), for 5
+                                currencies (USD, EUR, GBP, JPY, CHF).
+                            </span>
+                            <span invisible="rate_central_bank != 'boi'">
+                                The representative rates of the Bank of Israel, set each business day around 3:30 PM (Israel),
+                                for 13 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'bangladesh_bank'">
+                                The exchange rates of Bangladesh Bank, for 11 currencies (the weighted average rate of
+                                the US dollar, the mid of the cross rates).
+                            </span>
+                            <span invisible="rate_central_bank != 'cbn'">
+                                The official central rates of the Central Bank of Nigeria, for 11 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbk_kenya'">
+                                The indicative rates of the Central Bank of Kenya, for about 20 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cbsl'">
+                                The indicative exchange rates of the Central Bank of Sri Lanka, for about 50 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'tcmb'">
+                                The indicative rates of the Central Bank of the Republic of Türkiye (mid of its forex buying and
+                                selling rates), set each working day at 3:30 PM (Türkiye), for about 20 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'nbp'">
+                                The average exchange rates of Narodowy Bank Polski (table A), published each working day around
+                                noon (Poland), for about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cnb'">
+                                The exchange rate fixing of the Czech National Bank, set each working day at 2:30 PM (Prague), for
+                                about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'bnr'">
+                                The reference rates of the National Bank of Romania, set each working day around 1 PM (Romania),
+                                for about 35 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'mnb'">
+                                The official exchange rates of the Magyar Nemzeti Bank, set each working day around noon
+                                (Budapest), for about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'nbu'">
+                                The official exchange rates of the National Bank of Ukraine, for about 40 currencies, set in the
+                                afternoon and saved under the next working day, the day they apply from.
+                            </span>
+                            <span invisible="rate_central_bank != 'nbg'">
+                                The official exchange rates of the National Bank of Georgia, for about 40 currencies, set around
+                                5 PM (Tbilisi) and saved under the next day, the day they apply from.
+                            </span>
+                            <span invisible="rate_central_bank != 'nbk'">
+                                The official exchange rates of the National Bank of Kazakhstan, for about 50 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'boc'">
+                                The daily exchange rates of the Bank of Canada, published each business day by 4:30 PM (Eastern),
+                                for about 25 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'bcb'">
+                                The PTAX closing rates of the Banco Central do Brasil (mid of the buying and selling rates),
+                                published each business day around 1:10 PM (Brasília), for about 150 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'bnm'">
+                                The exchange rates of Bank Negara Malaysia (middle rates of the 5 PM session), for about 25
+                                currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'bsp'">
+                                The reference exchange rates of the Bangko Sentral ng Pilipinas, for about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'boe'">
+                                The daily spot rates of the Bank of England, observed around 4 PM (London) and published
+                                the next working day, for 25 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'snb'">
+                                The exchange rates of the Swiss National Bank at 11 AM (Zurich), for 4 currencies (EUR, USD,
+                                GBP, JPY).
+                            </span>
+                            <span invisible="rate_central_bank != 'norges_bank'">
+                                The exchange rates of Norges Bank, set each business day around 4 PM (Oslo), for about 40
+                                currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'riksbank'">
+                                The mid-market exchange rates of Sveriges Riksbank, for about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'danmarks_nationalbank'">
+                                The exchange rates of Danmarks Nationalbank, for about 30 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'sedlabanki'">
+                                The official reference rates (mid rates) of the Central Bank of Iceland, for 9 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'cba'">
+                                The official exchange rates of the Central Bank of Armenia, for about 40 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'nbrb'">
+                                The official exchange rates of the National Bank of the Republic of Belarus, for about 30
+                                currencies, set each working day and saved under the day they apply from.
+                            </span>
+                            <span invisible="rate_central_bank != 'rba'">
+                                The exchange rates of the Reserve Bank of Australia at 4 PM (Sydney), for about 20 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'mas'">
+                                The exchange rates published by the Monetary Authority of Singapore (average of the interbank
+                                buying and selling rates around noon), for 21 currencies.
+                            </span>
+                            <span invisible="rate_central_bank != 'banrep'">
+                                The TRM of the US dollar, certified each working day by the Superintendencia Financiera and
+                                published by the Banco de la República, saved under the day it applies from.
+                            </span>
+                            <span invisible="rate_central_bank != 'bcra'">
+                                The closing exchange rates of the Banco Central de la República Argentina, for about 35
+                                currencies.
+                            </span>
+                            Without key. Set a backup source for the other currencies.
                         </div>
                         <div class="mt8" invisible="not rate_last_update">
                             <span class="o_light_label">Last update: </span><field name="rate_last_update" class="oe_inline"/>

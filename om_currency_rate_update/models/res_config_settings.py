@@ -1,4 +1,4 @@
-from odoo import fields, models, _
+from odoo import _, api, fields, models
 
 
 class ResConfigSettings(models.TransientModel):
@@ -7,6 +7,7 @@ class ResConfigSettings(models.TransientModel):
     rate_interval = fields.Selection(related='company_id.rate_interval', readonly=False)
     rate_provider = fields.Selection(related='company_id.rate_provider', readonly=False)
     rate_fallback_provider = fields.Selection(related='company_id.rate_fallback_provider', readonly=False)
+    rate_central_bank = fields.Selection(related='company_id.rate_central_bank', readonly=False)
     rate_openexchangerates_key = fields.Char(
         related='company_id.rate_openexchangerates_key', readonly=False, groups='base.group_system')
     rate_exchangerate_api_key = fields.Char(
@@ -17,6 +18,12 @@ class ResConfigSettings(models.TransientModel):
     rate_next_date = fields.Date(related='company_id.rate_next_date', readonly=False)
     rate_last_update = fields.Datetime(related='company_id.rate_last_update')
     rate_last_message = fields.Text(related='company_id.rate_last_message')
+
+    @api.onchange('rate_provider', 'rate_fallback_provider')
+    def _onchange_rate_central_bank(self):
+        if not self.rate_central_bank:
+            self.rate_central_bank = self.env['res.company']._get_default_central_bank(
+                (self.rate_provider, self.rate_fallback_provider), self.company_id.country_id)
 
     def action_update_currency_rates(self):
         self.ensure_one()
