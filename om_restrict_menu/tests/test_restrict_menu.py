@@ -121,6 +121,17 @@ class TestHideMenu(HideMenuCase):
             self.assertEqual(self.app.id in children, visible, company.name)
             self.assertEqual(self.app.id in all_ids, visible, company.name)
 
+    def test_the_app_switcher_of_the_website(self):
+        """ website caches load_menus_root() again, above this module, for its app switcher: the roots still
+        follow the company, whichever asks first. """
+        if 'website' not in self.env.registry._init_modules:
+            self.skipTest('website is not installed')
+        self.branch.om_hidden_menu_ids = self.app
+        Menu = self.env['ir.ui.menu'].with_user(self.user).with_context(force_action=True)
+        for company, visible in [(self.company, True), (self.branch, False), (self.company, True)]:
+            root = Menu.with_context(allowed_company_ids=company.ids).load_menus_root()
+            self.assertEqual(self.app.id in [menu['id'] for menu in root['children']], visible, company.name)
+
 
 @tagged('post_install', '-at_install')
 class TestHideMenuRequest(HttpCase, HideMenuCase):
