@@ -12,9 +12,23 @@
                         <field name="om_hidden_user_ids" widget="many2many_tags"/>
                         <field name="om_hidden_company_ids" widget="many2many_tags"
                                groups="base.group_multi_company"/>
+                        <field name="parent_id" invisible="1"/>
+                        <field name="om_visible_user_ids" widget="many2many_tags" attrs="{'invisible': [('parent_id', '!=', False)]}"/>
                     </group>
                 </page>
             </notebook>
+        </field>
+    </record>
+
+    <record id="view_om_menu_search" model="ir.ui.view">
+        <field name="name">ir.ui.menu.search.om.hide.menu</field>
+        <field name="model">ir.ui.menu</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="base.edit_menu_access_search"/>
+        <field name="arch" type="xml">
+            <field name="parent_id" position="before">
+                <field name="parent_id" string="In App or Menu" operator="child_of"/>
+            </field>
         </field>
     </record>
 
@@ -27,6 +41,7 @@
                 <field name="complete_name" string="Menu"/>
                 <field name="om_hidden_user_ids" widget="many2many_tags"/>
                 <field name="om_hidden_company_ids" widget="many2many_tags" groups="base.group_multi_company"/>
+                <field name="om_visible_user_ids" widget="many2many_tags" optional="show"/>
             </tree>
         </field>
     </record>
@@ -38,7 +53,9 @@
         <field name="view_ids" eval="[Command.clear(),
             Command.create({'view_mode': 'tree', 'view_id': ref('view_om_hidden_menu_list')}),
             Command.create({'view_mode': 'form', 'view_id': ref('base.edit_menu_access')})]"/>
-        <field name="domain">['|', ('om_hidden_user_ids', '!=', False), ('om_hidden_company_ids', '!=', False)]</field>
+        <field name="search_view_id" ref="view_om_menu_search"/>
+        <field name="domain">['|', '|', ('om_hidden_user_ids', '!=', False), ('om_hidden_company_ids', '!=', False),
+                                ('om_visible_user_ids', '!=', False)]</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No menu is hidden</p>
             <p>
