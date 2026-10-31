@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_approval_request_view_form" model="ir.ui.view">
+        <field name="name">approval.request.view.form</field>
+        <field name="model">approval.request</field>
+        <field name="arch" type="xml">
+            <form string="Approval Request" create="0" edit="0" delete="0">
+                <header>
+                    <field name="can_approve" invisible="1"/>
+                    <button name="action_open_approve" string="Approve" type="object" class="btn-primary"
+                            attrs="{'invisible': [('can_approve', '=', False)]}"/>
+                    <button name="action_open_refuse" string="Refuse" type="object"
+                            attrs="{'invisible': [('can_approve', '=', False)]}"/>
+                    <button name="action_cancel" string="Withdraw" type="object"
+                            states="to_approve,approved"/>
+                    <button name="action_unlock" string="Unlock" type="object" groups="om_approval.group_approval_manager"
+                            attrs="{'invisible': ['|', ('is_locking', '=', False), ('state', '!=', 'done')]}"
+                            confirm="The record becomes editable again. Unlock it?"/>
+                    <field name="state" widget="statusbar" statusbar_visible="to_approve,approved,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="fa-external-link">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Open</span>
+                                <span class="o_stat_text"><field name="model_name"/></span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Locked" bg_color="bg-warning"
+                            attrs="{'invisible': [('is_locking', '=', False)]}"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="document_name"/>
+                            <field name="button_name" attrs="{'invisible': [('method', '=', False)]}"/>
+                            <field name="flow_id"/>
+                        </group>
+                        <group>
+                            <field name="requester_id" widget="many2one_avatar_user"/>
+                            <field name="create_date" string="Asked On"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="approval_step" attrs="{'invisible': [('state', '!=', 'to_approve')]}"/>
+                            <field name="approver_user_ids" widget="many2many_avatar_user"
+                                   attrs="{'invisible': [('state', '!=', 'to_approve')]}"/>
+                            <field name="method" invisible="1"/>
+                            <field name="is_locking" invisible="1"/>
+                            <field name="lock_record" attrs="{'invisible': [('method', '=', False)]}"/>
+                            <field name="keep_locked" attrs="{'invisible': [('lock_record', '=', False)]}"/>
+                            <field name="unlocked_by_id" widget="many2one_avatar_user"
+                                   attrs="{'invisible': [('unlocked_by_id', '=', False)]}"/>
+                            <field name="date_unlocked" attrs="{'invisible': [('date_unlocked', '=', False)]}"/>
+                        </group>
+                    </group>
+                    <group attrs="{'invisible': [('request_note', '=', False), ('attachment_ids', '=', [])]}">
+                        <field name="request_note"/>
+                        <field name="attachment_ids" widget="many2many_binary" readonly="1"
+                               attrs="{'invisible': [('attachment_ids', '=', [])]}"/>
+                    </group>
+                    <field name="line_ids">
+                        <tree>
+                            <field name="name"/>
+                            <field name="approver_user_ids" widget="many2many_avatar_user"/>
+                            <field name="approval_mode" optional="hide"/>
+                            <field name="approved_user_ids" widget="many2many_avatar_user" optional="show"/>
+                            <field name="progress" optional="show"/>
+                            <field name="state" widget="badge" decoration-info="state == 'pending'"
+                                   decoration-success="state == 'approved'" decoration-danger="state == 'refused'"/>
+                            <field name="date_pending" optional="hide"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="date"/>
+                            <field name="note"/>
+                            <field name="date_escalated" optional="hide"/>
+                        </tree>
+                    </field>
+                </sheet>
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_approval_request_view_list" model="ir.ui.view">
+        <field name="name">approval.request.view.list</field>
+        <field name="model">approval.request</field>
+        <field name="arch" type="xml">
+            <tree string="Approval Requests" create="0" edit="0" delete="0">
+                <field name="name"/>
+                <field name="create_date" string="Asked On"/>
+                <field name="model_name"/>
+                <field name="document_name"/>
+                <field name="button_name" optional="show"/>
+                <field name="requester_id" widget="many2one_avatar_user"/>
+                <field name="approval_step" optional="show"/>
+                <field name="approver_user_ids" widget="many2many_avatar_user" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-info="state == 'to_approve'"
+                       decoration-success="state in ('approved', 'done')" decoration-danger="state == 'refused'"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="om_approval_request_view_search" model="ir.ui.view">
+        <field name="name">approval.request.view.search</field>
+        <field name="model">approval.request</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="requester_id"/>
+                <field name="res_model"/>
+                <filter name="to_approve_by_me" string="To Approve by Me" domain="[('approver_user_ids', 'in', uid)]"/>
+                <filter name="my_requests" string="My Requests" domain="[('requester_id', '=', uid)]"/>
+                <separator/>
+                <filter name="to_approve" string="To Approve" domain="[('state', '=', 'to_approve')]"/>
+                <filter name="approved" string="Approved" domain="[('state', 'in', ('approved', 'done'))]"/>
+                <filter name="refused" string="Refused" domain="[('state', '=', 'refused')]"/>
+                <group>
+                    <filter name="group_model" string="Kind of Record" context="{'group_by': 'res_model'}"/>
+                    <filter name="group_requester" string="Requested By" context="{'group_by': 'requester_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_approval_request_action_to_approve" model="ir.actions.act_window">
+        <field name="name">To Approve</field>
+        <field name="res_model">approval.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_to_approve_by_me': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to approve</p>
+            <p>What waits for your approval, from every app, shows here.</p>
+        </field>
+    </record>
+
+    <record id="om_approval_request_action_my" model="ir.actions.act_window">
+        <field name="name">My Requests</field>
+        <field name="res_model">approval.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_my_requests': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No approval asked</p>
+            <p>A button needing an approval asks for it when you click it. Follow your requests here.</p>
+        </field>
+    </record>
+
+    <record id="om_approval_request_action" model="ir.actions.act_window">
+        <field name="name">All Requests</field>
+        <field name="res_model">approval.request</field>
+        <field name="view_mode">tree,form</field>
+        <field name="context">{'search_default_to_approve': 1}</field>
+    </record>
+
+</odoo>
