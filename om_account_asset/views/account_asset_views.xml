@@ -153,35 +153,15 @@
                 <field name="date"/>
                 <field name="state"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_global_click">
-                            <div class="row mb4">
-                                <div class="col-6">
-                                    <strong>
-                                        <span>
-                                            <t t-esc="record.name.value"/>
-                                        </span>
-                                    </strong>
-                                </div>
-                                <div class="col-6 text-end">
-                                    <strong>
-                                        <t t-esc="record.date.value"/>
-                                    </strong>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-6 text-muted">
-                                    <span>
-                                        <t t-esc="record.category_id.value"/>
-                                    </span>
-                                </div>
-                                <div class="col-6">
-                                    <span class="float-right text-end">
-                                        <field name="state" widget="label_selection"
-                                               options="{'classes': {'draft': 'primary', 'open': 'success', 'close': 'default'}}"/>
-                                    </span>
-                                </div>
-                            </div>
+                    <t t-name="card">
+                        <div class="d-flex mb4">
+                            <field name="name" class="fw-bold"/>
+                            <field name="date" class="ms-auto fw-bold"/>
+                        </div>
+                        <div class="d-flex">
+                            <field name="category_id" class="text-muted"/>
+                            <field name="state" widget="label_selection" class="ms-auto"
+                                   options="{'classes': {'draft': 'primary', 'open': 'success', 'close': 'default'}}"/>
                         </div>
                     </t>
                 </templates>
