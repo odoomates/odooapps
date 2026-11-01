@@ -136,8 +136,14 @@ as they are, under your name. Before the merge, a maintainer may ask you to:
   "review") that belong to one change.
 
 The maintainers merge with the mergebot, by a comment on the pull request:
-`mergebot r+` merges it as soon as CI is green, `mergebot r-` cancels it. Once
-merged, the mergebot thanks you on the pull request.
+
+- `mergebot r+` merges it as soon as CI is green;
+- `mergebot r+ minor` (or `major`, `patch`) first raises the version of the
+  modules it changes, in one `[REL]` commit on your branch, then merges it;
+- `mergebot rebase` rebases your branch on the version branch;
+- `mergebot r-` cancels a merge waiting for CI.
+
+Once merged, the mergebot thanks you on the pull request.
 
 ## Translations
 
