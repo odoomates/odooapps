@@ -11,7 +11,7 @@
 set -euo pipefail
 
 scripts=$(dirname "$0")
-read -r -a words <<< "$(printf '%s\n' "$BODY" | head -n 1 | tr -d '\r' | tr '[:upper:]' '[:lower:]')"
+read -r -a words <<< "$(printf '%s\n' "$BODY" | tr -d '\r' | grep -v '^[[:space:]]*$' | head -n 1 | tr '[:upper:]' '[:lower:]')"
 [ "${words[0]:-}" = /mergebot ] || exit 0
 level=""
 case "${words[1]:-} ${words[2]:-}" in

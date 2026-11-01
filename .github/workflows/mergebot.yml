@@ -28,7 +28,7 @@ jobs:
   command:
     if: >-
       github.event_name == 'issue_comment' && github.event.issue.pull_request
-      && (startsWith(github.event.comment.body, '/mergebot') || startsWith(github.event.comment.body, '/Mergebot'))
+      && (contains(github.event.comment.body, '/mergebot') || contains(github.event.comment.body, '/Mergebot'))
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     concurrency:
