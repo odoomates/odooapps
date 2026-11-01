@@ -1,6 +1,6 @@
 # Part of om_aed_currency_symbol (Odoo Mates). License: LGPL-3.
 {
-    'name': 'Odoo 20 UAE Dirham Symbol (AED)',
+    'name': 'UAE Dirham Symbol (AED)',
     'version': '1.0',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
