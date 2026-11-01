@@ -1,10 +1,10 @@
 name: Mergebot
 
-# Commands, on the first line of a comment of a pull request:
-#   mergebot r+                     merge the pull request (merge commit) once CI is green
-#   mergebot r+ minor|major|patch   bump the version of the modules changed, then merge
-#   mergebot rebase                 rebase the branch on its target branch
-#   mergebot r-                     cancel a merge waiting for CI
+# Commands, on the first line of a comment of a pull request (the slash is required):
+#   /mergebot r+                     merge the pull request (merge commit) once CI is green
+#   /mergebot r+ minor|major|patch   bump the version of the modules changed, then merge
+#   /mergebot rebase                 rebase the branch on its target branch
+#   /mergebot r-                     cancel a merge waiting for CI
 # The bump and the rebase push to the branch of the pull request with the MERGEBOT_TOKEN secret (a token of a
 # maintainer).
 # Only the owner and the collaborators of the repository may use them. Once merged, the bot thanks the
@@ -28,7 +28,7 @@ jobs:
   command:
     if: >-
       github.event_name == 'issue_comment' && github.event.issue.pull_request
-      && (startsWith(github.event.comment.body, 'mergebot') || startsWith(github.event.comment.body, 'Mergebot'))
+      && (startsWith(github.event.comment.body, '/mergebot') || startsWith(github.event.comment.body, '/Mergebot'))
     runs-on: ubuntu-24.04
     timeout-minutes: 150
     concurrency:

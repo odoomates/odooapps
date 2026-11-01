@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# The mergebot: runs the command of a pull request comment (its first line).
-#   mergebot r+                 merge the pull request (merge commit) once CI is green, then thank the author
-#   mergebot r+ minor|major|patch
+# The mergebot: runs the command of a pull request comment (its first line, starting with /mergebot).
+#   /mergebot r+                 merge the pull request (merge commit) once CI is green, then thank the author
+#   /mergebot r+ minor|major|patch
 #                               bump the version of the modules changed (not the new ones), then merge
-#   mergebot rebase             rebase the branch of the pull request on its target branch
-#   mergebot r-                 cancel a merge waiting for CI
+#   /mergebot rebase             rebase the branch of the pull request on its target branch
+#   /mergebot r-                 cancel a merge waiting for CI
 # The bump and the rebase push to the branch of the pull request (often in a fork): they use
 # MERGEBOT_TOKEN, a token of a maintainer, which also starts CI again on the new commits.
 # Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, ACTOR, COMMENT_ID, BODY, MERGEBOT_ROLES.
@@ -12,7 +12,7 @@ set -euo pipefail
 
 scripts=$(dirname "$0")
 read -r -a words <<< "$(printf '%s\n' "$BODY" | head -n 1 | tr -d '\r' | tr '[:upper:]' '[:lower:]')"
-[ "${words[0]:-}" = mergebot ] || exit 0
+[ "${words[0]:-}" = /mergebot ] || exit 0
 level=""
 case "${words[1]:-} ${words[2]:-}" in
     'r+ ') action=merge ;;
@@ -50,7 +50,7 @@ if [ "$draft" = true ]; then
 fi
 if [ "$action" = rebase ] || [ -n "$level" ]; then
     if [ -z "${MERGEBOT_TOKEN:-}" ]; then
-        say "The mergebot has no \`MERGEBOT_TOKEN\` secret to push to this branch: ask the author, or merge with \`mergebot r+\`."
+        say "The mergebot has no \`MERGEBOT_TOKEN\` secret to push to this branch: ask the author, or merge with \`/mergebot r+\`."
         exit 0
     fi
 fi
@@ -77,7 +77,7 @@ fi
 # merge
 # ---------------------------------------------------------------------------------------------------------
 if [ "$merge_state" = DIRTY ]; then
-    say "This pull request has conflicts with \`$base\`: \`mergebot rebase\`, or ask the author to rebase it."
+    say "This pull request has conflicts with \`$base\`: \`/mergebot rebase\`, or ask the author to rebase it."
     exit 0
 fi
 
