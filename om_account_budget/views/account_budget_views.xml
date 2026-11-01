@@ -179,36 +179,19 @@
                 <field name="user_id"/>
                 <field name="state"/>
                 <templates>
-                    <t t-name="kanban-box">
-                        <div t-attf-class="oe_kanban_global_click">
-                            <div class="row mb4">
-                                <div class="col-8">
-                                    <strong>
-                                        <field name="name"/>
-                                    </strong>
-                                </div>
-                                <div class="col-4">
-                                    <span class="float-right">
-                                        <field name="state" widget="label_selection"
-                                               options="{'classes': {'draft': 'default', 'done': 'success'}}"/>
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="row">
-                                <div class="col-10">
-                                    <i class="fa fa-clock-o" role="img" aria-label="Period" title="Period"/>
-                                    <t t-esc="record.date_from.value"/>-
-                                    <t t-esc="record.date_to.value"/>
-                                </div>
-                                <div class="col-2">
-                                    <span class="float-right">
-                                        <img t-att-src="kanban_image('res.users', 'image_small', record.user_id.raw_value)"
-                                             t-att-title="record.user_id.value" t-att-alt="record.user_id.value" width="24" height="24"
-                                             class="oe_kanban_avatar float-right"/>
-                                    </span>
-                                </div>
-                            </div>
+                    <t t-name="card">
+                        <div class="d-flex mb4">
+                            <field name="name" class="fw-bold"/>
+                            <field name="state" widget="label_selection" class="ms-auto"
+                                   options="{'classes': {'draft': 'default', 'done': 'success'}}"/>
                         </div>
+                        <footer>
+                            <div>
+                                <i class="fa fa-clock-o me-1" role="img" aria-label="Period" title="Period"/>
+                                <field name="date_from"/> - <field name="date_to"/>
+                            </div>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
                     </t>
                 </templates>
             </kanban>
