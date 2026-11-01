@@ -42,12 +42,12 @@ class HospitalAppointment(models.Model):
     def action_cancel(self):
         self.state = 'cancel'
 
-    @api.model
-    def create(self, vals):
-        if vals.get('name', _('New')) == _('New'):
-            vals['name'] = self.env['ir.sequence'].next_by_code('hospital.appointment') or _('New')
-        res = super(HospitalAppointment, self).create(vals)
-        return res
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('name', _('New')) == _('New'):
+                vals['name'] = self.env['ir.sequence'].next_by_code('hospital.appointment') or _('New')
+        return super().create(vals_list)
 
     @api.onchange('patient_id')
     def onchange_patient_id(self):
