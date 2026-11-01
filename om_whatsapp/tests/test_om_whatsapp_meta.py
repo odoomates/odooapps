@@ -7,6 +7,7 @@ from unittest.mock import patch
 from odoo import Command, fields
 from odoo.exceptions import AccessError, UserError
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_whatsapp.tools import MetaApi, MetaApiError
 
@@ -649,6 +650,7 @@ class TestOmWhatsappMetaWebhook(HttpCase):
         refused = self.url_open('/om_whatsapp/webhook?hub.mode=subscribe&hub.verify_token=wrong&hub.challenge=42')
         self.assertEqual(refused.status_code, 403)
 
+    @mute_logger('odoo.addons.om_whatsapp.controllers.webhook')
     def test_only_meta_signs(self):
         response = self._post({'messages': [{'from': '32470123456', 'id': 'wamid.in1', 'type': 'text', 'text': {'body': 'Hi'}}]},
                               secret='forged')
