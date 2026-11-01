@@ -139,7 +139,9 @@ merge, a maintainer may ask you to:
 The maintainers merge with the mergebot, by a comment on the pull request whose
 first line is the command (with its slash):
 
-- `/mergebot r+` merges it as soon as CI is green;
+- `/mergebot r+` merges it as soon as CI is green; if your branch is behind the
+  version branch, it is rebased first and CI runs again on the rebased commits
+  before the merge;
 - `/mergebot r+ minor` (or `major`, `patch`) first raises the version of the
   modules it changes, in one `[REL]` commit on your branch, then merges it;
 - `/mergebot rebase` rebases your branch on the version branch;

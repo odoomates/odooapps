@@ -1,11 +1,13 @@
 #!/usr/bin/env bash
 # The mergebot: runs the command of a pull request comment (its first line, starting with /mergebot).
-#   /mergebot r+                 merge the pull request (rebase, no merge commit) once CI is green, then thank the author
+#   /mergebot r+                 merge the pull request (rebase, no merge commit) once CI is green, then thank the author;
+#                               a branch behind its target branch is rebased first, and CI runs again on the rebased
+#                               commits before the merge
 #   /mergebot r+ minor|major|patch
 #                               bump the version of the modules changed (not the new ones), then merge
 #   /mergebot rebase             rebase the branch of the pull request on its target branch
 #   /mergebot r-                 cancel a merge waiting for CI
-# The bump and the rebase push to the branch of the pull request (often in a fork): they use
+# The bump and the rebases push to the branch of the pull request (often in a fork): they use
 # MERGEBOT_TOKEN, a token of a maintainer, which also starts CI again on the new commits.
 # Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, ACTOR, COMMENT_ID, BODY, MERGEBOT_ROLES.
 set -euo pipefail
@@ -23,6 +25,23 @@ case "${words[1]:-} ${words[2]:-}" in
 esac
 
 say() { gh pr comment "$PR" --repo "$REPO" --body "$1" > /dev/null; }
+
+# rebase the branch of the pull request (head $1) on its target branch, with the token of a maintainer: it also
+# starts CI again on the new commits
+rebase_branch() {
+    # shellcheck disable=SC2016
+    GH_TOKEN=$MERGEBOT_TOKEN gh api graphql -f id="$node_id" -f oid="$1" -f query='
+        mutation($id: ID!, $oid: GitObjectID!) {
+          updatePullRequestBranch(input: {pullRequestId: $id, expectedHeadOid: $oid, updateMethod: REBASE}) {
+            pullRequest { headRefOid }
+          }
+        }' > /dev/null 2>&1
+}
+
+# the number of commits of the target branch missing from the branch of the pull request ('?' if unknown)
+commits_behind() {
+    gh api "repos/$REPO/compare/$base...${head_repo%%/*}:$head_branch" --jq '.behind_by' 2>/dev/null || echo '?'
+}
 
 role=$(gh api "repos/$REPO/collaborators/$ACTOR/permission" --jq '.role_name' 2>/dev/null || echo none)
 if ! printf ' %s ' "$MERGEBOT_ROLES" | grep -q " $role "; then
@@ -59,13 +78,7 @@ fi
 # rebase
 # ---------------------------------------------------------------------------------------------------------
 if [ "$action" = rebase ]; then
-    # shellcheck disable=SC2016
-    if GH_TOKEN=$MERGEBOT_TOKEN gh api graphql -f id="$node_id" -f oid="$head_sha" -f query='
-        mutation($id: ID!, $oid: GitObjectID!) {
-          updatePullRequestBranch(input: {pullRequestId: $id, expectedHeadOid: $oid, updateMethod: REBASE}) {
-            pullRequest { headRefOid }
-          }
-        }' > /dev/null 2>&1; then
+    if rebase_branch "$head_sha"; then
         say "Rebased on \`$base\`: CI runs again on the rebased commits."
     else
         say "The branch cannot be rebased automatically on \`$base\` (conflicts?): @$(gh pr view "$PR" --repo "$REPO" --json author --jq .author.login), please rebase it and force-push."
@@ -115,10 +128,11 @@ print(json.dumps({'input': {
 }}))
 EOF
         # shellcheck disable=SC2016
-        if ! GH_TOKEN=$MERGEBOT_TOKEN gh api graphql --input - > /dev/null 2> "$work/error" < <(python3 -c '
+        if ! head_sha=$(GH_TOKEN=$MERGEBOT_TOKEN gh api graphql --input - --jq .data.createCommitOnBranch.commit.oid \
+            2> "$work/error" < <(python3 -c '
 import json, sys
 query = "mutation($input: CreateCommitOnBranchInput!) { createCommitOnBranch(input: $input) { commit { oid } } }"
-print(json.dumps({"query": query, "variables": json.load(open(sys.argv[1]))}))' "$work/input.json"); then
+print(json.dumps({"query": query, "variables": json.load(open(sys.argv[1]))}))' "$work/input.json")); then
             say "The version bump could not be pushed to the branch: $(head -c 300 "$work/error")"
             exit 0
         fi
@@ -127,29 +141,64 @@ print(json.dumps({"query": query, "variables": json.load(open(sys.argv[1]))}))' 
     fi
 fi
 
-behind=$(gh api "repos/$REPO/compare/$base...${head_repo%%/*}:$head_branch" --jq '.behind_by' 2>/dev/null || echo '?')
-behind_note=""
+# a branch behind its target branch is rebased first: its CI result was for the old base, so the merge waits for CI
+# on the rebased commits (the commits that are merged)
+behind=$(commits_behind)
+rebase_note=""
 if [ "$behind" != 0 ]; then
-    behind_note=" The branch is $behind commit(s) behind \`$base\`."
+    author=$(gh pr view "$PR" --repo "$REPO" --json author --jq .author.login)
+    if [ -z "${MERGEBOT_TOKEN:-}" ]; then
+        say "The branch is $behind commit(s) behind \`$base\` and the mergebot has no \`MERGEBOT_TOKEN\` secret to rebase it: @$author, please rebase it and force-push, then a maintainer merges with \`/mergebot r+\`.$bump_note"
+        exit 0
+    fi
+    if ! rebase_branch "$head_sha"; then
+        say "The branch is $behind commit(s) behind \`$base\` and cannot be rebased automatically (conflicts?): @$author, please rebase it and force-push, then a maintainer merges with \`/mergebot r+\`.$bump_note"
+        exit 0
+    fi
+    # wait for the rebased head, so that the merge below waits for its CI and not for the CI of the old head
+    old_head=$head_sha
+    for _ in $(seq 1 30); do
+        head_sha=$(gh pr view "$PR" --repo "$REPO" --json headRefOid --jq .headRefOid)
+        [ "$head_sha" != "$old_head" ] && break
+        sleep 2
+    done
+    if [ "$head_sha" = "$old_head" ]; then
+        say "The branch was rebased on \`$base\` but GitHub does not show the rebased commits yet: \`/mergebot r+\` again in a minute.$bump_note"
+        exit 0
+    fi
+    rebase_note=" Rebased on \`$base\` ($behind new commit(s) there): CI runs again on the rebased commits."
+    merge_state=PENDING
 fi
 
 case "$merge_state" in
     CLEAN|HAS_HOOKS)
         gh pr merge "$PR" --repo "$REPO" --rebase > /dev/null
-        say "Merging now.$bump_note$behind_note" ;;
+        say "Merging now.$bump_note" ;;
     *)
         gh pr merge "$PR" --repo "$REPO" --rebase --auto > /dev/null
-        say "Will merge as soon as CI is green.$bump_note$behind_note" ;;
+        say "Will merge as soon as CI is green.$bump_note$rebase_note" ;;
 esac
 
 # follow the merge (CI may take a while), to thank the author once it is done
 for _ in $(seq 1 140); do
-    state=$(gh pr view "$PR" --repo "$REPO" --json state --jq .state)
+    read -r state waiting head_sha < <(gh pr view "$PR" --repo "$REPO" --json state,autoMergeRequest,headRefOid \
+        --jq '"\(.state) \(.autoMergeRequest != null) \(.headRefOid)"')
     [ "$state" = MERGED ] && break
     [ "$state" = CLOSED ] && exit 0
-    waiting=$(gh pr view "$PR" --repo "$REPO" --json autoMergeRequest --jq '.autoMergeRequest != null')
     # the merge was cancelled, or CI failed
     [ "$waiting" = false ] && exit 0
+    # another pull request was merged meanwhile: rebase again, so that CI runs on the commits that are merged (a
+    # push of a maintainer keeps the merge waiting)
+    behind=$(commits_behind)
+    if [ "$behind" != 0 ] && [ "$behind" != '?' ] && [ -n "${MERGEBOT_TOKEN:-}" ]; then
+        if rebase_branch "$head_sha"; then
+            say "\`$base\` moved ($behind new commit(s)): rebased again, CI runs again on the rebased commits."
+        else
+            gh pr merge "$PR" --repo "$REPO" --disable-auto > /dev/null 2>&1 || true
+            say "\`$base\` moved and the branch cannot be rebased automatically (conflicts?): merge cancelled. @$(gh pr view "$PR" --repo "$REPO" --json author --jq .author.login), please rebase it and force-push, then a maintainer merges with \`/mergebot r+\`."
+            exit 0
+        fi
+    fi
     sleep 60
 done
 [ "$state" = MERGED ] || exit 0
