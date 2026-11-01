@@ -54,7 +54,11 @@ class TestCashForecast(AccountTestInvoicingCommon):
         # Odoo chooses for them, and are in transit until the bank statement
         self.bank.inbound_payment_method_line_ids.payment_account_id = False
         invoice = self._invoice('out_invoice', 600.0, date(2026, 2, 20))
-        self.env['account.payment.register'].with_context(active_model='account.move', active_ids=invoice.ids).create({
+        # force_payment_move: the accounting app makes the payments without an account of their own without a
+        # journal entry until the bank statement; the entry asked for is the one on the outstanding account
+        self.env['account.payment.register'].with_context(
+            active_model='account.move', active_ids=invoice.ids, force_payment_move=True,
+        ).create({
             'payment_date': date(2026, 2, 5), 'journal_id': self.bank.id,
         })._create_payments()
         _wizard, forecast = self._forecast(overdue='exclude')
