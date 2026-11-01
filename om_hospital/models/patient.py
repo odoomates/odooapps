@@ -55,14 +55,14 @@ class HospitalPatient(models.Model):
         for rec in self:
             rec.state = 'cancel'
 
-    @api.model
-    def create(self, vals):
-        if not vals.get('note'):
-            vals['note'] = 'New Patient'
-        if vals.get('reference', _('New')) == _('New'):
-            vals['reference'] = self.env['ir.sequence'].next_by_code('hospital.patient') or _('New')
-        res = super(HospitalPatient, self).create(vals)
-        return res
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if not vals.get('note'):
+                vals['note'] = 'New Patient'
+            if vals.get('reference', _('New')) == _('New'):
+                vals['reference'] = self.env['ir.sequence'].next_by_code('hospital.patient') or _('New')
+        return super().create(vals_list)
 
     @api.constrains('name')
     def check_name(self):
