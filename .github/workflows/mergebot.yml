@@ -4,6 +4,8 @@ name: Mergebot
 #   /mergebot r+                     merge the pull request (rebase, no merge commit) once CI is green; a branch
 #                                    behind its target branch is rebased first, and CI runs again before the merge
 #   /mergebot r+ minor|major|patch   bump the version of the modules changed, then merge
+#   /mergebot r+ fw+                 merge, then cherry-pick the commits on every higher version branch, one
+#                                    pull request per branch (fw+ goes with r+, in any order)
 #   /mergebot rebase                 rebase the branch on its target branch
 #   /mergebot r-                     cancel a merge waiting for CI
 # The bump and the rebase push to the branch of the pull request with the MERGEBOT_TOKEN secret (a token of a
@@ -61,7 +63,7 @@ jobs:
     # a pull request merged by hand (the merges of the bot do not start workflows: it thanks itself)
     if: github.event_name == 'pull_request_target' && github.event.pull_request.merged
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 30
     permissions:
       pull-requests: write
       issues: write
@@ -78,3 +80,11 @@ jobs:
           REPO: ${{ github.repository }}
           PR: ${{ github.event.pull_request.number }}
         run: bash .github/scripts/mergebot_thanks.sh
+      - name: Forward-port
+        if: contains(github.event.pull_request.labels.*.name, 'forward-port')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGEBOT_TOKEN: ${{ secrets.MERGEBOT_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: bash .github/scripts/mergebot_forward_port.sh

@@ -145,6 +145,10 @@ first line is the command (with its slash):
 - `/mergebot r+ minor` (or `major`, `patch`) first raises the version of the
   modules it changes, in one `[REL]` commit on your branch, then merges it;
 - `/mergebot rebase` rebases your branch on the version branch;
+- `/mergebot r+ fw+` merges it, then forward-ports it: the mergebot
+  cherry-picks its commits on every higher version branch (for 15.0: 16.0 to
+  20.0) and opens one pull request per branch; each one is merged by a maintainer
+  with `/mergebot r+` once its CI is green;
 - `/mergebot r-` cancels a merge waiting for CI.
 
 Once merged, the mergebot thanks you on the pull request.

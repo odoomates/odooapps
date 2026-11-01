@@ -5,8 +5,10 @@
 #                               commits before the merge
 #   /mergebot r+ minor|major|patch
 #                               bump the version of the modules changed (not the new ones), then merge
+#   /mergebot r+ fw+             merge, then forward-port: one pull request of its commits to every higher version
+#                               branch (fw+ goes with r+, in any order, also with a bump level)
 #   /mergebot rebase             rebase the branch of the pull request on its target branch
-#   /mergebot r-                 cancel a merge waiting for CI
+#   /mergebot r-                 cancel a merge waiting for CI (and its forward-port)
 # The bump and the rebases push to the branch of the pull request (often in a fork): they use
 # MERGEBOT_TOKEN, a token of a maintainer, which also starts CI again on the new commits.
 # Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, ACTOR, COMMENT_ID, BODY, MERGEBOT_ROLES.
@@ -15,14 +17,21 @@ set -euo pipefail
 scripts=$(dirname "$0")
 read -r -a words <<< "$(printf '%s\n' "$BODY" | tr -d '\r' | grep -v '^[[:space:]]*$' | head -n 1 | tr '[:upper:]' '[:lower:]')"
 [ "${words[0]:-}" = /mergebot ] || exit 0
+action=""
 level=""
-case "${words[1]:-} ${words[2]:-}" in
-    'r+ ') action=merge ;;
-    'r+ major'|'r+ minor'|'r+ patch') action=merge; level=${words[2]} ;;
-    'r- ') action=cancel ;;
-    'rebase ') action=rebase ;;
-    *) exit 0 ;;
-esac
+forward=false
+for word in "${words[@]:1}"; do
+    case "$word" in
+        r+) action=merge ;;
+        r-) action=cancel ;;
+        rebase) action=rebase ;;
+        major|minor|patch) level=$word ;;
+        fw+) forward=true ;;
+        *) exit 0 ;;
+    esac
+done
+[ -n "$action" ] || [ "$forward" = true ] || exit 0
+fw_label=forward-port
 
 say() { gh pr comment "$PR" --repo "$REPO" --body "$1" > /dev/null; }
 
@@ -48,10 +57,15 @@ if ! printf ' %s ' "$MERGEBOT_ROLES" | grep -q " $role "; then
     say "@$ACTOR only the maintainers of the repository can use the mergebot."
     exit 0
 fi
+if [ "$action" != merge ] && { [ -n "$level" ] || [ "$forward" = true ]; }; then
+    say "\`fw+\` and the bump levels go with \`r+\`: \`/mergebot r+ fw+\`, \`/mergebot r+ minor fw+\`."
+    exit 0
+fi
 gh api -X POST "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=+1 > /dev/null
 
 if [ "$action" = cancel ]; then
     gh pr merge "$PR" --repo "$REPO" --disable-auto > /dev/null 2>&1 || true
+    gh pr edit "$PR" --repo "$REPO" --remove-label "$fw_label" > /dev/null 2>&1 || true
     say "Merge cancelled: the pull request will not be merged automatically."
     exit 0
 fi
@@ -72,6 +86,28 @@ if [ "$action" = rebase ] || [ -n "$level" ]; then
         say "The mergebot has no \`MERGEBOT_TOKEN\` secret to push to this branch: ask the author, or merge with \`/mergebot r+\`."
         exit 0
     fi
+fi
+
+# fw+: the higher version branches to forward-port to, remembered with a label (also for a merge by hand)
+fw_note=""
+if [ "$forward" = true ]; then
+    if [[ $head_branch =~ ^[0-9]+\.0-fw-[0-9]+$ ]]; then
+        say "This pull request is a forward-port already: merge it with \`/mergebot r+\` (without \`fw+\`)."
+        exit 0
+    fi
+    if [ -z "${MERGEBOT_TOKEN:-}" ]; then
+        say "The mergebot has no \`MERGEBOT_TOKEN\` secret to push the forward-ports: \`/mergebot r+\` without \`fw+\`."
+        exit 0
+    fi
+    fw_targets=$(bash "$scripts/mergebot_forward_port.sh" --targets | paste -sd' ' | sed 's/ /`, `/g')
+    if [ -z "$fw_targets" ]; then
+        say "\`$base\` has no higher version branch to forward-port to: \`/mergebot r+\` without \`fw+\`."
+        exit 0
+    fi
+    gh label create "$fw_label" --repo "$REPO" --color 0E8A16 \
+        --description "Forward-ported by the mergebot to the higher version branches once merged" > /dev/null 2>&1 || true
+    gh pr edit "$PR" --repo "$REPO" --add-label "$fw_label" > /dev/null
+    fw_note=" Then forward-port to \`$fw_targets\`."
 fi
 
 # ---------------------------------------------------------------------------------------------------------
@@ -173,10 +209,10 @@ fi
 case "$merge_state" in
     CLEAN|HAS_HOOKS)
         gh pr merge "$PR" --repo "$REPO" --rebase > /dev/null
-        say "Merging now.$bump_note" ;;
+        say "Merging now.$bump_note$fw_note" ;;
     *)
         gh pr merge "$PR" --repo "$REPO" --rebase --auto > /dev/null
-        say "Will merge as soon as CI is green.$bump_note$rebase_note" ;;
+        say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note" ;;
 esac
 
 # follow the merge (CI may take a while), to thank the author once it is done
@@ -203,3 +239,6 @@ for _ in $(seq 1 140); do
 done
 [ "$state" = MERGED ] || exit 0
 bash "$scripts/mergebot_thanks.sh"
+if [ "$forward" = true ]; then
+    bash "$scripts/mergebot_forward_port.sh"
+fi
