@@ -127,8 +127,9 @@ be closed.
 
 ### Merging
 
-Pull requests are merged with a merge commit: your commits come into the branch
-as they are, under your name. Before the merge, a maintainer may ask you to:
+Pull requests are rebased onto the version branch, without a merge commit: your
+commits come into the branch one after the other, under your name. Before the
+merge, a maintainer may ask you to:
 
 - **rebase** your branch on the current version branch (`20.0`...), when it is
   much older;

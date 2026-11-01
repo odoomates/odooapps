@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The mergebot: runs the command of a pull request comment (its first line, starting with /mergebot).
-#   /mergebot r+                 merge the pull request (merge commit) once CI is green, then thank the author
+#   /mergebot r+                 merge the pull request (rebase, no merge commit) once CI is green, then thank the author
 #   /mergebot r+ minor|major|patch
 #                               bump the version of the modules changed (not the new ones), then merge
 #   /mergebot rebase             rebase the branch of the pull request on its target branch
@@ -135,10 +135,10 @@ fi
 
 case "$merge_state" in
     CLEAN|HAS_HOOKS)
-        gh pr merge "$PR" --repo "$REPO" --merge > /dev/null
+        gh pr merge "$PR" --repo "$REPO" --rebase > /dev/null
         say "Merging now.$bump_note$behind_note" ;;
     *)
-        gh pr merge "$PR" --repo "$REPO" --merge --auto > /dev/null
+        gh pr merge "$PR" --repo "$REPO" --rebase --auto > /dev/null
         say "Will merge as soon as CI is green.$bump_note$behind_note" ;;
 esac
 
