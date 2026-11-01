@@ -2,9 +2,15 @@
     'name': 'Odoo 20 Accounting Financial Reports',
     'version': '2.0.6',
     'category': 'Invoicing Management',
-    'description': 'Accounting Reports For Odoo 20, Annual Report, Accounting Financial '
-                   'Reports, Odoo 20 Financial Reports',
-    'summary': 'Annual Report and Accounting Reports For Odoo 20',
+    'description': 'Accounting Reports For Odoo 20, Odoo 20 Financial Reports, Accounting Financial Reports, '
+                   'Financial Statements, Accounting PDF Reports, Annual Report, Balance Sheet, Profit and Loss, '
+                   'P&L, Income Statement, Cash Flow Statement, General Ledger, Trial Balance, Partner Ledger, '
+                   'Customer Statement, Vendor Statement, Aged Partner Balance, Aged Receivable, Aged Payable, '
+                   'Ageing Report, Tax Report, VAT Report, GST Report, Tax Return, Tax Closing, Journals Audit, '
+                   'Journal Entries Report, Ledger Report, Audit Report, Odoo Community Accounting Reports',
+    'summary': 'Accounting Financial Reports for Odoo 20 Community: Annual Report, Balance Sheet, Profit and Loss, '
+               'Cash Flow Statement, General Ledger, Trial Balance, Partner Ledger, Aged Receivable and Payable, '
+               'Tax Report, Journals Audit, PDF',
     'sequence': '1',
     'author': 'Odoo Mates, Odoo SA',
     'license': 'LGPL-3',
