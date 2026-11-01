@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Thank the author of the merged pull request, once: a welcome for a first contribution, kudos always.
+# Thank the author of the merged pull request, once: a welcome on a first contribution, kudos always.
 # The team of the repository (admins, maintainers, writers) and the bots are not thanked.
 # Environment: GH_TOKEN, REPO, PR.
 set -euo pipefail
@@ -21,17 +21,24 @@ title=$(gh pr view "$PR" --repo "$REPO" --json title --jq '.title')
 merged=$(gh api -X GET search/issues -f q="repo:$REPO is:pr is:merged author:$author" --jq '.total_count')
 
 if [ "$merged" -le 1 ]; then
-    thanks="Welcome to the contributors of Odoo Apps: this is your first merged pull request here, and we hope the first of many."
-else
-    thanks="That makes $merged pull requests of yours merged here: thank you for coming back!"
-fi
+    body=$(cat <<EOF
+:tada: Thank you @$author, your pull request is merged!
 
-body=$(cat <<EOF
-:tada: Merged, thank you @$author!
-
-$thanks Kudos for **$title**: it is on the \`$(gh pr view "$PR" --repo "$REPO" --json baseRefName --jq .baseRefName)\` branch now, and reaches the users with the next update of the module on the Odoo Apps store.
+On behalf of the Odoo Mates team: welcome, and congratulations on your first contribution. **$title** is a great start, and we're looking forward to your next one. If you'd like to help further, have a look at the open [issues](https://github.com/$REPO/issues) and [Discussions](https://github.com/$REPO/discussions): we'd be happy to work with you again :raised_hands:
 
 $marker
 EOF
 )
+else
+    body=$(cat <<EOF
+:tada: Merged, thank you @$author!
+
+That makes $merged of your pull requests merged at Odoo Mates: thank you for coming back.
+
+Kudos for **$title** :clap:
+
+$marker
+EOF
+)
+fi
 gh pr comment "$PR" --repo "$REPO" --body "$body" > /dev/null
