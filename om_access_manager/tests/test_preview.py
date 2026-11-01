@@ -176,6 +176,10 @@ class TestPreview(HttpCase):
 
     def test_web_client_in_a_preview(self):
         self.manager.password = self.manager.login
+        if 'odoobot_state' in self.manager._fields:
+            # no OdooBot chat of the manager: its welcome could reach the page once it shows the user, who may
+            # not read that chat
+            self.manager.odoobot_state = 'disabled'
         self.start_tour(f'/odoo/action-base.action_res_users/{self.user.id}', 'om_access_manager_preview',
                         login=self.manager.login, timeout=120)
 
