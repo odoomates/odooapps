@@ -105,19 +105,39 @@ One commit per module and per logical change, written as in Odoo:
 
 - **Tags:** `[FIX]` bug fix, `[IMP]` improvement, `[ADD]` new module, `[REM]`
   removal, `[REF]` refactoring, `[I18N]` translations, `[MIG]` migration to a new
-  version.
-- The summary line is at most 50 characters, in English, without a full stop.
-  For example: `[FIX] om_account_followup: level of paid invoices`.
+  version; and, as in Odoo, `[REV]` revert, `[MOV]` move, `[REL]` release,
+  `[MERGE]` merge, `[CLA]` contributor agreement, `[PERF]` performance, `[CLN]`
+  clean-up, `[LINT]` linting.
+- The summary after `module: ` is at most 50 characters, in English, without a
+  full stop. For example: `[FIX] om_account_followup: level of paid invoices`.
 - Add a body after a blank line only when the why is not obvious from the
   summary.
 - Use `*` as the module when one change touches several modules:
   `[I18N] *: Spanish translations`.
+
+CI checks the first line of every commit of a pull request (merge commits
+aside): the *commit messages* check fails and lists the commits to fix. Reword
+them with `git rebase -i` and force-push your branch.
 
 ### Review
 
 A maintainer reviews the pull request. Answer the comments and push the
 corrections to the same branch. A pull request without an answer for 30 days may
 be closed.
+
+### Merging
+
+Pull requests are merged with a merge commit: your commits come into the branch
+as they are, under your name. Before the merge, a maintainer may ask you to:
+
+- **rebase** your branch on the current version branch (`20.0`...), when it is
+  much older;
+- **squash** your commits, when there are several small ones ("fix typo",
+  "review") that belong to one change.
+
+The maintainers merge with the mergebot, by a comment on the pull request:
+`mergebot r+` merges it as soon as CI is green, `mergebot r-` cancels it. Once
+merged, the mergebot thanks you on the pull request.
 
 ## Translations
 

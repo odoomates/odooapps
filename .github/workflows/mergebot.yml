@@ -1,0 +1,74 @@
+name: Mergebot
+
+# Commands, on the first line of a comment of a pull request:
+#   mergebot r+   merge the pull request (merge commit) once CI is green
+#   mergebot r-   cancel a merge waiting for CI
+# Only the owner and the collaborators of the repository may use them. Once merged, the bot thanks the
+# author. It never checks out nor runs the code of the pull request: it reads its own scripts from the
+# default branch and calls the GitHub API.
+
+on:
+  issue_comment:
+    types: [created]
+  pull_request_target:
+    types: [closed]
+
+permissions: {}
+
+env:
+  # the roles of the repository allowed to command the bot: on a repository of a personal account, the
+  # collaborators invited by the owner have the write role
+  MERGEBOT_ROLES: 'admin maintain write'
+
+jobs:
+  command:
+    if: >-
+      github.event_name == 'issue_comment' && github.event.issue.pull_request
+      && startsWith(github.event.comment.body, 'mergebot')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 150
+    concurrency:
+      group: mergebot-${{ github.event.issue.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check out the scripts of the bot (default branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Run the command
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.issue.number }}
+          ACTOR: ${{ github.event.comment.user.login }}
+          COMMENT_ID: ${{ github.event.comment.id }}
+          BODY: ${{ github.event.comment.body }}
+        run: bash .github/scripts/mergebot.sh
+
+  thanks:
+    # a pull request merged by hand (the merges of the bot do not start workflows: it thanks itself)
+    if: github.event_name == 'pull_request_target' && github.event.pull_request.merged
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - name: Check out the scripts of the bot (default branch)
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Thank the author
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: bash .github/scripts/mergebot_thanks.sh

@@ -1,0 +1,36 @@
+name: Commit messages
+
+# The commits of a pull request follow "[TAG] module: summary" (CONTRIBUTING.md).
+
+on:
+  pull_request:
+    branches: ['20.0']
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: commit-messages-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  commit-messages:
+    name: commit messages
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check out the checker
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+          persist-credentials: false
+      - name: Check the commit messages
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh api "repos/$REPO/pulls/$PR/commits" --paginate --jq '.[]' \
+            | python3 .github/scripts/check_commit_messages.py
