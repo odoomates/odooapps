@@ -1,5 +1,6 @@
 import unittest
 from datetime import date
+from unittest.mock import patch
 
 from odoo import Command
 from odoo.tests import tagged
@@ -54,9 +55,14 @@ class TestCashForecast(AccountTestInvoicingCommon):
         # Odoo chooses for them, and are in transit until the bank statement
         self.bank.inbound_payment_method_line_ids.payment_account_id = False
         invoice = self._invoice('out_invoice', 600.0, date(2026, 2, 20))
-        self.env['account.payment.register'].with_context(active_model='account.move', active_ids=invoice.ids).create({
-            'payment_date': date(2026, 2, 5), 'journal_id': self.bank.id,
-        })._create_payments()
+        # with an accounting app (om_account_accountant), such payments have no journal entry until the bank
+        # statement: the entry asked for is the one Odoo makes on the outstanding account without one
+        with patch.object(type(self.env['account.move']), '_get_invoice_in_payment_state', lambda move: 'paid'):
+            self.env['account.payment.register'].with_context(
+                active_model='account.move', active_ids=invoice.ids,
+            ).create({
+                'payment_date': date(2026, 2, 5), 'journal_id': self.bank.id,
+            })._create_payments()
         _wizard, forecast = self._forecast(overdue='exclude')
         rows = self._rows(forecast)
         self.assertNotIn('customers', rows)
