@@ -96,6 +96,7 @@ class ReportTrialBalance(models.AbstractModel):
             account_result[row.pop('id')] = row
 
         initial_balances = self._get_initial_balances(accounts)
+        has_start_date = bool(self.env.context.get('date_from'))
         account_res = []
         for account in accounts:
             res = dict((fn, 0.0) for fn in ['credit', 'debit', 'balance'])
@@ -108,6 +109,11 @@ class ReportTrialBalance(models.AbstractModel):
                 res['debit'] = account_result[account.id].get('debit')
                 res['credit'] = account_result[account.id].get('credit')
                 res['balance'] += account_result[account.id].get('balance')
+            # with a start date, an account left out would leave the columns unbalanced: the filters only drop
+            # the accounts with nothing to show
+            if has_start_date and any(not currency.is_zero(res[fn]) for fn in ('initial_balance', 'debit', 'credit', 'balance')):
+                account_res.append(res)
+                continue
             if display_account == 'all':
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
@@ -115,12 +121,11 @@ class ReportTrialBalance(models.AbstractModel):
             if display_account == 'movement' and (
                     not currency.is_zero(res['debit']) or not currency.is_zero(res['credit'])):
                 account_res.append(res)
-        # no movement in the period: not shown with the accounts with movements only
         undistributed = self._get_undistributed_result(accounts)
-        if display_account != 'movement' and not self.env.company.currency_id.is_zero(undistributed):
+        if not self.env.company.currency_id.is_zero(undistributed):
             account_res.append({
                 'code': '',
-                'name': _('Undistributed Profits/Losses'),
+                'name': _('Result Brought Forward'),
                 'initial_balance': undistributed,
                 'debit': 0.0,
                 'credit': 0.0,

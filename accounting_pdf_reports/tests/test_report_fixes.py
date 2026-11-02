@@ -104,7 +104,7 @@ class TestReportFixes(AccountTestInvoicingCommon):
         self.assertEqual(lines[revenue]['credit'], 30.0)
         self.assertEqual(lines[revenue]['balance'], -70.0)
         # the income of 2024 has a line of its own
-        self.assertEqual(lines['']['name'], 'Undistributed Profits/Losses')
+        self.assertEqual(lines['']['name'], 'Result Brought Forward')
         self.assertEqual(lines['']['initial_balance'], -100.0)
         self.assertEqual(lines['']['balance'], -100.0)
 
@@ -133,7 +133,7 @@ class TestReportFixes(AccountTestInvoicingCommon):
         self.assertAlmostEqual(sum(line['debit'] for line in lines), sum(line['credit'] for line in lines))
 
     def test_trial_balance_undistributed_line_only_when_relevant(self):
-        """ No line for balance sheet accounts alone, nor when only the movements are shown. """
+        """ No line for balance sheet accounts alone, whatever the filter. """
         self.init_invoice('out_invoice', partner=self.partner_a, amounts=[100.0], taxes=[],
                           invoice_date='2024-06-01', post=True)
         receivable = self.company_data['default_account_receivable']
@@ -141,4 +141,30 @@ class TestReportFixes(AccountTestInvoicingCommon):
         form = {'date_from': '2025-07-01', 'date_to': '2025-12-31'}
         self.assertNotIn('', self._trial_balance(receivable, display_account='all', **form))
         self.assertIn('', self._trial_balance(revenue, display_account='not_zero', **form))
-        self.assertNotIn('', self._trial_balance(revenue, display_account='movement', **form))
+        self.assertIn('', self._trial_balance(revenue, display_account='movement', **form))
+
+    def test_trial_balance_adds_up_with_every_filter(self):
+        """ With a start date no filter leaves an account out: not one without movements but with a balance, nor
+        one with movements that ends at zero. """
+        invoice = self.init_invoice('out_invoice', partner=self.partner_a, amounts=[100.0], taxes=[],
+                                    invoice_date='2025-03-01', post=True)
+        self.init_invoice('out_invoice', partner=self.partner_a, amounts=[40.0], taxes=[],
+                          invoice_date='2024-03-01', post=True)
+        receivable = invoice.line_ids.filtered(lambda line: line.account_type == 'asset_receivable')
+        bank = self.company_data['default_journal_bank'].default_account_id
+        paid = self.env['account.move'].create({
+            'move_type': 'entry', 'date': '2025-08-01', 'line_ids': [
+                fields.Command.create({'account_id': bank.id, 'debit': 140.0, 'name': 'paid'}),
+                fields.Command.create({'account_id': receivable.account_id.id, 'credit': 140.0, 'name': 'paid',
+                                       'partner_id': self.partner_a.id}),
+            ]})
+        paid.action_post()
+        accounts = self.env['account.account'].search([('company_id', '=', self.env.company.id)])
+        form = {'date_from': '2025-07-01', 'date_to': '2025-12-31'}
+        for display_account in ('all', 'movement', 'not_zero'):
+            lines = self._trial_balance_lines(accounts, display_account=display_account, **form)
+            self.assertAlmostEqual(sum(line['initial_balance'] for line in lines), 0.0, msg=display_account)
+            self.assertAlmostEqual(sum(line['balance'] for line in lines), 0.0, msg=display_account)
+            self.assertAlmostEqual(sum(line['debit'] for line in lines), sum(line['credit'] for line in lines),
+                                   msg=display_account)
+            self.assertEqual(sum(line['credit'] for line in lines), 140.0, msg=display_account)
