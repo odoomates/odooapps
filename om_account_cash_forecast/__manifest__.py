@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Cash Forecast',
-    'version': '1.0.1',
+    'version': '1.0.2',
     'category': 'Accounting',
     'summary': 'Forecast the cash balance by week or month from the invoices, bills and expected payments',
     'description': """

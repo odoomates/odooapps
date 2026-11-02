@@ -13,6 +13,15 @@ class ReportCashForecast(models.AbstractModel):
     _description = 'Cash Forecast Report'
 
     @api.model
+    def _get_row_keys(self):
+        """ The rows of the receipts and of the payments, in their order. Other modules add theirs, with their
+        label in `_get_row_labels`.
+
+        :return: (receipt row keys, payment row keys)
+        """
+        return list(RECEIPT_ROWS), list(PAYMENT_ROWS)
+
+    @api.model
     def _get_row_labels(self):
         return {
             'customers': _('Customer invoices'),
@@ -170,9 +179,10 @@ class ReportCashForecast(models.AbstractModel):
         opening = currency.round(opening)
 
         labels = self._get_row_labels()
+        receipt_rows, payment_rows = self._get_row_keys()
         sections = []
-        for key, name, row_keys in (('receipts', _('Receipts'), RECEIPT_ROWS),
-                                    ('payments', _('Payments'), PAYMENT_ROWS)):
+        for key, name, row_keys in (('receipts', _('Receipts'), receipt_rows),
+                                    ('payments', _('Payments'), payment_rows)):
             rows = []
             for row_key in row_keys:
                 if row_key not in amounts:
