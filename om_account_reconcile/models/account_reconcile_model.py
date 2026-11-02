@@ -14,9 +14,15 @@ class AccountReconcileModel(models.Model):
             texts.append(str(st_line.narration))
         return texts
 
-    def _om_is_applicable(self, st_line):
-        """ Whether the conditions of the model are fulfilled by the transaction. """
+    def _om_is_applicable(self, st_line, partner=None):
+        """ Whether the conditions of the model are fulfilled by the transaction.
+
+        :param partner: partner the transaction is evaluated for, e.g. the one chosen in the reconciliation
+                        screen and not saved yet (an empty recordset for none); its partner by default.
+        """
         self.ensure_one()
+        if partner is None:
+            partner = st_line.partner_id
         if self.company_id != st_line.company_id:
             return False
         if self.match_journal_ids and st_line.journal_id not in self.match_journal_ids:
@@ -40,7 +46,7 @@ class AccountReconcileModel(models.Model):
                 if not any(re.search(self.match_label_param, text) for text in texts):
                     return False
         if (self.match_partner_ids
-                and st_line.partner_id.commercial_partner_id not in self.match_partner_ids.commercial_partner_id):
+                and partner.commercial_partner_id not in self.match_partner_ids.commercial_partner_id):
             return False
         return True
 
@@ -51,13 +57,17 @@ class AccountReconcileModel(models.Model):
             return self._om_get_matching_rule_proposal(st_line)
         return {'writeoffs': self._om_get_writeoffs(st_line)}
 
-    def _om_get_writeoffs(self, st_line, residual=None):
+    def _om_get_writeoffs(self, st_line, residual=None, partner=None):
         """ Counterparts of the lines of the model.
 
         :param residual: amount left to cover, as a journal item amount in transaction currency;
                          what is left on the suspense account of the transaction by default.
+        :param partner: partner of the counterparts without a partner of their own;
+                        the partner of the transaction by default.
         """
         self.ensure_one()
+        if partner is None:
+            partner = st_line.partner_id
         trans_currency, _company_currency = st_line._om_currencies()
         if residual is None:
             residual = st_line.amount_residual
@@ -82,7 +92,7 @@ class AccountReconcileModel(models.Model):
                 'account_id': line.account_id.id,
                 'amount': amount,
                 'label': line.label or st_line.payment_ref,
-                'partner_id': (line.partner_id or st_line.partner_id).id,
+                'partner_id': (line.partner_id or partner).id,
                 'tax_ids': line.tax_ids.ids,
                 'tax_included': bool(line.tax_ids),
                 'analytic_distribution': line.analytic_distribution or False,

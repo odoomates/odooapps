@@ -513,7 +513,23 @@ export class OmBankReconciliation extends Component {
 
     async setPartner(partnerId) {
         this.state.proposal.partner_id = partnerId || false;
-        await this.refreshPreview();
+        await Promise.all([this.refreshPreview(), this.loadModels()]);
+    }
+
+    async loadModels() {
+        // the conditions of the models on the partner follow the partner chosen, not saved yet
+        if (!this.transaction || this.isReconciled) {
+            return;
+        }
+        const id = this.transaction.id;
+        const partnerId = this.state.proposal.partner_id;
+        const models = await this.orm.call("account.bank.statement.line", "om_bank_rec_models", [
+            [id],
+            partnerId,
+        ]);
+        if (this.transaction?.id === id && this.state.proposal.partner_id === partnerId) {
+            this.state.data.models = models;
+        }
     }
 
     async addMatch(candidate) {

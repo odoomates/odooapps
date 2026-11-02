@@ -122,16 +122,32 @@ class AccountBankStatementLine(models.Model):
             'matches': [{'aml_id': aml.id, 'amount': None, 'candidate': self._om_screen_candidate(aml)}
                         for aml in amls],
         }
+        data['models'] = self._om_screen_models()
+        return data
+
+    def _om_screen_models(self, partner=None):
+        """ Reconciliation models offered for the transaction, the applicable ones being highlighted.
+
+        :param partner: see `account.reconcile.model._om_is_applicable`
+        """
+        self.ensure_one()
         models = self.env['account.reconcile.model'].search([
             ('company_id', '=', self.company_id.id),
             ('rule_type', '=', 'reco_model'),
             ('mapped_partner_id', '=', False),
         ])
-        data['models'] = [
-            {'id': model.id, 'name': model.name, 'applicable': model._om_is_applicable(self)}
+        return [
+            {'id': model.id, 'name': model.name, 'applicable': model._om_is_applicable(self, partner=partner)}
             for model in models if not model.match_journal_ids or self.journal_id in model.match_journal_ids
         ]
-        return data
+
+    def om_bank_rec_models(self, partner_id=False):
+        """ Reconciliation models of the transaction for the partner chosen in the screen, not saved yet. """
+        self.ensure_one()
+        self._om_check_access()
+        if self.is_reconciled:
+            return []
+        return self._om_screen_models(partner=self.env['res.partner'].browse(partner_id or []))
 
     def om_bank_rec_candidates(self, search=None, limit=40, offset=0):
         self.ensure_one()
@@ -189,9 +205,13 @@ class AccountBankStatementLine(models.Model):
         model = self.env['account.reconcile.model'].browse(model_id)
         if model.company_id != self.company_id:
             raise UserError(_('This reconciliation model belongs to another company.'))
+        # the partner chosen in the screen, the one of the transaction when the proposal has none
+        partner = None
+        if 'partner_id' in (proposal or {}):
+            partner = self.env['res.partner'].browse(proposal['partner_id'] or [])
         lines = self._om_prepare_proposal_lines(self._om_clean_proposal(proposal))
         remaining_trans, _remaining_balance = self._om_remaining(lines)
-        return model._om_get_writeoffs(self, residual=remaining_trans)
+        return model._om_get_writeoffs(self, residual=remaining_trans, partner=partner)
 
     @api.model
     def om_bank_rec_auto_reconcile(self, st_line_ids):
