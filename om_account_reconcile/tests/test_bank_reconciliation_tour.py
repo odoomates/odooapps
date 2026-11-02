@@ -1,3 +1,4 @@
+from odoo import Command
 from odoo.tests import tagged
 
 from odoo.addons.account.tests.common import AccountTestInvoicingHttpCommon
@@ -20,6 +21,13 @@ class TestBankReconciliationTour(AccountTestInvoicingHttpCommon):
         payment = self.env['account.bank.statement.line'].create({
             'journal_id': bank_journal.id, 'date': '2026-01-20', 'amount': 420.0,
             'payment_ref': 'TOUR PAYMENT %s' % invoice.name,
+        })
+        # a model for the fees of the bank, applicable once the bank is the partner of the transaction
+        bank_partner = self.env['res.partner'].create({'name': 'Tour Bank Ltd'})
+        self.env['account.reconcile.model'].create({
+            'name': 'Tour Bank Fees', 'rule_type': 'reco_model', 'match_partner_ids': [Command.set(bank_partner.ids)],
+            'line_ids': [Command.create({
+                'account_id': charges.id, 'amount_type': 'percentage', 'amount_string': '100'})],
         })
         fee = self.env['account.bank.statement.line'].create({
             'journal_id': bank_journal.id, 'date': '2026-01-21', 'amount': -7.0, 'payment_ref': 'Tour bank fee',
