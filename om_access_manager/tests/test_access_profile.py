@@ -378,6 +378,19 @@ class TestAccessProfile(TransactionCase):
         self.assertFalse(stranger.with_user(self.user).has_access('read'))
         self.assertEqual(self._partner().search([]), allowed | self.user.partner_id)
 
+    def test_a_user_always_reads_the_contact_of_odoobot(self):
+        # Discuss opens a chat with OdooBot on the first visit of a user, reading its name as the user
+        allowed = self.env['res.partner'].create({'name': 'Allowed'})
+        self._profile(model_ids=[(0, 0, {
+            'model_id': self.partner_model.id,
+            'domain': repr([('id', '=', allowed.id)]),
+        })])
+        odoobot = self.env.ref('base.partner_root')
+        self.assertTrue(odoobot.with_user(self.user).has_access('read'))
+        odoobot.with_user(self.user).read(['name'])
+        # it stays archived: the searches of the user do not list it
+        self.assertEqual(self._partner().search([]), allowed | self.user.partner_id)
+
     def test_block_import(self):
         self._profile(block_import=True)
         with self.assertRaises(UserError):
