@@ -34,7 +34,12 @@ A transaction is a dict, where only ``date``, ``payment_ref`` and ``amount`` are
         'ref': str | None,
         'narration': str | None,
         'transaction_type': str | None,
+        'amount_currency': float | None,    # the amount in the currency of the other party, when it is
+        'foreign_currency_code': str | None,  # another one than the currency of the account (ISO code)
     }
+
+The foreign amount is kept only with its currency, when that currency differs from the one of the journal;
+its sign follows the one of ``amount``.
 """
 
 from . import camt
