@@ -61,14 +61,14 @@ class TestPartnerLedgerInitialBalance(AccountTestInvoicingCommon):
         ).create({'payment_date': '2025-03-02'})._create_payments()
 
         form = {'date_from': '2025-07-01'}
-        # posted, without the entries fully reconciled (the default)
+        # posted, without the entries fully reconciled
+        balances = self._ledger(reconciled=False, **form)['data']['computed']['initial_balances']
+        self.assertEqual(balances[self.partner_a.id], 100.0)
+        # with them (the default), the paid invoice and its payment cancel out: the same balance
         balances = self._ledger(**form)['data']['computed']['initial_balances']
         self.assertEqual(balances[self.partner_a.id], 100.0)
-        # with them, the paid invoice and its payment cancel out: the same balance
-        balances = self._ledger(reconciled=True, **form)['data']['computed']['initial_balances']
-        self.assertEqual(balances[self.partner_a.id], 100.0)
         # with the draft invoice too
-        balances = self._ledger(target_move='all', **form)['data']['computed']['initial_balances']
+        balances = self._ledger(target_move='all', reconciled=False, **form)['data']['computed']['initial_balances']
         self.assertEqual(balances[self.partner_a.id], 170.0)
 
     def test_payable_side_only_with_its_filter(self):

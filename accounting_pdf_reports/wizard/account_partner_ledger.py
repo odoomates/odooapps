@@ -10,7 +10,11 @@ class AccountPartnerLedger(models.TransientModel):
                                      help="It adds the currency column on "
                                           "report if the currency differs from "
                                           "the company currency.")
-    reconciled = fields.Boolean('Reconciled Entries')
+    reconciled = fields.Boolean(
+        'Reconciled Entries', default=True,
+        help='Also lists the entries that are fully reconciled today. Untick it for the open items only: an invoice '
+             'paid since then is left out, so the balance of a past date can look lower than it was.'
+    )
     initial_balance = fields.Boolean(
         string='Include Initial Balances', default=True,
         help='With a start date, a row shows the balance of each partner before it, and the running balance starts '

@@ -159,7 +159,8 @@ class TestReportFixes(AccountTestInvoicingCommon):
                                        'partner_id': self.partner_a.id}),
             ]})
         paid.action_post()
-        accounts = self.env['account.account'].search([('company_id', '=', self.env.company.id)])
+        field = 'company_ids' if 'company_ids' in self.env['account.account']._fields else 'company_id'
+        accounts = self.env['account.account'].search([]).filtered(lambda account: self.env.company in account[field])
         form = {'date_from': '2025-07-01', 'date_to': '2025-12-31'}
         for display_account in ('all', 'movement', 'not_zero'):
             lines = self._trial_balance_lines(accounts, display_account=display_account, **form)
