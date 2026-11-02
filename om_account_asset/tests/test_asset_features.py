@@ -529,6 +529,19 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
         self.assertFalse(refund.asset_ids)
         self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 3)
 
+    def test_asset_from_a_bill_in_a_foreign_currency(self):
+        """ The asset is worth what the bill booked on the asset account, at the rate of the bill, even when
+        the user changed that rate. """
+        self.category.create_from_bill = True
+        other = self.setup_other_currency('EUR', rates=[('2025-01-01', 2.0)])
+        bill = self._create_bill(price_unit=1000.0)
+        bill.currency_id = other
+        bill.invoice_currency_rate = 2.5
+        bill.action_post()
+        line = bill.invoice_line_ids
+        self.assertEqual(line.balance, 400.0)
+        self.assertEqual(bill.asset_ids.value, 400.0)
+
     def test_asset_from_a_bill_line_with_a_long_label(self):
         """ A label longer than 32 characters, on several lines: the bill posts, the reference of the asset is the
         first line of the label. """
