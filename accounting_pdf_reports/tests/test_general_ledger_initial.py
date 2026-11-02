@@ -76,7 +76,7 @@ class TestGeneralLedgerInitialBalance(AccountTestInvoicingCommon):
 
     def test_without_a_start_date(self):
         """ The default option needs no start date: the report covers the whole history, counted once. """
-        ledger = self._ledger(date_to='2025-12-31', display_account='all')
+        ledger = self._ledger(date_from=False, date_to='2025-12-31', display_account='all')
         self.assertEqual(ledger[self.receivable]['balance'], 170.0)
         self.assertEqual(ledger[self.revenue]['balance'], -170.0)
         self.assertNotIn('', ledger)

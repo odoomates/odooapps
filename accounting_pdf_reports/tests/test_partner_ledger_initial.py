@@ -100,7 +100,7 @@ class TestPartnerLedgerInitialBalance(AccountTestInvoicingCommon):
         self.assertEqual(values['sum_partner'](values['data'], self.partner_a, 'debit - credit'), 40.0)
 
         # without a start date the report covers the whole history, nothing is added
-        values = self._ledger(date_to='2025-12-31')
+        values = self._ledger(date_from=False, date_to='2025-12-31')
         self.assertEqual([line['progress'] for line in values['lines'](values['data'], self.partner_a)],
                          [100.0, 140.0])
 
@@ -121,4 +121,4 @@ class TestPartnerLedgerInitialBalance(AccountTestInvoicingCommon):
 
         self.assertIn('Initial Balance', render(date_from='2025-07-01'))
         self.assertNotIn('Initial Balance', render(date_from='2025-07-01', initial_balance=False))
-        self.assertNotIn('Initial Balance', render(date_to='2025-12-31'))
+        self.assertNotIn('Initial Balance', render(date_from=False, date_to='2025-12-31'))
