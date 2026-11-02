@@ -99,8 +99,9 @@ class Base(models.AbstractModel):
             extra.append(Domain.OR([parse(terms) for terms in or_groups]))
         restricted = Domain.AND(extra)
         if operation == 'read' and (own := self._om_own_records_domain()):
-            # a user always reads their own user and contact: Odoo reads them for its own screens (the
-            # calendar, the preferences, the avatar...), and they reveal nothing the user does not know
+            # a user always reads their own user and contact, and OdooBot's contact: Odoo reads them for its
+            # own screens (the calendar, the preferences, the avatar, the OdooBot chat...), and they reveal
+            # nothing the user does not know
             restricted |= own
         return restricted
 
@@ -109,8 +110,19 @@ class Base(models.AbstractModel):
         if self._name == 'res.users':
             return Domain('id', '=', self.env.uid)
         if self._name == 'res.partner':
-            return Domain('id', '=', self.env['res.users'].sudo().browse(self.env.uid).partner_id.id)
+            return Domain('id', 'in', self._om_always_readable_partner_ids())
         return None
+
+    @api.model
+    def _om_always_readable_partner_ids(self):
+        """ The contacts a user always reads: their own, and OdooBot's. Discuss opens a chat with OdooBot for
+        every user on their first visit and reads its name as the user: refused, the chat is never made and
+        Discuss fails on every page. OdooBot's name and avatar are no secret: every user sees them. """
+        partner_ids = [self.env['res.users'].sudo().browse(self.env.uid).partner_id.id]
+        odoobot = self.env.ref('base.partner_root', raise_if_not_found=False)
+        if odoobot:
+            partner_ids.append(odoobot.id)
+        return partner_ids
 
     @api.model
     def get_view(self, view_id=None, view_type='form', **options):
