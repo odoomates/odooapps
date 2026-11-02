@@ -80,7 +80,7 @@ class AccountMoveLine(models.Model):
         readonly=True, store=True
     )
 
-    @api.depends('asset_category_id', 'move_id.invoice_date')
+    @api.depends('asset_category_id', 'move_id.invoice_date', 'balance')
     def _get_asset_date(self):
         for rec in self:
             rec.asset_mrr = 0
@@ -93,13 +93,8 @@ class AccountMoveLine(models.Model):
                                       'your asset category cannot be 0.'))
                 months = cat.method_number * cat.method_period
                 if rec.move_id.move_type in ['out_invoice', 'out_refund']:
-                    price_subtotal = rec.currency_id._convert(
-                        rec.price_subtotal,
-                        rec.company_currency_id,
-                        rec.company_id,
-                        rec.move_id.invoice_date or fields.Date.context_today(rec))
-
-                    rec.asset_mrr = price_subtotal / months
+                    # the amount booked in the company currency, at the rate of the invoice
+                    rec.asset_mrr = abs(rec.balance) / months
                 if rec.move_id.invoice_date:
                     start_date = rec.move_id.invoice_date.replace(day=1)
                     end_date = (start_date + relativedelta(months=months, days=-1))
@@ -123,8 +118,9 @@ class AccountMoveLine(models.Model):
         category = self.asset_category_id
         date = move.invoice_date or move.date
         currency = move.company_currency_id
-        price_subtotal = currency.round(self.currency_id._convert(
-            self.price_subtotal, currency, self.company_id, move.invoice_date or fields.Date.context_today(self)))
+        # the amount booked on the asset account, in the company currency at the rate of the bill (which the user
+        # may have changed), not the amount converted again at the rate of the day
+        price_subtotal = currency.round(abs(self.balance))
         base_vals = {
             'name': self.name or self.product_id.display_name or category.name,
             # the first line of the label: the product, without its description
