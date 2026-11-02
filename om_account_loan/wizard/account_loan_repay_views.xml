@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_loan_repay_form" model="ir.ui.view">
+        <field name="name">account.loan.repay.form</field>
+        <field name="model">account.loan.repay</field>
+        <field name="arch" type="xml">
+            <form string="Early Repayment">
+                <group>
+                    <group>
+                        <field name="loan_id" readonly="1"/>
+                        <field name="company_id" invisible="1"/>
+                        <field name="currency_id" invisible="1"/>
+                        <field name="outstanding_amount"/>
+                        <field name="date"/>
+                        <field name="journal_id"/>
+                    </group>
+                    <group>
+                        <field name="amount"/>
+                        <field name="interest"/>
+                        <field name="withholding_tax_id" invisible="1"/>
+                        <field name="withholding" invisible="not withholding_tax_id"/>
+                        <field name="total"/>
+                        <field name="is_full" invisible="1"/>
+                        <field name="after_repayment" widget="radio" invisible="is_full"/>
+                    </group>
+                </group>
+                <div class="text-muted" invisible="not is_full">
+                    The whole principal is repaid: the loan is closed.
+                </div>
+                <footer>
+                    <button name="action_confirm" type="object" string="Repay" class="btn-primary"/>
+                    <button string="Discard" special="cancel" class="btn-secondary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

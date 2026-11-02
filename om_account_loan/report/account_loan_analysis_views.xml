@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_loan_line_pivot" model="ir.ui.view">
+        <field name="name">account.loan.line.pivot</field>
+        <field name="model">account.loan.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Loans Analysis" sample="1">
+                <field name="date" interval="year" type="row"/>
+                <field name="loan_type" type="col"/>
+                <field name="principal" type="measure"/>
+                <field name="interest" type="measure"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_account_loan_line_graph" model="ir.ui.view">
+        <field name="name">account.loan.line.graph</field>
+        <field name="model">account.loan.line</field>
+        <field name="arch" type="xml">
+            <graph string="Loans Analysis" type="bar" stacked="1" sample="1">
+                <field name="date" interval="year"/>
+                <field name="loan_type"/>
+                <!-- the graph shows one measure: the principal by default, the interest from the Measures menu -->
+                <field name="principal" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_account_loan_analysis" model="ir.actions.act_window">
+        <field name="name">Loans Analysis</field>
+        <field name="res_model">account.loan.line</field>
+        <field name="path">loans-analysis</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'pivot', 'view_id': ref('view_account_loan_line_pivot')}),
+            Command.create({'view_mode': 'graph', 'view_id': ref('view_account_loan_line_graph')}),
+            Command.create({'view_mode': 'list', 'view_id': ref('view_account_loan_line_list')})]"/>
+        <field name="search_view_id" ref="view_account_loan_line_search"/>
+        <field name="domain">[('loan_id.state', 'in', ('running', 'closed'))]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No running loan or lease yet</p>
+            <p>The principal, the interest and the instalments of the loans and the leases, year by year over their
+                life: what is paid and what is still to pay. The amounts are in the currency of each loan: group by
+                Currency when the loans are in several currencies.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_account_loan_analysis" name="Loans Analysis" action="action_account_loan_analysis"
+              parent="account.account_reports_management_menu" sequence="41"
+              groups="account.group_account_readonly,account.group_account_manager"/>
+
+</odoo>
