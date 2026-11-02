@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # The mergebot: runs the command of a pull request comment (its first line, starting with /mergebot).
-#   /mergebot r+                 merge the pull request (rebase, no merge commit) once CI is green, then thank the author;
+#   /mergebot r+                 merge the pull request (a merge commit "Merge PR #N into <branch>", the commits of
+#                               the author unchanged) once CI is green, then thank the author;
 #                               a branch behind its target branch is rebased first, and CI runs again on the rebased
 #                               commits before the merge
 #   /mergebot r+ minor|major|patch
@@ -206,12 +207,16 @@ if [ "$behind" != 0 ]; then
     merge_state=PENDING
 fi
 
+# a merge commit, as "Merge PR #12 into 20.0": the commits of the author land as they are (author, committer,
+# ids), only the merge commit is of the mergebot
+merge_subject="Merge PR #$PR into $base"
+merge_body="Signed-off-by $ACTOR"
 case "$merge_state" in
     CLEAN|HAS_HOOKS)
-        gh pr merge "$PR" --repo "$REPO" --rebase > /dev/null
+        gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" > /dev/null
         say "Merging now.$bump_note$fw_note" ;;
     *)
-        gh pr merge "$PR" --repo "$REPO" --rebase --auto > /dev/null
+        gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" --auto > /dev/null
         say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note" ;;
 esac
 
