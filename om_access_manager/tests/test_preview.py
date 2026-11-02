@@ -181,6 +181,9 @@ class TestPreview(HttpCase):
         with self.assertRaisesRegex(UserError, 'does not have the profile'):
             wizard.action_open_preview()
 
+    # the web client saves a few things on a first visit (the OdooBot chat): the preview refuses them, as it
+    # should, and logs it
+    @mute_logger('odoo.http')
     def test_web_client_in_a_preview(self):
         self.manager.password = self.manager.login
         self.start_tour(f'/web#action=base.action_res_users&id={self.user.id}&view_type=form', 'om_access_manager_preview',
