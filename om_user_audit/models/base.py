@@ -29,7 +29,8 @@ class Base(models.AbstractModel):
         if field.type in ('many2one', 'many2one_reference') and hasattr(value, 'display_name'):
             return value.display_name or ''
         if field.relational:
-            names = value.mapped('display_name')
+            # a record's name may be empty, display_name is then False
+            names = [line.display_name or f'#{line.id}' for line in value]
             text = ', '.join(names[:10]) + (f' (+{len(names) - 10})' if len(names) > 10 else '')
             return text
         if field.type == 'selection':
