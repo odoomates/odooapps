@@ -2,15 +2,17 @@ name: Mergebot
 
 # Commands, on the first line of a comment of a pull request (the slash is required):
 #   /mergebot r+                     merge the pull request (merge commit "Merge PR #N into <branch>") once CI
-#                                    is green; a branch behind its target branch is rebased first, and CI runs
-#                                    again before the merge
-#   /mergebot r+ minor|major|patch   bump the version of the modules changed, then merge
+#                                    is green, then bump the patch version of the modules changed; a branch
+#                                    behind its target branch is rebased first, and CI runs again before the merge
+#   /mergebot r+ minor|major         the same, with this level of version bump
+#   /mergebot r+ nobump              the same, without a version bump
 #   /mergebot r+ fw+                 merge, then cherry-pick the commits on every higher version branch, one
 #                                    pull request per branch (fw+ goes with r+, in any order)
+#   /mergebot r+ fw+ 19.0            the same, up to this branch included (also: fw+ upto 19.0)
 #   /mergebot rebase                 rebase the branch on its target branch
 #   /mergebot r-                     cancel a merge waiting for CI
-# The bump and the rebase push to the branch of the pull request with the MERGEBOT_TOKEN secret (a token of a
-# maintainer).
+# The rebase pushes to the branch of the pull request, the bump commits on its target branch, with the
+# MERGEBOT_TOKEN secret: a token of an admin of the repository, which the required checks do not stop.
 # Only the owner and the collaborators of the repository may use them. Once merged, the bot thanks the
 # author and deletes the branch, if of this repository. It never checks out nor runs the code of the pull
 # request: it reads its own scripts from the default branch and calls the GitHub API.
@@ -65,7 +67,12 @@ jobs:
     if: github.event_name == 'pull_request_target' && github.event.pull_request.merged
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    # after a command of the same pull request still following its merge: a bump is done once
+    concurrency:
+      group: mergebot-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
     permissions:
+      contents: read
       pull-requests: write
       issues: write
     steps:
@@ -75,6 +82,13 @@ jobs:
           ref: ${{ github.event.repository.default_branch }}
           sparse-checkout: .github/scripts
           persist-credentials: false
+      - name: Bump the version of the modules changed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MERGEBOT_TOKEN: ${{ secrets.MERGEBOT_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR: ${{ github.event.pull_request.number }}
+        run: bash .github/scripts/mergebot_bump.sh || echo "::warning::The version bump failed"
       - name: Thank the author
         env:
           GH_TOKEN: ${{ github.token }}

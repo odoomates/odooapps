@@ -141,17 +141,22 @@ first line is the command (with its slash):
 
 - `/mergebot r+` merges it as soon as CI is green; if your branch is behind the
   version branch, it is rebased first and CI runs again on the rebased commits
-  before the merge;
-- `/mergebot r+ minor` (or `major`, `patch`) first raises the version of the
-  modules it changes, in one `[REL]` commit on your branch, then merges it;
+  before the merge. Once merged, the mergebot raises the patch version of the
+  modules it changes, in one `[BOT] post-merge updates` commit on the version branch. A new module,
+  or one whose version your pull request changes, keeps its version;
+- `/mergebot r+ minor` (or `major`) does the same with a minor or major version;
+- `/mergebot r+ nobump` does the same without raising the version;
 - `/mergebot rebase` rebases your branch on the version branch;
 - `/mergebot r+ fw+` merges it, then forward-ports it: the mergebot
   cherry-picks its commits on every higher version branch (for 15.0: 16.0 to
   20.0) and opens one pull request per branch; each one is merged by a maintainer
   with `/mergebot r+` once its CI is green;
+- `/mergebot r+ fw+ 19.0` (or `fw+ upto 19.0`) forward-ports it up to that branch
+  included: for a module not on the higher branches, or a fix they do not need;
 - `/mergebot r-` cancels a merge waiting for CI.
 
-Once merged, the mergebot thanks you on the pull request.
+A wrong command is declined with a comment, and nothing is done. Once merged, the
+mergebot thanks you on the pull request.
 
 ## Translations
 
