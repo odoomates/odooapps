@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # The mergebot: runs the command of a pull request comment (its first line, starting with /mergebot).
 #   /mergebot r+                 merge the pull request (a merge commit "Merge PR #N into <branch>", the commits of
-#                               the author unchanged) once CI is green, then thank the author;
+#                               the author unchanged) once CI is green, then thank the author and delete its
+#                               branch, if of this repository;
 #                               a branch behind its target branch is rebased first, and CI runs again on the rebased
 #                               commits before the merge
 #   /mergebot r+ minor|major|patch
@@ -244,6 +245,14 @@ for _ in $(seq 1 140); do
 done
 [ "$state" = MERGED ] || exit 0
 bash "$scripts/mergebot_thanks.sh"
+# "automatically delete head branches" of GitHub does not act on the merges of the bot. Only a branch of this
+# repository, not a version branch, and one no open pull request still needs (the forward-port reads refs/pull)
+if [ "$head_repo" = "$REPO" ] && ! [[ $head_branch =~ ^([0-9]+\.0|master)$ ]] \
+    && [ "$(gh pr list --repo "$REPO" --state open --head "$head_branch" --json number --jq length)" = 0 ] \
+    && [ "$(gh pr list --repo "$REPO" --state open --base "$head_branch" --json number --jq length)" = 0 ]; then
+    gh api -X DELETE "repos/$REPO/git/refs/heads/$head_branch" > /dev/null \
+        || echo "::warning::The branch $head_branch could not be deleted"
+fi
 if [ "$forward" = true ]; then
     bash "$scripts/mergebot_forward_port.sh"
 fi
