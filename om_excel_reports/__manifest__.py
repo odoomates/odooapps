@@ -1,7 +1,7 @@
 # Part of Odoo2XL - Odoo Excel Reports (om_excel_reports). License: LGPL-3.
 {
     'name': 'Odoo2XL - Odoo Excel Reports',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
