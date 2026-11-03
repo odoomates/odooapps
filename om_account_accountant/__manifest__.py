@@ -6,7 +6,7 @@
                'Asset Management and Budget, Recurring Payments, '
                'Lock Dates, Fiscal Year, Period Closing, Accounting Dashboard, Financial Reports, '
                'Cash Flow Statement, Cash Forecast, Customer Follow up Management, Bank Reconciliation, '
-               'Cheque Printing, Automatic Currency Rates, Currency Revaluation, Bank Statement Import, '
+               'Cheque Printing, Batch Payments, Automatic Currency Rates, Currency Revaluation, Bank Statement Import, '
                'Vendor Bill OCR',
     'description': 'Odoo 20 Financial Reports, Asset Management and '
                    'Budget, Financial Reports, Cash Flow Statement, Cash Forecast, '
@@ -14,7 +14,7 @@
                    'Account Lock Date, Fiscal Year and Period Closing, Cheque Printing, '
                    'Automatic Currency Rates, Accounting Dashboard, Vendor Bill OCR',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
@@ -30,6 +30,7 @@
         'om_account_reconcile',
         'om_account_cash_forecast',
         'om_account_check_printing',
+        'om_account_batch_payment',
         'om_currency_rate_update',
         'om_currency_revaluation',
         'om_account_bank_statement_import',

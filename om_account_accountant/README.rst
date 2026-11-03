@@ -3,12 +3,12 @@ Odoo 20 Accounting Community
 ==============================
 
 Odoo 20 Community Edition ships Invoicing, not Accounting. This module turns it
-into a full accounting application: it installs the seventeen Odoo Mates
+into a full accounting application: it installs the eighteen Odoo Mates
 accounting modules in one click and adds the menus, groups, settings and
-dashboards that make them work as one system rather than seventeen separate
+dashboards that make them work as one system rather than eighteen separate
 apps.
 
-A 47-page user guide ships with the module, at
+A 45-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -53,6 +53,8 @@ Bank and payments
 * ``om_account_bank_statement_import`` — statement import with reusable file
   maps.
 * ``om_account_check_printing`` — cheque formats and cheque printing.
+* ``om_account_batch_payment`` — batch payments and deposits, the bulk upload
+  file of the bank and one bank transaction reconciled with a whole batch.
 * ``om_account_bill_ocr`` — vendor bills read from their PDF, scan or photo,
   on your own server.
 
@@ -113,7 +115,7 @@ your Odoo server and go to the Apps menu. Trigger the debug mode and update the
 list by clicking on the "Update Apps List" link. Now install the module by
 clicking on the install button.
 
-Installing this module installs the seventeen modules listed above, so make
+Installing this module installs the eighteen modules listed above, so make
 sure they are all present in your addons folder before you start.
 
 
