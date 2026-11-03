@@ -1,0 +1,53 @@
+name: Lint
+
+# The rules of this version of Odoo, on the modules of the repository: .github/scripts/run_odoo_lint.sh.
+
+on:
+  push:
+    branches: ['15.0']
+  pull_request:
+    branches: ['15.0']
+  workflow_dispatch:
+
+concurrency:
+  group: lint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: odoo
+          POSTGRES_PASSWORD: odoo
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      PGHOST: localhost
+      PGUSER: odoo
+      PGPASSWORD: odoo
+      ODOO_PATH: ${{ github.workspace }}/odoo
+      LOG_DIR: ${{ github.workspace }}/logs
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: odooapps
+      - uses: ./odooapps/.github/actions/setup-odoo
+      - name: Pylint
+        run: pip install pylint
+      - name: Lint
+        run: odooapps/.github/scripts/run_odoo_lint.sh lint_suite
+      - name: Log
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: lint-log
+          path: logs/
