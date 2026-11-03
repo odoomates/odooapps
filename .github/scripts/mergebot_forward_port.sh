@@ -1,14 +1,15 @@
 #!/usr/bin/env bash
 # Forward-port a merged pull request (/mergebot r+ fw+): cherry-pick its commits on every higher version branch
-# (16.0, 17.0, ... for a pull request merged into 15.0), one pull request per branch. The version bumps of the
-# mergebot ("[REL] ...: <level> version bump") and the merge commits are not ported. The commits keep their
+# (16.0, 17.0, ... for a pull request merged into 15.0), up to the branch of its label fw-upto-<branch> if any, one
+# pull request per branch. The merge commits are not
+# ported; each branch gets its own version bump when its pull request is merged. The commits keep their
 # message, the pull requests the description of the original and a reference to it, which lists them on it.
 # The branches and the pull requests are made with MERGEBOT_TOKEN, a token of a maintainer, so that CI runs on
 # them; a maintainer merges each one with /mergebot r+. A branch where the commits do not apply is listed in a
 # comment, to port by hand. Only git commands run on the code: nothing of the pull request is executed.
 #
 #   mergebot_forward_port.sh            forward-port the merged pull request PR
-#   mergebot_forward_port.sh --targets  print the higher version branches of the target branch of PR
+#   mergebot_forward_port.sh --targets  print the branches to forward-port to
 #
 # Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR (MERGEBOT_REMOTE: another git remote, for tests).
 set -euo pipefail
@@ -16,9 +17,12 @@ set -euo pipefail
 say() { gh pr comment "$PR" --repo "$REPO" --body "$1" > /dev/null; }
 
 base=$(gh pr view "$PR" --repo "$REPO" --json baseRefName --jq .baseRefName)
-# the version branches (N.0) above the target branch, lowest first
+upto=$(gh pr view "$PR" --repo "$REPO" --json labels \
+    --jq '.labels[].name | select(startswith("fw-upto-")) | ltrimstr("fw-upto-")' | head -n 1)
+# the version branches (N.0) above the target branch and up to the last one, lowest first
 targets=$(gh api "repos/$REPO/branches" --paginate --jq '.[].name' | grep -E '^[0-9]+\.0$' \
-    | awk -F. -v base="${base%%.*}" '$1 + 0 > base + 0' | sort -V || true)
+    | awk -F. -v base="${base%%.*}" -v upto="${upto%%.*}" '$1 + 0 > base + 0 && (upto == "" || $1 + 0 <= upto + 0)' \
+    | sort -V || true)
 if [ "${1:-}" = --targets ]; then
     [[ $base =~ ^[0-9]+\.0$ ]] && printf '%s\n' "$targets" | grep . || true
     exit 0
@@ -43,7 +47,6 @@ title=$(gh pr view "$PR" --repo "$REPO" --json title --jq .title)
 description=$(gh pr view "$PR" --repo "$REPO" --json body --jq .body)
 mapfile -t commits < <(gh api "repos/$REPO/pulls/$PR/commits" --paginate --jq '.[]
     | select((.parents | length) == 1)
-    | select(.commit.message | test("^\\[REL\\] [^\n]*: (major|minor|patch) version bump") | not)
     | .sha')
 if [ ${#commits[@]} -eq 0 ]; then
     say "No forward-port: the pull request has no commit to port.
