@@ -1,13 +1,10 @@
 name: Lint
 
-# The rules of this version of Odoo, on the modules of the repository: .github/scripts/run_odoo_lint.sh.
+# The rules of this version of Odoo, on the files a pull request edits: .github/scripts/run_odoo_lint.sh.
 
 on:
-  push:
-    branches: ['15.0']
   pull_request:
     branches: ['15.0']
-  workflow_dispatch:
 
 concurrency:
   group: lint-${{ github.ref }}
@@ -40,11 +37,13 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: odooapps
+          # the merge commit of the pull request and its first parent, the target branch
+          fetch-depth: 2
       - uses: ./odooapps/.github/actions/setup-odoo
       - name: Pylint
         run: pip install pylint
       - name: Lint
-        run: odooapps/.github/scripts/run_odoo_lint.sh lint_suite
+        run: odooapps/.github/scripts/run_odoo_lint.sh lint_suite HEAD^1
       - name: Log
         if: failure()
         uses: actions/upload-artifact@v7
