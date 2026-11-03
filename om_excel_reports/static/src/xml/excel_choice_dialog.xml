@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_excel_reports.ExcelChoiceDialog">
+        <Dialog size="'md'" header="false" footer="false"
+                contentClass="'o_report_excel_choice'" bodyClass="'p-4'">
+            <h4 class="o_rec_title">Print “<t t-out="props.title"/>”</h4>
+            <p class="o_rec_hint">Choose the format. Esc cancels.</p>
+            <div class="o_rec_tiles">
+                <button type="button" class="o_rec_tile" data-choice="pdf" t-on-click="() => this.choose('pdf')">
+                    <span class="o_rec_tile_label">PDF</span>
+                    <span class="o_rec_tile_sub">as usual</span>
+                </button>
+                <button type="button" class="o_rec_tile o_rec_tile_primary" data-choice="excel"
+                        t-ref="primary" t-on-click="() => this.choose('excel')">
+                    <span class="o_rec_tile_label">Excel</span>
+                    <span class="o_rec_tile_sub">.xlsx</span>
+                </button>
+                <button type="button" class="o_rec_tile" data-choice="both" t-on-click="() => this.choose('both')">
+                    <span class="o_rec_tile_label">Both</span>
+                    <span class="o_rec_tile_sub">PDF + Excel</span>
+                </button>
+            </div>
+            <div class="o_rec_footer">
+                <button type="button" class="o_rec_preview" data-choice="preview"
+                        title="Open the PDF in a new tab" t-on-click="() => this.choose('preview')">
+                    <i class="fa fa-eye" role="img" aria-hidden="true"/>
+                    <span>Preview</span>
+                </button>
+            </div>
+        </Dialog>
+    </t>
+
+</templates>
