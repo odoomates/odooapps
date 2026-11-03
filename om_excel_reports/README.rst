@@ -67,9 +67,8 @@ Tests
 
     odoo-bin -d <db> -i web_tour,om_excel_reports --test-enable --test-tags=/om_excel_reports
 
-``web_tour`` is only needed for the browser tours. Converter-only tests::
-
-    python3 -m unittest discover -s tests -p test_converter.py
+``web_tour`` is only needed for the browser tours. Converter-only tests: use
+``--test-tags=/om_excel_reports:TestParsing,/om_excel_reports:TestInvoice``.
 
 Credits
 =======

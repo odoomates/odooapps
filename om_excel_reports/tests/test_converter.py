@@ -1,12 +1,11 @@
-"""Stand-alone tests of the HTML -> xlsx converter (no Odoo needed): python3 -m unittest"""
+"""Tests of the HTML -> xlsx converter."""
 import datetime
 import io
 import os
-import sys
-import unittest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'lib'))
-import html_to_xlsx as h
+from odoo.tests import BaseCase
+
+from ..lib import html_to_xlsx as h
 
 HERE = os.path.dirname(__file__)
 
@@ -17,7 +16,7 @@ def convert(html, **kw):
     return openpyxl.load_workbook(io.BytesIO(data))
 
 
-class TestParsing(unittest.TestCase):
+class TestParsing(BaseCase):
     def test_numbers(self):
         self.assertEqual(h.parse_number('1,234.50', '.', ','), (1234.5, 2, True))
         self.assertEqual(h.parse_number('(12.00)', '.', ','), (-12.0, 2, False))
@@ -38,7 +37,7 @@ class TestParsing(unittest.TestCase):
         self.assertIsNone(h.parse_date('13/45/2026', '%m/%d/%Y'))
 
 
-class TestInvoice(unittest.TestCase):
+class TestInvoice(BaseCase):
     @classmethod
     def setUpClass(cls):
         with open(os.path.join(HERE, 'sample_invoice.html'), 'rb') as f:
@@ -89,7 +88,3 @@ class TestInvoice(unittest.TestCase):
         docs = [r[0] for r in rows[1:]]
         self.assertEqual(docs.count('Invoice INV/2026/0001'.replace('/', ' ')) + 0, 0)
         self.assertEqual(len(rows) - 1, 4)  # 3 lines of doc 1 (section row skipped) + 1 of doc 2
-
-
-if __name__ == '__main__':
-    unittest.main()
