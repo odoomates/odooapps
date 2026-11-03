@@ -153,6 +153,17 @@ class TestAccessProfileHttp(HttpCase):
                 }
                 throw new Error('not found: ' + selector);
             };
+            // Odoo 15 renders the field again on save: a click at that moment is lost
+            const clickUntil = async (selector, expected) => {
+                for (let tries = 0; tries < 15 && !document.querySelector(expected); tries++) {
+                    const element = document.querySelector(selector);
+                    if (element) {
+                        element.click();
+                    }
+                    await wait(1000);
+                }
+                return until(expected);
+            };
             const checkbox = (scope, label) => [...document.querySelectorAll(scope + ' .form-check')]
                 .find((check) => check.textContent.trim() === label).querySelector('input');
             const search = await until('.o_om_menu_tree_search');
@@ -162,8 +173,9 @@ class TestAccessProfileHttp(HttpCase):
             await until('.o_om_data_rights');
             checkbox('.o_om_data_rights', 'Create').click();
             await wait(1500);
-            (await until('.o_om_panel_section[data-section=fields] .o_om_section_toggle')).click();
-            (await until('.o_om_panel_row[data-field=color] button[data-mode=hide]')).click();
+            // the same render closes the section
+            (await clickUntil('.o_om_panel_section[data-section=fields] .o_om_section_toggle',
+                              '.o_om_panel_row[data-field=color] button[data-mode=hide]')).click();
             await wait(1500);
             // pages, filters and views: one section each
             for (const section of ['pages', 'filters', 'views']) {
@@ -171,11 +183,10 @@ class TestAccessProfileHttp(HttpCase):
             }
             await until('.o_om_menu_tree_row[data-menu-id="%(tags)s"] .o_om_mark.fa-lock');
             // the app: read only for everything below
-            (await until('.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_menu_tree_name')).click();
-            await until('.o_om_branch_rights');
-            (await until('.o_om_level[data-level=readonly]')).click();
+            await clickUntil('.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_menu_tree_name', '.o_om_branch_rights');
+            await clickUntil('.o_om_level[data-level=readonly]',
+                             '.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_mark.fa-sitemap');
             await wait(1500);
-            await until('.o_om_menu_tree_row[data-menu-id="%(app)s"] .o_om_mark.fa-sitemap');
             // a report, from its row under the menu; Odoo 15 renders the
             // field again on save, so the search box is a new one
             const newSearch = await until('.o_om_menu_tree_search');
@@ -184,6 +195,8 @@ class TestAccessProfileHttp(HttpCase):
             (await until('.o_om_tree_print[data-print="ir.actions.report,%(report)s"] input')).click();
             await wait(1500);
             await until('.o_om_tree_print[data-print="ir.actions.report,%(report)s"] .text-decoration-line-through');
+            // leaving the page while the form renders again is an error of Odoo 15
+            await wait(1500);
             console.log('test successful');
         })()""" % {'tags': tags.id, 'app': app.id, 'report': report.id}
         self.browser_js(

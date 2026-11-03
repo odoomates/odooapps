@@ -62,7 +62,7 @@ class HospitalAppointment(models.Model):
 
     def unlink(self):
         if self.state == 'done':
-            raise ValidationError(_("You Cannot Delete %s as it is in Done State" % self.name))
+            raise ValidationError(_("You Cannot Delete %s as it is in Done State", self.name))
         return super(HospitalAppointment, self).unlink()
 
     def action_url(self):

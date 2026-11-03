@@ -8,7 +8,6 @@ import logging
 from dateutil.relativedelta import relativedelta
 
 from odoo import _, api, fields, models
-from odoo.exceptions import AccessError
 from odoo.fields import Command
 from odoo.osv import expression
 from odoo.tools.safe_eval import datetime, safe_eval, time
@@ -558,5 +557,5 @@ class IrHttp(models.AbstractModel):
         if model_field is not None and model_field.type in ('binary', 'image') and not record.env.su:
             rules = record.env['om.access.profile']._current_rules()
             if rules.enabled and field in record._om_hidden(rules, record._name):
-                raise AccessError(_("Your access profile hides this file."))
+                return 403, None, None, 'application/octet-stream', None
         return super()._binary_record_content(record, field, *args, **kwargs)

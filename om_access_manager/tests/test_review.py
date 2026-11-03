@@ -45,13 +45,13 @@ class TestReview(HttpCase):
         return self.make_jsonrpc_request(route, {
             'model': model, 'method': method, 'args': args, 'kwargs': kwargs or {}})
 
-    @mute_logger('odoo.addons.web.controllers.utils')
+    @mute_logger('odoo.addons.web.controllers.main')
     def test_call_button_carries_the_field_guard(self):
         result = self._rpc('/web/dataset/call_button', 'res.partner', 'web_search_read',
                            [[('id', '=', self.partner.id)], ['email']])
         self.assertIs(result['records'][0]['email'], False)
 
-    @mute_logger('odoo.addons.web.controllers.export')
+    @mute_logger('odoo.addons.web.controllers.main')
     def test_the_export_dialog_and_file(self):
         fields = self.make_jsonrpc_request('/web/export/get_fields', {'model': 'res.partner'})
         self.assertNotIn('email', [field['id'] for field in fields])
