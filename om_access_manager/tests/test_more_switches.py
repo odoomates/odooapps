@@ -68,7 +68,7 @@ class TestMoreSwitches(HttpCase):
             module.with_user(admin).button_install()
         self.assertEqual(module.state, 'uninstalled')
 
-    @mute_logger('odoo.addons.web.controllers.export')
+    @mute_logger('odoo.addons.web.controllers.main')
     def test_a_field_kept_out_of_the_exports(self):
         self.env['om.access.profile.field'].create({
             'profile_id': self.profile.id, 'model_id': self.env['ir.model']._get('res.partner').id,

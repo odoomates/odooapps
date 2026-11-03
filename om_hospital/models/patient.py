@@ -69,7 +69,7 @@ class HospitalPatient(models.Model):
         for rec in self:
             patients = self.env['hospital.patient'].search([('name', '=', rec.name), ('id', '!=', rec.id)])
             if patients:
-                raise ValidationError(_("Name %s Already Exists" % rec.name))
+                raise ValidationError(_("Name %s Already Exists", rec.name))
 
     @api.constrains('age')
     def check_age(self):

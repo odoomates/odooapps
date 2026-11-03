@@ -62,8 +62,8 @@ class TestFieldGuard(HttpCase):
             'model_id': self.env['ir.model']._get('res.partner').id,
             'field_id': self.env['ir.model.fields']._get('res.partner', 'image_1920').id, 'mode': 'hide'})]
         self.env['base'].flush()
-        self.assertNotEqual(self.url_open(url).status_code, 200)
-        self.assertNotEqual(self.url_open(url + '&download=1').status_code, 200)
+        self.assertEqual(self.url_open(url).status_code, 404)
+        self.assertEqual(self.url_open(url + '&download=1').status_code, 404)
 
     def test_hidden_values_never_leave(self):
         result = self._call('res.partner', 'web_search_read', [], {

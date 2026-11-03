@@ -5,6 +5,8 @@
         <field name="name">view.res.partner</field>
         <field name="model">res.partner</field>
         <field name="inherit_id" ref="account.view_partner_property_form"/>
+        <!-- not only on the group: Odoo 15 hides it, and still reads its fields -->
+        <field name="groups_id" eval="[(4, ref('account.group_account_invoice')), (4, ref('account.group_account_readonly'))]"/>
         <field name="arch" type="xml">
             <xpath expr="//group[@name='accounting_entries']" position="after">
                 <group string="Credit Limits"
