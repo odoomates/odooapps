@@ -46,6 +46,18 @@ class TestAuditRules(AuditMixin, TransactionCase):
         edit = self._logs(model='res.partner', res_id=partner.id, event='write')
         self.assertEqual(edit.changes, f'Salesperson:  → {self.user.name}')
 
+    def test_a_related_record_without_a_name_is_logged(self):
+        def no_name(records):
+            for record in records:
+                record.display_name = False
+
+        with patch.object(type(self.env['mail.template']), '_compute_display_name', no_name):
+            template = self.env['mail.template'].create({'name': 'Unnamed'})
+            activity_type = self.env['mail.activity.type'].create({'name': 'Audited type'})
+            activity_type.with_user(self.env.ref('base.user_admin')).mail_template_ids = template
+        edit = self._logs(model='mail.activity.type', res_id=activity_type.id, event='write')
+        self.assertIn(f'#{template.id}', edit.changes)
+
     def test_the_superuser_and_technical_data_are_not_logged(self):
         self.env['res.partner'].sudo().create({'name': 'By the system'})
         self.env['ir.config_parameter'].with_user(self.env.ref('base.user_admin')).set_str('om.test', '1')
