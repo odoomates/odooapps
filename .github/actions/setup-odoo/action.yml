@@ -20,6 +20,16 @@ runs:
     - name: System libraries
       shell: bash
       run: sudo apt-get update -q && sudo apt-get install -yq libldap2-dev libsasl2-dev libpq-dev postgresql-client
+    - name: Chrome for the browser tests
+      shell: bash
+      # Odoo 15 attaches to the first target of Chrome: in recent versions it is the background page of a built-in
+      # extension, not the tab, and the browser tests find nothing there.
+      run: |
+        mkdir -p "$RUNNER_TEMP/chrome"
+        printf '#!/bin/sh\nexec /usr/bin/google-chrome --disable-component-extensions-with-background-pages "$@"\n' \
+          > "$RUNNER_TEMP/chrome/google-chrome"
+        chmod +x "$RUNNER_TEMP/chrome/google-chrome"
+        echo "$RUNNER_TEMP/chrome" >> "$GITHUB_PATH"
     - uses: actions/setup-python@v7
       with:
         python-version: '3.10'
