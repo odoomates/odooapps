@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_batch_payment" model="ir.actions.report">
+        <field name="name">Batch Payment</field>
+        <field name="model">account.batch.payment</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_batch_payment.report_batch_payment</field>
+        <field name="report_file">om_account_batch_payment.report_batch_payment</field>
+        <field name="print_report_name">'%s' % object.name.replace('/', '_')</field>
+        <field name="binding_model_id" ref="model_account_batch_payment"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_batch_payment_document">
+        <t t-call="web.external_layout">
+            <t t-set="payments" t-value="o._om_active_payments().sorted(lambda p: (p.partner_id.name or '', p.id))"/>
+            <div class="page">
+                <h2>
+                    <t t-if="o.batch_type == 'inbound'">Deposit Slip</t>
+                    <t t-else="">Payment List</t>
+                    <span t-field="o.name"/>
+                </h2>
+                <div class="row mt-3 mb-4">
+                    <div class="col-4">
+                        <strong>Bank</strong>
+                        <div t-field="o.journal_id"/>
+                        <div t-if="o.journal_id.bank_account_id" t-field="o.journal_id.bank_account_id.acc_number"/>
+                    </div>
+                    <div class="col-4">
+                        <strong>Date</strong>
+                        <div t-field="o.date"/>
+                    </div>
+                    <div class="col-4">
+                        <strong>Payment Method</strong>
+                        <div t-field="o.payment_method_line_id"/>
+                    </div>
+                </div>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th class="text-start">#</th>
+                            <th class="text-start">Number</th>
+                            <th class="text-start">Partner</th>
+                            <th class="text-start">Bank Account</th>
+                            <th class="text-start">Memo</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="payments" t-as="payment">
+                            <td t-out="payment_index + 1"/>
+                            <td><span t-field="payment.name"/></td>
+                            <td><span t-field="payment.partner_id.name"/></td>
+                            <td>
+                                <span t-field="payment.partner_bank_id.acc_number"/>
+                                <div t-if="payment.partner_bank_id.bank_bic" class="small text-muted"
+                                     t-field="payment.partner_bank_id.bank_bic"/>
+                            </td>
+                            <td><span t-field="payment.memo"/></td>
+                            <td class="text-end"><span t-field="payment.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td colspan="5">Total of <t t-out="len(payments)"/> payment(s)</td>
+                            <td class="text-end"><span t-field="o.amount" t-options="{'widget': 'monetary', 'display_currency': o.currency_id}"/></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div class="row mt-5" style="page-break-inside: avoid;">
+                    <div class="col-4">
+                        <div class="border-top pt-1">Prepared by</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-top pt-1">Approved by</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-top pt-1">
+                            <t t-if="o.batch_type == 'inbound'">Received by the bank</t>
+                            <t t-else="">Authorised signatory</t>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_batch_payment">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="om_account_batch_payment.report_batch_payment_document" t-lang="o.company_id.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>
