@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Forward-port a merged pull request (/mergebot r+ fw+): cherry-pick its commits on every higher version branch
 # (16.0, 17.0, ... for a pull request merged into 15.0), one pull request per branch. The version bumps of the
-# mergebot ("[REL] ...: <level> version bump") and the merge commits are not ported.
+# mergebot ("[REL] ...: <level> version bump") and the merge commits are not ported. The commits keep their
+# message, the pull requests the description of the original and a reference to it, which lists them on it.
 # The branches and the pull requests are made with MERGEBOT_TOKEN, a token of a maintainer, so that CI runs on
 # them; a maintainer merges each one with /mergebot r+. A branch where the commits do not apply is listed in a
 # comment, to port by hand. Only git commands run on the code: nothing of the pull request is executed.
@@ -38,8 +39,8 @@ $marker"
     exit 0
 fi
 
-author=$(gh pr view "$PR" --repo "$REPO" --json author --jq .author.login)
 title=$(gh pr view "$PR" --repo "$REPO" --json title --jq .title)
+description=$(gh pr view "$PR" --repo "$REPO" --json body --jq .body)
 mapfile -t commits < <(gh api "repos/$REPO/pulls/$PR/commits" --paginate --jq '.[]
     | select((.parents | length) == 1)
     | select(.commit.message | test("^\\[REL\\] [^\n]*: (major|minor|patch) version bump") | not)
@@ -49,6 +50,10 @@ if [ ${#commits[@]} -eq 0 ]; then
 $marker"
     exit 0
 fi
+
+fw_description="${description:+$description
+
+}Forward-port of #$PR: ${commits[*]}"
 
 work=$(mktemp -d)
 trap 'rm -rf "$work"' EXIT
@@ -70,7 +75,7 @@ for target in $targets; do
     fi
     git -C "$work" fetch -q --filter=blob:none origin "$target"
     git -C "$work" checkout -q -B "$branch" FETCH_HEAD
-    if ! git -C "$work" cherry-pick -x --allow-empty --keep-redundant-commits "${commits[@]}" > /dev/null 2>&1; then
+    if ! git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "${commits[@]}" > /dev/null 2>&1; then
         git -C "$work" cherry-pick --abort > /dev/null 2>&1 || true
         failed+=("$target")
         continue
@@ -81,9 +86,7 @@ for target in $targets; do
     fi
     git -C "$work" push -q origin "$branch"
     url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" \
-        --title "[FW $target] $title" --body "Forward-port of #$PR (merged into \`$base\`) to \`$target\`, by the mergebot: its commits, cherry-picked. Thank you @$author!
-
-CI runs on this pull request: a maintainer reviews it (the API may differ on \`$target\`) and merges it with \`/mergebot r+\`.")
+        --title "[FW $target] $title" --body "$fw_description")
     opened+=("- \`$target\`: $url")
 done
 
@@ -97,7 +100,7 @@ To port by hand, for each of these branches (\`<branch>\` = $(printf '`%s` ' "${
 \`\`\`
 git fetch origin <branch> pull/$PR/head
 git checkout -b <branch>-fw-$PR origin/<branch>
-git cherry-pick -x ${commits[*]}
+git cherry-pick ${commits[*]}
 \`\`\`
 then open a pull request to \`<branch>\`."
 fi
