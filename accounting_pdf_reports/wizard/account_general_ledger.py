@@ -8,10 +8,10 @@ class AccountReportGeneralLedger(models.TransientModel):
     _description = "General Ledger Report"
 
     initial_balance = fields.Boolean(
-        string='Include Initial Balances',
-        help='If you selected date, this field allow you to add a row '
-             'to display the amount of debit/credit/balance that precedes '
-             'the filter you have set.'
+        string='Include Initial Balances', default=True,
+        help='With a start date, a row shows the debit, credit and balance that precede it: the whole history of '
+             'the balance sheet accounts, the current fiscal year for the income and expense accounts, and a '
+             'Result Brought Forward line for the years before.'
     )
     sortby = fields.Selection(
         [('sort_date', 'Date'), ('sort_journal_partner', 'Journal & Partner')],
@@ -25,8 +25,6 @@ class AccountReportGeneralLedger(models.TransientModel):
     def _get_report_data(self, data):
         data = self.pre_print_report(data)
         data['form'].update(self.read(['initial_balance', 'sortby'])[0])
-        if data['form'].get('initial_balance') and not data['form'].get('date_from'):
-            raise UserError(_("You must define a Start Date"))
         records = self.env[data['model']].browse(data.get('ids', []))
         return records, data
 

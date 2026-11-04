@@ -66,6 +66,16 @@
                                     </td>
                                     <td t-if="data['form']['amount_currency']"/>
                                 </tr>
+                                <tr t-if="data['form'].get('initial_balance') and data['form']['date_from']">
+                                    <td colspan="4">Initial Balance</td>
+                                    <td/>
+                                    <td/>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="data['computed']['initial_balances'].get(o.id, 0.0)"
+                                              t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/>
+                                    </td>
+                                    <td t-if="data['form']['amount_currency']"/>
+                                </tr>
                                 <t t-set="rows" t-value="lines(data, o)"/>
                                 <tr t-foreach="rows" t-as="line">
                                     <td>
