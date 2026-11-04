@@ -15,6 +15,7 @@ limit, as an option. Online payments and portal signatures are not blocked.
     'data': [
         'views/res_config_settings_views.xml',
     ],
+    'images': ['static/description/banner.png'],
     'installable': True,
     'auto_install': True,
 }
