@@ -14,7 +14,7 @@
                    'Account Lock Date, Fiscal Year and Period Closing, Cheque Printing, '
                    'Automatic Currency Rates, Accounting Dashboard, Vendor Bill OCR',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
@@ -30,6 +30,7 @@
         'om_account_reconcile',
         'om_account_cash_forecast',
         'om_account_check_printing',
+        'om_credit_limit',
         'om_currency_rate_update',
         'om_currency_revaluation',
         'om_account_bank_statement_import',
