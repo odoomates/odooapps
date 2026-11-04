@@ -21,5 +21,6 @@ confirmation of a sales order, as an option.
         'views/res_config_settings_views.xml',
     ],
     'pre_init_hook': 'pre_init_hook',
+    'images': ['static/description/banner.png'],
     'installable': True,
 }
