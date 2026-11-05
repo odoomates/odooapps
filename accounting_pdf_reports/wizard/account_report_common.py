@@ -2,8 +2,32 @@ from odoo import api, fields, models, _
 from odoo.tools.misc import get_lang
 
 
+class ReportCompanyNotice(models.AbstractModel):
+    _name = "om.report.company.notice"
+    _description = "Notice of the company a report covers"
+
+    # a default and not a compute: the form opens a new record with the fields it has no dependency for left empty
+    company_notice = fields.Char(string='Company Notice', readonly=True,
+                                 default=lambda self: self._get_company_notice())
+
+    def _get_report_companies(self):
+        """ :return: the companies the report covers: the active one with its branches, whatever else the switcher
+        has selected """
+        return self.env['res.company'].browse(self.env['account.move.line']._branch_ids(self.env.company.id))
+
+    def _get_company_notice(self):
+        if not self.env.companies - self._get_report_companies():
+            return False
+        return _(
+            'Several companies are selected, but this report only covers %(company)s, the active company. '
+            'To report on another company, make it the active company.',
+            company=self.env.company.name,
+        )
+
+
 class AccountCommonReport(models.TransientModel):
     _name = "account.common.report"
+    _inherit = "om.report.company.notice"
     _description = "Account Common Report"
 
     company_id = fields.Many2one('res.company', string='Company', required=True, readonly=True,

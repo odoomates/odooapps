@@ -187,3 +187,18 @@ class TestDailyBooks(AccountTestInvoicingCommon):
         self.assertNotIn('1234.5', printed)
         # a line that took money out is shown too, not dropped for being negative
         self.assertIn('-1,234.50', printed)
+
+
+@tagged('post_install', '-at_install')
+class TestDailyBooksCompanyNotice(AccountTestInvoicingCommon):
+
+    def test_company_notice(self):
+        other = self.company_data_2['company'] if getattr(self, 'company_data_2', None) \
+            else self.setup_other_company()['company']
+        self.env.user.company_ids |= other
+        for model in ('account.cashbook.report', 'account.bankbook.report', 'account.daybook.report'):
+            self.assertIn('company_notice', self.env[model].get_view(view_type='form')['arch'], model)
+            one = self.env[model].with_context(allowed_company_ids=self.env.company.ids)
+            self.assertFalse(one.default_get(['company_notice']).get('company_notice'))
+            two = self.env[model].with_context(allowed_company_ids=[self.env.company.id, other.id])
+            self.assertIn(self.env.company.name, two.default_get(['company_notice'])['company_notice'], model)

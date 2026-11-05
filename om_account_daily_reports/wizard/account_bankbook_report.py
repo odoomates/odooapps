@@ -3,6 +3,7 @@ from odoo import fields, models, api, _
 
 class AccountBankBookReport(models.TransientModel):
     _name = "account.bankbook.report"
+    _inherit = "om.report.company.notice"
     _description = "Bank Book Report"
 
     def _get_default_account_ids(self):
