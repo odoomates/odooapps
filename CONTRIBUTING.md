@@ -157,7 +157,8 @@ first line is the command (with its slash):
 - `/mergebot r+ fw+` merges it, then forward-ports it: the mergebot
   cherry-picks its commits on every higher version branch (for 15.0: 16.0 to
   20.0) and opens one pull request per branch; each one is merged by a maintainer
-  with `/mergebot r+` once its CI is green;
+  with `/mergebot r+` once its CI is green. Without conflicts, it may hold a last commit
+  `[MIG] *: mechanical rewrites` for that version: read it like the rest;
 - `/mergebot r+ fw+ 19.0` (or `fw+ upto 19.0`) forward-ports it up to that branch
   included: for a module not on the higher branches, or a fix they do not need;
 - `/mergebot r-` cancels a merge waiting for CI, or for a linked pull request.
