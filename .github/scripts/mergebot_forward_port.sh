@@ -12,8 +12,9 @@
 #   mergebot_forward_port.sh            forward-port the merged pull request PR
 #   mergebot_forward_port.sh --targets  print the branches to forward-port to
 #
-# Each pull request lists what the migration check finds in the lines it adds. The check only reads the files as text,
-# and when it cannot run the pull request is opened without it.
+# Each pull request lists what the migration check finds in the lines it adds. On a branch without conflicts, what is
+# mechanical is rewritten first, in the added lines only, as one more commit. The check only reads and writes the files
+# as text, and when it cannot run the pull request is opened without it.
 # Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, MERGEBOT_MIGRATION_CHECK (owner/repo@tag, none: no check)
 # (MERGEBOT_REMOTE, MERGEBOT_MIGRATION_CHECK_REMOTE: other git remotes, for tests).
 set -euo pipefail
@@ -91,7 +92,25 @@ fi
 migration_check() {
     [ -n "$checker" ] || return 0
     (cd "$checker" && timeout 120 python3 -m omh "$work" --from "${base%%.*}" --to "${1%%.*}" \
-        --diff "FETCH_HEAD..HEAD" --markdown 2> /dev/null) || true
+        --diff "$2..HEAD" --markdown 2> /dev/null) || true
+}
+
+# rewrite what is mechanical in the lines this branch adds, as one commit. Nothing stops the forward-port: on any failure
+# the branch stays as it was. It prints a sentence for the pull request when it rewrote something.
+migration_fix() {
+    [ -n "$checker" ] || return 0
+    if ! (cd "$checker" && timeout 120 python3 -m omh "$work" --from "${base%%.*}" --to "${1%%.*}" \
+        --diff "$2..HEAD" --fix) > /dev/null 2>&1; then
+        git -C "$work" reset -q --hard HEAD
+        return 0
+    fi
+    git -C "$work" diff --quiet && return 0
+    git -C "$work" add -u
+    if ! git -C "$work" commit -q -m '[MIG] *: mechanical rewrites'; then
+        git -C "$work" reset -q --hard HEAD
+        return 0
+    fi
+    printf 'The last commit rewrites what is mechanical for `%s`: please read it.' "$1"
 }
 
 opened=()
@@ -104,6 +123,7 @@ for target in $targets; do
     fi
     git -C "$work" fetch -q --filter=blob:none origin "$target"
     git -C "$work" checkout -q -B "$branch" FETCH_HEAD
+    target_head=$(git -C "$work" rev-parse HEAD)
     conflicts=()
     for commit in "${commits[@]}"; do
         if git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "$commit" > /dev/null 2>&1; then
@@ -114,19 +134,20 @@ for target in $targets; do
         git -C "$work" add -A
         git -C "$work" -c core.editor=true commit -q --no-edit --allow-empty
     done
-    if git -C "$work" diff --quiet FETCH_HEAD HEAD; then
+    if git -C "$work" diff --quiet "$target_head" HEAD; then
         opened+=("- \`$target\`: nothing to port, the change is there already")
         continue
     fi
+    rewrites=""
+    [ ${#conflicts[@]} -eq 0 ] && rewrites=$(migration_fix "$target" "$target_head")
     git -C "$work" push -q origin "$branch"
-    report=$(migration_check "$target")
-    if [ -n "$report" ]; then
-        branch_description="$fw_description
+    report=$(migration_check "$target" "$target_head")
+    branch_description=$fw_description
+    for part in "$rewrites" "$report"; do
+        [ -z "$part" ] || branch_description="$branch_description
 
-$report"
-    else
-        branch_description=$fw_description
-    fi
+$part"
+    done
     if [ ${#conflicts[@]} -eq 0 ]; then
         url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" \
             --title "[FW $target] $title" --body "$branch_description")
