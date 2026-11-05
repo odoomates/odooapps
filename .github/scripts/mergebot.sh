@@ -171,6 +171,77 @@ rebase_branch() {
         }' > /dev/null 2>&1
 }
 
+# the state of CI on a commit: pending, failed, cancelled, none or passed. Not the jobs of the mergebot.
+ci_state() {
+    # shellcheck disable=SC2016
+    GH_TOKEN=${MERGEBOT_TOKEN:-$GH_TOKEN} gh api "repos/$REPO/commits/$1/check-runs?per_page=100" --jq '
+        [.check_runs[] | select(.name != "command" and .name != "thanks")]
+        | group_by(.name) | map(max_by(.started_at))
+        | if length == 0 then "none"
+          elif any(.status != "completed") then "pending"
+          elif any(.conclusion == "failure" or .conclusion == "timed_out" or .conclusion == "action_required"
+                   or .conclusion == "startup_failure") then "failed"
+          elif any(.conclusion == "cancelled") then "cancelled"
+          else "passed" end' 2>/dev/null || echo unknown
+}
+
+# a repository without auto-merge: do its job here. Wait for CI on the head, rebase when the target branch moves (CI
+# then runs again), and merge only what is green. r- is seen here, as its own run waits for this one.
+wait_and_merge() {
+    local state empty=0 cancelled=0 unknown=0 current cancel
+    say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note"
+    for _ in $(seq 1 140); do
+        sleep 30
+        cancel=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq "[.[]
+            | select(.id > ${COMMENT_ID:-0})
+            | select(.author_association == \"OWNER\" or .author_association == \"MEMBER\" or .author_association == \"COLLABORATOR\")
+            | select(.body | test(\"^\\\\s*/mergebot\\\\s+r-\"; \"i\"))] | length" 2>/dev/null || echo 0)
+        [ "$cancel" = 0 ] || exit 0
+        read -r pr_state current < <(gh pr view "$PR" --repo "$REPO" --json state,headRefOid --jq '"\(.state) \(.headRefOid)"')
+        [ "$pr_state" = OPEN ] || exit 0
+        head_sha=$current
+        behind=$(commits_behind)
+        if [ "$behind" != 0 ] && [ "$behind" != '?' ] && [ -n "${MERGEBOT_TOKEN:-}" ]; then
+            if rebase_branch "$head_sha"; then
+                say "\`$base\` moved ($behind new commit(s)): rebased again, CI runs again on the rebased commits."
+                continue
+            fi
+            say "\`$base\` moved and the branch cannot be rebased automatically (conflicts?): nothing merged."
+            exit 0
+        fi
+        state=$(ci_state "$head_sha")
+        case "$state" in
+            pending) cancelled=0; empty=0; unknown=0; sleep 30; continue ;;
+            none)
+                # CI may not have started yet on a new head: a branch without CI merges after a few looks
+                empty=$((empty + 1))
+                [ "$empty" -ge 3 ] || continue ;;
+            cancelled)
+                # a cancelled run is often replaced at once
+                cancelled=$((cancelled + 1))
+                [ "$cancelled" -ge 3 ] || continue
+                say "CI was cancelled: nothing merged. Run it again, then \`/mergebot r+\`."
+                exit 0 ;;
+            unknown)
+                unknown=$((unknown + 1))
+                [ "$unknown" -ge 3 ] || continue
+                say "The mergebot cannot read CI: nothing merged. \`/mergebot r+\` again."
+                exit 0 ;;
+            failed)
+                say "CI failed: nothing merged. Fix it and \`/mergebot r+\`, or an admin can \`/mergebot r+ skipci\`."
+                exit 0 ;;
+        esac
+        if gh pr merge "$PR" --repo "$REPO" --merge --match-head-commit "$head_sha" \
+            --subject "$merge_subject" --body "$merge_body" > /dev/null; then
+            return 0
+        fi
+        say "CI is green but the merge failed (a new push?): nothing merged. \`/mergebot r+\` again."
+        exit 0
+    done
+    say "Still waiting for CI after a long time, and the mergebot stops: nothing merged. \`/mergebot r+\` again."
+    exit 0
+}
+
 # the number of commits of the target branch missing from the branch of the pull request ('?' if unknown)
 commits_behind() {
     gh api "repos/$REPO/compare/$base...${head_repo%%/*}:$head_branch" --jq '.behind_by' 2>/dev/null || echo '?'
@@ -359,7 +430,8 @@ fi
 # on the rebased commits (the commits that are merged)
 behind=$(commits_behind)
 rebase_note=""
-if [ "$behind" != 0 ] && [ "$skip_ci" != true ]; then
+auto_merge=$(gh api "repos/$REPO" --jq .allow_auto_merge 2>/dev/null || echo true)
+if [ "$behind" != 0 ] && [ "$skip_ci" != true ] && [ "$auto_merge" = true ]; then
     author=$(gh pr view "$PR" --repo "$REPO" --json author --jq .author.login)
     if [ -z "${MERGEBOT_TOKEN:-}" ]; then
         say "The branch is $behind commit(s) behind \`$base\` and the mergebot has no \`MERGEBOT_TOKEN\` secret to rebase it: @$author, please rebase it and force-push, then a maintainer merges with \`/mergebot r+\`."
@@ -400,6 +472,9 @@ if [ "$skip_ci" = true ]; then
     fi
     merge_state=SKIPPED
     say "Merging now, CI skipped by @$ACTOR.$bump_note$fw_note"
+elif [ "$auto_merge" != true ]; then
+    wait_and_merge
+    merge_state=SKIPPED
 fi
 case "$merge_state" in
     SKIPPED) ;;
@@ -407,21 +482,8 @@ case "$merge_state" in
         gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" > /dev/null
         say "Merging now.$bump_note$fw_note" ;;
     *)
-        if gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" --auto > /dev/null; then
-            say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note"
-        else
-            # no auto-merge on this repository, without required checks: wait for CI here
-            say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note"
-            sleep 30
-            if ! timeout 8000 gh pr checks "$PR" --repo "$REPO" --watch --interval 60 > /dev/null 2>&1; then
-                say "CI is not green: nothing merged. Fix it and \`/mergebot r+\`, or \`/mergebot r+ skipci\`."
-                exit 0
-            fi
-            if ! gh pr merge "$PR" --repo "$REPO" --merge --match-head-commit "$head_sha"                 --subject "$merge_subject" --body "$merge_body" > /dev/null; then
-                say "CI is green but the merge failed (a new push?): nothing merged. \`/mergebot r+\` again."
-                exit 0
-            fi
-        fi ;;
+        gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" --auto > /dev/null
+        say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note" ;;
 esac
 
 # follow the merge (CI may take a while), to thank the author once it is done
