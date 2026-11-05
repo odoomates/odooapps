@@ -1,5 +1,7 @@
 import time
-from odoo import api, models, _
+from datetime import timedelta
+
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -32,12 +34,11 @@ class ReportGeneralLedger(models.AbstractModel):
         MoveLine = self.env['account.move.line']
         move_lines = {x: [] for x in accounts.ids}
 
-        # Prepare initial sql query and Get the initial move lines
-        if init_balance:
-            context = dict(self.env.context)
-            context['date_from'] = self.env.context.get('date_from')
-            context['date_to'] = False
-            context['initial_bal'] = True
+        def fetch_initial(init_accounts, **dates):
+            """ :return: the row of the debit, credit and balance of each of the accounts, for these dates """
+            if not init_accounts:
+                return []
+            context = dict(self.env.context, strict_range=True, **dates)
             if analytic_account_ids:
                 context['analytic_account_ids'] = analytic_account_ids
             if partner_ids:
@@ -65,10 +66,26 @@ class ReportGeneralLedger(models.AbstractModel):
                 LEFT JOIN res_partner p ON (l.partner_id=p.id)\
                 JOIN account_journal j ON (l.journal_id=j.id)\
                 WHERE l.account_id IN %s""" + filters + ' GROUP BY l.account_id')
-            params = (tuple(accounts.ids),) + tuple(init_where_params)
+            params = (tuple(init_accounts.ids),) + tuple(init_where_params)
             cr.execute(sql, params)
-            for row in cr.dictfetchall():
+            return cr.dictfetchall()
+
+        # the balance sheet accounts carry their whole history, the income and expense accounts start again at zero
+        # every fiscal year: what they earned in the years before has a line of its own
+        date_from = fields.Date.to_date(self.env.context.get('date_from'))
+        brought_forward = False
+        if init_balance and date_from:
+            fiscal_year_start = self.env['report.accounting_pdf_reports.report_trialbalance']._get_fiscal_year_start(
+                date_from)
+            carried = accounts.filtered('include_initial_balance')
+            restarted = accounts - carried
+            rows = fetch_initial(carried, date_from=date_from, date_to=False, initial_bal=True)
+            if fiscal_year_start < date_from:
+                rows += fetch_initial(restarted, date_from=fiscal_year_start, date_to=date_from - timedelta(days=1),
+                                      initial_bal=False)
+            for row in rows:
                 move_lines[row.pop('account_id')].append(row)
+            brought_forward = fetch_initial(restarted, date_from=fiscal_year_start, date_to=False, initial_bal=True)
 
         sql_sort = 'l.date, l.move_id'
         if sortby == 'sort_journal_partner':
@@ -133,6 +150,19 @@ class ReportGeneralLedger(models.AbstractModel):
                 account_res.append(res)
             if display_account == 'not_zero' and not currency.is_zero(res['balance']):
                 account_res.append(res)
+        if brought_forward:
+            debit = sum(row['debit'] for row in brought_forward)
+            credit = sum(row['credit'] for row in brought_forward)
+            company_currency = self.env.company.currency_id
+            if not company_currency.is_zero(debit) or not company_currency.is_zero(credit):
+                account_res.append({
+                    'code': '',
+                    'name': _('Result Brought Forward'),
+                    'debit': debit,
+                    'credit': credit,
+                    'balance': debit - credit,
+                    'move_lines': [],
+                })
         return account_res
 
     @api.model
