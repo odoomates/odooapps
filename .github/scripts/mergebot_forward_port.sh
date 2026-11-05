@@ -5,8 +5,9 @@
 # ported; each branch gets its own version bump when its pull request is merged. The commits keep their
 # message, the pull requests the description of the original and a reference to it, which lists them on it.
 # The branches and the pull requests are made with MERGEBOT_TOKEN, a token of a maintainer, so that CI runs on
-# them; a maintainer merges each one with /mergebot r+. A branch where the commits do not apply is listed in a
-# comment, to port by hand. Only git commands run on the code: nothing of the pull request is executed.
+# them; a maintainer merges each one with /mergebot r+. On a branch where the commits do not apply, the conflicts are
+# committed as they are, with their markers, in a draft pull request to finish by hand. Only git commands run on the
+# code: nothing of the pull request is executed.
 #
 #   mergebot_forward_port.sh            forward-port the merged pull request PR
 #   mergebot_forward_port.sh --targets  print the branches to forward-port to
@@ -44,7 +45,9 @@ $marker"
 fi
 
 title=$(gh pr view "$PR" --repo "$REPO" --json title --jq .title)
-description=$(gh pr view "$PR" --repo "$REPO" --json body --jq .body)
+# a link to another repository is about this pull request, not about its forward-ports
+description=$(gh pr view "$PR" --repo "$REPO" --json body --jq .body | tr -d '\r' \
+    | { grep -viE '^[[:space:]]*linked:[[:space:]]*[^[:space:]]+#[0-9]+[[:space:]]*$' || true; })
 mapfile -t commits < <(gh api "repos/$REPO/pulls/$PR/commits" --paginate --jq '.[]
     | select((.parents | length) == 1)
     | .sha')
@@ -69,7 +72,7 @@ git -C "$work" remote add origin "${MERGEBOT_REMOTE:-https://github.com/$REPO.gi
 git -C "$work" fetch -q --filter=blob:none origin "refs/pull/$PR/head"
 
 opened=()
-failed=()
+drafts=0
 for target in $targets; do
     branch="$target-fw-$PR"
     if gh api "repos/$REPO/branches/$branch" > /dev/null 2>&1; then
@@ -78,34 +81,44 @@ for target in $targets; do
     fi
     git -C "$work" fetch -q --filter=blob:none origin "$target"
     git -C "$work" checkout -q -B "$branch" FETCH_HEAD
-    if ! git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "${commits[@]}" > /dev/null 2>&1; then
-        git -C "$work" cherry-pick --abort > /dev/null 2>&1 || true
-        failed+=("$target")
-        continue
-    fi
+    conflicts=()
+    for commit in "${commits[@]}"; do
+        if git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "$commit" > /dev/null 2>&1; then
+            continue
+        fi
+        conflicts+=("- \`${commit:0:8}\` $(git -C "$work" log -1 --format=%s "$commit"): $(git -C "$work" diff --name-only \
+            --diff-filter=U | sed 's/.*/`&`/' | paste -sd' ' -)")
+        git -C "$work" add -A
+        git -C "$work" -c core.editor=true commit -q --no-edit --allow-empty
+    done
     if git -C "$work" diff --quiet FETCH_HEAD HEAD; then
         opened+=("- \`$target\`: nothing to port, the change is there already")
         continue
     fi
     git -C "$work" push -q origin "$branch"
-    url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" \
-        --title "[FW $target] $title" --body "$fw_description")
-    opened+=("- \`$target\`: $url")
+    if [ ${#conflicts[@]} -eq 0 ]; then
+        url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" \
+            --title "[FW $target] $title" --body "$fw_description")
+        opened+=("- \`$target\`: $url")
+    else
+        conflict_list=$(printf '%s\n' "${conflicts[@]}")
+        url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" --draft \
+            --title "[FW $target] $title" --body "$fw_description
+
+**Conflicts to resolve.** These commits did not apply and are committed with their conflict markers:
+
+$conflict_list")
+        opened+=("- \`$target\`: $url (draft: conflicts to resolve)")
+        drafts=$((drafts + 1))
+    fi
 done
 
 body="Forward-port of this pull request:
 $(printf '%s\n' "${opened[@]}")"
-if [ ${#failed[@]} -gt 0 ]; then
+if [ "$drafts" -gt 0 ]; then
     body="$body
-$(for target in "${failed[@]}"; do printf -- '- `%s`: the commits do not apply (conflicts), to port by hand\n' "$target"; done)
 
-To port by hand, for each of these branches (\`<branch>\` = $(printf '`%s` ' "${failed[@]}" | sed 's/ $//')):
-\`\`\`
-git fetch origin <branch> pull/$PR/head
-git checkout -b <branch>-fw-$PR origin/<branch>
-git cherry-pick ${commits[*]}
-\`\`\`
-then open a pull request to \`<branch>\`."
+A draft holds conflict markers: resolve them, push, then mark it ready for review."
 fi
 say "$body
 $marker"
