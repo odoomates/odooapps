@@ -3,6 +3,7 @@ from odoo import fields, models, _
 
 class AccountDayBookReport(models.TransientModel):
     _name = "account.daybook.report"
+    _inherit = "om.report.company.notice"
     _description = "Day Book Report"
 
     date_from = fields.Date(string='Start Date', default=fields.Date.context_today, required=True)

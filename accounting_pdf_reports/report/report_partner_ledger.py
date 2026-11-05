@@ -42,7 +42,9 @@ class ReportPartnerLedger(models.AbstractModel):
                 AND "account_move_line".account_id IN %s AND """ + query_get_data[1] + reconcile_clause + """
                 ORDER BY "account_move_line".date, "account_move_line".move_id, "account_move_line".id""")
         self.env.cr.execute(query, tuple(params))
-        progress = dict.fromkeys(partner_ids, 0.0)
+        # the running balance starts from the balance before the period
+        initial_balances = data['computed'].get('initial_balances', {})
+        progress = {partner_id: initial_balances.get(partner_id, 0.0) for partner_id in partner_ids}
         for r in self.env.cr.dictfetchall():
             partner_id = r.pop('partner_id')
             # move name, reference and label often repeat each other - the label
@@ -93,7 +95,35 @@ class ReportPartnerLedger(models.AbstractModel):
         self.env.cr.execute(query, tuple(params))
         for partner_id, debit, credit, balance in self.env.cr.fetchall():
             result[partner_id] = {'debit': debit, 'credit': credit, 'debit - credit': balance}
+        initial_balances = data['computed'].get('initial_balances', {})
+        for partner_id, partner_sums in result.items():
+            partner_sums['debit - credit'] += initial_balances.get(partner_id, 0.0)
         return result
+
+    def _get_initial_balances(self, data):
+        """ The balance of the partners before the start date, with the filters of the report.
+
+        :return: {partner id: balance}, empty when not asked or without a start date (the report then covers the
+                 whole history)
+        """
+        used_context = data['form'].get('used_context', {})
+        if not data['form'].get('initial_balance') or not used_context.get('date_from'):
+            return {}
+        query_get_data = self.env['account.move.line'].with_context(
+            dict(used_context, date_to=False, strict_range=True, initial_bal=True))._query_get()
+        reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
+        params = [tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]
+        query = """
+            SELECT "account_move_line".partner_id, SUM("account_move_line".debit - "account_move_line".credit)
+            FROM """ + query_get_data[0] + """, account_move AS m
+            WHERE "account_move_line".partner_id IS NOT NULL
+                AND m.id = "account_move_line".move_id
+                AND m.state IN %s
+                AND "account_move_line".account_id IN %s
+                AND """ + query_get_data[1] + reconcile_clause + """
+            GROUP BY "account_move_line".partner_id"""
+        self.env.cr.execute(query, tuple(params))
+        return dict(self.env.cr.fetchall())
 
     @api.model
     def _get_report_values(self, docids, data=None):
@@ -140,6 +170,12 @@ class ReportPartnerLedger(models.AbstractModel):
         else:
             partner_ids = [res['partner_id'] for res in
                            self.env.cr.dictfetchall()]
+        data['computed']['initial_balances'] = self._get_initial_balances(data)
+        if not data['form']['partner_ids']:
+            # without entries in the period, a partner still owes its initial balance
+            currency = self.env.company.currency_id
+            partner_ids += [partner_id for partner_id, balance in data['computed']['initial_balances'].items()
+                            if partner_id not in partner_ids and not currency.is_zero(balance)]
         partners = obj_partner.browse(partner_ids)
         partners = sorted(partners, key=lambda x: (x.ref or '', x.name or ''))
 

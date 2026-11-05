@@ -1,7 +1,10 @@
 from . import test_balance_sheet
 from . import test_aged_partner
-from . import test_menu_access
 from . import test_cash_flow
+from . import test_company_notice
+from . import test_partner_ledger_initial
+from . import test_general_ledger_initial
+from . import test_menu_access
 from . import test_annual_report
 from . import test_optional_columns
 from . import test_tax_report
@@ -10,3 +13,4 @@ from . import test_tax_grid
 from . import test_branch_reports
 from . import test_partner_ledger
 from . import test_general_ledger
+from . import test_report_fixes
