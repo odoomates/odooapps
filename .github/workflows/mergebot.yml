@@ -6,10 +6,12 @@ name: Mergebot
 #                                    behind its target branch is rebased first, and CI runs again before the merge
 #   /mergebot r+ minor|major         the same, with this level of version bump
 #   /mergebot r+ nobump              the same, without a version bump
+#   /mergebot r+ skipci              merge now, without waiting for CI nor rebasing: for the admins
 #   /mergebot r+ fw+                 merge, then cherry-pick the commits on every higher version branch, one
 #                                    pull request per branch (fw+ goes with r+, in any order)
 #   /mergebot r+ fw+ 19.0            the same, up to this branch included (also: fw+ upto 19.0)
 #   /mergebot rebase                 rebase the branch on its target branch
+#   /mergebot squash                 make the commits of the pull request one commit, named as the first one
 #   /mergebot r-                     cancel a merge waiting for CI, or for a linked pull request
 # A line "Linked: owner/repo#12" in the description of a pull request links it to another repository: r+ waits for
 # r+ on the other one, and the second r+ merges both.
@@ -32,6 +34,7 @@ env:
   # collaborators invited by the owner have the write role
   MERGEBOT_ROLES: 'admin maintain write'
   MERGEBOT_LINKED_REPOS: ${{ secrets.MERGEBOT_LINKED_REPOS }}
+  MERGEBOT_MIGRATION_CHECK: ${{ secrets.MERGEBOT_MIGRATION_CHECK }}
 
 jobs:
   command:

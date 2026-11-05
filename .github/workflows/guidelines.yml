@@ -1,0 +1,28 @@
+name: Odoo guidelines
+
+# The lines a pull request adds: .github/scripts/check_guidelines.py.
+
+on:
+  pull_request:
+    branches: ['20.0']
+
+concurrency:
+  group: guidelines-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  guidelines:
+    name: odoo guidelines
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # the merge commit of the pull request and its first parent, the target branch
+          fetch-depth: 2
+          persist-credentials: false
+      - name: Check the added lines
+        run: python3 .github/scripts/check_guidelines.py "$GITHUB_BASE_REF" HEAD^1

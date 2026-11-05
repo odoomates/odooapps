@@ -10,10 +10,13 @@
 #   /mergebot r+ minor|major|patch
 #                               the same, with this level of version bump
 #   /mergebot r+ nobump          the same, without a version bump (the label nobump: also for a merge by hand)
+#   /mergebot r+ skipci          merge now, without waiting for CI nor rebasing: for the admins of the repository
 #   /mergebot r+ fw+             merge, then forward-port: one pull request of its commits to every higher version
 #                               branch (fw+ goes with r+, in any order, also with a bump level)
 #   /mergebot r+ fw+ 19.0        the same, up to this branch included (also: fw+ upto 19.0)
 #   /mergebot rebase             rebase the branch of the pull request on its target branch
+#   /mergebot squash             make the commits of the pull request one commit, with the message and the author of
+#                               the first one (the code does not change, CI runs again on it)
 #   /mergebot r-                 cancel a merge waiting for CI (and its forward-port), or waiting for a linked pull
 #                               request
 #   /mergebot release            sent by the bot to a linked pull request that waits: run its last /mergebot r+ again
@@ -31,19 +34,27 @@ read -r -a words <<< "$(printf '%s\n' "$BODY" | tr -d '\r' | grep -v '^[[:space:
 action=""
 level=""
 forward=false
+skip_ci=false
 upto=""
 upto_word=false
 error=""
 [ "${words[0]}" = /mergebot ] || error="unknown command \`${words[0]}\`"
 for word in "${words[@]:1}"; do
     case "$word" in
-        r+|r-|rebase|release)
-            [ -z "$action" ] || error="\`$word\` with another of \`r+\`, \`r-\`, \`rebase\`"
-            case "$word" in r+) action=merge ;; r-) action=cancel ;; release) action=release ;; *) action=rebase ;; esac ;;
+        r+|r-|rebase|release|squash)
+            [ -z "$action" ] || error="\`$word\` with another of \`r+\`, \`r-\`, \`rebase\`, \`squash\`"
+            case "$word" in
+                r+) action=merge ;;
+                r-) action=cancel ;;
+                release) action=release ;;
+                squash) action=squash ;;
+                *) action=rebase ;;
+            esac ;;
         major|minor|patch|nobump)
             [ -z "$level" ] || error="two version bumps: \`$level\` and \`$word\`"
             level=$word ;;
         fw+) forward=true ;;
+        skipci) skip_ci=true ;;
         upto) upto_word=true ;;
         *)
             if [[ $word =~ ^[0-9]+\.0$ ]]; then
@@ -56,9 +67,9 @@ for word in "${words[@]:1}"; do
 done
 if [ -z "$error" ]; then
     if [ -z "$action" ]; then
-        error="no \`r+\`, \`r-\` or \`rebase\`"
-    elif [ "$action" != merge ] && { [ -n "$level" ] || [ "$forward" = true ]; }; then
-        error="\`fw+\` and the version bumps go with \`r+\`"
+        error="no \`r+\`, \`r-\`, \`rebase\` or \`squash\`"
+    elif [ "$action" != merge ] && { [ -n "$level" ] || [ "$forward" = true ] || [ "$skip_ci" = true ]; }; then
+        error="\`fw+\`, \`skipci\` and the version bumps go with \`r+\`"
     elif [ -n "$upto" ] && [ "$forward" != true ]; then
         error="a last branch goes with \`fw+\`"
     elif [ "$upto_word" = true ] && [ -z "$upto" ]; then
@@ -170,13 +181,18 @@ if ! printf ' %s ' "$MERGEBOT_ROLES" | grep -q " $role "; then
     say "@$ACTOR only the maintainers of the repository can use the mergebot."
     exit 0
 fi
+if [ "$skip_ci" = true ] && [ "$role" != admin ]; then
+    error="only an admin of the repository can use \`skipci\`"
+fi
 # a wrong command does nothing but say so
 if [ -n "$error" ]; then
     gh api -X POST "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=-1 > /dev/null
     say "Declined, nothing done: $error. The commands:
 - \`/mergebot r+\`: merge, then patch version bump (\`/mergebot r+ minor\`, \`major\`, \`nobump\`)
 - \`/mergebot r+ fw+\`: merge, then forward-port (\`/mergebot r+ fw+ 19.0\`: up to this branch)
+- \`/mergebot r+ skipci\`: merge now, without waiting for CI (admins)
 - \`/mergebot rebase\`: rebase on the target branch
+- \`/mergebot squash\`: make one commit, named as the first one
 - \`/mergebot r-\`: cancel a merge waiting for CI or for a linked pull request"
     exit 0
 fi
@@ -200,12 +216,13 @@ if [ "$action" = release ]; then
     # shellcheck disable=SC2016
     command=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq '.[]
         | select(.author_association == "OWNER" or .author_association == "MEMBER" or .author_association == "COLLABORATOR")
-        | select(.body | test("^\\s*/mergebot\\s+(.*\\s)?r\\+"; "i")) | .body | split("\n")[0]' | tail -n 1)
+        | select(.body | test("^\\s*/mergebot\\s+(.*\\s)?r\\+"; "i")) | "\(.user.login) \(.body | split("\n")[0])"' | tail -n 1)
     if [ -z "$command" ]; then
         say "The linked pull request has its r+, but the mergebot finds no \`/mergebot r+\` here: nothing done."
         exit 0
     fi
-    BODY=$command MERGEBOT_RELEASED=1 exec bash "$0"
+    # it runs as the person who wrote it, not as the token that wrote the release
+    ACTOR=${command%% *} BODY=${command#* } MERGEBOT_RELEASED=1 exec bash "$0"
 fi
 
 read -r state draft base head_repo head_branch head_sha merge_state node_id < <(gh pr view "$PR" --repo "$REPO" \
@@ -213,6 +230,53 @@ read -r state draft base head_repo head_branch head_sha merge_state node_id < <(
     --jq '"\(.state) \(.isDraft) \(.baseRefName) \(.headRepositoryOwner.login)/\(.headRepository.name) \(.headRefName) \(.headRefOid) \(.mergeStateStatus) \(.id)"')
 if [ "$state" != OPEN ]; then
     say "This pull request is not open."
+    exit 0
+fi
+# squash: also for a draft. Only git commands run on the code: nothing of the pull request is executed.
+if [ "$action" = squash ]; then
+    if [ -z "${MERGEBOT_TOKEN:-}" ]; then
+        say "The mergebot cannot push to this branch: nothing done."
+        exit 0
+    fi
+    work=$(mktemp -d)
+    trap 'rm -rf "$work"' EXIT
+    git -C "$work" init -q
+    git -C "$work" config user.name mergebot
+    git -C "$work" config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+    git -C "$work" config http.https://github.com/.extraheader \
+        "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$MERGEBOT_TOKEN" | base64 -w0)"
+    git -C "$work" remote add origin "${MERGEBOT_REMOTE:-https://github.com/$head_repo.git}"
+    git -C "$work" remote add target "${MERGEBOT_TARGET_REMOTE:-https://github.com/$REPO.git}"
+    if ! git -C "$work" fetch -q --filter=blob:none target "+refs/heads/$base:refs/remotes/target/$base" \
+        || ! git -C "$work" fetch -q --filter=blob:none origin "+refs/heads/$head_branch:refs/remotes/origin/$head_branch"; then
+        say "The mergebot cannot read this branch: nothing done."
+        exit 0
+    fi
+    tip=$(git -C "$work" rev-parse "refs/remotes/origin/$head_branch")
+    if [ "$tip" != "$head_sha" ]; then
+        say "The branch has just changed: \`/mergebot squash\` again."
+        exit 0
+    fi
+    fork_point=$(git -C "$work" merge-base "refs/remotes/target/$base" "$tip")
+    count=$(git -C "$work" rev-list --count "$fork_point..$tip")
+    if [ "$count" -le 1 ]; then
+        say "This pull request has one commit already: nothing to squash."
+        exit 0
+    fi
+    first=$(git -C "$work" rev-list --reverse --no-merges "$fork_point..$tip" | head -n 1)
+    tree=$(git -C "$work" rev-parse "$tip^{tree}")
+    git -C "$work" checkout -q --detach "$tip"
+    git -C "$work" reset -q --soft "$fork_point"
+    git -C "$work" commit -q --allow-empty -C "$first"
+    if [ "$(git -C "$work" rev-parse 'HEAD^{tree}')" != "$tree" ]; then
+        say "The squash would change the code: nothing done."
+        exit 0
+    fi
+    if git -C "$work" push -q --force-with-lease="$head_branch:$tip" origin "HEAD:refs/heads/$head_branch" 2>/dev/null; then
+        say "Squashed $count commits into one: \`$(git -C "$work" log -1 --format=%s)\`. The code is the same, CI runs again."
+    else
+        say "The mergebot cannot push to this branch: nothing done. Is it allowed to edit it?"
+    fi
     exit 0
 fi
 if [ "$draft" = true ]; then
@@ -295,7 +359,7 @@ fi
 # on the rebased commits (the commits that are merged)
 behind=$(commits_behind)
 rebase_note=""
-if [ "$behind" != 0 ]; then
+if [ "$behind" != 0 ] && [ "$skip_ci" != true ]; then
     author=$(gh pr view "$PR" --repo "$REPO" --json author --jq .author.login)
     if [ -z "${MERGEBOT_TOKEN:-}" ]; then
         say "The branch is $behind commit(s) behind \`$base\` and the mergebot has no \`MERGEBOT_TOKEN\` secret to rebase it: @$author, please rebase it and force-push, then a maintainer merges with \`/mergebot r+\`."
@@ -324,13 +388,40 @@ fi
 # ids), only the merge commit is of the mergebot
 merge_subject="Merge PR #$PR into $base"
 merge_body="Signed-off-by $ACTOR"
+if [ "$skip_ci" = true ]; then
+    # the required checks only let an admin through: the token of the mergebot
+    if [ -z "${MERGEBOT_TOKEN:-}" ]; then
+        say "The mergebot has no \`MERGEBOT_TOKEN\` secret to merge without CI: nothing done."
+        exit 0
+    fi
+    if ! GH_TOKEN=$MERGEBOT_TOKEN gh pr merge "$PR" --repo "$REPO" --merge --admin --match-head-commit "$head_sha"         --subject "$merge_subject" --body "$merge_body, CI skipped" > /dev/null; then
+        say "The merge without CI failed: nothing done."
+        exit 0
+    fi
+    merge_state=SKIPPED
+    say "Merging now, CI skipped by @$ACTOR.$bump_note$fw_note"
+fi
 case "$merge_state" in
+    SKIPPED) ;;
     CLEAN|HAS_HOOKS)
         gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" > /dev/null
         say "Merging now.$bump_note$fw_note" ;;
     *)
-        gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" --auto > /dev/null
-        say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note" ;;
+        if gh pr merge "$PR" --repo "$REPO" --merge --subject "$merge_subject" --body "$merge_body" --auto > /dev/null; then
+            say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note"
+        else
+            # no auto-merge on this repository, without required checks: wait for CI here
+            say "Will merge as soon as CI is green.$bump_note$rebase_note$fw_note"
+            sleep 30
+            if ! timeout 8000 gh pr checks "$PR" --repo "$REPO" --watch --interval 60 > /dev/null 2>&1; then
+                say "CI is not green: nothing merged. Fix it and \`/mergebot r+\`, or \`/mergebot r+ skipci\`."
+                exit 0
+            fi
+            if ! gh pr merge "$PR" --repo "$REPO" --merge --match-head-commit "$head_sha"                 --subject "$merge_subject" --body "$merge_body" > /dev/null; then
+                say "CI is green but the merge failed (a new push?): nothing merged. \`/mergebot r+\` again."
+                exit 0
+            fi
+        fi ;;
 esac
 
 # follow the merge (CI may take a while), to thank the author once it is done

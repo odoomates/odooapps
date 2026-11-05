@@ -12,7 +12,10 @@
 #   mergebot_forward_port.sh            forward-port the merged pull request PR
 #   mergebot_forward_port.sh --targets  print the branches to forward-port to
 #
-# Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR (MERGEBOT_REMOTE: another git remote, for tests).
+# Each pull request lists what the migration check finds in the lines it adds. The check only reads the files as text,
+# and when it cannot run the pull request is opened without it.
+# Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, MERGEBOT_MIGRATION_CHECK (owner/repo@tag, none: no check)
+# (MERGEBOT_REMOTE, MERGEBOT_MIGRATION_CHECK_REMOTE: other git remotes, for tests).
 set -euo pipefail
 
 say() { gh pr comment "$PR" --repo "$REPO" --body "$1" > /dev/null; }
@@ -71,6 +74,26 @@ git -C "$work" config http.https://github.com/.extraheader \
 git -C "$work" remote add origin "${MERGEBOT_REMOTE:-https://github.com/$REPO.git}"
 git -C "$work" fetch -q --filter=blob:none origin "refs/pull/$PR/head"
 
+# the checker, once for all the branches. Nothing stops the forward-port: without it, no report.
+checker=""
+if [[ ${MERGEBOT_MIGRATION_CHECK:-} == */*@* ]]; then
+    checker=$(mktemp -d)
+    if ! git -C "$work" -c advice.detachedHead=false clone -q --depth 1 --branch "${MERGEBOT_MIGRATION_CHECK##*@}" \
+        --config "http.https://github.com/.extraheader=$(git -C "$work" config http.https://github.com/.extraheader)" \
+        "${MERGEBOT_MIGRATION_CHECK_REMOTE:-https://github.com/${MERGEBOT_MIGRATION_CHECK%@*}.git}" "$checker" > /dev/null 2>&1 \
+        || { ! python3 -c 'import yaml' 2> /dev/null \
+            && ! python3 -m pip install -q --break-system-packages pyyaml > /dev/null 2>&1; }; then
+        checker=""
+    fi
+fi
+
+# the report of the migration check on the lines this branch adds (none without findings)
+migration_check() {
+    [ -n "$checker" ] || return 0
+    (cd "$checker" && timeout 120 python3 -m omh "$work" --from "${base%%.*}" --to "${1%%.*}" \
+        --diff "FETCH_HEAD..HEAD" --markdown 2> /dev/null) || true
+}
+
 opened=()
 drafts=0
 for target in $targets; do
@@ -96,14 +119,22 @@ for target in $targets; do
         continue
     fi
     git -C "$work" push -q origin "$branch"
+    report=$(migration_check "$target")
+    if [ -n "$report" ]; then
+        branch_description="$fw_description
+
+$report"
+    else
+        branch_description=$fw_description
+    fi
     if [ ${#conflicts[@]} -eq 0 ]; then
         url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" \
-            --title "[FW $target] $title" --body "$fw_description")
+            --title "[FW $target] $title" --body "$branch_description")
         opened+=("- \`$target\`: $url")
     else
         conflict_list=$(printf '%s\n' "${conflicts[@]}")
         url=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr create --repo "$REPO" --base "$target" --head "$branch" --draft \
-            --title "[FW $target] $title" --body "$fw_description
+            --title "[FW $target] $title" --body "$branch_description
 
 **Conflicts to resolve.** These commits did not apply and are committed with their conflict markers:
 
