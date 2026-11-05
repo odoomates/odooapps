@@ -119,6 +119,10 @@ CI checks the first line of every commit of a pull request (merge commits
 aside): the *commit messages* check fails and lists the commits to fix. Reword
 them with `git rebase -i` and force-push your branch.
 
+The *odoo guidelines* check reads the lines you add: a debugger, a `print`, or the
+version of another branch in a manifest fail, and it warns about `cr.commit()` and
+SQL built from strings.
+
 ### Review
 
 A maintainer reviews the pull request. Answer the comments and push the
@@ -146,7 +150,10 @@ first line is the command (with its slash):
   or one whose version your pull request changes, keeps its version;
 - `/mergebot r+ minor` (or `major`) does the same with a minor or major version;
 - `/mergebot r+ nobump` does the same without raising the version;
+- `/mergebot r+ skipci` merges it now, without waiting for CI: only for an admin of
+  the repository, when a failing check has nothing to do with the change;
 - `/mergebot rebase` rebases your branch on the version branch;
+- `/mergebot squash` makes your commits one commit, with the message of the first one;
 - `/mergebot r+ fw+` merges it, then forward-ports it: the mergebot
   cherry-picks its commits on every higher version branch (for 15.0: 16.0 to
   20.0) and opens one pull request per branch; each one is merged by a maintainer
