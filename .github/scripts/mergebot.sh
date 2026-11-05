@@ -14,10 +14,15 @@
 #                               branch (fw+ goes with r+, in any order, also with a bump level)
 #   /mergebot r+ fw+ 19.0        the same, up to this branch included (also: fw+ upto 19.0)
 #   /mergebot rebase             rebase the branch of the pull request on its target branch
-#   /mergebot r-                 cancel a merge waiting for CI (and its forward-port)
+#   /mergebot r-                 cancel a merge waiting for CI (and its forward-port), or waiting for a linked pull
+#                               request
+#   /mergebot release            sent by the bot to a linked pull request that waits: run its last /mergebot r+ again
+# Linked pull requests: a line "Linked: owner/repo#12" in the description of one of them, in a repository of the same
+# owner. r+ on one then waits for r+ on the other, and the second r+ merges both, each with its own command. A repository
+# of MERGEBOT_LINKED_REPOS is searched for a pull request naming this one, so one side declaring it is enough.
 # The rebases push to the branch of the pull request (often in a fork) with MERGEBOT_TOKEN, a token of a maintainer,
 # which also starts CI again on the new commits; the bump commits on the target branch with this token, of an admin.
-# Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, ACTOR, COMMENT_ID, BODY, MERGEBOT_ROLES.
+# Environment: GH_TOKEN, MERGEBOT_TOKEN, REPO, PR, ACTOR, COMMENT_ID, BODY, MERGEBOT_ROLES, MERGEBOT_LINKED_REPOS.
 set -euo pipefail
 
 scripts=$(dirname "$0")
@@ -32,9 +37,9 @@ error=""
 [ "${words[0]}" = /mergebot ] || error="unknown command \`${words[0]}\`"
 for word in "${words[@]:1}"; do
     case "$word" in
-        r+|r-|rebase)
+        r+|r-|rebase|release)
             [ -z "$action" ] || error="\`$word\` with another of \`r+\`, \`r-\`, \`rebase\`"
-            case "$word" in r+) action=merge ;; r-) action=cancel ;; *) action=rebase ;; esac ;;
+            case "$word" in r+) action=merge ;; r-) action=cancel ;; release) action=release ;; *) action=rebase ;; esac ;;
         major|minor|patch|nobump)
             [ -z "$level" ] || error="two version bumps: \`$level\` and \`$word\`"
             level=$word ;;
@@ -62,6 +67,7 @@ if [ -z "$error" ]; then
 fi
 fw_label=forward-port
 nobump_label=nobump
+linked_label=mergebot-r+
 
 say() { gh pr comment "$PR" --repo "$REPO" --body "$1" > /dev/null; }
 # the labels fw-upto-<branch>: the last branch to forward-port to
@@ -72,6 +78,75 @@ remove_upto() {
     done
 }
 remove_nobump() { gh api -X DELETE "repos/$REPO/issues/$PR/labels/$nobump_label" > /dev/null 2>&1 || true; }
+remove_linked() { gh pr edit "$PR" --repo "$REPO" --remove-label "$linked_label" > /dev/null 2>&1 || true; }
+
+# the pull requests linked to this one, as owner/repo#12: the lines of its description, and the pull requests of the
+# other repositories whose description names it
+linked_prs() {
+    local sibling number
+    gh pr view "$PR" --repo "$REPO" --json body --jq .body | tr -d '\r' \
+        | sed -nE 's/^[[:space:]]*[Ll]inked:[[:space:]]*([A-Za-z0-9._-]+\/[A-Za-z0-9._-]+#[0-9]+)[[:space:]]*$/\1/p'
+    [ -n "${MERGEBOT_TOKEN:-}" ] || return 0
+    for sibling in ${MERGEBOT_LINKED_REPOS:-}; do
+        [ "${sibling,,}" = "${REPO,,}" ] && continue
+        for number in $(GH_TOKEN=$MERGEBOT_TOKEN gh api -X GET search/issues \
+            -f q="repo:$sibling is:pr is:open in:body \"Linked: $REPO#$PR\"" --jq '.items[].number' 2>/dev/null); do
+            # the search matches words: 12 may also find #123
+            if GH_TOKEN=$MERGEBOT_TOKEN gh pr view "$number" --repo "$sibling" --json body --jq .body | tr -d '\r' \
+                | grep -qiE "^[[:space:]]*linked:[[:space:]]*$REPO#$PR[[:space:]]*$"; then
+                echo "$sibling#$number"
+            fi
+        done
+    done
+}
+
+# r+ with linked pull requests: go on only once every one of them has its r+, or is merged. Stops the command otherwise.
+wait_for_linked() {
+    local links link repo number info linked_state approved
+    local waiting=() open=()
+    links=$(linked_prs | sort -fu)
+    [ -n "$links" ] || return 0
+    if [ -z "${MERGEBOT_TOKEN:-}" ]; then
+        say "This pull request is linked, and the mergebot has no \`MERGEBOT_TOKEN\` secret to read the other one: nothing done."
+        exit 0
+    fi
+    gh label create "$linked_label" --repo "$REPO" --color 5319E7 \
+        --description "Has its r+, and waits for r+ on a linked pull request" > /dev/null 2>&1 || true
+    gh pr edit "$PR" --repo "$REPO" --add-label "$linked_label" > /dev/null
+    for link in $links; do
+        repo=${link%#*}
+        number=${link##*#}
+        if [ "${repo%%/*}" != "${REPO%%/*}" ]; then
+            say "\`$link\` is not a repository of \`${REPO%%/*}\`: nothing done."
+            exit 0
+        fi
+        if ! info=$(GH_TOKEN=$MERGEBOT_TOKEN gh pr view "$number" --repo "$repo" --json state,labels \
+            --jq "\"\(.state) \([.labels[].name] | index(\"$linked_label\") != null)\"" 2>/dev/null); then
+            say "The mergebot cannot read the linked pull request \`$link\`: nothing done."
+            exit 0
+        fi
+        read -r linked_state approved <<< "$info"
+        case "$linked_state" in
+            MERGED) ;;
+            OPEN)
+                open+=("$link")
+                [ "$approved" = true ] || waiting+=("$link") ;;
+            *)
+                say "The linked pull request \`$link\` is closed: remove the link, or reopen it. Nothing done."
+                exit 0 ;;
+        esac
+    done
+    if [ ${#waiting[@]} -gt 0 ]; then
+        say "Waiting for \`/mergebot r+\` on the linked pull request: ${waiting[*]}. Both are merged then. \`/mergebot r-\` cancels."
+        exit 0
+    fi
+    # the second r+: wakes the others up, once. A release does not, they are awake already.
+    if [ -z "${MERGEBOT_RELEASED:-}" ]; then
+        for link in "${open[@]}"; do
+            GH_TOKEN=$MERGEBOT_TOKEN gh pr comment "${link##*#}" --repo "${link%#*}" --body "/mergebot release" > /dev/null
+        done
+    fi
+}
 
 # rebase the branch of the pull request (head $1) on its target branch, with the token of a maintainer: it also
 # starts CI again on the new commits
@@ -102,7 +177,7 @@ if [ -n "$error" ]; then
 - \`/mergebot r+\`: merge, then patch version bump (\`/mergebot r+ minor\`, \`major\`, \`nobump\`)
 - \`/mergebot r+ fw+\`: merge, then forward-port (\`/mergebot r+ fw+ 19.0\`: up to this branch)
 - \`/mergebot rebase\`: rebase on the target branch
-- \`/mergebot r-\`: cancel a merge waiting for CI"
+- \`/mergebot r-\`: cancel a merge waiting for CI or for a linked pull request"
     exit 0
 fi
 gh api -X POST "repos/$REPO/issues/comments/$COMMENT_ID/reactions" -f content=+1 > /dev/null
@@ -112,8 +187,25 @@ if [ "$action" = cancel ]; then
     gh pr edit "$PR" --repo "$REPO" --remove-label "$fw_label" > /dev/null 2>&1 || true
     remove_nobump
     remove_upto
+    remove_linked
     say "Merge cancelled: the pull request will not be merged automatically."
     exit 0
+fi
+
+# a linked pull request got its r+: the last r+ of this one runs again, if it was not cancelled meanwhile
+if [ "$action" = release ]; then
+    if ! gh pr view "$PR" --repo "$REPO" --json labels --jq '.labels[].name' | grep -qxF "$linked_label"; then
+        exit 0
+    fi
+    # shellcheck disable=SC2016
+    command=$(gh api "repos/$REPO/issues/$PR/comments" --paginate --jq '.[]
+        | select(.author_association == "OWNER" or .author_association == "MEMBER" or .author_association == "COLLABORATOR")
+        | select(.body | test("^\\s*/mergebot\\s+(.*\\s)?r\\+"; "i")) | .body | split("\n")[0]' | tail -n 1)
+    if [ -z "$command" ]; then
+        say "The linked pull request has its r+, but the mergebot finds no \`/mergebot r+\` here: nothing done."
+        exit 0
+    fi
+    BODY=$command MERGEBOT_RELEASED=1 exec bash "$0"
 fi
 
 read -r state draft base head_repo head_branch head_sha merge_state node_id < <(gh pr view "$PR" --repo "$REPO" \
@@ -184,6 +276,7 @@ if [ "$merge_state" = DIRTY ]; then
     say "This pull request has conflicts with \`$base\`: \`/mergebot rebase\`, or ask the author to rebase it."
     exit 0
 fi
+wait_for_linked
 
 # the bump comes after the merge, on the versions of the target branch by then: nobump is kept as a label, for a merge
 # by hand while this waits for CI

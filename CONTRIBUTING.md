@@ -153,7 +153,11 @@ first line is the command (with its slash):
   with `/mergebot r+` once its CI is green;
 - `/mergebot r+ fw+ 19.0` (or `fw+ upto 19.0`) forward-ports it up to that branch
   included: for a module not on the higher branches, or a fix they do not need;
-- `/mergebot r-` cancels a merge waiting for CI.
+- `/mergebot r-` cancels a merge waiting for CI, or for a linked pull request.
+
+A pull request that goes with one in another repository says so with a line in its
+description: `Linked: owner/repo#12`. `/mergebot r+` then waits for `/mergebot r+`
+on the other one, and the second one merges both.
 
 A wrong command is declined with a comment, and nothing is done. Once merged, the
 mergebot thanks you on the pull request.

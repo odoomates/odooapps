@@ -10,7 +10,9 @@ name: Mergebot
 #                                    pull request per branch (fw+ goes with r+, in any order)
 #   /mergebot r+ fw+ 19.0            the same, up to this branch included (also: fw+ upto 19.0)
 #   /mergebot rebase                 rebase the branch on its target branch
-#   /mergebot r-                     cancel a merge waiting for CI
+#   /mergebot r-                     cancel a merge waiting for CI, or for a linked pull request
+# A line "Linked: owner/repo#12" in the description of a pull request links it to another repository: r+ waits for
+# r+ on the other one, and the second r+ merges both.
 # The rebase pushes to the branch of the pull request, the bump commits on its target branch, with the
 # MERGEBOT_TOKEN secret: a token of an admin of the repository, which the required checks do not stop.
 # Only the owner and the collaborators of the repository may use them. Once merged, the bot thanks the
@@ -29,6 +31,7 @@ env:
   # the roles of the repository allowed to command the bot: on a repository of a personal account, the
   # collaborators invited by the owner have the write role
   MERGEBOT_ROLES: 'admin maintain write'
+  MERGEBOT_LINKED_REPOS: ${{ vars.MERGEBOT_LINKED_REPOS }}
 
 jobs:
   command:
