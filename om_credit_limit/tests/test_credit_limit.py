@@ -41,7 +41,7 @@ class TestCreditLimitBlock(AccountTestInvoicingCommon):
 
     def test_a_manager_posts_over_the_limit_and_it_is_logged(self):
         invoice = self._invoice(1500.0)
-        self.assertTrue(self.env.user.has_group('om_account_accountant.group_credit_limit_override'))
+        self.assertTrue(self.env.user.has_group('om_credit_limit.group_credit_limit_override'))
         invoice.action_post()
         self.assertEqual(invoice.state, 'posted')
         message = invoice.message_ids.filtered(lambda message: 'credit limit' in (message.body or ''))
