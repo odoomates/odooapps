@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_report_design_view_list" model="ir.ui.view">
+        <field name="name">om.report.design.list</field>
+        <field name="model">om.report.design</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="paper" optional="hide"/>
+                <field name="orientation" optional="hide"/>
+                <field name="print_menu" optional="show"/>
+                <field name="menu_parent_id" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'published'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_report_design_view_form" model="ir.ui.view">
+        <field name="name">om.report.design.form</field>
+        <field name="model">om.report.design</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_open_designer" type="object" string="Open Designer" class="btn-primary"/>
+                    <button name="action_publish" type="object" string="Publish" invisible="state == 'published'"
+                            help="Add the report to the Print menu and to the chosen menu."/>
+                    <button name="action_unpublish" type="object" string="Unpublish" invisible="state != 'published'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Sales Orders with Lines"/></h1>
+                    </div>
+                    <group>
+                        <group string="Data">
+                            <field name="model_id" options="{'no_create': True, 'no_open': True}"
+                                   readonly="state == 'published'"/>
+                            <field name="model" invisible="1"/>
+                            <field name="domain" widget="domain" options="{'model': 'model', 'in_dialog': True}"
+                                   invisible="not model"/>
+                        </group>
+                        <group string="Page">
+                            <field name="paper"/>
+                            <field name="orientation" widget="radio" options="{'horizontal': True}"/>
+                            <label for="margin_top" string="Margins (mm)"/>
+                            <div class="d-flex gap-2 align-items-baseline">
+                                <span class="text-muted">Top</span><field name="margin_top" class="oe_inline"/>
+                                <span class="text-muted">Bottom</span><field name="margin_bottom" class="oe_inline"/>
+                                <span class="text-muted">Left</span><field name="margin_left" class="oe_inline"/>
+                                <span class="text-muted">Right</span><field name="margin_right" class="oe_inline"/>
+                            </div>
+                            <field name="page_break"/>
+                        </group>
+                        <group string="Publish">
+                            <field name="print_menu"/>
+                            <field name="menu_parent_id" options="{'no_create': True}"/>
+                            <field name="group_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Published as" invisible="state != 'published'">
+                            <field name="report_action_id"/>
+                            <field name="menu_id" invisible="not menu_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_report_design_view_search" model="ir.ui.view">
+        <field name="name">om.report.design.search</field>
+        <field name="model">om.report.design</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="model_id"/>
+                <filter name="published" string="Published" domain="[('state', '=', 'published')]"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="group_model" string="Model" context="{'group_by': 'model_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_report_design_action" model="ir.actions.act_window">
+        <field name="name">Reports</field>
+        <field name="res_model">om.report.design</field>
+        <field name="path">report-designer</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Design your first report</p>
+            <p>Pick a model, open the designer, drag the fields on the page, then publish: the report
+                prints from the Print menu of the records and shows on screen from its menu.</p>
+        </field>
+    </record>
+</odoo>
