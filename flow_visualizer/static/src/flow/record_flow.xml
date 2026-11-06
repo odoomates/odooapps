@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="flow_visualizer.RecordFlowMenuItem">
+        <DropdownItem class="'o_flow_record_menu'" onSelected="() => this.showFlow()">
+            <i class="oi oi-fw me-1" data-icon="family_history"/>Show Flow
+        </DropdownItem>
+    </t>
+
+    <t t-name="flow_visualizer.RecordFlowDialog">
+        <Dialog size="'xl'" title="this.title" footer="false" contentClass="'o_flow_record_dialog'">
+            <t t-set="flow" t-value="this.state.flow"/>
+            <div t-if="!this.documents.length" class="text-muted">Nothing linked to this record.</div>
+            <t t-else="">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="text-muted small flex-grow-1">
+                        <t t-out="this.documents.length"/> documents, oldest first: click one to open it.
+                    </span>
+                    <button type="button" class="btn btn-sm btn-outline-primary o_flow_replay" t-on-click="() => this.replay()">
+                        <i class="oi me-1" data-icon="autorenew"/>Play again
+                    </button>
+                </div>
+
+                <!-- the journey: one station per document, a dot running along the line -->
+                <div class="o_flow_journey" t-key="'journey-' + this.state.replay">
+                    <div class="o_flow_journey_track" t-att-style="'--o-flow-count: ' + this.documents.length">
+                        <span class="o_flow_journey_runner"/>
+                    </div>
+                    <t t-foreach="this.documents" t-as="card" t-key="card.key">
+                        <div class="o_flow_station" t-att-class="this.stationClass(card)"
+                             t-att-style="this.stationStyle(card_index)" t-att-data-key="card.key">
+                            <button type="button" class="o_flow_station_dot btn p-0" t-on-click="() => this.open(card)"
+                                    t-att-data-tooltip="card.model_label">
+                                <i class="oi" t-att-data-icon="this.icon(card)"/>
+                            </button>
+                            <div class="o_flow_station_body text-center">
+                                <div class="small text-muted text-truncate" t-out="card.type or card.model_label"/>
+                                <button type="button" class="btn btn-link p-0 fw-bold text-break o_flow_station_name"
+                                        t-on-click="() => this.open(card)" t-out="card.name"/>
+                                <div class="d-flex flex-wrap justify-content-center gap-1 my-1">
+                                    <span t-if="card.state" class="badge rounded-pill" t-att-class="this.stateClass(card.state)"
+                                          t-out="card.state[1]"/>
+                                    <span t-if="card.payment_state" class="badge rounded-pill"
+                                          t-att-class="this.stateClass(card.payment_state)" t-out="card.payment_state[1]"/>
+                                </div>
+                                <div t-if="this.mainMilestone(card)" class="small fw-semibold" t-out="this.mainMilestone(card)"/>
+                                <div t-if="card.amount" class="small" t-out="card.amount"/>
+                                <div t-if="card.partner" class="small text-muted text-truncate" t-out="card.partner"/>
+                                <div t-if="this.parentName(card)" class="small text-muted text-truncate">
+                                    from <t t-out="this.parentName(card)"/>
+                                </div>
+                                <button t-if="!this.isLast(card)" type="button"
+                                        class="btn btn-sm btn-outline-secondary mt-2 o_flow_back_here"
+                                        data-tooltip="Undo the documents after this one, with Odoo's own buttons"
+                                        t-on-click="() => this.planBack(card)">
+                                    <i class="oi me-1" data-icon="undo"/>Back to here
+                                </button>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+                <!-- going back to a document: what will be done, before it is -->
+                <div t-if="this.state.plan" class="o_flow_rewind_plan card border-warning mt-2">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="oi me-1" data-icon="undo"/>Back to <t t-out="this.state.target.name"/>
+                        </h5>
+                        <p t-if="!this.state.plan.length" class="text-muted mb-2">Nothing after it to go back on.</p>
+                        <p t-else="" class="small text-muted mb-2">
+                            Newest first, with Odoo's own buttons, all or nothing:
+                        </p>
+                        <t t-foreach="this.state.plan" t-as="item" t-key="item.key">
+                            <div class="d-flex align-items-start gap-2 py-1 o_flow_plan_item"
+                                 t-att-class="{'text-muted': item.blocked}">
+                                <i class="oi mt-1" t-att-data-icon="item.blocked ? 'warning' : 'undo'"
+                                   t-att-class="item.blocked ? 'text-danger' : 'text-warning'"/>
+                                <div>
+                                    <b t-out="item.name"/>
+                                    <span class="small text-muted"> · <t t-out="item.model_label"/></span>
+                                    <div t-if="item.blocked" class="small text-danger" t-out="item.blocked"/>
+                                    <div t-else="" class="small"><t t-out="item.steps.join(' → ')"/></div>
+                                </div>
+                            </div>
+                        </t>
+                        <div t-if="!this.flowStore.sim.active and this.canApply" class="alert alert-warning small py-1 px-2 mt-2 mb-2">
+                            This changes your data for real. To only try it out, start a simulation first
+                            (the ▶ Simulator icon in the top bar).
+                        </div>
+                        <div t-if="this.flowStore.sim.active" class="alert alert-info small py-1 px-2 mt-2 mb-2">
+                            A simulation runs: this becomes one more step you can go back on.
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-warning o_flow_apply_back"
+                                    t-att-disabled="!this.canApply or this.state.busy" t-on-click="() => this.applyBack()">
+                                Go back
+                            </button>
+                            <button type="button" class="btn btn-secondary" t-on-click="() => this.closePlan()">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- the timeline: what happened, day by day -->
+                <h5 class="mt-4 mb-2">Timeline</h5>
+                <div class="o_flow_timeline" t-key="'timeline-' + this.state.replay">
+                    <t t-foreach="this.days" t-as="day" t-key="day_index">
+                        <div class="o_flow_day text-muted small fw-bold text-uppercase mt-2" t-out="day.day"/>
+                        <t t-foreach="day.events" t-as="event" t-key="event.index">
+                            <div class="o_flow_event d-flex align-items-start gap-2"
+                                 t-att-class="'o_flow_event_' + event.kind"
+                                 t-att-style="'--o-flow-index: ' + Math.min(event.index, 30)">
+                                <span class="o_flow_event_time small text-muted" t-out="event.time"/>
+                                <span class="o_flow_event_dot"><i class="oi" t-att-data-icon="this.eventIcon(event)"/></span>
+                                <div class="flex-grow-1 min-w-0">
+                                    <button type="button" class="btn btn-link p-0 fw-semibold" t-on-click="() => this.open(event.card)">
+                                        <i class="oi me-1" t-att-data-icon="this.icon(event.card)"/><t t-out="event.card.name"/>
+                                    </button>
+                                    <span class="ms-1" t-out="this.eventText(event)"/>
+                                    <span t-if="event.author" class="small text-muted"> · <t t-out="event.author"/></span>
+                                </div>
+                            </div>
+                        </t>
+                    </t>
+                </div>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

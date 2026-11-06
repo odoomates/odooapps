@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="flow_visualizer.FlowSystray">
+        <button type="button" class="o_nav_entry btn px-2 o_flow_systray"
+                t-att-class="{'o_flow_systray_on': this.store.enabled}"
+                t-att-data-tooltip="this.store.enabled ? 'Flow Visualizer is on: click to stop tracing' : 'Flow Visualizer: see what a click does'"
+                t-on-click="() => this.toggle()">
+            <i class="oi" data-icon="family_history"/>
+        </button>
+    </t>
+
+    <t t-name="flow_visualizer.FlowPanel">
+        <aside t-if="this.store.enabled" class="o_flow_panel d-flex flex-column bg-view border-start shadow">
+            <header class="d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                <i class="oi text-primary" data-icon="family_history"/>
+                <span class="fw-bold flex-grow-1">Flow Visualizer</span>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button type="button" class="btn o_flow_tab_story"
+                            t-att-class="this.store.view === 'story' ? 'btn-primary' : 'btn-outline-secondary'"
+                            t-on-click="() => this.setView('story')">Story</button>
+                    <button type="button" class="btn o_flow_tab_technical"
+                            t-att-class="this.store.view === 'technical' ? 'btn-primary' : 'btn-outline-secondary'"
+                            t-on-click="() => this.setView('technical')">Technical</button>
+                </div>
+                <button type="button" class="btn btn-link btn-sm p-0 text-muted" data-tooltip="Clear the traces"
+                        t-on-click="() => this.clear()">
+                    <i class="oi" data-icon="delete"/>
+                </button>
+                <button type="button" class="btn btn-link btn-sm p-0 text-muted" data-tooltip="Stop tracing"
+                        t-on-click="() => this.turnOff()">
+                    <i class="oi" data-icon="close"/>
+                </button>
+            </header>
+
+            <div t-if="!this.store.traces.length" class="p-4 text-center text-muted">
+                <i class="oi d-block fs-1 mb-2" data-icon="family_history"/>
+                Click a button that changes data, such as <b>Confirm</b> on a quotation:
+                what it creates, edits and deletes shows up here.
+            </div>
+
+            <t t-else="">
+                <div class="px-3 pt-2 d-flex gap-2">
+                    <select class="form-select form-select-sm" t-on-change="this.selectTrace">
+                        <t t-foreach="this.store.traces" t-as="trace" t-key="trace.id">
+                            <option t-att-value="trace.id" t-att-selected="trace.id === this.store.selectedId"
+                                    t-out="this.traceLabel(trace)"/>
+                        </t>
+                    </select>
+                    <button t-if="this.store.view === 'story'" type="button"
+                            class="btn btn-sm btn-outline-primary o_flow_replay" data-tooltip="Play it again"
+                            t-on-click="() => this.replay()">
+                        <i class="oi" data-icon="autorenew"/>
+                    </button>
+                </div>
+                <t t-set="trace" t-value="this.selected"/>
+                <div t-if="trace and this.selectedUndone" class="alert alert-warning py-1 px-2 mx-3 mt-2 mb-0 small o_flow_undone_note">
+                    <i class="oi me-1" data-icon="history"/>This step was undone: you went back before it.
+                </div>
+                <t t-if="trace">
+                    <t t-if="this.store.view === 'story'" t-call="flow_visualizer.FlowStory"/>
+                    <t t-else="" t-call="flow_visualizer.FlowTechnical"/>
+                </t>
+            </t>
+        </aside>
+    </t>
+
+    <!-- the documents of a click, as a consultant tells it -->
+    <t t-name="flow_visualizer.FlowStory">
+        <div class="o_flow_story flex-grow-1 overflow-auto px-3 py-3">
+            <div t-if="trace.state === 'failed'" class="o_flow_failed alert alert-danger">
+                <div class="fw-bold mb-1">
+                    <i class="oi me-1" data-icon="warning"/>
+                    <t t-out="trace.method"/> failed: nothing was saved
+                </div>
+                <div class="small text-break" t-out="trace.error"/>
+            </div>
+            <t t-elif="!trace.story">
+                <div class="text-muted small">No story for this click: see the <b>Technical</b> tab.</div>
+            </t>
+            <t t-else="">
+                <div class="o_flow_headline mb-3">
+                    <div>
+                        <span class="badge text-bg-primary me-1" t-out="trace.story.action"/>
+                        <t t-if="this.entryCard">
+                            on <b t-out="this.entryCard.name"/>
+                        </t>
+                    </div>
+                    <div t-if="this.storySummary.length" class="small text-muted mt-1">
+                        Created
+                        <t t-foreach="this.storySummary" t-as="part" t-key="part_index">
+                            <span class="o_flow_summary_part" t-out="part"/>
+                        </t>
+                    </div>
+                    <div t-elif="!this.storyRows.length" class="small text-muted mt-1">
+                        No document changed.
+                    </div>
+                </div>
+
+                <t t-foreach="this.storyRows" t-as="row" t-key="this.store.replay + '-' + trace.id + '-' + row.card.key">
+                    <t t-set="card" t-value="row.card"/>
+                    <div class="o_flow_step" t-att-class="'o_flow_kind_' + card.kind" t-att-style="this.cardStyle(row)">
+                        <div t-if="row.depth > 0" class="o_flow_link">
+                            <span class="o_flow_link_line"><span class="o_flow_dot"/></span>
+                            <span class="o_flow_link_label" t-out="this.VERBS[card.kind] or ''"/>
+                        </div>
+                        <div class="o_flow_card card shadow-sm">
+                            <div class="card-body p-2">
+                                <div class="d-flex align-items-start gap-2">
+                                    <span class="o_flow_card_icon">
+                                        <i class="oi" t-att-data-icon="this.documentIcon(card)"/>
+                                    </span>
+                                    <div class="flex-grow-1 min-w-0">
+                                        <div class="small text-muted text-truncate" t-out="card.type or card.model_label"/>
+                                        <button type="button" class="btn btn-link p-0 fw-bold text-start text-break o_flow_card_name"
+                                                t-att-disabled="!card.exists" t-on-click="() => this.openCard(card)"
+                                                t-out="card.name"/>
+                                    </div>
+                                    <span t-if="card.state" class="badge rounded-pill o_flow_state"
+                                          t-att-class="this.stateClass(card)" t-out="card.state[1]"/>
+                                    <span t-elif="card.kind === 'unlink'" class="badge rounded-pill text-bg-danger">Deleted</span>
+                                </div>
+                                <button t-if="card.file" type="button"
+                                        class="btn btn-link p-0 small text-muted text-truncate mw-100 o_flow_code"
+                                        t-att-data-tooltip="'Open the code that made it'"
+                                        t-on-click="() => this.openCode(card)">
+                                    &lt;/&gt; <t t-out="card.where"/>
+                                </button>
+                                <div t-if="card.partner" class="small text-muted mt-1 text-truncate">
+                                    <i class="oi me-1" data-icon="person"/><t t-out="card.partner"/>
+                                </div>
+                                <div t-if="card.state_before and card.state" class="o_flow_status_change small mt-1">
+                                    <span class="o_flow_before" t-out="card.state_before"/>
+                                    <i class="oi mx-1" data-icon="arrow_forward"/>
+                                    <b t-out="card.state[1]"/>
+                                </div>
+                                <t t-foreach="card.changes" t-as="change" t-key="change_index">
+                                    <div class="small text-muted text-break">
+                                        <t t-out="change[0]"/>: <span class="o_flow_before" t-out="change[1] or '∅'"/>
+                                        → <t t-out="change[2] or '∅'"/>
+                                    </div>
+                                </t>
+                                <t t-foreach="card.lines" t-as="group" t-key="group_index">
+                                    <button type="button" class="o_flow_lines btn btn-sm w-100 text-start mt-2"
+                                            t-att-class="'o_flow_lines_' + group.kind"
+                                            t-on-click="() => this.openGroup(group)">
+                                        <div class="d-flex align-items-center gap-1">
+                                            <i class="oi" t-att-data-icon="this.lineIcon(group)"/>
+                                            <b t-out="group.count"/>
+                                            <span t-out="group.label"/>
+                                            <span class="text-muted" t-out="this.LINE_VERBS[group.kind]"/>
+                                        </div>
+                                        <t t-foreach="group.items" t-as="item" t-key="item_index">
+                                            <div class="small text-truncate o_flow_item" t-out="item"/>
+                                        </t>
+                                        <div t-if="group.count > group.items.length" class="small text-muted">
+                                            and <t t-out="group.count - group.items.length"/> more
+                                        </div>
+                                    </button>
+                                </t>
+                                <div t-if="card.messages or card.activities" class="small text-muted mt-2 d-flex gap-3">
+                                    <span t-if="card.messages">
+                                        <i class="oi me-1" data-icon="chat_bubble"/><t t-out="card.messages"/> chatter message(s)
+                                    </span>
+                                    <span t-if="card.activities">
+                                        <i class="oi me-1" data-icon="calendar_today"/><t t-out="card.activities"/> activity(ies)
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </t>
+
+                <div t-if="trace.story.loose.length" class="o_flow_step mt-3" t-att-style="'--o-flow-index: ' + Math.min(this.storyRows.length, 20)">
+                    <div class="small text-muted mb-1">Other records</div>
+                    <t t-foreach="trace.story.loose" t-as="group" t-key="group_index">
+                        <button type="button" class="o_flow_lines btn btn-sm w-100 text-start mt-1"
+                                t-att-class="'o_flow_lines_' + group.kind" t-on-click="() => this.openGroup(group)">
+                            <b t-out="group.count"/> <t t-out="group.label"/>
+                            <span class="text-muted" t-out="this.LINE_VERBS[group.kind]"/>
+                        </button>
+                    </t>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- the methods and records of a click, as a developer reads it -->
+    <t t-name="flow_visualizer.FlowTechnical">
+        <div class="px-3 py-2 border-bottom small">
+            <button type="button" class="btn btn-link p-0 fw-semibold text-start text-break"
+                    t-att-disabled="trace.res_ids.length !== 1"
+                    t-on-click="() => this.openSource(trace)">
+                <t t-out="trace.method"/>()
+            </button>
+            <span class="text-muted"> on <t t-out="trace.model"/></span>
+            <div class="text-muted">
+                <t t-out="trace.record_count"/> records ·
+                <t t-out="trace.duration"/> ms ·
+                <t t-out="trace.query_count"/> queries
+                <span t-if="trace.truncated" class="text-warning"> · cut short</span>
+            </div>
+            <label class="text-muted d-flex align-items-center gap-1 mt-1 mb-0">
+                <input type="checkbox" class="form-check-input mt-0" t-att-checked="this.store.showTechnical"
+                       t-on-change="this.toggleTechnical"/>
+                Show technical records
+            </label>
+            <div t-if="trace.state === 'failed'" class="alert alert-danger py-1 px-2 mt-2 mb-0">
+                <b>Rolled back.</b> Nothing below was saved.
+                <div class="text-break" t-out="trace.error"/>
+            </div>
+        </div>
+
+        <div class="o_flow_tree flex-grow-1 overflow-auto py-2">
+            <div t-if="!this.rows.length" class="px-3 text-muted small">
+                Only technical records changed: tick <b>Show technical records</b> to see them.
+            </div>
+            <t t-foreach="this.rows" t-as="row" t-key="row.key">
+                <t t-set="node" t-value="row.node"/>
+                <t t-set="kind" t-value="this.KINDS[node.kind]"/>
+                <div class="o_flow_row d-flex align-items-start gap-1 pe-2 py-1"
+                     t-att-class="kind.className" t-att-style="this.rowStyle(row)">
+                    <button t-if="row.hasChildren or (node.changes and node.changes.length)" type="button"
+                            class="btn btn-link p-0 text-reset o_flow_caret" t-on-click="() => this.toggleRow(row)">
+                        <i class="oi oi-fw" t-att-data-icon="row.expanded ? 'arrow_drop_down' : 'arrow_right'"/>
+                    </button>
+                    <span t-else="" class="oi oi-fw"/>
+                    <i class="oi oi-fw o_flow_icon" t-att-data-icon="kind.icon"/>
+                    <div class="flex-grow-1 min-w-0">
+                        <div>
+                            <t t-if="node.kind === 'call'">
+                                <span class="fw-semibold font-monospace small" t-out="node.method + '()'"/>
+                            </t>
+                            <span t-else="" class="o_flow_badge badge rounded-pill me-1" t-out="kind.label"/>
+                            <span class="text-muted small" t-out="node.label"/>
+                            <span t-if="node.total > 1" class="text-muted small"> (<t t-out="node.total"/>)</span>
+                            <button t-if="node.file" type="button" class="btn btn-link p-0 ms-1 o_flow_code"
+                                    t-att-data-tooltip="node.where" t-on-click="() => this.openCode(node)">&lt;/&gt;</button>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 mt-1">
+                            <t t-foreach="node.records" t-as="record" t-key="record[0]">
+                                <button t-if="record[2]" type="button" class="btn btn-sm o_flow_chip"
+                                        t-att-data-tooltip="node.model + ' #' + record[0]"
+                                        t-on-click="() => this.openRecord(node.model, record[0])"
+                                        t-out="record[1]"/>
+                                <span t-else="" class="o_flow_chip o_flow_chip_gone" t-out="record[1]"/>
+                            </t>
+                            <button t-if="this.hiddenCount(node) > 0 and node.kind !== 'unlink'" type="button"
+                                    class="btn btn-sm o_flow_chip" t-on-click="() => this.openRecords(node)">
+                                +<t t-out="this.hiddenCount(node)"/> more
+                            </button>
+                        </div>
+                        <div t-if="row.expanded and node.changes and node.changes.length" class="o_flow_changes small mt-1">
+                            <t t-foreach="node.changes" t-as="change" t-key="change.id">
+                                <div t-if="node.total > 1" class="fw-semibold" t-out="this.recordName(node, change.id)"/>
+                                <t t-foreach="change.lines" t-as="line" t-key="line_index">
+                                    <div class="text-break">
+                                        <span class="text-muted" t-out="line[0]"/>:
+                                        <span class="o_flow_before" t-out="line[1] or '∅'"/>
+                                        <span class="text-muted"> → </span>
+                                        <span class="fw-semibold" t-out="line[2] or '∅'"/>
+                                    </div>
+                                </t>
+                            </t>
+                        </div>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+</templates>
