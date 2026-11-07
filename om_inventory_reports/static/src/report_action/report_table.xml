@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_inventory_reports.KpiCards">
+        <div class="o_om_kpis">
+            <t t-foreach="this.props.kpis" t-as="kpi" t-key="kpi.key">
+                <button class="o_om_kpi" t-att-data-kpi="kpi.key"
+                        t-att-class="this.kpiClass(kpi)"
+                        t-att-disabled="!kpi.filter"
+                        t-on-click="() => this.props.onSelect(kpi)">
+                    <span class="o_om_kpi_icon"><i class="oi" t-att-data-icon="kpi.icon or 'info'"/></span>
+                    <span class="o_om_kpi_body">
+                        <span class="o_om_kpi_label" t-out="kpi.label"/>
+                        <span class="o_om_kpi_value" t-out="this.format(kpi)"/>
+                        <span t-if="this.hasPrevious(kpi)" class="o_om_kpi_previous">
+                            <span t-if="this.delta(kpi)" class="o_om_kpi_delta"
+                                  t-att-class="kpi.delta_pct &gt; 0 ? 'o_om_up' : kpi.delta_pct &lt; 0 ? 'o_om_down' : ''">
+                                <i class="oi" t-att-data-icon="kpi.delta_pct &gt; 0 ? 'arrow_upward' : 'arrow_downward'"/>
+                                <t t-out="this.delta(kpi)"/>
+                            </span>
+                            <span>vs <t t-out="this.previous(kpi)"/></span>
+                        </span>
+                    </span>
+                    <i t-if="kpi.filter" class="oi o_om_kpi_hint" t-att-data-icon="kpi.filter === this.props.active ? 'close_small' : 'filter_alt'"/>
+                </button>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="om_inventory_reports.ReportTable">
+        <table class="o_om_table">
+            <thead>
+                <tr>
+                    <th class="o_om_name_col" t-att-class="{ 'o_om_sortable': true }"
+                        t-on-click="() => this.props.onSort({ key: 'name', type: 'char' })">
+                        <span t-out="this.props.groupLabel"/>
+                        <i t-if="this.sortIcon({ key: 'name' })" class="oi ms-1" t-att-data-icon="this.sortIcon({ key: 'name' })"/>
+                    </th>
+                    <t t-foreach="this.props.columns" t-as="column" t-key="column.key">
+                        <th t-att-class="{ 'text-end': this.isNumeric(column), 'o_om_sortable': column.sortable }"
+                            t-att-title="column.help or ''" t-att-data-column="column.key"
+                            t-on-click="() => column.sortable and this.props.onSort(column)">
+                            <i t-if="this.sortIcon(column)" class="oi me-1" t-att-data-icon="this.sortIcon(column)"/>
+                            <span t-out="column.label"/>
+                        </th>
+                    </t>
+                    <th class="o_om_actions_col"/>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-set="barMax" t-value="this.barMax"/>
+                <t t-foreach="this.props.rows" t-as="row" t-key="row.id">
+                    <tr t-if="row.kind === 'loading'" class="o_om_row_loading">
+                        <td t-att-colspan="this.props.columns.length + 2" t-att-style="this.indent(row)">
+                            <span class="o_om_skeleton o_om_skeleton_line"/>
+                        </td>
+                    </tr>
+                    <tr t-elif="row.kind === 'more'" class="o_om_row_more" t-on-click="() => this.props.onLoadMore(row.parentId)">
+                        <td t-att-colspan="this.props.columns.length + 2" t-att-style="this.indent(row)">
+                            <button class="btn btn-link btn-sm p-0">
+                                <i class="oi me-1" data-icon="expand_more"/>Show <t t-out="row.next"/> more
+                                <span class="text-muted">(<t t-out="row.more"/> left)</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr t-else="" t-att-class="this.rowClass(row)" t-att-data-id="row.id"
+                        t-on-click="(ev) => this.onRowClick(row, ev)">
+                        <td class="o_om_name_cell">
+                            <span class="o_om_name_inner">
+                                <span t-foreach="this.guides(row)" t-as="guide" t-key="guide" class="o_om_guide"/>
+                                <i t-if="row.has_children" class="oi o_om_caret"
+                                   t-att-data-icon="this.props.expanded.includes(row.id) ? 'keyboard_arrow_down' : 'keyboard_arrow_right'"/>
+                                <span t-else="" class="o_om_caret_space"/>
+                                <i t-if="row.kind !== 'detail' and this.dimIcon(row)" class="oi o_om_dim_icon"
+                                   t-att-data-icon="this.dimIcon(row)"/>
+                                <span class="o_om_name" t-att-title="row.name" t-out="row.name"/>
+                                <span t-if="row.kind === 'group' and row.count" class="o_om_count" t-out="row.count"/>
+                            </span>
+                        </td>
+                        <t t-foreach="this.props.columns" t-as="column" t-key="column.key">
+                            <td t-if="column.bar" t-att-class="this.cellClass(row, column) + ' o_om_bar_cell'">
+                                <t t-set="bar" t-value="this.barStyle(row, column, barMax)"/>
+                                <span class="o_om_bar_wrap">
+                                    <span t-if="bar" class="o_om_bar_track"><span class="o_om_bar" t-att-style="bar"/></span>
+                                    <span class="o_om_bar_value" t-out="this.cell(row, column)"/>
+                                </span>
+                            </td>
+                            <td t-else="" t-att-class="this.cellClass(row, column)" t-out="this.cell(row, column)"/>
+                        </t>
+                        <td class="o_om_row_actions">
+                            <button t-if="row.open" class="btn btn-link btn-sm o_om_open" title="Open"
+                                    t-on-click="() => this.props.onOpen(row)">
+                                <i class="oi" data-icon="open_in_new"/>
+                            </button>
+                            <Dropdown t-if="row.links and row.links.length" menuClass="'o_om_menu'">
+                                <button class="btn btn-link btn-sm o_om_links" title="Open in another report">
+                                    <i class="oi" data-icon="more_horiz"/>
+                                </button>
+                                <t t-set-slot="content">
+                                    <t t-foreach="row.links" t-as="link" t-key="link.report">
+                                        <DropdownItem onSelected="() => this.props.onLink(link)">
+                                            <i class="oi me-2" t-att-data-icon="link.icon"/><t t-out="link.label"/>
+                                        </DropdownItem>
+                                    </t>
+                                </t>
+                            </Dropdown>
+                        </td>
+                    </tr>
+                </t>
+            </tbody>
+            <tfoot t-if="this.props.total">
+                <tr class="o_om_row_total">
+                    <td class="o_om_name_cell"><span class="o_om_name_inner ps-3" t-out="this.props.total.name"/></td>
+                    <t t-foreach="this.props.columns" t-as="column" t-key="column.key">
+                        <td t-att-class="this.cellClass(this.props.total, column)" t-out="this.cell(this.props.total, column)"/>
+                    </t>
+                    <td/>
+                </tr>
+            </tfoot>
+        </table>
+    </t>
+
+</templates>
