@@ -2,6 +2,7 @@ import { Component, onWillStart, proxy, t, useProps } from "@odoo/owl";
 import { CheckBox } from "@web/core/checkbox/checkbox";
 import { _t } from "@web/core/l10n/translation";
 import { useService } from "@web/core/utils/hooks";
+import { HelpDialog } from "../help/help_dialog";
 
 const RIGHTS = [
     ["perm_read", _t("Read")],
@@ -52,7 +53,12 @@ export class MenuPanel extends Component {
 
     setup() {
         this.orm = useService("orm");
-        this.state = proxy({ open: { rights: true }, fieldSearch: "", choices: {} });
+        this.dialog = useService("dialog");
+        // the rows of the simple record filter not saved yet: a field without a value
+        this.state = proxy({ open: { rights: true }, fieldSearch: "", choices: {}, pending: [], filterOpen: false,
+            // the rows as last edited, until the server has them: quick edits build on each other
+            localRows: null });
+        this.filterSaving = Promise.resolve();
         this.RIGHTS = RIGHTS;
         this.FIELD_MODES = FIELD_MODES;
         this.BUTTON_MODES = BUTTON_MODES;
@@ -103,7 +109,7 @@ export class MenuPanel extends Component {
     }
 
     get recordChoices() {
-        const choices = [...this.panel.record_choices];
+        const choices = [...this.panel.record_choices, ["some", _t("Only some records")]];
         const current = this.panel.rights.records;
         if (current === "custom") {
             choices.push(["custom", _t("Custom filter")]);
@@ -133,6 +139,10 @@ export class MenuPanel extends Component {
 
     get switchItems() {
         return Object.entries(this.panel.switch_labels);
+    }
+
+    openHelp(topic) {
+        this.dialog.add(HelpDialog, { topic });
     }
 
     onFieldSearch(ev) {
@@ -167,7 +177,7 @@ export class MenuPanel extends Component {
               label: this.countLabel(this.count(this.reports, (entry) => entry.hidden), _t("Print")) },
             { key: "actions", entries: this.actions, empty: _t("Nothing in the Action menu of this data."),
               label: this.countLabel(this.count(this.actions, (entry) => entry.hidden), _t("Action Menu")) },
-            { key: "switches", label: this.countLabel(switches, _t("Switches")) },
+            { key: "switches", label: this.countLabel(switches, _t("Restrictions")) },
         ];
     }
 
@@ -203,7 +213,100 @@ export class MenuPanel extends Component {
         if (["custom", "filter"].includes(ev.target.value)) {
             return;
         }
+        if (ev.target.value === "some") {
+            this.state.filterOpen = true;
+            if (!this.filterRows.length) {
+                this.addFilterRow();
+            }
+            return;
+        }
+        this.state.filterOpen = false;
+        this.state.pending = [];
         return this.props.apply({ kind: "data_rights", records: ev.target.value });
+    }
+
+    // the simple record filter: rows of "field is one of these, or the user"
+
+    get showSimpleFilter() {
+        return this.panel.rights.records === "some" || this.state.filterOpen;
+    }
+
+    get filterRows() {
+        return this.state.localRows || [...(this.panel.simple_filter || []), ...this.state.pending];
+    }
+
+    filterField(row) {
+        return (this.panel.filter_fields || []).find((field) => field.name === row.field);
+    }
+
+    valueChoices(row) {
+        if (!row.model) {
+            return [];
+        }
+        if (!this.state.choices[row.model]) {
+            this.state.choices[row.model] = [];
+            this.orm
+                .searchRead(row.model, [], ["display_name"], { limit: 500 })
+                .then((records) => (this.state.choices[row.model] = records));
+        }
+        const taken = new Set(row.records.map((record) => record.id));
+        return this.state.choices[row.model].filter((record) => !taken.has(record.id));
+    }
+
+    saveFilter(rows) {
+        const filled = rows.filter((row) => row.field && (row.records.length || row.me));
+        this.state.pending = rows.filter((row) => !(row.field && (row.records.length || row.me)));
+        this.state.filterOpen = Boolean(this.state.pending.length);
+        this.state.localRows = [...filled, ...this.state.pending];
+        const payload = filled.map((row) => ({
+            field: row.field, ids: row.records.map((record) => record.id), me: row.me,
+        }));
+        // one save at a time, in the order of the edits
+        this.filterSaving = this.filterSaving
+            .then(() => this.props.apply({ kind: "data_filter", rows: payload }))
+            .finally(() => {
+                if (this.state.localRows && this.filterSaving === saving) {
+                    this.state.localRows = null;
+                }
+            });
+        const saving = this.filterSaving;
+        return saving;
+    }
+
+    editFilterRow(row, change) {
+        const rows = this.filterRows.map((other) => (other === row ? { ...other, ...change } : { ...other }));
+        return this.saveFilter(rows);
+    }
+
+    addFilterRow() {
+        this.state.filterOpen = true;
+        this.state.pending = [...this.state.pending, { field: "", model: "", records: [], me: false }];
+    }
+
+    setFilterField(row, name) {
+        const field = (this.panel.filter_fields || []).find((field) => field.name === name);
+        return this.editFilterRow(row, { field: name, model: field ? field.model : "", records: [], me: false });
+    }
+
+    addFilterValue(row, ev) {
+        const id = parseInt(ev.target.value);
+        ev.target.value = "";
+        const record = (this.state.choices[row.model] || []).find((record) => record.id === id);
+        if (record) {
+            return this.editFilterRow(row, { records: [...row.records, { id, name: record.display_name }] });
+        }
+    }
+
+    removeFilterValue(row, record) {
+        return this.editFilterRow(row, { records: row.records.filter((other) => other.id !== record.id) });
+    }
+
+    setLinked(link, on) {
+        return this.props.apply({ kind: "data_linked", model: link.model, field: link.field, remove: !on });
+    }
+
+    removeFilterRow(row) {
+        return this.saveFilter(this.filterRows.filter((other) => other !== row).map((other) => ({ ...other })));
     }
 
     onBranchRecords(ev) {

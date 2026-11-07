@@ -178,4 +178,4 @@ class OmAccessTestUser(models.TransientModel):
         rows += Markup('<tr><td>%s</td><td>%s</td></tr>') % (
             _("Hidden menu entries"), hidden_menus)
         return Markup('<h4>%s</h4><table class="table table-sm">%s</table>') % (
-            _("Switches"), rows)
+            _("Restrictions"), rows)

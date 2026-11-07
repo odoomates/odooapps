@@ -597,7 +597,9 @@ class OmAccessProfile(models.Model):
     # every write clears the ormcaches this module and the menus rely on
     _clear_cache_name = 'default'
 
-    name = fields.Char(required=True, translate=True, tracking=True)
+    name = fields.Char(
+        required=True, translate=True, tracking=True,
+        help="Name it after the people it is for, say Warehouse Staff: it shows on their user form.")
     active = fields.Boolean(default=True, tracking=True)
     sequence = fields.Integer(default=10)
     note = fields.Html(string='Notes')
@@ -612,11 +614,9 @@ class OmAccessProfile(models.Model):
     strictness = fields.Selection(
         [('additive', 'Additive'), ('override', 'Override')],
         default='additive', required=True,
-        help="Additive profiles combine permissively with the other additive "
-             "profiles of the user: an operation is allowed as soon as one of "
-             "them allows it. An override profile always applies and can never "
-             "be overruled, which is what you want for a blanket such as "
-             "'Read Only' stacked on top of another profile.", tracking=True)
+        help="Additive: a user in several profiles may do what any of them allows. Override: this "
+             "profile always applies on top of the others, for a limit such as Read Only Everywhere.",
+        tracking=True)
 
     group_id = fields.Many2one(
         'res.groups', string='Technical Group', ondelete='restrict', copy=False,
@@ -624,25 +624,41 @@ class OmAccessProfile(models.Model):
              "set of a user stays a unique key for the caches of the menus.")
     user_ids = fields.Many2many(
         'res.users', 'om_access_profile_users_rel', 'profile_id', 'uid',
-        string='Users', tracking=True)
+        string='Users', tracking=True,
+        help="The users this profile applies to. A user can be in several profiles: they add up.")
     apply_to_admin = fields.Boolean(
         string='Apply to Settings Users',
         help="By default a member of the Settings group is never restricted by "
              "this profile. The Odoo superuser and the Administrator user are "
              "always exempt, whatever this setting says.", tracking=True)
 
-    global_readonly = fields.Boolean(string='Read Only Everywhere', tracking=True)
-    hide_chatter_all = fields.Boolean(string='Hide the Chatter Everywhere', tracking=True)
-    block_export = fields.Boolean(string='Block Export', tracking=True)
-    block_import = fields.Boolean(string='Block Import', tracking=True)
-    block_archive = fields.Boolean(string='Block Archiving', tracking=True)
-    block_duplicate = fields.Boolean(string='Block Duplication', tracking=True)
+    global_readonly = fields.Boolean(
+        string='Read Only Everywhere', tracking=True,
+        help="The users can open and read everything they see, but cannot create, edit or delete "
+             "anything.")
+    hide_chatter_all = fields.Boolean(
+        string='Hide the Chatter Everywhere', tracking=True,
+        help="The messages, notes and activities under the forms are hidden from these users.")
+    block_export = fields.Boolean(
+        string='Block Export', tracking=True,
+        help="The users cannot export lists to a spreadsheet.")
+    block_import = fields.Boolean(
+        string='Block Import', tracking=True,
+        help="The users cannot import records from a file.")
+    block_archive = fields.Boolean(
+        string='Block Archiving', tracking=True,
+        help="The users cannot archive or unarchive records.")
+    block_duplicate = fields.Boolean(
+        string='Block Duplication', tracking=True,
+        help="The users cannot duplicate records.")
     hide_activities = fields.Boolean(
         string='Hide Activities',
         help="The activities leave the chatter, the lists, the kanban cards, the activity "
              "views and the systray, and scheduling, editing or marking one done is refused. "
              "Odoo itself still schedules them.", tracking=True)
-    hide_settings_menu = fields.Boolean(string='Hide the Settings App', tracking=True)
+    hide_settings_menu = fields.Boolean(
+        string='Hide the Settings App', tracking=True,
+        help="The Settings app is hidden from these users.")
     lock_statusbar = fields.Boolean(string='Lock the Status Bars', tracking=True)
     block_rpc = fields.Boolean(
         string='Block the External API',
@@ -668,8 +684,12 @@ class OmAccessProfile(models.Model):
         string='Hide Log Note',
         help="In the chatter, internal notes cannot be logged. With Hide Send Message "
              "too, the chatter can only be read.", tracking=True)
-    hide_followers_all = fields.Boolean(string='Hide the Followers', tracking=True)
-    hide_attachments_all = fields.Boolean(string='Hide the Attachments', tracking=True)
+    hide_followers_all = fields.Boolean(
+        string='Hide the Followers', tracking=True,
+        help="In the chatter, the followers are hidden.")
+    hide_attachments_all = fields.Boolean(
+        string='Hide the Attachments', tracking=True,
+        help="In the chatter, the attached files are hidden.")
     home_action_id = fields.Many2one(
         'ir.actions.act_window', string='Home Page',
         help="Where the users of this profile land after signing in, instead of the home "
@@ -963,6 +983,28 @@ class OmAccessProfile(models.Model):
         self.ensure_one()
         viewer = self.env.user.sudo()
         return self._om_members().filtered(lambda user: not user._om_preview_refusal(viewer))
+
+    def action_configure(self):
+        """ The menu tree of the profile alone, on the full screen. """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Configure %(profile)s", profile=self.name),
+            'res_model': self._name,
+            'res_id': self.id,
+            'view_mode': 'form',
+            'views': [(self.env.ref('om_access_manager.om_access_profile_view_form_configure').id, 'form')],
+            'target': 'current',
+            # the breadcrumb reads the name of the record: Configure, after the profile
+            'context': dict(self.env.context, om_access_configure=True),
+        }
+
+    @api.depends_context('om_access_configure')
+    def _compute_display_name(self):
+        super()._compute_display_name()
+        if self.env.context.get('om_access_configure'):
+            for profile in self:
+                profile.display_name = _("Configure")
 
     def action_test_user(self):
         self.ensure_one()

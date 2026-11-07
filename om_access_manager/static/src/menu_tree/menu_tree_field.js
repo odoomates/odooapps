@@ -158,7 +158,7 @@ export class MenuTreeField extends Component {
                 marks.push({ icon: "print_disabled", title: _t("Reports or actions hidden") });
             }
             if (data.switches) {
-                marks.push({ icon: "toggle_off", title: _t("Switches on") });
+                marks.push({ icon: "toggle_off", title: _t("Restrictions on") });
             }
         }
         return marks;
@@ -347,6 +347,14 @@ export class MenuTreeField extends Component {
             }
         }
         return Boolean(this.record.resId);
+    }
+
+    /** A click anywhere on a row opens its settings, but on its box or its arrow. */
+    onRowClick(ev, menuId) {
+        if (ev.target.closest(".o-checkbox, .o_om_menu_tree_caret, .o_om_menu_tree_name, input, a")) {
+            return;
+        }
+        return this.select(menuId);
     }
 
     async select(menuId) {

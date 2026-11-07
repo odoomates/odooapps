@@ -27,6 +27,9 @@
         <field name="arch" type="xml">
             <list string="Access Profiles">
                 <header>
+                    <button name="action_guided_setup" type="object" string="Setup Wizard"
+                            class="btn-secondary" display="always"
+                            help="Set up a new profile step by step: who, which apps, then each app."/>
                     <button name="%(om_access_manager.om_access_template_wizard_action)d" type="action"
                             string="New from Template" class="btn-secondary" display="always"/>
                     <button name="%(om_access_manager.om_access_import_action)d" type="action"
@@ -51,20 +54,22 @@
                 <sheet>
                     <field name="model" invisible="1"/>
                     <field name="available_presets" invisible="1"/>
-                    <group>
-                        <group>
-                            <field name="model_id" readonly="1" options="{'no_open': True}"/>
-                            <field name="profile_id" readonly="1" options="{'no_open': True}"/>
-                        </group>
-                        <group string="Rights">
-                            <field name="perm_read"/>
-                            <field name="perm_create"/>
-                            <field name="perm_write"/>
-                            <field name="perm_unlink"/>
-                        </group>
-                    </group>
-                    <separator string="Which records"/>
-                    <div class="d-flex flex-wrap gap-2 mb-3">
+                    <div class="d-flex flex-wrap gap-4 text-muted mb-2">
+                        <div class="d-flex align-items-baseline gap-1">Data:
+                            <field name="model_id" readonly="1" options="{'no_open': True}"/></div>
+                        <div class="d-flex align-items-baseline gap-1">Profile:
+                            <field name="profile_id" readonly="1" options="{'no_open': True}"/></div>
+                    </div>
+                    <separator string="What they may do"/>
+                    <div class="d-flex flex-wrap gap-4 mb-3">
+                        <span><field name="perm_read" nolabel="1"/><label for="perm_read" string="Read"/></span>
+                        <span><field name="perm_create" nolabel="1"/><label for="perm_create" string="Create"/></span>
+                        <span><field name="perm_write" nolabel="1"/><label for="perm_write" string="Edit"/></span>
+                        <span><field name="perm_unlink" nolabel="1"/><label for="perm_unlink" string="Delete"/></span>
+                    </div>
+                    <separator string="Which records" invisible="context.get('om_own_filter')"/>
+                    <separator string="Their own filter" invisible="not context.get('om_own_filter')"/>
+                    <div class="d-flex flex-wrap gap-2 mb-2" invisible="context.get('om_own_filter')">
                         <button name="action_clear_filters" type="object" string="All Records"
                                 class="btn-secondary" icon="public"/>
                         <button name="action_preset_own" type="object" string="Their Own Records"
@@ -83,26 +88,32 @@
                                 class="btn-secondary" icon="edit"
                                 invisible="'draft' not in (available_presets or '')"/>
                     </div>
-                    <group>
-                        <field name="domain" string="Every Operation" widget="domain"
-                               options="{'model': 'model', 'allow_expressions': True}"/>
-                    </group>
-                    <group string="One operation only" col="1">
-                        <div class="text-muted">
+                    <div class="text-muted small mb-1" invisible="context.get('om_own_filter')">
+                        Or pick them: click New Rule, choose a field, say Project, and the values by name.
+                    </div>
+                    <div class="text-muted small mb-1" invisible="not context.get('om_own_filter')">
+                        Click New Rule, choose a field and its values; for a condition on the user themselves,
+                        use the buttons below.
+                    </div>
+                    <field name="domain" nolabel="1" widget="om_rule_domain"
+                           options="{'model': 'model', 'allow_expressions': True}"/>
+                    <widget name="om_current_user_domain" field="domain"/>
+                    <details class="mt-4 o_om_rule_more">
+                        <summary class="fw-bold">More options: one operation only, screen, chatter</summary>
+                        <div class="text-muted mt-2">
                             Narrow one operation further, on top of the filter above: for
                             instance read everything but edit only the drafts.
                         </div>
                         <group>
-                            <field name="domain_read" string="Read" widget="domain"
+                            <field name="domain_read" string="Read" widget="om_rule_domain"
                                    options="{'model': 'model', 'allow_expressions': True}"/>
-                            <field name="domain_write" string="Edit" widget="domain"
+                            <field name="domain_write" string="Edit" widget="om_rule_domain"
                                    options="{'model': 'model', 'allow_expressions': True}"/>
-                            <field name="domain_create" string="Create" widget="domain"
+                            <field name="domain_create" string="Create" widget="om_rule_domain"
                                    options="{'model': 'model', 'allow_expressions': True}"/>
-                            <field name="domain_unlink" string="Delete" widget="domain"
+                            <field name="domain_unlink" string="Delete" widget="om_rule_domain"
                                    options="{'model': 'model', 'allow_expressions': True}"/>
                         </group>
-                    </group>
                     <group string="Screen">
                         <group>
                             <field name="hide_chatter"/>
@@ -125,11 +136,31 @@
                             <field name="hide_activities"/>
                         </group>
                     </group>
+                    </details>
                 </sheet>
                 <footer>
                     <button string="Save" special="save" class="btn-primary" data-hotkey="q"/>
                     <button string="Discard" special="cancel" class="btn-secondary" data-hotkey="x"/>
                 </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- the menu tree alone, the full width of the screen: Configure on a profile opens it -->
+    <record id="om_access_profile_view_form_configure" model="ir.ui.view">
+        <field name="name">om.access.profile.form.configure</field>
+        <field name="model">om.access.profile</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <form string="Configure" class="o_om_configure">
+                <header>
+                    <button name="action_restrict_app" type="object" string="Restrict an App" icon="apps"/>
+                    <widget name="om_access_help" topic="records"/>
+                </header>
+                <!-- read by the menu tree: who the profile is for, the apps it gives -->
+                <field name="user_ids" invisible="1"/>
+                <field name="granted_group_ids" invisible="1"/>
+                <field name="hidden_menu_ids" nolabel="1" widget="om_access_menu_tree"/>
             </form>
         </field>
     </record>
@@ -142,8 +173,12 @@
                 <header>
                     <button name="action_test_user" type="object" string="Preview as User"
                             class="btn-primary" icon="visibility"/>
-                    <button name="action_health_check" type="object" string="Health Check"
-                            icon="health_and_safety" invisible="not id"/>
+                    <button name="action_configure" type="object" string="Configure"
+                            icon="tune" invisible="not id"/>
+                    <button name="action_guided_setup" type="object" string="Setup Wizard"
+                            icon="checklist" invisible="not id"
+                            help="Go through this profile step by step: who, which apps, then each app."/>
+                    <widget name="om_access_help" topic="records"/>
                 </header>
                 <sheet>
                     <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger"
@@ -185,7 +220,7 @@
                             </div>
                             <field name="hidden_menu_ids" nolabel="1" widget="om_access_menu_tree"/>
                         </page>
-                        <page string="Switches" name="switches">
+                        <page string="Restrictions" name="switches">
                             <group>
                                 <group string="Records">
                                     <field name="global_readonly"/>
@@ -222,6 +257,7 @@
                             </group>
                         </page>
                         <page string="Sign-in" name="sign_in">
+                            <div class="text-end"><widget name="om_access_help" topic="signin"/></div>
                             <div class="text-muted mb-2">
                                 Checked when the users sign in and on every request afterwards: a
                                 session ends once the working hours are over, or when it is used
@@ -478,6 +514,7 @@
                             </field>
                         </page>
                         <page string="Temporary Users" name="assignments">
+                            <div class="text-end"><widget name="om_access_help" topic="temporary"/></div>
                             <div class="text-muted mb-2">
                                 Users who carry the profile only between two dates: a replacement
                                 during a leave, a temporary job. The dates follow each user's time

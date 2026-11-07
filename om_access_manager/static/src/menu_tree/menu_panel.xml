@@ -31,7 +31,9 @@
 
             <!-- an app: the access it grants -->
             <div t-if="panel.grants" class="o_om_panel_block mb-3 o_om_grants">
-                <h5 class="o_om_panel_title">Access to the app</h5>
+                <h5 class="o_om_panel_title">Access to the app
+                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline o_om_help_link"
+                        title="How to hide an app or a menu" t-on-click="() => this.openHelp('apps')"><i class="oi" data-icon="help"/></button></h5>
                 <t t-if="panel.grants.length">
                     <div t-foreach="panel.grants" t-as="grant" t-key="grant.privilege_id"
                          class="d-flex flex-wrap align-items-center gap-2 mb-2 o_om_grant"
@@ -55,7 +57,9 @@
 
             <!-- a menu with children: what it passes down -->
             <div t-if="this.isBranch" class="o_om_panel_block mb-3">
-                <h5 class="o_om_panel_title">Everything below</h5>
+                <h5 class="o_om_panel_title">Everything below
+                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline o_om_help_link"
+                        title="How to hide an app or a menu" t-on-click="() => this.openHelp('apps')"><i class="oi" data-icon="help"/></button></h5>
                 <div class="btn-group btn-group-sm flex-wrap mb-2" role="group">
                     <button t-foreach="this.LEVELS" t-as="level" t-key="level[0]" type="button"
                             class="btn o_om_level"
@@ -110,7 +114,9 @@
 
             <!-- an app: its allowed records -->
             <div t-if="panel.allowed and panel.allowed.length" class="o_om_panel_block mb-3">
-                <h5 class="o_om_panel_title">Allowed records</h5>
+                <h5 class="o_om_panel_title">Allowed records
+                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline o_om_help_link"
+                        title="How to allow only some journals, shops or warehouses" t-on-click="() => this.openHelp('allowed')"><i class="oi" data-icon="help"/></button></h5>
                 <div t-foreach="panel.allowed" t-as="kind" t-key="kind.kind" class="mb-2 o_om_allowed"
                      t-att-data-kind="kind.kind">
                     <div class="fw-bold" t-out="kind.label"/>
@@ -138,7 +144,9 @@
 
             <!-- a menu opening data -->
             <div t-if="this.isData" class="o_om_panel_block">
-                <h5 class="o_om_panel_title">Rights</h5>
+                <h5 class="o_om_panel_title">Rights
+                    <button type="button" class="btn btn-link btn-sm p-0 ms-1 text-muted align-baseline o_om_help_link"
+                        title="How to make data read only" t-on-click="() => this.openHelp('rights')"><i class="oi" data-icon="help"/></button></h5>
                 <div class="d-flex flex-wrap gap-3 align-items-center o_om_data_rights">
                     <CheckBox t-foreach="this.RIGHTS" t-as="right" t-key="right[0]"
                               value="!!(panel.rights[right[0]])" disabled="this.props.readonly"
@@ -162,7 +170,83 @@
                         Edit drafts only
                     </CheckBox>
                     <button t-if="!this.props.readonly" type="button" class="btn btn-link btn-sm p-0"
-                            t-on-click="() => this.props.openRule()">Custom filter...</button>
+                            t-on-click="() => this.props.openRule()">Advanced...</button>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-muted o_om_help_link"
+                            title="How to show only some records" t-on-click="() => this.openHelp('records')">
+                        <i class="oi" data-icon="help"/>
+                    </button>
+                </div>
+                <div t-if="this.showSimpleFilter" class="o_om_simple_filter mt-2 ps-2 border-start">
+                    <div class="small text-muted mb-1">Users see only the records matching one of these:</div>
+                    <div t-foreach="this.filterRows" t-as="row" t-key="row_index"
+                         class="d-flex flex-wrap align-items-center gap-2 mb-2 o_om_filter_row">
+                        <span t-if="row_index" class="small text-muted">or</span>
+                        <select class="form-select form-select-sm w-auto o_om_filter_field"
+                                t-att-disabled="this.props.readonly"
+                                t-on-change="(ev) => this.setFilterField(row, ev.target.value)">
+                            <option value="">Choose a field...</option>
+                            <option t-foreach="panel.filter_fields" t-as="field" t-key="field.name"
+                                    t-att-value="field.name" t-att-selected="field.name === row.field"
+                                    t-out="field.label"/>
+                        </select>
+                        <t t-if="row.field">
+                            <span class="small">is</span>
+                            <span t-foreach="row.records" t-as="record" t-key="record.id"
+                                  class="badge text-bg-light border o_om_filter_value">
+                                <t t-out="record.name"/>
+                                <button t-if="!this.props.readonly" type="button" class="btn btn-link p-0 ms-1"
+                                        title="Remove" t-on-click="() => this.removeFilterValue(row, record)">×</button>
+                            </span>
+                            <select class="form-select form-select-sm w-auto o_om_filter_add"
+                                    t-att-disabled="this.props.readonly"
+                                    t-on-change="(ev) => this.addFilterValue(row, ev)">
+                                <option value="">Add...</option>
+                                <option t-foreach="this.valueChoices(row)" t-as="choice" t-key="choice.id"
+                                        t-att-value="choice.id" t-out="choice.display_name"/>
+                            </select>
+                            <span t-if="this.filterField(row) and !this.filterField(row).indexed"
+                                  class="small text-warning o_om_filter_index"
+                                  title="On a large table, filtering on this field can be slow: ask your developer to add a database index on it.">
+                                <i class="oi" data-icon="speed"/> may be slow on large data
+                            </span>
+                            <CheckBox t-if="this.filterField(row) and this.filterField(row).is_user"
+                                      value="!!row.me" disabled="this.props.readonly"
+                                      onChange="(value) => this.editFilterRow(row, { me: value })">
+                                or the user themselves
+                            </CheckBox>
+                        </t>
+                        <button t-if="!this.props.readonly" type="button" class="btn btn-link btn-sm p-0 text-muted"
+                                title="Remove this condition" t-on-click="() => this.removeFilterRow(row)">
+                            <i class="oi" data-icon="delete"/>
+                        </button>
+                    </div>
+                    <button t-if="!this.props.readonly" type="button" class="btn btn-link btn-sm p-0 o_om_filter_new"
+                            t-on-click="() => this.addFilterRow()">+ Add a condition</button>
+                    <div t-if="panel.linked and panel.linked.length" class="mt-2 o_om_linked">
+                        <div class="small text-muted mb-1">Limit the data linked to these records the same way:
+                            <button type="button" class="btn btn-link btn-sm p-0 text-muted align-baseline o_om_help_link"
+                                    title="How to limit the linked data" t-on-click="() => this.openHelp('linked')">
+                                <i class="oi" data-icon="help"/>
+                            </button>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <t t-foreach="panel.linked" t-as="link" t-key="link.model + link.field">
+                                <span t-if="link.own_filter" class="badge text-bg-light border text-muted"
+                                      title="This data has its own filter: change it with Advanced... on its menu.">
+                                    <t t-out="link.label"/>: own filter
+                                </span>
+                                <button t-elif="link.applied" type="button" class="btn btn-sm btn-primary o_om_linked_on"
+                                        t-att-disabled="this.props.readonly" title="Limited the same way: click to undo"
+                                        t-on-click="() => this.setLinked(link, false)">
+                                    <i class="oi me-1" data-icon="check"/><t t-out="link.label"/>
+                                </button>
+                                <button t-else="" type="button" class="btn btn-sm btn-outline-secondary o_om_linked_off"
+                                        t-att-disabled="this.props.readonly" t-on-click="() => this.setLinked(link, true)">
+                                    + <t t-out="link.label"/>
+                                </button>
+                            </t>
+                        </div>
+                    </div>
                 </div>
                 <div class="small text-muted mt-1">
                     <t t-out="this.dataSource"/>
@@ -179,6 +263,18 @@
                                 t-on-click="() => this.toggleSection(section.key)">
                             <i class="oi oi-fw" t-att-data-icon="this.state.open[section.key] ? 'arrow_drop_down' : 'arrow_right'"/>
                             <t t-out="section.label"/>
+                        </button>
+                        <button t-if="['print', 'actions', 'switches'].includes(section.key)" type="button"
+                                class="btn btn-link btn-sm p-0 ms-1 text-muted o_om_help_link"
+                                t-att-title="section.key === 'switches' ? 'How the restrictions work' : 'How to hide reports and actions'"
+                                t-on-click="() => this.openHelp(section.key === 'switches' ? 'switches' : 'reports')">
+                            <i class="oi" data-icon="help"/>
+                        </button>
+                        <button t-if="['fields', 'buttons'].includes(section.key)" type="button"
+                                class="btn btn-link btn-sm p-0 ms-1 text-muted o_om_help_link"
+                                title="How to hide or lock a field or a button"
+                                t-on-click="() => this.openHelp('fields')">
+                            <i class="oi" data-icon="help"/>
                         </button>
                         <div t-if="this.state.open[section.key]" class="ps-3 pt-1">
                             <t t-if="section.key === 'fields'">

@@ -24,3 +24,4 @@ from . import field_guard
 from . import mail_thread
 from . import mail_activity
 from . import om_access_preview
+from . import om_access_guided
