@@ -10,9 +10,10 @@
     'support': 'odoomates@gmail.com',
     'license': 'LGPL-3',
     'images': ['static/description/banner.png'],
-    'depends': ['om_access_manager', 'om_pos_access'],
+    'depends': ['om_access_manager', 'om_pos_access', 'point_of_sale'],
     'data': [
         'views/om_access_profile_views.xml',
     ],
-    'auto_install': True,
+    # installs itself, with POS Access Control, once the Access Manager and the Point of Sale are there
+    'auto_install': ['om_access_manager', 'point_of_sale'],
 }
