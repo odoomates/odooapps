@@ -19,7 +19,16 @@ runs:
       run: git clone --depth 1 --branch 17.0 https://github.com/odoo/odoo.git odoo
     - name: System libraries
       shell: bash
-      run: sudo apt-get update -q && sudo apt-get install -yq libldap2-dev libsasl2-dev libpq-dev postgresql-client
+      # a package mirror that does not answer is given up quickly and tried again, rather than holding the job until
+      # its time limit
+      run: |
+        opts='-o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30'
+        for attempt in 1 2 3; do
+          timeout 300 sudo apt-get update -q $opts && break
+          echo "::warning::apt-get update failed or took too long (attempt $attempt of 3)"
+          sleep 15
+        done
+        timeout 600 sudo apt-get install -yq $opts libldap2-dev libsasl2-dev libpq-dev postgresql-client
     - uses: actions/setup-python@v7
       with:
         python-version: '3.10'
