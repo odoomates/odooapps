@@ -1,0 +1,794 @@
+.o_om_guided {
+    .o_om_guided_step {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        padding: 0.25rem 0.6rem 0.25rem 0.25rem;
+        border-radius: 1rem;
+        color: $text-muted;
+        font-size: 0.875rem;
+
+        &.o_om_guided_done {
+            cursor: pointer;
+            color: $body-color;
+
+            .o_om_guided_dot {
+                background-color: $success;
+                color: $white;
+            }
+        }
+
+        &.o_om_guided_ahead {
+            cursor: pointer;
+
+            &:hover {
+                color: $body-color;
+                background-color: $gray-100;
+            }
+        }
+
+        &.o_om_guided_done:hover {
+            background-color: $gray-100;
+        }
+
+        &.o_om_guided_current {
+            color: $body-color;
+            font-weight: bold;
+            background-color: rgba($primary, 0.1);
+
+            .o_om_guided_dot {
+                background-color: $primary;
+                color: $white;
+            }
+        }
+    }
+
+    .o_om_guided_dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.5rem;
+        height: 1.5rem;
+        border-radius: 50%;
+        background-color: $gray-300;
+        font-size: 0.75rem;
+    }
+
+    .o_om_guided_app_grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+        gap: 0.5rem;
+    }
+
+    .o_om_guided_app {
+        position: relative;
+        padding: 0.75rem 0.25rem 0.5rem;
+        opacity: 0.6;
+
+        &.o_om_guided_app_on {
+            opacity: 1;
+            background-color: rgba($primary, 0.06);
+        }
+    }
+
+    .o_om_guided_app_tick {
+        position: absolute;
+        top: 0.25rem;
+        right: 0.35rem;
+    }
+
+    .o_om_guided_app_icon {
+        display: block;
+        width: 2.75rem;
+        height: 2.75rem;
+        margin: 0 auto;
+        border-radius: 0.5rem;
+    }
+
+    .o_om_guided_app_letter {
+        line-height: 2.75rem;
+        background-color: $gray-300;
+        font-size: 1.25rem;
+        font-weight: bold;
+    }
+
+    .o_om_guided_title_icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.4rem;
+    }
+
+    .o_om_guided_choice {
+        max-width: 16rem;
+    }
+
+    .o_om_guided_some_records {
+        min-width: 16rem;
+    }
+}
+
+.o_om_checklist {
+    max-width: 36rem;
+
+    .o_om_checklist_list {
+        max-height: 14rem;
+        overflow-y: auto;
+    }
+}
+
+// the Menus page: the top menus in one row as in the Odoo top bar, the menus under each
+// below it as in its drop-down
+.o_om_guided .o_om_guided_menu_bar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+
+    .o_om_guided_menu_col {
+        flex: 1 1 0;
+        min-width: 9.5rem;
+
+        &:first-child .o_om_guided_navbar_entry {
+            border-top-left-radius: $border-radius;
+            border-bottom-left-radius: $border-radius;
+        }
+
+        &:last-child .o_om_guided_navbar_entry {
+            border-top-right-radius: $border-radius;
+            border-bottom-right-radius: $border-radius;
+        }
+    }
+
+    .o_om_guided_navbar_entry {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        height: 46px;
+        padding: 0 0.6rem;
+        background: $o-brand-odoo;
+        color: rgba($white, 0.9);
+        white-space: nowrap;
+
+        .o_om_guided_fold {
+            color: rgba($white, 0.9);
+        }
+
+        .form-check-input {
+            border-color: rgba($white, 0.8);
+            background-color: transparent;
+
+            &:checked {
+                background-color: rgba($black, 0.25);
+                border-color: $white;
+            }
+        }
+    }
+
+    .o_om_guided_dropdown {
+        margin: 2px 0.15rem 0;
+        padding: 0.35rem 0;
+        background-color: $dropdown-bg;
+        border: $border-width solid $border-color;
+        border-radius: $border-radius;
+        box-shadow: $box-shadow-sm;
+
+        .o_om_guided_menu {
+            padding-top: 0.2rem;
+            padding-bottom: 0.2rem;
+            padding-right: 0.5rem;
+            color: $dropdown-link-color;
+        }
+
+        .o_om_guided_menu_section > span {
+            color: $dropdown-header-color;
+            font-weight: 500;
+            font-size: $font-size-sm;
+        }
+    }
+
+    // the name ticks and unticks the menu, as its box does
+    .o_om_guided_menu_name {
+        cursor: pointer;
+        user-select: none;
+
+        &.o_om_guided_menu_name_off {
+            cursor: default;
+        }
+    }
+
+    .o_om_guided_menu_off {
+        > .o_om_guided_navbar_entry > span {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .o_om_guided_dropdown {
+            opacity: 0.55;
+        }
+    }
+}
+
+// the Reports and Buttons pages: each screen drawn as Odoo shows it, its control panel on
+// top, the Print and Actions menus opened, the buttons where the form has them
+.o_om_guided .o_om_guided_screen {
+    border: $border-width solid $border-color;
+    border-radius: $border-radius;
+    background-color: $o-view-background-color;
+
+    .o_om_guided_cp {
+        display: flex;
+        align-items: baseline;
+        gap: 0.5rem;
+        padding: 0.5rem 0.75rem;
+        border-bottom: $border-width solid $border-color;
+    }
+
+    .o_om_guided_breadcrumb {
+        font-size: 1.1em;
+        color: $headings-color;
+    }
+
+    .o_om_guided_cp_menus {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 0.75rem;
+        background-color: $gray-100;
+    }
+
+    .o_om_guided_cp_toggle {
+        cursor: default;
+    }
+
+    .o_om_guided_dropdown_menu {
+        min-width: 17rem;
+        max-width: 26rem;
+        margin-top: 2px;
+        padding: 0.4rem 0;
+        background-color: $dropdown-bg;
+        border: $border-width solid $border-color;
+        border-radius: $border-radius;
+        box-shadow: $box-shadow-sm;
+
+        .dropdown-item {
+            cursor: pointer;
+            white-space: normal;
+        }
+
+        .o_om_guided_print_off span {
+            color: $text-muted;
+            text-decoration: line-through;
+        }
+    }
+
+    // the screen of a form: the grey background, the white sheet on it
+    .o_om_guided_form_bg {
+        padding: 0.75rem 1rem 1rem;
+        background-color: $o-webclient-background-color;
+        border-radius: 0 0 $border-radius $border-radius;
+    }
+
+    .o_om_guided_sheet {
+        padding: 1rem 1.25rem;
+        background-color: $o-view-background-color;
+        border: $border-width solid $border-color;
+        border-radius: $border-radius-lg;
+    }
+
+    .o_om_guided_place + .o_om_guided_place,
+    .o_om_guided_skeleton + .o_om_guided_place {
+        margin-top: 1rem;
+    }
+
+    .o_om_guided_place_label {
+        display: block;
+        margin-bottom: 0.35rem;
+        color: $text-muted;
+        font-size: $font-size-sm;
+    }
+
+    // the smart buttons: joined tiles, at the right as in the button box of a form
+    .o_om_guided_place_stat {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+
+        .o_om_guided_place_label {
+            margin-top: 0.6rem;
+        }
+    }
+
+    .o_om_guided_buttonbox {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        row-gap: 0.5rem;
+        // the free width of the row: shrunk to its content, wrapping puts each tile on a line
+        flex: 1 1 auto;
+
+        .o_om_guided_button > .oe_stat_button {
+            width: 100%;
+            min-width: 8.5rem;
+            cursor: pointer;
+        }
+
+        // joined: no rounding inside the row, as Odoo draws it
+        > .o_om_guided_button > .oe_stat_button {
+            border-radius: 0;
+        }
+
+        > .o_om_guided_button:first-child > .oe_stat_button {
+            border-top-left-radius: $border-radius;
+            border-bottom-left-radius: $border-radius;
+        }
+
+        > .o_om_guided_button:last-child > .oe_stat_button {
+            border-top-right-radius: $border-radius;
+            border-bottom-right-radius: $border-radius;
+        }
+    }
+
+    .o_om_guided_statusbar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.6rem 0.4rem;
+        padding-bottom: 0.75rem;
+        border-bottom: $border-width solid $border-color;
+    }
+
+    .o_om_guided_place_other .o_om_guided_statusbar {
+        border-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    // the fields of the form, as grey bars
+    .o_om_guided_skeleton {
+        margin-top: 1rem;
+
+        span,
+        .o_om_guided_skeleton_title {
+            display: block;
+            height: 0.6rem;
+            border-radius: 0.3rem;
+            background-color: $gray-200;
+        }
+
+        .o_om_guided_skeleton_title {
+            width: 30%;
+            height: 1.25rem;
+            margin-bottom: 1rem;
+        }
+
+        .o_om_guided_skeleton_cols {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0 2.5rem;
+        }
+
+        .o_om_guided_skeleton_row {
+            display: grid;
+            grid-template-columns: 35% 1fr;
+            gap: 1rem;
+            margin-bottom: 0.7rem;
+
+            span:first-child {
+                background-color: $gray-300;
+            }
+        }
+    }
+
+    .o_om_guided_button {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        max-width: 14rem;
+    }
+
+    // the lock of a hidden button, on its corner
+    .o_om_guided_lock {
+        position: absolute;
+        top: -0.55rem;
+        right: -0.55rem;
+        z-index: 3;
+        width: 1.4rem;
+        height: 1.4rem;
+        padding: 0;
+        border: $border-width solid $border-color;
+        border-radius: 50%;
+        background-color: $o-view-background-color;
+        color: $text-muted;
+        font-size: 0.75rem;
+        line-height: 1;
+
+        &:hover {
+            color: $danger;
+            border-color: $danger;
+        }
+
+        &.o_om_guided_lock_on {
+            background-color: $danger;
+            border-color: $danger;
+            color: $white;
+        }
+    }
+
+    .o_om_guided_btn_look {
+        cursor: pointer;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .o_om_guided_button_hide,
+    .o_om_guided_button_hide_block {
+        .o_om_guided_btn_look,
+        .o_om_guided_stat {
+            opacity: 0.45;
+            border-style: dashed;
+            text-decoration: line-through;
+        }
+    }
+
+    .o_om_guided_button_hide_block {
+        .o_om_guided_btn_look,
+        .o_om_guided_stat {
+            border-color: $danger;
+            color: $danger;
+            background-color: transparent;
+        }
+    }
+}
+
+.o_om_guided .o_om_guided_legend {
+    font-size: $font-size-sm;
+
+    .o_om_guided_legend_row {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.6rem;
+        padding: 0.3rem 0;
+    }
+
+    .o_om_guided_legend_btn {
+        flex-shrink: 0;
+        min-width: 5.5rem;
+        cursor: default;
+    }
+
+    // the same looks as on the screens above
+    .o_om_guided_button_hide .o_om_guided_btn_look {
+        opacity: 0.45;
+        border-style: dashed;
+        text-decoration: line-through;
+    }
+
+    .o_om_guided_button_hide_block .o_om_guided_btn_look {
+        border: $border-width dashed $danger;
+        color: $danger;
+        background-color: transparent;
+        text-decoration: line-through;
+    }
+}
+
+// the Records page: they see all, a picker of what to limit, a card for each limit
+.o_om_guided .o_om_guided_records_page {
+    .o_om_guided_all_banner {
+        padding: 0.6rem 0.8rem;
+        border-radius: $border-radius;
+        background-color: rgba($success, 0.08);
+        color: $body-color;
+
+        > .oi {
+            color: $success;
+            font-size: 1.2em;
+        }
+
+        &.o_om_guided_all_banner_limited {
+            background-color: rgba($primary, 0.08);
+
+            > .oi {
+                color: $primary;
+            }
+        }
+    }
+
+    .o_om_guided_picker_wrap {
+        position: relative;
+    }
+
+    // in the page, not over it: a short dialog would cut it
+    .o_om_guided_picker {
+        margin-top: 0.4rem;
+        width: 30rem;
+        max-width: 100%;
+        padding: 0.6rem;
+        background-color: $dropdown-bg;
+        border: $border-width solid $border-color;
+        border-radius: $border-radius;
+        box-shadow: $box-shadow;
+    }
+
+    .o_om_guided_picker_list {
+        max-height: 22rem;
+        overflow-y: auto;
+    }
+
+    .o_om_guided_picker_group {
+        padding: 0.25rem 0.5rem;
+        color: $dropdown-header-color;
+        font-size: $font-size-sm;
+        font-weight: 500;
+    }
+
+    .o_om_guided_picker_item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        width: 100%;
+        padding: 0.3rem 0.5rem 0.3rem 1rem;
+        border: 0;
+        border-radius: $border-radius;
+        background: none;
+        text-align: left;
+        color: $dropdown-link-color;
+
+        &:hover {
+            background-color: $dropdown-link-hover-bg;
+        }
+
+        &.o_om_guided_picked {
+            cursor: default;
+            opacity: 0.7;
+        }
+    }
+
+    .o_om_guided_card .card-header {
+        background-color: $gray-100;
+    }
+
+    .o_om_guided_radios {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.4rem 1.25rem;
+    }
+
+    .o_om_guided_radio {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        margin: 0;
+        cursor: pointer;
+    }
+
+    // My own filter: set apart from the ready-made choices
+    .o_om_guided_own_choice {
+        padding: 0.15rem 0.6rem;
+        border: $border-width dashed $primary;
+        border-radius: 1rem;
+        background-color: rgba($primary, 0.08);
+        color: $primary;
+        font-weight: 500;
+    }
+}
+
+// the New Rule button of the rule form, shown where a filter of one's own starts
+@keyframes o_om_highlight_pulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba($primary, 0.55); }
+    50% { box-shadow: 0 0 0 0.45rem rgba($primary, 0); }
+}
+
+.o_om_highlight {
+    border-radius: $border-radius;
+    outline: 2px solid $primary;
+    outline-offset: 2px;
+    background-color: rgba($primary, 0.1);
+    animation: o_om_highlight_pulse 1.4s ease-out 4;
+}
+
+// the Fields page: Odoo's own form, each field marked with what is set on it
+.o_om_guided .o_om_guided_fields {
+    // the whole form at its full height, no scroll of its own: the pop-up scrolls, as on the other pages
+    .o_om_guided_fields_form {
+        overflow: visible;
+    }
+
+    .o_om_fields_preview {
+        // the form as on the screen, but nothing in it is to be used: the fields are picked
+        .o_form_view {
+            background: transparent;
+        }
+
+        .o_form_sheet_bg {
+            padding: 0;
+        }
+
+        .o_form_statusbar,
+        .o-mail-Form-chatter,
+        .o_form_view .o-form-buttonbox {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .o_field_widget.o_om_field_known,
+        label.o_form_label.o_om_field_known {
+            cursor: pointer;
+            border-radius: $border-radius;
+
+            &:hover {
+                outline: 1px dashed $primary;
+                outline-offset: 2px;
+            }
+        }
+
+        // shown only in some states: marked, once Show fields hidden by conditions is on
+        .o_om_conditional {
+            outline: 1px dotted $info;
+            outline-offset: 2px;
+            background-color: rgba($info, 0.06);
+        }
+
+        .o_om_field_match {
+            outline: 2px solid $warning !important;
+            outline-offset: 2px;
+            background-color: rgba($warning, 0.12);
+        }
+
+        .o_field_widget[data-om-state="readonly"] {
+            background-color: $gray-100;
+            color: $text-muted;
+        }
+
+        .o_field_widget[data-om-state="hide"] {
+            opacity: 0.3;
+            text-decoration: line-through;
+            outline: 1px dashed $gray-500;
+        }
+
+        label.o_form_label[data-om-state="hide"] {
+            opacity: 0.45;
+            text-decoration: line-through;
+        }
+
+        // the state, after the label: read only, hidden, when...
+        label.o_form_label[data-om-tag]:not([data-om-tag=""])::after {
+            content: attr(data-om-tag);
+            display: inline-block;
+            margin-left: 0.35rem;
+            padding: 0 0.4rem;
+            border-radius: 1rem;
+            background-color: rgba($primary, 0.12);
+            color: $primary;
+            font-size: 0.7rem;
+            font-weight: 500;
+            text-decoration: none;
+            vertical-align: middle;
+        }
+
+        label.o_form_label[data-om-state="hide"]::after {
+            background-color: $gray-200;
+            color: $text-muted;
+        }
+    }
+
+    .o_om_guided_tab_off {
+        opacity: 0.6;
+        text-decoration: line-through;
+    }
+
+    .o_om_guided_field_chip {
+        &[data-om-state="readonly"] {
+            background-color: $gray-100;
+            color: $text-muted;
+        }
+
+        &[data-om-state="hide"] {
+            opacity: 0.45;
+            border-style: dashed;
+            text-decoration: line-through;
+        }
+    }
+}
+
+.o_om_guided .o_om_guided_legend .o_om_guided_legend_field {
+    flex-shrink: 0;
+    min-width: 5.5rem;
+    padding: 0.1rem 0.5rem;
+    border-bottom: $border-width solid $border-color;
+
+    &[data-om-state="readonly"] {
+        background-color: $gray-100;
+        color: $text-muted;
+    }
+
+    &[data-om-state="hide"] {
+        opacity: 0.35;
+        text-decoration: line-through;
+    }
+}
+
+.o_om_guided .o_om_conditional_sample {
+    padding: 0 0.3rem;
+    outline: 1px dotted $info;
+    background-color: rgba($info, 0.06);
+}
+
+// the Fields page: how to set a field, where nobody misses it
+.o_om_guided .o_om_guided_howto {
+    padding: 0.75rem 1rem;
+    border: $border-width solid rgba($info, 0.45);
+    border-left: 4px solid $info;
+    border-radius: $border-radius;
+    background-color: rgba($info, 0.1);
+
+    .o_om_guided_howto_title {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.6rem;
+        font-weight: 600;
+        font-size: 1.05rem;
+
+        .oi {
+            color: $info;
+            font-size: 1.4em;
+        }
+    }
+
+    .o_om_guided_howto_steps {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 0.75rem;
+    }
+
+    .o_om_guided_howto_step {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0.6rem;
+        border-radius: 2rem;
+        background-color: $o-view-background-color;
+        border: $border-width solid rgba($info, 0.35);
+    }
+
+    .o_om_guided_howto_count {
+        padding: 0.05rem 0.5rem;
+        border-radius: 1rem;
+        background-color: $info;
+        color: $white;
+        font-size: 0.8rem;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .o_om_guided_howto_arrow {
+        color: $info;
+    }
+
+    // the same samples as the legend
+    .o_om_guided_legend_field {
+        padding: 0.05rem 0.45rem;
+        border-bottom: $border-width solid $border-color;
+
+        &[data-om-state="readonly"] {
+            background-color: $gray-100;
+            color: $text-muted;
+        }
+
+        &[data-om-state="hide"] {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+    }
+
+    .o_om_guided_howto_note {
+        margin-top: 0.5rem;
+        color: $text-muted;
+        font-size: $font-size-sm;
+    }
+}

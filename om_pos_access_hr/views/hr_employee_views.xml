@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_employee_view_form_pos_access" model="ir.ui.view">
+        <field name="name">hr.employee.form.pos.access</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='hr_settings']" position="after">
+                <page string="Point of Sale" name="om_pos_access" groups="hr.group_hr_user">
+                    <div class="text-muted mb-2">
+                        What this employee may not do in the Point of Sale, when they log in to the shop with their
+                        badge or PIN.
+                    </div>
+                    <group>
+                        <field name="om_pos_own_rules"/>
+                    </group>
+                    <div class="text-muted" invisible="om_pos_own_rules">
+                        Off: they follow the rules of their Odoo user, or else of the Odoo user who opened the shop.
+                    </div>
+                    <group name="om_pos_rules" invisible="not om_pos_own_rules">
+                        <group string="Orders">
+                            <field name="om_pos_no_refund"/>
+                            <field name="om_pos_no_below_cost"/>
+                        </group>
+                        <group string="Customers and Lines">
+                            <field name="om_pos_no_partner_edit"/>
+                            <field name="om_pos_no_decrease"/>
+                        </group>
+                        <group string="Discounts and Prices">
+                            <field name="om_pos_no_discount"/>
+                            <field name="om_pos_max_discount" invisible="om_pos_no_discount"/>
+                            <field name="om_pos_no_price_change"/>
+                            <field name="om_pos_max_price_cut" invisible="om_pos_no_price_change"/>
+                        </group>
+                        <group string="Register and Payment">
+                            <field name="om_pos_no_cash_move"/>
+                            <field name="om_pos_no_close"/>
+                            <field name="om_pos_payment_method_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="Every payment method of the shop"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

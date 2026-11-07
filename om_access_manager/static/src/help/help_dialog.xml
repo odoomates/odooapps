@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_access_manager.HelpDialog">
+        <Dialog size="'xl'" title.translate="How to set up access" contentClass="'o_om_help'">
+            <ul class="nav nav-tabs mb-3 o_om_help_groups">
+                <li t-foreach="this.groups" t-as="group" t-key="group.key" class="nav-item">
+                    <a href="#" class="nav-link" t-att-class="{'active': group.key === this.state.group}"
+                       t-att-data-group="group.key"
+                       t-on-click.prevent="() => this.openGroup(group.key)" t-out="group.title"/>
+                </li>
+            </ul>
+            <div class="d-flex gap-4">
+                <nav class="o_om_help_topics flex-shrink-0">
+                    <button t-foreach="this.topics" t-as="topic" t-key="topic.key" type="button"
+                            class="btn btn-link d-block text-start w-100 px-2 py-1 o_om_help_topic"
+                            t-att-class="{'active fw-bold': topic.key === this.state.topic}"
+                            t-att-data-topic="topic.key"
+                            t-on-click="() => this.state.topic = topic.key" t-out="topic.title"/>
+                </nav>
+                <div class="flex-grow-1 o_om_help_page">
+                    <h4 t-out="this.current.title"/>
+                    <p class="text-muted" t-out="this.current.intro"/>
+                    <ol class="o_om_help_steps">
+                        <li t-foreach="this.current.steps" t-as="step" t-key="step_index" t-out="step"/>
+                    </ol>
+                    <img t-if="this.current.gif" t-att-src="this.gif(this.current)"
+                         class="img-fluid border rounded mb-3 o_om_help_gif"
+                         t-att-alt="this.current.title" loading="lazy"/>
+                    <div t-if="this.current.tips.length" class="alert alert-info mb-0" role="note">
+                        <div t-foreach="this.current.tips" t-as="tip" t-key="tip_index" t-out="tip"/>
+                    </div>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_access_manager.HelpButton">
+        <button type="button" class="btn btn-secondary o_om_help_button" t-on-click="() => this.open()">
+            <i class="oi me-1" data-icon="help"/>Help
+        </button>
+    </t>
+</templates>

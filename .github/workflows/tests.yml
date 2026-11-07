@@ -40,7 +40,9 @@ jobs:
           path: odooapps
       - uses: ./odooapps/.github/actions/setup-odoo
       - name: Install and test
-        run: odooapps/.github/scripts/run_odoo_tests.sh test_suite "$(cd odooapps && ls -d */__manifest__.py | cut -d/ -f1 | paste -sd, -)"
+        # website_sale too: with the Point of Sale and the website, Odoo installs website_address_autocomplete, whose
+        # test tour imports website_sale; without it the test assets break and every browser test fails
+        run: odooapps/.github/scripts/run_odoo_tests.sh test_suite "$(cd odooapps && ls -d */__manifest__.py | cut -d/ -f1 | paste -sd, -),website_sale"
       - name: Log
         if: failure()
         uses: actions/upload-artifact@v7

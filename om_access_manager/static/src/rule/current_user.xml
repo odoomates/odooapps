@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_access_manager.CurrentUserDomain">
+        <div t-if="this.state.fields.length" class="d-flex flex-wrap align-items-center gap-2 my-2 o_om_current_user">
+            <span class="small text-muted">The user themselves:</span>
+            <button t-foreach="this.state.fields" t-as="field" t-key="field.name" type="button"
+                    class="btn btn-sm btn-outline-primary o_om_current_user_add" t-att-data-field="field.name"
+                    t-att-disabled="this.props.readonly" t-on-click="() => this.add(field)">
+                <i class="oi me-1" data-icon="person"/><t t-out="this.label(field)"/>
+            </button>
+        </div>
+    </t>
+</templates>

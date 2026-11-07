@@ -1,0 +1,743 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_access_manager.GuidedSetupDialog">
+        <Dialog size="'xl'" title="this.title" contentClass="'o_om_guided'">
+            <ol class="o_om_guided_steps list-unstyled d-flex flex-wrap gap-1 mb-4">
+                <li t-foreach="this.steps" t-as="step" t-key="step.key"
+                    class="o_om_guided_step" t-att-class="this.stepClass(step, step_index)"
+                    t-att-data-step="step.key" t-att-title="step_index === this.stepIndex ? '' : this.labels.goTo"
+                    t-on-click="() => this.jump(step_index)">
+                    <span class="o_om_guided_dot" t-out="step_index + 1"/>
+                    <span class="o_om_guided_label" t-out="step.label"/>
+                </li>
+            </ol>
+
+            <!-- 1. who -->
+            <div t-if="this.state.step === 'who'" class="o_om_guided_who">
+                <h4>Who is this profile for?</h4>
+                <p class="text-muted">Name the job, for example Salesperson or Warehouse Team, and add the users
+                    doing it. Users can be added later too. The apps of the job are ticked for you in the next step.</p>
+                <div class="mb-3">
+                    <label class="form-label fw-bold" for="o_om_guided_name">Profile name</label>
+                    <input id="o_om_guided_name" class="form-control o_om_guided_name" type="text"
+                           placeholder="e.g. Salesperson" t-att-value="this.state.name"
+                           t-on-input="(ev) => this.state.name = ev.target.value"/>
+                </div>
+                <div class="mb-3 o_om_guided_users">
+                    <label class="form-label fw-bold">Users</label>
+                    <MultiRecordSelector resModel="'res.users'" resIds="this.state.userIds"
+                                         domain="[['share', '=', false]]" placeholder.translate="Add users..."
+                                         update="(ids) => this.setUsers(ids)"/>
+                </div>
+                <div t-if="this.state.isNew" class="alert alert-info mb-0" role="note">
+                    The profile stays off while you set it up: it applies to its users only once you click Finish.
+                </div>
+                <div t-else="" class="alert alert-warning mb-0" role="note">
+                    This profile is in use: each answer applies at once, as on the Configure screen.
+                </div>
+            </div>
+
+            <!-- 2. apps -->
+            <div t-elif="this.state.step === 'apps'" class="o_om_guided_apps">
+                <h4>Which apps do they use?</h4>
+                <p class="text-muted">Tick the apps these users work in. The others are hidden from them. The next
+                    steps go through each app ticked.</p>
+                <p t-if="this.state.isNew and !this.state.appsPicked and this.suggestedNames.length"
+                   class="small text-primary o_om_guided_suggested">
+                    <i class="oi me-1" data-icon="check_circle"/>Ticked from the profile name:
+                    <t t-out="this.suggestedNames.join(', ')"/>. Tick more apps or untick them.
+                </p>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <input class="form-control form-control-sm w-auto o_om_guided_app_search" type="search"
+                           placeholder="Search an app..." t-att-value="this.state.search"
+                           t-on-input="(ev) => this.state.search = ev.target.value"/>
+                    <button type="button" class="btn btn-link btn-sm" t-on-click="() => this.setAllApps(true)">Tick all</button>
+                    <button type="button" class="btn btn-link btn-sm" t-on-click="() => this.setAllApps(false)">Untick all</button>
+                    <span class="ms-auto small text-muted"><t t-out="this.state.shownIds.length"/> ticked</span>
+                </div>
+                <div class="o_om_guided_app_grid">
+                    <button t-foreach="this.filteredApps" t-as="app" t-key="app.id" type="button"
+                            class="o_om_guided_app btn border text-center"
+                            t-att-class="{'o_om_guided_app_on border-primary': this.isShown(app)}"
+                            t-att-data-app="app.name" t-att-aria-pressed="this.isShown(app) ? 'true' : 'false'"
+                            t-on-click="() => this.toggleApp(app)">
+                        <i t-if="this.isShown(app)" class="oi o_om_guided_app_tick text-primary" data-icon="check_circle"/>
+                        <img t-if="app.icon" t-att-src="app.icon" alt="" class="o_om_guided_app_icon mb-1"/>
+                        <span t-else="" class="o_om_guided_app_icon o_om_guided_app_letter mb-1" t-out="app.name[0]"/>
+                        <span class="d-block small text-truncate" t-out="app.name"/>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. one step for each app -->
+            <div t-elif="this.state.step.startsWith('app:') and this.state.appStep" class="o_om_guided_app_step"
+                 t-att-data-app="this.state.appStep.app.name">
+                <t t-set="step" t-value="this.state.appStep"/>
+                <h4 class="d-flex align-items-center gap-2">
+                    <img t-if="step.app.icon" t-att-src="step.app.icon" alt="" class="o_om_guided_title_icon"/>
+                    <t t-out="step.app.name"/>
+                </h4>
+                <ul t-if="this.appPages.length > 1" class="nav nav-pills mb-3 o_om_guided_pages">
+                    <li t-foreach="this.appPages" t-as="page" t-key="page[0]" class="nav-item">
+                        <a href="#" class="nav-link py-1" t-att-class="{'active': page[0] === this.state.appPage}"
+                           t-att-data-page="page[0]" t-on-click.prevent="() => this.openAppPage(page[0])">
+                            <t t-out="page_index + 1"/>. <t t-out="page[1]"/>
+                        </a>
+                    </li>
+                </ul>
+
+
+                <section t-if="this.state.appPage === 'menus'" class="mb-4 o_om_guided_menus">
+                    <div class="d-flex flex-wrap align-items-baseline gap-2 mb-2">
+                        <h5 class="mb-0 flex-grow-1">Which menus do they see?</h5>
+                        <button type="button" class="btn btn-link btn-sm p-0 o_om_guided_expand_all"
+                                t-on-click="() => this.setAllCollapsed(false)">Expand all</button>
+                        <button type="button" class="btn btn-link btn-sm p-0 o_om_guided_collapse_all"
+                                t-on-click="() => this.setAllCollapsed(true)">Collapse all</button>
+                    </div>
+                    <p class="small text-muted">The menus of the app as in its top bar. Untick a menu to hide it with
+                        the menus under it; untick Configuration for users who only do the daily work.</p>
+                    <div class="o_om_guided_menu_bar">
+                        <div t-foreach="this.menuTree" t-as="node" t-key="node.menu.id"
+                             class="o_om_guided_menu_col o_om_guided_menu_card"
+                             t-att-class="{'o_om_guided_menu_off': node.menu.hidden}" t-att-data-menu="node.menu.name">
+                            <div class="o_om_guided_navbar_entry" t-att-title="node.menu.name">
+                                <input type="checkbox" class="form-check-input m-0 flex-shrink-0" t-att-checked="!node.menu.hidden"
+                                       t-on-change="(ev) => this.setMenu(node.menu, ev.target.checked)"/>
+                                <span class="flex-grow-1 text-truncate o_om_guided_menu_name" t-out="node.menu.name"
+                                      t-on-click="() => this.setMenu(node.menu, node.menu.hidden)"/>
+                                <button t-if="node.children.length" type="button"
+                                        class="btn btn-link btn-sm p-0 o_om_guided_fold"
+                                        title="Expand or collapse"
+                                        t-on-click="() => this.toggleCollapse(node)">
+                                    <i class="oi" t-att-data-icon="this.isCollapsed(node) ? 'expand_more' : 'expand_less'"/>
+                                </button>
+                            </div>
+                            <div t-if="node.children.length and !this.isCollapsed(node)" class="o_om_guided_dropdown">
+                                <div t-foreach="this.cardItems(node)" t-as="item" t-key="item.menu.id"
+                                     class="d-flex align-items-center gap-2 o_om_guided_menu"
+                                     t-att-class="{'text-muted': item.menu.hidden_above, 'o_om_guided_menu_section': item.children.length}"
+                                     t-att-style="'padding-left: ' + (0.5 + (item.menu.depth - 1) * 1) + 'rem'"
+                                     t-att-data-menu="item.menu.name">
+                                    <input type="checkbox" class="form-check-input m-0 flex-shrink-0"
+                                           t-att-checked="!item.menu.hidden and !item.menu.hidden_above"
+                                           t-att-disabled="item.menu.hidden_above"
+                                           t-on-change="(ev) => this.setMenu(item.menu, ev.target.checked)"/>
+                                    <span class="flex-grow-1 o_om_guided_menu_name" t-out="item.menu.name"
+                                          t-att-class="{'o_om_guided_menu_name_off': item.menu.hidden_above}"
+                                          t-on-click="() => !item.menu.hidden_above and this.setMenu(item.menu, item.menu.hidden)"/>
+                                    <button t-if="item.children.length" type="button"
+                                            class="btn btn-link btn-sm p-0 text-muted o_om_guided_fold" title="Expand or collapse"
+                                            t-on-click="() => this.toggleCollapse(item)">
+                                        <i class="oi" t-att-data-icon="this.isCollapsed(item) ? 'expand_more' : 'expand_less'"/>
+                                    </button>
+                                </div>
+                            </div>
+                            <div t-elif="node.children.length" class="o_om_guided_dropdown small text-muted px-2">
+                                <t t-out="this.countBelow(node)"/> menus
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section t-if="this.state.appPage === 'reports' or this.state.appPage === 'buttons'"
+                         class="o_om_guided_filter mb-3">
+                    <input type="search" class="form-control form-control-sm w-auto o_om_guided_filter_input"
+                           t-att-placeholder="this.filterPlaceholder"
+                           t-att-value="this.state.filter" t-on-input="(ev) => this.state.filter = ev.target.value"/>
+                </section>
+
+                <section t-if="this.state.appPage === 'reports'" class="o_om_guided_reports">
+                    <p class="text-muted small">The Print and Actions menus of each screen, as Odoo shows them when
+                        records are selected. Untick what they may not use.</p>
+                    <t t-foreach="step.data" t-as="entry" t-key="entry.menu_id">
+                        <div t-if="entry.print.length" class="o_om_guided_screen mb-3 o_om_guided_report_data"
+                             t-att-data-model="entry.label">
+                            <div class="o_om_guided_cp">
+                                <span class="o_om_guided_breadcrumb" t-out="entry.label"/>
+                                <small class="text-muted" t-out="entry.menu"/>
+                            </div>
+                            <div class="o_om_guided_cp_menus">
+                                <t t-foreach="this.printGroups" t-as="group" t-key="group[0]">
+                                    <t t-set="items" t-value="this.printsOf(entry, group[0])"/>
+                                    <div t-if="items.length" class="o_om_guided_cp_dropdown" t-att-data-group="group[0]">
+                                        <span class="btn btn-secondary o_om_guided_cp_toggle">
+                                            <i class="oi me-1" t-att-class="{'oi-filled': group[0] !== 'print'}" t-att-data-icon="group[0] === 'print' ? 'print' : 'settings'"/>
+                                            <t t-out="group[0] === 'print' ? this.labels.print : this.labels.actions"/>
+                                            <i class="oi" data-icon="arrow_drop_down"/>
+                                        </span>
+                                        <div class="o_om_guided_dropdown_menu">
+                                            <div class="d-flex align-items-center px-3 pb-1 mb-1 border-bottom small">
+                                                <span class="text-muted flex-grow-1"><t t-out="items.filter((item) => !item.hidden).length"/>/<t t-out="items.length"/> allowed</span>
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2 o_om_guided_all_on"
+                                                        t-on-click="() => this.setAllPrints(entry, items, true)">Allow all</button>
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2 o_om_guided_all_off"
+                                                        t-on-click="() => this.setAllPrints(entry, items, false)">Hide all</button>
+                                            </div>
+                                            <label t-foreach="items" t-as="item" t-key="item.type + item.id"
+                                                   class="dropdown-item d-flex align-items-center gap-2 m-0 o_om_guided_print"
+                                                   t-att-class="{'o_om_guided_print_off': item.hidden}"
+                                                   t-att-data-print="item.label">
+                                                <input type="checkbox" class="form-check-input m-0 flex-shrink-0" t-att-checked="!item.hidden"
+                                                       t-on-change="(ev) => this.setPrint(entry, item, ev.target.checked)"/>
+                                                <span class="flex-grow-1" t-out="item.label"/>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </section>
+
+                <section t-if="this.state.appPage === 'buttons'" class="o_om_guided_buttons">
+                    <p class="text-muted small">The buttons of each screen, where Odoo shows them. <strong>Click a button</strong>
+                        to hide it from these users, click it again to show it. On a hidden button, the
+                        <i class="oi mx-1" data-icon="lock"/>lock blocks it as well.</p>
+                    <t t-foreach="step.data" t-as="entry" t-key="entry.menu_id">
+                        <t t-set="buttons" t-value="this.buttonsOf(entry)"/>
+                        <div t-if="buttons.length" class="o_om_guided_screen mb-3 o_om_guided_button_data"
+                             t-att-data-model="entry.label">
+                            <div class="o_om_guided_cp">
+                                <span class="o_om_guided_breadcrumb" t-out="entry.label"/>
+                                <small class="text-muted flex-grow-1" t-out="entry.menu"/>
+                                <button type="button" class="btn btn-link btn-sm p-0 o_om_guided_all_visible"
+                                        t-on-click="() => this.setAllButtons(entry, buttons, 'visible')">All visible</button>
+                                <button type="button" class="btn btn-link btn-sm p-0 ms-2 o_om_guided_all_hidden"
+                                        t-on-click="() => this.setAllButtons(entry, buttons, 'hide')">Hide all</button>
+                            </div>
+                            <div class="o_om_guided_form_bg">
+                                <div class="o_om_guided_sheet">
+                                    <t t-set="stats" t-value="this.buttonsAt(buttons, 'stat')"/>
+                                    <t t-set="headers" t-value="this.buttonsAt(buttons, 'header')"/>
+                                    <t t-set="others" t-value="this.buttonsAt(buttons, 'other')"/>
+                                    <!-- the smart buttons, at the top of the sheet as in a form -->
+                                    <div t-if="stats.length" class="o_om_guided_place o_om_guided_place_stat" data-place="stat">
+                                        <span class="o_om_guided_place_label">Smart buttons</span>
+                                        <div class="o-form-buttonbox o_om_guided_buttonbox">
+                                            <div t-foreach="stats" t-as="button" t-key="button.button_type + button.button_name"
+                                                 class="o_om_guided_button" t-att-class="'o_om_guided_button_' + this.buttonMode(button)"
+                                                 t-att-data-button="button.button_name">
+                                                <button type="button" class="btn oe_stat_button btn-outline-secondary o_om_guided_stat"
+                                                        t-att-title="this.buttonTitle(button)" t-on-click="() => this.toggleButton(entry, button)">
+                                                    <i t-if="button.icon and button.icon.startsWith('fa-')" t-att-class="'o_button_icon fa fa-fw ' + button.icon"/>
+                                                    <i t-else="" class="o_button_icon oi oi-fw" t-att-data-icon="button.icon or 'widgets'"/>
+                                                    <div class="o_stat_info"><span class="o_stat_text" t-out="button.label"/></div>
+                                                </button>
+                                                <t t-call="om_access_manager.GuidedButtonLock"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- the buttons of the form header, below -->
+                                    <div t-if="headers.length" class="o_om_guided_place o_om_guided_place_header" data-place="header">
+                                        <span class="o_om_guided_place_label">Buttons</span>
+                                        <div class="o_om_guided_statusbar">
+                                            <div t-foreach="headers" t-as="button" t-key="button.button_type + button.button_name"
+                                                 class="o_om_guided_button" t-att-class="'o_om_guided_button_' + this.buttonMode(button)"
+                                                 t-att-data-button="button.button_name">
+                                                <t t-call="om_access_manager.GuidedButtonLook"/>
+                                                <t t-call="om_access_manager.GuidedButtonLock"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- the fields of the form: only drawn, for the feel of it -->
+                                    <div t-if="stats.length or headers.length" class="o_om_guided_skeleton" aria-hidden="true">
+                                        <div class="o_om_guided_skeleton_title"/>
+                                        <div class="o_om_guided_skeleton_cols">
+                                            <div t-foreach="[0, 1]" t-as="col" t-key="col">
+                                                <div t-foreach="[0, 1, 2]" t-as="row" t-key="row" class="o_om_guided_skeleton_row">
+                                                    <span/><span/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div t-if="others.length" class="o_om_guided_place o_om_guided_place_other" data-place="other">
+                                        <span class="o_om_guided_place_label">Other buttons of the form and list</span>
+                                        <div class="o_om_guided_statusbar">
+                                            <div t-foreach="others" t-as="button" t-key="button.button_type + button.button_name"
+                                                 class="o_om_guided_button" t-att-class="'o_om_guided_button_' + this.buttonMode(button)"
+                                                 t-att-data-button="button.button_name">
+                                                <t t-call="om_access_manager.GuidedButtonLook"/>
+                                                <t t-call="om_access_manager.GuidedButtonLock"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <div class="o_om_guided_legend card">
+                        <div class="card-body py-2 px-3">
+                            <div class="o_om_guided_legend_row">
+                                <span class="btn btn-sm btn-secondary o_om_guided_legend_btn">Button</span>
+                                <div><strong>Shown</strong>: they see the button and can use it.</div>
+                            </div>
+                            <div class="o_om_guided_legend_row o_om_guided_button_hide">
+                                <span class="btn btn-sm btn-secondary o_om_guided_btn_look o_om_guided_legend_btn">Button</span>
+                                <div><strong>Hidden</strong> (dimmed): the button is not on the screen. They could still run
+                                    the same action another way: from another screen, the Action menu or by calling Odoo
+                                    directly. Use it to keep screens simple, not to forbid something.</div>
+                            </div>
+                            <div class="o_om_guided_legend_row o_om_guided_button_hide_block">
+                                <span class="btn btn-sm btn-secondary o_om_guided_btn_look o_om_guided_legend_btn"><i class="oi me-1" data-icon="lock"/>Button</span>
+                                <div><strong>Blocked</strong> (red, with the lock): hidden too, and Odoo refuses it however
+                                    they try, with an error; each try is written to the audit log. Use it for what they
+                                    must not do. Odoo's own automatic work (scheduled jobs, automations) still runs it.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section t-if="this.state.appPage === 'fields' and this.fieldsEntry" class="o_om_guided_fields">
+                    <t t-set="entry" t-value="this.fieldsEntry"/>
+                    <div class="o_om_guided_howto mb-3" role="note">
+                        <div class="o_om_guided_howto_title">
+                            <i class="oi" data-icon="info"/>
+                            <span>Click a field (or its label) on the form below to set it</span>
+                        </div>
+                        <div class="o_om_guided_howto_steps">
+                            <div class="o_om_guided_howto_step">
+                                <span class="o_om_guided_howto_count">1st click</span>
+                                <span class="o_om_guided_legend_field" data-om-state="readonly">Customer</span>
+                                <span><strong>Read only</strong></span>
+                            </div>
+                            <i class="oi o_om_guided_howto_arrow" data-icon="arrow_forward"/>
+                            <div class="o_om_guided_howto_step">
+                                <span class="o_om_guided_howto_count">2nd click</span>
+                                <span class="o_om_guided_legend_field" data-om-state="hide">Customer</span>
+                                <span><strong>Hidden</strong></span>
+                            </div>
+                            <i class="oi o_om_guided_howto_arrow" data-icon="arrow_forward"/>
+                            <div class="o_om_guided_howto_step">
+                                <span class="o_om_guided_howto_count">3rd click</span>
+                                <span class="o_om_guided_legend_field">Customer</span>
+                                <span><strong>Normal again</strong></span>
+                            </div>
+                        </div>
+                        <div class="o_om_guided_howto_note">It applies to that field on every screen of this data
+                            (the form, lists and cards), and the server keeps to it for imports and scripts too.</div>
+                    </div>
+                    <ul t-if="this.fieldsEntries.length > 1" class="nav nav-tabs mb-2 o_om_guided_fields_data">
+                        <li t-foreach="this.fieldsEntries" t-as="item" t-key="item.menu_id" class="nav-item">
+                            <a href="#" class="nav-link py-1" t-att-class="{'active': item.menu_id === entry.menu_id}"
+                               t-att-data-model="item.label" t-on-click.prevent="() => this.openFieldsData(item)">
+                                <t t-out="item.label"/>
+                                <span t-if="this.changedFields(item).length" class="badge rounded-pill text-bg-primary ms-1"
+                                      t-out="this.changedFields(item).length"/>
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="o_om_guided_screen mb-3 o_om_guided_field_data" t-att-data-model="entry.label">
+                        <div class="o_om_guided_cp">
+                            <span class="o_om_guided_breadcrumb" t-out="entry.label"/>
+                            <small class="text-muted flex-grow-1" t-out="entry.menu"/>
+                            <input type="search" class="form-control form-control-sm w-auto o_om_guided_field_search"
+                                   placeholder="Find a field..." t-att-value="this.state.fieldSearch"
+                                   t-on-input="(ev) => this.state.fieldSearch = ev.target.value"/>
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-2 o_om_guided_fields_reset"
+                                    t-on-click="() => this.resetFields(entry)">All normal</button>
+                        </div>
+                        <label t-if="entry.has_form" class="d-flex align-items-center gap-2 px-3 pt-2 mb-0 o_om_guided_show_all"
+                               title="Some fields show only in some states (a confirmed order, a draft bill): show them all, in their place, to set them too.">
+                            <div class="form-check form-switch m-0">
+                                <input type="checkbox" class="form-check-input" t-att-checked="this.state.fieldShowAll"
+                                       t-on-change="(ev) => this.state.fieldShowAll = ev.target.checked"/>
+                            </div>
+                            <span class="small fw-bold">Show fields hidden by conditions</span>
+                            <span t-if="this.state.fieldShowAll" class="small text-muted">
+                                <span class="o_om_conditional_sample">marked so</span>: shown only in some states
+                            </span>
+                        </label>
+                        <div t-if="entry.tabs.length" class="o_om_guided_tabs d-flex flex-wrap align-items-center gap-2 px-3 py-2">
+                            <span class="small text-muted">Tabs:</span>
+                            <button t-foreach="entry.tabs" t-as="tab" t-key="tab.element_name" type="button"
+                                    class="btn btn-sm o_om_guided_tab" t-att-data-tab="tab.element_name"
+                                    t-att-class="tab.hidden ? 'o_om_guided_tab_off btn-light' : 'btn-outline-secondary'"
+                                    t-att-title="tab.hidden ? this.labels.tabShow : this.labels.tabHide"
+                                    t-on-click="() => this.toggleTab(entry, tab)">
+                                <i class="oi me-1" t-att-data-icon="tab.hidden ? 'visibility_off' : 'visibility'"/>
+                                <t t-out="tab.label"/>
+                            </button>
+                        </div>
+                        <div class="o_om_guided_form_bg o_om_guided_fields_form">
+                            <FieldsPreview t-if="entry.has_form" t-key="entry.menu_id + (this.state.fieldShowAll ? ':all' : '')"
+                                           entry="entry" showAll="this.state.fieldShowAll"
+                                           search="this.state.fieldSearch" onField="(field) => this.cycleField(entry, field)"/>
+                            <div t-else="" class="text-muted small p-3">This data has no form: its fields are below.</div>
+                        </div>
+                        <t t-set="others" t-value="entry.fields.filter((field) => !field.in_form)"/>
+                        <div t-if="others.length" class="o_om_guided_place o_om_guided_fields_others">
+                            <span class="o_om_guided_place_label">Only in its lists or cards</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <button t-foreach="others" t-as="field" t-key="field.name" type="button"
+                                        class="btn btn-sm btn-outline-secondary o_om_guided_field_chip"
+                                        t-att-data-field="field.name" t-att-data-om-state="field.condition ? 'condition' : field.mode"
+                                        t-att-title="field.name" t-on-click="() => this.cycleField(entry, field)">
+                                    <i t-if="field.mode === 'readonly'" class="oi me-1" data-icon="lock"/>
+                                    <t t-out="field.label"/>
+                                </button>
+                            </div>
+                        </div>
+                        <div t-if="this.changedFields(entry).length" class="o_om_guided_place o_om_guided_fields_changed">
+                            <span class="o_om_guided_place_label">Set for these users</span>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span t-foreach="this.changedFields(entry)" t-as="field" t-key="field.name"
+                                      class="badge rounded-pill border o_om_guided_field_badge" t-att-data-field="field.name"
+                                      t-att-class="field.mode === 'hide' ? 'text-bg-light text-decoration-line-through' : 'text-bg-light'">
+                                    <t t-out="field.label"/>: <t t-out="this.fieldTag(field)"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="px-3 pb-2">
+                            <button type="button" class="btn btn-link btn-sm p-0 o_om_guided_more"
+                                    t-on-click="() => this.toggleMore(entry)">
+                                <t t-if="this.state.more[entry.menu_id]">Hide the settings</t>
+                                <t t-else="">More settings: required, conditions, export, links...</t>
+                            </button>
+                            <div t-if="this.state.more[entry.menu_id]" class="border rounded p-2 mt-2 o_om_guided_panel">
+                                <MenuPanel t-key="entry.menu_id" panel="this.state.more[entry.menu_id]"
+                                           apply="this.morePanelApply(entry)" openRule="this.moreOpenRule(entry)"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="o_om_guided_legend card">
+                        <div class="card-body py-2 px-3">
+                            <div class="o_om_guided_legend_row">
+                                <span class="o_om_guided_legend_field">Customer</span>
+                                <div><strong>Normal</strong>: as Odoo shows it.</div>
+                            </div>
+                            <div class="o_om_guided_legend_row">
+                                <span class="o_om_guided_legend_field" data-om-state="readonly">Customer</span>
+                                <div><strong>Read only</strong>: they see it but cannot change it, on the screens, by import or by a script.</div>
+                            </div>
+                            <div class="o_om_guided_legend_row">
+                                <span class="o_om_guided_legend_field" data-om-state="hide">Customer</span>
+                                <div><strong>Hidden</strong>: not shown on the form, in lists or on cards, and blank in exports and scripts.</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <t t-if="this.state.appPage === 'records'">
+                <section t-if="step.has_children" class="mb-3 o_om_guided_read_only">
+                    <label class="d-flex gap-2 border rounded p-2">
+                        <div class="form-check form-switch m-0">
+                            <input type="checkbox" class="form-check-input" t-att-checked="step.read_only"
+                                   t-on-change="(ev) => this.setReadOnly(ev.target.checked)"/>
+                        </div>
+                        <div>
+                            <div class="fw-bold">Read only in this app</div>
+                            <div class="small text-muted">They open what the menus show, but create, change and delete
+                                nothing.</div>
+                        </div>
+                    </label>
+                </section>
+
+                <section class="o_om_guided_records_page">
+                    <h5>Which records do they see?</h5>
+                    <div class="o_om_guided_all_banner d-flex align-items-center gap-2 mb-3"
+                         t-att-class="{'o_om_guided_all_banner_limited': this.hasLimits}">
+                        <i class="oi" t-att-data-icon="this.hasLimits ? 'filter_alt' : 'visibility'"/>
+                        <span t-if="this.hasLimits">They see all records in <t t-out="step.app.name"/>, except what
+                            the cards below limit.</span>
+                        <span t-else="">They see all records in <t t-out="step.app.name"/>. Limit some only if
+                            needed: pick the data below.</span>
+                    </div>
+
+                    <div class="o_om_guided_picker_wrap mb-3">
+                        <button type="button" class="btn btn-secondary o_om_guided_picker_toggle"
+                                t-att-class="{'active': this.state.picker}" t-on-click="() => this.togglePicker()">
+                            <i class="oi me-1" data-icon="add"/>Limit records of...
+                        </button>
+                        <div t-if="this.state.picker" class="o_om_guided_picker">
+                            <input type="search" class="form-control form-control-sm mb-2 o_om_guided_picker_search"
+                                   placeholder="Search a menu or data..." t-att-value="this.state.pickerSearch"
+                                   t-on-input="(ev) => this.state.pickerSearch = ev.target.value"/>
+                            <div class="o_om_guided_picker_list">
+                                <div t-foreach="this.pickerGroups" t-as="group" t-key="group.name" class="mb-2">
+                                    <div class="o_om_guided_picker_group" t-out="group.name"/>
+                                    <button t-foreach="group.items" t-as="item" t-key="item.key" type="button"
+                                            class="o_om_guided_picker_item" t-att-class="{'o_om_guided_picked': item.picked}"
+                                            t-att-data-pick="item.name" t-on-click="() => this.pick(item)">
+                                        <span class="flex-grow-1 text-truncate"><t t-out="item.name"/>
+                                            <small class="text-muted ms-1" t-out="item.detail"/></span>
+                                        <span t-if="item.picked" class="small text-success"><i class="oi" data-icon="check"/> added</span>
+                                        <span t-elif="item.common" class="badge rounded-pill text-bg-light border o_om_guided_common"
+                                              title="Often limited">Common</span>
+                                    </button>
+                                </div>
+                                <div t-if="!this.pickerGroups.length" class="small text-muted">Nothing found.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div t-foreach="step.records" t-as="entry" t-key="entry.menu_id"
+                         class="card mb-3 o_om_guided_card o_om_guided_data" t-att-data-model="entry.label">
+                        <t t-set="choice" t-value="this.recordsChoice(entry)"/>
+                        <div class="card-header d-flex align-items-center gap-2 py-2">
+                            <span class="fw-bold" t-out="entry.label"/>
+                            <small class="text-muted" t-out="entry.menu"/>
+                            <span class="badge rounded-pill ms-auto o_om_guided_card_state"
+                                  t-att-class="choice === 'all' ? 'text-bg-light border' : 'text-bg-primary'"
+                                  t-out="this.choiceLabel(entry)"/>
+                            <button type="button" class="btn btn-link btn-sm p-0 text-muted o_om_guided_card_remove"
+                                    title="Remove: they see all of them again" t-on-click="() => this.removeCard(entry)">
+                                <i class="oi" data-icon="close"/>
+                            </button>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="small fw-bold mb-1">Which ones do they see?</div>
+                            <div class="o_om_guided_radios mb-2">
+                                <label t-foreach="this.mainChoices(entry)" t-as="option" t-key="option[0]"
+                                       class="o_om_guided_radio o_om_guided_records" t-att-data-records="option[0]"
+                                       t-att-title="entry.choice_help[option[0]]">
+                                    <input type="radio" class="form-check-input m-0" t-att-name="'records_' + entry.menu_id"
+                                           t-att-checked="option[0] === choice" t-on-change="() => this.setRecords(entry, option[0])"/>
+                                    <span t-out="option[1]"/>
+                                </label>
+                                <label t-if="entry.filter_fields.length" class="o_om_guided_radio o_om_guided_records" data-records="some"
+                                       title="Only the records you tick, by a field you pick: a team, a salesperson, a customer, or the records themselves.">
+                                    <input type="radio" class="form-check-input m-0" t-att-name="'records_' + entry.menu_id"
+                                           t-att-checked="choice === 'some'" t-on-change="() => this.setRecords(entry, 'some')"/>
+                                    <span>Only some...</span>
+                                </label>
+                                <label t-if="this.dateChoices(entry).length" class="o_om_guided_radio o_om_guided_records" data-records="date"
+                                       t-att-title="entry.choice_help[this.dateChoices(entry).some((option) => option[0] === choice) ? choice : 'month']">
+                                    <t t-set="dated" t-value="this.dateChoices(entry).some((option) => option[0] === choice)"/>
+                                    <input type="radio" class="form-check-input m-0" t-att-name="'records_' + entry.menu_id"
+                                           t-att-checked="dated" t-on-change="() => this.setRecords(entry, 'month')"/>
+                                    <span>Created</span>
+                                    <select class="form-select form-select-sm w-auto o_om_guided_dates"
+                                            t-on-change="(ev) => this.setRecords(entry, ev.target.value)">
+                                        <option t-foreach="this.dateChoices(entry)" t-as="option" t-key="option[0]"
+                                                t-att-value="option[0]" t-att-selected="option[0] === choice or (!dated and option[0] === 'month')"
+                                                t-out="this.dateLabel(option)"/>
+                                    </select>
+                                </label>
+                                <label class="o_om_guided_radio o_om_guided_records o_om_guided_own_choice" data-records="custom"
+                                       title="Write the filter yourself with Odoo's filter editor, for example Salesperson is the user: [('user_id', '=', uid)].">
+                                    <input type="radio" class="form-check-input m-0" t-att-name="'records_' + entry.menu_id"
+                                           t-att-checked="choice === 'custom' or choice === 'filter'"
+                                           t-on-change="() => this.openOwnFilter(entry)"/>
+                                    <i class="oi" data-icon="edit"/>
+                                    <span>My own filter...</span>
+                                </label>
+                            </div>
+                            <div t-if="choice === 'warehouse' and entry.no_warehouse.length"
+                                 class="alert alert-warning py-1 px-2 small mb-2 o_om_guided_warehouse_warning" role="alert">
+                                <i class="oi me-1" data-icon="warning"/>No Default Warehouse on the user form of
+                                <t t-out="entry.no_warehouse.join(', ')"/>: they will see almost no records. Set it on
+                                each user (Preferences or the user form), or use Only some... with the Warehouse.
+                            </div>
+                            <div t-elif="choice === 'warehouse'" class="small text-muted mb-2">
+                                Each user sees the records of the Default Warehouse on their user form.
+                            </div>
+                            <div t-if="this.countText(entry)" class="small mb-2 o_om_guided_count">
+                                <i class="oi me-1" data-icon="visibility"/><t t-out="this.countText(entry)"/>
+                            </div>
+                            <div t-if="choice === 'custom' or choice === 'filter'" class="small mb-2 o_om_guided_own_filter">
+                                <t t-if="entry.domain">
+                                    <span class="text-muted">Their own filter:</span>
+                                    <code class="ms-1" t-out="entry.domain"/>
+                                </t>
+                                <span t-else="" class="text-muted">A filter of its own is set (by operation or on a menu).</span>
+                                <button type="button" class="btn btn-link btn-sm p-0 ms-2 o_om_guided_own_edit"
+                                        t-on-click="() => this.openOwnFilter(entry)">Edit</button>
+                            </div>
+                            <div t-if="choice === 'some' and entry.linked_from and entry.records === 'some'"
+                                 class="small text-muted mb-2 o_om_guided_linked_from">
+                                Only those of the <t t-out="entry.linked_from"/> kept: limited along with it.
+                            </div>
+                            <div t-elif="choice === 'some'" class="o_om_guided_some ps-2 border-start mb-2">
+                                <t t-set="row" t-value="this.someRow(entry)"/>
+                                <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                                    <span class="small fw-bold">Only those of these:</span>
+                                    <button t-foreach="this.quickFields(entry)" t-as="field" t-key="field.name" type="button"
+                                            class="btn btn-sm rounded-pill o_om_guided_some_pick" t-att-data-field="field.name"
+                                            t-att-class="row.field and field.name === row.field.name ? 'btn-primary' : 'btn-outline-primary'"
+                                            t-on-click="() => this.setSomeField(entry, field.name)" t-out="field.label"/>
+                                    <select t-if="this.otherFields(entry).length" class="form-select form-select-sm w-auto o_om_guided_some_field"
+                                            t-on-change="(ev) => ev.target.value and this.setSomeField(entry, ev.target.value)">
+                                        <option value="">Other...</option>
+                                        <option t-foreach="this.otherFields(entry)" t-as="field" t-key="field.name"
+                                                t-att-value="field.name" t-att-selected="row.field and field.name === row.field.name"
+                                                t-out="field.label"/>
+                                    </select>
+                                </div>
+                                <div t-if="row.field" class="o_om_guided_some_records">
+                                    <div class="small text-muted mb-1">Tick the <t t-out="row.field.label"/> to keep:</div>
+                                    <RecordChecklist t-key="entry.menu_id + row.field.name" resModel="row.field.model" ids="row.ids"
+                                                     update="(ids) => this.setSome(entry, ids, row.me)"/>
+                                    <label t-if="row.field.is_user" class="small d-flex align-items-center gap-1 mt-1">
+                                        <input type="checkbox" class="form-check-input o_om_guided_some_me" t-att-checked="row.me"
+                                               t-on-change="(ev) => this.setSome(entry, row.ids, ev.target.checked)"/>
+                                        and the user themselves
+                                    </label>
+                                </div>
+                                <div t-if="this.hasMoreRows(entry)" class="small text-muted mt-1">
+                                    More conditions are set: see them with More settings.
+                                </div>
+                                <div t-if="entry.linked.length and entry.records === 'some'" class="mt-2 o_om_guided_linked">
+                                    <div class="small text-muted mb-1">Limit what belongs to these records the same way:</div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <t t-foreach="entry.linked" t-as="link" t-key="link.model + link.field">
+                                            <span t-if="link.own_filter" class="badge text-bg-light border text-muted">
+                                                <t t-out="link.label"/>: own filter
+                                            </span>
+                                            <button t-elif="link.applied" type="button" class="btn btn-sm btn-primary o_om_linked_on"
+                                                    t-on-click="() => this.setLinked(entry, link, false)">
+                                                <i class="oi me-1" data-icon="check"/><t t-out="link.label"/>
+                                            </button>
+                                            <button t-else="" type="button" class="btn btn-sm btn-outline-secondary o_om_linked_off"
+                                                    t-on-click="() => this.setLinked(entry, link, true)">
+                                                + <t t-out="link.label"/>
+                                            </button>
+                                        </t>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-link btn-sm p-0 o_om_guided_more"
+                                    t-on-click="() => this.toggleMore(entry)">
+                                <t t-if="this.state.more[entry.menu_id]">Hide the settings</t>
+                                <t t-else="">More settings: rights, fields, buttons, tabs...</t>
+                            </button>
+                            <div t-if="this.state.more[entry.menu_id]" class="border rounded p-2 mt-2 o_om_guided_panel">
+                                <MenuPanel t-key="entry.menu_id" panel="this.state.more[entry.menu_id]"
+                                           apply="this.morePanelApply(entry)" openRule="this.moreOpenRule(entry)"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div t-foreach="this.allowedCards" t-as="kind" t-key="kind.kind"
+                         class="card mb-3 o_om_guided_card o_om_guided_allowed" t-att-data-kind="kind.kind">
+                        <div class="card-header d-flex align-items-center gap-2 py-2">
+                            <span class="fw-bold" t-out="kind.label"/>
+                            <small class="text-muted">which ones they use</small>
+                            <span class="badge rounded-pill ms-auto o_om_guided_card_state"
+                                  t-att-class="kind.records.length or kind.per_user ? 'text-bg-primary' : 'text-bg-light border'">
+                                <t t-if="kind.records.length"><t t-out="kind.records.length"/> ticked</t>
+                                <t t-elif="kind.per_user">Set on each user</t>
+                                <t t-else="">All</t>
+                            </span>
+                            <button type="button" class="btn btn-link btn-sm p-0 text-muted o_om_guided_card_remove"
+                                    title="Remove: they use all of them again" t-on-click="() => this.removeKind(kind)">
+                                <i class="oi" data-icon="close"/>
+                            </button>
+                        </div>
+                        <div class="card-body py-2">
+                            <p class="small text-muted mb-1">Tick the ones they use. None ticked: all of them.</p>
+                            <RecordChecklist resModel="kind.model" ids="this.allowedIds(kind)"
+                                             update="(ids) => this.setAllowed(kind, ids)"/>
+                            <label class="small d-flex align-items-center gap-1 mt-1">
+                                <input type="checkbox" class="form-check-input" t-att-checked="kind.per_user"
+                                       t-on-change="(ev) => this.setAllowedPerUser(kind, ev.target.checked)"/>
+                                and those set on each user
+                            </label>
+                        </div>
+                    </div>
+                </section>
+                </t>
+
+
+                <p t-if="!this.appPages.length and !step.data.length and !step.allowed.length and !step.has_children" class="text-muted">
+                    Nothing more to set for this app: they see it, or untick it on the Apps step.
+                </p>
+            </div>
+
+            <!-- 4. everywhere -->
+            <div t-elif="this.state.step === 'everywhere'" class="o_om_guided_everywhere">
+                <h4>Anything else, in every app?</h4>
+                <p class="text-muted">Switch on what these users may not do anywhere. All are off by default.</p>
+                <div class="row g-2">
+                    <div t-foreach="this.state.switches" t-as="entry" t-key="entry.name" class="col-md-6">
+                        <label class="d-flex gap-2 border rounded p-2 h-100 o_om_guided_switch"
+                               t-att-data-switch="entry.name">
+                            <div class="form-check form-switch m-0">
+                                <input type="checkbox" class="form-check-input" t-att-checked="entry.value"
+                                       t-on-change="(ev) => this.setSwitch(entry, ev.target.checked)"/>
+                            </div>
+                            <div>
+                                <div class="fw-bold" t-out="entry.label"/>
+                                <div class="small text-muted" t-out="entry.help"/>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5. review -->
+            <div t-elif="this.state.step === 'review' and this.state.summary" class="o_om_guided_review">
+                <t t-set="summary" t-value="this.state.summary"/>
+                <h4>Ready: <t t-out="summary.name"/></h4>
+                <div class="mb-3 o_om_guided_review_users">
+                    <label class="form-label fw-bold mb-1">Users</label>
+                    <MultiRecordSelector resModel="'res.users'" resIds="this.state.userIds"
+                                         domain="[['share', '=', false]]" placeholder.translate="Add users..."
+                                         update="(ids) => this.setReviewUsers(ids)"/>
+                    <div t-if="!this.state.userIds.length" class="small text-warning mt-1">
+                        <i class="oi me-1" data-icon="warning"/>No users yet: add them here, or later on the profile.
+                    </div>
+                </div>
+                <table class="table table-sm align-top o_om_guided_summary">
+                    <thead><tr><th>App</th><th>Access</th><th>Limited to</th></tr></thead>
+                    <tbody>
+                        <tr t-foreach="summary.apps" t-as="app" t-key="app.name">
+                            <td class="fw-bold" t-out="app.name"/>
+                            <td t-out="app.level"/>
+                            <td>
+                                <div t-foreach="app.lines" t-as="line" t-key="line_index" t-out="line"/>
+                                <span t-if="!app.lines.length" class="text-muted">All records</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p t-if="summary.hidden_apps.length" class="small text-muted">
+                    <strong>Hidden:</strong> <t t-out="summary.hidden_apps.join(', ')"/>
+                </p>
+                <p t-if="summary.switches.length" class="small">
+                    <strong>Everywhere:</strong> <t t-out="summary.switches.join(', ')"/>
+                </p>
+                <div class="alert alert-info mb-0" role="note">
+                    Check it as one of its users with Preview as User. Everything set here can be changed later
+                    with the Setup Wizard again, or on the Configure screen.
+                </div>
+            </div>
+
+            <t t-set-slot="footer">
+                <button t-if="this.state.step === 'review'" type="button" class="btn btn-primary o_om_guided_finish"
+                        t-att-disabled="this.state.busy" t-on-click="() => this.finish()">Finish</button>
+                <button t-else="" type="button" class="btn btn-primary o_om_guided_next"
+                        t-att-disabled="this.state.busy" t-on-click="() => this.next()">Next</button>
+                <button t-if="this.stepIndex > 0" type="button" class="btn btn-secondary o_om_guided_back"
+                        t-att-disabled="this.state.busy" t-on-click="() => this.back()">Back</button>
+                <button t-if="this.state.step === 'review'" type="button" class="btn btn-secondary o_om_guided_preview"
+                        t-att-disabled="this.state.busy or !this.state.summary.users.length"
+                        t-on-click="() => this.previewAsUser()">Preview as User</button>
+                <button type="button" class="btn btn-link o_om_guided_cancel" t-on-click="() => this.cancel()">
+                    <t t-if="this.state.isNew">Cancel</t><t t-else="">Close</t>
+                </button>
+                <button type="button" class="btn btn-link ms-auto text-muted o_om_help_link" title="How the Setup Wizard works"
+                        t-on-click="() => this.openHelp()"><i class="oi" data-icon="help"/></button>
+            </t>
+        </Dialog>
+    </t>
+    <!-- a button drawn as Odoo shows it: a click hides it, another shows it again -->
+    <t t-name="om_access_manager.GuidedButtonLook">
+        <button type="button" class="btn o_om_guided_btn_look" t-att-title="this.buttonTitle(button)"
+                t-att-class="button.primary ? 'btn-primary' : 'btn-secondary'"
+                t-on-click="() => this.toggleButton(entry, button)">
+            <i t-if="this.buttonMode(button) === 'hide_block'" class="oi me-1" data-icon="lock"/>
+            <t t-out="button.label"/>
+        </button>
+    </t>
+
+    <!-- on a hidden button: the lock, to block it as well -->
+    <t t-name="om_access_manager.GuidedButtonLock">
+        <button t-if="this.buttonMode(button) !== 'visible'" type="button"
+                class="btn btn-sm o_om_guided_lock" t-att-class="{'o_om_guided_lock_on': this.buttonMode(button) === 'hide_block'}"
+                t-att-title="this.buttonMode(button) === 'hide_block' ? this.labels.unblock : this.labels.block"
+                t-att-aria-label="this.labels.block" t-on-click="() => this.toggleBlock(entry, button)">
+            <i class="oi" data-icon="lock"/>
+        </button>
+    </t>
+</templates>

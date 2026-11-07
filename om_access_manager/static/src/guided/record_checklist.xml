@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_access_manager.RecordChecklist">
+        <div class="o_om_checklist border rounded">
+            <div t-if="this.chosen.length" class="d-flex flex-wrap gap-1 p-2 border-bottom o_om_checklist_chosen">
+                <span t-foreach="this.chosen" t-as="record" t-key="record.id"
+                      class="badge rounded-pill text-bg-primary d-inline-flex align-items-center gap-1 o_om_checklist_chip">
+                    <t t-out="record.name"/>
+                    <button type="button" class="btn btn-link btn-sm p-0 text-white lh-1" title="Remove"
+                            t-on-click="() => this.toggle(record, false)">×</button>
+                </span>
+            </div>
+            <div class="p-2 pb-1">
+                <input type="search" class="form-control form-control-sm o_om_checklist_search"
+                       placeholder="Search..." t-att-value="this.state.search" t-on-input="(ev) => this.onSearch(ev)"/>
+            </div>
+            <div class="o_om_checklist_list px-2 pb-2">
+                <label t-foreach="this.others" t-as="record" t-key="record.id"
+                       class="d-flex align-items-center gap-2 py-1 o_om_checklist_item" t-att-data-name="record.name">
+                    <input type="checkbox" class="form-check-input m-0" t-on-change="() => this.toggle(record, true)"/>
+                    <span t-out="record.name"/>
+                </label>
+                <div t-if="!this.others.length" class="small text-muted py-1">Nothing more found.</div>
+                <div t-if="this.state.more" class="small text-muted py-1">More records: search to find the others.</div>
+            </div>
+        </div>
+    </t>
+</templates>
