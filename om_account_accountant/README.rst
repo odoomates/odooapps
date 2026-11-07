@@ -3,12 +3,12 @@ Odoo 19 Accounting Community
 ==============================
 
 Odoo 19 Community Edition ships Invoicing, not Accounting. This module turns it
-into a full accounting application: it installs the seventeen Odoo Mates
+into a full accounting application: it installs the eighteen Odoo Mates
 accounting modules in one click and adds the menus, groups, settings and
-dashboards that make them work as one system rather than seventeen separate
+dashboards that make them work as one system rather than eighteen separate
 apps.
 
-A 47-page user guide ships with the module, at
+A 50-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -51,6 +51,8 @@ Bank and payments
 * ``om_account_bank_statement_import`` — statement import with reusable file
   maps.
 * ``om_account_check_printing`` — cheque formats and cheque printing.
+* ``om_account_batch_payment`` — batch payments and deposits, the bulk upload
+  file of the bank and one bank transaction reconciled with a whole batch.
 
 Currency and periods
 --------------------
@@ -115,21 +117,21 @@ your Odoo server and go to the Apps menu. Trigger the debug mode and update the
 list by clicking on the "Update Apps List" link. Now install the module by
 clicking on the install button.
 
-Installing this module installs the seventeen modules listed above, so make
+Installing this module installs the eighteen modules listed above, so make
 sure they are all present in your addons folder before you start.
 
 
 Upgrading from an earlier 19 release
 ====================================
 
-This is release 1.3.0 (October 2026). It adds modules and changes several of
+This is release 1.4.0 (October 2026). It adds modules and changes several of
 the others, so upgrade the suite as a whole:
 
 1. Back up the database.
 2. Replace all the Odoo Mates accounting modules with this release, not only
    this one. The new modules (``om_account_reconcile``,
    ``om_account_bank_statement_import``, ``om_account_check_printing``,
-   ``om_account_cash_forecast``, ``om_currency_rate_update``,
+   ``om_account_batch_payment``, ``om_account_cash_forecast``, ``om_currency_rate_update``,
    ``om_currency_revaluation`` and the four ``om_spreadsheet_account*``
    dashboards) must be in the addons path too, or the upgrade stops.
 3. Restart Odoo and update the apps list in developer mode.
@@ -137,7 +139,7 @@ the others, so upgrade the suite as a whole:
    upgrades a module and the ones depending on it, not the modules it depends
    on, so upgrading *Odoo 19 Accounting Community* alone is not enough. The new
    modules install themselves with it. From the command line:
-   ``-u accounting_pdf_reports,om_account_accountant,om_account_asset,om_account_budget,om_account_daily_reports,om_account_followup,om_fiscal_year,om_recurring_payments``
+   ``-u accounting_pdf_reports,om_account_accountant,om_account_asset,om_account_budget,om_account_daily_reports,om_account_followup,om_account_reconcile,om_fiscal_year,om_recurring_payments``
    (or ``-u all``).
 
 The data is kept: the upgrade only adds to it. Nothing new switches itself on:
