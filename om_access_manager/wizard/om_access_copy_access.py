@@ -25,9 +25,9 @@ class OmAccessCopyAccess(models.TransientModel):
     summary = fields.Html(compute='_compute_summary')
 
     @api.model
-    def default_get(self, fields_list):
-        values = super().default_get(fields_list)
-        if 'source_user_id' in fields_list and self.env.context.get('active_model') == 'res.users':
+    def default_get(self, fields):
+        values = super().default_get(fields)
+        if 'source_user_id' in fields and self.env.context.get('active_model') == 'res.users':
             values.setdefault('source_user_id', self.env.context.get('active_id'))
         return values
 

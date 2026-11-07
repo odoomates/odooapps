@@ -26,9 +26,9 @@ class OmAccessTestUser(models.TransientModel):
     report = fields.Html(string='Effective Access', compute='_compute_result', sanitize=False)
 
     @api.model
-    def default_get(self, fields_list):
-        values = super().default_get(fields_list)
-        if 'user_id' in fields_list and self.env.context.get('active_model') == 'res.users':
+    def default_get(self, fields):
+        values = super().default_get(fields)
+        if 'user_id' in fields and self.env.context.get('active_model') == 'res.users':
             values.setdefault('user_id', self.env.context.get('active_id'))
         return values
 

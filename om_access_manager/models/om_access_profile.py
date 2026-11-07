@@ -909,22 +909,6 @@ class OmAccessProfile(models.Model):
         if not (rules.allows(self._name, 'read') and rules.allows(self._name, 'write')):
             return 'profiles'
         return False
-        rules = self._resolve(user.id)
-        if not rules.enabled:
-            return False
-        if rules.has_flag('block_login'):
-            return 'login'
-        # working hours and networks: refused at some moment or from some place
-        limits = [bool(profile.login_slots or profile.networks) for profile in rules.override]
-        if any(limits) or (rules.additive and all(
-                profile.login_slots or profile.networks for profile in rules.additive)):
-            return 'login'
-        settings_menu = self.env.ref('base.menu_administration', raise_if_not_found=False)
-        if rules.has_flag('hide_settings_menu') or (settings_menu and settings_menu.id in rules.menu_blacklist()):
-            return 'settings'
-        if not (rules.allows(self._name, 'read') and rules.allows(self._name, 'write')):
-            return 'profiles'
-        return False
 
     #
     # actions of the single screen
