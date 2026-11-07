@@ -10,9 +10,11 @@
     'support': 'odoomates@gmail.com',
     'license': 'LGPL-3',
     'images': ['static/description/banner.png'],
-    'depends': ['om_access_manager_pos', 'om_pos_access_hr'],
+    'depends': ['om_access_manager_pos', 'om_pos_access_hr', 'om_access_manager', 'point_of_sale', 'pos_hr'],
     'data': [
         'views/om_access_profile_views.xml',
     ],
-    'auto_install': True,
+    # installs itself, with the modules it builds on, once the Access Manager, the Point of Sale and its
+    # employee login are there
+    'auto_install': ['om_access_manager', 'point_of_sale', 'pos_hr'],
 }
