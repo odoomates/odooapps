@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="om_account_reconcile.BankReconciliation.Panel" t-inherit-mode="extension">
+        <xpath expr="//ul[hasclass('nav-tabs')]" position="inside">
+            <li class="nav-item" t-if="this.state.batches.length">
+                <a href="#" t-att-class="'nav-link' + (this.state.tab === 'batches' ? ' active' : '')"
+                   data-tab="batches" t-on-click.prevent="() => this.state.tab = 'batches'">
+                    Batches <span class="badge text-bg-secondary ms-1" t-out="this.state.batches.length"/>
+                </a>
+            </li>
+        </xpath>
+        <xpath expr="//div[hasclass('o_om_bank_rec_models')]" position="after">
+            <div t-if="this.state.tab === 'batches'" class="o_om_bank_rec_batches">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr><th>Batch</th><th>Date</th><th class="text-end">Payments</th><th class="text-end">Amount</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="this.state.batches" t-as="batch" t-key="batch.id"
+                            class="o_om_bank_rec_batch" t-att-data-id="batch.id"
+                            t-on-click="() => this.addBatch(batch)">
+                            <td>
+                                <t t-out="batch.name"/>
+                                <span t-if="batch.score &gt;= 50" class="badge text-bg-info ms-1">Suggested</span>
+                            </td>
+                            <td t-out="batch.date_display"/>
+                            <td class="text-end" t-out="batch.payment_count"/>
+                            <td class="text-end" t-out="this.formatAbs(batch.amount, batch.currency_id)"/>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+    </t>
+
+</templates>
