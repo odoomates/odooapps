@@ -338,7 +338,7 @@ class LiveBuilder:
             if field:
                 self._write(step_key, field, {'tracking': 100})
         # mail caches the tracked fields of a model
-        self.env.transaction.invalidate_ormcache()
+        self.env.registry.clear_cache()
 
     def _sync_accesses(self, step_key, files, models):
         """ The access rights of the CSV file, as it is after the step: new lines
@@ -613,7 +613,7 @@ class LiveBuilder:
                 if record:
                     record.write(entry['old'])
                     if 'tracking' in entry['old']:
-                        self.env.transaction.invalidate_ormcache()
+                        self.env.registry.clear_cache()
             elif entry['do'] == 'unlink':
                 record = self.env[entry['model']].sudo().create(entry['values'])
                 self.map[entry['key']] = [record._name, record.id]
