@@ -16,5 +16,6 @@
     'data': [
         'views/hr_employee_views.xml',
     ],
-    'auto_install': True,
+    # installs itself once both are there
+    'auto_install': ['om_pos_access', 'pos_hr'],
 }
