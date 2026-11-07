@@ -56,7 +56,8 @@
                                     Write the name of the column of the file when it has a header row, or the
                                     number of the column otherwise, the first column being
                                     <code>1</code>. Use either the amount column, or the debit and the credit
-                                    columns.
+                                    columns. The foreign amount and its currency are read for the transactions
+                                    made in another currency than the one of the journal.
                                 </div>
                                 <group>
                                     <group string="Transaction">
@@ -71,6 +72,10 @@
                                         <field name="column_debit" required="not column_amount"/>
                                         <field name="column_credit" required="not column_amount"/>
                                         <field name="column_currency"/>
+                                        <field name="column_amount_currency"
+                                               required="column_foreign_currency"/>
+                                        <field name="column_foreign_currency"
+                                               required="column_amount_currency"/>
                                     </group>
                                     <group string="Other Party">
                                         <field name="column_partner"/>

@@ -25,6 +25,9 @@ CLOSING_FALLBACK_CODES = ('CLAV',)
 # The identifiers the banks send when there is none.
 EMPTY_REFERENCES = ('NOTPROVIDED', 'NOTPROVIDE', 'UNKNOWN', 'NONREF')
 
+# The amounts of an AmtDtls element that can be in the currency of the other party, the instructed one first.
+FOREIGN_AMOUNTS = ('InstdAmt/Amt', 'TxAmt/Amt')
+
 
 def parse(data, filename, options=None):
     root = _root(data)
@@ -98,7 +101,7 @@ def _balances(node):
 
 def _transactions(entry, index):
     """The transactions of an Ntry element, several of them when the entry is a batch."""
-    amount, dummy = _amount(entry)
+    amount, currency = _amount(entry)
     indicator = _text(entry, 'CdtDbtInd')
     # A reversal keeps the indicator of the transaction it cancels, its amount goes the other way.
     reversal = (_text(entry, 'RvslInd') or '').lower() in ('true', '1')
@@ -117,13 +120,19 @@ def _transactions(entry, index):
                for transaction in _children(group, 'TxDtls')]
     # A batch is split in one transaction per TxDtls, but only when each of them carries its own amount.
     batch = len(details) > 1 and all(_find(transaction, 'Amt') is not None for transaction in details)
+    # The foreign amount of the entry, or of its only detail: the details of an entry that is not split
+    # tell nothing of the entry as a whole.
+    foreign = _foreign_amount(details[0], currency) if len(details) == 1 else (None, None)
+    if foreign[0] is None:
+        foreign = _foreign_amount(entry, currency)
+    values['amount_currency'], values['foreign_currency_code'] = foreign
     if not batch:
         details = details[:1]
     transactions = []
     for sub_index, detail in enumerate(details or [None]):
         transaction = dict(values)
         if detail is not None:
-            transaction.update(_details(detail, indicator, reversal, batch))
+            transaction.update(_details(detail, indicator, reversal, batch, currency))
         # the reference of the entry identifies it, the one of the detail only tells a batch apart
         detail_reference = transaction.pop('reference', None)
         reference = (detail_reference if batch else None) or entry_reference
@@ -136,12 +145,14 @@ def _transactions(entry, index):
     return transactions
 
 
-def _details(node, indicator, reversal, batch):
-    """The values of a TxDtls element, ``indicator`` being the direction of its entry."""
+def _details(node, indicator, reversal, batch, currency):
+    """The values of a TxDtls element, ``indicator`` being the direction of its entry and ``currency``
+    the currency of its amount."""
     values = {}
     amount, dummy = _amount(node)
     if amount is not None and batch:
         values['amount'] = _sign(amount, _text(node, 'CdtDbtInd') or indicator, reversal)
+        values['amount_currency'], values['foreign_currency_code'] = _foreign_amount(node, currency)
     parties = _find(node, 'RltdPties')
     if parties is not None:
         # The other party is the creditor of a payment and the debtor of a collection.
@@ -158,6 +169,17 @@ def _details(node, indicator, reversal, batch):
     if narration:
         values['narration'] = narration
     return values
+
+
+def _foreign_amount(node, currency):
+    """:return: (the amount, its currency) of the AmtDtls of an Ntry or TxDtls element that is in another
+    currency than ``currency``, the one of the account, or (None, None). The sign is left to the importer."""
+    details = _find(node, 'AmtDtls')
+    for path in FOREIGN_AMOUNTS:
+        amount, code = _amount(details, path)
+        if amount and code and code.upper() != (currency or '').upper():
+            return abs(amount), code.upper()
+    return None, None
 
 
 def _reference(node, path):

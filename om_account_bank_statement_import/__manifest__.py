@@ -10,7 +10,7 @@ QFX, QIF, and CSV or Excel with a map of the columns of your bank, which is kept
 The journal is recognised from the account number in the file, the transactions already imported are skipped, and
 the file stays attached to the statement. The statements are then reconciled as usual.
     """,
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',

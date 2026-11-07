@@ -150,6 +150,48 @@ CAMT054 = """<?xml version="1.0" encoding="UTF-8"?>
 </Document>
 """
 
+CAMT053_FOREIGN = """<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+  <BkToCstmrStmt>
+    <GrpHdr><MsgId>MSG-005</MsgId><CreDtTm>2023-05-05T02:00:00</CreDtTm></GrpHdr>
+    <Stmt>
+      <Id>STMT-2023-005</Id>
+      <Acct><Id><Othr><Id>987654321</Id></Othr></Id><Ccy>USD</Ccy></Acct>
+      <Ntry>
+        <Amt Ccy="USD">545.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>
+        <BookgDt><Dt>2023-05-02</Dt></BookgDt>
+        <AcctSvcrRef>FX01</AcctSvcrRef>
+        <NtryDtls><TxDtls>
+          <AmtDtls>
+            <InstdAmt><Amt Ccy="EUR">500.00</Amt></InstdAmt>
+            <TxAmt>
+              <Amt Ccy="USD">545.00</Amt>
+              <CcyXchg><SrcCcy>EUR</SrcCcy><TrgtCcy>USD</TrgtCcy><XchgRate>1.09</XchgRate></CcyXchg>
+            </TxAmt>
+          </AmtDtls>
+          <RltdPties><Dbtr><Nm>Euro Customer</Nm></Dbtr></RltdPties>
+        </TxDtls></NtryDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="USD">109.00</Amt><CdtDbtInd>DBIT</CdtDbtInd>
+        <BookgDt><Dt>2023-05-03</Dt></BookgDt>
+        <AcctSvcrRef>FX02</AcctSvcrRef>
+        <AmtDtls>
+          <InstdAmt><Amt Ccy="USD">109.00</Amt></InstdAmt>
+          <TxAmt><Amt Ccy="EUR">100.00</Amt></TxAmt>
+        </AmtDtls>
+      </Ntry>
+      <Ntry>
+        <Amt Ccy="USD">20.00</Amt><CdtDbtInd>DBIT</CdtDbtInd>
+        <BookgDt><Dt>2023-05-04</Dt></BookgDt>
+        <AcctSvcrRef>FX03</AcctSvcrRef>
+        <AmtDtls><InstdAmt><Amt Ccy="USD">20.00</Amt></InstdAmt></AmtDtls>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>
+"""
+
 
 @tagged('post_install', '-at_install')
 class TestCamtParser(TransactionCase):
@@ -197,6 +239,23 @@ class TestCamtParser(TransactionCase):
         self.assertEqual(single['amount'], -75.0)
         self.assertEqual(single['unique_import_id'], 'SINGLE01')
         self.assertEqual(single['partner_name'], 'Office Supplies')
+
+    def test_camt053_foreign_amount(self):
+        """The instructed or transaction amount in another currency than the account is the foreign amount."""
+        transactions = camt.parse(CAMT053_FOREIGN.encode(), 'foreign.xml', {})[0]['transactions']
+        self.assertEqual([line['amount'] for line in transactions], [545.0, -109.0, -20.0])
+        self.assertEqual([(line['amount_currency'], line['foreign_currency_code']) for line in transactions],
+                         [(500.0, 'EUR'), (100.0, 'EUR'), (None, None)])
+
+    def test_camt053_batch_foreign_amount(self):
+        """Each transaction of a batch keeps its own foreign amount, not the one of the entry."""
+        content = CAMT053_BATCH.replace(
+            '<Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>',
+            '<Amt Ccy="EUR">100.00</Amt><CdtDbtInd>CRDT</CdtDbtInd>'
+            '<AmtDtls><InstdAmt><Amt Ccy="CHF">95.00</Amt></InstdAmt></AmtDtls>')
+        first, second, dummy = camt.parse(content.encode(), 'batch.xml', {})[0]['transactions']
+        self.assertEqual((first['amount_currency'], first['foreign_currency_code']), (95.0, 'CHF'))
+        self.assertEqual((second['amount_currency'], second['foreign_currency_code']), (None, None))
 
     def test_camt052_report(self):
         """A camt.052 report, with a proprietary account number and its opening balance as PRCD."""

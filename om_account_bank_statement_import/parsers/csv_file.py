@@ -234,6 +234,7 @@ def _build_transaction(row, indexes, file_map, date_format, row_number):
     ref = _as_text(_cell(row, indexes.get('ref')))
     unique_id = _as_text(_cell(row, indexes.get('unique_id')))
     currency_code = _as_text(_cell(row, indexes.get('currency'))).upper() or None
+    amount_currency, foreign_currency_code = _to_foreign_amount(row, indexes, file_map, row_number)
     return {
         'date': date,
         'payment_ref': label or ref or '/',
@@ -244,6 +245,8 @@ def _build_transaction(row, indexes, file_map, date_format, row_number):
         'ref': ref or None,
         'narration': _as_text(_cell(row, indexes.get('narration'))) or None,
         'transaction_type': None,
+        'amount_currency': amount_currency,
+        'foreign_currency_code': foreign_currency_code,
     }, currency_code
 
 
@@ -256,6 +259,19 @@ def _to_amount(row, indexes, file_map, row_number):
         # the bank writes the money leaving the account as a positive number
         debit = -abs(debit)
     return credit + debit
+
+
+def _to_foreign_amount(row, indexes, file_map, row_number):
+    """ :return: (the amount in the foreign currency, the ISO code of that currency) of a row, or
+    (None, None) when the row has not both of them. The importer keeps them only when that currency is not
+    the one of the journal, and gives the amount the sign of the amount of the row. """
+    if indexes.get('amount_currency') is None or indexes.get('foreign_currency') is None:
+        return None, None
+    code = _as_text(_cell(row, indexes['foreign_currency'])).upper()
+    amount = _to_float(_cell(row, indexes['amount_currency']), file_map, row_number, 'foreign amount')
+    if not code or not amount:
+        return None, None
+    return amount, code
 
 
 # -------------------------------------------------------------------------
