@@ -28,8 +28,8 @@ BIC = re.compile(r'^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$')
 
 # The subfields of a :86: of the SEPA banks, the ones that are not listed here are kept in the narration.
 SLASH_FIELDS = (
-    'ACCT', 'ADDR', 'BENM', 'BIC', 'CDTRREF', 'CNTP', 'CREF', 'CSID', 'EREF', 'IBAN', 'ID', 'ISDT',
-    'MARF', 'NAME', 'ORDP', 'PREF', 'PURP', 'REMI', 'RTRN', 'RMTINF', 'ULTB', 'ULTD',
+    'ACCT', 'ADDR', 'BENM', 'BIC', 'CDTRREF', 'CHGS', 'CNTP', 'CREF', 'CSID', 'EREF', 'IBAN', 'ID', 'ISDT',
+    'MARF', 'NAME', 'OCMT', 'ORDP', 'PREF', 'PURP', 'REMI', 'RTRN', 'RMTINF', 'ULTB', 'ULTD',
 )
 SLASH_FIELD = re.compile(r'/(%s)/' % '|'.join(SLASH_FIELDS))
 
@@ -37,6 +37,10 @@ SLASH_FIELD = re.compile(r'/(%s)/' % '|'.join(SLASH_FIELDS))
 # ?30 the bank of the other party, ?31 its account and ?32/?33 its name.
 SUBFIELD = re.compile(r'\?(\d{2})([^?]*)')
 DESCRIPTION_SUBFIELDS = tuple('%02d' % index for index in list(range(20, 30)) + list(range(60, 64)))
+
+# /OCMT/EUR500,00/: the original amount of the transaction and its currency, in the supplementary details
+# of a :61: (a code of the SWIFT standard) or in the :86: of the SEPA banks.
+ORIGINAL_AMOUNT = re.compile(r'/OCMT/\s*(?P<currency>[A-Z]{3})\s*(?P<amount>\d[\d.,]*)')
 
 # The references the banks send when there is none.
 EMPTY_REFERENCES = ('NONREF', 'NOTPROVIDED', 'UNKNOWN')
@@ -118,6 +122,7 @@ def _transaction(value, statement, index):
     # Two transactions of a day can carry the same amount and the same reference, the number of the
     # statement and the position of the line keep their identifiers apart.
     parts = [bank_reference or customer_reference, statement['name'], str(index + 1)]
+    amount_currency, foreign_currency_code = _original_amount(extra)
     return {
         'date': entry_date or value_date,
         'payment_ref': customer_reference or bank_reference or '/',
@@ -128,7 +133,19 @@ def _transaction(value, statement, index):
         'ref': customer_reference or bank_reference or None,
         'narration': extra.strip() or None,
         'transaction_type': (match.group('transaction_type') or '').strip() or None,
+        'amount_currency': amount_currency,
+        'foreign_currency_code': foreign_currency_code,
     }
+
+
+def _original_amount(text):
+    """:return: (the amount, the currency) of the /OCMT/ code of a text, or (None, None). The sign is left
+    to the importer, the currency is compared with the one of the journal there."""
+    match = ORIGINAL_AMOUNT.search(text or '')
+    if not match:
+        return None, None
+    amount = _number(match.group('amount'))
+    return (amount, match.group('currency')) if amount else (None, None)
 
 
 def _information(transaction, value):
@@ -155,6 +172,8 @@ def _information(transaction, value):
     transaction['partner_name'] = partner_name or transaction['partner_name']
     transaction['account_number'] = account_number or transaction['account_number']
     transaction['ref'] = transaction['ref'] or label
+    if not transaction.get('foreign_currency_code'):
+        transaction['amount_currency'], transaction['foreign_currency_code'] = _original_amount(value)
 
 
 def _slash_fields(value):

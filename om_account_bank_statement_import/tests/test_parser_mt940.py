@@ -47,6 +47,20 @@ MT940_ENVELOPE = """{1:F01ABNANL2AXXXX0000000000}{2:I940ABNANL2AXXXXN}{4:
 :62F:C230402EUR200,00
 -}"""
 
+MT940_FOREIGN = """:20:FOREIGN
+:25:NL02ABNA0123456789 USD
+:28C:9
+:60F:C230501USD100,00
+:61:2305020502C545,00NTRFNONREF//BREF1
+/OCMT/EUR500,00/
+:86:/NAME/Euro Customer/REMI/Invoice 7
+:61:2305030503D109,00NTRFNONREF//BREF2
+:86:/NAME/Paris Hotel/OCMT/EUR100,00//REMI/Room
+:61:2305040504D20,00NTRFNONREF//BREF3
+:86:/NAME/Local Shop/REMI/Paper
+:62F:C230504USD516,00
+"""
+
 
 @tagged('post_install', '-at_install')
 class TestMt940Parser(TransactionCase):
@@ -113,6 +127,13 @@ class TestMt940Parser(TransactionCase):
         self.assertEqual(first['date'], second['date'])
         self.assertNotEqual(first['unique_import_id'], second['unique_import_id'])
         self.assertEqual(first['payment_ref'], 'Cash deposit main branch')
+
+    def test_mt940_original_amount(self):
+        """The /OCMT/ original amount of a :61: or of a :86: is the foreign amount of the line."""
+        transactions = mt940.parse(MT940_FOREIGN.encode(), 'foreign.sta', {})[0]['transactions']
+        self.assertEqual([(line['amount_currency'], line['foreign_currency_code']) for line in transactions],
+                         [(500.0, 'EUR'), (100.0, 'EUR'), (None, None)])
+        self.assertEqual(transactions[1]['payment_ref'], 'Room', "the /OCMT/ code is not part of the label")
 
     def test_other_formats(self):
         """A file that is not an MT940 is left to the next parser."""

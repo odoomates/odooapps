@@ -67,6 +67,15 @@ class AccountStatementImportMap(models.Model):
     column_account_number = fields.Char(
         string='Account Number Column', help='The bank account of the other party of the transaction.')
     column_currency = fields.Char(string='Currency Column', help='The ISO code of the currency, e.g. EUR.')
+    column_amount_currency = fields.Char(
+        string='Foreign Amount Column',
+        help='The amount of the transaction in the currency of the other party, when it is another one than the '
+             'currency of the account, e.g. 500.00 for a transfer of 500.00 EUR on a USD account. Its sign '
+             'follows the one of the amount.')
+    column_foreign_currency = fields.Char(
+        string='Foreign Currency Column',
+        help='The ISO code of the currency of the foreign amount, e.g. EUR. A row in the currency of the '
+             'journal has no foreign amount.')
     column_unique_id = fields.Char(
         string='Unique ID Column',
         help='The identifier of the transaction at the bank, to import the same file twice without '
@@ -80,6 +89,14 @@ class AccountStatementImportMap(models.Model):
                 raise ValidationError(_(
                     'The map "%s" needs an amount column, or a debit column and a credit column.',
                     file_map.name))
+
+    @api.constrains('column_amount_currency', 'column_foreign_currency')
+    def _check_foreign_currency_columns(self):
+        for file_map in self:
+            if bool(file_map.column_amount_currency) != bool(file_map.column_foreign_currency):
+                raise ValidationError(_(
+                    'The map "%s" needs both the foreign amount column and the foreign currency column, or '
+                    'neither of them.', file_map.name))
 
     def _get_map_options(self):
         """ :return: the map as a plain dict, for the parsers, which do not import Odoo """
@@ -106,6 +123,8 @@ class AccountStatementImportMap(models.Model):
                 'partner': self.column_partner or '',
                 'account_number': self.column_account_number or '',
                 'currency': self.column_currency or '',
+                'amount_currency': self.column_amount_currency or '',
+                'foreign_currency': self.column_foreign_currency or '',
                 'unique_id': self.column_unique_id or '',
                 'narration': self.column_narration or '',
             },

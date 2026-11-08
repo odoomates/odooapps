@@ -1,4 +1,5 @@
 import logging
+import math
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
@@ -113,17 +114,62 @@ class AccountStatementImport(models.TransientModel):
                 currency=journal_currency.name,
             ))
 
-    def _statement_line_values(self, transaction, journal, statement):
+    def _get_foreign_currencies(self, transactions, journal, filename):
+        """ :return: {ISO code: currency} of the foreign amounts of the transactions that are not in the
+        currency of the journal; an unknown or inactive currency is refused """
+        journal_currency = journal.currency_id or journal.company_id.currency_id
+        codes = {
+            (transaction.get('foreign_currency_code') or '').strip().upper() for transaction in transactions
+            if transaction.get('amount_currency')
+        } - {'', journal_currency.name.upper()}
+        if not codes:
+            return {}
+        currencies = self.env['res.currency'].with_context(active_test=False).search([('name', 'in', list(codes))])
+        unknown = codes - set(currencies.mapped('name'))
+        if unknown:
+            raise UserError(_(
+                'The file %(file)s has transactions in the currency %(codes)s, which is unknown. Check the '
+                'foreign currency column of the file map, or the ISO code written in the file.',
+                file=filename, codes=', '.join(sorted(unknown)),
+            ))
+        inactive = currencies.filtered(lambda currency: not currency.active)
+        if inactive:
+            raise UserError(_(
+                'The file %(file)s has transactions in %(codes)s. Activate that currency in the settings of '
+                'the accounting, then import the file again.',
+                file=filename, codes=', '.join(sorted(inactive.mapped('name'))),
+            ))
+        return {currency.name.upper(): currency for currency in currencies}
+
+    def _foreign_currency_values(self, transaction, currencies):
+        """ :return: the foreign currency and the amount in that currency of a statement line, with the
+        sign of its amount; nothing when the transaction is in the currency of the journal """
+        currency = currencies.get((transaction.get('foreign_currency_code') or '').strip().upper())
+        amount_currency = transaction.get('amount_currency')
+        if not currency or not amount_currency or not transaction['amount']:
+            return {}
+        return {
+            'foreign_currency_id': currency.id,
+            'amount_currency': currency.round(math.copysign(abs(amount_currency), transaction['amount'])),
+        }
+
+    def _statement_line_values(self, transaction, journal, statement, currencies=None):
+        """ :param dict currencies: the result of ``_get_foreign_currencies``, read for the transaction
+        alone when not given """
+        if currencies is None:
+            currencies = self._get_foreign_currencies([transaction], journal, statement.get('name') or '')
         unique_import_id = transaction.get('unique_import_id')
         if unique_import_id:
             # the same transaction file may be imported in two journals of two companies
             unique_import_id = f'{journal.id}-{unique_import_id}'
         narration = transaction.get('narration')
+        # an amount converted by the parser, from a foreign amount and a rate, has more decimals
+        journal_currency = journal.currency_id or journal.company_id.currency_id
         return {
             'journal_id': journal.id,
             'date': transaction['date'],
             'payment_ref': transaction['payment_ref'],
-            'amount': transaction['amount'],
+            'amount': journal_currency.round(transaction['amount']),
             'unique_import_id': unique_import_id,
             'partner_name': transaction.get('partner_name'),
             'account_number': transaction.get('account_number'),
@@ -136,6 +182,7 @@ class AccountStatementImport(models.TransientModel):
                     ('import_id', transaction.get('unique_import_id')),
                 ) if value
             },
+            **self._foreign_currency_values(transaction, currencies),
         }
 
     def _import_statement(self, statement, filename, attachment):
@@ -149,7 +196,9 @@ class AccountStatementImport(models.TransientModel):
         if not transactions:
             return self.env['account.bank.statement'], 0
 
-        values = [self._statement_line_values(transaction, journal, statement) for transaction in transactions]
+        currencies = self._get_foreign_currencies(transactions, journal, filename)
+        values = [self._statement_line_values(transaction, journal, statement, currencies)
+                  for transaction in transactions]
         import_ids = [line['unique_import_id'] for line in values if line['unique_import_id']]
         already_imported = set(self.env['account.bank.statement.line'].sudo().search_fetch(
             [('unique_import_id', 'in', import_ids)], ['unique_import_id'],

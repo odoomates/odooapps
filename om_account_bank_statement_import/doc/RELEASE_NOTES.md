@@ -1,5 +1,14 @@
 ## Module <om_account_bank_statement_import>
 
+#### 02.11.2026
+#### Version 1.0.2
+##### IMP
+- the statement lines keep the foreign amount and the foreign currency of a transaction made in another
+  currency than the one of the account: from the new columns of the CSV and Excel file maps, the
+  instructed or transaction amount of CAMT, the /OCMT/ of MT940 and the CURRENCY or ORIGCURRENCY of OFX
+- a file with a foreign amount in an inactive or unknown currency is now refused with a message: activate
+  the currency, or correct its code, then import the file again
+
 #### 30.10.2026
 #### Version 1.0.1
 ##### IMP
