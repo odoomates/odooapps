@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="flow_visualizer.SimulatorSystray">
+        <button t-if="!this.store.sim.active" type="button" class="o_nav_entry btn px-2 o_flow_sim_systray"
+                data-tooltip="Simulator: try things out, every click becomes a step you can go back to"
+                t-on-click="() => this.start()">
+            <i class="oi" data-icon="play_arrow"/>
+        </button>
+        <Dropdown t-else="">
+            <button type="button" class="o_nav_entry btn px-2 o_flow_sim_systray o_flow_sim_systray_on"
+                    data-tooltip="A simulation runs: nothing is saved">
+                <span class="o_flow_sim_rec me-1"/>
+                <span class="fw-bold small" t-out="this.stepCount"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="px-3 py-1 small text-muted">
+                    Simulation: <t t-out="this.stepCount"/> step(s), nothing saved yet
+                </div>
+                <DropdownItem class="'o_flow_sim_menu_keep'" onSelected="() => this.send('keep')">
+                    <i class="oi oi-fw me-1" data-icon="check"/>Keep all
+                </DropdownItem>
+                <DropdownItem class="'o_flow_sim_menu_start_over'" onSelected="() => this.send('start-over')">
+                    <i class="oi oi-fw me-1" data-icon="undo"/>Go back to the start
+                </DropdownItem>
+                <DropdownItem class="'o_flow_sim_menu_discard text-danger'" onSelected="() => this.send('discard')">
+                    <i class="oi oi-fw me-1" data-icon="close"/>Discard
+                </DropdownItem>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="flow_visualizer.FlowSimulator">
+        <div t-if="this.store.sim.active" class="o_flow_sim_bar d-flex align-items-center gap-3 px-3">
+            <div class="o_flow_sim_badge d-flex align-items-center gap-2 flex-shrink-0">
+                <span class="o_flow_sim_rec"/>
+                <div class="lh-sm">
+                    <div class="fw-bold text-uppercase small">Simulation</div>
+                    <div class="small opacity-75">nothing is saved</div>
+                </div>
+            </div>
+
+            <div class="o_flow_sim_track d-flex align-items-center flex-grow-1 overflow-auto">
+                <button type="button" class="o_flow_sim_step o_flow_sim_start btn"
+                        t-att-class="{'o_flow_sim_current': !this.current}"
+                        data-tooltip="Go back to the start" t-on-click="() => this.goBack(null)">
+                    <span class="o_flow_sim_dot"><i class="oi" data-icon="flag"/></span>
+                    <span class="o_flow_sim_text fw-semibold">Start</span>
+                </button>
+                <t t-foreach="this.steps" t-as="step" t-key="step.id">
+                    <span class="o_flow_sim_link"/>
+                    <button type="button" class="o_flow_sim_step btn"
+                            t-att-class="{'o_flow_sim_current': step === this.current}"
+                            t-att-data-tooltip="step === this.current ? 'Where you are' : 'Go back to this step'"
+                            t-on-click="() => this.goBack(step)">
+                        <span class="o_flow_sim_dot">
+                            <i class="oi" t-att-data-icon="this.icon(step)"/>
+                        </span>
+                        <span class="o_flow_sim_text">
+                            <span class="fw-semibold" t-out="this.label(step)"/>
+                            <span class="o_flow_sim_target" t-out="step.target"/>
+                        </span>
+                    </button>
+                </t>
+                <t t-if="this.undone.length">
+                    <button type="button" class="btn btn-sm o_flow_sim_undone_toggle ms-2"
+                            t-on-click="() => this.toggleUndone()">
+                        <i class="oi me-1" data-icon="history"/><t t-out="this.undone.length"/> undone
+                    </button>
+                    <t t-if="this.state.showUndone">
+                        <t t-foreach="this.undone" t-as="step" t-key="step.id">
+                            <span class="o_flow_sim_step o_flow_sim_abandoned ms-2" data-tooltip="Undone: gone back before it">
+                                <span class="o_flow_sim_dot"><i class="oi" t-att-data-icon="this.icon(step)"/></span>
+                                <span class="o_flow_sim_text">
+                                    <span t-out="this.label(step)"/>
+                                    <span class="o_flow_sim_target" t-out="step.target"/>
+                                </span>
+                            </span>
+                        </t>
+                    </t>
+                </t>
+            </div>
+
+            <div class="d-flex gap-2 flex-shrink-0">
+                <button type="button" class="btn btn-sm btn-light o_flow_sim_keep"
+                        t-att-disabled="this.store.simBusy" t-on-click="() => this.end(true)">
+                    <i class="oi me-1" data-icon="check"/>Keep all
+                </button>
+                <button type="button" class="btn btn-sm btn-outline-light o_flow_sim_discard"
+                        t-att-disabled="this.store.simBusy" t-on-click="() => this.end(false)">
+                    <i class="oi me-1" data-icon="close"/>Discard
+                </button>
+            </div>
+
+            <div t-if="this.state.rewinding" class="o_flow_sim_rewinding">
+                <i class="oi" data-icon="autorenew"/>
+                <span>Going back to <b t-out="this.state.rewinding"/>…</span>
+            </div>
+        </div>
+    </t>
+
+</templates>

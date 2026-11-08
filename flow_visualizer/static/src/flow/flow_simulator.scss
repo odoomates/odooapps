@@ -1,0 +1,170 @@
+$o-flow-sim-height: 64px;
+
+// ---------------------------------------------------------------------------
+// the simulator bar: a player at the bottom of the screen
+// ---------------------------------------------------------------------------
+
+.o_flow_sim_bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: $o-flow-sim-height;
+    z-index: 1031;
+    color: $white;
+    background: linear-gradient(90deg, #7a1f3d, #b3324f 45%, #c2410c);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.25);
+}
+
+// the screen and the panel make room for it
+body:has(.o_flow_sim_bar) {
+    .o_action_manager {
+        padding-bottom: $o-flow-sim-height;
+    }
+    .o_flow_panel {
+        bottom: $o-flow-sim-height;
+    }
+}
+
+.o_flow_sim_rec {
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 50%;
+    background-color: #ff4d4d;
+    box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.8);
+    animation: o_flow_rec 1.4s ease-out infinite;
+}
+
+.o_flow_sim_track {
+    scrollbar-width: thin;
+    padding: 0.25rem 0;
+}
+
+.o_flow_sim_step {
+    --btn-padding-x: 0.25rem;
+    --btn-padding-y: 0.15rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex: 0 0 auto;
+    color: $white !important;
+    border: 0;
+    border-radius: 2rem;
+    padding-right: 0.75rem;
+    animation: o_flow_pop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.15);
+    }
+}
+
+.o_flow_sim_dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    color: #7a1f3d;
+    background-color: $white;
+    --oi-font-size: 1.1rem;
+}
+
+.o_flow_sim_text {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    line-height: 1.15;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.o_flow_sim_target {
+    opacity: 0.8;
+    font-size: 0.75rem;
+}
+
+.o_flow_sim_current .o_flow_sim_dot {
+    background-color: #ffd166;
+    animation: o_flow_here 1.6s ease-out infinite;
+}
+
+.o_flow_sim_link {
+    flex: 0 0 1.5rem;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.6);
+}
+
+.o_flow_sim_abandoned {
+    opacity: 0.45;
+    text-decoration: line-through;
+    animation: none;
+    cursor: default;
+}
+
+.o_flow_sim_undone_toggle {
+    color: $white !important;
+    border: 1px dashed rgba(255, 255, 255, 0.6);
+    border-radius: 1rem;
+    flex: 0 0 auto;
+}
+
+.o_flow_sim_rewinding {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    font-size: 1rem;
+    background: rgba(20, 10, 30, 0.85);
+    animation: o_flow_in 0.2s ease-out both;
+    --oi-font-size: 1.6rem;
+
+    .oi {
+        animation: o_flow_rewind 0.8s linear infinite;
+    }
+}
+
+@keyframes o_flow_rec {
+    to {
+        box-shadow: 0 0 0 0.6rem rgba(255, 77, 77, 0);
+    }
+}
+
+@keyframes o_flow_here {
+    from {
+        box-shadow: 0 0 0 0 rgba(255, 209, 102, 0.9);
+    }
+    to {
+        box-shadow: 0 0 0 0.6rem rgba(255, 209, 102, 0);
+    }
+}
+
+@keyframes o_flow_rewind {
+    to {
+        transform: rotate(-360deg);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_flow_sim_rec,
+    .o_flow_sim_step,
+    .o_flow_sim_current .o_flow_sim_dot,
+    .o_flow_sim_rewinding .oi {
+        animation: none;
+    }
+}
+
+.o_flow_sim_systray_on {
+    color: $white !important;
+    background: linear-gradient(90deg, #7a1f3d, #c2410c) !important;
+    border-radius: 1rem;
+    margin: 0 0.25rem;
+
+    .o_flow_sim_rec {
+        display: inline-block;
+        width: 0.6rem;
+        height: 0.6rem;
+    }
+}
