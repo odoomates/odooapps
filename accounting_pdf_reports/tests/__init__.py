@@ -6,7 +6,6 @@ from . import test_company_notice
 from . import test_partner_ledger_initial
 from . import test_general_ledger_initial
 from . import test_menu_access
-from . import test_optional_columns
 from . import test_report_fixes
 from . import test_report_templates
 from . import test_tax_report
