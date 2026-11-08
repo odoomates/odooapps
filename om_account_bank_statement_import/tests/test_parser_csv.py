@@ -110,6 +110,27 @@ class TestCsvParser(TransactionCase):
         self.assertEqual([line['amount'] for line in statement['transactions']], [-10.0, 10.0])
         self.assertEqual([line['unique_import_id'] for line in statement['transactions']], ['ID1', 'ID2'])
 
+    def test_csv_foreign_amount_columns(self):
+        """ The foreign amount and its currency are read when a row has both of them. """
+        file_map = self._make_map(column_amount_currency='Original Amount',
+                                  column_foreign_currency='Original Currency')
+        content = (
+            'Date,Label,Amount,Original Amount,Original Currency\n'
+            '01/02/2024,Transfer from Europe,545.00,500.00,eur\n'
+            '02/02/2024,Local shop,-20.00,,\n'
+            '03/02/2024,No currency,-30.00,30.00,\n'
+        )
+        transactions = self._parse(content, 'bank.csv', file_map)[0]['transactions']
+        self.assertEqual([(line['amount_currency'], line['foreign_currency_code']) for line in transactions],
+                         [(500.0, 'EUR'), (None, None), (None, None)])
+
+    def test_map_needs_both_foreign_columns(self):
+        """ The foreign amount column and the foreign currency column go together. """
+        with self.assertRaises(ValidationError):
+            self._make_map(column_amount_currency='Original Amount')
+        with self.assertRaises(ValidationError):
+            self._make_map(column_foreign_currency='Original Currency')
+
     # -------------------------------------------------------------------------
     # Excel
     # -------------------------------------------------------------------------

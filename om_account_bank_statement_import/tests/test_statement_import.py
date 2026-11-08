@@ -33,6 +33,53 @@ VERSION:102
 </STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>
 """
 
+OFX_FOREIGN_FILE = """OFXHEADER:100
+DATA:OFXSGML
+VERSION:102
+
+<OFX>
+<BANKMSGSRSV1><STMTTRNRS><TRNUID>1<STATUS><CODE>0<SEVERITY>INFO</STATUS>
+<STMTRS><CURDEF>USD
+<BANKACCTFROM><BANKID>123456<ACCTID>987654321<ACCTTYPE>CHECKING</BANKACCTFROM>
+<BANKTRANLIST><DTSTART>20260301<DTEND>20260331
+<STMTTRN><TRNTYPE>CREDIT<DTPOSTED>20260302<TRNAMT>545.00<FITID>FX-1<NAME>Euro Customer
+<ORIGCURRENCY><CURRATE>1.09<CURSYM>EUR</ORIGCURRENCY></STMTTRN>
+<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260303<TRNAMT>-100.00<FITID>FX-2<NAME>Paris Hotel
+<CURRENCY><CURRATE>1.09<CURSYM>EUR</CURRENCY></STMTTRN>
+<STMTTRN><TRNTYPE>DEBIT<DTPOSTED>20260304<TRNAMT>-20.00<FITID>FX-3<NAME>Local Shop</STMTTRN>
+</BANKTRANLIST>
+<LEDGERBAL><BALAMT>416.00<DTASOF>20260331</LEDGERBAL>
+</STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>
+"""
+
+CSV_FOREIGN_FILE = """Date,Label,Amount,Original Amount,Original Currency
+01/02/2026,Transfer from Europe,545.00,500.00,EUR
+02/02/2026,Hotel in Paris,-109.00,100.00,eur
+03/02/2026,Local shop,-20.00,,
+04/02/2026,Same currency,-30.00,-30.00,USD
+"""
+
+CAMT_FOREIGN_FILE = """<?xml version="1.0" encoding="UTF-8"?>
+<Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.053.001.02">
+  <BkToCstmrStmt>
+    <GrpHdr><MsgId>FX</MsgId><CreDtTm>2026-04-05T02:00:00</CreDtTm></GrpHdr>
+    <Stmt>
+      <Id>FX-STMT</Id>
+      <Acct><Id><Othr><Id>987654321</Id></Othr></Id><Ccy>USD</Ccy></Acct>
+      <Ntry>
+        <Amt Ccy="USD">109.00</Amt><CdtDbtInd>DBIT</CdtDbtInd>
+        <BookgDt><Dt>2026-04-02</Dt></BookgDt>
+        <AcctSvcrRef>CAMT-FX-1</AcctSvcrRef>
+        <NtryDtls><TxDtls>
+          <AmtDtls><InstdAmt><Amt Ccy="EUR">100.00</Amt></InstdAmt></AmtDtls>
+          <RltdPties><Cdtr><Nm>Paris Hotel</Nm></Cdtr></RltdPties>
+        </TxDtls></NtryDtls>
+      </Ntry>
+    </Stmt>
+  </BkToCstmrStmt>
+</Document>
+"""
+
 
 @tagged('post_install', '-at_install')
 class TestStatementImport(AccountTestInvoicingCommon):
@@ -127,6 +174,66 @@ class TestStatementImport(AccountTestInvoicingCommon):
         self.journal.currency_id = foreign
         with self.assertRaisesRegex(UserError, 'USD'):
             self._import(OFX_FILE, 'statement.ofx')
+
+    # -------------------------------------------------------------------------
+    # Foreign currency of the lines
+    # -------------------------------------------------------------------------
+    def _foreign_map(self):
+        return self.env['account.statement.import.map'].create({
+            'name': 'Foreign Map',
+            'date_format': '%d/%m/%Y',
+            'column_date': 'Date',
+            'column_label': 'Label',
+            'column_amount': 'Amount',
+            'column_amount_currency': 'Original Amount',
+            'column_foreign_currency': 'Original Currency',
+        })
+
+    def _foreign_values(self, lines):
+        return [(line.amount, line.foreign_currency_id.name or False, line.amount_currency)
+                for line in lines.sorted('date')]
+
+    def test_import_csv_with_a_foreign_amount(self):
+        """ A row in another currency keeps its foreign amount, with the sign of its amount; a row in the
+        currency of the journal has none. """
+        self.setup_other_currency('EUR')
+        action = self._import(CSV_FOREIGN_FILE, 'foreign.csv', journal_id=self.journal.id,
+                              map_id=self._foreign_map().id)
+        lines = self._statements_of(action).line_ids
+        self.assertEqual(self._foreign_values(lines), [
+            (545.0, 'EUR', 500.0),
+            (-109.0, 'EUR', -100.0),
+            (-20.0, False, 0.0),
+            (-30.0, False, 0.0),
+        ])
+
+    def test_an_unknown_foreign_currency_is_refused(self):
+        content = CSV_FOREIGN_FILE.replace(',eur', ',XYZ')
+        with self.assertRaisesRegex(UserError, 'XYZ, which is unknown'):
+            self._import(content, 'foreign.csv', journal_id=self.journal.id, map_id=self._foreign_map().id)
+
+    def test_an_inactive_foreign_currency_is_refused(self):
+        self.env.ref('base.CHF').active = False
+        content = CSV_FOREIGN_FILE.replace(',eur', ',CHF').replace(',EUR', ',CHF')
+        with self.assertRaisesRegex(UserError, 'Activate'):
+            self._import(content, 'foreign.csv', journal_id=self.journal.id, map_id=self._foreign_map().id)
+
+    def test_import_camt_with_an_instructed_amount(self):
+        self.setup_other_currency('EUR')
+        action = self._import(CAMT_FOREIGN_FILE, 'foreign.xml')
+        statement = self._statements_of(action)
+        self.assertEqual(statement.journal_id, self.journal)
+        self.assertEqual(self._foreign_values(statement.line_ids), [(-109.0, 'EUR', -100.0)])
+
+    def test_import_ofx_with_a_currency(self):
+        """ ORIGCURRENCY: the amount was converted, CURRENCY: the amount is the foreign one. """
+        self.setup_other_currency('EUR')
+        action = self._import(OFX_FOREIGN_FILE, 'foreign.ofx')
+        self.assertEqual(self._foreign_values(self._statements_of(action).line_ids), [
+            (545.0, 'EUR', 500.0),
+            (-109.0, 'EUR', -100.0),
+            (-20.0, False, 0.0),
+        ])
 
     def test_a_journal_is_needed(self):
         self.journal.bank_account_id = False
