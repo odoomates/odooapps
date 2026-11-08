@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 16 Accounting Financial Reports',
-    'version': '16.0.2.1.1',
+    'version': '16.0.2.2.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 16, Accounting Financial Reports, '
                    'Odoo 16 Financial Reports',
@@ -8,11 +8,10 @@
     'sequence': '1',
     'author': 'Odoo Mates, Odoo SA',
     'license': 'LGPL-3',
-    'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'website': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
-    'depends': ['account'],
+    'depends': ['account', 'om_print_journal_entry'],
     'live_test_url': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'data': [
         'security/ir.model.access.csv',
@@ -44,7 +43,6 @@
         'report/report_tax.xml',
         'report/report_aged_partner.xml',
         'report/report_journal_audit.xml',
-        'report/report_journal_entries.xml',
         'report/report_cash_flow.xml',
     ],
     'pre_init_hook': '_pre_init_clean_m2m_models',
