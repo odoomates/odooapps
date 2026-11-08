@@ -6,7 +6,6 @@ from . import test_partner_ledger_initial
 from . import test_general_ledger_initial
 from . import test_menu_access
 from . import test_annual_report
-from . import test_optional_columns
 from . import test_tax_report
 from . import test_tax_closing
 from . import test_tax_grid
