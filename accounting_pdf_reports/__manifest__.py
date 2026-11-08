@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Financial Reports',
-    'version': '2.0.7',
+    'version': '2.1.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 20, Odoo 20 Financial Reports, Accounting Financial Reports, '
                    'Financial Statements, Accounting PDF Reports, Annual Report, Balance Sheet, Profit and Loss, '
@@ -11,14 +11,13 @@
     'summary': 'Accounting Financial Reports for Odoo 20 Community: Annual Report, Balance Sheet, Profit and Loss, '
                'Cash Flow Statement, General Ledger, Trial Balance, Partner Ledger, Aged Receivable and Payable, '
                'Tax Report, Journals Audit, PDF',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'license': 'LGPL-3',
-    'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'website': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
-    'depends': ['account'],
+    'depends': ['account', 'om_print_journal_entry'],
     'live_test_url': 'https://www.youtube.com/watch?v=yA4NLwOLZms',
     'data': [
         'security/ir.access.csv',
@@ -51,7 +50,6 @@
         'report/report_tax_grid.xml',
         'report/report_aged_partner.xml',
         'report/report_journal_audit.xml',
-        'report/report_journal_entries.xml',
         'report/report_cash_flow.xml',
     ],
     'pre_init_hook': '_pre_init_clean_m2m_models',
