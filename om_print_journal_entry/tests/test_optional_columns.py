@@ -35,7 +35,7 @@ class TestOptionalColumns(AccountTestInvoicingCommon):
 
     def _journal_entry_page(self):
         html, __ = self.env['ir.actions.report'].with_user(self.reader)._render_qweb_html(
-            'accounting_pdf_reports.report_journal_entries', self.entry.ids)
+            'om_print_journal_entry.report_journal_entries', self.entry.ids)
         return html.decode() if isinstance(html, bytes) else str(html)
 
     def test_the_analytic_column_follows_the_setting(self):

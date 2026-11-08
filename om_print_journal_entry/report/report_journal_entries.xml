@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_journal_entries">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-set="layout_document_title">
+                    <span t-out="o.om_print_document_label()"/> <span t-field="o.name"/>
+                </t>
+                <t t-call="web.external_layout">
+                    <!-- a column for a feature that is not used would be an empty stripe down every page -->
+                    <t t-set="show_analytic" t-value="env.user.has_group('analytic.group_analytic_accounting')"/>
+                    <t t-set="show_taxes" t-value="o.om_print_has_taxes()"/>
+                    <t t-set="show_currency" t-value="o.om_print_has_foreign_currency()"/>
+                    <t t-set="amount_columns" t-value="3 + (show_analytic and 1 or 0) + (show_taxes and 1 or 0) + (show_currency and 1 or 0)"/>
+                    <div class="page o_om_report o_om_je">
+                        <t t-call="om_print_journal_entry.report_style"/>
+                        <t t-call="om_print_journal_entry.report_journal_entry_style"/>
+
+                        <div id="informations" class="row mb-3 o_om_je_info">
+                            <div class="col-3 mb-2">
+                                <strong>Journal</strong>
+                                <div t-field="o.journal_id"/>
+                            </div>
+                            <div class="col-3 mb-2">
+                                <strong>Accounting Date</strong>
+                                <div t-field="o.date"/>
+                            </div>
+                            <div class="col-3 mb-2" t-if="o.invoice_date">
+                                <strong>Invoice Date</strong>
+                                <div t-field="o.invoice_date"/>
+                            </div>
+                            <div class="col-3 mb-2" t-if="o.invoice_date_due and o.is_invoice(include_receipts=True)">
+                                <strong>Due Date</strong>
+                                <div t-field="o.invoice_date_due"/>
+                            </div>
+                            <div class="col-3 mb-2" t-if="o.partner_id">
+                                <strong>Partner</strong>
+                                <div t-field="o.partner_id"/>
+                            </div>
+                            <div class="col-3 mb-2" t-if="o.ref">
+                                <strong>Reference</strong>
+                                <div t-field="o.ref"/>
+                            </div>
+                            <div class="col-3 mb-2" t-if="o.invoice_origin">
+                                <strong>Source Document</strong>
+                                <div t-field="o.invoice_origin"/>
+                            </div>
+                            <div class="col-3 mb-2">
+                                <strong>Status</strong>
+                                <div><span t-attf-class="o_om_je_state o_om_je_state_{{o.state}}" t-field="o.state"/></div>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Account</th>
+                                    <th class="text-start">Partner</th>
+                                    <th class="text-start">Label</th>
+                                    <th t-if="show_analytic" class="text-start">Analytic Distribution</th>
+                                    <th t-if="show_taxes" class="text-start">Taxes</th>
+                                    <th t-if="show_currency" class="text-end">Amount in Currency</th>
+                                    <th class="text-end">Debit</th>
+                                    <th class="text-end">Credit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.line_ids" t-as="line">
+                                    <td><span t-field="line.account_id"/></td>
+                                    <td><span t-field="line.partner_id"/></td>
+                                    <td><span t-field="line.name"/></td>
+                                    <td t-if="show_analytic">
+                                        <div t-foreach="line.om_print_analytic_labels()" t-as="entry">
+                                            <t t-out="entry"/>
+                                        </div>
+                                    </td>
+                                    <td t-if="show_taxes" class="o_om_je_taxes">
+                                        <t t-out="line.om_print_tax_labels()"/>
+                                    </td>
+                                    <td t-if="show_currency" class="text-end text-nowrap">
+                                        <span t-if="line.currency_id != o.company_currency_id" t-field="line.amount_currency"
+                                              t-options="{'widget': 'monetary', 'display_currency': line.currency_id}"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-field="line.debit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-field="line.credit" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot>
+                                <tr class="fw-bold border-top border-dark">
+                                    <td t-att-colspan="amount_columns">Total</td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="sum(o.line_ids.mapped('debit'))"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                                    </td>
+                                    <td class="text-end text-nowrap">
+                                        <span t-out="sum(o.line_ids.mapped('credit'))"
+                                              t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+
+                        <t t-set="tax_summary" t-value="o.om_print_tax_summary()"/>
+                        <div t-if="tax_summary" class="row mt-3">
+                            <div class="col-6 offset-6">
+                                <h4>Tax Summary</h4>
+                                <table class="table table-sm">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-start">Tax</th>
+                                            <th class="text-end">Base</th>
+                                            <th class="text-end">Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr t-foreach="tax_summary" t-as="tax_line">
+                                            <td><t t-out="tax_line['name']"/></td>
+                                            <td class="text-end text-nowrap">
+                                                <span t-out="tax_line['base']" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                                            </td>
+                                            <td class="text-end text-nowrap">
+                                                <span t-out="tax_line['amount']" t-options="{'widget': 'monetary', 'display_currency': o.company_currency_id}"/>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div t-if="o.narration" class="mt-3">
+                            <h4>Notes</h4>
+                            <div t-field="o.narration"/>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- what only the journal entry has: the status badge, the taxes -->
+    <template id="report_journal_entry_style">
+        <style>
+            .o_om_je .o_om_je_state {
+                display: inline-block; padding: 1px 9px; border-radius: 10px;
+                font-size: 10px; font-weight: 600; letter-spacing: .03em;
+                background-color: #E5E7EB; color: #374151;
+            }
+            .o_om_je .o_om_je_state_posted { background-color: #DCFCE7; color: #166534; }
+            .o_om_je .o_om_je_state_draft { background-color: #FEF3C7; color: #92400E; }
+            .o_om_je .o_om_je_state_cancel { background-color: #FEE2E2; color: #991B1B; }
+            /* the details, four per line: floated, because wkhtmltopdf does not wrap a flex row */
+            .o_om_je .o_om_je_info { display: block !important; overflow: hidden; margin-left: 0; margin-right: 0; }
+            .o_om_je .o_om_je_info > div {
+                float: left; width: 25%; max-width: 25%; flex: none; padding-left: 0; padding-right: 12px;
+            }
+            .o_om_je .o_om_je_taxes { font-size: 11px; color: #4b5563; }
+            .o_om_je .o_om_je_type {
+                font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: #6b7280;
+            }
+        </style>
+    </template>
+
+</odoo>
