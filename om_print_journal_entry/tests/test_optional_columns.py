@@ -34,7 +34,7 @@ class TestOptionalColumns(OmAccountTestCommon):
         self.env['base'].invalidate_cache()
 
     def _journal_entry_page(self):
-        html, __ = self.env['ir.actions.report'].with_user(self.reader)._get_report_from_name('accounting_pdf_reports.report_journal_entries')._render_qweb_html(
+        html, __ = self.env['ir.actions.report'].with_user(self.reader)._get_report_from_name('om_print_journal_entry.report_journal_entries')._render_qweb_html(
             self.entry.ids)
         return html.decode() if isinstance(html, bytes) else str(html)
 

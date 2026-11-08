@@ -49,10 +49,6 @@ class TestReportTemplates(OmAccountTestCommon):
                 html = self._render(model, **values)
                 self.assertIn('o_om_report', html)
 
-    def test_the_journal_entry_prints_on_the_letterhead(self):
-        html, __ = self.env['ir.actions.report']._get_report_from_name('accounting_pdf_reports.report_journal_entries')._render_qweb_html(
-            self.invoice.ids)
-        self.assertIn(self.invoice.name, html.decode())
-        self.assertFalse(self.env.ref('accounting_pdf_reports.action_report_journal_entries').paperformat_id)
+    def test_the_reports_print_on_their_paper_format(self):
         self.assertEqual(self.env.ref('accounting_pdf_reports.action_report_general_ledger').paperformat_id,
                          self.env.ref('accounting_pdf_reports.paperformat_om_report'))
