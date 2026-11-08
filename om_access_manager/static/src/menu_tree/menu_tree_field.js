@@ -357,6 +357,14 @@ export class MenuTreeField extends Component {
         return Boolean(this.record.resId);
     }
 
+    /** A click anywhere on a row opens its settings, but on its box or its arrow. */
+    onRowClick(menuId, ev) {
+        if (ev.target.closest(".form-check, .o_om_menu_tree_caret, .o_om_menu_tree_name, input, a")) {
+            return;
+        }
+        return this.select(menuId);
+    }
+
     async select(menuId) {
         this.state.selected = menuId;
         if (!(await this.ensureSaved())) {
