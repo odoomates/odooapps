@@ -13,6 +13,10 @@
                         Only what is restricted
                     </CheckBox>
                 </div>
+                <div class="small text-muted mb-2 o_om_menu_tree_howto">
+                    <i class="fa fa-info-circle me-1"/>Tick to show or hide a menu.
+                    <strong>Click a menu</strong> to configure it on the right: rights, records, fields, buttons.
+                </div>
                 <t t-foreach="this.rows" t-as="row" t-key="row.id">
                 <div t-if="row.kind === 'print'" class="d-flex align-items-center o_om_menu_tree_row o_om_tree_print"
                      t-att-style="'padding-left: ' + (row.depth * 1.5) + 'rem'" t-att-data-print="row.key">
@@ -27,7 +31,7 @@
                 <div t-else="" class="d-flex align-items-center o_om_menu_tree_row"
                      t-att-class="{'o_om_menu_tree_app': row.depth === 0, 'o_om_menu_tree_selected': row.selected}"
                      t-att-style="'padding-left: ' + (row.depth * 1.5) + 'rem'"
-                     t-att-data-menu-id="row.id">
+                     t-att-data-menu-id="row.id" t-on-click="(ev) => this.onRowClick(row.id, ev)">
                     <button t-if="row.hasChildren and !this.state.search and !this.state.onlyRestricted" type="button"
                             class="btn btn-link p-0 me-1 o_om_menu_tree_caret"
                             t-on-click="() => this.toggleExpand(row.id)">
@@ -53,6 +57,10 @@
                        t-att-title="mark.title"/>
                     <span t-if="row.depth === 0 and !row.hidden and row.hiddenCount"
                           class="badge rounded-pill text-bg-warning ms-2" t-out="this.hiddenLabel(row.hiddenCount)"/>
+                    <span class="ms-auto ps-2 small o_om_menu_tree_configure" aria-hidden="true">
+                        <t t-if="row.selected">Configuring</t><t t-else="">Configure</t>
+                        <i class="fa fa-chevron-right ms-1"/>
+                    </span>
                 </div>
                 </t>
             </div>
@@ -61,6 +69,10 @@
                            panel="this.state.panel" readonly="!!(this.props.readonly)"
                            apply="(change) => this.apply(change)" openRule="() => this.openRule()"/>
                 <div t-else="" class="text-muted p-3 o_om_menu_tree_hint">
+                    <div class="o_om_menu_tree_pointer mb-3">
+                        <i class="fa fa-arrow-left"/>
+                        <span>Click a menu to configure it</span>
+                    </div>
                     <h5>Configure from the menus</h5>
                     <p>Click a menu on the left to set, for the users of this profile:</p>
                     <ul>
