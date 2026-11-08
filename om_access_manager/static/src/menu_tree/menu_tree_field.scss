@@ -37,9 +37,55 @@
     .o_om_menu_tree_row {
         min-height: 1.9rem;
         border-radius: .25rem;
+        padding-right: .4rem;
+        cursor: pointer;
+
+        // the row says it opens settings: on hover, and on the one open
+        .o_om_menu_tree_configure {
+            visibility: hidden;
+            color: $primary;
+            white-space: nowrap;
+        }
+
+        &:hover {
+            background-color: rgba($primary, .06);
+
+            .o_om_menu_tree_configure {
+                visibility: visible;
+            }
+        }
 
         &.o_om_menu_tree_selected {
-            background-color: var(--table-hover-bg, rgba(0, 0, 0, .06));
+            background-color: rgba($primary, .12);
+            box-shadow: inset 3px 0 0 $primary;
+
+            .o_om_menu_tree_configure {
+                visibility: visible;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .o_om_menu_tree_howto {
+        padding: .35rem .5rem;
+        border-radius: .25rem;
+        background-color: rgba($info, .08);
+    }
+
+    // before any menu is clicked: where to click
+    .o_om_menu_tree_pointer {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .5rem .9rem;
+        border-radius: 2rem;
+        background-color: rgba($primary, .1);
+        color: $primary;
+        font-weight: 500;
+        font-size: 1.05rem;
+
+        .fa {
+            animation: o_om_point_left 1.2s ease-in-out infinite;
         }
     }
 
@@ -85,4 +131,9 @@
         position: static;
         max-height: none;
     }
+}
+
+@keyframes o_om_point_left {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-6px); }
 }
