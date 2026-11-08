@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 14 Accounting Financial Reports',
-    'version': '14.0.6.0.0',
+    'version': '14.0.6.1.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 14, Accounting Financial Reports,'
                    ' Odoo 14 Financial Reports',
@@ -14,7 +14,7 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'depends': ['account'],
+    'depends': ['account', 'om_print_journal_entry'],
     'live_test_url': 'https://www.youtube.com/watch?v=Qu6R3yNKR60',
     'demo': [],
     'data': [
@@ -39,7 +39,6 @@
         'report/report_tax.xml',
         'report/report_aged_partner.xml',
         'report/report_journal_audit.xml',
-        'report/report_journal_entries.xml',
     ],
     'pre_init_hook': '_pre_init_clean_m2m_models',
     'installable': True,
