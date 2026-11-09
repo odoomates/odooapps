@@ -16,7 +16,13 @@ status values, a number, ``{'mode': 'field', 'field': 'user_id'}`` or
 """
 from itertools import pairwise
 
+<<<<<<< HEAD
 from .graph import HIDDEN_FIELD_PREFIXES, HIDDEN_FIELD_TYPES, eval_domain
+=======
+from odoo import _
+
+from .graph import HIDDEN_FIELD_PREFIXES, HIDDEN_FIELD_TYPES, eval_domain, form_buttons
+>>>>>>> f5af503 ([IMP] om_automation_studio: buttons, user groups)
 
 COLUMN, ROW = 270, 130
 NUMBER_TYPES = ('integer', 'float', 'monetary')
@@ -28,6 +34,7 @@ GUESSES = {
     'date': ['date_deadline', 'invoice_date_due', 'validity_date', 'date_planned', 'date_end', 'date'],
     'status': ['state', 'stage_id', 'status', 'won_status'],
     'user': ['user_id', 'invoice_user_id', 'responsible_id'],
+    'button': ['action_confirm', 'button_confirm', 'action_post'],
 }
 # never guessed for a user: they are who touched the record last, not who owns it
 NOT_OWNERS = ('write_uid',)
@@ -168,6 +175,15 @@ def template_slot(env, Model, name, label, help=''):
             'options': [{'id': template.id, 'name': template.name} for template in templates], 'default': False}
 
 
+def button_slot(env, Model, name, label, required=False, help=''):
+    """ A button of the form, or none (False). """
+    options = form_buttons(env, Model)
+    names = [option['name'] for option in options]
+    default = next((name for name in GUESSES['button'] if name in names), names[0] if required and names else False)
+    return {'name': name, 'type': 'button', 'label': label, 'required': required, 'help': help,
+            'options': options, 'default': default}
+
+
 def domain_slot(name, label, help=''):
     return {'name': name, 'type': 'domain', 'label': label, 'required': False, 'help': help, 'default': '[]'}
 
@@ -212,6 +228,8 @@ def clean(env, slots, values):
                 value = slot['default']
         elif kind == 'template':
             value = value if value in [option['id'] for option in slot['options']] else False
+        elif kind == 'button':
+            value = value if value in [option['name'] for option in slot['options']] else False
         elif kind == 'domain':
             try:
                 eval_domain(env, value or '[]')
@@ -309,6 +327,9 @@ class ApprovalLimit(Pattern):
             field_slot(env, Model, 'number', _("Number"), 'number', paths=True,
                        help=_("A field of the record or of its lines.")),
             number_slot('limit', _("Approval when above"), 1000),
+            button_slot(env, Model, 'button', _("Ask on the button"),
+                        help=_("The approval is asked when the button is clicked, and the button goes on once "
+                          "approved. None: asked as soon as the record is saved above the limit.")),
             field_slot(env, Model, 'status', _("Status"), 'status', required=False),
             values_slot('status_values', _("Only while the status is"), 'status', required=False),
             domain_slot('condition', _("Only for records that match")),
@@ -330,14 +351,77 @@ class ApprovalLimit(Pattern):
         label = _("%(field)s above %(limit)s", field=field_label(env, Model, number, short=True), limit=f'{limit:g}')
         timeout = values['days'] > 0
         lock = values['block'] and bool(status)
+        domain = repr(statuses + above + condition(env, values['condition']))
+        button = values.get('button')
+        if button:
+            start = n('start', 'start', 0, 0, label, trigger='button', method=button, domain=domain,
+                      stop_domain=repr(stop))
+            approved = _("Approved: %s. The button can be clicked again.", label)
+        else:
+            start = n('start', 'start', 0, 0, label, trigger='change', fields=watched(number, status),
+                      domain=domain, becomes=True, policy='single', stop_domain=repr(stop))
+            approved = _("Approved: %s.", label)
         nodes = [
-            n('start', 'start', 0, 0, label, trigger='change', fields=watched(number, status),
-              domain=repr(statuses + above + condition(env, values['condition'])), becomes=True,
-              policy='single', stop_domain=repr(stop)),
+            start,
             n('approve', 'approval', 1, 0, _("Approve"), title=_("Approve {{ object.display_name }}"),
               note=label, timeout=timeout, amount=values['days'], unit='days', lock=lock, lock_mode='fields',
               lock_fields=[status] if lock else [], **assign(values['approver'])),
-            n('ok', 'note', 2, -1, _("Log the approval"), body=_("Approved: %s.", label)),
+            n('ok', 'note', 2, -1, _("Log the approval"), body=approved),
+            activity(env, 'revise', 2, 0, _("Revise it"), values['owner'],
+                     _("Refused: revise {{ object.display_name }}")),
+            n('end', 'end', 3, 0, ''),
+        ]
+        edges = [e('start', 'out', 'approve'), e('approve', 'approved', 'ok'), e('approve', 'rejected', 'revise'),
+                 e('ok', 'out', 'end'), e('revise', 'out', 'end')]
+        if timeout:
+            nodes.append(activity(env, 'remind', 2, 1, _("Remind the approver"), values['approver'],
+                                  _("{{ object.display_name }} waits for your answer")))
+            edges += [e('approve', 'timeout', 'remind'), e('remind', 'out', 'end')]
+        return {'nodes': nodes, 'edges': edges}
+
+
+class ApprovalButton(Pattern):
+    key, icon = 'approval_button', 'fa-hand-pointer-o'
+
+    def name(self, env):
+        return _("Approval on a button")
+
+    def description(self, env):
+        return _("Clicking a button (Confirm, Post, Validate) asks an approver first: the button goes on "
+                 "once approved. Saving the record never asks.")
+
+    def fits(self, env, Model):
+        return bool(form_buttons(env, Model))
+
+    def slots(self, env, Model):
+        return [
+            button_slot(env, Model, 'button', _("Button"), required=True,
+                        help=_("Once approved, the next click goes on. A change of the fields of the "
+                               "condition asks again.")),
+            domain_slot('condition', _("Only for records that match"), _("None: every click asks.")),
+            user_slot(env, Model, 'approver', _("Approver"), owner=False),
+            days_slot('days', _("Answer within (days)"), 2, _("0: no time limit.")),
+            field_slot(env, Model, 'status', _("Status"), 'status', required=False),
+            boolean_slot('block', _("Block the status until the answer"), True,
+                         _("The record cannot change its status in any other way while it waits.")),
+            user_slot(env, Model, 'owner', _("Who revises a refused one")),
+        ]
+
+    def build(self, env, Model, values):
+        button, status = values['button'], values['status']
+        strings = {option['name']: option['string'] for option in form_buttons(env, Model)}
+        # "Confirm (action_confirm)": the label alone
+        label = strings.get(button, button).rsplit(' (', 1)[0]
+        timeout = values['days'] > 0
+        lock = values['block'] and bool(status)
+        nodes = [
+            n('start', 'start', 0, 0, _("%s clicked", label), trigger='button', method=button,
+              domain=repr(condition(env, values['condition']))),
+            n('approve', 'approval', 1, 0, _("Approve"), title=_("Approve {{ object.display_name }}"),
+              note=_("Asked on %s.", label), timeout=timeout, amount=values['days'], unit='days', lock=lock,
+              lock_mode='fields', lock_fields=[status] if lock else [], **assign(values['approver'])),
+            n('ok', 'note', 2, -1, _("Log the approval"),
+              body=_("Approved: %s can be clicked again.", label)),
             activity(env, 'revise', 2, 0, _("Revise it"), values['owner'],
                      _("Refused: revise {{ object.display_name }}")),
             n('end', 'end', 3, 0, ''),
@@ -688,7 +772,7 @@ class AfterDone(Pattern):
 
 
 PATTERNS = {pattern.key: pattern for pattern in (
-    ApprovalLimit(), FollowUp(), Overdue(), BeforeDate(), Stuck(), NewRecord(), BigValue(), MissingInfo(),
+    ApprovalLimit(), ApprovalButton(), FollowUp(), Overdue(), BeforeDate(), Stuck(), NewRecord(), BigValue(), MissingInfo(),
     AfterDone(),
 )}
 
