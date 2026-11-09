@@ -6,17 +6,32 @@
         <field name="sequence">50</field>
     </record>
 
+    <!-- the app: User, then Supervisor, then Administrator; without any of
+         them the app is hidden, the approvals asked of the user still come
+         as activities and on the records -->
+    <record id="om_automation_studio_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_automation_studio"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Sees the app and answers the approvals asked of them.</field>
+    </record>
+
     <record id="om_automation_studio_group_supervisor" model="res.groups">
         <field name="name">Supervisor</field>
         <field name="category_id" ref="module_category_automation_studio"/>
-        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="implied_ids" eval="[Command.link(ref('om_automation_studio_group_user'))]"/>
         <field name="comment">Follows the runs of every workflow and every approval, retries or cancels runs.</field>
     </record>
 
-    <!-- designing a workflow writes on any record with full rights: only
-         administrators design, as for Automation Rules -->
-    <record id="base.group_system" model="res.groups">
+    <!-- the steps of a workflow write on any record with full rights, as
+         Automation Rules do: give it to trusted users only -->
+    <record id="om_automation_studio_group_admin" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="category_id" ref="module_category_automation_studio"/>
         <field name="implied_ids" eval="[Command.link(ref('om_automation_studio_group_supervisor'))]"/>
+        <field name="users" eval="[Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Designs, publishes and pauses the workflows, manages the templates, and answers
+any approval for its approver. The steps of a workflow change records with full rights.</field>
     </record>
 
     <!-- every user reads their own approvals and answers them while pending;
