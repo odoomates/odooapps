@@ -9,6 +9,7 @@ from odoo.addons.om_automation_studio.tools import (
     HIDDEN_FIELD_TYPES,
     check_graph,
     eval_domain,
+    form_buttons,
     graph_index,
 )
 
@@ -66,6 +67,7 @@ class OmWorkflow(models.Model):
             'change': self.env._("When created or updated"),
             'date': self.env._("Based on a date"),
             'manual': self.env._("From the Action menu"),
+            'button': self.env._("When a button is clicked"),
         }
         for workflow in self:
             start = workflow._start_node(workflow.graph)
@@ -208,6 +210,9 @@ class OmWorkflow(models.Model):
                 'state': 'om_workflow',
                 'om_workflow_id': workflow.id,
             }
+            # a button is checked when it is clicked: nothing to listen to
+            if trigger == 'button':
+                continue
             if trigger == 'manual':
                 workflow.manual_action_id = self.env['ir.actions.server'].create({
                     **action_vals,
@@ -288,9 +293,11 @@ class OmWorkflow(models.Model):
     # runs
     # ------------------------------------------------------------------
 
-    def _start_runs(self, records):
+    def _start_runs(self, records, button_values=None):
         """ Start a run of the published version on each of ``records``,
-        unless the run policy of the Start says otherwise. """
+        unless the run policy of the Start says otherwise. A run a button
+        starts (``button_values``: what it asks about) has no policy: the
+        button decides when one starts. """
         self.ensure_one()
         Run = self.env['om.workflow.run'].sudo()
         if self.state != 'active' or not self.version_id or not records:
@@ -302,7 +309,7 @@ class OmWorkflow(models.Model):
         config = (self._start_node(self.version_id.graph) or {}).get('config') or {}
         policy = config.get('policy') or 'single'
         records = records.exists()
-        if policy != 'multiple':
+        if policy != 'multiple' and button_values is None:
             domain = [('workflow_id', '=', self.id), ('res_id', 'in', records.ids)]
             if policy == 'single':
                 domain.append(('state', 'in', ('running', 'waiting')))
@@ -316,6 +323,7 @@ class OmWorkflow(models.Model):
             'res_model': self.model,
             'res_id': record.id,
             'res_name': record.display_name,
+            'button_values': button_values,
         } for record in records])
         runs.with_context(om_workflow_depth=depth + 1)._advance()
         return runs
@@ -324,12 +332,20 @@ class OmWorkflow(models.Model):
     # designer
     # ------------------------------------------------------------------
 
+    def _check_designer(self):
+        """ The workflow the designer opens: one that exists and the user may
+        see, not what a page reloaded or left open by someone else asks. """
+        if len(self) != 1 or not self.id or not self.exists():
+            raise UserError(self.env._("This workflow no longer exists: open one from Automation Studio, Workflows."))
+        self.check_access('read')
+
     def designer_load(self):
-        self.ensure_one()
+        self._check_designer()
         return {
             'workflow': self._designer_info(),
             'graph': self.graph or self._default_graph(),
             'fields': self.designer_fields(self.model),
+            'buttons': form_buttons(self.env, self.env[self.model]) if self.model in self.env else [],
             'issues': check_graph(self.env, self.model, self.graph),
         }
 
@@ -391,6 +407,84 @@ class OmWorkflow(models.Model):
         return sorted(result, key=lambda f: f['string'].lower())
 
     @api.model
+    def designer_conditions(self, model, domains):
+        """ The conditions ``domains`` of ``model`` in words, as the chart
+        shows them: ``{domain: {'short': ..., 'full': ...}}``, the short one
+        with the last field of each path only. """
+        self.env['om.workflow'].check_access('read')
+        result = {}
+        if not model or model not in self.env:
+            return result
+        for domain in domains or []:
+            try:
+                leaves = expression.normalize_domain(eval_domain(self.env, domain))
+                result[domain] = {'short': self._describe_domain(self.env[model], leaves, short=True),
+                                  'full': self._describe_domain(self.env[model], leaves)}
+            except Exception:  # noqa: BLE001 a wrong condition is told by the checks, not here
+                result[domain] = {'short': '', 'full': ''}
+        return result
+
+    @api.model
+    def _start_conditions(self, model, graph):
+        """ For a preview: the condition of the Start of ``graph`` in words, by domain. """
+        domain = ((self._start_node(graph) or {}).get('config') or {}).get('domain')
+        if not domain or domain == '[]':
+            return {}
+        return self.designer_conditions(model, [domain])
+
+    def _describe_domain(self, Model, domain, short=False):
+        _ = self.env._
+        if domain in ([], [expression.TRUE_LEAF]):
+            return ''
+        position = 0
+
+        def walk(parent):
+            nonlocal position
+            token = domain[position]
+            position += 1
+            if token in ('&', '|'):
+                parts = [walk(token), walk(token)]
+                text = f" {_('and') if token == '&' else _('or')} ".join(parts)
+                # an "or" inside an "and" keeps its brackets
+                return f"({text})" if token == '|' and parent == '&' else text
+            if token == '!':
+                return _("not (%s)", walk('!'))
+            return self._describe_leaf(Model, token, short)
+
+        # a normalized domain is one tree
+        return walk(None)
+
+    def _describe_leaf(self, Model, leaf, short):
+        _ = self.env._
+        path, operator, value = leaf
+        if not isinstance(path, str):
+            return str(value)
+        labels, field = [], None
+        for name in path.split('.'):
+            field = Model._fields.get(name)
+            if field is None:
+                return f"{path} {operator} {value}"
+            labels.append(field._description_string(self.env))
+            if field.relational:
+                Model = self.env[field.comodel_name]
+        label = labels[-1] if short else ' > '.join(labels)
+        if operator in ('=', '!=') and value is False and field.type != 'boolean':
+            return _("%s is set", label) if operator == '!=' else _("%s is not set", label)
+        values = value if isinstance(value, (list, tuple)) else [value]
+        if field.type == 'selection':
+            names = dict(field._description_selection(self.env))
+            values = [names.get(item, item) for item in values]
+        elif field.relational and all(isinstance(item, int) and not isinstance(item, bool) for item in values):
+            values = Model.browse(values).exists().sudo().mapped('display_name')
+        elif field.type == 'boolean':
+            values = [_("yes") if item else _("no") for item in values]
+        words = {'=': '=', '!=': '≠', '>': '>', '>=': '≥', '<': '<', '<=': '≤',
+                 'in': _("is"), 'not in': _("is not"), 'ilike': _("contains"), 'not ilike': _("does not contain"),
+                 'like': _("contains"), 'not like': _("does not contain"), '=ilike': '=', '=like': '='}
+        joined = (f" {_('or')} " if operator == 'in' else ', ').join(str(item) for item in values)
+        return f"{label} {words.get(operator, operator)} {joined}"
+
+    @api.model
     def designer_model_name(self, model_id):
         model = self.env['ir.model'].browse(model_id).exists()
         return model.model if model else False
@@ -398,7 +492,7 @@ class OmWorkflow(models.Model):
     def designer_run(self, run_id):
         """ What the run viewer shows: the version the run follows and the
         steps it went through. """
-        self.ensure_one()
+        self._check_designer()
         run = self.env['om.workflow.run'].browse(run_id)
         run.check_access('read')
         nodes, __ = graph_index(run.version_id.graph)

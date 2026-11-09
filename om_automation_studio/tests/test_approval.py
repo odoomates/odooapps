@@ -73,7 +73,7 @@ class TestApproval(WorkflowCase):
         partner = self.env['res.partner'].create({'name': 'Away'})
         workflow._start_runs(partner)
         approval = self.runs_of(workflow, partner).approval_ids
-        admin = new_test_user(self.env, 'om_wd_admin', groups='base.group_system')
+        admin = new_test_user(self.env, 'om_wd_admin', groups='base.group_user,om_automation_studio.om_automation_studio_group_admin')
         approval.with_user(admin).action_approve()
         self.assertEqual(approval.state, 'approved')
         self.assertEqual(approval.decided_by_id, admin)
@@ -86,7 +86,7 @@ class TestApproval(WorkflowCase):
         partner = self.env['res.partner'].create({'name': 'Strict'})
         workflow._start_runs(partner)
         approval = self.runs_of(workflow, partner).approval_ids
-        admin = new_test_user(self.env, 'om_wd_admin', groups='base.group_system')
+        admin = new_test_user(self.env, 'om_wd_admin', groups='base.group_user,om_automation_studio.om_automation_studio_group_admin')
         self.assertFalse(approval.with_user(admin).can_decide)
         with self.assertRaises(UserError):
             approval.with_user(admin).action_approve()

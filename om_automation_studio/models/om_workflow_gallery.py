@@ -54,7 +54,8 @@ class OmWorkflow(models.Model):
         graph, todo = self._template_graph(key, model, values)
         if not graph:
             return {'graph': False, 'missing': todo, 'issues': []}
-        return {'graph': graph, 'missing': [], 'issues': check_graph(self.env, model, graph)}
+        return {'graph': graph, 'missing': [], 'issues': check_graph(self.env, model, graph),
+                'conditions': self._start_conditions(model, graph)}
 
     @api.model
     def template_create(self, key, model, values, name=None):
