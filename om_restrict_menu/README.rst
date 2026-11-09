@@ -2,7 +2,11 @@
 Hide Menus by User and Company
 ==============================
 
+<<<<<<< HEAD
 This module hides any menu or app of Odoo 15 for a user, or for every user while a company is the
+=======
+This module hides any menu or app of Odoo 10 for a user, or for every user while a company is the
+>>>>>>> 07a27e2 ([ADD] om_restrict_menu: backport of 15.0)
 current company.
 
 Features

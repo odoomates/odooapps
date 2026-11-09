@@ -1,6 +1,13 @@
+<<<<<<< HEAD
 {
     'name': 'Hide Menus by User and Company',
     'version': '1.1',
+=======
+# -*- coding: utf-8 -*-
+{
+    'name': 'Hide Menus by User and Company',
+    'version': '10.0.1.0.0',
+>>>>>>> 07a27e2 ([ADD] om_restrict_menu: backport of 15.0)
     'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Hide any menu or app for a user, or for everyone while a company is the current company, '

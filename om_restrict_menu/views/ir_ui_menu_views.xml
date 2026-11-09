@@ -41,7 +41,11 @@
                 <field name="complete_name" string="Menu"/>
                 <field name="om_hidden_user_ids" widget="many2many_tags"/>
                 <field name="om_hidden_company_ids" widget="many2many_tags" groups="base.group_multi_company"/>
+<<<<<<< HEAD
                 <field name="om_visible_user_ids" widget="many2many_tags" optional="show"/>
+=======
+                <field name="om_visible_user_ids" widget="many2many_tags"/>
+>>>>>>> 07a27e2 ([ADD] om_restrict_menu: backport of 15.0)
             </tree>
         </field>
     </record>
@@ -50,9 +54,15 @@
         <field name="name">Hidden Menus</field>
         <field name="res_model">ir.ui.menu</field>
         <field name="view_mode">tree,form</field>
+<<<<<<< HEAD
         <field name="view_ids" eval="[Command.clear(),
             Command.create({'view_mode': 'tree', 'view_id': ref('view_om_hidden_menu_list')}),
             Command.create({'view_mode': 'form', 'view_id': ref('base.edit_menu_access')})]"/>
+=======
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'tree', 'view_id': ref('view_om_hidden_menu_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('base.edit_menu_access')})]"/>
+>>>>>>> 07a27e2 ([ADD] om_restrict_menu: backport of 15.0)
         <field name="search_view_id" ref="view_om_menu_search"/>
         <field name="domain">['|', '|', ('om_hidden_user_ids', '!=', False), ('om_hidden_company_ids', '!=', False),
                                 ('om_visible_user_ids', '!=', False)]</field>
