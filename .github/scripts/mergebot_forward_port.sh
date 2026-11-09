@@ -98,7 +98,8 @@ migration_check() {
 }
 
 # rewrite what is mechanical in the lines this branch adds, as one commit. Nothing stops the forward-port: on any failure
-# the branch stays as it was. It prints a sentence for the pull request when it rewrote something.
+# the branch stays as it was. It prints a sentence for the pull request when it rewrote something. The files committed
+# with conflict markers ($conflicted_files) stay as they are: their lines are to be resolved by hand first.
 migration_fix() {
     [ -n "$checker" ] || return 0
     if ! (cd "$checker" && timeout 120 python3 -m omh "$work" --from "${base%%.*}" --to "${1%%.*}" \
@@ -106,6 +107,9 @@ migration_fix() {
         git -C "$work" reset -q --hard HEAD
         return 0
     fi
+    for file in "${conflicted_files[@]}"; do
+        git -C "$work" checkout -q HEAD -- "$file" 2> /dev/null || true
+    done
     git -C "$work" diff --quiet && return 0
     git -C "$work" add -u
     if ! git -C "$work" commit -q -m '[MIG] *: mechanical rewrites'; then
@@ -127,6 +131,7 @@ for target in $targets; do
     git -C "$work" checkout -q -B "$branch" FETCH_HEAD
     target_head=$(git -C "$work" rev-parse HEAD)
     conflicts=()
+    conflicted_files=()
     failed=""
     for commit in "${commits[@]}"; do
         if git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "$commit" > "$work/.git/fw.err" 2>&1; then
@@ -138,8 +143,10 @@ for target in $targets; do
             git -C "$work" cherry-pick --abort > /dev/null 2>&1 || git -C "$work" reset -q --hard "$target_head"
             break
         fi
-        conflicts+=("- \`${commit:0:8}\` $(git -C "$work" log -1 --format=%s "$commit"): $(git -C "$work" diff --name-only \
-            --diff-filter=U | sed 's/.*/`&`/' | paste -sd' ' -)")
+        mapfile -t unmerged < <(git -C "$work" diff --name-only --diff-filter=U)
+        conflicted_files+=("${unmerged[@]}")
+        conflicts+=("- \`${commit:0:8}\` $(git -C "$work" log -1 --format=%s "$commit"): $(printf '%s\n' "${unmerged[@]}" \
+            | sed 's/.*/`&`/' | paste -sd' ' -)")
         git -C "$work" add -A
         # the message and author of the commit itself: what a failed cherry-pick leaves for it depends on git
         git -C "$work" commit -q --allow-empty --no-verify -C "$commit"
@@ -153,7 +160,8 @@ for target in $targets; do
         continue
     fi
     rewrites=""
-    [ ${#conflicts[@]} -eq 0 ] && rewrites=$(migration_fix "$target" "$target_head")
+    # with conflicts too: the files without any are rewritten, the conflicted ones are left to resolve
+    rewrites=$(migration_fix "$target" "$target_head")
     git -C "$work" push -q origin "$branch"
     report=$(migration_check "$target" "$target_head")
     branch_description=$fw_description
