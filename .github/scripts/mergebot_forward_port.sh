@@ -73,7 +73,9 @@ git -C "$work" config user.email '41898282+github-actions[bot]@users.noreply.git
 git -C "$work" config http.https://github.com/.extraheader \
     "AUTHORIZATION: basic $(printf 'x-access-token:%s' "$MERGEBOT_TOKEN" | base64 -w0)"
 git -C "$work" remote add origin "${MERGEBOT_REMOTE:-https://github.com/$REPO.git}"
-git -C "$work" fetch -q --filter=blob:none origin "refs/pull/$PR/head"
+# whole objects: a cherry-pick fetching a missing file on demand can be refused by GitHub ("not our ref"), and then
+# fails before writing any conflict
+git -C "$work" fetch -q origin "refs/pull/$PR/head"
 
 # the checker, once for all the branches. Nothing stops the forward-port: without it, no report.
 checker=""
@@ -121,13 +123,20 @@ for target in $targets; do
         opened+=("- \`$target\`: branch \`$branch\` exists already")
         continue
     fi
-    git -C "$work" fetch -q --filter=blob:none origin "$target"
+    git -C "$work" fetch -q origin "$target"
     git -C "$work" checkout -q -B "$branch" FETCH_HEAD
     target_head=$(git -C "$work" rev-parse HEAD)
     conflicts=()
+    failed=""
     for commit in "${commits[@]}"; do
-        if git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "$commit" > /dev/null 2>&1; then
+        if git -C "$work" cherry-pick --allow-empty --keep-redundant-commits "$commit" > "$work/.git/fw.err" 2>&1; then
             continue
+        fi
+        # an error that is not a conflict: nothing applied, say so rather than open an empty forward-port
+        if ! git -C "$work" rev-parse -q --verify CHERRY_PICK_HEAD > /dev/null; then
+            failed="\`${commit:0:8}\` could not be applied: $({ grep -E '^(fatal|error):' "$work/.git/fw.err" || true; } | tail -n 1)"
+            git -C "$work" cherry-pick --abort > /dev/null 2>&1 || git -C "$work" reset -q --hard "$target_head"
+            break
         fi
         conflicts+=("- \`${commit:0:8}\` $(git -C "$work" log -1 --format=%s "$commit"): $(git -C "$work" diff --name-only \
             --diff-filter=U | sed 's/.*/`&`/' | paste -sd' ' -)")
@@ -135,6 +144,10 @@ for target in $targets; do
         # the message and author of the commit itself: what a failed cherry-pick leaves for it depends on git
         git -C "$work" commit -q --allow-empty --no-verify -C "$commit"
     done
+    if [ -n "$failed" ]; then
+        opened+=("- \`$target\`: not forward-ported, $failed")
+        continue
+    fi
     if git -C "$work" diff --quiet "$target_head" HEAD; then
         opened+=("- \`$target\`: nothing to port, the change is there already")
         continue
