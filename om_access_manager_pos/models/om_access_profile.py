@@ -24,6 +24,11 @@ class OmAccessProfile(models.Model):
         relation='om_access_profile_pos_payment_method_rel', column1='profile_id', column2='method_id',
         tracking=True)
     om_pos_no_below_cost = fields.Boolean(tracking=True)
+    om_pos_no_cancel = fields.Boolean(tracking=True)
+    om_pos_refund_receipt_only = fields.Boolean(tracking=True)
+    om_pos_max_refund = fields.Float(tracking=True)
+    om_pos_pricelist_ids = fields.Many2many(
+        relation='om_access_profile_pos_pricelist_rel', column1='profile_id', column2='pricelist_id', tracking=True)
 
     @api.model
     def _om_pos_combine(self, profiles):
@@ -42,14 +47,16 @@ class OmAccessProfile(models.Model):
                 limits.append(max(values))
             limits += [value for value in override.mapped(field_name) if value > 0]
             rules[key] = min(limits) if limits else None
-        # payment methods: any additive profile allowing them all allows them all; override ones narrow
-        methods = None
-        if additive and all(profile.om_pos_payment_method_ids for profile in additive):
-            methods = set(additive.om_pos_payment_method_ids.ids)
-        for profile in override.filtered('om_pos_payment_method_ids'):
-            methods = set(profile.om_pos_payment_method_ids.ids) if methods is None \
-                else methods & set(profile.om_pos_payment_method_ids.ids)
-        rules['payment_methods'] = sorted(methods) if methods is not None else None
+        # payment methods and pricelists: any additive profile allowing them all allows them all; override ones
+        # narrow
+        for key, field_name in (('payment_methods', 'om_pos_payment_method_ids'),
+                                ('pricelists', 'om_pos_pricelist_ids')):
+            allowed = None
+            if additive and all(profile[field_name] for profile in additive):
+                allowed = set(additive[field_name].ids)
+            for profile in override.filtered(field_name):
+                allowed = set(profile[field_name].ids) if allowed is None else allowed & set(profile[field_name].ids)
+            rules[key] = sorted(allowed) if allowed is not None else None
         return rules
 
 

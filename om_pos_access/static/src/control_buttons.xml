@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_pos_access.ControlButtons" t-inherit="point_of_sale.ControlButtons" t-inherit-mode="extension">
+        <!-- the pricelist, when the cashier may choose among several -->
+        <xpath expr="//t[@name='o_pricelist_button']" position="attributes">
+            <attribute name="t-if">this.pos.accessRight.canAccessPricelist and (!this.pos.accessRight.omPricelists or this.pos.accessRight.omPricelists.length > 1)</attribute>
+        </xpath>
+        <!-- Cancel Order -->
+        <xpath expr="//t[@icon=&quot;'delete'&quot;]" position="attributes">
+            <attribute name="t-if">this.pos.accessRight.canCancelOrder and !this.pos.accessRight.omIsRestricted('cancel')</attribute>
+        </xpath>
+    </t>
+</templates>

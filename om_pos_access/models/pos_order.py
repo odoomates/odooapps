@@ -23,8 +23,29 @@ class PosOrder(models.Model):
         Access = self.env['om.pos.access']
         lines = self._om_pos_lines(order)
         flags = rules['flags']
-        if 'refund' in flags and (order.get('is_refund') or any(line.get('refunded_orderline_id') for line in lines)):
+        # money given back: a line of a receipt refunded, or a line made negative by hand
+        returned = [line for line in lines if (line.get('qty') or 0) < 0
+                    and not line.get('reward_id') and not line.get('is_reward_line') and not line.get('combo_parent_id')]
+        by_hand = [line for line in returned if not line.get('refunded_orderline_id')]
+        if 'refund' in flags and (order.get('is_refund') or returned
+                                  or any(line.get('refunded_orderline_id') for line in lines)):
             raise UserError(Access._om_pos_message('refund'))
+        if 'refund_receipt' in flags and by_hand:
+            raise UserError(Access._om_pos_message('refund_receipt'))
+        session = self.env['pos.session'].sudo().browse(order.get('session_id')).exists()
+        config = session.config_id
+        currency = config.currency_id or self.env.company.currency_id
+        if rules.get('max_refund') and returned:
+            refunded = sum(abs(line['price_subtotal_incl']) if line.get('price_subtotal_incl') is not None
+                           else abs((line.get('qty') or 0) * (line.get('price_unit') or 0)
+                                    * (1 - (line.get('discount') or 0) / 100))
+                           for line in returned)
+            if currency.compare_amounts(refunded, rules['max_refund']) > 0:
+                raise UserError(Access._om_pos_message('max_refund', limit=currency.format(rules['max_refund'])))
+        if rules.get('pricelists') is not None and order.get('pricelist_id') \
+                and order['pricelist_id'] not in rules['pricelists']:
+            pricelist = self.env['product.pricelist'].sudo().browse(order['pricelist_id'])
+            raise UserError(Access._om_pos_message('pricelist', pricelist=pricelist.display_name))
         if rules['payment_methods'] is not None:
             for payment in order.get('payment_ids') or ():
                 values = payment[2] if isinstance(payment, (list, tuple)) and len(payment) > 2 else None
@@ -32,14 +53,11 @@ class PosOrder(models.Model):
                 if method_id and method_id not in rules['payment_methods']:
                     method = self.env['pos.payment.method'].sudo().browse(method_id)
                     raise UserError(Access._om_pos_message('payment_method', method=method.display_name))
-        session = self.env['pos.session'].sudo().browse(order.get('session_id')).exists()
-        config = session.config_id
         skipped = {product.id for product in (
             config._fields.get('discount_product_id') and config.discount_product_id,
             config._fields.get('tip_product_id') and config.tip_product_id) if product}
         pricelist = self.env['product.pricelist'].sudo().browse(order.get('pricelist_id')).exists() \
             or config.pricelist_id
-        currency = config.currency_id or self.env.company.currency_id
         for line in lines:
             # a refund repeats the sale it refunds; combo parts, rewards and fees have computed prices
             if line.get('refunded_orderline_id') or line.get('combo_parent_id') or line.get('reward_id'):
@@ -79,3 +97,16 @@ class PosOrder(models.Model):
             if not Access._om_pos_empty(rules):
                 self._om_pos_check(order, rules)
         return super().sync_from_ui(orders)
+
+    @api.model
+    def _om_pos_cancel_cashier(self):
+        """ (user, employee) cancelling orders from the shop: om_pos_access_hr knows the employee. """
+        return self.env.user, None
+
+    def cancel_order_from_pos(self):
+        # an order with products only: the shop also drops empty orders this way
+        if self.filtered(lambda order: order.state == 'draft' and order.lines):
+            Access = self.env['om.pos.access']
+            if Access._om_pos_refuse('cancel', *self._om_pos_cancel_cashier()):
+                raise UserError(Access._om_pos_message('cancel'))
+        return super().cancel_order_from_pos()
