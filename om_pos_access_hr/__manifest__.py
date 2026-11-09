@@ -1,6 +1,6 @@
 {
     'name': 'POS Access Control for Employees',
-    'version': '0.1.0',
+    'version': '0.1.1',
     'author': 'Odoo Mates',
     'category': 'Sales/Point of Sale',
     'summary': 'The Point of Sale restrictions of POS Access Control, for the employees who log in to the '

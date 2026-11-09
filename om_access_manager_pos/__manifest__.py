@@ -1,6 +1,6 @@
 {
     'name': 'User Access Manager for Point of Sale',
-    'version': '0.1.0',
+    'version': '0.1.1',
     'author': 'Odoo Mates',
     'category': 'Sales/Point of Sale',
     'summary': 'Restrict what each cashier may do in the Point of Sale, per access profile',
