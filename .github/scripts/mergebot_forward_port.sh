@@ -132,7 +132,8 @@ for target in $targets; do
         conflicts+=("- \`${commit:0:8}\` $(git -C "$work" log -1 --format=%s "$commit"): $(git -C "$work" diff --name-only \
             --diff-filter=U | sed 's/.*/`&`/' | paste -sd' ' -)")
         git -C "$work" add -A
-        git -C "$work" -c core.editor=true commit -q --no-edit --allow-empty
+        # the message and author of the commit itself: what a failed cherry-pick leaves for it depends on git
+        git -C "$work" commit -q --allow-empty --no-verify -C "$commit"
     done
     if git -C "$work" diff --quiet "$target_head" HEAD; then
         opened+=("- \`$target\`: nothing to port, the change is there already")
