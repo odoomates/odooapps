@@ -12,7 +12,7 @@ def as_user(records, user):
     """ ``records`` as ``user``: with_user() from Odoo 13, sudo(user) before """
     if hasattr(records, 'with_user'):
         return records.with_user(user)
-    return records.sudo(user)
+    return records.with_user(user)
 
 
 def origin(records):
