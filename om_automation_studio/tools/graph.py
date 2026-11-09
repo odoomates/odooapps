@@ -35,7 +35,7 @@ UNITS = {
     'weeks': relativedelta(weeks=1),
     'months': relativedelta(months=1),
 }
-TRIGGERS = ('create', 'change', 'date', 'manual')
+TRIGGERS = ('create', 'change', 'date', 'manual', 'button')
 VALUE_MODES = ('value', 'field', 'today', 'clear')
 # fields the designer does not list: technical, or chatter
 HIDDEN_FIELD_PREFIXES = ('message_', 'activity_', 'website_message', '__', 'rating_')
@@ -44,6 +44,27 @@ HIDDEN_FIELD_TYPES = ('properties', 'properties_definition', 'json', 'binary', '
 # field types the update and create nodes can set
 SETTABLE_TYPES = ('char', 'text', 'html', 'integer', 'float', 'monetary', 'boolean', 'selection',
                   'date', 'datetime', 'many2one', 'many2many')
+
+
+def form_buttons(env, Model):
+    """ The buttons of the form of ``Model`` that call a method, as
+    ``[{'name': method, 'string': label}]`` in the order of the form. """
+    # the arch of the form as it is stored, not get_view: that one prepares the model for the web client, which
+    # changes its class
+    View = env['ir.ui.view'].sudo()
+    view_id = View.default_view(Model._name, 'form')
+    try:
+        root = View.browse(view_id)._get_combined_arch() if view_id else Model._get_default_form_view()
+    except Exception:  # noqa: BLE001 a model without a form has no buttons
+        return []
+    buttons = {}
+    for node in root.iter('button'):
+        name = node.get('name') or ''
+        if node.get('type') != 'object' or not name or name.startswith('_') or name in buttons:
+            continue
+        if callable(getattr(Model, name, None)):
+            buttons[name] = (node.get('string') or node.get('title') or name).strip()
+    return [{'name': name, 'string': f"{label} ({name})"} for name, label in buttons.items()]
 
 
 def offset(amount, unit):
@@ -204,6 +225,10 @@ def _check_node(env, Model, node, add):
             field = Model._fields.get(config.get('date_field') or '')
             if not field or field.type not in ('date', 'datetime') or not field.store:
                 add(node, _("Choose the date field the workflow starts from."))
+        elif trigger == 'button':
+            method = config.get('method') or ''
+            if not method or method.startswith('_') or not callable(getattr(Model, method, None)):
+                add(node, _("Choose the button the workflow waits on."))
         for name in config.get('fields') or []:
             if name not in Model._fields:
                 add(node, _("The watched field %s does not exist.", name))

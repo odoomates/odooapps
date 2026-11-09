@@ -85,7 +85,8 @@ class OmWorkflowTemplate(models.Model):
     def gallery_preview(self):
         self.ensure_one()
         return {'graph': self.graph or {'nodes': [], 'edges': []},
-                'issues': check_graph(self.env, self.model, self.graph)}
+                'issues': check_graph(self.env, self.model, self.graph),
+                'conditions': self.env['om.workflow']._start_conditions(self.model, self.graph)}
 
     def create_workflow(self, name=None):
         """ A draft workflow from the template, opened in the designer. """

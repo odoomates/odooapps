@@ -15,6 +15,8 @@ const NODE_H = 64;
 // a step with several exits lists them under its header
 const HEAD_H = 52;
 const PORT_GAP = 24;
+// the line under a Start that tells its condition
+const CONDITION_H = 22;
 const GRID = 20;
 // a press that moves less than this is a click, not a drag
 const DRAG_THRESHOLD_PX = 4;
@@ -47,6 +49,18 @@ const PORT_LABELS = {
     approved: _t("Approved"),
     rejected: _t("Rejected"),
 };
+// the colour of an arrow and of its exit, by exit
+const PORT_TONES = {
+    out: "ink",
+    yes: "go",
+    done: "go",
+    approved: "go",
+    no: "muted",
+    rejected: "stop",
+    timeout: "late",
+};
+// every colour an arrow can take, each with its arrow head
+const EDGE_TONES = ["ink", "go", "muted", "stop", "late", "selected"];
 const RUN_STATES = {
     running: _t("Running"),
     waiting: _t("Waiting"),
@@ -59,6 +73,7 @@ const TRIGGERS = [
     ["change", _t("A record is created or updated")],
     ["date", _t("A date of the record comes")],
     ["manual", _t("Someone starts it from the Action menu")],
+    ["button", _t("A button is clicked")],
 ];
 const POLICIES = [
     ["single", _t("One run at a time per record")],
@@ -117,9 +132,18 @@ export function portsOf(node) {
     return ports.filter((port) => port !== "timeout" || node.config?.timeout);
 }
 
+/** Whether ``node`` is a Start with a condition: one more line shows it. */
+export function hasStartCondition(node) {
+    const domain = node.type === "start" && node.config?.domain;
+    return Boolean(domain) && domain !== "[]";
+}
+
 export function nodeHeight(node) {
     const ports = portsOf(node).length;
-    return ports > 1 ? HEAD_H + ports * PORT_GAP + 6 : NODE_H;
+    if (ports > 1) {
+        return HEAD_H + ports * PORT_GAP + 6;
+    }
+    return hasStartCondition(node) ? NODE_H + CONDITION_H : NODE_H;
 }
 
 export function portPoint(node, port) {
@@ -163,6 +187,8 @@ export class WorkflowDesigner extends Component {
         this.NODE_TYPES = NODE_TYPES;
         this.PALETTE = PALETTE;
         this.PORT_LABELS = PORT_LABELS;
+        this.PORT_TONES = PORT_TONES;
+        this.EDGE_TONES = EDGE_TONES;
         this.RUN_STATES = RUN_STATES;
         this.TRIGGERS = TRIGGERS;
         this.POLICIES = POLICIES;
@@ -177,6 +203,8 @@ export class WorkflowDesigner extends Component {
             workflow: {},
             graph: { nodes: [], edges: [] },
             fields: [],
+            buttons: [],
+            conditions: {},
             targetFields: {},
             issues: [],
             selection: null,
@@ -190,7 +218,10 @@ export class WorkflowDesigner extends Component {
             redoCount: 0,
             run: null,
             steps: [],
+            missing: false,
         });
+        // the conditions asked in words, so that each is asked once
+        this.conditionsAsked = new Set();
         this.undoStack = [];
         this.redoStack = [];
         this.drag = null;
@@ -216,6 +247,11 @@ export class WorkflowDesigner extends Component {
     // ------------------------------------------------------------------
 
     async load() {
+        if (!this.workflowId) {
+            // a page reloaded without the workflow: nothing to draw
+            this.state.missing = true;
+            return;
+        }
         if (this.runId) {
             const data = await this.orm.call(MODEL, "designer_run", [[this.workflowId], this.runId]);
             this.state.workflow = data.workflow;
@@ -228,6 +264,7 @@ export class WorkflowDesigner extends Component {
             this.state.workflow = data.workflow;
             this.state.graph = data.graph;
             this.state.fields = data.fields;
+            this.state.buttons = data.buttons || [];
             this.state.issues = data.issues;
             for (const node of data.graph.nodes) {
                 if (node.type === "create" && node.config.model) {
@@ -273,6 +310,10 @@ export class WorkflowDesigner extends Component {
         const config = node.config || {};
         switch (node.type) {
             case "start":
+                if (config.trigger === "button" && config.method) {
+                    const button = this.state.buttons.find((b) => b.name === config.method);
+                    return `${_t("Button")}: ${button?.string || config.method}`;
+                }
                 return TRIGGERS.find(([key]) => key === config.trigger)?.[1] || "";
             case "wait":
                 if (config.mode === "date") {
@@ -280,6 +321,8 @@ export class WorkflowDesigner extends Component {
                     return field ? `${config.amount || 0} ${this.unitLabel(config.unit)} ${this.directionLabel(config.direction)} ${field.string}` : "";
                 }
                 return `${config.amount || 0} ${this.unitLabel(config.unit)}`;
+            case "condition":
+                return this.condition(config.domain)?.short || "";
             case "wait_until":
             case "approval":
                 return config.timeout ? _t("at most %(amount)s %(unit)s", { amount: config.amount, unit: this.unitLabel(config.unit) }) : "";
@@ -291,6 +334,28 @@ export class WorkflowDesigner extends Component {
             default:
                 return "";
         }
+    }
+
+    /**
+     * ``domain`` in words, ``{short, full}``: asked to the server the first
+     * time, the chart shows it once the answer is there.
+     */
+    condition(domain) {
+        if (!domain || domain === "[]") {
+            return null;
+        }
+        if (!(domain in this.state.conditions) && !this.conditionsAsked.has(domain)) {
+            this.conditionsAsked.add(domain);
+            this.orm
+                .call(MODEL, "designer_conditions", [this.state.workflow.model, [domain]])
+                .then((result) => Object.assign(this.state.conditions, result));
+        }
+        return this.state.conditions[domain] || null;
+    }
+
+    startCondition(node) {
+        const condition = hasStartCondition(node) && this.condition(node.config.domain);
+        return condition ? { ...condition, short: _t("If %s", condition.short) } : null;
     }
 
     unitLabel(unit) {
@@ -362,9 +427,24 @@ export class WorkflowDesigner extends Component {
     }
 
     gridStyle() {
+        // graph paper: a strong line every 5 squares
         const { pan, zoom } = this.state;
         const size = GRID * zoom;
-        return `background-size:${size}px ${size}px;background-position:${pan.x}px ${pan.y}px;`;
+        const major = size * 5;
+        const sizes = [major, major, size, size].map((s) => `${s}px ${s}px`).join(",");
+        const positions = Array(4).fill(`${pan.x}px ${pan.y}px`).join(",");
+        return `background-size:${sizes};background-position:${positions};`;
+    }
+
+    /** The colour of ``edge``: of its exit, or what the run did with it. */
+    edgeTone(edge) {
+        if (this.isSelected("edge", edge.id)) {
+            return "selected";
+        }
+        if (this.state.run) {
+            return this.edgeTaken(edge) ? "go" : "muted";
+        }
+        return PORT_TONES[edge.port] || "ink";
     }
 
     // ------------------------------------------------------------------

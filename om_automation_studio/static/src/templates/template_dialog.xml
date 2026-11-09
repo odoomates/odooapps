@@ -105,7 +105,7 @@
             <div class="col-lg-7">
                 <div class="o_om_wd_template_preview border rounded">
                     <WorkflowPreview t-if="this.state.preview?.graph" graph="this.state.preview.graph"
-                                     issues="this.state.preview.issues"/>
+                                     issues="this.state.preview.issues" conditions="this.state.preview.conditions || {}"/>
                     <div t-elif="!this.state.model" class="h-100 d-flex align-items-center justify-content-center text-muted">
                         Choose the model the workflow runs on.
                     </div>
@@ -191,6 +191,14 @@
                     t-att-selected="option.id === this.state.values[slot.name]" t-out="option.name"/>
         </select>
         <div t-if="!slot.options.length" class="small text-muted mt-1">This model has no email template yet.</div>
+    </t>
+
+    <t t-name="om_automation_studio.TemplateSlot.button">
+        <select class="form-select form-select-sm" t-on-change="(ev) => this.set(slot.name, ev.target.value || false)">
+            <option value="" t-att-selected="!this.state.values[slot.name]">None</option>
+            <option t-foreach="slot.options" t-as="option" t-key="option.name" t-att-value="option.name"
+                    t-att-selected="option.name === this.state.values[slot.name]" t-out="option.string"/>
+        </select>
     </t>
 
     <t t-name="om_automation_studio.TemplateSlot.domain">
