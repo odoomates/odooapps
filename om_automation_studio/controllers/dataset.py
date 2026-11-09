@@ -19,16 +19,16 @@ class DataSetWorkflow(DataSet):
     click is checked, never the code that calls the same method. """
 
     @http.route()
-    def call_button(self, model, method, args, kwargs):
+    def call_button(self, model, method, args, kwargs, path=None):
         ids = _record_ids(args)
         Workflow = request.env['om.workflow'].with_context(**((kwargs or {}).get('context') or {}))
         gate = ids and Workflow._button_gate(model, method, ids)
         if not gate:
-            return super().call_button(model, method, args, kwargs)
+            return super().call_button(model, method, args, kwargs, path=path)
         allowed, messages = gate
         action = False
         if allowed:
-            action = super().call_button(model, method, [allowed, *args[1:]], kwargs)
+            action = super().call_button(model, method, [allowed, *args[1:]], kwargs, path=path)
         params = {
             'title': Workflow.env._("Waiting for approval"),
             'message': "\n".join(messages),
