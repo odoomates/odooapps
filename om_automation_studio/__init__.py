@@ -1,4 +1,4 @@
-from . import models, wizard
+from . import controllers, models, wizard
 
 
 def uninstall_hook(env):
