@@ -1,21 +1,36 @@
 /** @odoo-module **/
 
 import { Component } from "@odoo/owl";
+import { _t } from "@web/core/l10n/translation";
 
-import { NODE_TYPES, edgePath, inPoint, nodeHeight, portPoint, portsOf } from "../designer/designer";
+import {
+    NODE_TYPES,
+    edgePath,
+    hasStartCondition,
+    inPoint,
+    nodeHeight,
+    portPoint,
+    portsOf,
+} from "../designer/designer";
 
 const NODE_W = 216;
 const MARGIN = 24;
 // what fits on a step of the preview
 const LABEL_SIZE = 20;
+const CONDITION_SIZE = 24;
 // drawn at this scale, readable; a wider chart scrolls
 const SCALE = 0.6;
 
 /** A chart drawn small and read-only: the preview of a template. */
 export class WorkflowPreview extends Component {
     static template = "om_automation_studio.Preview";
-    static props = { graph: Object, issues: { type: Array, optional: true } };
-    static defaultProps = { issues: [] };
+    static props = {
+        graph: Object,
+        issues: { type: Array, optional: true },
+        // the conditions of the Start in words, by domain
+        conditions: { type: Object, optional: true },
+    };
+    static defaultProps = { issues: [], conditions: {} };
 
     setup() {
         this.NODE_TYPES = NODE_TYPES;
@@ -68,6 +83,21 @@ export class WorkflowPreview extends Component {
 
     hasError(node) {
         return this.props.issues.some((issue) => issue.node === node.id && issue.level === "error");
+    }
+
+    typeLabel(node) {
+        const type = this.NODE_TYPES[node.type]?.label || "";
+        // a Start on a button says so: nothing else on the chart tells it
+        return node.type === "start" && node.config?.trigger === "button" ? `${type} · ${_t("On a button")}` : type;
+    }
+
+    condition(node) {
+        const condition = hasStartCondition(node) && this.props.conditions[node.config.domain];
+        if (!condition) {
+            return "";
+        }
+        const text = _t("If %s", condition.short);
+        return text.length > CONDITION_SIZE ? `${text.slice(0, CONDITION_SIZE - 1)}…` : text;
     }
 
     label(node) {
