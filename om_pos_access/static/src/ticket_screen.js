@@ -6,6 +6,11 @@ patch(TicketScreen.prototype, {
     get omRefundRefused() {
         return this.pos.accessRight.omIsRestricted("refund");
     },
+    // deleting an order with products is cancelling it
+    shouldHideDeleteButton(order) {
+        return super.shouldHideDeleteButton(...arguments)
+            || (order.lines.length > 0 && this.pos.accessRight.omIsRestricted("cancel"));
+    },
     async onClickRefund() {
         if (this.omRefundRefused) {
             this.pos.notification.add(_t("You are not allowed to refund."), { type: "warning" });

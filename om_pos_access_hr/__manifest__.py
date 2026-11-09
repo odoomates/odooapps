@@ -16,6 +16,11 @@
     'data': [
         'views/hr_employee_views.xml',
     ],
+    'assets': {
+        'point_of_sale._assets_pos': [
+            'om_pos_access_hr/static/src/**/*',
+        ],
+    },
     # installs itself once both are there
     'auto_install': ['om_pos_access', 'pos_hr'],
 }

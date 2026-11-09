@@ -14,12 +14,17 @@ POS_RESTRICTIONS = {
     'close': 'om_pos_no_close',
     'partner': 'om_pos_no_partner_edit',
     'decrease': 'om_pos_no_decrease',
+    'cancel': 'om_pos_no_cancel',
+    'refund_receipt': 'om_pos_refund_receipt_only',
 }
-# limit: the field carrying it, a percentage, 0 for none
+# limit: the field carrying it, a percentage (an amount for the refunds), 0 for none
 POS_LIMITS = {
     'max_discount': 'om_pos_max_discount',
     'max_price_cut': 'om_pos_max_price_cut',
+    'max_refund': 'om_pos_max_refund',
 }
+# list of allowed records: the key the rules give it under, None for all
+POS_LISTS = ('payment_methods', 'pricelists')
 
 
 class OmPosAccessRules(models.AbstractModel):
@@ -64,6 +69,22 @@ class OmPosAccessRules(models.AbstractModel):
     om_pos_no_below_cost = fields.Boolean(
         string='Never Below Cost',
         help="A price or a discount that sells a product for less than its cost is refused.")
+    om_pos_no_cancel = fields.Boolean(
+        string='No Cancelling Orders',
+        help="Cancel Order is hidden, an order with products cannot be deleted from the list of orders, and "
+             "cancelling an order sent anyway is refused.")
+    om_pos_refund_receipt_only = fields.Boolean(
+        string='Refunds Only From a Receipt',
+        help="A refund goes through Orders, from the receipt of the sale: a line made negative with the +/- key is "
+             "refused.")
+    om_pos_max_refund = fields.Float(
+        string='Maximum Refund',
+        help="The highest amount, taxes included, an order may give back, in the currency of the shop. 0 for no "
+             "limit.")
+    om_pos_pricelist_ids = fields.Many2many(
+        'product.pricelist', string='Only These Pricelists',
+        help="Leave empty to allow every pricelist of the shop. Set, only these can be chosen, and orders with "
+             "another pricelist are refused: the price and discount limits are measured against them.")
 
     def _om_pos_own_rules(self):
         """ The rules this record sets, as the engine reads them. """
@@ -72,6 +93,7 @@ class OmPosAccessRules(models.AbstractModel):
             'flags': sorted(key for key, field_name in POS_RESTRICTIONS.items() if self[field_name]),
             **{key: self[field_name] or None for key, field_name in POS_LIMITS.items()},
             'payment_methods': self.om_pos_payment_method_ids.ids or None,
+            'pricelists': self.om_pos_pricelist_ids.ids or None,
         }
 
 
@@ -82,26 +104,27 @@ class OmPosAccess(models.AbstractModel):
 
     @api.model
     def _om_pos_no_rules(self):
-        return {'flags': [], **dict.fromkeys(POS_LIMITS), 'payment_methods': None}
+        return {'flags': [], **dict.fromkeys(POS_LIMITS), 'payment_methods': None, 'pricelists': None}
 
     @api.model
     def _om_pos_empty(self, rules):
-        return not rules['flags'] and not any(rules[key] for key in POS_LIMITS) and rules['payment_methods'] is None
+        return not rules['flags'] and not any(rules[key] for key in POS_LIMITS) \
+            and all(rules.get(key) is None for key in POS_LISTS)
 
     @api.model
     def _om_pos_merge(self, *rules_list):
         """ Several rules of the same cashier, from several sources: all of them apply, so the strictest
-        wins. Every restriction, the lowest limit, the payment methods all of them allow. """
+        wins. Every restriction, the lowest limit, the payment methods and pricelists all of them allow. """
         result = self._om_pos_no_rules()
         flags = set()
         for rules in rules_list:
             flags.update(rules['flags'])
             for key in POS_LIMITS:
-                if rules[key] and (not result[key] or rules[key] < result[key]):
+                if rules.get(key) and (not result[key] or rules[key] < result[key]):
                     result[key] = rules[key]
-            if rules['payment_methods'] is not None:
-                result['payment_methods'] = sorted(set(rules['payment_methods']) if result['payment_methods'] is None
-                                                   else set(result['payment_methods']) & set(rules['payment_methods']))
+            for key in POS_LISTS:
+                if rules.get(key) is not None:
+                    result[key] = sorted(set(rules[key]) if result[key] is None else set(result[key]) & set(rules[key]))
         result['flags'] = sorted(flags)
         return result
 
@@ -142,5 +165,9 @@ class OmPosAccess(models.AbstractModel):
             'close': _("You are not allowed to close the register."),
             'partner': _("You are not allowed to create or edit customers in the Point of Sale."),
             'payment_method': _("You are not allowed to take payments by %(method)s."),
+            'pricelist': _("You are not allowed to sell with the pricelist %(pricelist)s."),
+            'cancel': _("You are not allowed to cancel orders in the Point of Sale."),
+            'refund_receipt': _("Refunds are only allowed from the receipt of the sale, in Orders."),
+            'max_refund': _("You are allowed refunds up to %(limit)s."),
         }
         return messages[key] % values if values else messages[key]

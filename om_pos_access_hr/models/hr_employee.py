@@ -24,3 +24,8 @@ class HrEmployee(models.Model):
     om_pos_no_decrease = fields.Boolean(groups=HR)
     om_pos_payment_method_ids = fields.Many2many(groups=HR)
     om_pos_no_below_cost = fields.Boolean(groups=HR)
+    om_pos_no_cancel = fields.Boolean(groups=HR)
+    om_pos_refund_receipt_only = fields.Boolean(groups=HR)
+    om_pos_max_refund = fields.Float(groups=HR)
+    om_pos_pricelist_ids = fields.Many2many(
+        relation='om_pos_access_employee_pricelist_rel', column1='employee_id', column2='pricelist_id', groups=HR)

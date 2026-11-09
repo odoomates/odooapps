@@ -1,7 +1,14 @@
 import { PosAccessRightPlugin } from "@point_of_sale/app/plugins/access_right_plugin";
 import { patch } from "@web/core/utils/patch";
 
-const NO_RULES = { flags: [], max_discount: null, max_price_cut: null, payment_methods: null };
+const NO_RULES = {
+    flags: [],
+    max_discount: null,
+    max_price_cut: null,
+    max_refund: null,
+    payment_methods: null,
+    pricelists: null,
+};
 
 patch(PosAccessRightPlugin.prototype, {
     /**
@@ -35,6 +42,18 @@ patch(PosAccessRightPlugin.prototype, {
     // the ids of the payment methods allowed, or null for all of them
     get omPaymentMethods() {
         return this.omRules.payment_methods ?? null;
+    },
+    // the +/- key: a negative quantity or price gives money back without the receipt of the sale
+    get canNegateQuantity() {
+        return super.canNegateQuantity && !this.omIsRestricted("refund") && !this.omIsRestricted("refund_receipt");
+    },
+    // the ids of the pricelists allowed, or null for all of them
+    get omPricelists() {
+        return this.omRules.pricelists ?? null;
+    },
+    omPricelistAllowed(pricelist) {
+        const allowed = this.omPricelists;
+        return !allowed || !pricelist || allowed.includes(pricelist.id);
     },
     get omEmployeeId() {
         return this.config.module_pos_hr ? this.loggedCashier?.id : null;

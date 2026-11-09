@@ -13,3 +13,11 @@ class PosOrder(models.Model):
         if employee_id:
             employee = self.env['hr.employee'].sudo().browse(int(employee_id)).exists() or None
         return user, employee
+
+    @api.model
+    def _om_pos_cancel_cashier(self):
+        user, employee = super()._om_pos_cancel_cashier()
+        employee_id = self.env.context.get('om_pos_employee_id')
+        if employee_id:
+            employee = self.env['hr.employee'].sudo().browse(int(employee_id)).exists() or None
+        return user, employee

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-07 13:42+0000\n"
-"PO-Revision-Date: 2026-11-07 13:42+0000\n"
+"POT-Creation-Date: 2026-11-09 09:51+0000\n"
+"PO-Revision-Date: 2026-11-09 09:51+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -21,6 +21,22 @@ msgstr ""
 msgid ""
 "A price or a discount that sells a product for less than its cost is "
 "refused."
+msgstr ""
+
+#. module: om_pos_access
+#: model:ir.model.fields,help:om_pos_access.field_om_pos_access_rules__om_pos_refund_receipt_only
+#: model:ir.model.fields,help:om_pos_access.field_res_users__om_pos_refund_receipt_only
+msgid ""
+"A refund goes through Orders, from the receipt of the sale: a line made "
+"negative with the +/- key is refused."
+msgstr ""
+
+#. module: om_pos_access
+#: model:ir.model.fields,help:om_pos_access.field_om_pos_access_rules__om_pos_no_cancel
+#: model:ir.model.fields,help:om_pos_access.field_res_users__om_pos_no_cancel
+msgid ""
+"Cancel Order is hidden, an order with products cannot be deleted from the "
+"list of orders, and cancelling an order sent anyway is refused."
 msgstr ""
 
 #. module: om_pos_access
@@ -81,10 +97,8 @@ msgid "Every payment method of the shop"
 msgstr ""
 
 #. module: om_pos_access
-#: model:ir.module.module,summary:base.module_om_pos_access
-msgid ""
-"Restrict what each cashier may do in the Point of Sale: refunds, discounts, "
-"prices, cash, closing, customers, payment methods"
+#: model_terms:ir.ui.view,arch_db:om_pos_access.res_users_view_form_pos_access
+msgid "Every pricelist of the shop"
 msgstr ""
 
 #. module: om_pos_access
@@ -114,6 +128,15 @@ msgid ""
 msgstr ""
 
 #. module: om_pos_access
+#: model:ir.model.fields,help:om_pos_access.field_om_pos_access_rules__om_pos_pricelist_ids
+#: model:ir.model.fields,help:om_pos_access.field_res_users__om_pos_pricelist_ids
+msgid ""
+"Leave empty to allow every pricelist of the shop. Set, only these can be "
+"chosen, and orders with another pricelist are refused: the price and "
+"discount limits are measured against them."
+msgstr ""
+
+#. module: om_pos_access
 #: model:ir.model.fields,field_description:om_pos_access.field_om_pos_access_rules__om_pos_max_discount
 #: model:ir.model.fields,field_description:om_pos_access.field_res_users__om_pos_max_discount
 msgid "Maximum Discount (%)"
@@ -126,9 +149,21 @@ msgid "Maximum Price Cut (%)"
 msgstr ""
 
 #. module: om_pos_access
+#: model:ir.model.fields,field_description:om_pos_access.field_om_pos_access_rules__om_pos_max_refund
+#: model:ir.model.fields,field_description:om_pos_access.field_res_users__om_pos_max_refund
+msgid "Maximum Refund"
+msgstr ""
+
+#. module: om_pos_access
 #: model:ir.model.fields,field_description:om_pos_access.field_om_pos_access_rules__om_pos_no_below_cost
 #: model:ir.model.fields,field_description:om_pos_access.field_res_users__om_pos_no_below_cost
 msgid "Never Below Cost"
+msgstr ""
+
+#. module: om_pos_access
+#: model:ir.model.fields,field_description:om_pos_access.field_om_pos_access_rules__om_pos_no_cancel
+#: model:ir.model.fields,field_description:om_pos_access.field_res_users__om_pos_no_cancel
+msgid "No Cancelling Orders"
 msgstr ""
 
 #. module: om_pos_access
@@ -189,6 +224,12 @@ msgid "Only These Payment Methods"
 msgstr ""
 
 #. module: om_pos_access
+#: model:ir.model.fields,field_description:om_pos_access.field_om_pos_access_rules__om_pos_pricelist_ids
+#: model:ir.model.fields,field_description:om_pos_access.field_res_users__om_pos_pricelist_ids
+msgid "Only These Pricelists"
+msgstr ""
+
+#. module: om_pos_access
 #: model_terms:ir.ui.view,arch_db:om_pos_access.res_users_view_form_pos_access
 msgid "Orders"
 msgstr ""
@@ -229,8 +270,30 @@ msgid "Point of Sale Session"
 msgstr ""
 
 #. module: om_pos_access
+#: model:ir.model.fields,field_description:om_pos_access.field_om_pos_access_rules__om_pos_refund_receipt_only
+#: model:ir.model.fields,field_description:om_pos_access.field_res_users__om_pos_refund_receipt_only
+msgid "Refunds Only From a Receipt"
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-javascript
+#. odoo-python
+#: code:addons/om_pos_access/models/pos_access.py:0
+#: code:addons/om_pos_access/static/src/order_summary.js:0
+#: code:addons/om_pos_access/static/src/pos_store.js:0
+msgid "Refunds are only allowed from the receipt of the sale, in Orders."
+msgstr ""
+
+#. module: om_pos_access
 #: model_terms:ir.ui.view,arch_db:om_pos_access.res_users_view_form_pos_access
 msgid "Register and Payment"
+msgstr ""
+
+#. module: om_pos_access
+#: model:ir.module.module,summary:base.module_om_pos_access
+msgid ""
+"Restrict what each cashier may do in the Point of Sale: refunds, discounts, "
+"prices, cash, closing, customers, payment methods"
 msgstr ""
 
 #. module: om_pos_access
@@ -256,6 +319,14 @@ msgid ""
 "The discount key (%) of the Point of Sale is disabled, and orders sent with "
 "a discounted line, or with the global discount, are refused. Refunding a "
 "discounted sale stays possible."
+msgstr ""
+
+#. module: om_pos_access
+#: model:ir.model.fields,help:om_pos_access.field_om_pos_access_rules__om_pos_max_refund
+#: model:ir.model.fields,help:om_pos_access.field_res_users__om_pos_max_refund
+msgid ""
+"The highest amount, taxes included, an order may give back, in the currency "
+"of the shop. 0 for no limit."
 msgstr ""
 
 #. module: om_pos_access
@@ -306,6 +377,30 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_pos_access/static/src/price_rules.js:0
 msgid "You are allowed prices at most %s% below the pricelist."
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-python
+#: code:addons/om_pos_access/models/pos_access.py:0
+msgid "You are allowed refunds up to %(limit)s."
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-javascript
+#: code:addons/om_pos_access/static/src/pos_store.js:0
+msgid "You are allowed refunds up to %s."
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-python
+#: code:addons/om_pos_access/models/pos_access.py:0
+msgid "You are not allowed to cancel orders in the Point of Sale."
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-javascript
+#: code:addons/om_pos_access/static/src/pos_store.js:0
+msgid "You are not allowed to cancel orders."
 msgstr ""
 
 #. module: om_pos_access
@@ -379,6 +474,8 @@ msgstr ""
 
 #. module: om_pos_access
 #. odoo-javascript
+#: code:addons/om_pos_access/static/src/order_summary.js:0
+#: code:addons/om_pos_access/static/src/pos_store.js:0
 #: code:addons/om_pos_access/static/src/ticket_screen.js:0
 msgid "You are not allowed to refund."
 msgstr ""
@@ -399,6 +496,18 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_pos_access/static/src/price_rules.js:0
 msgid "You are not allowed to sell below cost."
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-python
+#: code:addons/om_pos_access/models/pos_access.py:0
+msgid "You are not allowed to sell with the pricelist %(pricelist)s."
+msgstr ""
+
+#. module: om_pos_access
+#. odoo-javascript
+#: code:addons/om_pos_access/static/src/pos_store.js:0
+msgid "You are not allowed to sell with the pricelist %s: choose another one."
 msgstr ""
 
 #. module: om_pos_access
