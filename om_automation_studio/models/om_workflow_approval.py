@@ -7,6 +7,8 @@ from odoo.tools.misc import format_datetime
 
 # what an approver may change on their own approval
 APPROVER_FIELDS = {'comment'}
+# answers for any approver, unless the step forbids it
+ADMIN_GROUP = 'om_automation_studio.om_automation_studio_group_admin'
 
 
 class OmWorkflowApproval(models.Model):
@@ -52,7 +54,7 @@ class OmWorkflowApproval(models.Model):
             approval.can_decide = approval.state == 'pending' and approval._may_answer(self.env.user)
 
     def _may_answer(self, user):
-        return self.user_id == user or (not self.approver_only and user.has_group('base.group_system'))
+        return self.user_id == user or (not self.approver_only and user.has_group(ADMIN_GROUP))
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -69,7 +71,7 @@ class OmWorkflowApproval(models.Model):
         return approvals
 
     def write(self, vals):
-        if not self.env.su and not self.env.user.has_group('base.group_system') and set(vals) - APPROVER_FIELDS:
+        if not self.env.su and not self.env.user.has_group(ADMIN_GROUP) and set(vals) - APPROVER_FIELDS:
             raise AccessError(_("Approvals are answered with the Approve and Reject buttons."))
         return super().write(vals)
 

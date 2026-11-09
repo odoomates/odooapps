@@ -1,6 +1,6 @@
 from odoo import SUPERUSER_ID, api
 
-from . import models, wizard
+from . import controllers, models, wizard
 
 
 def uninstall_hook(cr, registry):
