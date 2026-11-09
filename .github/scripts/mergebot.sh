@@ -13,7 +13,8 @@
 #   /mergebot r+ skipci          merge now, without waiting for CI nor rebasing: for the admins of the repository
 #   /mergebot r+ fw+             merge, then forward-port: one pull request of its commits to every higher version
 #                               branch (fw+ goes with r+, in any order, also with a bump level)
-#   /mergebot r+ fw+ 19.0        the same, up to this branch included (also: fw+ upto 19.0)
+#   /mergebot r+ fw+ 19.0        the same, up to this branch included (also: fw+ upto 19.0); on a pull request
+#                               merged already whose forward-port did not happen, it forward-ports it
 #   /mergebot rebase             rebase the branch of the pull request on its target branch
 #   /mergebot squash             make the commits of the pull request one commit, with the message and the author of
 #                               the first one (the code does not change, CI runs again on it)
@@ -299,6 +300,23 @@ fi
 read -r state draft base head_repo head_branch head_sha merge_state node_id < <(gh pr view "$PR" --repo "$REPO" \
     --json state,isDraft,baseRefName,headRepositoryOwner,headRepository,headRefName,headRefOid,mergeStateStatus,id \
     --jq '"\(.state) \(.isDraft) \(.baseRefName) \(.headRepositoryOwner.login)/\(.headRepository.name) \(.headRefName) \(.headRefOid) \(.mergeStateStatus) \(.id)"')
+# fw+ on a merged pull request whose forward-port did not happen (it stopped on an error): forward-port it now
+if [ "$state" = MERGED ] && [ "$action" = merge ] && [ "$forward" = true ] && [ -n "${MERGEBOT_TOKEN:-}" ] \
+    && ! [[ $head_branch =~ ^[0-9]+\.0-fw-[0-9]+$ ]]; then
+    if gh api "repos/$REPO/issues/$PR/comments" --paginate --jq '.[].body' | grep -qF '<!-- mergebot-forward-port -->'; then
+        say "This pull request is forward-ported already."
+        exit 0
+    fi
+    remove_upto
+    if [ -n "$upto" ]; then
+        gh label create "fw-upto-$upto" --repo "$REPO" --color 0E8A16 \
+            --description "The forward-port of the mergebot stops at this branch" > /dev/null 2>&1 || true
+        gh api -X POST "repos/$REPO/issues/$PR/labels" -f "labels[]=fw-upto-$upto" > /dev/null
+    fi
+    say "Merged already: forward-porting now."
+    bash "$scripts/mergebot_forward_port.sh"
+    exit 0
+fi
 if [ "$state" != OPEN ]; then
     say "This pull request is not open."
     exit 0
