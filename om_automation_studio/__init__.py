@@ -1,4 +1,10 @@
+<<<<<<< HEAD
 from . import models, wizard
+=======
+from odoo import SUPERUSER_ID, api
+
+from . import controllers, models, wizard
+>>>>>>> f5af503 ([IMP] om_automation_studio: buttons, user groups)
 
 
 def uninstall_hook(env):
