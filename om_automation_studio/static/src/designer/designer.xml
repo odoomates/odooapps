@@ -3,7 +3,11 @@
 
     <t t-name="om_automation_studio.Designer">
         <div class="o_om_wd_designer o_action d-flex flex-column h-100">
-            <t t-if="this.state.loaded">
+            <div t-if="this.state.missing" class="m-auto text-center text-muted p-5">
+                <i class="fa fa-sitemap fa-3x mb-3 d-block"/>
+                No workflow to show: open one from Automation Studio, Workflows.
+            </div>
+            <t t-elif="this.state.loaded">
                 <t t-call="om_automation_studio.Designer.Toolbar"/>
                 <div class="o_om_wd_main d-flex flex-grow-1 overflow-hidden">
                     <t t-if="!this.readonly()" t-call="om_automation_studio.Designer.Palette"/>
@@ -117,19 +121,19 @@
             <div class="o_om_wd_viewport" t-att-style="this.viewportStyle()">
                 <svg class="o_om_wd_edges" width="1" height="1">
                     <defs>
-                        <marker id="o_om_wd_arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7"
+                        <marker t-foreach="this.EDGE_TONES" t-as="tone" t-key="tone" t-att-id="'o_om_wd_arrow_' + tone"
+                                viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6"
                                 orient="auto-start-reverse">
-                            <path d="M 0 0 L 10 5 L 0 10 z" class="o_om_wd_arrow"/>
+                            <path d="M 0 0 L 10 5 L 0 10 L 3 5 z" t-att-class="'o_om_wd_arrow o_om_wd_tone_' + tone"/>
                         </marker>
                     </defs>
                     <t t-foreach="this.state.graph.edges" t-as="edge" t-key="edge.id">
                         <t t-set="d" t-value="this.edgeD(edge)"/>
                         <t t-if="d">
                             <path class="o_om_wd_edge_hit" t-att-d="d" t-on-pointerdown="(ev) => this.onEdgePointerDown(ev, edge)"/>
-                            <path class="o_om_wd_edge" t-att-d="d" marker-end="url(#o_om_wd_arrow)"
-                                  t-att-class="{'o_om_wd_edge_selected': this.isSelected('edge', edge.id),
-                                                'o_om_wd_edge_taken': this.state.run and this.edgeTaken(edge),
-                                                'o_om_wd_edge_faded': this.state.run and !this.edgeTaken(edge)}"/>
+                            <t t-set="tone" t-value="this.edgeTone(edge)"/>
+                            <path class="o_om_wd_edge" t-att-d="d" t-att-marker-end="'url(#o_om_wd_arrow_' + tone + ')'"
+                                  t-att-class="'o_om_wd_tone_' + tone + (this.state.run and !this.edgeTaken(edge) ? ' o_om_wd_edge_faded' : '')"/>
                         </t>
                     </t>
                     <path t-if="this.state.link" class="o_om_wd_edge o_om_wd_edge_draft" t-att-d="this.linkD()"/>
@@ -138,12 +142,14 @@
                     <div class="o_om_wd_node" t-att-data-node-id="node.id" t-att-style="this.nodeStyle(node)"
                          t-att-class="this.nodeClass(node)"
                          t-on-pointerdown="(ev) => this.onNodePointerDown(ev, node)">
+                        <div class="o_om_wd_node_tab" t-out="this.NODE_TYPES[node.type].label"/>
                         <div t-if="node.type !== 'start'" class="o_om_wd_in"/>
                         <div class="o_om_wd_node_head d-flex align-items-center gap-2">
                             <span class="o_om_wd_node_icon"><i class="oi" t-att-data-icon="this.NODE_TYPES[node.type].icon"/></span>
                             <div class="o_om_wd_node_text flex-grow-1">
                                 <div class="fw-semibold text-truncate" t-out="this.nodeLabel(node)"/>
-                                <div class="small text-muted text-truncate" t-out="this.nodeSummary(node)"/>
+                                <div class="small text-muted text-truncate" t-out="this.nodeSummary(node)"
+                                     t-att-title="node.type === 'condition' ? this.condition(node.config.domain)?.full : false"/>
                             </div>
                             <i t-if="!this.state.run and this.nodeIssues(node).length" class="oi o_om_wd_node_warn"
                                t-att-class="this.nodeIssues(node).some((i) => i.level === 'error') ? 'text-danger' : 'text-warning'"
@@ -151,8 +157,12 @@
                             <span t-if="this.state.run and this.nodeSteps(node).length > 1" class="badge rounded-pill text-bg-light"
                                   t-out="'×' + this.nodeSteps(node).length"/>
                         </div>
+                        <t t-set="startCondition" t-value="this.startCondition(node)"/>
+                        <div t-if="startCondition" class="o_om_wd_node_condition small text-truncate"
+                             t-att-title="startCondition.full" t-out="startCondition.short"/>
                         <t t-foreach="this.portsOf(node)" t-as="port" t-key="port">
-                            <div class="o_om_wd_port" t-att-style="this.portStyle(node, port)" t-att-data-port="port"
+                            <div class="o_om_wd_port" t-att-class="'o_om_wd_tone_' + (this.PORT_TONES[port] || 'ink')"
+                                 t-att-style="this.portStyle(node, port)" t-att-data-port="port"
                                  t-on-pointerdown="(ev) => this.onPortPointerDown(ev, node, port)">
                                 <span class="o_om_wd_port_label" t-out="this.PORT_LABELS[port]"/>
                                 <span class="o_om_wd_port_dot"/>
@@ -288,10 +298,28 @@
                         t-att-selected="config.trigger === item[0]" t-out="item[1]"/>
             </select>
         </div>
-        <t t-if="config.trigger === 'change'">
+        <t t-if="config.trigger === 'button'">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Button</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'method', ev.target.value)">
+                    <option value="">Choose the button...</option>
+                    <option t-if="config.method and !this.state.buttons.some((b) => b.name === config.method)"
+                            t-att-value="config.method" selected="selected" t-out="config.method"/>
+                    <option t-foreach="this.state.buttons" t-as="button" t-key="button.name" t-att-value="button.name"
+                            t-att-selected="config.method === button.name" t-out="button.string"/>
+                </select>
+                <div class="small text-muted mt-1">
+                    The workflow starts when the button is clicked on a record that matches the condition below.
+                    While an approval of the workflow waits, the button does not go on; once approved, it goes on
+                    at the next click. Saving the record never starts it.
+                </div>
+            </div>
+        </t>
+        <t t-if="config.trigger === 'change' or config.trigger === 'button'">
             <div class="mb-3">
                 <label class="form-label small fw-bold">Watched fields</label>
-                <div class="small text-muted mb-1">Only a change of these fields starts it. None: any change, of the lines too.</div>
+                <div t-if="config.trigger === 'button'" class="small text-muted mb-1">An approval covers the fields of the condition: a change of them, or of these fields, asks again at the next click.</div>
+                <div t-else="" class="small text-muted mb-1">Only a change of these fields starts it. None: any change, of the lines too.</div>
                 <select class="form-select form-select-sm mb-1"
                         t-on-change="(ev) => { ev.target.value and this.toggleWatched(node, ev.target.value, true); ev.target.value = ''; }">
                     <option value="">Add a field...</option>
@@ -336,7 +364,7 @@
                 </label>
             </div>
         </div>
-        <div class="mb-3">
+        <div t-if="config.trigger !== 'button'" class="mb-3">
             <label class="form-label small fw-bold">Runs per record</label>
             <select class="form-select form-select-sm" t-on-change="(ev) => this.setConfig(node, 'policy', ev.target.value)">
                 <option t-foreach="this.POLICIES" t-as="item" t-key="item[0]" t-att-value="item[0]"

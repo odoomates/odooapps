@@ -86,7 +86,7 @@ class TestSavedTemplate(WorkflowCase):
         theirs.company_id = other
         shared = self.save_as_template(self.workflow)
         shared.company_id = False
-        admin = new_test_user(self.env, 'om_wd_template_admin', groups='base.group_system')
+        admin = new_test_user(self.env, 'om_wd_template_admin', groups='base.group_user,om_automation_studio.om_automation_studio_group_admin')
         visible = self.Template.with_user(admin).search([]).ids
         self.assertIn(mine.id, visible)
         self.assertIn(shared.id, visible)

@@ -48,6 +48,8 @@ class OmWorkflowRun(models.Model):
     error = fields.Text(readonly=True)
     step_ids = fields.One2many('om.workflow.run.step', 'run_id', string='Steps', readonly=True)
     approval_ids = fields.One2many('om.workflow.approval', 'run_id', readonly=True)
+    # the run a button started: the values of the record it asks about
+    button_values = fields.Text(readonly=True, copy=False)
 
     @api.depends('node_key', 'version_id.graph')
     def _compute_node_label(self):
@@ -109,6 +111,36 @@ class OmWorkflowRun(models.Model):
     def _check_supervisor(self):
         if not self.env.user.has_group('om_automation_studio.om_automation_studio_group_supervisor'):
             raise UserError(self.env._("Only workflow supervisors can change runs."))
+
+    # ------------------------------------------------------------------
+    # button
+    # ------------------------------------------------------------------
+
+    def _button_verdict(self):
+        """ Whether the button the run was started by may go on. """
+        self.ensure_one()
+        approvals = self.approval_ids
+        if approvals.filtered(lambda a: a.state == 'pending'):
+            return 'pending'
+        if self.state == 'failed':
+            return 'failed'
+        if approvals.filtered(lambda a: a.state != 'approved'):
+            return 'refused'
+        return 'ok'
+
+    def _button_message(self, verdict, asked=False):
+        self.ensure_one()
+        _ = self.env._
+        if verdict == 'pending':
+            approval = self.approval_ids.filtered(lambda a: a.state == 'pending')[:1]
+            if asked:
+                return _("%(record)s is sent for approval to %(user)s. Click again once it is approved.",
+                         record=self.res_name, user=approval.user_id.name)
+            return _("%(record)s waits for approval by %(user)s.", record=self.res_name, user=approval.user_id.name)
+        if verdict == 'failed':
+            return _("%(record)s cannot go on: the workflow %(workflow)s failed (%(error)s).",
+                     record=self.res_name, workflow=self.workflow_id.name, error=self.error or '')
+        return _("%(record)s cannot go on: it is not approved.", record=self.res_name)
 
     # ------------------------------------------------------------------
     # engine
