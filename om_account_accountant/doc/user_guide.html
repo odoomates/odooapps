@@ -217,7 +217,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">5.4</span><span>Payments</span></div>
     <div class="toc-line"><span class="n">5.5</span><span>Post-dated cheques</span></div>
     <div class="toc-line"><span class="n">5.6</span><span>Recurring payments</span></div>
-    <div class="toc-line"><span class="n">5.7</span><span>Printing cheques</span></div>
+    <div class="toc-line"><span class="n">5.7</span><span>Recurring journal entries</span></div>
+    <div class="toc-line"><span class="n">5.8</span><span>Printing cheques</span></div>
 
     <div class="toc-part"><span class="n">6</span><span class="t">Bank and cash</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">6.1</span><span>Importing the statement</span></div>
@@ -577,7 +578,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         Formats</span>, where this suite lets you position every printed field to the
         millimetre and watch a live preview &mdash; the Gulf, UK and Irish, Australian and New
         Zealand leaves are there, and you can build your own. Set the finished format on the
-        bank journal, under <strong>Cheque Format</strong>. That is section 5.7.</p>
+        bank journal, under <strong>Cheque Format</strong>. That is section 5.8.</p>
 
     <h2><span class="n">2.11</span> The Gulf states</h2>
     <p>Set the company's country to Bahrain, Kuwait, Oman, Qatar, Saudi Arabia or the United
@@ -953,7 +954,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             (section 6.3) &mdash; same result, less typing.</li>
     </ol>
     <p>You pay a vendor with a post-dated cheque: the mirror image. Register the payment with
-        PDC Issued, print the cheque itself with the cheque formats (section 5.7), and when it
+        PDC Issued, print the cheque itself with the cheque formats (section 5.8), and when it
         is presented, debit Post-dated cheques issued and credit the bank.</p>
     <div class="note">
         <p class="label">Tip</p>
@@ -985,7 +986,29 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <figcaption>A recurring payment and the entries it has generated.</figcaption>
     </figure>
 
-    <h2><span class="n">5.7</span> Printing cheques</h2>
+    <h2><span class="n">5.7</span> Recurring journal entries</h2>
+    <p>On the entry itself, in its <span class="path">Other Info</span> tab. For accruals, rent,
+        management fees, prepaid amortisation &mdash; any journal entry, vendor bill or customer
+        invoice that comes back every month, quarter or year. Odoo does it on its own: there is
+        no template to set up.</p>
+    <ol>
+        <li>Create the journal entry, the bill or the invoice as usual, with the amount of one period.</li>
+        <li>In the <strong>Other Info</strong> tab, set <strong>Auto-post</strong> to
+            <strong>Monthly</strong>, <strong>Quarterly</strong> or <strong>Yearly</strong>. Set
+            <strong>Auto-post until</strong> when the recurrence has to stop, such as the end of a lease.</li>
+        <li>Post it. Odoo creates the entry of the next period at once, in draft, on the same day of
+            the month, and posts it on its date; posting that one creates the next, and so on until
+            the <strong>Auto-post until</strong> date.</li>
+    </ol>
+    <div class="note">
+        <p class="label">Tip</p>
+        <p>The next entry waits in draft until its date: change its amount there to change the
+            following periods, set its <strong>Auto-post</strong> to <strong>No</strong> or delete it
+            to stop the recurrence. Payments to and from the bank on a schedule of their own are
+            recurring payments (section 5.6).</p>
+    </div>
+
+    <h2><span class="n">5.8</span> Printing cheques</h2>
     <p><span class="path">Configuration &rsaquo; Invoicing &rsaquo; Cheque Formats</span>, then
         print from the vendor payment. The page layout and the margins live in the settings
         (section 2.10).</p>

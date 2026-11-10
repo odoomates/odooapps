@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_deferred" model="ir.actions.report">
+        <field name="name">Deferred Report</field>
+        <field name="model">om.deferred.report</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_account_deferred.report_deferred</field>
+        <field name="print_report_name">'%s - %s' % (dict(object._fields['kind'].selection)[object.kind], object.date_to)</field>
+    </record>
+
+    <template id="report_deferred">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="report">
+                <t t-call="web.external_layout">
+                    <t t-set="lines" t-value="report.line_ids"/>
+                    <t t-set="columns" t-value="['total', 'not_started', 'before', 'current', 'later']"/>
+                    <div class="page">
+                        <h3><t t-out="report._title()"/></h3>
+                        <p>
+                            <span t-field="report.date_from"/> - <span t-field="report.date_to"/>
+                        </p>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Document</th>
+                                    <th>Label</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th class="text-end">Total</th>
+                                    <th class="text-end">Not Started</th>
+                                    <th class="text-end">Before</th>
+                                    <th class="text-end">Current</th>
+                                    <th class="text-end">Later</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="lines.account_id" t-as="account">
+                                    <t t-set="account_lines" t-value="lines.filtered(lambda line: line.account_id == account)"/>
+                                    <tr class="fw-bold">
+                                        <td colspan="4"><span t-field="account.display_name"/></td>
+                                        <t t-foreach="columns" t-as="column">
+                                            <td class="text-end">
+                                                <span t-out="sum(account_lines.mapped(column))"
+                                                      t-options="{'widget': 'monetary', 'display_currency': report.company_id.currency_id}"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                    <tr t-foreach="account_lines" t-as="line">
+                                        <td><span t-field="line.move_id.name"/></td>
+                                        <td><span t-field="line.name"/></td>
+                                        <td><span t-field="line.start_date"/></td>
+                                        <td><span t-field="line.end_date"/></td>
+                                        <t t-foreach="columns" t-as="column">
+                                            <td class="text-end">
+                                                <span t-out="line[column]"
+                                                      t-options="{'widget': 'monetary', 'display_currency': report.company_id.currency_id}"/>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                                <tr class="fw-bold border-top">
+                                    <td colspan="4">Total</td>
+                                    <t t-foreach="columns" t-as="column">
+                                        <td class="text-end">
+                                            <span t-out="sum(lines.mapped(column))"
+                                                  t-options="{'widget': 'monetary', 'display_currency': report.company_id.currency_id}"/>
+                                        </td>
+                                    </t>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
