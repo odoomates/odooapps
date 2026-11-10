@@ -1,6 +1,6 @@
-===========================
-Odoo 20 Post-dated Cheques
-===========================
+==================
+Post-dated Cheques
+==================
 
 This module keeps track of the post-dated cheques received from customers and issued to vendors, in Odoo 20
 Community Edition, from their registration to their clearing.
