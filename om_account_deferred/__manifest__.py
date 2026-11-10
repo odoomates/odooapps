@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 20 Deferred Revenue and Expense',
+    'name': 'Deferred Revenue and Expense',
     'version': '0.1.0',
     'author': 'Odoo Mates',
     'category': 'Accounting/Accounting',

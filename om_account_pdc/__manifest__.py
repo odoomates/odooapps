@@ -1,5 +1,5 @@
 {
-    'name': 'Odoo 20 Post-dated Cheques',
+    'name': 'Post-dated Cheques',
     'version': '0.1.0',
     'author': 'Odoo Mates',
     'category': 'Accounting/Accounting',
