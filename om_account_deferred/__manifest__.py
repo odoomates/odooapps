@@ -1,6 +1,6 @@
 {
     'name': 'Deferred Revenue and Expense',
-    'version': '0.1.0',
+    'version': '0.1.1',
     'author': 'Odoo Mates',
     'category': 'Accounting/Accounting',
     'summary': 'Deferred Revenue, Deferred Expense, Prepaid Expenses, Revenue Recognition from the invoice line, '

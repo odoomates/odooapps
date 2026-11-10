@@ -1,6 +1,6 @@
 {
     'name': 'Post-dated Cheques',
-    'version': '0.1.0',
+    'version': '0.1.1',
     'author': 'Odoo Mates',
     'category': 'Accounting/Accounting',
     'summary': 'Post Dated Cheques, PDC, PDC Received, PDC Issued, Cheque Register, Deposit, Clear and Bounce '
