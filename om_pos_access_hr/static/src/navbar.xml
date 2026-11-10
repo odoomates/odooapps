@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <!-- pos_hr sets its own condition on Close Register: the rules of the cashier apply as well -->
+    <t t-name="om_pos_access_hr.Navbar" t-inherit="point_of_sale.Navbar" t-inherit-mode="extension">
+        <xpath expr="//DropdownItem[@onSelected='() => this.pos.closeSession()']" position="attributes">
+            <attribute name="t-if">(!pos.config.module_pos_hr or pos.employeeIsAdmin or pos.getCashierUserId() === pos.session.user_id?.id) and !pos.omIsRestricted('close')</attribute>
+        </xpath>
+    </t>
+</templates>
