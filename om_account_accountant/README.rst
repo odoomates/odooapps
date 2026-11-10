@@ -8,7 +8,7 @@ accounting modules in one click and adds the menus, groups, settings and
 dashboards that make them work as one system rather than seventeen separate
 apps.
 
-A 47-page user guide ships with the module, at
+A 44-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -101,6 +101,25 @@ What this module adds on top
   the cost of a good as an expense when it is invoiced to the customer.
 * Keeps the In Payment status on invoices, so a registered payment does not mark
   the invoice paid before the payment is reconciled.
+
+
+Recurring entries
+=================
+
+Odoo repeats a journal entry, a vendor bill or a customer invoice by itself, for
+accruals, rent, fees or any amount that comes back every period:
+
+1. Create the entry, the bill or the invoice as usual.
+2. In its Other Info tab, set Auto-post to Monthly, Quarterly or Yearly, and an
+   Auto-post until date if the recurrence must stop.
+3. Post it. Odoo creates the entry of the next period at once, in draft, on the
+   same day of the month, and posts it by itself on its date; posting that one
+   creates the next, until the Auto-post until date.
+
+To stop a recurrence, set Auto-post to No on the next entry, which is still in
+draft, or delete it. To change the amount from the next period on, change it on
+that entry. Recurring payments to and from a bank, with their own schedule, are
+the job of Recurring Payments (``om_recurring_payments``).
 
 
 Installation
