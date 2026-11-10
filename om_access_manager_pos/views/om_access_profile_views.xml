@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_access_profile_view_form_pos" model="ir.ui.view">
+        <field name="name">om.access.profile.form.pos</field>
+        <field name="model">om.access.profile</field>
+        <field name="inherit_id" ref="om_access_manager.om_access_profile_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='sign_in']" position="after">
+                <page string="Point of Sale" name="pos">
+                    <div class="text-muted mb-2">
+                        What the cashiers of this profile may not do in the Point of Sale. A cashier is
+                        an Odoo user of the profile, or a POS employee listed below when employees log in
+                        to the shop. Rules set on the user or the employee themselves apply too: the
+                        strictest wins.
+                    </div>
+                    <group name="pos_restrictions">
+                        <group string="Orders">
+                            <field name="om_pos_no_refund"/>
+                            <field name="om_pos_refund_receipt_only" invisible="om_pos_no_refund"/>
+                            <field name="om_pos_max_refund" invisible="om_pos_no_refund"/>
+                            <field name="om_pos_no_cancel"/>
+                            <field name="om_pos_no_below_cost"/>
+                        </group>
+                        <group string="Customers and Lines">
+                            <field name="om_pos_no_partner_edit"/>
+                            <field name="om_pos_no_decrease"/>
+                        </group>
+                        <group string="Payment">
+                            <field name="om_pos_payment_method_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="Every payment method of the shop"/>
+                        </group>
+                        <group string="Register">
+                            <field name="om_pos_no_cash_move"/>
+                            <field name="om_pos_no_close"/>
+                        </group>
+                        <group string="Discounts and Prices">
+                            <field name="om_pos_no_discount"/>
+                            <field name="om_pos_max_discount" invisible="om_pos_no_discount"/>
+                            <field name="om_pos_no_price_change"/>
+                            <field name="om_pos_max_price_cut" invisible="om_pos_no_price_change"/>
+                            <field name="om_pos_pricelist_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="Every pricelist of the shop"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
