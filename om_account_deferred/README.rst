@@ -1,6 +1,6 @@
-====================================
-Odoo 20 Deferred Revenue and Expense
-====================================
+============================
+Deferred Revenue and Expense
+============================
 
 This module spreads revenue and expense over the periods they belong to, from the invoice and bill lines,
 in Odoo 20 Community Edition.
