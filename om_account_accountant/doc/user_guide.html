@@ -220,6 +220,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">5.7</span><span>Recurring journal entries</span></div>
     <div class="toc-line"><span class="n">5.8</span><span>Printing cheques</span></div>
     <div class="toc-line"><span class="n">5.9</span><span>Batch payments</span></div>
+    <div class="toc-line"><span class="n">5.10</span><span>Deferred revenue and expenses</span></div>
 
     <div class="toc-part"><span class="n">6</span><span class="t">Bank and cash</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">6.1</span><span>Importing the statement</span></div>
@@ -290,7 +291,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <h2><span class="n">1.1</span> What this app installs</h2>
     <p>Installing <strong>Odoo 20 Accounting Community</strong> turns the Invoicing
         application of Odoo 20 Community Edition into a full accounting application. It
-        installs eighteen modules and arranges their menus, groups and dashboards so that
+        installs seventeen modules and arranges their menus, groups and dashboards so that
         they work as one:</p>
     <ul class="plain two-col">
         <li>Financial reports (Balance Sheet, Profit and Loss, Cash Flow Statement, the
@@ -303,7 +304,6 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Customer follow-ups and statements</li>
         <li>Cash forecast</li>
         <li>Cheque printing</li>
-        <li>Batch payments and bank upload files</li>
         <li>Automatic currency rates and currency revaluation</li>
         <li>Fiscal years, period closing and lock dates</li>
         <li>Recurring payments</li>
@@ -312,11 +312,20 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
 
     <div class="note">
         <p class="label">Good to know</p>
-        <p><strong>One module is not installed for you.</strong> <em>Budget Control of
-            Purchases</em> (<code>om_account_budget_purchase</code>) adds committed amounts
-            and budget control on purchase orders. Download it from the Odoo Apps store and
-            it installs itself as soon as Purchase and the budgets are both present. See
-            section 8.5.</p>
+        <p><strong>Four modules are not installed for you.</strong> They are free on the
+            Odoo Apps store and this guide covers them; download the ones you need into your
+            addons folder and install them from the Apps menu.</p>
+        <ul>
+            <li><em>Batch Payments</em> (<code>om_account_batch_payment</code>): payment runs,
+                batch deposits and the upload file of the bank. See section 5.9.</li>
+            <li><em>Deferred Revenue and Expense</em> (<code>om_account_deferred</code>):
+                revenue and expense spread over the months they belong to. See section 5.10.</li>
+            <li><em>Post-dated Cheques</em> (<code>om_account_pdc</code>): a register of the
+                cheques received and issued, from registration to clearing. See section 5.5.</li>
+            <li><em>Budget Control of Purchases</em> (<code>om_account_budget_purchase</code>):
+                committed amounts and budget control on purchase orders. It installs itself as
+                soon as Purchase and the budgets are both present. See section 8.5.</li>
+        </ul>
     </div>
 
     <h2><span class="n">1.2</span> Who can do what</h2>
@@ -929,9 +938,27 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
 
     <h2><span class="n">5.5</span> Post-dated cheques</h2>
     <p>A cheque dated next month is not money in the bank yet. It should not sit in the bank
-        account, and the invoice it settles should not stay open either. A journal of its own
-        solves both.</p>
-    <h3>Setting it up, once</h3>
+        account, and the invoice it settles should not stay open either.</p>
+    <h3>With the Post-dated Cheques module</h3>
+    <p>Install <em>Post-dated Cheques</em> (<code>om_account_pdc</code>), a separate free module.
+        In <span class="path">Configuration &rsaquo; Settings</span>, section Post-dated Cheques, set
+        the PDC Receivable account (a current asset), the PDC Payable account (a current
+        liability), both with reconciliation allowed, and the journal of the registrations.</p>
+    <ol>
+        <li>Open <span class="path">Customers &rsaquo; Post-dated Cheques</span>, create the cheque
+            with its partner, amount, number, bank, date and the invoices it pays, and click
+            <strong>Register</strong>. The amount moves from the customer to PDC Receivable and the
+            invoices are settled at once; one cheque can pay several invoices, or part of one.</li>
+        <li><strong>Deposit</strong> it when it goes to the bank.</li>
+        <li><strong>Clear</strong> it on or after its date: the amount moves from the PDC account
+            to the bank journal. A daily activity reminds you of the cheques reaching their date.</li>
+        <li>If it bounces, <strong>Bounce</strong> reverses the registration and opens its
+            invoices again.</li>
+    </ol>
+    <p>The cheques issued work the same way under <span class="path">Vendors &rsaquo; Post-dated
+        Cheques</span>, with PDC Payable. The list, with its filters To Clear, Due and Bounced, is
+        the cheque register.</p>
+    <h3>Without the module: a journal of its own</h3>
     <ol>
         <li>Create two accounts with <strong>Allow Reconciliation</strong> ticked: Post-dated
             cheques received (a current asset) and Post-dated cheques issued (a current
@@ -1040,6 +1067,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     </div>
 
     <h2><span class="n">5.9</span> Batch payments</h2>
+    <p>This section needs <em>Batch Payments</em> (<code>om_account_batch_payment</code>), a separate
+        free module.</p>
     <p><span class="path">Vendors &rsaquo; Batch Payments</span> for a payment run,
         <span class="path">Customers &rsaquo; Batch Deposits</span> for customer cheques taken to the bank
         together. The bank then shows one transaction for the whole batch, and that one transaction is
@@ -1071,6 +1100,50 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             file if it has to go back to the bank. A cancelled payment stays listed but no longer counts in the total.
             A batch can only go back to draft while none of its payments is cleared by the bank: undo the
             reconciliation first.</p>
+    </div>
+
+    <h2><span class="n">5.10</span> Deferred revenue and expenses</h2>
+    <p>A yearly insurance paid in January is an expense of the twelve months it covers, and a
+        yearly subscription invoiced in advance is revenue of the months it serves. This needs
+        <em>Deferred Revenue and Expense</em> (<code>om_account_deferred</code>), a separate free
+        module.</p>
+    <h3>Setting it up, once</h3>
+    <p>In <span class="path">Configuration &rsaquo; Settings</span>, section Deferred Revenue and
+        Expense, fill in the Deferred Expense and the Deferred Revenue blocks: the
+        <strong>Journal</strong>, the <strong>Account</strong> (a current asset such as Prepaid
+        Expenses for the expenses, a current liability such as Deferred Income for the revenue),
+        then:</p>
+    <ul>
+        <li><strong>Based on</strong>: <strong>By Months</strong> gives each month the share of the
+            month it covers, <strong>By Days</strong> splits the amount by days, <strong>By Full
+            Months</strong> counts every month the line touches as a whole one. The last period
+            takes the rounding, so the entries always add up to the line.</li>
+        <li><strong>Generate Entries</strong>: <strong>On invoice validation</strong> (<strong>On
+            bill validation</strong> for the expenses) posts, with the document, one entry moving its
+            deferred lines out of profit and loss to the deferred account, then one entry per period
+            bringing back the share of that period. Entries of past dates are posted at once, the
+            others on their date. <strong>Manually &amp; Grouped</strong> makes one entry for all
+            the deferred lines at the end of each period, moving out what they recognise after it,
+            reversed on the first day of the next one.</li>
+    </ul>
+    <h3>Deferring a line</h3>
+    <ol>
+        <li>On the invoice or bill, show the optional columns <strong>Start Date</strong> and
+            <strong>End Date</strong> and fill them in on the lines to defer. Only income and
+            expense lines are deferred: a customer invoice gives deferred revenue, a vendor bill a
+            deferred expense.</li>
+        <li>Post the document. The <strong>Deferrals</strong> button opens its deferral entries,
+            which carry the analytic distribution of the line.</li>
+        <li>With Manually &amp; Grouped, open <span class="path">Reporting &rsaquo; Deferred
+            Revenue</span> or <span class="path">Deferred Expense</span> at the period end, choose the
+            period and click <strong>Generate Entries</strong>.</li>
+    </ol>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>The two reports show, per account and per document, the total, the amount not started
+            yet, and what is recognised before the period, in it and after it. Resetting a document
+            to draft reverses its posted deferral entries and deletes the others; a credit note
+            defers its lines the other way round.</p>
     </div>
 </div>
 
@@ -1140,7 +1213,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <figcaption>The reconciliation screen: the transaction, its counterparts and the
             suggestions.</figcaption>
     </figure>
-    <p>A batch has its own tab. The <strong>Batches</strong> tab lists the sent batches of that bank going in the
+    <p>With Batch Payments installed (section 5.9), its bridge <em>Batch Payments Reconciliation</em>
+        (<code>om_account_batch_payment_reconcile</code>) installs itself, and a batch has its own tab. The <strong>Batches</strong> tab lists the sent batches of that bank going in the
         direction of the transaction; clicking one adds the open items of all its payments, and you can remove any of
         them before validating. A batch is suggested when its reference is in the label of the transaction, or when
         its amount matches and nothing else is proposed. With automatic reconciliation on, a transaction with both
