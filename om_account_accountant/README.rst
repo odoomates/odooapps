@@ -8,7 +8,7 @@ accounting modules in one click and adds the menus, groups, settings and
 dashboards that make them work as one system rather than seventeen separate
 apps.
 
-A 47-page user guide ships with the module, at
+A 50-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -69,6 +69,21 @@ Dashboards
   accounting overview, profit and loss, balance sheet, receivables and
   payables, bank and cash, assets, budgets, follow-ups and cash forecast
   dashboards.
+
+
+Companion module, installed separately
+--------------------------------------
+
+This module is not a dependency of this one, so installing it does not install
+it. It is free on the Odoo Apps store; download it into your addons folder and
+install it from the Apps menu. The user guide covers it too.
+
+* ``om_account_batch_payment`` — Batch Payments: batch payments and deposits,
+  the bulk upload file of the bank and one bank transaction reconciled with a
+  whole batch. With this module installed, its bridge
+  ``om_account_batch_payment_reconcile`` installs itself and adds the batches
+  to the reconciliation screen.
+  https://apps.odoo.com/apps/modules/18.0/om_account_batch_payment
 
 
 What this module adds on top

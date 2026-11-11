@@ -219,6 +219,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">5.5</span><span>Post-dated cheques</span></div>
     <div class="toc-line"><span class="n">5.6</span><span>Recurring payments</span></div>
     <div class="toc-line"><span class="n">5.7</span><span>Printing cheques</span></div>
+    <div class="toc-line"><span class="n">5.8</span><span>Batch payments</span></div>
 
     <div class="toc-part"><span class="n">6</span><span class="t">Bank and cash</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">6.1</span><span>Importing the statement</span></div>
@@ -305,6 +306,14 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Recurring payments</li>
         <li>Eight spreadsheet dashboards</li>
     </ul>
+
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p><strong>Batch Payments is not installed for you.</strong> <em>Batch Payments</em>
+            (<code>om_account_batch_payment</code>) adds payment runs, batch deposits and the upload
+            file of the bank. It is free on the Odoo Apps store: download it into your addons folder
+            and install it from the Apps menu. See section 5.8.</p>
+    </div>
 
     <h2><span class="n">1.2</span> Who can do what</h2>
     <p>Accounting in Odoo is driven by two groups. Set them on each user under
@@ -1007,6 +1016,42 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             cheques of your bank &mdash; the magnetic line is already on the paper. Turn it on
             only for blank cheque stock, and upload an E-13B font.</p>
     </div>
+
+    <h2><span class="n">5.8</span> Batch payments</h2>
+    <p>This section needs <em>Batch Payments</em> (<code>om_account_batch_payment</code>), a separate
+        free module on the Odoo Apps store; this app does not install it.</p>
+    <p><span class="path">Vendors &rsaquo; Batch Payments</span> for a payment run,
+        <span class="path">Customers &rsaquo; Batch Deposits</span> for customer cheques taken to the bank
+        together. The bank then shows one transaction for the whole batch, and that one transaction is
+        reconciled with all the payments of the batch (section 6.3).</p>
+    <ol>
+        <li>Prepare the file once: copy <strong>Bulk Upload (CSV)</strong> under <span class="path">Configuration
+            &rsaquo; Invoicing &rsaquo; Bank File Layouts</span>, set the columns of the template of your bank, and
+            choose it on the bank journal, tab <strong>Outgoing Payments</strong>, under <strong>Bank File
+            Layout</strong>. A deposit of cheques needs no file.</li>
+        <li>Create the batch: select the bills and tick <strong>Create a Batch</strong> in Register Payment, or
+            select the payments and use <strong>Action &rsaquo; Create Batch</strong>, or add payments on a new
+            batch. They must share the bank journal, the direction, the payment method and the currency.</li>
+        <li><strong>Validate</strong>. Draft payments are posted, the file is generated and attached, and the
+            payments are locked: amount, partner, bank account, date and memo cannot change.</li>
+        <li><strong>Download Bank File</strong> and upload it to your bank, or <strong>Print</strong> the payment
+            list or the deposit slip.</li>
+    </ol>
+    <figure>
+        <img src="img/batch-payment.jpg" alt="Batch payment"/>
+        <figcaption>A sent batch: its payments, the total and the bank file.</figcaption>
+    </figure>
+    <figure>
+        <img src="img/batch-layout.jpg" alt="Bank file layout"/>
+        <figcaption>A bank file layout: CSV or Excel, and the columns in the order of your bank.</figcaption>
+    </figure>
+    <div class="note">
+        <p class="label">If the bank rejects a payment</p>
+        <p>Use <strong>Reset to Draft</strong>, remove or cancel the payment, then validate again and regenerate the
+            file if it has to go back to the bank. A cancelled payment stays listed but no longer counts in the total.
+            A batch can only go back to draft while none of its payments is cleared by the bank: undo the
+            reconciliation first.</p>
+    </div>
 </div>
 
 <!-- ============================================================ PART 6 -->
@@ -1074,6 +1119,16 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <img src="img/bank-reconciliation.jpg" alt="Reconciliation screen"/>
         <figcaption>The reconciliation screen: the transaction, its counterparts and the
             suggestions.</figcaption>
+    </figure>
+    <p>With Batch Payments installed (section 5.8), its bridge <em>Batch Payments Reconciliation</em>
+        (<code>om_account_batch_payment_reconcile</code>) installs itself, and a batch has its own tab. The <strong>Batches</strong> tab lists the sent batches of that bank going in the
+        direction of the transaction; clicking one adds the open items of all its payments, and you can remove any of
+        them before validating. A batch is suggested when its reference is in the label of the transaction, or when
+        its amount matches and nothing else is proposed. With automatic reconciliation on, a transaction with both
+        the reference and the amount of a batch is reconciled for you. Undoing it puts the batch back to sent.</p>
+    <figure>
+        <img src="img/batch-reconcile.jpg" alt="Batches tab"/>
+        <figcaption>One bank transaction matched with the five payments of a batch.</figcaption>
     </figure>
     <div class="note">
         <p class="label">Tip</p>
