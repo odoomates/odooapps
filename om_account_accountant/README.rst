@@ -3,12 +3,12 @@ Odoo 20 Accounting Community
 ==============================
 
 Odoo 20 Community Edition ships Invoicing, not Accounting. This module turns it
-into a full accounting application: it installs the eighteen Odoo Mates
+into a full accounting application: it installs the seventeen Odoo Mates
 accounting modules in one click and adds the menus, groups, settings and
-dashboards that make them work as one system rather than eighteen separate
+dashboards that make them work as one system rather than seventeen separate
 apps.
 
-A 46-page user guide ships with the module, at
+A 47-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -53,8 +53,6 @@ Bank and payments
 * ``om_account_bank_statement_import`` — statement import with reusable file
   maps.
 * ``om_account_check_printing`` — cheque formats and cheque printing.
-* ``om_account_batch_payment`` — batch payments and deposits, the bulk upload
-  file of the bank and one bank transaction reconciled with a whole batch.
 * ``om_account_bill_ocr`` — vendor bills read from their PDF, scan or photo,
   on your own server.
 
@@ -75,6 +73,32 @@ Dashboards
   accounting overview, profit and loss, balance sheet, receivables and
   payables, bank and cash, assets, budgets, follow-ups and cash forecast
   dashboards.
+
+
+Companion modules, installed separately
+---------------------------------------
+
+These modules are not dependencies of this one, so installing it does not
+install them. They are free on the Odoo Apps store; download the ones you need
+into your addons folder and install them from the Apps menu. The user guide
+covers them too.
+
+* ``om_account_batch_payment`` — Batch Payments: batch payments and deposits,
+  the bulk upload file of the bank and one bank transaction reconciled with a
+  whole batch. With this module installed, its bridge
+  ``om_account_batch_payment_reconcile`` installs itself and adds the batches
+  to the reconciliation screen.
+  https://apps.odoo.com/apps/modules/20.0/om_account_batch_payment
+* ``om_account_deferred`` — Deferred Revenue and Expense: revenue and expense
+  spread over the months they belong to from the start and end dates of the
+  invoice and bill lines, with the Deferred Revenue and Deferred Expense
+  reports. https://apps.odoo.com/apps/modules/20.0/om_account_deferred
+* ``om_account_pdc`` — Post-dated Cheques: the cheques received and issued,
+  registered against their invoices, then deposited, cleared or bounced, with
+  the cheque register. https://apps.odoo.com/apps/modules/20.0/om_account_pdc
+* ``om_account_budget_purchase`` — Budget Control of Purchases: committed
+  amounts and budget control on purchase orders. It installs itself when
+  Purchase and the budgets are both present. https://apps.odoo.com/apps/modules/20.0/om_account_budget_purchase
 
 
 What this module adds on top
@@ -134,7 +158,7 @@ your Odoo server and go to the Apps menu. Trigger the debug mode and update the
 list by clicking on the "Update Apps List" link. Now install the module by
 clicking on the install button.
 
-Installing this module installs the eighteen modules listed above, so make
+Installing this module installs the seventeen modules listed above, so make
 sure they are all present in your addons folder before you start.
 
 

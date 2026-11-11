@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 from odoo.tests import tagged
 
-from .test_batch_payment import BatchPaymentCommon
+from odoo.addons.om_account_batch_payment.tests.test_batch_payment import BatchPaymentCommon
 
 
 @tagged('post_install', '-at_install')

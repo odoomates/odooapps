@@ -1,20 +1,20 @@
 {
-    'name': 'Odoo 20 Batch Payments',
+    'name': 'Batch Payments',
     'version': '0.1.0',
     'category': 'Accounting',
     'summary': 'Batch Payments, Batch Deposits, Bank Upload Files, one Bank Transaction for many Payments',
     'description': """
 Group the payments of a bank journal in a batch: one vendor payment run or one deposit of customer cheques.
 Print the payment list or the deposit slip, export the file of the batch for the bulk upload of your bank in a
-CSV or Excel layout designed from the settings, and reconcile the single transaction of the bank with all the
-payments of the batch at once.
+CSV or Excel layout designed from the settings. With Odoo 20 Reconciliation installed, the bridge Batch Payments
+Reconciliation reconciles the single transaction of the bank with all the payments of the batch at once.
     """,
     'sequence': 1,
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
     'support': 'odoomates@gmail.com',
-    'depends': ['account', 'om_account_reconcile'],
+    'depends': ['account'],
     'data': [
         'security/ir.access.csv',
         'data/ir_sequence_data.xml',
@@ -26,14 +26,6 @@ payments of the batch at once.
         'views/account_journal_views.xml',
         'wizard/account_payment_register_views.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'om_account_batch_payment/static/src/bank_reconciliation/*',
-        ],
-        'web.assets_tests': [
-            'om_account_batch_payment/static/tests/tours/**/*',
-        ],
-    },
     'images': ['static/description/banner.png'],
     'installable': True,
 }

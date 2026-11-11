@@ -1,11 +1,15 @@
-======================
-Odoo 20 Batch Payments
-======================
+==============
+Batch Payments
+==============
 
 This module groups the payments of a bank journal in batches, in Odoo 20 Community Edition: a payment run
 to the vendors sent to the bank in one file, or a deposit of customer cheques taken to the bank at once.
 The bank then shows one transaction for the whole batch, and that one transaction is reconciled with all
 the payments of the batch.
+
+The module depends only on Invoicing (``account``). Reconciling a batch from the reconciliation screen is
+the job of *Batch Payments Reconciliation* (``om_account_batch_payment_reconcile``), which installs itself
+when *Odoo 20 Reconciliation* (``om_account_reconcile``) is installed too.
 
 Features
 ========
@@ -31,26 +35,6 @@ Features
 * Each bank journal has its default layout; the file is attached to the batch and to its chatter.
 * Print the payment list, or the deposit slip of a deposit, with the bank account of every payee and
   signature lines.
-
-Bank reconciliation
-===================
-
-The module adds a Batches tab to the reconciliation screen of *Odoo 20 Reconciliation*
-(``om_account_reconcile``):
-
-* The tab lists the sent batches of the bank going in the direction of the transaction. Clicking a batch
-  adds the open items of all its payments to the proposal; any of them can be removed again before
-  validating, e.g. when the bank rejected one payment.
-* The batch is suggested on its own when its reference is in the label of the transaction, or when its
-  amount is the amount of the transaction and no other open item or batch has it.
-* The automatic reconciliation reconciles a transaction with a batch whose reference is in the label and
-  whose amount is the amount of the transaction.
-* A payment with a journal entry is cleared by its outstanding item. A payment without journal entry (a
-  payment method without an outstanding account, the default with *Odoo 20 Accounting Community*) is
-  cleared with the open items of the invoices it pays, and what it pays beyond them goes to the partner;
-  it is marked as reconciled when the transaction covers the whole batch.
-* The batch is reconciled once the bank cleared every one of its payments, and back to sent when a
-  reconciliation is undone.
 
 Configuration
 =============

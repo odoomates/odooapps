@@ -49,8 +49,6 @@ class AccountBatchPayment(models.Model):
     export_file = fields.Binary(string='Bank File', attachment=True, copy=False, readonly=True)
     export_filename = fields.Char(string='File Name', copy=False, readonly=True)
     export_date = fields.Datetime(string='Generated On', copy=False, readonly=True)
-    statement_line_ids = fields.Many2many(
-        'account.bank.statement.line', compute='_compute_statement_line_ids', string='Bank Transactions')
 
     @api.depends('journal_id')
     def _compute_currency_id(self):
@@ -90,12 +88,6 @@ class AccountBatchPayment(models.Model):
                 continue
             payments = batch._om_active_payments()
             batch.state = 'reconciled' if payments and all(payments.mapped('om_is_cleared')) else 'sent'
-
-    def _compute_statement_line_ids(self):
-        for batch in self:
-            batch.statement_line_ids = self.env['account.bank.statement.line'].search([
-                ('om_batch_payment_ids', 'in', batch.payment_ids.ids),
-            ]) if batch.payment_ids else False
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -216,7 +208,3 @@ class AccountBatchPayment(models.Model):
     def action_open_payments(self):
         self.ensure_one()
         return self.payment_ids._get_records_action(name=_('Payments of %s', self.name), context={'create': False})
-
-    def action_open_statement_lines(self):
-        self.ensure_one()
-        return self.statement_line_ids._get_records_action(name=_('Bank Transactions of %s', self.name))
