@@ -1,6 +1,6 @@
 {
     'name': 'Batch Payments Reconciliation',
-    'version': '1.0.0',
+    'version': '0.1.0',
     'category': 'Accounting',
     'summary': 'Reconcile one Bank Transaction with all the Payments of a Batch',
     'description': 'Adds a Batches tab to the reconciliation screen of Odoo 20 Reconciliation: one transaction of '
