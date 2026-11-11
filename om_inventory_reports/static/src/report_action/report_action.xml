@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_inventory_reports.InventoryReport">
+        <div class="o_action o_om_inventory_report" t-att-class="'o_om_density_' + this.state.density">
+            <ControlPanel>
+                <t t-set-slot="control-panel-buttons">
+                    <ExportMenu t-if="this.state.report and !this.isOverview" onExport="(format, all) => this.export(format, all)"
+                                exporting="this.state.exporting"/>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <ReportSwitcher catalog="this.state.catalog" current="this.state.reportKey"
+                                        onSelect="(key) => this.switchReport(key)"/>
+                        <SavedViewsMenu t-if="!this.isOverview" views="this.state.views" viewId="this.state.viewId"
+                                        onApply="(view) => this.applyView(view)"
+                                        onSave="(values) => this.saveView(values)"
+                                        onDelete="(view) => this.deleteView(view)"
+                                        onSchedule="(view) => this.scheduleView(view)"/>
+                    </div>
+                </t>
+            </ControlPanel>
+            <div class="o_content o_om_content">
+                <t t-set="report" t-value="this.state.report"/>
+                <div t-if="this.isOverview and this.state.overview" class="o_om_overview">
+                    <t t-foreach="this.state.overview.cards" t-as="card" t-key="card.key">
+                        <div class="o_om_overview_card" t-att-data-report="card.key">
+                            <button class="o_om_overview_head" t-on-click="() => this.openFromOverview(card)">
+                                <span class="o_om_kpi_icon"><i class="oi" t-att-data-icon="card.icon"/></span>
+                                <span class="d-flex flex-column flex-grow-1 text-start">
+                                    <span class="fw-semibold" t-out="card.name"/>
+                                    <small class="text-muted" t-out="card.subtitle or card.description"/>
+                                </span>
+                                <i class="oi text-muted" data-icon="chevron_right"/>
+                            </button>
+                            <div class="o_om_overview_kpis">
+                                <t t-foreach="card.kpis" t-as="kpi" t-key="kpi.key">
+                                    <button class="o_om_overview_kpi" t-att-class="'o_om_tone_' + (kpi.tone or 'neutral')"
+                                            t-on-click="() => this.openFromOverview(card, kpi)">
+                                        <span class="o_om_kpi_label" t-out="kpi.label"/>
+                                        <span class="o_om_kpi_value" t-out="this.formatKpi(kpi)"/>
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                <t t-elif="report">
+                    <div class="o_om_toolbar">
+                        <div class="o_om_filters">
+                            <DateFilter t-if="report.date_mode !== 'none'" mode="report.date_mode"
+                                        options="this.state.options" onChange="(patch) => this.setOptions(patch)"/>
+                            <CompareMenu t-if="report.compare_available" value="this.state.options.compare"
+                                         label="report.compare_label"
+                                         onChange="(value) => this.setOptions({ compare: value }, { keepExpanded: true })"/>
+                            <span class="o_om_divider"/>
+                            <t t-foreach="report.filters" t-as="filter" t-key="filter.key">
+                                <RecordFilter filter="filter" resIds="this.state.options[filter.option] || []"
+                                              onChange="(ids) => this.setFilter(filter, ids)"/>
+                            </t>
+                            <span class="o_om_divider"/>
+                            <OptionsMenu toggles="report.toggles" extraOptions="report.extra_options"
+                                         options="this.state.options" density="this.state.density"
+                                         onChange="(patch) => this.setOptions(patch)"
+                                         onDensity="(density) => this.setDensity(density)"/>
+                            <button t-if="this.activeFilterCount" class="btn btn-link o_om_reset"
+                                    t-on-click="() => this.clearFilters()">
+                                <i class="oi me-1" data-icon="close_small"/>Reset
+                            </button>
+                        </div>
+                        <div class="o_om_viewbar">
+                            <GroupByMenu available="report.group_by" groupBy="this.state.options.group_by || []"
+                                         onChange="(groupBy) => this.setOptions({ group_by: groupBy })"/>
+                            <ColumnsMenu columns="report.columns"
+                                         onChange="(columns) => this.setOptions({ columns: columns }, { keepExpanded: true })"/>
+                            <button class="btn o_om_ghost" title="Unfold all" t-on-click="() => this.expandAll()">
+                                <i class="oi me-1" data-icon="expand_more"/>Unfold
+                            </button>
+                            <button class="btn o_om_ghost" title="Fold all" t-on-click="() => this.collapseAll()">
+                                <i class="oi me-1" data-icon="expand_less"/>Fold
+                            </button>
+                            <t t-foreach="this.chips" t-as="chip" t-key="chip.key">
+                                <span class="o_om_chip">
+                                    <i class="oi" t-att-data-icon="chip.icon"/>
+                                    <span t-out="chip.label"/>
+                                    <button class="btn btn-link p-0" title="Remove" t-on-click="chip.remove">
+                                        <i class="oi" data-icon="close_small"/>
+                                    </button>
+                                </span>
+                            </t>
+                            <div class="o_om_search">
+                                <i class="oi" data-icon="search"/>
+                                <input class="o_input" type="search" placeholder="Search in report..."
+                                       t-ref="this.searchRef"
+                                       t-att-value="this.state.options.search" t-on-input="(ev) => this.onSearchInput(ev)"/>
+                            </div>
+                            <i t-if="this.state.reloading" class="oi o_om_spin text-muted" data-icon="progress_activity"/>
+                        </div>
+                    </div>
+                    <KpiCards t-if="report.kpis.length" kpis="report.kpis" active="this.state.options.kpi_filter"
+                              report="report" onSelect="(kpi) => this.toggleKpi(kpi)"/>
+                    <div class="o_om_table_wrap" t-att-class="{ 'o_om_reloading': this.state.reloading }"
+                         t-ref="this.tableRef" tabindex="0"
+                         t-on-scroll="() => this.onTableScroll()" t-on-keydown="(ev) => this.onKeydown(ev)">
+                        <div t-if="this.state.error" class="o_om_state">
+                            <i class="oi text-danger" data-icon="error"/>
+                            <h5 t-out="this.state.error"/>
+                            <button class="btn btn-secondary" t-on-click="() => this.reload()">Try again</button>
+                        </div>
+                        <div t-elif="!this.state.lines.length" class="o_om_state">
+                            <i class="oi text-muted" data-icon="inventory_2"/>
+                            <h5>Nothing to show</h5>
+                            <p class="text-muted">No stock matches these filters.</p>
+                            <button t-if="this.activeFilterCount or this.state.options.kpi_filter"
+                                    class="btn btn-secondary" t-on-click="() => this.clearFilters()">Clear filters</button>
+                        </div>
+                        <ReportTable t-else="" rows="this.rows" columns="this.visibleColumns" total="report.total"
+                                     report="report" sort="this.state.options.sort" expanded="this.state.expanded"
+                                     focusedId="this.state.focusedId" groupLabel="this.groupLabel"
+                                     onToggle="(line) => this.toggleLine(line)" onOpen="(line) => this.openLine(line)"
+                                     onLink="(link) => this.followLink(link)" onLoadMore="(id) => this.loadMore(id)"
+                                     onSort="(column) => this.sortBy(column)" onFocus="(id) => this.state.focusedId = id"/>
+                    </div>
+                </t>
+                <div t-elif="this.state.loading or !this.isOverview" class="o_om_skeleton_page">
+                    <div class="o_om_skeleton o_om_skeleton_bar"/>
+                    <div class="d-flex gap-3 my-3">
+                        <div t-foreach="[1, 2, 3, 4]" t-as="i" t-key="i" class="o_om_skeleton o_om_skeleton_card"/>
+                    </div>
+                    <div t-foreach="[1, 2, 3, 4, 5, 6, 7, 8]" t-as="i" t-key="i" class="o_om_skeleton o_om_skeleton_row"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

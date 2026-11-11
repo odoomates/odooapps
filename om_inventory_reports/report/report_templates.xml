@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_inventory_report" model="report.paperformat">
+        <field name="name">Inventory Reports (A4 landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">32</field>
+        <field name="margin_bottom">18</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_spacing">26</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_inventory" model="ir.actions.report">
+        <field name="name">Inventory Report</field>
+        <field name="model">om.inventory.report.view</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_inventory_reports.report_inventory</field>
+        <field name="paperformat_id" ref="paperformat_inventory_report"/>
+    </record>
+
+    <template id="report_inventory">
+        <t t-call="web.html_container">
+            <t t-set="data_report_landscape" t-value="True"/>
+            <t t-call="web.external_layout">
+                <div class="page o_om_inventory_pdf">
+                    <style>
+                        .o_om_inventory_pdf { font-size: 9pt; }
+                        .o_om_inventory_pdf h2 { margin-bottom: 2px; }
+                        .o_om_inventory_pdf .o_om_filter { color: #555; margin-bottom: 1px; }
+                        .o_om_inventory_pdf .o_om_filter strong { color: #333; margin-right: 6px; }
+                        .o_om_inventory_pdf .o_om_kpi { display: inline-block; margin: 6px 28px 10px 0; vertical-align: top; }
+                        .o_om_inventory_pdf .o_om_kpi_value { font-size: 12pt; font-weight: bold; }
+                        .o_om_inventory_pdf table.o_om_lines th, .o_om_inventory_pdf table.o_om_lines td { border-left: 0 !important; border-right: 0 !important; border-top: 0; }
+                        .o_om_inventory_pdf table.o_om_lines { width: 100%; border-collapse: collapse; }
+                        .o_om_inventory_pdf table.o_om_lines th { border-bottom: 1.5px solid #333; padding: 4px 5px; text-align: left; font-size: 8pt; text-transform: uppercase; }
+                        .o_om_inventory_pdf table.o_om_lines td { border-bottom: 1px solid #e3e3e3; padding: 3px 5px; }
+                        .o_om_inventory_pdf .o_om_num { text-align: right !important; white-space: nowrap; }
+                        .o_om_inventory_pdf .o_om_group { font-weight: bold; }
+                        .o_om_inventory_pdf .o_om_group_0 td { background-color: #f2f2f2; }
+                        .o_om_inventory_pdf .o_om_detail td { color: #333; font-size: 8.5pt; }
+                        .o_om_inventory_pdf .o_om_opening td, .o_om_inventory_pdf .o_om_closing td { font-style: italic; color: #666; }
+                        .o_om_inventory_pdf .o_om_total td { font-weight: bold; border-top: 1.5px solid #333; border-bottom: 0; }
+                        .o_om_inventory_pdf .o_om_negative { color: #b42318; }
+                        .o_om_inventory_pdf thead { display: table-header-group; }
+                        .o_om_inventory_pdf tr { page-break-inside: avoid; }
+                    </style>
+                    <h2 t-out="export['title']"/>
+                    <div t-foreach="export['filters']" t-as="item" class="o_om_filter">
+                        <strong t-out="item[0]"/><span t-out="item[1]"/>
+                    </div>
+                    <div t-if="export['kpis']" class="o_om_kpis">
+                        <div t-foreach="export['kpis']" t-as="kpi" class="o_om_kpi">
+                            <div class="text-muted" t-out="kpi['label']"/>
+                            <div class="o_om_kpi_value" t-out="format_kpi(kpi)"/>
+                        </div>
+                    </div>
+                    <table class="o_om_lines">
+                        <thead>
+                            <tr>
+                                <th t-out="export['group_label']"/>
+                                <th t-foreach="export['columns']" t-as="column"
+                                    t-att-class="'o_om_num' if column['type'] in numeric else ''" t-out="column['label']"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="export['lines']" t-as="line"
+                                t-att-class="row_class(line)">
+                                <td t-attf-style="padding-left: #{4 + 12 * line['level']}px" t-out="line['name']"/>
+                                <t t-foreach="export['columns']" t-as="column">
+                                    <td t-att-class="cell_class(line, column)" t-out="cell(line, column)"/>
+                                </t>
+                            </tr>
+                            <tr class="o_om_total">
+                                <td t-out="export['total']['name']"/>
+                                <td t-foreach="export['columns']" t-as="column"
+                                    t-att-class="'o_om_num' if column['type'] in numeric else ''"
+                                    t-out="cell(export['total'], column)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p class="text-muted mt-3" style="font-size: 7.5pt">Printed on <t t-out="printed_on"/></p>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>
