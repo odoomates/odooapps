@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- a name with the part that matched the search in bold -->
+    <t t-name="om_theme_lite.Highlighted">
+        <t t-foreach="parts" t-as="part" t-key="part_index">
+            <b t-if="part.hit" class="om-hit" t-out="part.text"/>
+            <t t-else="" t-out="part.text"/>
+        </t>
+    </t>
+
+    <t t-name="om_theme_lite.AppLauncher">
+        <div class="om-launcher o_action" t-att-class="{ 'om-has-bg': this.backgroundStyle }"
+             t-att-style="this.backgroundStyle">
+          <div class="om-launcher-inner">
+            <div class="om-launcher-head">
+                <div class="om-launcher-search" t-att-class="{'om-visible': this.query()}">
+                    <i class="oi oi-fw om-launcher-icon" data-icon="search"/>
+                    <input type="text" t-ref="this.searchRef"
+                           placeholder="Search apps and menus…"
+                           t-model="this.query"
+                           t-on-keydown="(ev) => this.onSearchKeydown(ev)"/>
+                    <button t-if="this.query()" class="om-launcher-clear"
+                            t-on-click="() => this.query.set('')">
+                        <i class="oi oi-fw" data-icon="close"/>
+                    </button>
+                </div>
+            </div>
+
+            <div class="om-launcher-body">
+                <!-- no heading over the plain app grid: the grid is self-evident,
+                     and a label only earns its place once results are filtered -->
+                <div t-if="this.query()" class="om-launcher-section">Results</div>
+
+                <div t-if="!this.results.length" class="om-launcher-empty">
+                    <i class="oi om-launcher-icon" data-icon="search"/>
+                    <p t-out="this.emptyMessage"/>
+                </div>
+
+                <div class="om-launcher-grid" t-ref="this.gridRef">
+                    <t t-foreach="this.results" t-as="entry" t-key="entry.app.id">
+                        <div class="om-app-wrap" t-att-data-app-key="this.appKey(entry.app)">
+                            <a class="om-app" t-att-href="this.menuHref(entry.app)" draggable="false"
+                               t-att-class="{'om-active': entry.index === this.activeIndex}"
+                               t-on-click="(ev) => this.onLinkClick(ev, () => this.openApp(entry.app))">
+                                <t t-set="icon" t-value="entry.app.webIconData ? null : this.fontIcon(entry.app)"/>
+                                <img t-if="entry.app.webIconData" class="om-app-icon"
+                                     t-att-src="entry.app.webIconData" t-att-alt="entry.app.name"
+                                     draggable="false"/>
+                                <span t-elif="icon" class="om-app-icon om-app-icon-font" t-att-style="icon.style">
+                                    <i t-att-class="icon.className"/>
+                                </span>
+                                <span t-else="" class="om-app-icon om-app-icon-empty">
+                                    <t t-out="entry.app.name.slice(0, 1)"/>
+                                </span>
+                                <span class="om-app-name">
+                                    <t t-call="om_theme_lite.Highlighted" parts="entry.nameParts"/>
+                                </span>
+                            </a>
+
+                            <!-- menu items that matched, so a search finds what is
+                                 inside an app and not only the app itself -->
+                            <div t-if="entry.items.length" class="om-app-items">
+                                <a t-foreach="entry.items" t-as="item" t-key="item.id"
+                                   class="om-app-item" t-att-title="item.path" draggable="false"
+                                   t-att-href="this.menuHref(this.menuService.getMenu(item.id))"
+                                   t-att-class="{'om-active': item.index === this.activeIndex}"
+                                   t-on-click="(ev) => this.onLinkClick(ev, () => this.openMenu(item.id))">
+                                    <i class="oi om-launcher-caret" data-icon="chevron_forward"/>
+                                    <span><t t-call="om_theme_lite.Highlighted" parts="item.nameParts"/></span>
+                                </a>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+
+            </div>
+          </div>
+        </div>
+    </t>
+
+</templates>

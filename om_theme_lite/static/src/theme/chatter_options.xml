@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-inherit="mail.Chatter" t-inherit-mode="extension">
+        <!-- show or hide field changes, next to the chatter's search -->
+        <xpath expr="//span[hasclass('o-mail-Chatter-topbarGrow')]" position="after">
+            <button type="button" class="btn btn-link px-1 o_om_tracking_toggle"
+                    t-att-class="{ 'text-muted': !this.omHideTracking(), 'o_om_active': this.omHideTracking() }"
+                    t-att-title="this.omHideTracking() ? 'Show field changes' : 'Hide field changes'"
+                    aria-label="Hide field changes" t-on-click="() => this.omToggleTracking()">
+                <i class="oi oi-fw" data-icon="filter_alt" role="img"/>
+            </button>
+        </xpath>
+        <!-- the edge to drag, when the chatter sits beside the form -->
+        <xpath expr="//div[hasclass('o-mail-Chatter-top')]" position="before">
+            <div t-if="this.webChatterProps.isChatterAside" class="o_om_chatter_resize"
+                 title="Drag to resize, double-click to reset"
+                 t-on-pointerdown="(ev) => this.omStartResize(ev)"
+                 t-on-dblclick="() => this.omResetWidth()"/>
+        </xpath>
+    </t>
+
+</templates>
