@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_report_design_demo_contacts" model="om.report.design">
+        <field name="name">Companies and their Contacts</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="domain">[('is_company', '=', True)]</field>
+        <field name="page_break" eval="False"/>
+        <field name="layout" eval="{'bands': [
+            {'id': 'page_header', 'kind': 'page_header', 'height': 18, 'elements': [
+                {'id': 'logo', 'type': 'image', 'source': 'company', 'field': 'logo', 'x': 0, 'y': 1, 'w': 40, 'h': 14},
+                {'id': 'title', 'type': 'text', 'text': 'Companies and their Contacts', 'x': 90, 'y': 3, 'w': 100, 'h': 9,
+                 'style': {'font_size': 16, 'bold': True, 'align': 'right'}},
+            ]},
+            {'id': 'company', 'kind': 'record', 'height': 22, 'elements': [
+                {'id': 'name', 'type': 'field', 'field': 'name', 'x': 0, 'y': 2, 'w': 120, 'h': 8,
+                 'style': {'font_size': 13, 'bold': True}},
+                {'id': 'rule', 'type': 'line', 'x': 0, 'y': 10.5, 'w': 190, 'h': 0.3, 'style': {'color': '#017e84'}},
+                {'id': 'city_label', 'type': 'text', 'text': 'City:', 'x': 0, 'y': 12, 'w': 20, 'h': 6, 'style': {'bold': True}},
+                {'id': 'city', 'type': 'field', 'field': 'city', 'x': 20, 'y': 12, 'w': 50, 'h': 6},
+                {'id': 'country_label', 'type': 'text', 'text': 'Country:', 'x': 72, 'y': 12, 'w': 20, 'h': 6, 'style': {'bold': True}},
+                {'id': 'country', 'type': 'field', 'field': 'country_id', 'x': 92, 'y': 12, 'w': 45, 'h': 6},
+                {'id': 'phone_label', 'type': 'text', 'text': 'Phone:', 'x': 139, 'y': 12, 'w': 16, 'h': 6, 'style': {'bold': True}},
+                {'id': 'phone', 'type': 'field', 'field': 'phone', 'x': 155, 'y': 12, 'w': 35, 'h': 6},
+            ]},
+            {'id': 'contacts', 'kind': 'table', 'relation': 'child_ids', 'order': 'name', 'header_bg': '#e9ecef',
+             'border': True, 'font_size': 9, 'row_height': 6, 'columns': [
+                {'id': 'c_name', 'field': 'name', 'label': 'Contact', 'width': 50},
+                {'id': 'c_function', 'field': 'function', 'label': 'Job Position', 'width': 45},
+                {'id': 'c_email', 'field': 'email', 'label': 'Email', 'width': 60},
+                {'id': 'c_phone', 'field': 'phone', 'label': 'Phone', 'width': 35},
+            ]},
+            {'id': 'gap', 'kind': 'record', 'height': 6, 'elements': []},
+            {'id': 'page_footer', 'kind': 'page_footer', 'height': 8, 'elements': [
+                {'id': 'date', 'type': 'date', 'x': 0, 'y': 1, 'w': 40, 'h': 6, 'style': {'font_size': 8}},
+                {'id': 'page', 'type': 'page', 'text': 'Page {page} / {pages}', 'x': 150, 'y': 1, 'w': 40, 'h': 6,
+                 'style': {'font_size': 8, 'align': 'right'}},
+            ]},
+        ]}"/>
+    </record>
+
+    <function model="om.report.design" name="action_publish" eval="[[ref('om_report_design_demo_contacts')]]"/>
+</odoo>

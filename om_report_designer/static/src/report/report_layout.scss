@@ -1,0 +1,97 @@
+// The look of a designed report: the same in the PDF, on screen and in the
+// designer. Sizes are in mm and pt only, with one font shipped with Odoo.
+
+@mixin om-rd-lato($type, $weight, $style) {
+    @font-face {
+        font-family: 'OM RD Lato';
+        src: url('/web/static/fonts/lato/Lato-#{$type}-webfont.woff') format('woff'),
+             url('/web/static/fonts/lato/Lato-#{$type}-webfont.ttf') format('truetype');
+        font-weight: $weight;
+        font-style: $style;
+    }
+}
+@include om-rd-lato('Reg', normal, normal);
+@include om-rd-lato('RegIta', normal, italic);
+@include om-rd-lato('Bol', bold, normal);
+@include om-rd-lato('BolIta', bold, italic);
+
+.o_om_rd_doc {
+    position: relative;
+    margin: 0;
+    padding: 0;
+    font-family: 'OM RD Lato', 'Lato', sans-serif;
+    font-size: 10pt;
+    line-height: 1.2;
+    color: #000000;
+    text-align: left;
+
+    * {
+        box-sizing: border-box;
+    }
+}
+
+.o_om_rd_band {
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+    page-break-inside: avoid;
+}
+
+.o_om_rd_el {
+    position: absolute;
+    overflow: hidden;
+}
+
+.o_om_rd_tbl {
+    display: table;
+    table-layout: fixed;
+    width: 100%;
+    height: 100%;
+}
+
+.o_om_rd_cell {
+    display: table-cell;
+    padding: 0 0.5mm;
+    overflow: hidden;
+}
+
+.o_om_rd_table {
+    border-collapse: collapse;
+    table-layout: fixed;
+    margin: 0;
+    color: inherit;
+
+    thead {
+        display: table-header-group;
+    }
+    tr {
+        page-break-inside: avoid;
+    }
+    th, td {
+        padding: 0.5mm 1mm;
+        vertical-align: middle;
+        overflow: hidden;
+        word-wrap: break-word;
+        line-height: 1.2;
+    }
+    th {
+        font-weight: bold;
+        border-bottom: 0.3mm solid #000000;
+    }
+    &.o_om_rd_bordered {
+        th, td {
+            border: 0.2mm solid #000000;
+        }
+    }
+    &.o_om_rd_striped tbody tr:nth-child(even) td {
+        background-color: #f2f2f2;
+    }
+    .o_om_rd_total td {
+        font-weight: bold;
+        border-top: 0.3mm solid #000000;
+    }
+}
+
+.o_om_rd_record.o_om_rd_break {
+    page-break-before: always;
+}
