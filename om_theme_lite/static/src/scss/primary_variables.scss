@@ -1,0 +1,86 @@
+// Prepended into web._assets_primary_variables, so these win over Odoo's own !default
+// values and every derived variable downstream recomputes from them.
+//
+// !default is kept so a customer module prepended before this one can still override.
+
+// ---------------------------------------------------------------- brand
+// Odoo's plum for primary buttons and teal for links, actions and focus: the pair
+// people know from Odoo Enterprise, so the backend feels familiar on Community.
+$o-theme-primary: #714b67 !default;
+$o-theme-action: #017e84 !default;
+
+$o-community-color: $o-theme-primary !default;
+$o-brand-odoo: #1e1b34 !default;      // navbar: near-black, not the brand colour
+$o-brand-primary: $o-theme-primary !default;
+$o-action: $o-theme-action !default;
+// links, "Add a line", breadcrumbs and field links in teal, not in the button colour
+$o-main-link-color: $o-theme-action !default;
+
+// ---------------------------------------------------------------- greys
+// A slightly cooler scale than stock. Overriding these repaints most of the UI,
+// because bootstrap_overridden.scss aliases them onto Bootstrap's $gray-*.
+$o-white: #ffffff !default;
+$o-black: #000000 !default;
+$o-gray-100: #f7f8fa !default;
+$o-gray-200: #eceef2 !default;
+$o-gray-300: #dfe3e9 !default;
+$o-gray-400: #c6ccd6 !default;
+$o-gray-500: #9aa3b0 !default;
+$o-gray-600: #6b7480 !default;
+$o-gray-700: #4b535e !default;
+$o-gray-800: #333a44 !default;
+$o-gray-900: #1f242c !default;
+
+// ---------------------------------------------------------------- semantics
+$o-success: #16a34a !default;
+$o-info: #0284c7 !default;
+$o-warning: #d97706 !default;
+$o-danger: #dc2626 !default;
+
+// ---------------------------------------------------------------- tag colours
+// The twelve slots Odoo offers for tags, kanban headers and colour pickers. The
+// stock set is a saturated rainbow (#ee2d2d, #5794dd, #ee2f8a...) which is the
+// loudest thing left on a list view. These are the same twelve hues held at a
+// lower saturation, so a record covered in tags still reads as calm.
+$o-colors: #9a948d, #bf5a52, #bd7a45, #b99a4b,
+           #6f8fae, #8d7595, #b07a61,
+           #5f968f, #5c688c, #ad6c83,
+           #6f9469, #8a7dad !default;
+
+// ---------------------------------------------------------------- type
+$o-font-size-base: 0.875rem !default;   // 14px, matching Odoo, but set explicitly
+$o-line-height-base: 1.55 !default;
+$o-font-weight-medium: 500 !default;
+
+// ---------------------------------------------------------------- geometry
+$o-border-radius: 0.375rem !default;
+$o-border-radius-sm: 0.25rem !default;
+$o-border-radius-lg: 0.625rem !default;
+$o-border-radius-xl: 1rem !default;
+
+// ---------------------------------------------------------------- control panel
+// The control panel shares the canvas colour, so the top of a screen is one surface
+// with the content on it in white. Bootstrap's breadcrumb background is derived
+// from this too, which is why it is set here and not only in theme.scss. Written
+// against the grey scale, it follows dark mode on its own.
+$o-control-panel-background-color: $o-gray-100 !default;
+
+// ---------------------------------------------------------------- inputs
+// The line under a field at rest: Odoo's #ccc is a flat grey that ignores the
+// palette and stays light in dark mode. A step of the grey scale follows both.
+$o-form-lightsecondary: $o-gray-300 !default;
+
+// ---------------------------------------------------------------- navbar
+// The navbar is part of the same light surface as everything else, rather than a
+// dark bar across the top. Everything here is expressed through the grey scale on
+// purpose: dark mode inverts that scale, so the navbar follows it without a single
+// dark-mode override.
+$o-navbar-height: 48px !default;
+$o-navbar-background: $o-gray-100 !default;
+$o-navbar-entry-border-radius: 0.375rem !default;
+$o-navbar-entry-bg--hover: rgba($o-gray-900, 0.06) !default;
+$o-navbar-entry-bg--active: rgba($o-gray-900, 0.09) !default;
+// menu entries in ink, not a faded grey: they are the way around the app
+$o-navbar-entry-color: $o-gray-800 !default;
+$o-navbar-entry-color--hover: $o-gray-900 !default;
+$o-navbar-entry-color--active: $o-gray-900 !default;
