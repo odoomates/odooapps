@@ -1,6 +1,6 @@
 {
     'name': 'Approvals',
-    'version': '1.1.0',
+    'version': '1.1.1',
     'category': 'Productivity',
     'summary': 'Approval flows for any app: a button waits for its approval before it runs, e.g. confirming a '
                'sale order above an amount',
