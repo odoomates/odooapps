@@ -3,6 +3,7 @@ fails the job. The rest of the code is cleaned when it is edited.
 
     lint_report.py PYLINT_OUTPUT ODOO_LOG EDITED_FILES
 """
+import os
 import pathlib
 import re
 import sys
@@ -18,6 +19,9 @@ REASON = re.compile(r'^(?:\w*Error|\w*Exception): (.*)$', re.M)
 # Apps store that older versions do not know
 NOISE = re.compile(r'Setting manifest key \w+ to the default manifest value')
 KNOWN_MANIFEST_KEYS = {'support'}
+# a private repository holds paid modules: the Odoo Proprietary License is allowed there, not the LGPL Odoo asks for
+PRIVATE_REPO = os.environ.get('LINT_PRIVATE_REPO') == 'true'
+PAID_LICENSE = re.compile(r"^'LGPL-3' != 'OPL-1'$")
 
 
 def clean(text):
@@ -70,6 +74,8 @@ def subtest_finding(subtest, message, edited):
         attributes.pop('model', None)
     reason = REASON.search(message)
     reason = reason[1] if reason else ''
+    if PRIVATE_REPO and PAID_LICENSE.match(reason):
+        return None
     if reason.startswith('Items in the first set'):
         keys = set(re.findall(r"^'(\w+)'", message, re.M)) - KNOWN_MANIFEST_KEYS
         if not keys:
