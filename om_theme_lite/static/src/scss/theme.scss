@@ -1,0 +1,829 @@
+// Appended to web.assets_backend: rules that cannot be expressed as variables.
+//
+// Only the load-bearing classes are targeted - the ones Odoo's own layout SCSS
+// depends on, so they cannot move silently. Bootstrap utility classes baked into
+// templates are deliberately left alone: they churn every release.
+//
+// Every accent-bearing rule below reads the palette through a CSS custom property
+// rather than the SCSS variable, so one custom property carries the accent to every
+// rule, and the dark bundle only has to redefine the property.
+
+:root {
+    --om-theme-primary: #{$o-theme-primary};
+    // the same colour as a bare "r, g, b" triplet, so rules can apply alpha to it
+    --om-theme-primary-rgb: #{red($o-theme-primary)}, #{green($o-theme-primary)}, #{blue($o-theme-primary)};
+    --om-surface: #{$o-white};
+    --om-surface-sunken: #{$o-gray-100};
+    --om-border: #{$o-gray-300};
+    --om-shadow-sm: 0 1px 2px rgba(16, 24, 40, .05);
+    --om-shadow: 0 1px 3px rgba(16, 24, 40, .1), 0 1px 2px rgba(16, 24, 40, .06);
+    // dropdowns and other things that float above the page
+    --om-shadow-pop: 0 12px 32px rgba(16, 24, 40, .14), 0 2px 6px rgba(16, 24, 40, .06);
+    --om-radius: #{$o-border-radius};
+    --om-radius-sm: #{$o-border-radius-sm};
+    --om-radius-lg: #{$o-border-radius-lg};
+    // text drawn on top of the primary colour, picked from its lightness so a pale
+    // primary still gets readable text
+    --om-theme-on-primary: #{if(lightness($o-theme-primary) > 60, #111827, #ffffff)};
+    // the primary colour used as text *on* a surface rather than as a fill. Dark
+    // mode lightens it, because the fill colour is far too dark to read on a dark
+    // background.
+    --om-theme-link: #{$o-main-link-color};
+    // the action colour as a bare "r, g, b" triplet, for tints
+    --om-action-rgb: #{red($o-action)}, #{green($o-action)}, #{blue($o-action)};
+
+    // row height and form spacing
+    --om-row-padding-y: .5rem;
+    --om-form-gap: 1rem;
+}
+
+// ---------------------------------------------------------------- navbar
+.o_main_navbar {
+    // no rule and no shadow under the bar: it is the same surface as the screen
+    // below it, and a divider only breaks that up
+    border-bottom: 0;
+    box-shadow: none;
+
+    // the app name is a label, not a heading: regular weight, a touch larger
+    // than the menus beside it
+    .o_menu_brand {
+        font-weight: 400;
+        font-size: 1.125rem;
+        color: #{$o-gray-900};
+    }
+}
+
+// ---------------------------------------------------------------- control panel
+// The navbar, the control panel and the canvas are one surface; the content - the
+// list, the sheet, the cards - sits on it in white. A white band between two grey
+// ones only made the top of every screen look striped.
+.o_control_panel {
+    border-bottom: 0;
+    background-color: var(--om-surface-sunken);
+
+    .o_breadcrumb .o_last_breadcrumb_item {
+        font-weight: 600;
+    }
+
+    // the record menu, save and discard icons: plain on the canvas, tinted on
+    // hover, instead of white chips on the grey
+    .btn-light {
+        --btn-bg: transparent;
+        --btn-border-color: transparent;
+        --btn-hover-bg: rgba(var(--om-theme-primary-rgb), .07);
+        --btn-hover-border-color: transparent;
+        --btn-active-bg: rgba(var(--om-theme-primary-rgb), .1);
+    }
+}
+
+// ---------------------------------------------------------------- content
+.o_content {
+    background-color: var(--om-surface-sunken);
+}
+
+// ---------------------------------------------------------------- list view
+.o_list_view {
+    .o_list_renderer {
+        // a band of grey behind the headers is the heaviest thing on a list; the
+        // header sits on the same surface as the rows and is separated by one line
+        // instead. It stays opaque because the header is sticky.
+        --ListRenderer-thead-bg-color: #{$o-white};
+        background-color: var(--om-surface);
+    }
+
+    // the table is a card on the canvas, like a form sheet; not on phones, where
+    // every pixel of width goes to the columns
+    @include media-breakpoint-up(md) {
+        .o_content > .o_list_renderer {
+            margin: 0 1rem 1rem;
+            border: 1px solid var(--om-border);
+            border-radius: var(--om-radius-lg);
+            box-shadow: var(--om-shadow-sm);
+        }
+    }
+
+    .o_list_table {
+        thead th {
+            text-transform: none;
+            letter-spacing: .01em;
+            font-weight: 600;
+            color: #{$o-gray-600};
+            border-bottom: 1px solid var(--om-border);
+        }
+
+        tbody tr.o_data_row > td {
+            padding-top: var(--om-row-padding-y);
+            padding-bottom: var(--om-row-padding-y);
+        }
+
+        tbody tr:hover {
+            background-color: rgba(var(--om-theme-primary-rgb), .04);
+        }
+
+        // the selected row should read as selected, not merely hovered
+        tbody tr.o_data_row.o_row_selected,
+        tbody tr.o_data_row.table-info {
+            background-color: rgba(var(--om-theme-primary-rgb), .08);
+        }
+    }
+}
+
+// ---------------------------------------------------------------- form view
+.o_form_view {
+    .o_form_sheet {
+        // a white card on the canvas, with the same soft lift as list tables and
+        // kanban cards
+        border: 1px solid var(--om-border);
+        border-radius: var(--om-radius-lg);
+        box-shadow: var(--om-shadow-sm);
+    }
+
+    // labels in ink, as strong as the values beside them
+    .o_form_label {
+        color: #{$o-gray-900};
+        font-weight: 500;
+    }
+
+    .o_form_statusbar {
+        border-bottom: 1px solid var(--om-border);
+    }
+
+    .o_inner_group > tbody > tr > td {
+        padding-bottom: calc(var(--om-form-gap) * .35);
+    }
+
+    // section headings inside a form should whisper, not shout
+    .o_horizontal_separator:not(:empty) {
+        color: #{$o-gray-600};
+        font-weight: 600;
+        letter-spacing: .04em;
+        box-shadow: 0 1px 0 var(--om-border);
+    }
+}
+
+// ---------------------------------------------------------------- kanban
+// Ghost records are Odoo's invisible fillers that keep the last row of cards from
+// stretching; they must stay invisible, so they get no edge.
+.o_kanban_view .o_kanban_record:not(.o_kanban_ghost) {
+    // a soft card at rest, a little more lift on hover
+    border: 1px solid var(--om-border);
+    border-radius: var(--om-radius-lg);
+    box-shadow: var(--om-shadow-sm);
+    transition: box-shadow .12s ease-in-out, border-color .12s ease-in-out;
+
+    &:hover {
+        border-color: #{$o-gray-400};
+        box-shadow: var(--om-shadow);
+    }
+}
+
+// ---------------------------------------------------------------- controls
+.btn {
+    font-weight: 500;
+}
+
+// Recoloured through the custom property rather than the SCSS variable, so light
+// and dark share these rules and differ only in the property.
+//
+// Odoo 20 runs Bootstrap with an empty variable prefix, so these are --btn-*, not
+// --bs-btn-*. It also builds each button from the $o-btns-bs-override map, whose
+// "primary" entry hardcodes $o-white as the text colour - which is a dark surface
+// in dark mode. Setting the text colour here covers both.
+.o_web_client {
+    .btn-primary {
+        --btn-bg: var(--om-theme-primary);
+        --btn-border-color: var(--om-theme-primary);
+        --btn-color: var(--om-theme-on-primary);
+        --btn-hover-bg: #{"color-mix(in srgb, var(--om-theme-primary) 86%, black)"};
+        --btn-hover-border-color: #{"color-mix(in srgb, var(--om-theme-primary) 86%, black)"};
+        --btn-hover-color: var(--om-theme-on-primary);
+        --btn-active-bg: #{"color-mix(in srgb, var(--om-theme-primary) 78%, black)"};
+        --btn-active-border-color: #{"color-mix(in srgb, var(--om-theme-primary) 78%, black)"};
+        --btn-active-color: var(--om-theme-on-primary);
+        --btn-disabled-bg: var(--om-theme-primary);
+        --btn-disabled-border-color: var(--om-theme-primary);
+        --btn-disabled-color: var(--om-theme-on-primary);
+    }
+
+    .btn-secondary {
+        --btn-hover-bg: #{"color-mix(in srgb, var(--om-theme-primary) 12%, transparent)"};
+    }
+
+    .o_form_uri,
+    .o_field_widget a:not(.btn) {
+        color: var(--om-theme-link);
+    }
+
+    .btn-outline-primary {
+        --btn-color: var(--om-theme-link);
+        --btn-border-color: var(--om-theme-link);
+        --btn-hover-bg: var(--om-theme-primary);
+        --btn-hover-border-color: var(--om-theme-primary);
+        --btn-hover-color: var(--om-theme-on-primary);
+    }
+}
+
+
+// The search bar is deliberately left alone. Odoo builds it as an input-group
+// whose children inherit the group's pill radius - "whichever element ends the
+// group closes the pill" - so giving .o_searchview a radius of its own stops it
+// closing, and the pill breaks open. Its focus state is Odoo's too: the group
+// recolours its border, which a rectangular outline drawn inside the pill only
+// fights.
+
+// a visible, consistent focus ring - the stock one is easy to lose
+// Buttons get a visible focus ring. Fields do not: they show focus with their
+// underline (see "fields" below), and a rectangle around an underlined field, or
+// inside the rounded search bar, only fights it.
+.btn:focus-visible {
+    outline: 2px solid rgba(var(--om-theme-primary-rgb), .45);
+    outline-offset: 1px;
+}
+
+// The apps button replaces Odoo's Dropdown (see navbar_patch.xml), which means it
+// no longer picks up the .dropdown-toggle styling every other navbar entry gets.
+// These are the same custom properties the stock entries read, so the button
+// follows the navbar whatever colour it is.
+.o_main_navbar .o_navbar_apps_menu .om-navbar-apps {
+    display: flex;
+    align-items: center;
+    padding: .35rem .75rem;
+    border: 0;
+    border-radius: var(--NavBar-entry-borderRadius, #{$o-navbar-entry-border-radius});
+    background-color: inherit;
+    color: var(--NavBar-entry-color, #{$o-navbar-entry-color});
+    font-size: 1.15rem;
+
+    &:hover,
+    &:focus {
+        background-color: var(--NavBar-entry-backgroundColor--hover, #{$o-navbar-entry-bg--hover});
+        color: var(--NavBar-entry-color--hover, #{$o-navbar-entry-color--hover});
+    }
+}
+
+// inside an app the button shows that app's icon, like a bookmark of where you
+// are; on the home screen it is hidden (see above)
+.o_main_navbar .om-navbar-apps .om-navbar-app-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: contain;
+}
+
+// On the home screen the apps button would only open the screen already showing.
+.o_web_client:has(.om-launcher) .o_main_navbar {
+    .o_navbar_apps_menu,
+    .o_menu_toggle {
+        visibility: hidden;
+    }
+}
+
+// ---------------------------------------------------------------- list totals
+// The totals row stays in view at the bottom of a long list instead of scrolling
+// away with the last record. Odoo leaves the footer transparent, so it gets the
+// view background to keep the rows from showing through.
+.o_list_renderer .o_list_table > tfoot > tr > td {
+    position: sticky;
+    bottom: 0;
+    z-index: 1;
+    background-color: var(--om-surface);
+    box-shadow: inset 0 1px 0 var(--om-border);
+}
+
+// ---------------------------------------------------------------- chatter
+// A note is internal and a message goes to the followers. The composer takes a
+// warm tint while Log note is selected, so nobody sends to a customer what was
+// meant for the team.
+.o-mail-Chatter:has(.o-mail-Chatter-logNote.active) .o-mail-Composer-inputContainer {
+    background-color: rgba(#b99a6b, .1);
+    border-color: rgba(#b99a6b, .55) !important;
+}
+
+// ---------------------------------------------------------------- phones
+// Fingers need bigger targets than a mouse pointer: buttons, checkboxes and menu
+// entries grow on small screens, nothing else changes.
+@include media-breakpoint-down(md) {
+    .o_control_panel .btn,
+    .o-mail-Chatter-topbar .btn,
+    .modal-footer .btn {
+        min-height: 2.5rem;
+    }
+
+    .o_list_record_selector .form-check-input,
+    .o_list_table thead .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
+    .dropdown-menu .dropdown-item {
+        padding-top: .55rem;
+        padding-bottom: .55rem;
+    }
+
+    .o_form_view .o_statusbar_buttons .btn {
+        min-height: 2.5rem;
+    }
+}
+
+// ---------------------------------------------------------------- fields
+// A field is quiet until it is used: Odoo's underline appears on hover, and on
+// focus it thickens to two pixels in the accent colour - no box, no outline.
+.o_field_widget .o_input {
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+}
+
+.o_field_widget:focus-within .o_input:focus {
+    outline: 0;
+    box-shadow: 0 1px 0 0 var(--om-theme-link);
+}
+
+// The suggestion list of a many2one, a selection and every other dropdown: a soft
+// card with rounded rows, the matched letters in the accent, and the "Create" and
+// "Search more" actions set apart below the records.
+.o-dropdown--menu.dropdown-menu,
+.o-autocomplete--dropdown-menu {
+    padding: .35rem;
+    border: 1px solid var(--om-border);
+    border-radius: var(--om-radius-lg);
+    box-shadow: var(--om-shadow-pop);
+
+    .dropdown-item {
+        border-radius: var(--om-radius);
+        padding: .42rem .7rem;
+    }
+
+    .dropdown-item:hover,
+    .dropdown-item:focus,
+    .dropdown-item.focus {
+        background-color: rgba(var(--om-theme-primary-rgb), .07);
+        color: inherit;
+    }
+}
+
+// the row picked with the keyboard or the mouse; Odoo's own rule for it is this
+// specific, so this one has to be too
+.o-autocomplete .ui-menu-item > a.ui-state-active {
+    background-color: rgba(var(--om-theme-primary-rgb), .08);
+    color: inherit;
+}
+
+.o-autocomplete--mark {
+    padding: 0;
+    background-color: transparent;
+    color: var(--om-theme-link);
+    font-weight: 700;
+}
+
+.o-autocomplete--dropdown-menu {
+    // actions, not records: muted until pointed at
+    .ui-menu-item.o_m2o_dropdown_option > a {
+        color: #{$o-gray-600};
+        font-weight: 500;
+
+        &:hover,
+        &.ui-state-active {
+            color: #{$o-gray-900};
+        }
+    }
+
+    .o-autocomplete--dropdown-item:not(.o_m2o_dropdown_option) + .o_m2o_dropdown_option {
+        margin-top: .3rem;
+        padding-top: .3rem;
+        border-top: 1px solid var(--om-border);
+    }
+}
+
+// ---------------------------------------------------------------- search bar
+// A soft grey edge, one step darker while in use. Odoo focuses the search on most
+// screens as they open, so the "in use" edge is the one usually seen: it has to be
+// calm as well, not the ink-black of the primary colour.
+.o_cp_searchview {
+    .o_searchview,
+    .o_searchview_dropdown_toggler {
+        border-color: var(--om-border);
+        transition: border-color .15s ease-in-out;
+    }
+
+    &:focus-within,
+    &:hover {
+        .o_searchview,
+        .o_searchview_dropdown_toggler {
+            border-color: #{$o-gray-400};
+        }
+    }
+}
+
+// ---------------------------------------------------------------- badges
+// Status badges in lists, kanban cards and forms: a tint of their colour with the
+// colour as text, instead of a solid block. The navbar counters keep their fill.
+.o_action_manager {
+    @each $name, $color in ("success": $o-success, "info": $o-info, "warning": $o-warning, "danger": $o-danger) {
+        .badge.text-bg-#{$name} {
+            background-color: rgba($color, .13) !important;
+            color: var(--om-badge-#{$name}, #{darken($color, 12%)}) !important;
+        }
+    }
+
+    .badge.text-bg-primary {
+        background-color: rgba(var(--om-theme-primary-rgb), .1) !important;
+        color: var(--om-theme-link) !important;
+    }
+
+    .badge.text-bg-secondary,
+    .badge.text-bg-light {
+        background-color: var(--om-surface-sunken) !important;
+        color: #{$o-gray-700} !important;
+        box-shadow: inset 0 0 0 1px var(--om-border);
+    }
+
+    .badge.rounded-pill {
+        font-weight: 500;
+        padding: .3em .7em;
+    }
+}
+
+// ---------------------------------------------------------------- kanban columns
+.o_kanban_renderer {
+    .o_kanban_header .o_column_title {
+        font-weight: 600;
+        letter-spacing: .01em;
+    }
+
+    // a thin bar reads as a summary; the stock one is as heavy as a button
+    .o_column_progress {
+        height: 5px;
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .o_kanban_counter {
+        font-size: .875rem;
+        color: #{$o-gray-600};
+
+        b, .o_animated_number {
+            color: #{$o-gray-800};
+            font-weight: 600;
+        }
+    }
+}
+
+// ---------------------------------------------------------------- form layout
+.o_form_view {
+    @include media-breakpoint-up(md) {
+        .o_form_sheet_bg > .o_form_sheet {
+            padding-top: 1.75rem;
+            padding-bottom: 1.75rem;
+        }
+    }
+
+    .o_inner_group > tbody > tr > td {
+        padding-bottom: calc(var(--om-form-gap) * .5);
+    }
+
+    // Tabs drawn as joined boxes: every tab has an edge, and the open one has no
+    // line under it, so it opens into the page below and reads as the front card
+    // of a stack.
+    .o_notebook .o_notebook_headers .nav-tabs {
+        border-bottom: 1px solid var(--om-border);
+
+        .nav-item + .nav-item .nav-link {
+            margin-left: -1px;
+        }
+
+        .nav-link {
+            margin-bottom: -1px;
+            padding: .55rem 1.1rem;
+            border: 1px solid var(--om-border);
+            border-radius: 0;
+            background-color: var(--om-surface);
+            color: #{$o-gray-700};
+            font-weight: 500;
+
+            &:hover {
+                color: #{$o-gray-900};
+                background-color: var(--om-surface-sunken);
+            }
+
+            &.active {
+                position: relative;
+                z-index: 1;
+                border-bottom-color: var(--om-surface);
+                background-color: var(--om-surface);
+                color: #{$o-gray-900};
+                font-weight: 500;
+            }
+        }
+
+        .nav-item:first-child .nav-link {
+            border-top-left-radius: var(--om-radius);
+        }
+
+        .nav-item:last-child .nav-link {
+            border-top-right-radius: var(--om-radius);
+        }
+    }
+}
+
+// ---------------------------------------------------------------- chatter
+// Three kinds of entry, each with its own look, so the thread can be read at a
+// glance: a message that went to the followers sits on a light teal card, an
+// internal note on a warm tint with an edge, and a field change is a small grey
+// chip with the new value in teal.
+.o-mail-Chatter {
+    // the date that splits the thread whispers instead of shouting in bold
+    .o-mail-DateSection {
+        font-weight: 500 !important;
+        font-size: .75rem;
+        letter-spacing: .04em;
+        color: #{$o-gray-500};
+    }
+
+    .o-mail-Message-author {
+        font-weight: 600;
+    }
+
+    .o-mail-Message-date {
+        color: #{$o-gray-500};
+    }
+
+    // a little more air between entries; consecutive ones from the same author
+    // stay grouped
+    .o-mail-Message:not(.o-squashed) {
+        margin-top: .9rem !important;
+    }
+
+    // messages sent to the followers: a card rather than a chat bubble
+    .o-mail-Message-bubble.o-green,
+    .o-mail-Message-bubble.o-blue {
+        border-color: rgba(var(--om-action-rgb), .28) !important;
+        background-color: rgba(var(--om-action-rgb), .06) !important;
+    }
+
+    .o-mail-Message-bubble,
+    .o-discuss-text-body:has(> .o-mail-Message-bubble) {
+        border-radius: var(--om-radius-lg) !important;
+    }
+
+    .o-mail-Message-bubbleTail {
+        display: none !important;
+    }
+
+    // internal notes written by people (not field changes)
+    .o-mail-Message-body.o-note:not(.o_track):has(.o-mail-Message-richBody) {
+        margin-top: .15rem;
+        padding: .45rem .75rem !important;
+        border-left: 3px solid rgba(#b99a6b, .75);
+        border-radius: 0 var(--om-radius) var(--om-radius) 0;
+        background-color: rgba(#b99a6b, .1);
+    }
+
+    // field changes: "Quotation -> Sales Order (Status)"
+    .o-mail-Message-body.o_track {
+        display: inline-block;
+        width: auto !important;
+        margin-top: .15rem;
+        padding: .35rem .65rem !important;
+        border: 1px solid var(--om-border);
+        border-radius: var(--om-radius);
+        background-color: var(--om-surface-sunken);
+        font-size: .8125rem;
+        line-height: 1.6;
+        color: #{$o-gray-600};
+
+        b {
+            font-weight: 600;
+            color: var(--om-theme-link);
+        }
+
+        i {
+            font-style: normal;
+            color: #{$o-gray-500};
+        }
+    }
+}
+
+// ---------------------------------------------------------------- refresh button
+.o_control_panel .o_om_refresh {
+    display: flex;
+    align-items: center;
+    padding: .3rem .55rem;
+    color: #{$o-gray-700};
+}
+
+// ---------------------------------------------------------------- dialogs
+// the full screen button sits just left of the close button, whichever header the
+// dialog brings
+.modal-header {
+    .o_om_dialog_size {
+        order: 1;
+    }
+
+    .btn-close {
+        order: 2;
+    }
+}
+
+// a full screen dialog fills the height as well as the width
+.modal-fs .modal-content {
+    min-height: calc(100vh - #{2 * $modal-dialog-margin-y-sm-up});
+}
+
+// ---------------------------------------------------------------- chatter width
+// The chatter beside a form keeps the width it was dragged to.
+.o-mail-Form-chatter.o-aside {
+    position: relative;
+}
+
+.o_om_chatter_sized .o-mail-Form-chatter.o-aside {
+    flex-grow: 0;
+    width: var(--om-chatter-width);
+}
+
+.o_om_chatter_resize {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 3;
+    width: 6px;
+    cursor: col-resize;
+    transition: background-color .15s ease-in-out;
+
+    &:hover {
+        background-color: rgba(var(--om-action-rgb), .25);
+    }
+}
+
+body.o_om_chatter_resizing {
+    cursor: col-resize;
+    user-select: none;
+}
+
+// "Below the form": the form and the chatter stacked, even on a wide screen, where
+// Odoo's form template would lay them out in a row
+.o_om_chatter_below .o_form_view {
+    .o_form_renderer.d-flex {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+
+    // With nothing beside it, the form takes the whole width: Odoo's caps on the
+    // renderer and the sheet are sized for a chatter sitting next to them, and
+    // would otherwise leave an empty strip on the right.
+    .o_form_renderer,
+    .o_form_sheet_bg {
+        max-width: none;
+    }
+}
+
+// field changes hidden from the thread, from the chatter's own button
+.o_om_hide_tracking .o-mail-Chatter .o-mail-Message:has(.o-mail-Message-body.o_track) {
+    display: none;
+}
+
+.o-mail-Chatter .o_om_tracking_toggle.o_om_active {
+    color: var(--om-theme-link);
+}
+
+// ---------------------------------------------------------------- apps sidebar
+$om-sidebar-icons: 48px;
+$om-sidebar-large: 200px;
+
+body.o_om_sidebar_icons {
+    padding-left: $om-sidebar-icons;
+}
+
+body.o_om_sidebar_large {
+    padding-left: $om-sidebar-large;
+}
+
+// On a phone there is no room for it, and on the home screen it would only repeat
+// the tiles in the middle, so the page takes back the space there.
+body.o_om_sidebar:has(.om-launcher) {
+    padding-left: 0;
+
+    .o_om_apps_sidebar {
+        display: none;
+    }
+}
+
+@include media-breakpoint-down(md) {
+    body.o_om_sidebar_icons,
+    body.o_om_sidebar_large {
+        padding-left: 0;
+    }
+}
+
+.o_om_apps_sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: $zindex-fixed;
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+    width: $om-sidebar-icons;
+    padding: .5rem .4rem;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    background-color: var(--om-surface);
+    border-right: 1px solid var(--om-border);
+
+    .o_om_sidebar_large & {
+        width: $om-sidebar-large;
+    }
+
+    .o_om_sidebar_item {
+        display: flex;
+        align-items: center;
+        gap: .65rem;
+        padding: .4rem;
+        border-radius: var(--om-radius);
+        color: #{$o-gray-800};
+        text-decoration: none;
+        white-space: nowrap;
+
+        &:hover {
+            background-color: rgba(var(--om-theme-primary-rgb), .06);
+        }
+
+        &.o_om_active {
+            background-color: rgba(var(--om-theme-primary-rgb), .1);
+            box-shadow: inset 3px 0 0 var(--om-theme-primary);
+            font-weight: 600;
+        }
+    }
+
+    .o_om_sidebar_icon {
+        flex: 0 0 auto;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        object-fit: contain;
+    }
+
+    .o_om_sidebar_letter,
+    .o_om_sidebar_home .o_om_sidebar_icon {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.1rem;
+    }
+
+    .o_om_sidebar_letter:not([style]) {
+        background-color: var(--om-theme-primary);
+        color: #fff;
+        font-weight: 600;
+    }
+
+    .o_om_sidebar_home {
+        margin-bottom: .35rem;
+        color: #{$o-gray-700};
+    }
+
+    .o_om_sidebar_name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        font-size: .875rem;
+    }
+
+    // icons only: a slim rail
+    .o_om_sidebar_icons & {
+        padding: .45rem .3rem;
+
+        .o_om_sidebar_item {
+            justify-content: center;
+            padding: .35rem 0;
+        }
+
+        .o_om_sidebar_icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+        }
+
+        .o_om_sidebar_name {
+            display: none;
+        }
+    }
+}
+
+// ---------------------------------------------------------------- pivot on phones
+// The table scrolls sideways and its row headers stay in view, so a wide pivot can
+// be read on a phone without losing track of which row is which.
+@include media-breakpoint-down(md) {
+    .o_pivot {
+        overflow-x: auto;
+
+        table > tbody > tr > th,
+        table > thead > tr:first-child > th:first-child {
+            position: sticky;
+            left: 0;
+            z-index: 1;
+            background-color: var(--om-surface);
+            box-shadow: inset -1px 0 0 var(--om-border);
+        }
+    }
+}
+
