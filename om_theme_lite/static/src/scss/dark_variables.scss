@@ -1,0 +1,50 @@
+// Prepended to web.assets_web_dark.
+//
+// Odoo 20 Community ships the dark *bundle* but no dark *palette*: assets_web_dark
+// is assets_web plus five component stylesheets, so nothing actually turns dark.
+// The palette has to come from here.
+//
+// Prepended rather than appended for the same reason as primary_variables.scss: SCSS
+// takes the first !default assignment, and this file has to land before the bundle
+// includes web.assets_web (and with it Odoo's own defaults and ours).
+//
+// Only the variables at the top of the chain are set. Everything else in Odoo -
+// $o-webclient-background-color, $o-main-text-color, $o-border-color, the Bootstrap
+// $white/$gray-*/$body-bg map - is derived from these, so the whole backend follows.
+
+// makes the browser render scrollbars, native inputs and form controls dark
+$o-webclient-color-scheme: dark;
+
+// The grey scale is inverted, not replaced: Odoo reads gray-100 as "lightest
+// surface" and gray-900 as "darkest text", so flipping the ends flips every rule
+// built on them.
+$o-white: #232733;      // surfaces: sheets, cards, dropdowns
+$o-black: #ffffff;      // the strongest text colour
+
+$o-gray-100: #1b1e27;   // the page behind the sheets
+$o-gray-200: #262a36;
+$o-gray-300: #333949;   // borders
+$o-gray-400: #424a5e;
+$o-gray-500: #6b7385;
+$o-gray-600: #98a1b2;
+$o-gray-700: #c3c9d4;
+$o-gray-800: #dfe3ea;
+$o-gray-900: #eef1f6;   // body text
+
+$o-view-background-color: #232733;
+
+// Plum and teal lighten on dark: the light-mode shades are too deep to stand out
+// against the slate surfaces. Button text still comes from the colour's own
+// lightness (theme.scss), so it stays white on this plum.
+$o-theme-primary: #946889;
+
+// links, actions and focus in a lighter teal
+$o-theme-action: #3fb7bd;
+$o-main-link-color: #3fb7bd;
+
+// Bootstrap picks button text with color-contrast(), which chooses between $black
+// and $white. Those two are semantic here - "strongest text" and "surface" - and
+// inverting them would have every filled button print dark text on a dark fill.
+// Contrast has to stay physical, so it is pinned to real black and white.
+$color-contrast-light: #ffffff;
+$color-contrast-dark: #111111;
