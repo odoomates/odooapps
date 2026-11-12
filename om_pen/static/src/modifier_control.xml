@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.ModifierControl">
+        <div class="om-pen-row">
+            <label class="om-pen-label" t-esc="props.label"/>
+            <div class="om-pen-control">
+                <div class="om-pen-segmented" role="group">
+                    <button t-att-class="props.entry.mode === '' ? 'active' : ''"
+                            t-on-click="() => this.setMode('')"
+                            title="Leave as the view has it">Auto</button>
+                    <button t-att-class="props.entry.mode === '1' ? 'active' : ''"
+                            t-on-click="() => this.setMode('1')">Yes</button>
+                    <button t-att-class="props.entry.mode === '0' ? 'active' : ''"
+                            t-on-click="() => this.setMode('0')">No</button>
+                    <button t-att-class="props.entry.mode === 'expr' ? 'active' : ''"
+                            t-on-click="() => this.setMode('expr')"
+                            title="Depend on the record">If…</button>
+                </div>
+
+                <t t-if="props.entry.mode === 'expr'">
+                    <ConditionBuilder t-if="!props.entry.cond.raw"
+                                      condition="props.entry.cond"
+                                      fields="props.fields"
+                                      fieldNames="props.fieldNames"/>
+                    <div t-else="" class="om-pen-cond om-pen-cond-raw">
+                        <input type="text" class="form-control form-control-sm"
+                               placeholder="state != 'draft'" t-model="props.entry.expr"/>
+                        <small class="om-pen-help">Written by hand.</small>
+                    </div>
+                    <button class="om-pen-cond-swap" t-on-click="() => this.toggleRaw()">
+                        <t t-if="props.entry.cond.raw">use the builder</t>
+                        <t t-else="">write it by hand</t>
+                    </button>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>
