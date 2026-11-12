@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The company's own favicon in the browser tab, when it has one. -->
+    <template id="layout_favicon" inherit_id="web.layout" name="Theme Lite: favicon">
+        <xpath expr="//link[@rel='shortcut icon']" position="attributes">
+            <attribute name="t-att-href">x_icon or (request and request.env.company.sudo().om_favicon and '/om_theme_lite/company/%s/om_favicon' % request.env.company.id) or '/web/static/img/favicon.ico'</attribute>
+        </xpath>
+    </template>
+
+    <!-- The login page: a class to style it by, and the company background behind
+         the card when one is set. -->
+    <template id="login_layout" inherit_id="web.login_layout" name="Theme Lite: login page">
+        <xpath expr="//t[@t-call='web.frontend_layout']" position="attributes">
+            <attribute name="body_classname.f">bg-100 o_om_login</attribute>
+        </xpath>
+        <xpath expr="//div[hasclass('container')][hasclass('py-5')]" position="inside">
+            <div class="o_om_login_bg"
+                 t-att-style="res_company.sudo().om_home_background and ('background-image: url(/om_theme_lite/company/%s/om_home_background)' % res_company.id) or None"/>
+        </xpath>
+    </template>
+
+</odoo>

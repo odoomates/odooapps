@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_theme_lite.AppsSidebar">
+        <nav t-if="this.visible" class="o_om_apps_sidebar d-print-none" aria-label="Apps">
+            <a href="/odoo" class="o_om_sidebar_item o_om_sidebar_home" title="Home"
+               t-on-click="(ev) => this.openHome(ev)">
+                <span class="o_om_sidebar_icon"><i class="oi" data-icon="apps"/></span>
+                <span class="o_om_sidebar_name">Home</span>
+            </a>
+            <t t-foreach="this.apps" t-as="app" t-key="app.id">
+                <a class="o_om_sidebar_item" t-att-href="this.href(app)" t-att-title="app.name"
+                   t-att-class="{ 'o_om_active': this.currentApp?.id === app.id }"
+                   t-on-click="(ev) => this.openApp(ev, app)">
+                    <t t-set="icon" t-value="this.fontIcon(app)"/>
+                    <img t-if="app.webIconData" class="o_om_sidebar_icon" t-att-src="app.webIconData" alt=""/>
+                    <span t-else="" class="o_om_sidebar_icon o_om_sidebar_letter"
+                          t-att-style="icon?.style">
+                        <i t-if="icon" t-att-class="icon.className"/>
+                        <t t-else="" t-out="app.name.slice(0, 1)"/>
+                    </span>
+                    <span class="o_om_sidebar_name" t-out="app.name"/>
+                </a>
+            </t>
+        </nav>
+    </t>
+
+</templates>

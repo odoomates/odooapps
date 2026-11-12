@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- In the dialog itself rather than in web.Dialog.header: many dialogs bring a
+         header of their own, and call that template from their own context, where
+         the dialog's state is out of reach. -->
+    <t t-inherit="web.Dialog" t-inherit-mode="extension">
+        <xpath expr="//header[hasclass('modal-header')]" position="inside">
+            <button t-if="this.omCanResize" type="button"
+                    class="btn oi oi-lg opacity-50 opacity-100-hover o_om_dialog_size"
+                    t-att-data-icon="this.omIsMaximized ? 'fullscreen_exit' : 'open_with'"
+                    t-att-title="this.omIsMaximized ? 'Restore' : 'Full screen'"
+                    aria-label="Full screen" tabindex="-1"
+                    t-on-click="() => this.omToggleSize()"/>
+        </xpath>
+    </t>
+
+</templates>
