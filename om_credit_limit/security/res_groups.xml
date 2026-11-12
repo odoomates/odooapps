@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="group_credit_limit_override" model="res.groups">
+        <field name="name">Override the Credit Limit</field>
+        <field name="privilege_id" ref="account.res_groups_privilege_accounting"/>
+        <field name="comment">Post the customer invoices going over the credit limit of the customer.</field>
+    </record>
+
+    <record id="account.group_account_manager" model="res.groups">
+        <field name="implied_ids" eval="[(4, ref('om_credit_limit.group_credit_limit_override'))]"/>
+    </record>
+
+</odoo>

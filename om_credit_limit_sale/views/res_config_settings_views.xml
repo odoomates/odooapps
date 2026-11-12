@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.credit.limit.sale</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_credit_limit.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='credit_limit_block']" position="after">
+                <div class="content-group mt-2" invisible="not account_use_credit_limit">
+                    <field name="credit_limit_block_sale"/>
+                    <label for="credit_limit_block_sale" class="o_light_label"
+                           string="Refuse to confirm a sales order going over the limit"/>
+                    <div class="text-muted">
+                        The accounting managers can still confirm it: the override is logged on the order.
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

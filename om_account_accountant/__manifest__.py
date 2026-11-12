@@ -30,6 +30,7 @@
         'om_account_reconcile',
         'om_account_cash_forecast',
         'om_account_check_printing',
+        'om_credit_limit',
         'om_currency_rate_update',
         'om_currency_revaluation',
         'om_account_bank_statement_import',
