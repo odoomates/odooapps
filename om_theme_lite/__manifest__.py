@@ -64,7 +64,5 @@ list column widths that are remembered.
         ],
     },
     'license': 'LGPL-3',
-    'price': 89,
-    'currency': 'USD',
     'images': ['static/description/banner.png'],
 }
