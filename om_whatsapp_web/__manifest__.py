@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp Connector Web',
-    'version': '15.0.1.0.0',
+    'version': '15.0.1.0.1',
     'author': 'Odoo Mates',
     'category': 'Marketing',
     'description': 'Send WhatsApp messages and PDFs from Odoo through WhatsApp Web, open in another tab, with the Odoo Mates browser extension.',
