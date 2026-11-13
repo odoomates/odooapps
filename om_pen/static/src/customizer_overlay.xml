@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.Section">
+        <div class="om-pen-section" t-att-class="open ? 'open' : ''">
+            <button class="om-pen-section-head" t-on-click="() => this.toggleSection(key)">
+                <i class="oi oi-fw" t-att-data-icon="open ? 'arrow_drop_down' : 'arrow_right'"/>
+                <span t-out="title"/>
+            </button>
+            <div class="om-pen-section-body" t-if="open">
+                <!-- a t-call body renders at t-out="0"; t-slot only works for components -->
+                <t t-out="0"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_pen.CustomizerOverlay">
+        <t t-if="this.state.active">
+            <div class="o_om_pen_ui o_om_pen_banner">
+                <i class="oi me-2" data-icon="edit"/>
+                <span class="om-pen-crumb">
+                    <strong t-out="this.state.config.resModel"/>
+                    <span class="om-pen-sep">/</span>
+                    <span t-out="this.state.config.viewType"/>
+                </span>
+                <span t-if="this.state.adding" class="om-pen-hint">
+                    Drop <strong t-out="this.state.adding"/> where it should go
+                </span>
+                <span t-elif="this.state.broken" class="badge text-bg-danger ms-3">
+                    No longer matches the standard view
+                </span>
+                <span t-else="" class="om-pen-hint om-pen-hint-quiet">
+                    Click a field to edit it · drag to move it · Esc to leave
+                </span>
+                <span class="flex-grow-1"/>
+                <span t-if="this.state.saving" class="om-pen-saving"><i class="oi oi-spin me-1" data-icon="progress_activity"/>Saving</span>
+                <t t-if="this.state.hasDraft">
+                    <span class="om-pen-draft-count" t-att-class="this.state.draftInvalid ? 'invalid' : ''">
+                        <t t-out="this.state.draftCount"/> unpublished
+                    </span>
+                    <button class="btn btn-sm btn-light me-2"
+                            t-on-click="() => this.customizer.discardDraft()">Discard</button>
+                    <button class="btn btn-sm me-2"
+                            t-att-class="this.state.draftInvalid ? 'btn-outline-light' : 'btn-warning'"
+                            t-att-disabled="this.state.draftInvalid or this.state.saving"
+                            t-att-title="this.state.draftInvalid ? 'These changes no longer fit the standard view. Discard them and make them again.' : 'Make these changes live for everyone'"
+                            t-on-click="() => this.customizer.publish()">Publish</button>
+                </t>
+                <button t-if="this.state.adding" class="btn btn-sm btn-light me-2"
+                        t-on-click="() => this.customizer.cancelAdding()">Cancel</button>
+                <button class="btn btn-sm btn-light om-pen-exit"
+                        t-on-click="() => this.customizer.toggle()">Exit</button>
+            </div>
+
+            <div t-if="this.state.adding" class="o_om_pen_ui o_om_pen_chip">
+                <i class="oi me-2" data-icon="open_with"/>
+                <span t-out="this.state.adding"/>
+                <small class="d-block">drag onto the form, or click a field</small>
+            </div>
+
+            <div class="o_om_pen_ui o_om_pen_panel">
+                <div class="om-pen-tabs">
+                    <button t-att-class="this.ui.tab === 'add' ? 'active' : ''"
+                            t-on-click="() => this.ui.tab = 'add'">
+                        <i class="oi me-1" data-icon="add"/>Add
+                    </button>
+                    <button t-att-class="this.ui.tab === 'field' ? 'active' : ''"
+                            t-on-click="() => this.ui.tab = 'field'">
+                        <i class="oi me-1" data-icon="edit"/>Field
+                    </button>
+                    <button t-att-class="this.ui.tab === 'view' ? 'active' : ''"
+                            t-on-click="() => this.ui.tab = 'view'">
+                        <i class="oi me-1" data-icon="tune"/>View
+                    </button>
+                    <button t-att-class="this.ui.tab === 'changes' ? 'active' : ''"
+                            t-on-click="() => this.ui.tab = 'changes'">
+                        <i class="oi me-1" data-icon="format_list_bulleted"/>Changes
+                        <span t-if="this.changes.length" class="om-pen-count" t-out="this.changes.length"/>
+                    </button>
+                </div>
+
+                <!-- add tab: drag a type or a field onto the view -->
+                <t t-if="this.ui.tab === 'add'">
+                    <div class="om-pen-palette-wrap">
+                        <div class="om-pen-palette-hint">
+                            <i class="oi me-1" data-icon="pan_tool_alt"/>Drag onto the form. You see where it lands before you let go.
+                        </div>
+                        <div class="om-pen-subhead">New field</div>
+                        <div class="om-pen-palette">
+                            <div t-foreach="this.paletteTypes" t-as="type" t-key="type.key"
+                                 class="om-pen-tile o_om_pen_source" t-att-data-ttype="type.key">
+                                <i class="oi oi-fw" t-att-data-icon="type.icon"/>
+                                <span t-out="type.label"/>
+                            </div>
+                        </div>
+                        <div class="om-pen-subhead">Existing fields</div>
+                        <input type="search" class="form-control form-control-sm mb-2"
+                               placeholder="Search fields not on this view"
+                               t-model="this.bind(this.palette, 'search')"/>
+                        <div class="om-pen-palette-list">
+                            <div t-foreach="this.paletteFields" t-as="field" t-key="field.name"
+                                 class="om-pen-palette-row o_om_pen_source" t-att-data-field="field.name"
+                                 t-att-title="field.name">
+                                <i class="oi oi-fw me-2" t-att-data-icon="field.icon"/>
+                                <span class="flex-grow-1" t-out="field.string"/>
+                                <i class="oi om-pen-grip" data-icon="more_vert"/>
+                            </div>
+                            <div t-if="!this.paletteFields.length" class="om-pen-empty">Every field is on the view already.</div>
+                        </div>
+                        <button class="btn btn-link btn-sm px-0 mt-2" t-on-click="() => this.openAddDialog()">
+                            <i class="oi me-1" data-icon="share"/>A related field, or more options…
+                        </button>
+                    </div>
+                </t>
+
+                <!-- field tab -->
+                <t t-if="this.ui.tab === 'field'">
+                    <button class="om-pen-add-field" t-on-click="() => this.ui.tab = 'add'">
+                        <i class="oi me-2" data-icon="add"/>Add a field to this view
+                    </button>
+                    <t t-if="this.state.selected">
+                        <div class="om-pen-head">
+                            <div class="om-pen-head-title" t-out="this.currentLabel"/>
+                            <div class="om-pen-head-meta">
+                                <code t-out="this.state.selected"/>
+                                <span class="om-pen-chip" t-out="this.selectedField.type"/>
+                                <span t-if="this.isAddedField" class="om-pen-chip om-pen-chip-info">added</span>
+                            </div>
+                        </div>
+
+                        <div class="om-pen-body">
+                            <t t-call="om_pen.Section"
+                                key="'appearance'"
+                                title="'Appearance'"
+                                open="this.ui.openSections.appearance">
+                                <div class="om-pen-row">
+                                    <label class="om-pen-label">Label</label>
+                                    <div class="om-pen-control">
+                                        <input type="text" class="form-control form-control-sm om-pen-field-label"
+                                               t-model="this.bind(this.draft, 'label')"/>
+                                        <button t-if="this.draft.label !== this.baseLabel"
+                                                class="om-pen-reset" title="Back to the standard label"
+                                                t-on-click="() => this.draft.label = this.baseLabel">reset</button>
+                                    </div>
+                                </div>
+                                <div class="om-pen-row">
+                                    <label class="om-pen-label">Tooltip</label>
+                                    <div class="om-pen-control">
+                                        <input type="text" class="form-control form-control-sm"
+                                               placeholder="shown on hover" t-model="this.bind(this.draft, 'help_text')"/>
+                                    </div>
+                                </div>
+                                <div class="om-pen-row">
+                                    <label class="om-pen-label">Placeholder</label>
+                                    <div class="om-pen-control">
+                                        <input type="text" class="form-control form-control-sm"
+                                               placeholder="shown when empty" t-model="this.bind(this.draft, 'placeholder')"/>
+                                    </div>
+                                </div>
+                                <div class="om-pen-row">
+                                    <label class="om-pen-label">Widget</label>
+                                    <div class="om-pen-control">
+                                        <select class="form-select form-select-sm" t-model="this.bind(this.draft, 'widget')">
+                                            <option value="">Default</option>
+                                            <option t-foreach="this.widgetChoices" t-as="choice"
+                                                    t-key="choice.name" t-att-value="choice.name">
+                                                <t t-out="choice.label"/> (<t t-out="choice.name"/>)
+                                            </option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </t>
+
+                            <t t-call="om_pen.Section"
+                                key="'behaviour'"
+                                title="'Behaviour'"
+                                open="this.ui.openSections.behaviour">
+                                <ModifierControl label.translate="Hidden" entry="this.draft.invisible"
+                                      fields="this.state.fields"
+                                      fieldNames="this.conditionFieldNames"/>
+                                <ModifierControl label.translate="Readonly" entry="this.draft.readonly"
+                                      fields="this.state.fields"
+                                      fieldNames="this.conditionFieldNames"/>
+                                <ModifierControl label.translate="Required" entry="this.draft.required"
+                                      fields="this.state.fields"
+                                      fieldNames="this.conditionFieldNames"/>
+                                <t t-if="this.isList">
+                                    <ModifierControl label.translate="Hide column" entry="this.draft.column_invisible"
+                                      fields="this.state.fields"
+                                      fieldNames="this.conditionFieldNames"/>
+                                    <div class="om-pen-row">
+                                        <label class="om-pen-label">Optional</label>
+                                        <div class="om-pen-control">
+                                            <select class="form-select form-select-sm" t-model="this.bind(this.draft, 'optional')">
+                                                <option value="">Always shown</option>
+                                                <option value="show">Optional, shown by default</option>
+                                                <option value="hide">Optional, hidden by default</option>
+                                            </select>
+                                            <small class="om-pen-help">Users switch optional columns on from the column picker.</small>
+                                        </div>
+                                    </div>
+                                </t>
+                            </t>
+
+                            <t t-call="om_pen.Section"
+                                key="'visibility'"
+                                title="'Who can see it'"
+                                open="this.ui.openSections.visibility">
+                                <div t-if="this.selectedGroupNames.length" class="om-pen-tags">
+                                    <span t-foreach="this.selectedGroupNames" t-as="name" t-key="name"
+                                          class="om-pen-chip om-pen-chip-primary" t-out="name"/>
+                                </div>
+                                <p t-else="" class="om-pen-help mb-2">Everyone who can see this view.</p>
+                                <input type="text" class="form-control form-control-sm mb-1"
+                                       placeholder="Search groups…" t-model="this.bind(this.ui, 'groupSearch')"/>
+                                <div class="om-pen-scroll">
+                                    <label t-foreach="this.visibleGroups" t-as="group" t-key="group.id"
+                                           class="om-pen-check">
+                                        <input type="checkbox"
+                                               t-att-checked="this.draft.group_ids.includes(group.id)"
+                                               t-on-change="() => this.toggleGroup(group.id)"/>
+                                        <span t-out="group.display_name"/>
+                                    </label>
+                                </div>
+                            </t>
+
+                            <t t-if="this.isRelational" t-call="om_pen.Section"
+                                key="'relational'"
+                                title="'Linked record'"
+                                open="this.ui.openSections.relational">
+                                <label class="om-pen-check">
+                                    <input type="checkbox" t-model="this.bind(this.draft, 'opt_no_open')"/>
+                                    <span>Cannot open the linked record</span>
+                                </label>
+                                <label class="om-pen-check">
+                                    <input type="checkbox" t-model="this.bind(this.draft, 'opt_no_create')"/>
+                                    <span>Cannot create from here</span>
+                                </label>
+                                <label class="om-pen-check">
+                                    <input type="checkbox" t-model="this.bind(this.draft, 'opt_no_quick_create')"/>
+                                    <span>No quick create</span>
+                                </label>
+                                <label class="om-pen-check">
+                                    <input type="checkbox" t-model="this.bind(this.draft, 'opt_no_create_edit')"/>
+                                    <span>No "Create and edit"</span>
+                                </label>
+                            </t>
+                        </div>
+
+                        <div class="om-pen-foot" t-att-class="this.dirty ? 'dirty' : ''">
+                            <button class="btn btn-sm btn-link text-danger px-0"
+                                    t-on-click="() => this.clearField()">
+                                <t t-if="this.isAddedField">Remove from view</t>
+                                <t t-else="">Reset field</t>
+                            </button>
+                            <span class="flex-grow-1"/>
+                            <span t-if="this.dirty" class="om-pen-pending">Unsaved</span>
+                            <button class="btn btn-sm btn-primary"
+                                    t-att-disabled="this.state.saving or !this.dirty"
+                                    t-att-title="this.dirty ? 'Apply (Ctrl+Enter)' : 'Nothing to apply yet'"
+                                    t-on-click="() => this.applyField()">Apply</button>
+                        </div>
+                    </t>
+                    <div t-else="" class="om-pen-empty">
+                        <i class="oi" data-icon="pan_tool_alt"/>
+                        <p>Click any field to edit it.</p>
+                        <p class="om-pen-help">
+                            <t t-out="this.availableToAdd"/> more fields of this model are not
+                            on this view yet.
+                        </p>
+                    </div>
+                </t>
+
+                <!-- view tab -->
+                <t t-if="this.ui.tab === 'view'">
+                    <div class="om-pen-body">
+                        <t t-call="om_pen.Section"
+                            key="'appearance'"
+                            title="'What users may do'"
+                            open="true">
+                            <label class="om-pen-check">
+                                <input type="checkbox" t-model="this.bind(this.actionsDraft, 'create_ok')"/>
+                                <span>Create records</span>
+                            </label>
+                            <label class="om-pen-check">
+                                <input type="checkbox" t-model="this.bind(this.actionsDraft, 'edit_ok')"/>
+                                <span>Edit records</span>
+                            </label>
+                            <label class="om-pen-check">
+                                <input type="checkbox" t-model="this.bind(this.actionsDraft, 'delete_ok')"/>
+                                <span>Delete records</span>
+                            </label>
+                            <label class="om-pen-check" t-att-class="!this.actionsDraft.create_ok ? 'disabled' : ''">
+                                <input type="checkbox" t-att-disabled="!this.actionsDraft.create_ok"
+                                       t-model="this.bind(this.actionsDraft, 'duplicate_ok')"/>
+                                <span>Duplicate records</span>
+                            </label>
+                            <p t-if="!this.actionsDraft.create_ok" class="om-pen-help">
+                                Duplicating is off because creating is off.
+                            </p>
+                            <t t-if="this.isList">
+                                <label class="om-pen-check">
+                                    <input type="checkbox" t-model="this.bind(this.actionsDraft, 'export_ok')"/>
+                                    <span>Export</span>
+                                </label>
+                                <label class="om-pen-check">
+                                    <input type="checkbox" t-model="this.bind(this.actionsDraft, 'import_ok')"/>
+                                    <span>Import</span>
+                                </label>
+                            </t>
+                        </t>
+
+                        <t t-if="this.state.subviews.length">
+                            <div class="om-pen-subhead">Embedded views</div>
+                            <div t-foreach="this.state.subviews" t-as="subview" t-key="subview.name"
+                                 class="om-pen-card">
+                                <div>
+                                    <strong t-out="subview.string"/>
+                                    <code class="ms-1" t-out="subview.comodel"/>
+                                </div>
+                                <div class="mt-1">
+                                    <button t-foreach="subview.views" t-as="kind" t-key="kind"
+                                            class="btn btn-sm btn-outline-primary me-1"
+                                            t-on-click="() => this.openSubviewDialog(subview, kind)">
+                                        <i class="oi me-1" data-icon="add"/>Add to <t t-out="kind"/>
+                                    </button>
+                                </div>
+                            </div>
+                        </t>
+
+                        <t t-if="this.hasNotebook">
+                            <div class="om-pen-subhead">Pages</div>
+                            <div t-foreach="this.state.pages" t-as="page" t-key="page.id" class="om-pen-card om-pen-row-flex">
+                                <span class="flex-grow-1" t-out="page.string"/>
+                                <button t-if="this.state.adding" class="btn btn-sm btn-outline-success me-1"
+                                        t-on-click="() => this.placeInPage(page.id)">Put it here</button>
+                                <button class="btn btn-sm btn-link text-danger p-0"
+                                        t-on-click="() => this.removePage(page.id)">
+                                    <i class="oi" data-icon="delete"/>
+                                </button>
+                            </div>
+                            <div class="input-group input-group-sm mt-2">
+                                <input type="text" class="form-control" placeholder="New page title"
+                                       t-model="this.bind(this.ui, 'pageTitle')"/>
+                                <button class="btn btn-outline-primary"
+                                        t-on-click="() => this.addPage()">Add</button>
+                            </div>
+                        </t>
+                    </div>
+                    <div class="om-pen-foot">
+                        <span class="flex-grow-1"/>
+                        <button class="btn btn-sm btn-primary" t-att-disabled="this.state.saving"
+                                t-on-click="() => this.applyActions()">Apply</button>
+                    </div>
+                </t>
+
+                <!-- changes tab -->
+                <t t-if="this.ui.tab === 'changes'">
+                    <div class="om-pen-body">
+                        <input t-if="this.changes.length or this.ui.changeSearch" type="text"
+                               class="form-control form-control-sm mb-2"
+                               placeholder="Search changes…" t-model="this.bind(this.ui, 'changeSearch')"/>
+                        <div t-if="!this.changes.length" class="om-pen-empty">
+                            <i class="oi" data-icon="check_circle"/>
+                            <p>Nothing customized on this view yet.</p>
+                        </div>
+                        <div t-foreach="this.changes" t-as="change" t-key="change.name"
+                             class="om-pen-card om-pen-change" t-on-click="() => this.selectChange(change.name)">
+                            <div class="flex-grow-1">
+                                <div>
+                                    <strong t-out="change.label"/>
+                                    <span t-if="change.kind === 'add'" class="om-pen-chip om-pen-chip-info ms-1">added</span>
+                                    <span t-if="change.kind === 'move'" class="om-pen-chip ms-1">moved</span>
+                                    <span t-if="change.draft and change.to_remove"
+                                          class="om-pen-chip om-pen-chip-warn ms-1">removal pending</span>
+                                    <span t-elif="change.draft"
+                                          class="om-pen-chip om-pen-chip-warn ms-1">unpublished</span>
+                                    <span t-else="" class="om-pen-chip om-pen-chip-live ms-1">live</span>
+                                </div>
+                                <small class="om-pen-help" t-out="change.summary"/>
+                            </div>
+                            <button class="btn btn-sm btn-link text-danger p-0 ms-2"
+                                    t-on-click.stop="() => this.removeRule(change.name)"
+                                    title="Undo this change">
+                                <i class="oi" data-icon="close"/>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="om-pen-foot">
+                        <button class="btn btn-sm btn-link text-danger px-0"
+                                t-on-click="() => this.customizer.reset()">Reset everything</button>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </t>
+
+</templates>
