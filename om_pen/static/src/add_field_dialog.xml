@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.AddFieldDialog">
+        <Dialog title="props.target ? 'Add a field to ' + props.target.label : 'Add a field'"
+                size="'lg'" contentClass="'om-pen-dialog'">
+
+            <div class="om-pen-modes">
+                <button t-att-class="state.mode === 'new' ? 'active' : ''"
+                        t-on-click="() => state.mode = 'new'">
+                    <i class="fa fa-magic"/>
+                    <span>New field</span>
+                    <small>Create one on this model</small>
+                </button>
+                <button t-att-class="state.mode === 'related' ? 'active' : ''"
+                        t-on-click="() => state.mode = 'related'">
+                    <i class="fa fa-share-alt"/>
+                    <span>Related field</span>
+                    <small>Show a value from a linked record</small>
+                </button>
+                <button t-att-class="state.mode === 'existing' ? 'active' : ''"
+                        t-on-click="() => state.mode = 'existing'">
+                    <i class="fa fa-search"/>
+                    <span>Existing field</span>
+                    <small>Put one that already exists on the view</small>
+                </button>
+            </div>
+
+            <!-- new field -->
+            <t t-if="state.mode === 'new'">
+                <div class="om-pen-row">
+                    <label class="om-pen-label">Label</label>
+                    <div class="om-pen-control">
+                        <input type="text" class="form-control form-control-sm om-pen-new-label"
+                               placeholder="e.g. Internal Reference"
+                               t-model="state.label" t-on-input="() => this.onLabelInput()"/>
+                        <small class="om-pen-help">What people see on the form.</small>
+                    </div>
+                </div>
+
+                <div class="om-pen-row">
+                    <label class="om-pen-label">Technical name</label>
+                    <div class="om-pen-control">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text om-pen-prefix">x_</span>
+                            <input type="text" class="form-control om-pen-new-name"
+                                   placeholder="internal_reference"
+                                   t-model="state.name" t-on-input="() => this.onNameInput()"/>
+                            <button t-if="state.nameTouched" class="btn btn-outline-secondary"
+                                    title="Follow the label again"
+                                    t-on-click="() => this.resetName()">
+                                <i class="fa fa-refresh"/>
+                            </button>
+                        </div>
+                        <small class="om-pen-help">
+                            Used in exports, formulas and code. Letters, digits and
+                            underscores only — it cannot be changed later without
+                            recreating the field.
+                        </small>
+                    </div>
+                </div>
+
+                <div class="om-pen-row">
+                    <label class="om-pen-label">Type</label>
+                    <div class="om-pen-control">
+                        <div class="om-pen-types">
+                            <button t-foreach="state.types" t-as="type" t-key="type[0]"
+                                    t-att-class="state.ttype === type[0] ? 'active' : ''"
+                                    t-on-click="() => state.ttype = type[0]">
+                                <i class="fa" t-att-class="icons[type[0]] || 'fa-square-o'"/>
+                                <span t-esc="type[1]"/>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div t-if="needsRelation" class="om-pen-row">
+                    <label class="om-pen-label">Linked model</label>
+                    <div class="om-pen-control">
+                        <input type="text" class="form-control form-control-sm"
+                               list="om_pen_models" placeholder="e.g. res.partner"
+                               t-model="state.relation"/>
+                        <datalist id="om_pen_models">
+                            <option t-foreach="state.models" t-as="model" t-key="model.id"
+                                    t-att-value="model.model" t-att-label="model.name"/>
+                        </datalist>
+                    </div>
+                </div>
+
+                <div t-if="needsSelection" class="om-pen-row">
+                    <label class="om-pen-label">Options</label>
+                    <div class="om-pen-control">
+                        <textarea class="form-control form-control-sm" rows="4"
+                                  placeholder="Low&#10;Medium&#10;High"
+                                  t-model="state.selection"/>
+                        <small class="om-pen-help">One per line.</small>
+                    </div>
+                </div>
+
+                <div class="om-pen-warn">
+                    <i class="fa fa-database me-2"/>
+                    This creates a real column on <code t-esc="model"/>. Deleting the field
+                    later destroys whatever it holds.
+                </div>
+            </t>
+
+            <!-- related field -->
+            <t t-elif="state.mode === 'related'">
+                <div class="om-pen-row">
+                    <label class="om-pen-label">Follow</label>
+                    <div class="om-pen-control">
+                        <div class="om-pen-path">
+                            <t t-foreach="state.steps" t-as="choices" t-key="choices_index">
+                                <select class="form-select form-select-sm om-pen-hop"
+                                        t-att-data-level="choices_index"
+                                        t-on-change="(ev) => this.pickStep(choices_index, ev.target.value)">
+                                    <option value="">
+                                        <t t-if="choices_index === 0">Linked record…</t>
+                                        <t t-else="">then…</t>
+                                    </option>
+                                    <option t-foreach="choices" t-as="step" t-key="step.name"
+                                            t-att-value="step.name"
+                                            t-att-selected="state.path[choices_index] === step.name">
+                                        <t t-esc="step.string"/>
+                                    </option>
+                                    <t t-if="choices_index > 0">
+                                        <option t-foreach="leafChoices" t-as="leaf" t-key="'leaf_' + leaf.name"
+                                                t-att-value="leaf.name"
+                                                t-att-selected="state.path[choices_index] === leaf.name">
+                                            <t t-esc="leaf.string"/> (<t t-esc="leaf.type"/>)
+                                        </option>
+                                    </t>
+                                </select>
+                            </t>
+                        </div>
+                        <small class="om-pen-help">
+                            Pick the link, then the value on the other record. Keep going
+                            to follow another link.
+                        </small>
+                    </div>
+                </div>
+
+                <div t-if="state.pathTarget" class="om-pen-picked has">
+                    <i class="fa fa-check-circle me-2"/>
+                    <strong t-esc="state.pathTarget.string"/>
+                    <code class="ms-2" t-esc="relatedPath"/>
+                    <span class="om-pen-chip ms-2" t-esc="state.pathTarget.ttype"/>
+                </div>
+                <div t-else="" class="om-pen-picked">Choose a link and a value to mirror.</div>
+
+                <div class="om-pen-row mt-3">
+                    <label class="om-pen-label">Label</label>
+                    <div class="om-pen-control">
+                        <input type="text" class="form-control form-control-sm om-pen-new-label"
+                               t-model="state.label" t-on-input="() => this.onLabelInput()"/>
+                    </div>
+                </div>
+                <div class="om-pen-row">
+                    <label class="om-pen-label">Technical name</label>
+                    <div class="om-pen-control">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text om-pen-prefix">x_</span>
+                            <input type="text" class="form-control om-pen-new-name"
+                                   t-model="state.name" t-on-input="() => this.onNameInput()"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="om-pen-warn om-pen-warn-quiet">
+                    <i class="fa fa-info-circle me-2"/>
+                    A related field is read-only and is not stored, so it adds no column
+                    and deleting it later destroys nothing.
+                </div>
+            </t>
+
+            <!-- existing field -->
+            <t t-else="">
+                <input type="text" class="form-control form-control-sm mb-2"
+                       placeholder="Search fields…" t-model="state.search"/>
+                <div class="o_om_pen_fieldlist om-pen-tall">
+                    <div t-foreach="availableFields" t-as="field" t-key="field.name"
+                         class="o_om_pen_fieldrow"
+                         t-att-data-field="field.name"
+                         t-att-class="state.existing === field.name ? 'selected' : ''"
+                         t-att-title="state.existing === field.name ? 'Click again to unpick it' : ''"
+                         t-on-click="() => this.toggleExisting(field.name)">
+                        <i class="fa fa-fw om-pen-tick"
+                           t-att-class="state.existing === field.name ? 'fa-check-circle' : 'fa-circle-o'"/>
+                        <i class="fa fa-fw om-pen-kind" t-att-class="icons[field.type] || 'fa-square-o'"/>
+                        <span class="om-pen-name" t-esc="field.string"/>
+                        <code class="ms-2" t-esc="field.name"/>
+                        <span class="om-pen-chip ms-auto" t-esc="field.type"/>
+                    </div>
+                    <div t-if="!availableFields.length" class="om-pen-empty py-4">
+                        <i class="fa fa-check-circle-o"/>
+                        <p>Every field of this model is already on the view.</p>
+                    </div>
+                </div>
+                <div class="om-pen-picked" t-att-class="state.existing ? 'has' : ''">
+                    <t t-if="state.existing">
+                        <i class="fa fa-check-circle me-2"/>
+                        <strong t-esc="pickedLabel"/>
+                        <code class="ms-2" t-esc="state.existing"/>
+                    </t>
+                    <t t-else="">Pick a field from the list above.</t>
+                </div>
+            </t>
+
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="!canConfirm"
+                        t-on-click="() => this.confirm()">
+                    <t t-if="props.target">Add it</t>
+                    <t t-else="">Choose where to put it</t>
+                </button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>
