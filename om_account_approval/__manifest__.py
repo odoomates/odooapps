@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Approvals',
-    'version': '1.0.0',
+    'version': '20.0.1.0.0',
     'category': 'Accounting',
     'summary': 'Vendor bills, credit notes, journal entries and payments posted only once approved',
     'description': 'The approval flows of the Approvals app on the Post button of the journal entries and payments '
