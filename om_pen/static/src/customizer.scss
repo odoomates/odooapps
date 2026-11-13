@@ -1,0 +1,920 @@
+$o-om-pen-accent: #7c7bad;
+$o-om-pen-panel-width: 340px;
+$o-om-pen-banner-height: 32px;
+// the navbar owns the top of the screen; everything we add sits under it, otherwise
+// the banner would cover the very button used to leave customize mode
+$o-om-pen-top: $o-navbar-height;
+
+.o_om_pen_systray .o_om_pen_toggle {
+    padding: 0 .6rem;
+    // the colour of the other navbar icons, so the button stays visible whatever
+    // colour a theme gives the navbar
+    color: var(--NavBar-entry-color, #{$o-navbar-entry-color});
+
+    &:hover {
+        color: var(--NavBar-entry-color--hover, #{$o-navbar-entry-color--hover});
+    }
+
+    &.o_om_pen_on {
+        background-color: #fff;
+        color: $o-om-pen-accent !important;
+        border-radius: 3px;
+    }
+}
+
+.o_om_pen_banner {
+    position: fixed;
+    top: $o-om-pen-top;
+    left: 0;
+    right: 0;
+    z-index: 1035;
+    height: $o-om-pen-banner-height;
+    display: flex;
+    align-items: center;
+    padding: 0 .75rem;
+    background-color: $o-om-pen-accent;
+    color: #fff;
+    font-size: 13px;
+}
+
+.o_om_pen_panel {
+    position: fixed;
+    top: $o-om-pen-top + $o-om-pen-banner-height;
+    right: 0;
+    bottom: 0;
+    z-index: 1035;
+    width: $o-om-pen-panel-width;
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-left: 1px solid #dee2e6;
+    box-shadow: -2px 0 6px rgba(0, 0, 0, .08);
+
+    .o_om_pen_panel_header {
+        padding: .75rem;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .o_om_pen_panel_body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: .75rem;
+    }
+
+    .o_om_pen_panel_footer {
+        display: flex;
+        align-items: center;
+        padding: .5rem .75rem;
+        border-top: 1px solid #dee2e6;
+    }
+}
+
+body.o_om_pen_active {
+    // the whole navbar changes colour, so the mode is obvious from anywhere
+    .o_main_navbar {
+        background-color: $o-om-pen-accent !important;
+        // white entries on the accent, also under a theme that draws the navbar light
+        --NavBar-entry-color: rgba(255, 255, 255, .9);
+        --NavBar-entry-color--hover: #fff;
+        --NavBar-entry-color--active: #fff;
+        // entries are painted in the navbar's own colour, which a theme may make light
+        --NavBar-entry-backgroundColor: transparent;
+        --NavBar-entry-backgroundColor--hover: rgba(255, 255, 255, .12);
+        --NavBar-entry-backgroundColor--focus: rgba(255, 255, 255, .12);
+        --NavBar-entry-backgroundColor--active: rgba(255, 255, 255, .18);
+
+        .o_menu_brand {
+            color: #fff !important;
+        }
+    }
+
+    // make room for the banner and the panel instead of covering the screen
+    .o_action_manager {
+        padding-top: $o-om-pen-banner-height;
+        padding-right: $o-om-pen-panel-width;
+    }
+
+    .o_field_widget[name] {
+        position: relative;
+        cursor: pointer;
+
+        // the field's own controls must not swallow the click, otherwise selecting a
+        // field would start editing the record
+        > * {
+            pointer-events: none;
+        }
+
+        // nothing at rest. A pencil on every field is decoration: it says the same
+        // thing the banner already says, on every row, forever.
+        &::after {
+            // a Material Symbols ligature: the icon is named, as Odoo's own icons are
+            content: "edit";
+            font-family: 'Material Symbols Outlined';
+            text-rendering: geometricPrecision;
+            word-break: keep-all;
+            position: absolute;
+            top: -9px;
+            right: -9px;
+            z-index: 2;
+            width: 18px;
+            height: 18px;
+            line-height: 18px;
+            text-align: center;
+            font-size: 12px;
+            border-radius: 50%;
+            background-color: $o-om-pen-accent;
+            color: #fff;
+            opacity: 0;
+            transform: scale(.85);
+            transition: opacity .1s ease-in-out, transform .1s ease-in-out;
+            pointer-events: none;
+        }
+
+        &:hover {
+            outline: 1px dashed rgba($o-om-pen-accent, .75);
+            outline-offset: 2px;
+
+            &::after {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        // a field that already carries a rule keeps a quiet dot, because that is worth
+        // knowing without hovering every row to find out
+        &.o_om_pen_touched::before {
+            content: "";
+            position: absolute;
+            // top-left, so it never sits under the pencil that appears on hover
+            top: -3px;
+            left: -3px;
+            z-index: 2;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: #07B700;
+        }
+
+        &.o_om_pen_touched:hover {
+            outline-color: rgba(#07B700, .85);
+
+            &::after { background-color: #07B700; }
+        }
+
+        &.o_om_pen_selected {
+            outline: 2px solid $o-om-pen-accent;
+            outline-offset: 2px;
+
+            &::after { opacity: 1; transform: scale(1); }
+        }
+    }
+}
+
+// while a field is waiting to be placed, every field reads as a drop target
+body.o_om_pen_active.o_om_pen_placing .o_field_widget[name] {
+    outline: 1px dashed rgba(#07B700, .9);
+
+    &::after {
+        content: "add";
+        background-color: #07B700;
+        opacity: .85;
+    }
+}
+
+
+// ---------------------------------------------------------------- panel chrome
+$om-pen-border: #e5e5ea;
+$om-pen-muted: #6b6b76;
+
+.o_om_pen_panel {
+    font-size: 13px;
+
+    .om-pen-tabs {
+        display: flex;
+        border-bottom: 1px solid $om-pen-border;
+        background-color: #fafafc;
+
+        button {
+            flex: 1 1 0;
+            border: 0;
+            background: transparent;
+            padding: .6rem .4rem;
+            color: $om-pen-muted;
+            border-bottom: 2px solid transparent;
+            white-space: nowrap;
+
+            &:hover { color: $o-om-pen-accent; }
+
+            &.active {
+                color: $o-om-pen-accent;
+                border-bottom-color: $o-om-pen-accent;
+                background-color: #fff;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .om-pen-count {
+        display: inline-block;
+        min-width: 17px;
+        padding: 0 5px;
+        margin-left: 4px;
+        border-radius: 9px;
+        background-color: $o-om-pen-accent;
+        color: #fff;
+        font-size: 11px;
+        line-height: 17px;
+    }
+
+    .om-pen-head {
+        padding: .75rem .9rem;
+        border-bottom: 1px solid $om-pen-border;
+
+        .om-pen-head-title {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .om-pen-head-meta {
+            margin-top: .25rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            color: $om-pen-muted;
+
+            code { font-size: 11px; color: $om-pen-muted; }
+        }
+    }
+
+    .om-pen-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: .5rem .9rem .9rem;
+    }
+
+    .om-pen-foot {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .6rem .9rem;
+        border-top: 1px solid $om-pen-border;
+        background-color: #fafafc;
+    }
+}
+
+.om-pen-chip {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 10px;
+    background-color: #eeeef3;
+    color: $om-pen-muted;
+    font-size: 11px;
+
+    &.om-pen-chip-info { background-color: #e2f0ff; color: #1b6fb8; }
+    &.om-pen-chip-primary { background-color: rgba($o-om-pen-accent, .14); color: $o-om-pen-accent; }
+}
+
+// collapsible sections
+.om-pen-section {
+    border-bottom: 1px solid $om-pen-border;
+
+    &:last-child { border-bottom: 0; }
+
+    .om-pen-section-head {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+        padding: .55rem 0;
+        font-weight: 600;
+        color: #3a3a44;
+
+        &:hover { color: $o-om-pen-accent; }
+    }
+
+    .om-pen-section-body { padding: 0 0 .7rem .2rem; }
+}
+
+.om-pen-subhead {
+    margin: 1rem 0 .4rem;
+    font-weight: 600;
+    color: #3a3a44;
+}
+
+// label + control rows
+.om-pen-row {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: .45rem;
+
+    .om-pen-label {
+        flex: 0 0 84px;
+        padding-top: .3rem;
+        color: $om-pen-muted;
+    }
+
+    .om-pen-control {
+        flex: 1 1 auto;
+        min-width: 0;
+        position: relative;
+    }
+}
+
+.om-pen-expr { margin-top: .3rem; }
+
+.om-pen-reset {
+    position: absolute;
+    right: .35rem;
+    top: .3rem;
+    border: 0;
+    background: transparent;
+    color: $om-pen-muted;
+    font-size: 11px;
+    text-decoration: underline;
+
+    &:hover { color: $o-om-pen-accent; }
+}
+
+// four-way segmented control
+.om-pen-segmented {
+    display: flex;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    overflow: hidden;
+
+    button {
+        flex: 1 1 0;
+        border: 0;
+        border-right: 1px solid #ced4da;
+        background-color: #fff;
+        padding: .2rem 0;
+        font-size: 12px;
+        color: $om-pen-muted;
+
+        &:last-child { border-right: 0; }
+        &:hover { background-color: #f2f2f7; }
+
+        &.active {
+            background-color: $o-om-pen-accent;
+            color: #fff;
+        }
+    }
+}
+
+.om-pen-check {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-bottom: .3rem;
+    cursor: pointer;
+
+    &.disabled { opacity: .5; cursor: default; }
+    input { margin: 0; }
+}
+
+.om-pen-tags { display: flex; flex-wrap: wrap; gap: .25rem; margin-bottom: .4rem; }
+
+.om-pen-scroll {
+    max-height: 170px;
+    overflow-y: auto;
+    border: 1px solid $om-pen-border;
+    border-radius: 4px;
+    padding: .35rem .5rem;
+}
+
+.om-pen-help { color: $om-pen-muted; font-size: 12px; }
+
+.om-pen-card {
+    display: flex;
+    align-items: flex-start;
+    padding: .5rem .6rem;
+    margin-bottom: .4rem;
+    border: 1px solid $om-pen-border;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+.om-pen-change {
+    cursor: pointer;
+    &:hover { border-color: $o-om-pen-accent; }
+}
+
+.om-pen-row-flex { align-items: center; }
+
+.om-pen-empty {
+    text-align: center;
+    color: $om-pen-muted;
+    padding: 2rem .5rem;
+
+    i { font-size: 26px; opacity: .45; display: block; margin-bottom: .6rem; }
+    p { margin-bottom: .3rem; }
+}
+
+// banner
+.o_om_pen_banner {
+    .om-pen-crumb { font-weight: 500; }
+    .om-pen-sep { opacity: .5; margin: 0 .3rem; }
+
+    .om-pen-hint {
+        margin-left: 1rem;
+        background-color: rgba(255, 255, 255, .18);
+        padding: .1rem .55rem;
+        border-radius: 3px;
+    }
+
+    .om-pen-hint-quiet { background: transparent; opacity: .75; }
+    .om-pen-saving { margin-right: .75rem; opacity: .9; }
+    .om-pen-exit { font-weight: 500; }
+}
+
+.o_om_pen_chip small { opacity: .8; }
+
+// add-field lives in the Field tab now, not floating over the form
+.om-pen-add-field {
+    display: block;
+    width: calc(100% - 1.8rem);
+    margin: .7rem .9rem .2rem;
+    padding: .45rem;
+    border: 1px dashed rgba($o-om-pen-accent, .55);
+    border-radius: 5px;
+    background-color: rgba($o-om-pen-accent, .05);
+    color: $o-om-pen-accent;
+    font-weight: 500;
+
+    &:hover {
+        background-color: rgba($o-om-pen-accent, .12);
+        border-style: solid;
+    }
+}
+
+.o_om_pen_panel .om-pen-foot {
+    transition: background-color .12s ease-in-out;
+
+    &.dirty {
+        background-color: #fff8e1;
+        border-top-color: #f0d58c;
+    }
+}
+
+.om-pen-pending {
+    margin-right: .55rem;
+    color: #8a6d1f;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.om-pen-draft-count {
+    margin-right: .6rem;
+    padding: .1rem .55rem;
+    border-radius: 3px;
+    background-color: #ffc107;
+    color: #4a3b00;
+    font-size: 12px;
+    font-weight: 600;
+
+    &.invalid { background-color: #dc3545; color: #fff; }
+}
+
+.om-pen-chip.om-pen-chip-warn { background-color: #fff3cd; color: #8a6d1f; }
+.om-pen-chip.om-pen-chip-live { background-color: #e6f4ea; color: #1e7e34; }
+
+// ---------------------------------------------------------------- add-field dialog
+.om-pen-dialog {
+    .om-pen-modes {
+        display: flex;
+        gap: .6rem;
+        margin-bottom: 1rem;
+
+        button {
+            flex: 1 1 0;
+            text-align: left;
+            padding: .7rem .9rem;
+            border: 1px solid $om-pen-border;
+            border-radius: 6px;
+            background-color: #fff;
+
+            i { font-size: 15px; color: $om-pen-muted; margin-bottom: .2rem; }
+            span { display: block; font-weight: 600; }
+            small { display: block; color: $om-pen-muted; }
+
+            &:hover { border-color: $o-om-pen-accent; }
+
+            &.active {
+                border-color: $o-om-pen-accent;
+                background-color: rgba($o-om-pen-accent, .07);
+                box-shadow: inset 0 0 0 1px $o-om-pen-accent;
+
+                i, span { color: $o-om-pen-accent; }
+            }
+        }
+    }
+
+    .om-pen-row .om-pen-label { flex-basis: 120px; }
+    .om-pen-prefix { background-color: #f2f2f7; color: $om-pen-muted; font-family: monospace; }
+
+    .om-pen-types {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(118px, 1fr));
+        gap: .35rem;
+
+        button {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .35rem .5rem;
+            border: 1px solid $om-pen-border;
+            border-radius: 5px;
+            background-color: #fff;
+            font-size: 12px;
+            text-align: left;
+
+            i { color: $om-pen-muted; width: 14px; }
+
+            &:hover { border-color: $o-om-pen-accent; }
+
+            &.active {
+                border-color: $o-om-pen-accent;
+                background-color: rgba($o-om-pen-accent, .1);
+                font-weight: 500;
+                i { color: $o-om-pen-accent; }
+            }
+        }
+    }
+
+    .om-pen-warn {
+        margin-top: 1rem;
+        padding: .5rem .7rem;
+        border-radius: 5px;
+        background-color: #fff8e1;
+        color: #8a6d1f;
+        font-size: 12px;
+    }
+
+    .om-pen-tall { max-height: 320px; }
+    .o_om_pen_fieldrow code { color: $om-pen-muted; font-size: 11px; }
+}
+
+// ------------------------------------------ field picker (restored and reworked)
+.o_om_pen_fieldlist {
+    border: 1px solid $om-pen-border;
+    border-radius: 5px;
+    overflow-y: auto;
+    padding: .2rem;
+}
+
+.o_om_pen_fieldrow {
+    display: flex;
+    align-items: center;
+    padding: .35rem .45rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1px solid transparent;
+
+    .om-pen-tick { color: #c3c3cd; margin-right: .35rem; }
+    .om-pen-kind { color: $om-pen-muted; margin-right: .45rem; }
+    .om-pen-name { font-weight: 500; }
+
+    &:hover {
+        background-color: rgba($o-om-pen-accent, .07);
+        .om-pen-tick { color: $o-om-pen-accent; }
+    }
+
+    &.selected {
+        background-color: rgba($o-om-pen-accent, .14);
+        border-color: $o-om-pen-accent;
+
+        .om-pen-tick,
+        .om-pen-kind,
+        .om-pen-name { color: $o-om-pen-accent; }
+    }
+}
+
+// what is currently picked, spelled out under the list
+.om-pen-picked {
+    margin-top: .5rem;
+    padding: .45rem .6rem;
+    border-radius: 5px;
+    background-color: #f4f4f8;
+    color: $om-pen-muted;
+    font-size: 12px;
+
+    &.has {
+        background-color: rgba($o-om-pen-accent, .1);
+        color: $o-om-pen-accent;
+    }
+
+    code { color: inherit; opacity: .75; }
+}
+
+.o_om_pen_change:hover { border-color: $o-om-pen-accent; }
+
+// a field that already carries a rule reads green, so customized ones stand out
+
+
+.om-pen-dialog {
+    .om-pen-path {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .35rem;
+
+        .om-pen-hop { width: auto; min-width: 150px; max-width: 230px; }
+    }
+
+    .om-pen-warn-quiet {
+        background-color: #eef4fb;
+        color: #1b5a8a;
+    }
+}
+
+// condition builder
+.om-pen-cond {
+    margin-top: .35rem;
+    padding: .45rem;
+    border: 1px solid $om-pen-border;
+    border-radius: 5px;
+    background-color: #fafafc;
+
+    .om-pen-cond-join {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        margin-bottom: .35rem;
+        color: $om-pen-muted;
+        font-size: 12px;
+
+        select { width: auto; }
+    }
+
+    .om-pen-cond-row {
+        display: flex;
+        gap: .25rem;
+        margin-bottom: .25rem;
+
+        .om-pen-cond-field { flex: 1 1 40%; min-width: 0; }
+        .om-pen-cond-op { flex: 1 1 30%; min-width: 0; }
+        .om-pen-cond-value { flex: 1 1 30%; min-width: 0; }
+
+        .om-pen-cond-drop {
+            border: 0;
+            background: transparent;
+            color: $om-pen-muted;
+            padding: 0 .2rem;
+
+            &:hover { color: #dc3545; }
+        }
+    }
+
+    .om-pen-cond-add {
+        border: 0;
+        background: transparent;
+        color: $o-om-pen-accent;
+        font-size: 12px;
+        padding: .15rem 0 0;
+    }
+
+    .om-pen-cond-preview {
+        margin-top: .35rem;
+        font-family: monospace;
+        font-size: 11px;
+        color: $om-pen-muted;
+        word-break: break-all;
+    }
+}
+
+.om-pen-cond-swap {
+    border: 0;
+    background: transparent;
+    color: $om-pen-muted;
+    font-size: 11px;
+    text-decoration: underline;
+    padding: .2rem 0 0;
+
+    &:hover { color: $o-om-pen-accent; }
+}
+
+
+// ---------------------------------------------------------------- add tab: drag and drop
+.o_om_pen_panel .om-pen-palette-wrap {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: .6rem .9rem .9rem;
+
+    .om-pen-subhead {
+        margin: .9rem 0 .45rem;
+    }
+}
+
+.om-pen-palette-hint {
+    padding: .5rem .65rem;
+    border-radius: 6px;
+    background-color: rgba($o-om-pen-accent, .08);
+    color: darken($o-om-pen-accent, 25%);
+    font-size: 12px;
+}
+
+.om-pen-palette {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .4rem;
+}
+
+.om-pen-tile,
+.om-pen-palette-row {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .45rem .6rem;
+    border: 1px solid #e5e5ea;
+    border-radius: 6px;
+    background-color: #fff;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    transition: border-color .12s, box-shadow .12s, transform .12s;
+
+    i { color: $o-om-pen-accent; }
+
+    &:hover {
+        border-color: $o-om-pen-accent;
+        box-shadow: 0 2px 6px rgba($o-om-pen-accent, .18);
+        transform: translateY(-1px);
+    }
+
+    &:active { cursor: grabbing; }
+}
+
+.om-pen-palette-list {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+
+    .om-pen-grip { color: #c4c4cc; }
+}
+
+// the chip that follows the pointer
+.o_om_pen_avatar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 1100;
+    pointer-events: none;
+    padding: .35rem .7rem;
+    border-radius: 20px;
+    background-color: $o-om-pen-accent;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .18);
+}
+
+body.o_om_pen_dragging,
+body.o_om_pen_dragging * {
+    cursor: grabbing !important;
+    user-select: none !important;
+}
+
+// the slot showing where the field lands
+.o_om_pen_ghost {
+    animation: o_om_pen_ghost_in .12s ease-out;
+
+    &.o_wrap_label .o_form_label {
+        color: $o-om-pen-accent;
+        font-weight: 600;
+    }
+}
+
+.o_om_pen_ghost_input {
+    display: flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: .25rem .6rem;
+    margin-bottom: .5rem;
+    border: 2px dashed $o-om-pen-accent;
+    border-radius: 6px;
+    background-color: rgba($o-om-pen-accent, .07);
+    color: $o-om-pen-accent;
+    font-size: 13px;
+}
+
+.o_om_pen_ghost_bar {
+    display: flex;
+    align-items: center;
+    gap: .75rem;
+    margin: .35rem 0;
+
+    .o_om_pen_ghost_bar_label {
+        min-width: 8rem;
+        color: $o-om-pen-accent;
+        font-weight: 600;
+    }
+
+    .o_om_pen_ghost_input { flex: 1 1 auto; margin-bottom: 0; }
+}
+
+// the slot turned into an editor after a new field type is dropped
+.o_om_pen_ghost_editing {
+    .form-control { border-color: $o-om-pen-accent; }
+}
+
+.o_om_pen_ghost_row {
+    display: flex;
+    align-items: center;
+    margin-bottom: .5rem;
+
+    .o_om_pen_ghost_extra {
+        display: flex;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .o_om_pen_ghost_type {
+        padding: .25rem .6rem;
+        border: 2px dashed $o-om-pen-accent;
+        border-radius: 6px;
+        color: $o-om-pen-accent;
+        flex: 1 1 auto;
+    }
+}
+
+.o_om_pen_ghost_float {
+    position: fixed;
+    z-index: 1100;
+    width: 320px;
+    padding: .75rem;
+    border: 1px solid $o-om-pen-accent;
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .16);
+}
+
+// a notebook tab the field would be dropped into
+.o_notebook .nav-link.o_om_pen_drop_into {
+    background-color: rgba($o-om-pen-accent, .12) !important;
+    box-shadow: inset 0 0 0 2px $o-om-pen-accent;
+    color: $o-om-pen-accent !important;
+}
+
+@keyframes o_om_pen_ghost_in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+// ---------------------------------------------------------------- list columns
+body.o_om_pen_active .o_list_renderer:not(.o_field_x2many .o_list_renderer) {
+    th[data-name],
+    td.o_data_cell[name] {
+        cursor: pointer;
+    }
+
+    th[data-name]:hover {
+        box-shadow: inset 0 -2px 0 rgba($o-om-pen-accent, .6);
+    }
+
+    th.o_om_pen_selected {
+        box-shadow: inset 0 -3px 0 $o-om-pen-accent;
+        color: $o-om-pen-accent;
+    }
+
+    th.o_om_pen_touched::before {
+        content: "";
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        margin-right: 4px;
+        border-radius: 3px;
+        background-color: #07B700;
+        vertical-align: middle;
+    }
+}
+
+// where a dragged field lands among the columns
+.o_list_renderer th.o_om_pen_col_before,
+.o_list_renderer th.o_om_pen_col_after {
+    position: relative;
+    overflow: visible !important;
+
+    &::after {
+        content: attr(data-om-pen-drop);
+        position: absolute;
+        top: 100%;
+        z-index: 3;
+        padding: 2px 8px;
+        border-radius: 10px;
+        background-color: $o-om-pen-accent;
+        color: #fff;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+}
+
+.o_list_renderer th.o_om_pen_col_before {
+    box-shadow: inset 4px 0 0 $o-om-pen-accent;
+    &::after { left: -2px; transform: translateX(-50%); }
+}
+
+.o_list_renderer th.o_om_pen_col_after {
+    box-shadow: inset -4px 0 0 $o-om-pen-accent;
+    &::after { right: -2px; transform: translateX(50%); }
+}
