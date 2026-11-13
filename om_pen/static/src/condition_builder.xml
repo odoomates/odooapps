@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.ConditionBuilder">
+        <div class="om-pen-cond">
+            <div class="om-pen-cond-join" t-if="props.condition.rows.length > 1">
+                <span>Match</span>
+                <select class="form-select form-select-sm" t-model="props.condition.join">
+                    <option value="and">all of</option>
+                    <option value="or">any of</option>
+                </select>
+            </div>
+
+            <div t-foreach="props.condition.rows" t-as="row" t-key="row_index" class="om-pen-cond-row">
+                <select class="form-select form-select-sm om-pen-cond-field"
+                        t-model="row.field" t-on-change="() => this.onFieldChange(row)">
+                    <option value="">Pick a field…</option>
+                    <option t-foreach="props.fieldNames" t-as="name" t-key="name"
+                            t-att-value="name">
+                        <t t-esc="props.fields[name] and props.fields[name].string or name"/>
+                    </option>
+                </select>
+
+                <select class="form-select form-select-sm om-pen-cond-op" t-model="row.operator">
+                    <option t-foreach="operatorsFor(row.field)" t-as="entry" t-key="entry.op"
+                            t-att-value="entry.op" t-esc="entry.label"/>
+                </select>
+
+                <t t-if="needsValue(row)">
+                    <select t-if="typeOf(row.field) === 'selection' and row.operator !== 'in'"
+                            class="form-select form-select-sm om-pen-cond-value" t-model="row.value">
+                        <option value="">…</option>
+                        <option t-foreach="selectionOf(row.field)" t-as="option"
+                                t-key="option[0]" t-att-value="option[0]" t-esc="option[1]"/>
+                    </select>
+                    <select t-elif="typeOf(row.field) === 'boolean'"
+                            class="form-select form-select-sm om-pen-cond-value" t-model="row.value">
+                        <option value="true">ticked</option>
+                        <option value="false">not ticked</option>
+                    </select>
+                    <input t-else="" type="text" class="form-control form-control-sm om-pen-cond-value"
+                           t-att-placeholder="row.operator === 'in' ? 'a, b, c' : 'value'"
+                           t-model="row.value"/>
+                </t>
+
+                <button class="om-pen-cond-drop" title="Remove this condition"
+                        t-on-click="() => this.removeRow(row_index)">
+                    <i class="fa fa-times"/>
+                </button>
+            </div>
+
+            <button class="om-pen-cond-add" t-on-click="() => this.addRow()">
+                <i class="fa fa-plus me-1"/>Add a condition
+            </button>
+        </div>
+    </t>
+
+</templates>
