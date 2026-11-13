@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Mates Pen',
-    'version': '18.0.1.0.0',
+    'version': '18.0.1.0.1',
     'category': 'Productivity',
     'summary': 'Add Fields, Change Fields, View Customizer Odoo 18, Hide Fields, Rename Fields, Readonly Fields, No Code',
     'description': """
