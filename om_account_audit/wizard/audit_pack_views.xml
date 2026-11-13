@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_audit_pack_view_form" model="ir.ui.view">
+        <field name="name">account.audit.pack.form</field>
+        <field name="model">account.audit.pack</field>
+        <field name="arch" type="xml">
+            <form string="Audit Pack">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="run_check"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_print" type="object" string="Print" class="btn-primary" data-hotkey="q"/>
+                    <button special="cancel" string="Cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_account_audit_pack" model="ir.actions.act_window">
+        <field name="name">Audit Pack</field>
+        <field name="res_model">account.audit.pack</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>
