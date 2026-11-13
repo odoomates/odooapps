@@ -1,0 +1,139 @@
+// the field wrapper would shrink to its content
+.o_field_om_access_menu_tree {
+    display: block;
+    width: 100%;
+}
+
+.o_om_menu_tree_layout {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: flex-start;
+    width: 100%;
+
+    .o_om_menu_tree {
+        flex: 1 1 17rem;
+        min-width: 0;
+    }
+
+    .o_om_menu_tree_panel {
+        flex: 1 1 21rem;
+        min-width: 0;
+        position: sticky;
+        top: 0;
+        max-height: 85vh;
+        overflow-y: auto;
+        border: 1px solid var(--border-color, #dee2e6);
+        border-radius: .5rem;
+        padding: .75rem 1rem;
+        background-color: var(--o-view-background-color, #fff);
+
+        &.o_om_busy {
+            opacity: .6;
+            pointer-events: none;
+        }
+    }
+
+    .o_om_menu_tree_row {
+        min-height: 1.9rem;
+        border-radius: .25rem;
+        padding-right: .4rem;
+        cursor: pointer;
+
+        // the row says it opens settings: on hover, and on the one open
+        .o_om_menu_tree_configure {
+            visibility: hidden;
+            color: $primary;
+            white-space: nowrap;
+        }
+
+        &:hover {
+            background-color: rgba($primary, .06);
+
+            .o_om_menu_tree_configure {
+                visibility: visible;
+            }
+        }
+
+        &.o_om_menu_tree_selected {
+            background-color: rgba($primary, .12);
+            box-shadow: inset 3px 0 0 $primary;
+
+            .o_om_menu_tree_configure {
+                visibility: visible;
+                font-weight: 500;
+            }
+        }
+    }
+
+    .o_om_menu_tree_howto {
+        padding: .35rem .5rem;
+        border-radius: .25rem;
+        background-color: rgba($info, .08);
+    }
+
+    // before any menu is clicked: where to click
+    .o_om_menu_tree_pointer {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .5rem .9rem;
+        border-radius: 2rem;
+        background-color: rgba($primary, .1);
+        color: $primary;
+        font-weight: 500;
+        font-size: 1.05rem;
+
+        .fa {
+            animation: o_om_point_left 1.2s ease-in-out infinite;
+        }
+    }
+
+    .o_om_menu_tree_app {
+        border-top: 1px solid var(--border-color, #dee2e6);
+        padding-top: .25rem;
+        margin-top: .25rem;
+    }
+
+    .o_om_menu_tree_name {
+        line-height: 1.2;
+    }
+
+    .o_om_panel_title {
+        font-size: 1rem;
+        border-bottom: 1px solid var(--border-color, #dee2e6);
+        padding-bottom: .25rem;
+        margin-bottom: .5rem;
+    }
+
+    .o_om_panel_row {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .25rem .5rem;
+        padding: .2rem 0;
+
+        .o_om_panel_label {
+            flex: 1 1 10rem;
+            min-width: 0;
+        }
+
+        .o_om_condition {
+            flex: 1 1 100%;
+        }
+    }
+}
+
+// a phone: the panel comes first, the tree below it
+@media (max-width: 767.98px) {
+    .o_om_menu_tree_layout .o_om_menu_tree_panel {
+        order: -1;
+        position: static;
+        max-height: none;
+    }
+}
+
+@keyframes o_om_point_left {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-6px); }
+}

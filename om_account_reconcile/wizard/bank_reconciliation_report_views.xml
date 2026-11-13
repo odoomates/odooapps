@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_bank_reconciliation_report" model="ir.ui.view">
+        <field name="name">om.bank.reconciliation.report.form</field>
+        <field name="model">om.bank.reconciliation.report</field>
+        <field name="arch" type="xml">
+            <form string="Bank Reconciliation Statement">
+                <p class="text-muted">
+                    What the bank has told you, plus what you have recorded that the bank has
+                    not seen yet, gives the cash your books believe you hold.
+                </p>
+                <group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="date"/>
+                        <field name="target_move" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="show_details"/>
+                    </group>
+                </group>
+                <group>
+                    <field name="journal_ids" widget="many2many_tags"
+                           options="{'no_create': True}"/>
+                </group>
+                <footer>
+                    <button name="action_print" string="Print" type="object" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_bank_reconciliation_report" model="ir.actions.act_window">
+        <field name="name">Bank Reconciliation Statement</field>
+        <field name="res_model">om.bank.reconciliation.report</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_bank_reconciliation_report"/>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_bank_reconciliation_report"
+              name="Bank Reconciliation Statement"
+              action="action_bank_reconciliation_report"
+              parent="menu_reconciliation"
+              sequence="40"
+              groups="account.group_account_basic"/>
+
+</odoo>

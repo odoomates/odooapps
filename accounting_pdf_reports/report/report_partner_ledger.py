@@ -3,6 +3,14 @@ from odoo import api, models, _
 from odoo.exceptions import UserError
 
 
+# the amounts the report sums, as the template asks for them, qualified with their table
+SUMMED_FIELDS = {
+    'debit': '"account_move_line".debit',
+    'credit': '"account_move_line".credit',
+    'debit - credit': '"account_move_line".debit - "account_move_line".credit',
+}
+
+
 class ReportPartnerLedger(models.AbstractModel):
     _name = 'report.accounting_pdf_reports.report_partnerledger'
     _description = 'Partner Ledger Report'
@@ -13,10 +21,14 @@ class ReportPartnerLedger(models.AbstractModel):
         query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
         reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
         lang_code = self.env.context.get('lang') or 'en_US'
-        params = [lang_code, partner.id, tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]
-        query = """
-            SELECT "account_move_line".id, "account_move_line".date, j.code, COALESCE(acc.name->>%s, acc.name->>'en_US') as a_name, "account_move_line".ref, m.name as move_name, "account_move_line".name, "account_move_line".debit, "account_move_line".credit, "account_move_line".amount_currency,"account_move_line".currency_id, c.symbol AS currency_code
-            FROM """ + query_get_data[0] + """
+        params = ([lang_code, partner.id, tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])]
+                  + query_get_data[2])
+        query = ("""
+            SELECT "account_move_line".id, "account_move_line".date, j.code, COALESCE(acc.name->>%s, acc.name->>'en_US') as a_name, """
+                 '''"account_move_line".ref, m.name as move_name, "account_move_line".name, '''
+                 '''"account_move_line".debit, "account_move_line".credit, "account_move_line".amount_currency,'''
+                 '''"account_move_line".currency_id, c.symbol AS currency_code
+            FROM ''' + query_get_data[0] + """
             LEFT JOIN account_journal j ON ("account_move_line".journal_id = j.id)
             LEFT JOIN account_account acc ON ("account_move_line".account_id = acc.id)
             LEFT JOIN res_currency c ON ("account_move_line".currency_id=c.id)
@@ -24,19 +36,26 @@ class ReportPartnerLedger(models.AbstractModel):
             WHERE "account_move_line".partner_id = %s
                 AND m.state IN %s
                 AND "account_move_line".account_id IN %s AND """ + query_get_data[1] + reconcile_clause + """
-                ORDER BY "account_move_line".date"""
+                ORDER BY "account_move_line".date""")
         self.env.cr.execute(query, tuple(params))
         res = self.env.cr.dictfetchall()
-        sum = 0.0
+        sum = data['computed'].get('initial_balances', {}).get(partner.id, 0.0)
         lang = self.env['res.lang']
         lang_id = lang._lang_get(lang_code)
         date_format = lang_id.date_format
         for r in res:
             r['date'] = r['date']
-            r['displayed_name'] = '-'.join(
-                r[field_name] for field_name in ('move_name', 'ref', 'name')
-                if r[field_name] not in (None, '', '/')
-            )
+            # move name, reference and label often repeat each other - the label
+            # frequently ends with the move name - so anything a part already says is
+            # dropped rather than printed twice
+            parts = []
+            for field_name in ('move_name', 'ref', 'name'):
+                value = (r[field_name] or '').strip()
+                if value in ('', '/') or any(value in kept for kept in parts):
+                    continue
+                parts = [kept for kept in parts if kept not in value]
+                parts.append(value)
+            r['displayed_name'] = ' - '.join(parts)
             sum += r['debit'] - r['credit']
             r['progress'] = sum
             r['currency_id'] = currency.browse(r.get('currency_id'))
@@ -50,25 +69,61 @@ class ReportPartnerLedger(models.AbstractModel):
         query_get_data = self.env['account.move.line'].with_context(data['form'].get('used_context', {}))._query_get()
         reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
 
-        params = [partner.id, tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]
-        query = """SELECT sum(""" + field + """)
+        params = ([partner.id, tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])]
+                  + query_get_data[2])
+        # the columns are qualified: the domain may join a table holding the same ones,
+        # which PostgreSQL then refuses as an ambiguous reference
+        try:
+            summed = SUMMED_FIELDS[field]
+        except KeyError:
+            raise ValueError(f'The partner ledger cannot sum {field!r}.') from None
+        query = """SELECT sum(""" + summed + """)
                 FROM """ + query_get_data[0] + """, account_move AS m
                 WHERE "account_move_line".partner_id = %s
                     AND m.id = "account_move_line".move_id
                     AND m.state IN %s
-                    AND account_id IN %s
+                    AND "account_move_line".account_id IN %s
                     AND """ + query_get_data[1] + reconcile_clause
         self.env.cr.execute(query, tuple(params))
 
         contemp = self.env.cr.fetchone()
         if contemp is not None:
             result = contemp[0] or 0.0
+        if field == 'debit - credit':
+            result += data['computed'].get('initial_balances', {}).get(partner.id, 0.0)
         return result
+
+    def _get_initial_balances(self, data):
+        """ The balance of the partners before the start date, with the filters of the report.
+
+        :return: {partner id: balance}, empty when not asked or without a start date (the report then covers the
+                 whole history)
+        """
+        used_context = data['form'].get('used_context', {})
+        if not data['form'].get('initial_balance') or not used_context.get('date_from'):
+            return {}
+        query_get_data = self.env['account.move.line'].with_context(
+            dict(used_context, date_to=False, strict_range=True, initial_bal=True))._query_get()
+        reconcile_clause = "" if data['form']['reconciled'] else ' AND "account_move_line".full_reconcile_id IS NULL '
+        params = [tuple(data['computed']['move_state']), tuple(data['computed']['account_ids'])] + query_get_data[2]
+        query = """
+            SELECT "account_move_line".partner_id, SUM("account_move_line".debit - "account_move_line".credit)
+            FROM """ + query_get_data[0] + """, account_move AS m
+            WHERE "account_move_line".partner_id IS NOT NULL
+                AND m.id = "account_move_line".move_id
+                AND m.state IN %s
+                AND "account_move_line".account_id IN %s
+                AND """ + query_get_data[1] + reconcile_clause + """
+            GROUP BY "account_move_line".partner_id"""
+        self.env.cr.execute(query, tuple(params))
+        return dict(self.env.cr.fetchall())
 
     @api.model
     def _get_report_values(self, docids, data=None):
         if not data.get('form'):
             raise UserError(_("Form content is missing, this report cannot be printed."))
+        # the entries are read with SQL: write the pending changes first
+        self.env.flush_all()
         data['computed'] = {}
 
         obj_partner = self.env['res.partner']
@@ -108,6 +163,12 @@ class ReportPartnerLedger(models.AbstractModel):
         else:
             partner_ids = [res['partner_id'] for res in
                            self.env.cr.dictfetchall()]
+        data['computed']['initial_balances'] = self._get_initial_balances(data)
+        if not data['form']['partner_ids']:
+            # without entries in the period, a partner still owes its initial balance
+            currency = self.env.company.currency_id
+            partner_ids += [partner_id for partner_id, balance in data['computed']['initial_balances'].items()
+                            if partner_id not in partner_ids and not currency.is_zero(balance)]
         partners = obj_partner.browse(partner_ids)
         partners = sorted(partners, key=lambda x: (x.ref or '', x.name or ''))
 

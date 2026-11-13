@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_form_inherit_device" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.form.inherit.device</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_account_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header invisible="provider != 'device'">
+                    <button name="action_device_link" type="object" string="Link WhatsApp" class="btn-primary"
+                            invisible="device_state == 'linked'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_device_start_bridge" type="object" string="Start the Bridge"
+                            invisible="device_state not in ('draft', 'offline')" groups="base.group_system"/>
+                    <button name="action_device_unlink" type="object" string="Unlink"
+                            invisible="device_state != 'linked'" groups="om_whatsapp_base.group_om_whatsapp_manager"
+                            confirm="Unlink this WhatsApp? Odoo leaves the linked devices of the phone, and stops sending and receiving with it."/>
+                    <field name="device_state" widget="statusbar" statusbar_visible="draft,linked"/>
+                </header>
+            </xpath>
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                <div class="alert alert-info" role="alert" invisible="provider != 'device' or device_state == 'linked'">
+                    <b>Link your WhatsApp in a few steps</b>
+                    <ol class="mb-1 mt-2">
+                        <li>On the server, once: Node.js 20 or later (<code>node --version</code>), and the packages of
+                            the bridge: <code>cd om_whatsapp_device/bridge &amp;&amp; npm ci</code>.</li>
+                        <li>Save this account.</li>
+                        <li>Click <b>Start the Bridge</b> (administrators), or run the bridge as a service of the server
+                            with the secret of the tab <i>WhatsApp QR</i> (see the README of the module).</li>
+                        <li>Click <b>Link WhatsApp</b>: the QR code shows, live.</li>
+                        <li>On your phone: WhatsApp › Settings › <b>Linked devices</b> › <b>Link a device</b>, and scan the
+                            QR code. No camera? <i>Link with a phone number instead</i>, and type the code on the phone.</li>
+                        <li>The account turns <b>Linked</b>: send and receive from the server, with no browser open.</li>
+                    </ol>
+                </div>
+                <div class="alert alert-warning" role="alert"
+                     invisible="provider != 'device' or device_state not in ('offline', 'logged_out', 'error')">
+                    <span invisible="device_state != 'offline'">The WhatsApp Bridge is not running: nothing goes out nor comes in.
+                        Click <b>Start the Bridge</b>, or start its service on the server (see the README of the module).</span>
+                    <span invisible="device_state != 'logged_out'">This WhatsApp was unlinked from the phone: click
+                        <b>Link WhatsApp</b> to link it again.</span>
+                    <span invisible="device_state != 'error'"><field name="device_reason" readonly="1" class="oe_inline"/></span>
+                </div>
+            </xpath>
+            <page name="users" position="before">
+                <page string="WhatsApp QR" name="device" invisible="provider != 'device'">
+                    <group>
+                        <group string="As a person sends">
+                            <field name="device_daily_limit"/>
+                            <field name="device_min_gap"/>
+                            <field name="device_max_gap"/>
+                            <div class="text-muted" colspan="2">WhatsApp bans the numbers that send too much, too fast,
+                                from a linked device. Automation rules wait in a queue, sent one at a time.</div>
+                        </group>
+                        <group string="WhatsApp Bridge" groups="base.group_system">
+                            <field name="device_bridge_url"/>
+                            <field name="device_secret" widget="CopyClipboardChar"/>
+                            <field name="device_key"/>
+                            <field name="device_checked_on"/>
+                            <div class="text-muted" colspan="2">The secret goes in OM_WA_SECRET when you run the bridge as a
+                                service of the server.</div>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_user_rule" model="ir.rule">
+        <field name="name">WhatsApp account: its users</field>
+        <field name="model_id" ref="model_om_whatsapp_account"/>
+        <field name="domain_force">[('user_ids', 'in', [user.id])]</field>
+        <field name="groups" eval="[Command.link(ref('group_om_whatsapp_user'))]"/>
+    </record>
+
+    <record id="om_whatsapp_account_manager_rule" model="ir.rule">
+        <field name="name">WhatsApp account: all, for managers</field>
+        <field name="model_id" ref="model_om_whatsapp_account"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+        <field name="groups" eval="[Command.link(ref('group_om_whatsapp_manager'))]"/>
+    </record>
+
+    <record id="om_whatsapp_account_company_rule" model="ir.rule">
+        <field name="name">WhatsApp account multi-company</field>
+        <field name="model_id" ref="model_om_whatsapp_account"/>
+        <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+    </record>
+
+    <record id="om_whatsapp_template_company_rule" model="ir.rule">
+        <field name="name">WhatsApp template multi-company</field>
+        <field name="model_id" ref="model_om_whatsapp_template"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

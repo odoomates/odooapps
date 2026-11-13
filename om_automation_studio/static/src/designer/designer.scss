@@ -1,0 +1,410 @@
+// the look of the designer: graph paper, ink outlines, a tab and an
+// offset shadow in the colour of each kind of step
+$-ink: #1f2933;
+$-paper: #f5f2ea;
+$-paper-deep: #ebe6da;
+$-node-colors: (
+    start: #0f766e,
+    condition: #714b67,
+    wait: #b7791f,
+    wait_until: #b7791f,
+    approval: #c0392b,
+    update: #2557a7,
+    create: #2557a7,
+    email: #2f855a,
+    activity: #2f855a,
+    note: #2f855a,
+    end: #4a5568,
+);
+$-tones: (
+    ink: $-ink,
+    go: #2f855a,
+    muted: #8a8f98,
+    stop: #c0392b,
+    late: #b7791f,
+    selected: $o-brand-primary,
+);
+
+.o_om_wd_designer {
+    background-color: $o-view-background-color;
+    user-select: none;
+}
+
+.o_om_wd_toolbar {
+    background-color: $o-view-background-color;
+
+    .o_om_wd_name {
+        max-width: 320px;
+    }
+}
+
+// palette ----------------------------------------------------------------
+
+.o_om_wd_palette {
+    flex: 0 0 196px;
+    background-color: $-paper-deep;
+
+    .o_om_wd_palette_title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.7rem;
+        letter-spacing: 0.08em;
+        color: rgba($-ink, 0.6) !important;
+
+        &::after {
+            content: "";
+            flex: 1;
+            border-top: 1px solid rgba($-ink, 0.18);
+        }
+    }
+}
+
+.o_om_wd_tool {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border: 1.5px solid transparent;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: $-ink;
+    cursor: grab;
+    transition: background-color 0.12s, border-color 0.12s, box-shadow 0.12s;
+
+    &:hover {
+        border-color: $-ink;
+        background-color: #fff;
+        box-shadow: 3px 3px 0 var(--o-om-pd-shadow);
+    }
+}
+
+.o_om_wd_node_icon {
+    display: inline-flex;
+    flex: 0 0 28px;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--o-om-pd-color, #{$o-gray-600});
+    border-radius: 50%;
+    color: var(--o-om-pd-color, #{$o-gray-600});
+    background-color: var(--o-om-pd-soft, #{$o-gray-100});
+    font-size: 0.8rem;
+}
+
+@each $-type, $-color in $-node-colors {
+    .o_om_wd_type_#{$-type} {
+        --o-om-pd-color: #{$-color};
+        --o-om-pd-soft: #{mix($-color, #fff, 12%)};
+        --o-om-pd-shadow: #{rgba($-color, 0.35)};
+    }
+}
+
+@each $-tone, $-color in $-tones {
+    .o_om_wd_tone_#{$-tone} {
+        --o-om-pd-tone: #{$-color};
+    }
+}
+
+// canvas -----------------------------------------------------------------
+
+.o_om_wd_canvas {
+    background-color: $-paper;
+    background-image:
+        linear-gradient(rgba($-ink, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba($-ink, 0.09) 1px, transparent 1px),
+        linear-gradient(rgba($-ink, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba($-ink, 0.04) 1px, transparent 1px);
+    cursor: default;
+
+    &.o_om_wd_linking {
+        cursor: crosshair;
+    }
+}
+
+.o_om_wd_viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+}
+
+.o_om_wd_edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    overflow: visible;
+}
+
+.o_om_wd_edge {
+    fill: none;
+    stroke: var(--o-om-pd-tone, #{$-ink});
+    stroke-width: 2.25;
+    stroke-linecap: round;
+    pointer-events: none;
+
+    &.o_om_wd_tone_muted {
+        stroke-dasharray: 6 5;
+    }
+
+    &.o_om_wd_tone_selected {
+        stroke-width: 3.5;
+    }
+}
+
+.o_om_wd_edge_hit {
+    fill: none;
+    stroke: transparent;
+    stroke-width: 14;
+    cursor: pointer;
+}
+
+.o_om_wd_arrow {
+    fill: var(--o-om-pd-tone, #{$-ink});
+}
+
+.o_om_wd_edge_draft {
+    stroke: $o-brand-primary;
+    stroke-dasharray: 6 4;
+}
+
+.o_om_wd_edge_faded {
+    opacity: 0.35;
+}
+
+// steps ------------------------------------------------------------------
+
+.o_om_wd_node {
+    position: absolute;
+    padding: 10px 12px;
+    border: 1.5px solid $-ink;
+    border-radius: 4px 10px 10px 10px;
+    background-color: #fff;
+    box-shadow: 4px 4px 0 var(--o-om-pd-shadow, #{rgba($-ink, 0.2)});
+    font-size: 0.875rem;
+    color: $-ink;
+    cursor: move;
+    transition: box-shadow 0.12s, border-color 0.12s;
+
+    &:hover {
+        box-shadow: 6px 6px 0 var(--o-om-pd-shadow, #{rgba($-ink, 0.2)});
+    }
+
+    &.o_om_wd_selected {
+        border-color: var(--o-om-pd-color);
+        box-shadow: 6px 6px 0 var(--o-om-pd-color);
+
+        .o_om_wd_node_tab {
+            outline: 2px solid var(--o-om-pd-color);
+            outline-offset: 1px;
+        }
+    }
+
+    &.o_om_wd_has_error {
+        border-color: $o-danger;
+        border-style: dashed;
+    }
+
+    &.o_om_wd_unvisited {
+        opacity: 0.45;
+    }
+
+    &.o_om_wd_step_failed {
+        border-color: $o-danger;
+        background-color: rgba($o-danger, 0.06);
+    }
+
+    &.o_om_wd_current {
+        animation: o_om_wd_pulse 1.6s ease-in-out infinite;
+    }
+}
+
+@keyframes o_om_wd_pulse {
+    50% {
+        box-shadow: 4px 4px 0 var(--o-om-pd-shadow), 0 0 0 8px rgba($o-brand-primary, 0.2);
+    }
+}
+
+// the kind of step, as a tab on top of it
+.o_om_wd_node_tab {
+    position: absolute;
+    bottom: 100%;
+    left: -1.5px;
+    padding: 1px 8px 0;
+    border-radius: 5px 5px 0 0;
+    font-size: 0.66rem;
+    font-weight: 700;
+    line-height: 16px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: #fff;
+    background-color: var(--o-om-pd-color, #{$-ink});
+}
+
+.o_om_wd_node_head {
+    min-height: 32px;
+}
+
+.o_om_wd_node_text {
+    min-width: 0;
+    line-height: 1.25;
+}
+
+.o_om_wd_node_condition {
+    margin: 6px 0 0 36px;
+    padding: 1px 6px;
+    border-left: 2px solid var(--o-om-pd-color);
+    font-style: italic;
+    color: rgba($-ink, 0.75);
+    background-color: var(--o-om-pd-soft);
+}
+
+.o_om_wd_in {
+    position: absolute;
+    top: 26px;
+    left: -7px;
+    width: 12px;
+    height: 12px;
+    border: 2px solid $-ink;
+    border-radius: 50%;
+    background-color: $-paper;
+}
+
+.o_om_wd_port {
+    position: absolute;
+    right: -7px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transform: translateY(-50%);
+    cursor: crosshair;
+}
+
+.o_om_wd_port_label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--o-om-pd-tone, #{$-ink});
+
+    &:not(:empty) {
+        padding: 0 7px;
+        border: 1px solid var(--o-om-pd-tone, #{$-ink});
+        border-radius: 999px;
+        background-color: #fff;
+    }
+}
+
+.o_om_wd_port_dot {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--o-om-pd-tone, #{$-ink});
+    border-radius: 50%;
+    background-color: #fff;
+
+    .o_om_wd_port:hover & {
+        background-color: var(--o-om-pd-tone, #{$-ink});
+    }
+}
+
+.o_om_wd_zoom {
+    position: absolute;
+    bottom: 16px;
+    left: 16px;
+}
+
+.o_om_wd_hint {
+    position: absolute;
+    right: 16px;
+    bottom: 12px;
+    pointer-events: none;
+}
+
+.o_om_wd_ghost {
+    position: fixed;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid $o-brand-primary;
+    border-radius: 6px;
+    background-color: $o-view-background-color;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.o_om_wd_panel {
+    flex: 0 0 340px;
+    background-color: $o-view-background-color;
+    user-select: text;
+
+    .o_om_wd_num {
+        max-width: 80px;
+    }
+
+    .o_om_wd_mode {
+        flex: 0 0 110px;
+    }
+
+    .o_om_wd_value_input {
+        min-width: 0;
+    }
+}
+
+.o_om_wd_issue_link {
+    cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+}
+
+.o_om_wd_tag {
+    font-weight: normal;
+}
+
+.o_om_wd_step {
+    padding: 6px 8px;
+    margin-bottom: 4px;
+    border-left: 3px solid $o-gray-300;
+    border-radius: 4px;
+    cursor: pointer;
+
+    &:hover,
+    &.o_om_wd_step_selected {
+        background-color: $o-gray-100;
+    }
+
+    &.o_om_wd_step_done {
+        border-left-color: $o-success;
+    }
+
+    &.o_om_wd_step_waiting {
+        border-left-color: $o-info;
+    }
+
+    &.o_om_wd_step_failed {
+        border-left-color: $o-danger;
+    }
+}
+
+.o_om_wd_badge_running,
+.o_om_wd_badge_waiting {
+    color: #fff;
+    background-color: $o-info;
+}
+
+.o_om_wd_badge_done {
+    color: #fff;
+    background-color: $o-success;
+}
+
+.o_om_wd_badge_failed {
+    color: #fff;
+    background-color: $o-danger;
+}
+
+.o_om_wd_badge_cancelled {
+    color: #fff;
+    background-color: $o-gray-600;
+}

@@ -10,11 +10,78 @@ class FollowupFollowup(models.Model):
     name = fields.Char(string="Name", related='company_id.name', readonly=True)
     followup_line = fields.One2many('followup.line', 'followup_id', 'Follow-up', copy=True)
     company_id = fields.Many2one('res.company', 'Company', required=True, default=lambda self: self.env.company)
+    auto_send = fields.Boolean(
+        string='Send Automatically',
+        help='Every day, send the reminders that are due: update the follow-up levels, send the emails and '
+             'schedule the manual actions. Letters are not printed automatically: print them from the customers.')
+    auto_user_id = fields.Many2one(
+        'res.users', string='Send As', default=lambda self: self.env.user,
+        domain="[('share', '=', False), ('company_ids', 'in', company_id)]",
+        help='The follow-up emails are sent in the name of this user, with the access rights of this user.')
+    last_auto_send = fields.Date(string='Last Automatic Sending', readonly=True, copy=False)
 
     _company_uniq = models.Constraint(
         'unique(company_id)',
         'Only one follow-up per company is allowed',
     )
+
+    @api.constrains('auto_send', 'auto_user_id')
+    def _check_auto_user(self):
+        for followup in self:
+            if followup.auto_send and not followup.auto_user_id:
+                raise ValidationError(_('Choose the user sending the automatic follow-ups.'))
+
+    @api.model
+    def _get_default_plan(self, company=None):
+        company = company or self.env.company
+        return self.search([('company_id', '=', company.id)], limit=1)
+
+    def _get_levels(self):
+        """ :return: the levels of the plan, from the first to the last """
+        self.ensure_one()
+        return self.followup_line.sorted(lambda line: (line.delay, line.id))
+
+    @api.model
+    def _create_default_plans(self, companies):
+        """ A plan with three reminders for the companies without any plan """
+        for company in companies:
+            if self.sudo().search_count([('company_id', '=', company.id)]):
+                continue
+            templates = [self.env.ref('om_account_followup.email_template_om_account_followup_level%s' % index,
+                                      raise_if_not_found=False) for index in range(3)]
+            self.sudo().create({
+                'company_id': company.id,
+                'followup_line': [
+                    (0, 0, {
+                        'name': _('Friendly reminder'), 'delay': 7, 'send_email': True, 'send_letter': False,
+                        'email_template_id': templates[0].id if templates[0] else False,
+                    }),
+                    (0, 0, {
+                        'name': _('Second reminder'), 'delay': 21, 'send_email': True, 'send_letter': True,
+                        'email_template_id': templates[1].id if templates[1] else False,
+                    }),
+                    (0, 0, {
+                        'name': _('Final notice'), 'delay': 45, 'send_email': True, 'send_letter': True,
+                        'manual_action': True, 'manual_action_note': _('Call the customer about the overdue '
+                                                                        'invoices.'),
+                        'email_template_id': templates[2].id if templates[2] else False,
+                    }),
+                ],
+            })
+
+    @api.model
+    def _cron_send_followups(self):
+        """ Daily job: send the reminders that are due for the plans sending them automatically. """
+        today = fields.Date.context_today(self)
+        for followup in self.search([('auto_send', '=', True)]):
+            if followup.last_auto_send == today:
+                continue
+            wizard = self.env['followup.print'].with_user(followup.auto_user_id).with_company(followup.company_id)
+            wizard.with_context(followup_automatic=True).create({
+                'followup_id': followup.id,
+                'date': today,
+            }).do_process()
+            followup.last_auto_send = today
 
 
 class FollowupLine(models.Model):
@@ -31,9 +98,11 @@ class FollowupLine(models.Model):
 
     @api.model
     def default_get(self, default_fields):
-        values = super(FollowupLine, self).default_get(default_fields)
-        if self.env.ref('om_account_followup.email_template_om_account_followup_default'):
-            values['email_template_id'] = self.env.ref('om_account_followup.email_template_om_account_followup_default').id
+        values = super().default_get(default_fields)
+        template = self.env.ref('om_account_followup.email_template_om_account_followup_default',
+                                raise_if_not_found=False)
+        if template and 'email_template_id' in default_fields:
+            values.setdefault('email_template_id', template.id)
         return values
 
     name = fields.Char('Follow-Up Action', required=True)
@@ -85,7 +154,7 @@ Best Regards,
                     line.description % {'partner_name': '', 'date': '',
                                         'user_signature': '',
                                         'company_name': ''}
-                except (KeyError, ValueError, TypeError):
+                except (KeyError, TypeError, ValueError):
                     raise ValidationError(
                         _('Your description is invalid, use the right legend '
                           'or %% if you want to use the percent character.'))

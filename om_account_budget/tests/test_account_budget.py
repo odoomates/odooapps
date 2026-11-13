@@ -277,3 +277,61 @@ class TestAccountBudget(TransactionCase):
         # User B should not be able to see Budget A
         budgets_visible = self.budget_model.with_user(user_b).search([('id', '=', budget_a.id)])
         self.assertFalse(budgets_visible)
+
+    def test_08_practical_amount_of_several_lines(self):
+        """The lines sharing a position and a period, or a plan, are computed together."""
+        budget_post = self.budget_post_model.create({
+            'name': 'Shared Post',
+            'account_ids': [(4, self.test_account.id)]
+        })
+        other_account = self.account_model.create({
+            'name': 'Other Expense', 'code': '654321', 'account_type': 'expense',
+        })
+        other_post = self.budget_post_model.create({
+            'name': 'Other Post',
+            'account_ids': [(4, other_account.id)]
+        })
+        plan = self.env['account.analytic.plan'].create({'name': 'Budget Plan'})
+        analytic_1, analytic_2 = self.env['account.analytic.account'].create([
+            {'name': 'Project 1', 'plan_id': plan.id},
+            {'name': 'Project 2', 'plan_id': plan.id},
+        ])
+        column = plan._column_name()
+        self.env['account.analytic.line'].create([
+            {'name': 'Cost 1', 'amount': -100.0, column: analytic_1.id, 'date': '2026-03-01'},
+            {'name': 'Cost 2', 'amount': -30.0, column: analytic_2.id, 'date': '2026-03-01'},
+            {'name': 'Cost 2b', 'amount': -5.0, column: analytic_2.id, 'date': '2027-03-01'},
+        ])
+        counterpart = self.env.company.account_journal_suspense_account_id or \
+            self.env['account.account'].search([('id', 'not in', (self.test_account | other_account).ids)], limit=1)
+        self.env['account.move'].create({
+            'move_type': 'entry',
+            'date': '2026-06-15',
+            'line_ids': [
+                (0, 0, {'account_id': self.test_account.id, 'debit': 500.0, 'name': 'Expense'}),
+                (0, 0, {'account_id': other_account.id, 'debit': 70.0, 'name': 'Other expense'}),
+                (0, 0, {'account_id': counterpart.id, 'credit': 570.0, 'name': 'Counterpart'}),
+            ]
+        }).action_post()
+
+        budgets = self.budget_model.create([{
+            'name': name, 'date_from': '2026-01-01', 'date_to': '2026-12-31',
+        } for name in ('Budget A', 'Budget B')])
+        values = [
+            (budgets[0], budget_post, False),
+            (budgets[1], budget_post, False),
+            (budgets[0], other_post, False),
+            (budgets[0], False, analytic_1),
+            (budgets[0], False, analytic_2),
+        ]
+        lines = self.env['crossovered.budget.lines'].create([{
+            'crossovered_budget_id': budget.id,
+            'general_budget_id': post and post.id,
+            'analytic_account_id': analytic and analytic.id,
+            'date_from': '2026-01-01',
+            'date_to': '2026-12-31',
+            'planned_amount': -1000,
+        } for budget, post, analytic in values])
+
+        self.env.invalidate_all()
+        self.assertEqual(lines.mapped('practical_amount'), [-500.0, -500.0, -70.0, -100.0, -30.0])

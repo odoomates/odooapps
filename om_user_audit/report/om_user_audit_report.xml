@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_user_activity" model="ir.actions.report">
+        <field name="name">User Activity</field>
+        <field name="model">om.user.audit.report.wizard</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_user_audit.report_user_activity</field>
+        <field name="print_report_name">'User Activity'</field>
+    </record>
+
+    <template id="report_user_activity">
+        <t t-call="web.html_container">
+            <t t-call="web.internal_layout">
+                <div class="page">
+                    <h2>User Activity</h2>
+                    <p>
+                        From <span t-out="wizard.date_from" t-options="{'widget': 'date'}"/>
+                        to <span t-out="wizard.date_to" t-options="{'widget': 'date'}"/>
+                    </p>
+                    <p t-if="truncated" class="text-muted">
+                        Only the first <t t-out="limit"/> lines are printed: narrow the period or
+                        the users.
+                    </p>
+                    <t t-foreach="groups" t-as="group">
+                        <h4 class="mt-4" t-out="group[0].name or 'Unknown user'"/>
+                        <table class="table table-sm o_main_table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Event</th>
+                                    <th>Data</th>
+                                    <th>Record</th>
+                                    <th>Detail</th>
+                                    <th>Address</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="group[1]" t-as="line">
+                                    <td><span t-field="line.date"/></td>
+                                    <td t-out="labels.get(line.event)"/>
+                                    <td t-out="line.model_name or ''"/>
+                                    <td t-out="line.res_name or (line.record_count and '%s records' % line.record_count) or ''"/>
+                                    <td style="white-space: pre-line;" t-out="line.changes or line.detail or ''"/>
+                                    <td t-out="line.ip or ''"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </t>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

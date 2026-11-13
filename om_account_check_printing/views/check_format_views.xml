@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_check_format_form" model="ir.ui.view">
+        <field name="name">account.check.format.form</field>
+        <field name="model">account.check.format</field>
+        <field name="arch" type="xml">
+            <form string="Cheque Format">
+                <header>
+                    <button name="action_print_test" type="object" string="Test Print" class="btn-primary"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Cheque book of the main bank"/></h1>
+                    </div>
+                    <group>
+                        <group string="Paper">
+                            <field name="paper_size"/>
+                            <field name="page_width" readonly="paper_size != 'custom'"/>
+                            <field name="page_height" readonly="paper_size != 'custom'"/>
+                            <field name="offset_x"/>
+                            <field name="offset_y"/>
+                            <field name="font_size"/>
+                        </group>
+                        <group string="Values">
+                            <field name="date_format"/>
+                            <field name="amount_with_currency"/>
+                            <field name="amount_stars"/>
+                            <field name="words_uppercase"/>
+                            <field name="words_suffix"/>
+                            <field name="words_cents"/>
+                            <field name="words_lang"/>
+                            <field name="words_lang_2"/>
+                            <field name="words_fill"/>
+                            <field name="country_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <div class="o_horizontal_separator mt-4 mb-2 text-uppercase fw-bolder small">Preview</div>
+                    <p class="text-muted small mb-2">
+                        The test print with sample values, updated as you change the format. Print it to check the
+                        positions on a real cheque.
+                    </p>
+                    <field name="preview_html" nolabel="1" readonly="1" class="d-block mb-3"/>
+                    <notebook>
+                        <page string="Printed Fields" name="fields">
+                            <p class="text-muted">
+                                Positions are measured in millimetres from the top left corner of the page. Print a test
+                                on plain paper, hold it against a cheque and adjust the positions.
+                            </p>
+                            <field name="line_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="field"/>
+                                    <field name="text" invisible="field != 'text'" required="field == 'text'"/>
+                                    <field name="x"/>
+                                    <field name="y"/>
+                                    <field name="width"/>
+                                    <field name="height" optional="show"/>
+                                    <field name="line_height" optional="hide"/>
+                                    <field name="font_size" optional="show"/>
+                                    <field name="bold" optional="show"/>
+                                    <field name="align" optional="show"/>
+                                    <field name="letter_spacing" optional="hide"/>
+                                    <field name="rotation" optional="hide"/>
+                                    <field name="border" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="MICR Line" name="micr">
+                            <p class="text-muted">
+                                Only for cheques printed on blank cheque paper with magnetic toner: the cheques of
+                                your bank already carry their MICR line. The routing number and the account number
+                                are taken from the bank account of the journal.
+                            </p>
+                            <group>
+                                <group>
+                                    <field name="print_micr"/>
+                                    <field name="micr_style" invisible="not print_micr"/>
+                                    <field name="micr_font" filename="micr_font_filename"
+                                           invisible="not print_micr" required="print_micr"/>
+                                    <field name="micr_font_filename" invisible="1"/>
+                                </group>
+                                <group invisible="not print_micr">
+                                    <field name="micr_bottom"/>
+                                    <field name="micr_right"/>
+                                    <field name="micr_font_size"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Stubs" name="stubs">
+                            <group>
+                                <field name="print_stub"/>
+                                <field name="stub_top" invisible="not print_stub"/>
+                                <field name="stub_2_top" invisible="not print_stub"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_check_format_list" model="ir.ui.view">
+        <field name="name">account.check.format.list</field>
+        <field name="model">account.check.format</field>
+        <field name="arch" type="xml">
+            <list string="Cheque Formats">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="paper_size"/>
+                <field name="country_ids" widget="many2many_tags" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_check_format_search" model="ir.ui.view">
+        <field name="name">account.check.format.search</field>
+        <field name="model">account.check.format</field>
+        <field name="arch" type="xml">
+            <search string="Cheque Formats">
+                <field name="name"/>
+                <field name="country_ids"/>
+                <filter name="any_country" string="Any Country" domain="[('country_ids', '=', False)]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_paper_size" string="Paper" context="{'group_by': 'paper_size'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_check_format" model="ir.actions.act_window">
+        <field name="name">Cheque Formats</field>
+        <field name="res_model">account.check.format</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a cheque format</p>
+            <p>Place the date, payee and amounts where the cheques of your bank expect them.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_check_format"
+              name="Cheque Formats"
+              parent="account.account_invoicing_menu"
+              action="action_check_format"
+              sequence="25"
+              groups="account.group_account_manager"/>
+
+</odoo>

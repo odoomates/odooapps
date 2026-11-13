@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_composer_view_form" model="ir.ui.view">
+        <field name="name">om.whatsapp.composer.form</field>
+        <field name="model">om.whatsapp.composer</field>
+        <field name="arch" type="xml">
+            <form string="Send WhatsApp">
+                <field name="res_model" invisible="1"/>
+                <field name="res_ids" invisible="1"/>
+                <field name="res_count" invisible="1"/>
+                <field name="can_send_files" invisible="1"/>
+                <div class="alert alert-info" role="alert" invisible="res_count &lt;= 1">
+                    <field name="recipient_valid_count" class="oe_inline"/> document(s) with a valid number will get
+                    the message<span invisible="not recipient_invalid_count">, <field name="recipient_invalid_count" class="oe_inline"/> without one are skipped</span>.
+                    <span invisible="not template_id">The template is filled in for each of them.</span>
+                </div>
+                <group>
+                    <group>
+                        <field name="account_id" options="{'no_create': True, 'no_open': True}"/>
+                        <field name="template_id" options="{'no_create': True}"/>
+                    </group>
+                    <group invisible="res_count != 1">
+                        <field name="partner_id" readonly="1" invisible="not partner_id"/>
+                        <field name="number" widget="phone" required="res_count == 1"/>
+                    </group>
+                </group>
+                <field name="body" placeholder="Write your message..." readonly="res_count &gt; 1 and template_id"/>
+                <group invisible="not can_send_files">
+                    <field name="attach_report" invisible="not template_id"/>
+                    <field name="attachment_ids" widget="many2many_binary" invisible="res_count != 1"/>
+                </group>
+                <group>
+                    <field name="use_exclusion_list" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                </group>
+                <footer>
+                    <button name="action_send" type="object" string="Send" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_composer_action" model="ir.actions.act_window">
+        <field name="name">Send WhatsApp</field>
+        <field name="res_model">om.whatsapp.composer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

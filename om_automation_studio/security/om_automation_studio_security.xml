@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_groups_privilege_workflow_designer" model="res.groups.privilege">
+        <field name="name">Automation Studio</field>
+        <field name="category_id" ref="base.module_category_productivity"/>
+    </record>
+
+    <!-- the app: User, then Supervisor, then Administrator; without any of
+         them the app is hidden, the approvals asked of the user still come
+         as activities and on the records -->
+    <record id="om_automation_studio_group_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">5</field>
+        <field name="privilege_id" ref="res_groups_privilege_workflow_designer"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Sees the app and answers the approvals asked of them.</field>
+    </record>
+
+    <record id="om_automation_studio_group_supervisor" model="res.groups">
+        <field name="name">Supervisor</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_workflow_designer"/>
+        <field name="implied_ids" eval="[Command.link(ref('om_automation_studio_group_user'))]"/>
+        <field name="comment">Follows the runs of every workflow and every approval, retries or cancels runs.</field>
+    </record>
+
+    <!-- the steps of a workflow write on any record with full rights, as
+         Automation Rules do: give it to trusted users only -->
+    <record id="om_automation_studio_group_admin" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_workflow_designer"/>
+        <field name="implied_ids" eval="[Command.link(ref('om_automation_studio_group_supervisor'))]"/>
+        <field name="user_ids" eval="[Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Designs, publishes and pauses the workflows, manages the templates, and answers
+any approval for its approver. The steps of a workflow change records with full rights.</field>
+    </record>
+
+    <!-- every user reads their own approvals and answers them while pending;
+         supervisors and administrators see them all -->
+    <record id="om_workflow_approval_rule_user_read" model="ir.rule">
+        <field name="name">Approvals: own</field>
+        <field name="model_id" ref="model_om_workflow_approval"/>
+        <field name="groups" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="om_workflow_approval_rule_user_write" model="ir.rule">
+        <field name="name">Approvals: own, pending</field>
+        <field name="model_id" ref="model_om_workflow_approval"/>
+        <field name="groups" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="domain_force">[('user_id', '=', user.id), ('state', '=', 'pending')]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+
+    <record id="om_workflow_approval_rule_supervisor" model="ir.rule">
+        <field name="name">Approvals: all</field>
+        <field name="model_id" ref="model_om_workflow_approval"/>
+        <field name="groups" eval="[Command.link(ref('om_automation_studio_group_supervisor'))]"/>
+        <field name="domain_force">[(1, '=', 1)]</field>
+    </record>
+
+    <!-- the templates of the companies of the user, and those shared -->
+    <record id="om_workflow_template_rule_company" model="ir.rule">
+        <field name="name">Workflow Templates: companies</field>
+        <field name="model_id" ref="model_om_workflow_template"/>
+        <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+    </record>
+</odoo>

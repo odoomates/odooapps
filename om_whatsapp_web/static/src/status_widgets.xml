@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_whatsapp_web.StatusDot">
+        <span t-if="status.ready" t-attf-class="o_om_whatsapp_dot o_om_whatsapp_dot_{{ view.level }}"
+              t-att-data-tooltip="view.reason" role="img" t-att-aria-label="view.title"/>
+    </t>
+
+    <t t-name="om_whatsapp_web.Status">
+        <div t-if="status.ready" class="o_om_whatsapp_web_status d-flex align-items-center gap-3 border rounded px-3 py-2 mb-3">
+            <span t-attf-class="o_om_whatsapp_dot o_om_whatsapp_dot_lg o_om_whatsapp_dot_{{ view.level }}"/>
+            <div class="flex-grow-1">
+                <div class="fw-bold" t-out="view.title"/>
+                <div class="small" t-out="view.reason"/>
+                <div class="small text-muted" t-out="lastSeen"/>
+            </div>
+            <button t-if="view.action === 'open'" type="button" class="btn btn-sm btn-primary"
+                    t-on-click="openWhatsapp">Open WhatsApp Web</button>
+            <button type="button" class="btn btn-sm btn-secondary" t-att-disabled="status.checking"
+                    t-on-click="refresh">Check again</button>
+        </div>
+    </t>
+
+    <t t-name="om_whatsapp_web.StatusWarning">
+        <div t-if="status.ready and status.blocking" class="alert alert-warning d-flex align-items-center gap-2" role="alert">
+            <span class="o_om_whatsapp_dot o_om_whatsapp_dot_disconnected"/>
+            <span class="flex-grow-1" t-out="status.reason"/>
+            <button t-if="status.action === 'open'" type="button" class="btn btn-sm btn-secondary"
+                    t-on-click="openWhatsapp">Open WhatsApp Web</button>
+        </div>
+    </t>
+
+</templates>

@@ -1,14 +1,30 @@
-from odoo import models, fields, api, SUPERUSER_ID, _
+from datetime import timedelta
+
+from odoo import SUPERUSER_ID, _, api, fields, models
 from odoo.exceptions import UserError
+
+from odoo.addons.account.models.company import LOCK_DATE_FIELDS, SOFT_LOCK_DATE_FIELDS
+
+# how long an exception to a lock date lasts
+EXCEPTION_DURATIONS = {
+    '5min': timedelta(minutes=5),
+    '15min': timedelta(minutes=15),
+    '1h': timedelta(hours=1),
+    '24h': timedelta(hours=24),
+    'forever': None,
+}
 
 
 class ChangeLockDate(models.TransientModel):
+    """ Set the lock dates of the company. A date set or moved forward is written on the company; a soft lock date
+    removed or moved back is not: an exception to it is created instead, for a time, for the user or everyone, with
+    its reason, as Odoo logs the exceptions in the chatter of the company. """
     _name = 'change.lock.date'
     _description = 'Change Lock Date'
 
     @api.model
     def default_get(self, vals):
-        res = super(ChangeLockDate, self).default_get(vals)
+        res = super().default_get(vals)
         company_rec = self.env.company
         res.update({
             'company_id': company_rec.id,
@@ -40,11 +56,60 @@ class ChangeLockDate(models.TransientModel):
         help='Like the "Global Lock Date", but no exceptions are possible.'
     )
     fiscalyear_lock_date = fields.Date(
-        string='Lock Date for All Users',
+        string='Global Lock Date',
         default=lambda self: self.env.company.fiscalyear_lock_date,
         help='No users, including Advisers, can edit accounts prior to and inclusive of '
              'this date. Use it for fiscal year locking.'
     )
+    exception_needed = fields.Boolean(
+        compute='_compute_exception_needed',
+        help='A lock date is removed or moved back: an exception to it is created, the company keeps its date.')
+    exception_fields = fields.Char(compute='_compute_exception_needed', string='Lock Dates Opened')
+    exception_applies_to = fields.Selection(
+        [('me', 'Only Me'), ('everyone', 'Everyone')], string='Exception For', required=True, default='me')
+    exception_duration = fields.Selection(
+        [('5min', '5 Minutes'), ('15min', '15 Minutes'), ('1h', '1 Hour'), ('24h', '24 Hours'),
+         ('forever', 'Forever')], string='During', required=True, default='5min')
+    exception_reason = fields.Char(string='Reason',
+                                   help='Why the period is opened: logged in the chatter of the company.')
+
+    @api.depends('company_id', *SOFT_LOCK_DATE_FIELDS)
+    def _compute_exception_needed(self):
+        for wizard in self:
+            opened = wizard._opened_lock_dates()
+            wizard.exception_needed = bool(opened)
+            wizard.exception_fields = wizard._lock_date_labels(opened) or False
+
+    def _lock_date_labels(self, lock_date_fields):
+        """ :return: the labels of the lock dates, e.g. 'Global Lock Date and Tax Return Lock Date' """
+        labels = [self._fields[field]._description_string(self.env) for field in lock_date_fields]
+        if len(labels) < 2:
+            return ''.join(labels)
+        return _('%(dates)s and %(last)s', dates=', '.join(labels[:-1]), last=labels[-1])
+
+    def _opened_lock_dates(self):
+        """ :return: the soft lock dates the wizard removes or moves back from the dates of the company """
+        self.ensure_one()
+        company = self.company_id
+        return [field for field in SOFT_LOCK_DATE_FIELDS
+                if company[field] and (not self[field] or self[field] < company[field])]
+
+    def _changed_lock_dates(self):
+        """ :return: the lock dates the user changed; the others are not written again """
+        self.ensure_one()
+        return [field for field in LOCK_DATE_FIELDS if self[field] != self.company_id[field]]
+
+    def action_remove_lock_date(self):
+        """ Remove a soft lock date from the wizard, as clearing the field does, and show it again with the panel
+        of the exception: reopening a period does not depend on how the date widget can be emptied. """
+        self.ensure_one()
+        field = self.env.context.get('lock_date_field')
+        if field not in SOFT_LOCK_DATE_FIELDS:
+            raise UserError(_('Only the soft lock dates can be removed: the hard lock date cannot be undone.'))
+        self[field] = False
+        action = self.env['ir.actions.act_window']._for_xml_id('om_fiscal_year.action_view_change_lock_date')
+        action['res_id'] = self.id
+        return action
 
     def update_lock_date(self):
         self.ensure_one()
@@ -53,12 +118,27 @@ class ChangeLockDate(models.TransientModel):
             raise UserError(_("You Are Not Allowed To Perform This Operation"))
         if self.env.uid != SUPERUSER_ID and self.company_id not in self.env.user.company_ids:
             raise UserError(_("You cannot change the lock dates of another company."))
+        opened = self._opened_lock_dates()
+        if opened and not (self.exception_reason or '').strip():
+            raise UserError(_('Fill in the Reason field to reopen the %s. It says why the period is reopened '
+                              'and is logged with the exception.', self.exception_fields))
         # sudo() is required because setting lock dates writes on res.company,
         # which accounting managers are not allowed to write on.
-        self.company_id.sudo().write({
-            'hard_lock_date': self.hard_lock_date,
-            'fiscalyear_lock_date': self.fiscalyear_lock_date,
-            'purchase_lock_date': self.purchase_lock_date,
-            'sale_lock_date': self.sale_lock_date,
-            'tax_lock_date': self.tax_lock_date,
-        })
+        values = {field: self[field] for field in self._changed_lock_dates() if field not in opened}
+        if values:
+            self.company_id.sudo().write(values)
+        if opened:
+            self._create_exceptions(opened)
+
+    def _create_exceptions(self, lock_date_fields):
+        """ An exception to each lock date opened, instead of changing the date of the company. """
+        self.ensure_one()
+        duration = EXCEPTION_DURATIONS[self.exception_duration]
+        # as the user, not as the super user: the chatter of the company tells who opened the period
+        self.env['account.lock_exception'].create([{
+            'company_id': self.company_id.id,
+            field: self[field],
+            'user_id': self.env.user.id if self.exception_applies_to == 'me' else False,
+            'end_datetime': fields.Datetime.now() + duration if duration else False,
+            'reason': self.exception_reason.strip(),
+        } for field in lock_date_fields])

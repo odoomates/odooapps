@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <!-- the secret of the bridge: made at install, not on a read-only request -->
+    <function model="om.whatsapp.account" name="_device_bridge_secret"/>
+
+    <record id="ir_cron_device_send_queue" model="ir.cron">
+        <field name="name">WhatsApp QR: send the queue</field>
+        <field name="model_id" ref="om_whatsapp_base.model_om_whatsapp_account"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_device_send_queue()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+    </record>
+
+    <record id="ir_cron_device_check" model="ir.cron">
+        <field name="name">WhatsApp QR: check the linked numbers and the bridge</field>
+        <field name="model_id" ref="om_whatsapp_base.model_om_whatsapp_account"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_device_check()</field>
+        <field name="interval_number">5</field>
+        <field name="interval_type">minutes</field>
+    </record>
+</odoo>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="currency_revaluation_view_form" model="ir.ui.view">
+        <field name="name">currency.revaluation.form</field>
+        <field name="model">currency.revaluation</field>
+        <field name="arch" type="xml">
+            <form string="Currency Revaluation">
+                <sheet>
+                    <div class="alert alert-info" role="alert">
+                        What is still open in a foreign currency is restated at the rate of the revaluation date.
+                        The difference is posted as one adjustment entry and reversed at the start of the next
+                        period, since nothing is gained or lost until the invoices are paid.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="company_id" invisible="1"/>
+                            <field name="company_currency_id" invisible="1"/>
+                            <field name="date"/>
+                            <field name="currency_ids" widget="many2many_tags"
+                                   placeholder="e.g. USD (all the other currencies by default)"
+                                   options="{'no_create': True}"/>
+                            <field name="journal_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="gain_account_id" options="{'no_create': True}"/>
+                            <field name="loss_account_id" options="{'no_create': True}"/>
+                            <field name="reverse"/>
+                            <field name="reversal_date" invisible="not reverse" required="reverse"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="1">
+                        <list string="Revaluation" create="0" delete="0" edit="0"
+                              decoration-danger="adjustment &lt; 0" decoration-success="adjustment &gt; 0">
+                            <field name="company_currency_id" column_invisible="1"/>
+                            <field name="currency_id"/>
+                            <field name="account_id"/>
+                            <field name="partner_id" optional="show"/>
+                            <field name="amount_currency"/>
+                            <field name="balance"/>
+                            <field name="revalued"/>
+                            <field name="adjustment" sum="Adjustment"/>
+                        </list>
+                    </field>
+                    <div class="text-muted" invisible="line_ids">
+                        Nothing is open in a foreign currency on this date.
+                    </div>
+                </sheet>
+                <footer>
+                    <button name="action_revalue" type="object" string="Post Adjustment" class="btn-primary"
+                            data-hotkey="q" invisible="not line_ids"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_currency_revaluation" model="ir.actions.act_window">
+        <field name="name">Currency Revaluation</field>
+        <field name="res_model">currency.revaluation</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_currency_revaluation"
+              name="Currency Revaluation"
+              sequence="30"
+              action="action_currency_revaluation"
+              groups="account.group_account_user,account.group_account_manager"
+              parent="account.account_closing_menu"/>
+
+</odoo>

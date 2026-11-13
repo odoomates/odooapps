@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_form_inherit_meta" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.form.inherit.meta</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="inherit_id" ref="om_whatsapp_base.om_whatsapp_account_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header invisible="provider != 'meta'">
+                    <button name="action_meta_setup" type="object" string="Connect to Meta" class="btn-primary"
+                            invisible="meta_state != 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_meta_setup" type="object" string="Connect Again"
+                            invisible="meta_state == 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_meta_permanent_token" type="object" string="Make it Permanent" class="btn-primary"
+                            invisible="meta_state == 'draft' or not meta_token_expires" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_meta_check" type="object" string="Check Connection"
+                            invisible="meta_state == 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_meta_set_webhook" type="object" string="Set Webhook"
+                            invisible="meta_state == 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_meta_test_message" type="object" string="Send Test Message"
+                            invisible="meta_state == 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <button name="action_meta_disconnect" type="object" string="Disconnect"
+                            invisible="meta_state == 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"
+                            confirm="Disconnect this number from the account? Odoo stops sending and receiving with it, until you connect a number again."/>
+                    <button name="action_meta_sync_templates" type="object" string="Sync Templates"
+                            invisible="meta_state == 'draft'" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                    <field name="meta_state" widget="statusbar" statusbar_visible="draft,connected"/>
+                </header>
+            </xpath>
+            <xpath expr="//sheet/div[hasclass('oe_title')]" position="before">
+                <div class="alert alert-warning" role="alert" invisible="provider != 'meta' or meta_state != 'error'">
+                    <field name="meta_status_message" class="text-break"/>
+                </div>
+                <div class="alert alert-info" role="alert" invisible="provider != 'meta' or meta_state != 'draft'">
+                    Save the account, then click <b>Connect to Meta</b>: a few small steps, each with a button to the right
+                    page of Meta, and Odoo does the rest.
+                </div>
+                <div class="alert alert-warning" role="alert" invisible="provider != 'meta' or meta_state == 'draft' or not meta_token_expires">
+                    Connected with a temporary token of Meta, until <field name="meta_token_expires" class="oe_inline" readonly="1"/>:
+                    click <b>Make it Permanent</b> to keep WhatsApp working after it.
+                </div>
+            </xpath>
+            <page name="users" position="before">
+                <page string="Meta" name="meta" invisible="provider != 'meta' or meta_state == 'draft'">
+                    <group>
+                        <group string="Number">
+                            <field name="meta_verified_name"/>
+                            <field name="meta_quality_rating"/>
+                            <field name="meta_messaging_limit"/>
+                            <field name="meta_checked_on"/>
+                        </group>
+                        <group string="Meta">
+                            <field name="meta_waba_name"/>
+                            <field name="meta_waba_id"/>
+                            <field name="meta_phone_number_id"/>
+                            <field name="meta_app_id" readonly="1" groups="om_whatsapp_base.group_om_whatsapp_manager"/>
+                        </group>
+                        <group string="Webhook" groups="om_whatsapp_base.group_om_whatsapp_manager">
+                            <field name="meta_webhook_url" widget="CopyClipboardChar"/>
+                            <field name="meta_verify_token" widget="CopyClipboardChar"/>
+                            <field name="meta_pin" readonly="1"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+</odoo>

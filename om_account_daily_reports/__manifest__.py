@@ -1,6 +1,6 @@
 {
     'name': 'Cash Book, Day Book, Bank Book Financial Reports',
-    'version': '1.0.2',
+    'version': '1.1.1',
     'category': 'Invoicing Management',
     'summary': 'Cash Book, Day Book and Bank Book Report For Odoo 19',
     'description': 'Cash Book, Day Book and Bank Book Report For Odoo 19',
@@ -10,7 +10,6 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'website': 'https://www.odoomates.tech',
     'depends': ['account', 'accounting_pdf_reports'],
     'data': [
         'security/ir.model.access.csv',

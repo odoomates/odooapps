@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <!-- The columns most bulk upload portals ask for: copy the layout and match the template of your bank. -->
+        <record id="batch_layout_generic_csv" model="account.batch.payment.layout">
+            <field name="name">Bulk Upload (CSV)</field>
+            <field name="sequence">10</field>
+            <field name="file_type">csv</field>
+        </record>
+        <record id="batch_layout_generic_csv_number" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">1</field>
+            <field name="title">Sr No</field>
+            <field name="value">line_number</field>
+        </record>
+        <record id="batch_layout_generic_csv_holder" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">2</field>
+            <field name="title">Beneficiary Name</field>
+            <field name="value">holder_name</field>
+        </record>
+        <record id="batch_layout_generic_csv_account" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">3</field>
+            <field name="title">Beneficiary Account Number</field>
+            <field name="value">account_number</field>
+        </record>
+        <record id="batch_layout_generic_csv_bic" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">4</field>
+            <field name="title">Bank Code (BIC / IFSC)</field>
+            <field name="value">bic</field>
+        </record>
+        <record id="batch_layout_generic_csv_amount" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">5</field>
+            <field name="title">Amount</field>
+            <field name="value">amount</field>
+        </record>
+        <record id="batch_layout_generic_csv_currency" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">6</field>
+            <field name="title">Currency</field>
+            <field name="value">currency</field>
+        </record>
+        <record id="batch_layout_generic_csv_date" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">7</field>
+            <field name="title">Payment Date</field>
+            <field name="value">date</field>
+        </record>
+        <record id="batch_layout_generic_csv_memo" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">8</field>
+            <field name="title">Remarks</field>
+            <field name="value">memo</field>
+            <field name="max_length">35</field>
+        </record>
+        <record id="batch_layout_generic_csv_email" model="account.batch.payment.layout.line">
+            <field name="layout_id" ref="batch_layout_generic_csv"/>
+            <field name="sequence">9</field>
+            <field name="title">Beneficiary Email</field>
+            <field name="value">partner_email</field>
+        </record>
+
+    </data>
+</odoo>

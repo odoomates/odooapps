@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_whatsapp_device.DeviceLink">
+        <div class="o_om_whatsapp_device_link p-3 text-center">
+            <t t-set="status" t-value="state.status"/>
+
+            <div t-if="status.state === 'linked'" class="py-4">
+                <div class="display-4 text-success">✓</div>
+                <h4>Linked<t t-if="status.number"> to <t t-out="status.number"/></t></h4>
+                <p class="text-muted">Odoo sends and receives with this WhatsApp from now on. It shows in the linked devices
+                    of the phone, as WhatsApp Web does.</p>
+                <button class="btn btn-primary" t-on-click="close">Close</button>
+            </div>
+
+            <div t-elif="status.state === 'offline'" class="py-4">
+                <h4 class="text-danger">The WhatsApp Bridge is not running</h4>
+                <p t-out="status.reason"/>
+                <p class="text-muted">Close, click <b>Start the Bridge</b> on the account, or start its service on the server.</p>
+            </div>
+
+            <div t-elif="status.pairing_code" class="py-3">
+                <h4>Type this code on your phone</h4>
+                <div class="o_om_whatsapp_device_code my-3" t-out="status.pairing_code"/>
+                <ol class="text-start d-inline-block">
+                    <li>Open <b>WhatsApp</b> on the phone, then <b>Settings</b> (or <b>⋮</b>) › <b>Linked devices</b>.</li>
+                    <li><b>Link a device</b> › <b>Link with phone number instead</b>.</li>
+                    <li>Type the code above.</li>
+                </ol>
+            </div>
+
+            <div t-else="">
+                <h4>Scan this QR code with your phone</h4>
+                <ol class="text-start d-inline-block">
+                    <li>Open <b>WhatsApp</b> on the phone, then <b>Settings</b> (or <b>⋮</b>) › <b>Linked devices</b>.</li>
+                    <li><b>Link a device</b>, and point the phone at the code.</li>
+                </ol>
+                <div class="my-2">
+                    <img t-if="status.qr_image" t-att-src="status.qr_image" alt="QR code to link WhatsApp"
+                         class="o_om_whatsapp_device_qr"/>
+                    <div t-else="" class="o_om_whatsapp_device_qr d-flex align-items-center justify-content-center text-muted">
+                        Getting a QR code from WhatsApp…
+                    </div>
+                </div>
+                <p class="text-muted small">The code changes by itself every few seconds: scan the one shown.</p>
+                <div t-if="!state.withCode">
+                    <button class="btn btn-link" t-on-click="() => state.withCode = true">Link with a phone number instead</button>
+                </div>
+                <div t-else="" class="d-flex gap-2 justify-content-center mt-2">
+                    <input class="form-control w-auto" type="tel" placeholder="e.g. +965 5555 1234" t-att-value="state.phone"
+                           t-on-input="(ev) => state.phone = ev.target.value"/>
+                    <button class="btn btn-primary" t-on-click="linkWithCode">Get a code</button>
+                </div>
+            </div>
+
+            <p t-if="status.reason and status.state !== 'offline'" class="text-muted small mt-2" t-out="status.reason"/>
+            <p t-if="state.error" class="text-danger mt-2" t-out="state.error"/>
+        </div>
+    </t>
+</templates>

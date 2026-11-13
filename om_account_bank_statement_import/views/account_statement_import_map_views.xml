@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_account_statement_import_map_list" model="ir.ui.view">
+            <field name="name">account.statement.import.map.list</field>
+            <field name="model">account.statement.import.map</field>
+            <field name="arch" type="xml">
+                <list string="Bank Statement File Maps">
+                    <field name="name"/>
+                    <field name="date_format"/>
+                    <field name="delimiter" optional="show"/>
+                    <field name="decimal_separator" optional="show"/>
+                    <field name="has_header" optional="hide"/>
+                    <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                </list>
+            </field>
+        </record>
+
+        <record id="view_account_statement_import_map_form" model="ir.ui.view">
+            <field name="name">account.statement.import.map.form</field>
+            <field name="model">account.statement.import.map</field>
+            <field name="arch" type="xml">
+                <form string="Bank Statement File Map">
+                    <sheet>
+                        <div class="oe_title">
+                            <label for="name"/>
+                            <h1><field name="name" placeholder="e.g. My Bank - CSV export"/></h1>
+                        </div>
+                        <group>
+                            <group string="File">
+                                <field name="file_encoding"/>
+                                <field name="delimiter"/>
+                                <field name="quotechar"/>
+                                <field name="sheet"/>
+                            </group>
+                            <group string="Values">
+                                <field name="date_format"/>
+                                <field name="decimal_separator"/>
+                                <field name="thousands_separator"/>
+                                <field name="debit_positive" widget="boolean_toggle"
+                                       invisible="not column_debit"/>
+                            </group>
+                            <group string="Rows">
+                                <field name="has_header" widget="boolean_toggle"/>
+                                <field name="skip_rows"/>
+                            </group>
+                            <group string="Other">
+                                <field name="company_id" groups="base.group_multi_company"
+                                       options="{'no_create': True}"/>
+                            </group>
+                        </group>
+                        <notebook>
+                            <page string="Columns" name="columns">
+                                <div class="alert alert-info" role="alert">
+                                    Write the name of the column of the file when it has a header row, or the
+                                    number of the column otherwise, the first column being
+                                    <code>1</code>. Use either the amount column, or the debit and the credit
+                                    columns.
+                                </div>
+                                <group>
+                                    <group string="Transaction">
+                                        <field name="column_date"/>
+                                        <field name="column_label"/>
+                                        <field name="column_ref"/>
+                                        <field name="column_narration"/>
+                                    </group>
+                                    <group string="Amount">
+                                        <field name="column_amount"
+                                               required="not column_debit or not column_credit"/>
+                                        <field name="column_debit" required="not column_amount"/>
+                                        <field name="column_credit" required="not column_amount"/>
+                                        <field name="column_currency"/>
+                                    </group>
+                                    <group string="Other Party">
+                                        <field name="column_partner"/>
+                                        <field name="column_account_number"/>
+                                    </group>
+                                    <group string="Import">
+                                        <field name="column_unique_id"/>
+                                    </group>
+                                </group>
+                            </page>
+                            <page string="Notes" name="note">
+                                <field name="note" nolabel="1"
+                                       placeholder="e.g. Export the transactions of the month from the website of the bank, in CSV."/>
+                            </page>
+                        </notebook>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="action_account_statement_import_map" model="ir.actions.act_window">
+            <field name="name">Bank Statement File Maps</field>
+            <field name="res_model">account.statement.import.map</field>
+            <field name="view_mode">list,form</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">Describe the file of your bank</p>
+                <p>
+                    A map tells Odoo how to read the CSV or Excel file of one bank: its separators, the format
+                    of its dates and which column holds the date, the label and the amount of a transaction.
+                    Set the map on the journal of the bank and import the file as usual.
+                </p>
+            </field>
+        </record>
+
+        <menuitem id="menu_account_statement_import_map"
+                  name="Bank Statement File Maps"
+                  action="action_account_statement_import_map"
+                  parent="account.menu_finance_configuration"
+                  groups="account.group_account_manager"
+                  sequence="45"/>
+
+    </data>
+</odoo>

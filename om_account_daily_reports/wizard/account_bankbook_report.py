@@ -4,6 +4,7 @@ from datetime import date
 
 class AccountBankBookReport(models.TransientModel):
     _name = "account.bankbook.report"
+    _inherit = "om.report.company.notice"
     _description = "Bank Book Report"
 
     def _get_default_account_ids(self):
@@ -62,5 +63,5 @@ class AccountBankBookReport(models.TransientModel):
         data['form']['comparison_context'] = comparison_context
         return self.env.ref(
             'om_account_daily_reports.action_report_bank_book').report_action(self,
-                                                                     data=data)
+                                                                     data=data, config=False)
 

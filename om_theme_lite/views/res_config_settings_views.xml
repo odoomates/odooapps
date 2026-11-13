@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om.theme.lite</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='companies']" position="after">
+                <block title="Theme" name="om_theme_lite_setting_container">
+                    <setting id="om_home_background" string="Home screen background" company_dependent="1"
+                             help="A picture behind the app launcher and on the login page">
+                        <field name="om_home_background" widget="image" class="w-50"
+                               options="{'size': [0, 90]}"/>
+                    </setting>
+                    <setting id="om_favicon" string="Favicon" company_dependent="1"
+                             help="The small icon in the browser tab">
+                        <field name="om_favicon" widget="image" class="w-25"
+                               options="{'size': [0, 48]}"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

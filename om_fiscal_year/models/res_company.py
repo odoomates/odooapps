@@ -1,38 +1,18 @@
-from odoo import api, fields, models, _
-from odoo.exceptions import RedirectWarning, ValidationError
+from odoo import fields, models
 
 
 class ResCompany(models.Model):
     _inherit = 'res.company'
 
-    def _validate_fiscalyear_lock(self, values):
-        if values.get('fiscalyear_lock_date'):
-            draft_entries = self.env['account.move'].search([
-                ('company_id', 'in', self.ids),
-                ('state', '=', 'draft'),
-                ('date', '<=', values['fiscalyear_lock_date'])])
-            if draft_entries:
-                error_msg = _(
-                    'There are still unposted entries in the period you want to lock. You should either post or delete them.')
-                action_error = {
-                    'view_mode': 'list',
-                    'name': 'Unposted Entries',
-                    'res_model': 'account.move',
-                    'type': 'ir.actions.act_window',
-                    'domain': [('id', 'in', draft_entries.ids)],
-                    'search_view_id': [self.env.ref('account.view_account_move_filter').id, 'search'],
-                    'views': [[self.env.ref('account.view_move_tree').id, 'list'],
-                              [self.env.ref('account.view_move_form').id, 'form']],
-                }
-                raise RedirectWarning(error_msg, action_error, _('Show unposted entries'))
+    retained_earnings_account_id = fields.Many2one(
+        'account.account', string='Retained Earnings Account', check_company=True,
+        domain=[('account_type', '=', 'equity')],
+        help='Account receiving the earnings of the fiscal years when they are closed.')
 
-            unreconciled_statement_lines = self.env['account.bank.statement.line'].search([
-                ('company_id', 'in', self.ids),
-                ('is_reconciled', '=', False),
-                ('date', '<=', values['fiscalyear_lock_date']),
-                ('move_id.state', 'in', ('draft', 'posted')),
-            ])
-            if unreconciled_statement_lines:
-                error_msg = _("There are still unreconciled bank statement lines in the period you want to lock."
-                              "You should either reconcile or delete them.")
-                raise ValidationError(error_msg)
+    def _get_unreconciled_statement_lines_redirect_action(self, unreconciled_statement_lines):
+        """ The action of the warning shown when a period with unreconciled bank transactions is locked. Core gives
+        it no views, which the web client needs to open it from the warning: they are the views of its mode. """
+        action = super()._get_unreconciled_statement_lines_redirect_action(unreconciled_statement_lines)
+        if not action.get('views'):
+            action['views'] = [(False, mode) for mode in action['view_mode'].split(',')]
+        return action
