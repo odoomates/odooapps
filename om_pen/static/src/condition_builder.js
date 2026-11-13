@@ -59,7 +59,9 @@ export function buildExpression(condition, fields) {
                     .join(", ");
                 return `${row.field} in [${items}]`;
             }
-            return `${row.field} ${row.operator} ${literal(row.value, type)}`;
+            // "is" is stored as "=", which in python would be an assignment
+            const operator = row.operator === "=" ? "==" : row.operator;
+            return `${row.field} ${operator} ${literal(row.value, type)}`;
         })
         .join(join);
 }
