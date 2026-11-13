@@ -188,7 +188,8 @@ export class CustomizerOverlay extends Component {
             this.pristine = JSON.stringify(this.draft);
             return;
         }
-        this.draft.label = rule.label || "";
+        // the label box already holds the rule's label, or the one shown when the
+        // rule renames nothing
         this.draft.help_text = rule.help_text || "";
         this.draft.widget = rule.widget || "";
         this.draft.placeholder = rule.placeholder || "";
