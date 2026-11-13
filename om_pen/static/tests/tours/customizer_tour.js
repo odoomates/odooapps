@@ -560,6 +560,11 @@ registry.category("web_tour.tours").add("om_pen_related_tour", {
             trigger: ".om-pen-picked.has:contains('parent_id.website')",
         },
         {
+            content: "give it a label of its own, not the one of the field it mirrors",
+            trigger: ".modal .om-pen-new-label",
+            run: "edit Parent Website",
+        },
+        {
             content: "name it",
             trigger: ".om-pen-new-name",
             run: "edit parent_site",

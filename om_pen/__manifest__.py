@@ -45,6 +45,7 @@ replayed on another database.
             'om_pen/static/tests/tours/*.js',
         ],
     },
+    'live_test_url': 'https://www.youtube.com/watch?v=i-6JEtXyjXY',
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
 }

@@ -125,6 +125,22 @@ class OmPenRule(models.Model):
             if not isinstance(value, dict):
                 raise ValidationError(_("The original options of %s must be a dictionary.") % rule.field_name)
 
+    @api.constrains('invisible', 'readonly', 'required', 'column_invisible')
+    def _check_conditions(self):
+        # a condition that does not parse breaks the whole view, for everybody
+        for rule in self:
+            for name in ('invisible', 'readonly', 'required', 'column_invisible'):
+                expression = (rule[name] or '').strip()
+                if not expression:
+                    continue
+                try:
+                    ast.parse(expression, mode='eval')
+                except SyntaxError as error:
+                    raise ValidationError(_(
+                        "The condition for %(attribute)s of %(field)s is not valid: %(condition)s",
+                        attribute=rule._fields[name].string, field=rule.field_name, condition=expression,
+                    )) from error
+
     # the shape of a rule as it gets published; everything the arch is built from
     SNAPSHOT_FIELDS = (
         'field_name', 'kind', 'label', 'help_text', 'widget', 'placeholder', 'optional',
