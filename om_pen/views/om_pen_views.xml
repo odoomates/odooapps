@@ -1,0 +1,128 @@
+<odoo>
+
+    <record id="om_pen_view_view_list" model="ir.ui.view">
+        <field name="name">om.pen.view.list</field>
+        <field name="model">om.pen.view</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="model"/>
+                <field name="view_id"/>
+                <field name="view_type"/>
+                <field name="custom_view_id"/>
+                <field name="active" widget="boolean_toggle"/>
+                <field name="broken" widget="boolean_toggle" readonly="1"
+                       decoration-danger="broken"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_pen_view_view_form" model="ir.ui.view">
+        <field name="name">om.pen.view.form</field>
+        <field name="model">om.pen.view</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_reset" type="object" string="Reset This View"
+                            confirm="Every customization of this view will be removed. Continue?"/>
+                    <button name="action_export_module" type="object" string="Export As Module"
+                            class="btn-primary"/>
+                </header>
+                <div class="alert alert-danger m-0" role="alert" invisible="not broken">
+                    This customization no longer matches the view it extends, usually
+                    because a module update moved or removed something it points at.
+                    Switch it off, or reset it, before upgrading.
+                </div>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="model" readonly="1"/>
+                            <field name="view_id" readonly="1"/>
+                            <field name="view_type" readonly="1"/>
+                        </group>
+                        <group>
+                            <field name="custom_view_id" readonly="1"/>
+                            <field name="active" widget="boolean_toggle"/>
+                            <field name="broken" readonly="1"/>
+                        </group>
+                    </group>
+                    <group string="Allowed Actions">
+                        <group>
+                            <field name="create_ok"/>
+                            <field name="edit_ok"/>
+                            <field name="delete_ok"/>
+                        </group>
+                        <group>
+                            <!-- the client ANDs duplicate with create, so a disabled
+                                 create silently disables duplicate as well -->
+                            <field name="duplicate_ok" readonly="not create_ok"/>
+                            <field name="export_ok" invisible="view_type != 'list'"/>
+                            <field name="import_ok" invisible="view_type not in ('list', 'kanban')"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Field Rules" name="rules">
+                            <field name="rule_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="field_name"/>
+                                    <field name="label"/>
+                                    <field name="invisible"/>
+                                    <field name="readonly"/>
+                                    <field name="required"/>
+                                    <field name="widget"/>
+                                    <field name="kind"/>
+                                    <field name="anchor_field"/>
+                                    <field name="group_ids" widget="many2many_tags"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Added Pages" name="pages">
+                            <field name="page_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="string"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_pen_export_action" model="ir.actions.server">
+        <field name="name">Export As Module</field>
+        <field name="model_id" ref="model_om_pen_view"/>
+        <field name="binding_model_id" ref="model_om_pen_view"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">action = records.action_export_module()</field>
+    </record>
+
+    <record id="om_pen_recheck_action" model="ir.actions.server">
+        <field name="name">Check For Broken Customizations</field>
+        <field name="model_id" ref="model_om_pen_view"/>
+        <field name="state">code</field>
+        <field name="code">model.action_recheck()</field>
+    </record>
+
+    <record id="om_pen_view_action" model="ir.actions.act_window">
+        <field name="name">View Customizations</field>
+        <field name="res_model">om.pen.view</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No view has been customized yet</p>
+            <p>Turn on customize mode from the navbar, then click the pencil on any field.</p>
+        </field>
+    </record>
+
+    <menuitem id="om_pen_menu"
+              name="View Customizations"
+              parent="base.menu_custom"
+              action="om_pen_view_action"
+              groups="om_pen.group_customizer"
+              sequence="25"/>
+
+</odoo>
