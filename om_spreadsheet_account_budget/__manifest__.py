@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 19 Budgets Dashboard',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Accounting',
     'summary': 'Budgets dashboard in the Dashboards app: planned, expected and actual expenses and revenues',
     'description': """
