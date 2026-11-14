@@ -17,7 +17,7 @@
         'report/report_journal_entries.xml',
     ],
     'pre_init_hook': 'pre_init_hook',
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'application': False,
 }
