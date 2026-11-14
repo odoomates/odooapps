@@ -1,77 +1,336 @@
-<div class="om-wrap" style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#2b2b3a;">
-
-<style>
-@media (max-width: 760px) {
-    .om-card {width: 100% !important; margin: 0 0 14px 0 !important;}
-    .om-hero h1 {font-size: 26px !important;}
-    .om-band {padding: 28px 16px !important;}
-}
-</style>
-
-<div class="om-hero" style="background:#2C0091;color:#ffffff;padding:48px 32px;text-align:center;">
-    <h1 style="color:#ffffff;font-size:34px;font-weight:700;margin:0 0 14px 0;line-height:1.25;">Currency Revaluation for Odoo 19 Community</h1>
-    <p style="color:#e7dffa;font-size:18px;line-height:1.55;margin:0 auto;max-width:900px;">Restate what is open in a foreign currency at the rate of the closing date &mdash; the unpaid invoices, the unpaid bills and the accounts held in a foreign currency &mdash; as one adjustment entry on an unrealized gain and an unrealized loss account, reversed at the start of the next period.</p>
-    <div style="margin-top:24px;">
-        <span style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.38);color:#ffffff;border-radius:40px;padding:7px 18px;margin:5px;font-size:14px;font-weight:600;">Unrealized gains and losses</span>
-        <span style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.38);color:#ffffff;border-radius:40px;padding:7px 18px;margin:5px;font-size:14px;font-weight:600;">Closing rate</span>
-        <span style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.38);color:#ffffff;border-radius:40px;padding:7px 18px;margin:5px;font-size:14px;font-weight:600;">IAS 21</span>
-        <span style="display:inline-block;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.38);color:#ffffff;border-radius:40px;padding:7px 18px;margin:5px;font-size:14px;font-weight:600;">Community Edition</span>
-    </div>
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#4B4453;">
+<div style="border:1px solid #E8DFEC;border-radius:14px;background-color:#FAF6FA;padding:12px 16px;margin:8px 0 10px 0;">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_accountant" target="_blank" rel="noopener" style="float:right;display:inline-block;border:1px solid #714B67;color:#714B67;border-radius:8px;padding:7px 14px;margin:4px 0 0 12px;font-size:14px;font-weight:700;text-decoration:none;">See Odoo 19 Accounting &rarr;</a>
+<img src="om_app_accountant.png" alt="Odoo 19 Accounting" style="float:left;width:44px;height:44px;border-radius:10px;margin:0 12px 0 0;"/>
+<div style="overflow:hidden;">
+<span style="display:inline-block;color:#FFFFFF;background-color:#714B67;border-radius:20px;padding:1px 9px;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;vertical-align:middle;">Part of</span>
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_accountant" target="_blank" rel="noopener" style="font-size:15px;font-weight:700;color:#3E2D4F;text-decoration:none;vertical-align:middle;margin-left:4px;">Odoo 19 Accounting</a>
+<div style="font-size:13.5px;color:#4C4C60;line-height:1.5;margin:3px 0 0 0;">Currency Revaluation is one of the modules of Odoo 19 Accounting. Need full accounting? Install <b>om_account_accountant</b> and get all of them, arranged in one Accounting app.</div>
 </div>
-
-<div class="om-band" style="padding:44px 32px;background:#ffffff;">
-    <span style="display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#148963;background:#e6f4ee;border-radius:4px;padding:5px 10px;margin-bottom:12px;">Revalue</span>
-    <h2 style="font-size:28px;font-weight:700;color:#2C0091;margin:0 0 10px 0;">See the adjustment before you post it</h2>
-    <p style="font-size:17px;color:#4a4a5a;line-height:1.6;margin:0 0 20px 0;max-width:1000px;">Open Currency Revaluation from the Closing menu, pick the date and, if you want, the currencies to treat. The lines are computed as you type: for each account, partner and currency, what is open in the foreign currency, what it is worth in the books, what it is worth at the rate of that date, and the difference between the two.</p>
-    <ul style="margin:0 0 22px 0;padding:0 0 0 4px;list-style:none;">
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;The receivable and payable accounts are revalued on what is left open on them, invoice by invoice and partner by partner.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;The accounts held in a foreign currency, such as a foreign bank account, are revalued on the balance they hold.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;Every currency other than the one of the company, or only the ones you name.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;The total of the adjustment is shown before anything is posted.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;A past period gives the same figures once the invoices have been paid: only what was matched on or before the revaluation date is deducted.</li>
-    </ul>
-    <div class="om-shot" style="margin:18px 0 6px 0;text-align:center;">
-        <img src="currency_revaluation.png" alt="The revaluation, account by account, with the adjustment of each line." style="max-width:100%;border:1px solid #dddddd;border-radius:6px;"/></div>
-    <p style="font-size:13px;color:#8a8a99;text-align:center;margin:8px 0 0;">The revaluation, account by account, with the adjustment of each line.</p>
+<div style="clear:both;"></div>
 </div>
-
-<div class="om-band" style="padding:44px 32px;background:#f6f5f9;">
-    <span style="display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#148963;background:#e6f4ee;border-radius:4px;padding:5px 10px;margin-bottom:12px;">Entry</span>
-    <h2 style="font-size:28px;font-weight:700;color:#2C0091;margin:0 0 10px 0;">One adjustment entry, reversed on its own</h2>
-    <p style="font-size:17px;color:#4a4a5a;line-height:1.6;margin:0 0 20px 0;max-width:1000px;">Post Adjustment writes a single entry: the difference on each account against the unrealized gain account and the unrealized loss account. The amounts in the foreign currency do not move &mdash; only what they are worth does.</p>
-    <ul style="margin:0 0 22px 0;padding:0 0 0 4px;list-style:none;">
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;Each line says which amount was revalued and at the rate of which date.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;The entry is reversed at the start of the next period, so nothing is gained or lost until the invoices are paid.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;A date can be revalued only once: the entry already posted on it is named, and has to be reversed or deleted first.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;Only the accounting managers can post a revaluation.</li>
-        <li style="font-size:15px;color:#45455a;line-height:1.55;margin:0 0 8px 0;"><span style="color:#148963;font-weight:700;">&#10003;</span> &nbsp;The revaluation date is kept on the entry, so the adjustments are easy to find again.</li>
-    </ul>
+<div style="background-color:#715782;background-image:linear-gradient(135deg,#71639E 0%,#714B67 100%);border-radius:16px;padding:40px 28px 34px 28px;text-align:center;color:#FFFFFF;margin:8px 0 0 0;">
+<div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#EADFF0;text-transform:uppercase;margin:0 0 10px 0;">Odoo Mates &middot; free and open source</div>
+<h1 style="font-size:42px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">Currency Revaluation</h1>
+<p style="font-size:19px;color:#F6F1F7;max-width:720px;margin:0 auto 20px auto;line-height:1.5;">Restate what is open in a foreign currency at the closing rate, as one adjustment entry on unrealized gain and loss accounts, reversed at the start of the next period.</p>
+<div style="margin:0 0 22px 0;">
+<span style="display:inline-block;border:1px solid #D9C8E2;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Unrealized gains and losses</span>
+<span style="display:inline-block;border:1px solid #D9C8E2;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Closing rate</span>
+<span style="display:inline-block;border:1px solid #D9C8E2;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Auto-reversal</span>
+<span style="display:inline-block;border:1px solid #D9C8E2;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">IAS 21</span>
+<span style="display:inline-block;border:1px solid #D9C8E2;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Community Edition</span>
+<span style="display:inline-block;border:1px solid #D9C8E2;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Free, LGPL-3</span>
 </div>
-
-<div class="om-band" style="padding:44px 32px;background:#ffffff;">
-    <span style="display:inline-block;font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase;color:#148963;background:#e6f4ee;border-radius:4px;padding:5px 10px;margin-bottom:12px;">Settings</span>
-    <h2 style="font-size:28px;font-weight:700;color:#2C0091;margin:0 0 10px 0;">Set it up once, per company</h2>
-    <p style="font-size:17px;color:#4a4a5a;line-height:1.6;margin:0 0 20px 0;max-width:1000px;">The journal of the adjustment entries, the unrealized gain account, the unrealized loss account and whether the entry is reversed are kept on the company and filled in by default in the wizard.</p>
-    <div class="om-shot" style="margin:18px 0 6px 0;text-align:center;">
-        <img src="currency_settings.png" alt="The journal and the accounts of the revaluation, in the accounting settings." style="max-width:100%;border:1px solid #dddddd;border-radius:6px;"/></div>
-    <p style="font-size:13px;color:#8a8a99;text-align:center;margin:8px 0 0;">The journal and the accounts of the revaluation, in the accounting settings.</p>
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_accountant" target="_blank" rel="noopener" style="display:inline-block;background-color:#FFFFFF;color:#3E2D4F;border-radius:8px;padding:10px 22px;margin:0 6px 8px 6px;font-size:15px;font-weight:700;text-decoration:none;">Need full accounting? Odoo 19 Accounting &rarr;</a>
 </div>
-
-<hr style="width:100%;height:4px;background:#2C0091;margin:0px;border:none;"/>
-<hr style="width:100%;height:4px;background:#148963;margin:0px;border:none;"/>
-
-<div style="padding:36px 32px;background:#ffffff;text-align:center;">
-    <img src="odoo_mates.png" alt="Odoo Mates" style="height:140px;max-width:100%;"/>
-    <h3 style="color:#2C0091;font-size:24px;margin:14px 0 6px 0;">Keeping it simple</h3>
-    <h3 style="color:#2C0091;font-size:19px;margin:0 0 14px 0;">Email: <a href="mailto:odoomates@gmail.com" style="color:#714B67;">odoomates@gmail.com</a></h3>
-    <div>
-        <a target="_blank" href="https://www.facebook.com/odoomatesofficial" style="margin:0 8px;"><i class="fa fa-facebook-square" style="font-size:34px;color:#2C0091;"></i></a>
-        <a target="_blank" href="https://twitter.com/odoomates/" style="margin:0 8px;"><i class="fa fa-twitter" style="font-size:34px;color:#2C0091;"></i></a>
-        <a target="_blank" href="https://www.youtube.com/channel/UCVKlUZP7HAhdQgs-9iTJklQ" style="margin:0 8px;"><i class="fa fa-youtube-play" style="font-size:34px;color:#2C0091;"></i></a>
-    </div>
+<div style="padding:34px 0 4px 0;text-align:center;">
+<h2 style="font-size:28px;font-weight:800;color:#3E2D4F;margin:0 0 8px 0;">Everything at a glance</h2>
+<p style="font-size:15px;color:#4B4453;max-width:760px;margin:0 auto 18px auto;line-height:1.6;">The foreign currency step of the closing, previewed before anything is posted.</p>
 </div>
-
-<hr style="width:100%;height:4px;background:#148963;margin:0px;border:none;"/>
-<hr style="width:100%;height:4px;background:#2C0091;margin:0px;border:none;"/>
-
+<div class="row">
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-users">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Receivables and Payables</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">What is still open, partner by partner.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-university">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Foreign Bank Accounts</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">Accounts in a foreign currency, on their balance.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-eye">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Preview First</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">Open amount, in the books, at the closing rate, and the difference.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-file-text-o">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">One Entry</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">Each difference against an unrealized gain or loss account.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-undo">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Reversed Next Period</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">Nothing is gained or lost until the invoices are paid.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-history">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Past Periods Hold</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">Only what was matched by the date is deducted.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-ban">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Once per Date</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">A second revaluation of the same date is refused.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #715782;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-cog">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#3E2D4F;margin:0 0 3px 0;">Set Once</div>
+<div style="font-size:12.5px;color:#4B4453;line-height:1.45;">Journal and accounts kept per company, filled in by default.</div>
+</div>
+</div>
+</div>
+</div>
+<div style="padding:44px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#715782;text-transform:uppercase;margin:0 0 6px 0;">Features</div>
+<h2 style="font-size:28px;font-weight:800;color:#3E2D4F;margin:0 0 8px 0;">A closer look</h2>
+</div>
+<div class="row">
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#715782;text-transform:uppercase;margin:0 0 3px 0;">Revalue</div>
+<h3 style="font-size:19px;font-weight:800;color:#3E2D4F;margin:0 0 10px 0;">See the adjustment before you post it</h3>
+<img src="currency_revaluation.png" alt="See the adjustment before you post it" style="display:block;width:100%;border-radius:8px;border:1px solid #E8DFEC;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Open Currency Revaluation from the Closing menu and pick the date.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Receivables and payables revalued on what is open, partner by partner.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Accounts held in a foreign currency revalued on their balance.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Every foreign currency, or only the ones you name, with the total shown first.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Post Adjustment writes one entry, reversed on the date you choose.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#715782;text-transform:uppercase;margin:0 0 3px 0;">Settings</div>
+<h3 style="font-size:19px;font-weight:800;color:#3E2D4F;margin:0 0 10px 0;">Set it up once, per company</h3>
+<img src="currency_settings.png" alt="Set it up once, per company" style="display:block;width:100%;border-radius:8px;border:1px solid #E8DFEC;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The journal of the adjustment entries.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The unrealized gain account and the unrealized loss account.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Whether the entry is reversed at the start of the next period.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Only accounting managers can post a revaluation.</div>
+</div>
+</div>
+</div>
+<div style="padding:30px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#715782;text-transform:uppercase;margin:0 0 6px 0;">How it works</div>
+<h2 style="font-size:28px;font-weight:800;color:#3E2D4F;margin:0 0 8px 0;">In three steps</h2>
+</div>
+<div class="row">
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#715782;background-image:linear-gradient(135deg,#71639E 0%,#714B67 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">1</span></div><div style="font-size:15px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Set the accounts</div><div style="font-size:14px;color:#4B4453;line-height:1.55;">Journal, unrealized gain and loss accounts in the accounting settings.</div></div></div>
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#715782;background-image:linear-gradient(135deg,#71639E 0%,#714B67 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">2</span></div><div style="font-size:15px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Pick the date</div><div style="font-size:14px;color:#4B4453;line-height:1.55;">Usually the last day of the period; the lines compute as you type.</div></div></div>
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#715782;background-image:linear-gradient(135deg,#71639E 0%,#714B67 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">3</span></div><div style="font-size:15px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Post the adjustment</div><div style="font-size:14px;color:#4B4453;line-height:1.55;">One entry, with its reversal on the first day of the next period.</div></div></div>
+</div>
+<div style="background-color:#715782;background-image:linear-gradient(135deg,#71639E 0%,#714B67 100%);border-radius:16px;padding:28px 22px 12px 22px;margin:30px 0 0 0;">
+<div style="text-align:center;margin:0 0 16px 0;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#EADFF0;text-transform:uppercase;margin:0 0 6px 0;">Part of Odoo 19 Accounting</div>
+<h2 style="font-size:26px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">Need full accounting? Use Odoo 19 Accounting</h2>
+<p style="font-size:14.5px;color:#F6F1F7;max-width:780px;margin:0 auto 14px auto;line-height:1.55;">Currency Revaluation works on its own. For a complete accounting application, install <b>om_account_accountant</b>: it brings Currency Revaluation and all the modules below, and arranges their menus in one Accounting app.</p>
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_accountant" target="_blank" rel="noopener" style="display:inline-block;background-color:#FFFFFF;color:#3E2D4F;border-radius:8px;padding:10px 22px;margin:0 0 6px 0;font-size:15px;font-weight:700;text-decoration:none;">Get Odoo 19 Accounting, free &rarr;</a>
+</div>
+<div class="row">
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/accounting_pdf_reports" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-bar-chart"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Financial Reports</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_daily_reports" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-calendar"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Day, Cash &amp; Bank Book</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_spreadsheet_account" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-tachometer"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Accounting Dashboards</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_reconcile" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-exchange"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Bank Reconciliation</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_bank_statement_import" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-upload"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Bank Statement Import</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_cash_forecast" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-line-chart"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Cash Forecast</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_accountant" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-bell-o"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Customer Follow-ups</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_check_printing" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-money"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Cheque Printing</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_recurring_payments" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-refresh"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Recurring Payments</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_asset" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-building-o"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Asset Management</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_budget" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-pie-chart"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Budget Management</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_currency_rate_update" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-globe"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Automatic Currency Rates</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_currency_revaluation" target="_blank" rel="noopener" class="h-100" style="display:block;border:2px solid #FFFFFF;background-color:#F6F1F7;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-repeat"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Currency Revaluation</span><span style="display:inline-block;color:#714B67;font-size:9.5px;font-weight:700;letter-spacing:.5px;margin-left:5px;vertical-align:middle;">THIS APP</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_fiscal_year" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-lock"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Fiscal Year &amp; Closing</span>
+</a>
+</div>
+<div class="col-6 col-md-4 col-lg-3 mb-2">
+<a href="https://apps.odoo.com/apps/modules/19.0/om_print_journal_entry" target="_blank" rel="noopener" class="h-100" style="display:block;border:1px solid #E8DFEC;background-color:#FFFFFF;border-radius:10px;padding:9px 10px;text-decoration:none;">
+<span style="display:inline-block;width:26px;height:26px;border-radius:7px;background-color:#F6F1F7;color:#715782;text-align:center;line-height:26px;font-size:13px;vertical-align:middle;margin:0 6px 0 0;"><i class="fa fa-print"></i></span><span style="font-size:12.5px;font-weight:700;color:#3E2D4F;vertical-align:middle;">Print Journal Entries</span>
+</a>
+</div>
+</div>
+<p style="font-size:12.5px;color:#F6F1F7;text-align:center;margin:6px 0 4px 0;">Plus the accounting menus, the Accountant, Advisor and Auditor groups, and the accounting settings.</p>
+</div>
+<div style="padding:40px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#715782;text-transform:uppercase;margin:0 0 6px 0;">Install</div>
+<h2 style="font-size:28px;font-weight:800;color:#3E2D4F;margin:0 0 8px 0;">Get started</h2>
+</div>
+<div class="row">
+<div class="col-12 col-lg-7 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:20px;">
+<h3 style="font-size:21px;font-weight:800;color:#3E2D4F;margin:0 0 12px 0;">How to install it</h3>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#715782;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">1</span>Copy the module to a folder of your own modules, e.g. <code style="background-color:#F6F1F7;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">/opt/odoo/custom-addons</code>, and add that folder to <code style="background-color:#F6F1F7;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">addons_path</code> in <code style="background-color:#F6F1F7;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">odoo.conf</code>.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#715782;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">2</span>Restart Odoo.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#715782;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">3</span>Activate the developer mode, then <b>Apps &rarr; Update Apps List</b>.</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#715782;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">4</span>Clear the Apps filter, search <b>om_currency_revaluation</b> and install it.</div>
+<div style="background-color:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;margin:10px 0 0 0;font-size:13px;color:#78350F;line-height:1.5;">
+<b>Do not use Apps &rarr; Import Module.</b> It is meant for data modules without Python, and leaves this module half loaded.</div>
+</div>
+</div>
+<div class="col-12 col-lg-5 mb-3">
+<div class="h-100" style="background-color:#715782;background-image:linear-gradient(135deg,#71639E 0%,#714B67 100%);border-radius:12px;padding:20px;">
+<h3 style="font-size:21px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">The whole suite, in one install</h3>
+<p style="font-size:14px;color:#F6F1F7;line-height:1.55;margin:0 0 12px 0;">Odoo 19 Accounting installs this module with every other one of the suite, the accounting menus and the dashboards, and comes with a user guide for the person keeping the books.</p>
+<a href="https://apps.odoo.com/apps/modules/19.0/om_account_accountant" target="_blank" rel="noopener" style="display:inline-block;background-color:#FFFFFF;color:#3E2D4F;border-radius:8px;padding:9px 20px;margin:4px 0 0 0;font-size:14px;font-weight:700;text-decoration:none;">See Odoo 19 Accounting &rarr;</a>
+</div>
+</div>
+</div>
+<div style="padding:30px 0 4px 0;text-align:center;">
+<h2 style="font-size:28px;font-weight:800;color:#3E2D4F;margin:0 0 8px 0;">Questions we get</h2>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Do the amounts in the foreign currency change?</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;">No. Only what they are worth in the currency of the company changes; the foreign amounts stay as they are.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Can I revalue the same date twice?</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;">No. The entry already posted for that date is named, and has to be reversed or deleted first.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Where do the closing rates come from?</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;">From the currency rates in Odoo. <b>om_currency_rate_update</b> keeps them up to date for you.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Do I need the full accounting app?</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;">No. Currency Revaluation works on its own. For complete accounting, install <b>om_account_accountant</b>, which brings it together with the rest of the suite.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E8DFEC;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#3E2D4F;margin:0 0 4px 0;">Do I need Odoo Enterprise?</div>
+<div style="font-size:13.5px;color:#4B4453;line-height:1.5;">No. Everything on this page runs on the Community Edition.</div>
+</div>
+</div>
+</div>
+<div style="background-color:#F6F1F7;border-radius:16px;padding:24px 20px 16px 20px;text-align:center;margin:18px 0 0 0;">
+<h2 style="font-size:22px;font-weight:800;color:#3E2D4F;margin:0 0 6px 0;">How is the app working for you?</h2>
+<p style="font-size:14px;color:#4B4453;margin:0 0 12px 0;">Your rating helps others find it; your requests and pull requests decide what comes next.</p>
+<a href="https://apps.odoo.com/apps/modules/19.0/om_currency_revaluation/" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E8DFEC;background-color:#FFFFFF;color:#3E2D4F;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#9733;&nbsp; Rate us on Odoo Apps</a>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2019%20Currency%20Revaluation%20(om_currency_revaluation)%20-%20Feature%20request" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E8DFEC;background-color:#FFFFFF;color:#3E2D4F;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#128161;&nbsp; Request a feature</a>
+<a href="https://github.com/odoomates/odooapps/issues/new/choose" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E8DFEC;background-color:#FFFFFF;color:#3E2D4F;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#128027;&nbsp; Report an issue</a>
+<a href="https://github.com/odoomates/odooapps" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E8DFEC;background-color:#FFFFFF;color:#3E2D4F;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#9733;&nbsp; Star us on GitHub</a>
+</div>
+<div style="text-align:center;margin:18px 0 10px 0;">
+<img src="odoo_mates.png" alt="Odoo Mates" style="height:44px;margin:0 0 4px 0;"/>
+<div style="font-size:13px;color:#4B4453;">Email: <a href="mailto:odoomates@gmail.com" style="color:#715782;font-weight:700;">odoomates@gmail.com</a></div>
+</div>
 </div>
