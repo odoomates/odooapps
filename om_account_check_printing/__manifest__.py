@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 18 Cheque Printing',
-    'version': '1.1.0',
+    'version': '1.1.1',
     'category': 'Accounting',
     'summary': 'Configurable cheque formats for printing the cheques of any bank in Odoo 18 Community',
     'description': """

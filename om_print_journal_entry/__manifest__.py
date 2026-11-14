@@ -1,6 +1,6 @@
 {
     'name': 'Print Journal Entries',
-    'version': '18.0.1.1.0',
+    'version': '18.0.1.1.1',
     'category': 'Accounting',
     'summary': 'Print Journal Entry, Journal Entries PDF, Print Accounting Entries, Journal Voucher Print, '
                'Print Journal Items, Journal Entry Report, Taxes, Tax Summary',
