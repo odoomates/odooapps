@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_adapt_rule_list" model="ir.ui.view">
+        <field name="name">om.adapt.rule.list</field>
+        <field name="model">om.adapt.rule</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-success="state == 'applied'" decoration-muted="state == 'dismissed'">
+                <header>
+                    <button name="action_analyse" type="object" string="Analyse now" class="btn-primary" display="always"/>
+                    <button name="action_apply" type="object" string="Apply"/>
+                    <button name="action_undo" type="object" string="Undo"/>
+                    <button name="action_dismiss" type="object" string="Dismiss"/>
+                </header>
+                <field name="kind"/>
+                <field name="model_label"/>
+                <field name="element_label"/>
+                <field name="evidence"/>
+                <field name="history" widget="om_sparkline" optional="show"/>
+                <field name="last_used" optional="hide"/>
+                <field name="group_id" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="auto_applied" optional="hide"/>
+                <field name="score" optional="hide"/>
+                <field name="view_type" column_invisible="True"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-info="state == 'suggested'"
+                       decoration-success="state == 'applied'" decoration-muted="state == 'dismissed'"/>
+                <button name="action_apply" type="object" string="Apply" class="btn-link"
+                        invisible="state != 'suggested'"/>
+                <button name="action_undo" type="object" string="Undo" class="btn-link"
+                        invisible="state != 'applied'"/>
+                <button name="action_preview" type="object" string="Preview" class="btn-link"
+                        invisible="state == 'applied' or view_type not in ('form', 'list')"/>
+                <button name="action_dismiss" type="object" string="Dismiss" class="btn-link text-muted"
+                        invisible="state != 'suggested'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_adapt_rule_form" model="ir.ui.view">
+        <field name="name">om.adapt.rule.form</field>
+        <field name="model">om.adapt.rule</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_apply" type="object" string="Apply" class="btn-primary"
+                            invisible="state != 'suggested'"/>
+                    <button name="action_preview" type="object" string="Preview"
+                            invisible="state == 'applied' or view_type not in ('form', 'list')"/>
+                    <button name="action_undo" type="object" string="Undo" invisible="state != 'applied'"/>
+                    <button name="action_dismiss" type="object" string="Dismiss" invisible="state != 'suggested'"/>
+                    <button name="action_restore" type="object" string="Suggest again" invisible="state != 'dismissed'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group string="Where">
+                            <field name="kind"/>
+                            <field name="model_label"/>
+                            <field name="model" groups="base.group_no_one"/>
+                            <field name="view_id" invisible="not view_id"/>
+                            <field name="action_id" invisible="not action_id"/>
+                            <field name="element_label"/>
+                            <field name="element" groups="base.group_no_one"/>
+                        </group>
+                        <group string="Why">
+                            <field name="evidence"/>
+                            <field name="uses"/>
+                            <field name="total"/>
+                            <field name="score"/>
+                            <field name="history" widget="om_sparkline"/>
+                            <field name="last_used"/>
+                            <field name="group_id" invisible="not group_id"/>
+                            <field name="user_id" invisible="not user_id"/>
+                            <field name="filter_id" invisible="not filter_id"/>
+                            <field name="auto_applied" invisible="not auto_applied"/>
+                            <field name="applied_date" invisible="not applied_date"/>
+                            <field name="view_type" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group string="New order" invisible="kind != 'menu_order'">
+                        <field name="menu_order_display" nolabel="1" colspan="2"/>
+                    </group>
+                    <notebook invisible="not journal_ids">
+                        <page string="Journal" name="journal">
+                            <field name="journal_ids" readonly="1">
+                                <list>
+                                    <field name="create_date" string="When"/>
+                                    <field name="event"/>
+                                    <field name="user_id"/>
+                                    <field name="evidence"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_adapt_rule_search" model="ir.ui.view">
+        <field name="name">om.adapt.rule.search</field>
+        <field name="model">om.adapt.rule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_label"/>
+                <field name="element_label"/>
+                <filter name="suggested" string="Suggested" domain="[('state', '=', 'suggested')]"/>
+                <filter name="applied" string="Applied" domain="[('state', '=', 'applied')]"/>
+                <filter name="dismissed" string="Dismissed" domain="[('state', '=', 'dismissed')]"/>
+                <separator/>
+                <filter name="fold" string="Folded fields" domain="[('kind', '=', 'fade_field')]"/>
+                <filter name="column" string="Columns" domain="[('kind', 'in', ('show_column', 'hide_column'))]"/>
+                <filter name="promote" string="Fields brought forward" domain="[('kind', '=', 'promote_field')]"/>
+                <filter name="page" string="Folded tabs" domain="[('kind', '=', 'fold_page')]"/>
+                <filter name="filter" string="Filters" domain="[('kind', 'in', ('default_filter', 'hide_filter'))]"/>
+                <filter name="personal" string="Personal filters" domain="[('kind', '=', 'user_filter')]"/>
+                <filter name="menus" string="Menu order" domain="[('kind', '=', 'menu_order')]"/>
+                <separator/>
+                <filter name="auto" string="Applied on its own" domain="[('auto_applied', '=', True)]"/>
+                <filter name="for_roles" string="For a role" domain="[('group_id', '!=', False)]"/>
+                <filter name="for_people" string="For one person" domain="[('user_id', '!=', False)]"/>
+                <group>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model'}"/>
+                    <filter name="group_kind" string="Change" context="{'group_by': 'kind'}"/>
+                    <filter name="group_role" string="Role" context="{'group_by': 'group_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_adapt_rule" model="ir.actions.act_window">
+        <field name="name">Screen changes</field>
+        <field name="res_model">om.adapt.rule</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_suggested': 1, 'search_default_applied': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No changes to suggest yet</p>
+            <p>Adaptive Views counts how each screen is used. Once a form has been saved often
+                enough, or an action opened often enough, the changes worth making show up here.
+                Click Analyse now to look again.</p>
+        </field>
+    </record>
+
+</odoo>

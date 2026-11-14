@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_adaptive_views.SparklineField">
+        <svg t-if="this.values.length" class="o_om_sparkline" t-att-width="this.width" t-att-height="this.height"
+             role="img" t-att-aria-label="this.title">
+            <title t-out="this.title"/>
+            <t t-foreach="this.bars" t-as="bar" t-key="bar_index">
+                <rect t-att-x="bar.x" t-att-y="bar.y" t-att-width="bar.width" t-att-height="bar.height" rx="1"
+                      t-att-class="bar.value ? 'o_om_bar' : 'o_om_bar_empty'"/>
+            </t>
+        </svg>
+    </t>
+
+</templates>

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_adapt_field_report_list" model="ir.ui.view">
+        <field name="name">om.adapt.field.report.list</field>
+        <field name="model">om.adapt.field.report</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" decoration-muted="status == 'kept'"
+                  decoration-warning="status == 'unused' and foldable" default_group_by="model_label">
+                <header>
+                    <button name="action_fold" type="object" string="Fold"/>
+                    <button name="action_unfold" type="object" string="Unfold"/>
+                </header>
+                <field name="model_label" column_invisible="True"/>
+                <field name="field_label"/>
+                <field name="field_name" optional="hide"/>
+                <field name="page_label" optional="show"/>
+                <field name="edits"/>
+                <field name="saves"/>
+                <field name="share"/>
+                <field name="history" widget="om_sparkline"/>
+                <field name="last_used" optional="show"/>
+                <field name="status" widget="badge" decoration-danger="status == 'unused'"
+                       decoration-warning="status == 'rare'" decoration-success="status == 'used'"/>
+                <field name="kept_reason" optional="show"/>
+                <field name="foldable" column_invisible="True"/>
+                <field name="rule_state" optional="show"/>
+                <button name="action_fold" type="object" string="Fold" class="btn-link"
+                        invisible="not foldable or rule_state == 'applied'"/>
+                <button name="action_unfold" type="object" string="Unfold" class="btn-link"
+                        invisible="rule_state != 'applied'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_adapt_field_report_search" model="ir.ui.view">
+        <field name="name">om.adapt.field.report.search</field>
+        <field name="model">om.adapt.field.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_label"/>
+                <field name="field_label"/>
+                <filter name="unused" string="Never changed" domain="[('status', '=', 'unused')]"/>
+                <filter name="rare" string="Rarely changed" domain="[('status', '=', 'rare')]"/>
+                <filter name="foldable" string="Can be folded" domain="[('foldable', '=', True)]"/>
+                <group>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model_label'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_adapt_field_report" model="ir.actions.act_window">
+        <field name="name">Fields nobody uses</field>
+        <field name="res_model">om.adapt.field.report</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_foldable': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No forms saved yet</p>
+            <p>Every field of every form saved in the period shows up here with how often it was
+                changed, after the next analysis (Screen changes, Analyse now).</p>
+        </field>
+    </record>
+
+    <record id="view_om_adapt_menu_report_list" model="ir.ui.view">
+        <field name="name">om.adapt.menu.report.list</field>
+        <field name="model">om.adapt.menu.report</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0" delete="0" decoration-muted="opens == 0">
+                <field name="complete_name"/>
+                <field name="opens"/>
+                <field name="history" widget="om_sparkline"/>
+                <field name="last_used"/>
+                <button name="action_open_menu" type="object" string="Menu settings" class="btn-link"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_adapt_menu_report_search" model="ir.ui.view">
+        <field name="name">om.adapt.menu.report.search</field>
+        <field name="model">om.adapt.menu.report</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="complete_name"/>
+                <filter name="unused" string="Never opened" domain="[('opens', '=', 0)]"/>
+                <filter name="used" string="Opened" domain="[('opens', '>', 0)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_adapt_menu_report" model="ir.actions.act_window">
+        <field name="name">Menus nobody opens</field>
+        <field name="res_model">om.adapt.menu.report</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_unused': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">Nothing to show yet</p>
+            <p>After the next analysis, every menu shows up here with how often it was opened.</p>
+        </field>
+    </record>
+
+</odoo>

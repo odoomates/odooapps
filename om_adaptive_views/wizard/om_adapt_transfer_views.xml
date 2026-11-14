@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_adapt_transfer_form" model="ir.ui.view">
+        <field name="name">om.adapt.transfer.form</field>
+        <field name="model">om.adapt.transfer</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="mode" widget="radio" options="{'horizontal': true}"/>
+                    <field name="apply_imported" invisible="mode != 'import'"/>
+                    <field name="file" filename="filename" invisible="mode == 'export' and not file"
+                           readonly="mode == 'export'"/>
+                    <field name="filename" invisible="1"/>
+                </group>
+                <div invisible="not result" class="alert alert-info" role="status">
+                    <field name="result"/>
+                </div>
+                <p class="text-muted" invisible="mode != 'export'">
+                    The changes applied for this company go into one file, ready to import on another
+                    database - from a test database to production, for example.
+                </p>
+                <footer>
+                    <button name="action_export" type="object" string="Export" class="btn-primary"
+                            invisible="mode != 'export'"/>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"
+                            invisible="mode != 'import'"/>
+                    <button special="cancel" string="Close"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_adapt_transfer" model="ir.actions.act_window">
+        <field name="name">Move changes</field>
+        <field name="res_model">om.adapt.transfer</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

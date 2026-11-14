@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_adapt_journal_list" model="ir.ui.view">
+        <field name="name">om.adapt.journal.list</field>
+        <field name="model">om.adapt.journal</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="create_date" string="When"/>
+                <field name="event" widget="badge" decoration-success="event in ('apply', 'auto', 'import')"
+                       decoration-warning="event == 'undo'" decoration-muted="event == 'dismiss'"/>
+                <field name="name"/>
+                <field name="model_label"/>
+                <field name="group_id" optional="show"/>
+                <field name="target_user_id" optional="hide"/>
+                <field name="evidence" optional="show"/>
+                <field name="user_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_adapt_journal_search" model="ir.ui.view">
+        <field name="name">om.adapt.journal.search</field>
+        <field name="model">om.adapt.journal</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="user_id"/>
+                <filter name="auto" string="Applied on its own" domain="[('event', '=', 'auto')]"/>
+                <filter name="undo" string="Undone" domain="[('event', '=', 'undo')]"/>
+                <group>
+                    <filter name="group_event" string="Event" context="{'group_by': 'event'}"/>
+                    <filter name="group_user" string="By" context="{'group_by': 'user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_adapt_journal" model="ir.actions.act_window">
+        <field name="name">Change journal</field>
+        <field name="res_model">om.adapt.journal</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No changes yet</p>
+            <p>Every change applied, undone or dismissed is kept here, with who did it and the
+                numbers it was based on.</p>
+        </field>
+    </record>
+
+</odoo>
