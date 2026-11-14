@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- In the dialog itself rather than in web.Dialog.header: many dialogs bring a
+         header of their own, and call that template from their own context, where
+         the dialog's state is out of reach. -->
+    <t t-inherit="web.Dialog" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('modal-dialog')]" position="attributes">
+            <attribute name="t-attf-class">modal-{{omDialogSize}}</attribute>
+        </xpath>
+        <xpath expr="//header[hasclass('modal-header')]" position="inside">
+            <button t-if="this.omCanResize" type="button"
+                    class="btn fa opacity-50 opacity-100-hover o_om_dialog_size"
+                    t-att-class="this.omIsMaximized ? 'fa-compress' : 'fa-expand'"
+                    t-att-title="this.omIsMaximized ? 'Restore' : 'Full screen'"
+                    aria-label="Full screen" tabindex="-1"
+                    t-on-click="() => this.omToggleSize()"/>
+        </xpath>
+    </t>
+
+    <!-- Action dialogs (wizards, records opened in a pop-up) use a copy of web.Dialog
+         taken before this module loads, so they need the same change. -->
+    <t t-inherit="web.ActionDialog" t-inherit-mode="extension">
+        <xpath expr="//div[hasclass('modal-dialog')]" position="attributes">
+            <attribute name="t-attf-class">modal-{{omDialogSize}}</attribute>
+        </xpath>
+        <xpath expr="//header[hasclass('modal-header')]" position="inside">
+            <button t-if="this.omCanResize" type="button"
+                    class="btn fa opacity-50 opacity-100-hover o_om_dialog_size"
+                    t-att-class="this.omIsMaximized ? 'fa-compress' : 'fa-expand'"
+                    t-att-title="this.omIsMaximized ? 'Restore' : 'Full screen'"
+                    aria-label="Full screen" tabindex="-1"
+                    t-on-click="() => this.omToggleSize()"/>
+        </xpath>
+    </t>
+
+</templates>
