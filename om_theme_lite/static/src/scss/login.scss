@@ -1,0 +1,157 @@
+// The login page, in web.assets_frontend.
+//
+// Nobody is signed in yet, so there is no user preference to read: the page follows
+// the light or dark setting of the device instead. The colours are written out
+// rather than taken from the backend palette, because this bundle is compiled
+// without it.
+
+$om-login-plum: #714b67;
+$om-login-teal: #017e84;
+
+body.o_om_login {
+    --om-login-canvas: #f4f5f8;
+    --om-login-card: #ffffff;
+    --om-login-text: #1f242c;
+    --om-login-muted: #6b7480;
+    --om-login-border: #dfe3e9;
+    --om-login-input: #ffffff;
+
+    min-height: 100vh;
+    background-color: var(--om-login-canvas) !important;
+    color: var(--om-login-text);
+
+    // the company picture when one is set, otherwise two faint glows of the brand
+    // colours on the canvas
+    .o_om_login_bg {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        background-color: var(--om-login-canvas);
+        background-image:
+            radial-gradient(circle at 15% 20%, rgba($om-login-plum, .14), transparent 45%),
+            radial-gradient(circle at 85% 80%, rgba($om-login-teal, .12), transparent 45%);
+        background-size: cover;
+        background-position: center;
+    }
+
+    .container:has(> .o_om_login_bg) {
+        position: relative;
+        display: flex;
+        min-height: 100vh;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .o_database_list {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 380px !important;
+        border: 1px solid var(--om-login-border) !important;
+        border-radius: 18px !important;
+        overflow: hidden;
+        background-color: var(--om-login-card) !important;
+        box-shadow: 0 24px 60px rgba(16, 24, 40, .14), 0 4px 12px rgba(16, 24, 40, .06);
+
+        // Odoo paints the card body near-white on its own; the card carries the
+        // colour here, light or dark
+        > .card-body {
+            padding: 2.25rem 2rem 1.75rem;
+            background-color: transparent !important;
+        }
+
+        .border-top,
+        .border-bottom {
+            border-color: var(--om-login-border) !important;
+        }
+
+        label,
+        .form-label {
+            font-weight: 500;
+            color: var(--om-login-text);
+        }
+
+        .form-control {
+            border: 1px solid var(--om-login-border);
+            border-radius: 10px;
+            padding: .6rem .8rem;
+            background-color: var(--om-login-input);
+            color: var(--om-login-text);
+
+            &::placeholder {
+                color: var(--om-login-muted);
+            }
+
+            &:focus {
+                border-color: $om-login-teal;
+                box-shadow: 0 0 0 3px rgba($om-login-teal, .15);
+            }
+        }
+
+        .btn-primary {
+            border: 0;
+            border-radius: 10px;
+            padding: .65rem 1rem;
+            background-color: $om-login-plum !important;
+            font-weight: 600;
+
+            &:hover,
+            &:focus {
+                background-color: darken($om-login-plum, 6%) !important;
+            }
+        }
+
+        a:not(.btn) {
+            color: $om-login-teal;
+        }
+
+        // "Use a Passkey" and the other secondary sign-in choices
+        .list-group-item,
+        .input-group-text,
+        .btn-light,
+        .o_show_password {
+            border-color: var(--om-login-border) !important;
+            background-color: var(--om-login-input) !important;
+            color: var(--om-login-text) !important;
+        }
+
+        .small,
+        .text-muted {
+            color: var(--om-login-muted) !important;
+        }
+    }
+
+    // a picture behind the card: the card needs to stand off it a little more
+    .o_om_login_bg[style] {
+        &::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-color: rgba(15, 18, 25, .25);
+        }
+    }
+
+    @media (prefers-color-scheme: dark) {
+        --om-login-canvas: #1b1e27;
+        --om-login-card: #232733;
+        --om-login-text: #eef1f6;
+        --om-login-muted: #98a1b2;
+        --om-login-border: #333949;
+        --om-login-input: #1b1e27;
+        color-scheme: dark;
+
+        .o_om_login_bg {
+            background-image:
+                radial-gradient(circle at 15% 20%, rgba($om-login-plum, .3), transparent 45%),
+                radial-gradient(circle at 85% 80%, rgba($om-login-teal, .22), transparent 45%);
+        }
+
+        .o_database_list {
+            box-shadow: 0 24px 60px rgba(0, 0, 0, .5);
+
+            a:not(.btn) {
+                color: #3fb7bd;
+            }
+        }
+    }
+}
