@@ -1,0 +1,274 @@
+.om-launcher {
+    height: 100%;
+    overflow-y: auto;
+    background-color: var(--om-surface-sunken, #f7f8fa);
+    // a faint dot grid, so the home screen reads as a surface of its own rather
+    // than an empty view
+    background-image: radial-gradient(var(--om-launcher-dot, #{rgba(#6b7480, .18)}) 1px, transparent 1px);
+    background-size: 18px 18px;
+
+    // one column shared by the search box and the grids, so everything lines up
+    // on the same left edge whatever the viewport
+    .om-launcher-inner {
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 0 2rem 3rem;
+    }
+
+    .om-launcher-head {
+        position: sticky;
+        top: 0;
+        z-index: 1;
+        display: flex;
+        justify-content: center;
+        padding: 2rem 0 1rem;
+        background-color: var(--om-surface-sunken, #f7f8fa);
+    }
+
+    .om-launcher-search {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        width: 100%;
+        max-width: 560px;
+        padding: .65rem 1rem;
+        border: 1px solid var(--om-border, #dfe3e9);
+        border-radius: 999px;
+        background-color: var(--om-surface, #fff);
+        box-shadow: var(--om-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
+        transition: border-color .12s ease-in-out, box-shadow .12s ease-in-out,
+                    opacity .12s ease-in-out;
+
+        // Hidden until the first keystroke, but still taking up its space: showing
+        // it must not shove the app grid down the page.
+        visibility: hidden;
+        opacity: 0;
+
+        &.om-visible {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        &:focus-within {
+            border-color: var(--om-theme-primary, #4f46e5);
+            box-shadow: 0 0 0 3px rgba(var(--om-theme-primary-rgb), .15);
+        }
+
+        > .om-launcher-icon { color: #{$o-gray-500}; }
+
+        input {
+            flex: 1 1 auto;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            font-size: 1rem;
+        }
+    }
+
+    .om-launcher-clear {
+        display: flex;
+        align-items: center;
+        border: 0;
+        background: transparent;
+        color: #{$o-gray-500};
+        padding: 0 .2rem;
+
+        &:hover { color: #{$o-gray-700}; }
+    }
+
+    .om-launcher-section {
+        margin: 1.5rem 0 .85rem;
+        font-size: .75rem;
+        font-weight: 600;
+        letter-spacing: .06em;
+        text-transform: uppercase;
+        color: #{$o-gray-600};
+    }
+
+    .om-launcher-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+        gap: .5rem 0;
+        align-items: start;
+    }
+
+    .om-app-wrap {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .om-app,
+    .om-app-item {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .om-app {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: .55rem;
+        width: 100%;
+        padding: .85rem .5rem .7rem;
+        border: 0;
+        border-radius: var(--om-radius-lg, .5rem);
+        background-color: transparent;
+        transition: background-color .12s ease-in-out, transform .12s ease-in-out;
+
+        &:hover {
+            background-color: rgba(var(--om-theme-primary-rgb), .06);
+            transform: translateY(-1px);
+
+            .om-app-icon {
+                box-shadow: 0 6px 16px rgba(16, 24, 40, .14);
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid rgba(var(--om-theme-primary-rgb), .5);
+            outline-offset: 2px;
+        }
+    }
+
+    // the icon sits on its own rounded plate; there is no card around the tile
+    .om-app-icon {
+        width: 64px;
+        height: 64px;
+        padding: 10px;
+        object-fit: contain;
+        border-radius: var(--om-radius-lg, .5rem);
+        background-color: var(--om-surface, #fff);
+        box-shadow: var(--om-shadow-sm, 0 1px 2px rgba(16, 24, 40, .05));
+        transition: box-shadow .12s ease-in-out;
+    }
+
+    .om-app-icon-empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--om-radius, .375rem);
+        background-color: var(--om-theme-primary, #4f46e5);
+        color: #fff;
+        font-size: 1.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .om-app-name {
+        font-size: .8125rem;
+        font-weight: 500;
+        text-align: center;
+        line-height: 1.25;
+    }
+
+    // menu items that matched the search, hung under their app tile
+    .om-app-items {
+        margin: .4rem 0 0 .5rem;
+        padding-left: .6rem;
+        display: flex;
+        flex-direction: column;
+        gap: .1rem;
+        border-left: 2px solid var(--om-border, #dfe3e9);
+    }
+
+    .om-app-item {
+        display: flex;
+        align-items: center;
+        gap: .3rem;
+        width: 100%;
+        border: 0;
+        background: transparent;
+        padding: .25rem .4rem;
+        border-radius: var(--om-radius-sm, .25rem);
+        font-size: .8125rem;
+        color: #{$o-gray-700};
+        text-align: left;
+
+        span {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        &:hover {
+            background-color: rgba(var(--om-theme-primary-rgb), .08);
+            color: var(--om-theme-primary, #4f46e5);
+        }
+    }
+
+    .om-launcher-empty {
+        text-align: center;
+        color: #{$o-gray-600};
+        padding: 3rem 1rem;
+
+        .om-launcher-icon { font-size: 28px; opacity: .4; display: block; margin-bottom: .75rem; }
+        p { margin: 0; }
+    }
+
+    // the part of a name that matched the search
+    .om-hit {
+        font-weight: 700;
+        color: var(--om-theme-link, var(--om-theme-primary));
+    }
+
+    // the result Enter opens, moved with the arrow keys
+    .om-app.om-active {
+        background-color: rgba(var(--om-theme-primary-rgb), .08);
+        outline: 2px solid rgba(var(--om-theme-primary-rgb), .35);
+        outline-offset: -2px;
+    }
+
+    .om-app-item.om-active {
+        background-color: rgba(var(--om-theme-primary-rgb), .1);
+        color: var(--om-theme-link, var(--om-theme-primary));
+    }
+
+    // apps that ship a font icon instead of an image
+    .om-app-icon-font {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.9rem;
+    }
+
+    // the tile being dragged, and the gap it leaves
+    .om-app-wrap {
+        &.o_dragged {
+            opacity: .9;
+            z-index: 2;
+
+            .om-app-icon {
+                box-shadow: 0 10px 24px rgba(16, 24, 40, .22);
+            }
+        }
+
+    }
+
+    .om-app-placeholder {
+        min-height: 112px;
+        margin: 0 .5rem;
+        border: 2px dashed var(--om-border, #dfe3e9);
+        border-radius: var(--om-radius-lg, .5rem);
+    }
+
+    // the company picture behind the tiles, under a veil of the canvas colour so
+    // the app names stay readable whatever the picture
+    &.om-has-bg {
+        background-image:
+            linear-gradient(var(--om-launcher-veil, rgba(247, 248, 250, .55)), var(--om-launcher-veil, rgba(247, 248, 250, .55))),
+            var(--om-launcher-bg);
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+
+        .om-launcher-head {
+            background-color: transparent;
+        }
+
+        .om-app-name {
+            font-weight: 600;
+        }
+    }
+}

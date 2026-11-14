@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- the wide and the narrow control panel are separate templates -->
+    <t t-inherit="web.ControlPanel.Regular" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_cp_pager')]" position="before">
+            <button t-if="this.omCanRefresh()" type="button" class="btn btn-light o_om_refresh"
+                    title="Refresh" aria-label="Refresh" t-on-click="() => this.omRefresh()">
+                <i class="fa fa-refresh"/>
+            </button>
+        </xpath>
+    </t>
+
+    <t t-inherit="web.ControlPanel.Small" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_cp_pager')]" position="before">
+            <button t-if="this.omCanRefresh()" type="button" class="btn btn-light o_om_refresh"
+                    title="Refresh" aria-label="Refresh" t-on-click="() => this.omRefresh()">
+                <i class="fa fa-refresh"/>
+            </button>
+        </xpath>
+    </t>
+
+</templates>
