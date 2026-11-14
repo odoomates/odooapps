@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_integrity_check_view_list" model="ir.ui.view">
+        <field name="name">account.integrity.check.list</field>
+        <field name="model">account.integrity.check</field>
+        <field name="arch" type="xml">
+            <list create="0" delete="0" decoration-danger="state == 'corrupted'" decoration-muted="state == 'no_data'">
+                <header>
+                    <button name="action_run_check" type="object" string="Run a Check Now" class="btn-primary"
+                            display="always" groups="account.group_account_manager"/>
+                </header>
+                <field name="date"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="user_id"/>
+                <field name="state" widget="badge" decoration-success="state == 'verified'"
+                       decoration-danger="state == 'corrupted'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="account_integrity_check_view_form" model="ir.ui.view">
+        <field name="name">account.integrity.check.form</field>
+        <field name="model">account.integrity.check</field>
+        <field name="arch" type="xml">
+            <form create="0" delete="0" edit="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id" placeholder="Weekly check"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list decoration-danger="status == 'corrupted'" decoration-muted="status == 'no_data'">
+                            <field name="journal_name"/>
+                            <field name="status" widget="badge" decoration-success="status == 'verified'"
+                                   decoration-danger="status == 'corrupted'"/>
+                            <field name="message"/>
+                            <field name="secured_by_journal"/>
+                            <field name="first_move_name"/>
+                            <field name="first_move_date"/>
+                            <field name="last_move_name"/>
+                            <field name="last_move_date"/>
+                            <field name="last_hash" optional="hide"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_integrity_check_view_search" model="ir.ui.view">
+        <field name="name">account.integrity.check.search</field>
+        <field name="model">account.integrity.check</field>
+        <field name="arch" type="xml">
+            <search>
+                <filter name="corrupted" string="Corrupted" domain="[('state', '=', 'corrupted')]"/>
+                <filter name="scheduled" string="Weekly Checks" domain="[('user_id', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_integrity_check" model="ir.actions.act_window">
+        <field name="name">Integrity Checks</field>
+        <field name="res_model">account.integrity.check</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No data inalterability check yet</p>
+            <p>Each check recomputes the hash chains of the secured journals, and finds the entries changed since
+                they were secured. A check runs every week; run one now from this list.</p>
+        </field>
+    </record>
+
+    <record id="action_account_moves_not_secured" model="ir.actions.act_window">
+        <field name="name">Entries Not Secured</field>
+        <field name="res_model">account.move</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('state', '=', 'posted'), ('inalterable_hash', '=', False)]</field>
+        <field name="context">{'create': False}</field>
+    </record>
+</odoo>
