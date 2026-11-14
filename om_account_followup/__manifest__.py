@@ -27,5 +27,5 @@ disputed invoices and follow-up plans per customer.""",
     ],
     'post_init_hook': 'post_init_hook',
     'demo': ['demo/demo.xml'],
-    'images': ['static/description/banner.png'],
+    'images': ['static/description/banner.gif'],
 }
