@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om.adaptive.views</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='companies']" position="after">
+                <block title="Adaptive Views" name="om_adaptive_views_setting_container">
+                    <setting id="om_adaptive_learning" string="Learn from usage"
+                             help="Count how screens are used - names of fields, filters, columns and menus, never values - and suggest changes">
+                        <field name="om_adaptive_learning"/>
+                        <div class="mt8" invisible="not om_adaptive_learning">
+                            <button name="%(om_adaptive_views.action_om_adapt_rule)d" type="action"
+                                    string="Screen changes" class="btn-link ps-0"/>
+                        </div>
+                        <div class="row mt8" invisible="not om_adaptive_learning">
+                            <label for="om_adaptive_days" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_days" class="col-6"/>
+                        </div>
+                        <div class="mt8">
+                            <button name="action_om_adaptive_reset" type="object" string="Start learning again"
+                                    class="btn-link ps-0"
+                                    confirm="All the counts, the reports and the suggestions not acted on are deleted. Applied changes stay. Start again?"/>
+                        </div>
+                    </setting>
+                    <setting id="om_adaptive_fold" string="Fields"
+                             help="On forms saved at least this often, fold fields changed in fewer saves than the first share, and bring forward tab fields changed in more than the second"
+                             invisible="not om_adaptive_learning">
+                        <div class="row mt8">
+                            <label for="om_adaptive_min_saves" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_min_saves" class="col-6"/>
+                            <label for="om_adaptive_fade_rate" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_fade_rate" class="col-6"/>
+                            <label for="om_adaptive_promote_rate" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_promote_rate" class="col-6"/>
+                            <label for="om_adaptive_max_folds" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_max_folds" class="col-6"/>
+                            <label for="om_adaptive_fill_guard" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_fill_guard" class="col-6"/>
+                        </div>
+                    </setting>
+                    <setting id="om_adaptive_filters" string="Filters and columns"
+                             help="On actions opened at least this often, suggest the filter applied in this share of visits as the default, and hide filters never used"
+                             invisible="not om_adaptive_learning">
+                        <div class="row mt8">
+                            <label for="om_adaptive_min_visits" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_min_visits" class="col-6"/>
+                            <label for="om_adaptive_filter_rate" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_filter_rate" class="col-6"/>
+                            <label for="om_adaptive_min_column_toggles" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_min_column_toggles" class="col-6"/>
+                        </div>
+                    </setting>
+                    <setting id="om_adaptive_roles" string="Roles"
+                             help="Learn these groups apart: each gets the changes learnt for it, on top of the changes for everyone"
+                             invisible="not om_adaptive_learning">
+                        <field name="om_adapt_role_ids" widget="many2many_tags" options="{'no_create': True}"
+                               placeholder="e.g. Sales / User, Accounting / Billing"/>
+                    </setting>
+                    <setting id="om_adaptive_auto" string="Apply on their own"
+                             help="Apply the clearest changes without waiting for an admin; the admins get a weekly digest with an undo link for each"
+                             invisible="not om_adaptive_learning">
+                        <field name="om_adaptive_auto_apply"/>
+                        <div class="row mt8" invisible="not om_adaptive_auto_apply">
+                            <label for="om_adaptive_auto_min_saves" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_auto_min_saves" class="col-6"/>
+                            <label for="om_adaptive_auto_fade_rate" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_auto_fade_rate" class="col-6"/>
+                            <label for="om_adaptive_auto_min_visits" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_auto_min_visits" class="col-6"/>
+                            <label for="om_adaptive_auto_filter_rate" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_auto_filter_rate" class="col-6"/>
+                        </div>
+                    </setting>
+                    <setting id="om_adaptive_personal" string="Personal default filters"
+                             help="The filter a person applies on most of their visits becomes their own default"
+                             invisible="not om_adaptive_learning">
+                        <field name="om_adaptive_user_filters"/>
+                        <div class="row mt8" invisible="not om_adaptive_user_filters">
+                            <label for="om_adaptive_user_min_visits" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_user_min_visits" class="col-6"/>
+                            <label for="om_adaptive_user_filter_rate" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_user_filter_rate" class="col-6"/>
+                        </div>
+                    </setting>
+                    <setting id="om_adaptive_menus" string="Menu order"
+                             help="Put the apps, and the menus of each app, in the order they are opened; the screen an app opens on stays the same"
+                             invisible="not om_adaptive_learning">
+                        <field name="om_adaptive_menu_order"/>
+                        <div class="row mt8" invisible="not om_adaptive_menu_order">
+                            <label for="om_adaptive_min_menu_opens" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_min_menu_opens" class="col-6"/>
+                            <label for="om_adaptive_menu_ratio" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_menu_ratio" class="col-6"/>
+                            <label for="om_adaptive_user_menus" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_user_menus" class="col-6"/>
+                        </div>
+                        <div class="row" invisible="not om_adaptive_menu_order or not om_adaptive_user_menus">
+                            <label for="om_adaptive_user_min_menu_opens" class="col-6 o_light_label"/>
+                            <field name="om_adaptive_user_min_menu_opens" class="col-6"/>
+                        </div>
+                        <div class="mt8" invisible="not om_adaptive_menu_order">
+                            <label for="om_adapt_pinned_menu_ids" class="o_light_label d-block"/>
+                            <field name="om_adapt_pinned_menu_ids" widget="many2many_tags" options="{'no_create': True}"
+                                   placeholder="e.g. Settings"/>
+                        </div>
+                    </setting>
+                    <setting id="om_adaptive_protected" string="Left alone"
+                             help="Models whose screens never change, and fields never folded or moved"
+                             invisible="not om_adaptive_learning">
+                        <div class="mt8">
+                            <label for="om_adaptive_protected_models" class="o_light_label"/>
+                            <field name="om_adaptive_protected_models" placeholder="account.move, res.users"/>
+                            <label for="om_adaptive_protected_fields" class="o_light_label mt8"/>
+                            <field name="om_adaptive_protected_fields" placeholder="vat, res.partner.website"/>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

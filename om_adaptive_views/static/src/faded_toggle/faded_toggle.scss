@@ -1,0 +1,18 @@
+// A folded field is out of sight with its label, until the form is unfolded.
+.o_form_renderer:not(.o_om_show_faded) {
+    .o_wrap_input:has(> .o_om_faded),
+    .o_wrap_label:has(+ .o_wrap_input > .o_om_faded),
+    .o_wrap_field_inline:has(.o_om_faded),
+    .o_notebook_headers .nav-item:has(> .o_om_faded_page) {
+        display: none !important;
+    }
+}
+
+// unfolded: the fields come back, set slightly apart from the ones in daily use
+.o_form_renderer.o_om_show_faded {
+    .o_wrap_input:has(> .o_om_faded),
+    .o_wrap_label:has(+ .o_wrap_input > .o_om_faded),
+    .o_notebook_headers .nav-item > .o_om_faded_page:not(.active) {
+        opacity: .75;
+    }
+}

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_usage_stat_list" model="ir.ui.view">
+        <field name="name">om.usage.stat.list</field>
+        <field name="model">om.usage.stat</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="week"/>
+                <field name="model_label"/>
+                <field name="view_type"/>
+                <field name="event"/>
+                <field name="element"/>
+                <field name="count" sum="Total"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_usage_stat_pivot" model="ir.ui.view">
+        <field name="name">om.usage.stat.pivot</field>
+        <field name="model">om.usage.stat</field>
+        <field name="arch" type="xml">
+            <pivot>
+                <field name="model" type="row"/>
+                <field name="event" type="col"/>
+                <field name="count" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_om_usage_stat_search" model="ir.ui.view">
+        <field name="name">om.usage.stat.search</field>
+        <field name="model">om.usage.stat</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model"/>
+                <field name="element"/>
+                <filter name="forms" string="Forms" domain="[('view_type', '=', 'form')]"/>
+                <filter name="lists" string="Lists" domain="[('view_type', '=', 'list')]"/>
+                <filter name="searches" string="Searches" domain="[('view_type', '=', 'search')]"/>
+                <group>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model'}"/>
+                    <filter name="group_event" string="Use" context="{'group_by': 'event'}"/>
+                    <filter name="group_element" string="Field or filter" context="{'group_by': 'element'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_usage_stat" model="ir.actions.act_window">
+        <field name="name">Screen usage</field>
+        <field name="res_model">om.usage.stat</field>
+        <field name="view_mode">pivot,list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">Nothing counted yet</p>
+            <p>Counts appear here as people use the backend: forms saved and fields changed,
+                actions opened and filters applied, columns switched on or off.</p>
+        </field>
+    </record>
+
+</odoo>

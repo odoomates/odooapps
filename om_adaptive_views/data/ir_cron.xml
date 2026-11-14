@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="ir_cron_om_adapt_analyse" model="ir.cron">
+        <field name="name">Adaptive Views: suggest changes from usage</field>
+        <field name="model_id" ref="model_om_adapt_rule"/>
+        <field name="state">code</field>
+        <field name="code">model._om_analyse()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+    <record id="ir_cron_om_usage_purge" model="ir.cron">
+        <field name="name">Adaptive Views: forget old usage</field>
+        <field name="model_id" ref="model_om_usage_stat"/>
+        <field name="state">code</field>
+        <field name="code">model._om_purge()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">weeks</field>
+    </record>
+    <record id="ir_cron_om_adapt_digest" model="ir.cron">
+        <field name="name">Adaptive Views: weekly digest of the changes</field>
+        <field name="model_id" ref="model_om_adapt_rule"/>
+        <field name="state">code</field>
+        <field name="code">model._om_send_digest()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">weeks</field>
+    </record>
+</odoo>
