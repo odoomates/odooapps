@@ -85,6 +85,15 @@ class ResUsers(models.Model):
             self.env['om.user.audit.log']._om_log('other', separate=True, detail=_("Preview ended"))
         return data
 
+    def _init_messaging(self, *args, **kwargs):
+        # OdooBot welcomes a user on their first visit by opening a chat with them. A
+        # preview saves nothing, so that welcome waits for the user's own first visit:
+        # the state is only changed in the cache of this request, never written.
+        if preview_of_request() and 'odoobot_state' in self._fields \
+                and self.odoobot_state in (False, 'not_initialized'):
+            self.env.cache.set(self, self._fields['odoobot_state'], 'disabled')
+        return super()._init_messaging(*args, **kwargs)
+
 
 def valid_preview(env):
     """ The preview of the session, checked again on every request: still
