@@ -1,6 +1,6 @@
 {
     'name': 'Customer Follow Up Management',
-    'version': '1.3.0',
+    'version': '1.3.1',
     'category': 'Accounting',
     'description': """Customer payment follow-ups: reminders by email and letter, customer statements, promises to pay,
 disputed invoices and follow-up plans per customer.""",

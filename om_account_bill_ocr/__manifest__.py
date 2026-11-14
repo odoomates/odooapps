@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Vendor Bill OCR',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Accounting',
     'summary': 'Read the uploaded vendor bills: vendor, number, dates, totals, taxes and lines, from PDFs, '
                'scans and photos, on your own server and for free',
