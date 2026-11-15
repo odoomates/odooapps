@@ -1,6 +1,6 @@
 {
     'name': 'Dynamic Accounting Reports',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Accounting/Accounting',
     'summary': 'Dynamic accounting reports on screen for Odoo 20 Community: Executive Summary, Balance Sheet, Profit and Loss, Cash Flow, '
                'Tax Report, Trial Balance, General Ledger, Day Book, Bank Book, Cash Book, Journals Audit, Partner Ledger, Aged Receivable, Aged Payable, '
