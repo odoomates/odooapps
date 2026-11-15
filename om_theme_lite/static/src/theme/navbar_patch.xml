@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- On a wide screen the apps button is a Dropdown listing the apps, with no
+         handler to patch, so the button itself is replaced. The xpath is narrow on
+         purpose: if Odoo restructures the navbar it fails loudly at build time
+         rather than silently doing nothing. -->
+    <t t-inherit="web.NavBar.AppsMenu" t-inherit-mode="extension" owl="1">
+        <xpath expr="//Dropdown" position="replace">
+            <div class="o_navbar_apps_menu">
+                <t t-set="omApp" t-value="omCurrentApp()"/>
+                <button class="om-navbar-apps" data-hotkey="h" title="Home Menu"
+                        t-on-click="omOpenLauncher">
+                    <img t-if="omApp and omApp.webIconData" class="om-navbar-app-icon"
+                         t-att-src="omIconSrc(omApp)" alt=""/>
+                    <i t-else="" class="fa fa-th-large"/>
+                </button>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

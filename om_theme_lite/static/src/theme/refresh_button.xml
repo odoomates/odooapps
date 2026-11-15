@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_theme_lite.RefreshButton" owl="1">
+        <button t-if="omCanRefresh()" type="button" class="btn btn-light o_om_refresh"
+                title="Refresh" aria-label="Refresh" t-on-click="omRefresh">
+            <i class="fa fa-refresh"/>
+        </button>
+    </t>
+
+    <t t-inherit="web.ControlPanel" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_cp_pager')]" position="before">
+            <t t-call="om_theme_lite.RefreshButton"/>
+        </xpath>
+    </t>
+
+    <!-- the control panel of the older views -->
+    <t t-inherit="web.Legacy.ControlPanel" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('o_cp_pager')]" position="before">
+            <t t-call="om_theme_lite.RefreshButton"/>
+        </xpath>
+    </t>
+
+</templates>

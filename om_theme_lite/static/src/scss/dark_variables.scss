@@ -1,0 +1,62 @@
+// The first file of the dark bundles (see the manifest).
+//
+// Odoo 15 Community has no dark mode at all: no dark bundle and no dark palette.
+// The bundles are this module's own - the light ones with this file in front - and
+// the palette comes from here.
+//
+// It goes first for the same reason primary_variables.scss is prepended: SCSS takes
+// the first !default assignment, and this file has to land before the bundle
+// includes Odoo's own defaults and ours.
+//
+// Only the variables at the top of the chain are set. Everything else - the canvas,
+// the text colour, the borders, Bootstrap's $gray-* and $body-bg - is derived from
+// these, so most of the backend follows. theme.dark.scss covers the rest.
+
+// The grey scale is inverted, not replaced: Odoo reads gray-100 as "lightest
+// surface" and gray-900 as "darkest text", so flipping the ends flips every rule
+// built on them.
+$o-white: #232733;      // surfaces: sheets, cards, dropdowns
+$o-black: #ffffff;      // the strongest text colour
+
+$o-gray-100: #1b1e27;   // the page behind the sheets
+$o-gray-200: #262a36;
+$o-gray-300: #333949;   // borders
+$o-gray-400: #424a5e;
+$o-gray-500: #6b7385;
+$o-gray-600: #98a1b2;
+$o-gray-700: #c3c9d4;
+$o-gray-800: #dfe3ea;
+$o-gray-900: #eef1f6;   // body text
+
+$o-view-background-color: #232733;
+
+// Bootstrap's white and black are the surface and the strongest text as well:
+// dropdowns, modals, cards, inputs and tabs all fill with $white.
+$white: $o-white;
+$black: $o-black;
+
+// Plum and teal lighten on dark: the light-mode shades are too deep to stand out
+// against the slate surfaces. Button text still comes from the colour's own
+// lightness (theme.scss), so it stays white on this plum.
+$o-theme-primary: #946889;
+
+// links, actions and focus in a lighter teal
+$o-theme-action: #3fb7bd;
+$o-main-link-color: #3fb7bd;
+
+// Bootstrap 4 picks button text with color-yiq(), which chooses between these two.
+// They default to $gray-900 and $white, which are semantic here - "body text" and
+// "surface" - and would have every filled button print dark text on a dark fill.
+// Contrast has to stay physical, so it is pinned to real black and white.
+$yiq-text-dark: #111111;
+$yiq-text-light: #ffffff;
+
+// Odoo's tooltips are white cards with grey text
+$o-tooltip-background-color: #2c3140;
+$o-tooltip-arrow-color: #2c3140;
+$o-tooltip-color: #dfe3ea;
+$o-tooltip-text-color: #c3c9d4;
+$o-tooltip-title-text-color: #eef1f6;
+$o-tooltip-title-background-color: #262a36;
+
+$o-shadow-color: #000000;
