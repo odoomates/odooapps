@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- an OWL component always renders an element, so the hidden sidebar is an
+         empty one -->
+    <t t-name="om_theme_lite.AppsSidebar" owl="1">
+      <div class="o_om_apps_sidebar_root">
+        <nav t-if="visible" class="o_om_apps_sidebar d-print-none" aria-label="Apps">
+            <a href="/web" class="o_om_sidebar_item o_om_sidebar_home" title="Home"
+               t-on-click="openHome">
+                <span class="o_om_sidebar_icon"><i class="fa fa-th-large"/></span>
+                <span class="o_om_sidebar_name">Home</span>
+            </a>
+            <t t-foreach="apps" t-as="app" t-key="app.id">
+                <a class="o_om_sidebar_item" t-att-href="href(app)" t-att-title="app.name"
+                   t-att-class="{ 'o_om_active': isActive(app) }"
+                   t-on-click="openApp(app)">
+                    <t t-set="icon" t-value="fontIcon(app)"/>
+                    <img t-if="app.webIconData" class="o_om_sidebar_icon" t-att-src="iconSrc(app)" alt=""/>
+                    <span t-else="" class="o_om_sidebar_icon o_om_sidebar_letter"
+                          t-att-style="icon and icon.style">
+                        <i t-if="icon" t-att-class="icon.className"/>
+                        <t t-else="" t-esc="app.name.slice(0, 1)"/>
+                    </span>
+                    <span class="o_om_sidebar_name" t-esc="app.name"/>
+                </a>
+            </t>
+        </nav>
+      </div>
+    </t>
+
+</templates>

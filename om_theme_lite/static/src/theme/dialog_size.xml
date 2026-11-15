@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_theme_lite.DialogSizeButton" owl="1">
+        <button t-if="omCanResize()" type="button"
+                class="btn fa o_om_dialog_size"
+                t-att-class="omIsMaximized() ? 'fa-compress' : 'fa-expand'"
+                t-att-title="omIsMaximized() ? 'Restore' : 'Full screen'"
+                aria-label="Full screen" tabindex="-1"
+                t-on-click="omToggleSize"/>
+    </t>
+
+    <t t-inherit="web.Dialog" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('modal-dialog')]" position="attributes">
+            <attribute name="t-att-class">omDialogClass()</attribute>
+        </xpath>
+        <xpath expr="//header[hasclass('modal-header')]" position="inside">
+            <t t-call="om_theme_lite.DialogSizeButton"/>
+        </xpath>
+    </t>
+
+    <!-- Action dialogs (wizards, records opened in a pop-up) use a copy of
+         web.Dialog taken before this module loads, so they need the same change. -->
+    <t t-inherit="web.ActionDialog" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('modal-dialog')]" position="attributes">
+            <attribute name="t-att-class">omDialogClass()</attribute>
+        </xpath>
+        <xpath expr="//header[hasclass('modal-header')]" position="inside">
+            <t t-call="om_theme_lite.DialogSizeButton"/>
+        </xpath>
+    </t>
+
+</templates>
