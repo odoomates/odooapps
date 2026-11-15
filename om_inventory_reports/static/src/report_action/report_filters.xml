@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_inventory_reports.ReportSwitcher">
+        <Dropdown menuClass="'o_om_menu o_om_switcher_menu'">
+            <button class="btn o_om_switcher">
+                <i t-if="this.currentReport" class="oi me-1" t-att-data-icon="this.currentReport.icon"/>
+                <span t-if="this.currentReport" t-out="this.currentReport.name"/>
+                <span t-else="">Reports</span>
+                <i class="oi ms-1" data-icon="expand_more"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="px-3 pt-2 pb-1">
+                    <input class="form-control form-control-sm" type="search" placeholder="Find a report..."
+                           t-att-value="this.state.search" t-on-input="(ev) => this.state.search = ev.target.value"/>
+                </div>
+                <t t-foreach="this.sections" t-as="section" t-key="section.key">
+                    <h6 class="dropdown-header" t-out="section.name"/>
+                    <t t-foreach="section.reports" t-as="report" t-key="report.key">
+                        <DropdownItem class="{ 'o_om_report_item': true, 'selected': report.key === this.props.current }"
+                                      onSelected="() => this.props.onSelect(report.key)">
+                            <i class="oi o_om_report_icon" t-att-data-icon="report.icon"/>
+                            <span class="d-flex flex-column">
+                                <span class="fw-medium" t-out="report.name"/>
+                                <small class="text-muted" t-out="report.description"/>
+                            </span>
+                        </DropdownItem>
+                    </t>
+                </t>
+                <div t-if="!this.sections.length" class="px-3 py-2 text-muted">No report found.</div>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="om_inventory_reports.SavedViewsMenu">
+        <Dropdown menuClass="'o_om_menu o_om_views_menu'">
+            <button class="btn o_om_pill o_om_views_toggle" t-att-class="{ 'o_om_active': this.currentView }">
+                <i class="oi me-1" t-att-data-icon="this.currentView ? 'star' : 'bookmark'"/>
+                <span t-if="this.currentView" t-out="this.currentView.name"/>
+                <span t-else="">Saved views</span>
+            </button>
+            <t t-set-slot="content">
+                <t t-if="this.props.views.length">
+                    <h6 class="dropdown-header">Saved views</h6>
+                    <t t-foreach="this.props.views" t-as="view" t-key="view.id">
+                        <DropdownItem class="{ 'o_om_view_item': true, 'selected': view.id === this.props.viewId }"
+                                      onSelected="() => this.props.onApply(view)">
+                            <span class="flex-grow-1 text-truncate" t-out="view.name"/>
+                            <i t-if="view.is_default" class="oi text-warning" data-icon="star" title="Default"/>
+                            <i t-if="view.shared" class="oi text-muted" data-icon="group" title="Shared"/>
+                            <button t-if="view.mine" class="btn btn-link btn-sm p-0 o_om_view_delete" title="Delete"
+                                    t-on-click.stop="() => this.props.onDelete(view)">
+                                <i class="oi" data-icon="delete"/>
+                            </button>
+                        </DropdownItem>
+                    </t>
+                    <div class="dropdown-divider"/>
+                </t>
+                <DropdownItem t-if="this.currentView and this.currentView.mine" onSelected="() => this.save(true)">
+                    <i class="oi me-2" data-icon="save"/>Update "<t t-out="this.currentView.name"/>"
+                </DropdownItem>
+                <DropdownItem t-if="this.currentView" onSelected="() => this.props.onSchedule(this.currentView)">
+                    <i class="oi me-2" data-icon="mail"/>Email this view regularly...
+                </DropdownItem>
+                <div class="px-3 py-2 o_om_save_view">
+                    <div class="small text-muted mb-1">Save the current filters, grouping and columns</div>
+                    <input class="form-control form-control-sm mb-2" placeholder="View name"
+                           t-att-value="this.state.name" t-on-input="(ev) => this.state.name = ev.target.value"
+                           t-on-keydown="(ev) => this.onKeydown(ev)"/>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="om_view_default"
+                               t-att-checked="this.state.isDefault" t-on-change="(ev) => this.state.isDefault = ev.target.checked"/>
+                        <label class="form-check-label" for="om_view_default">Open this view by default</label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="om_view_shared"
+                               t-att-checked="this.state.shared" t-on-change="(ev) => this.state.shared = ev.target.checked"/>
+                        <label class="form-check-label" for="om_view_shared">Share with all users</label>
+                    </div>
+                    <button class="btn btn-primary btn-sm w-100" t-att-disabled="!this.state.name.trim()"
+                            t-on-click="() => this.save()">Save view</button>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="om_inventory_reports.ExportMenu">
+        <div class="btn-group o_om_export">
+            <button class="btn btn-primary" t-att-disabled="this.props.exporting" t-on-click="() => this.props.onExport('pdf')">
+                <i class="oi me-1" t-att-class="{ 'o_om_spin': this.props.exporting === 'pdf' }"
+                   t-att-data-icon="this.props.exporting === 'pdf' ? 'progress_activity' : 'picture_as_pdf'"/>PDF
+            </button>
+            <button class="btn btn-secondary o_om_export_btn" t-att-disabled="this.props.exporting" t-on-click="() => this.props.onExport('xlsx')">
+                <i class="oi me-1" t-att-class="{ 'o_om_spin': this.props.exporting === 'xlsx' }"
+                   t-att-data-icon="this.props.exporting === 'xlsx' ? 'progress_activity' : 'table_chart'"/>Excel
+            </button>
+            <Dropdown menuClass="'o_om_menu'">
+                <button class="btn btn-secondary" title="More export options" t-att-disabled="this.props.exporting">
+                    <i class="oi" data-icon="more_vert"/>
+                </button>
+                <t t-set-slot="content">
+                    <h6 class="dropdown-header">Everything unfolded</h6>
+                    <DropdownItem onSelected="() => this.props.onExport('pdf', true)">
+                        <i class="oi me-2" data-icon="picture_as_pdf"/>PDF, all lines
+                    </DropdownItem>
+                    <DropdownItem onSelected="() => this.props.onExport('xlsx', true)">
+                        <i class="oi me-2" data-icon="table_chart"/>Excel, all lines
+                    </DropdownItem>
+                    <div class="dropdown-divider"/>
+                    <DropdownItem onSelected="() => this.props.onExport('csv', true)">
+                        <i class="oi me-2" data-icon="description"/>CSV, all lines
+                    </DropdownItem>
+                </t>
+            </Dropdown>
+        </div>
+    </t>
+
+    <t t-name="om_inventory_reports.DateFilter">
+        <div class="btn-group o_om_date_filter">
+            <button t-if="this.props.mode === 'range'" class="btn o_om_pill o_om_pill_icon" title="Previous period"
+                    t-on-click="() => this.shift(-1)">
+                <i class="oi" data-icon="chevron_left"/>
+            </button>
+            <Dropdown menuClass="'o_om_menu o_om_date_menu'">
+                <button class="btn o_om_pill o_om_date_toggle">
+                    <i class="oi me-1" data-icon="calendar_today"/>
+                    <span t-out="this.label"/>
+                </button>
+                <t t-set-slot="content">
+                    <t t-foreach="this.presets" t-as="preset" t-key="preset.key">
+                        <div t-if="preset.separator" class="dropdown-divider"/>
+                        <DropdownItem class="{ 'selected': this.props.options.date_preset === preset.key }"
+                                      onSelected="() => this.selectPreset(preset.key)">
+                            <t t-out="preset.label"/>
+                        </DropdownItem>
+                    </t>
+                    <div class="dropdown-divider"/>
+                    <div class="px-3 py-2 o_om_custom_dates">
+                        <div t-if="this.props.mode === 'range'" class="small text-muted mb-1">Custom period</div>
+                        <div t-else="" class="small text-muted mb-1">Pick a date</div>
+                        <div t-if="this.props.mode === 'range'" class="d-flex align-items-center gap-2">
+                            <DateTimeInput type="'date'" value="this.dateFrom" onChange="(value) => this.setDate('date_from', value)"/>
+                            <i class="oi text-muted" data-icon="arrow_forward"/>
+                            <DateTimeInput type="'date'" value="this.dateTo" onChange="(value) => this.setDate('date_to', value)"/>
+                        </div>
+                        <DateTimeInput t-else="" type="'date'" value="this.dateTo" onChange="(value) => this.setDate('date_to', value)"/>
+                    </div>
+                </t>
+            </Dropdown>
+            <button t-if="this.props.mode === 'range'" class="btn o_om_pill o_om_pill_icon" title="Next period"
+                    t-on-click="() => this.shift(1)">
+                <i class="oi" data-icon="chevron_right"/>
+            </button>
+        </div>
+    </t>
+
+    <t t-name="om_inventory_reports.CompareMenu">
+        <Dropdown menuClass="'o_om_menu'">
+            <button class="btn o_om_pill o_om_compare_toggle" t-att-class="{ 'o_om_active': this.props.value }"
+                    t-att-title="this.props.label">
+                <i class="oi me-1" data-icon="swap_horiz"/>
+                <span t-if="this.props.value" t-out="this.current.label"/>
+                <span t-else="">Compare</span>
+            </button>
+            <t t-set-slot="content">
+                <h6 class="dropdown-header">Compare with</h6>
+                <t t-foreach="this.choices" t-as="choice" t-key="choice.label">
+                    <DropdownItem class="{ 'selected': (this.props.value || false) === choice.key }"
+                                  onSelected="() => this.props.onChange(choice.key)">
+                        <t t-out="choice.label"/>
+                    </DropdownItem>
+                </t>
+                <div t-if="this.props.label" class="px-3 pt-1 pb-2 small text-muted" t-out="this.props.label"/>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="om_inventory_reports.RecordFilter">
+        <Dropdown menuClass="'o_om_menu o_om_record_menu'" onOpened="() => this.onOpened()">
+            <button class="btn o_om_pill o_om_filter_toggle" t-att-class="{ 'o_om_active': this.props.resIds.length }"
+                    t-att-data-filter="this.props.filter.key">
+                <i class="oi me-1" t-att-data-icon="this.props.filter.icon"/>
+                <span class="text-truncate" t-out="this.label"/>
+                <span t-if="this.props.resIds.length &gt; 1" class="o_om_pill_count" t-out="this.props.resIds.length"/>
+                <i class="oi ms-1 o_om_caret_small" data-icon="arrow_drop_down"/>
+            </button>
+            <t t-set-slot="content">
+                <div class="px-3 py-2">
+                    <div class="small text-muted mb-2">
+                        <t t-out="this.props.filter.label"/>: show only
+                    </div>
+                    <MultiRecordSelector resModel="this.props.filter.model" resIds="this.props.resIds"
+                                         domain="this.props.filter.domain" update="(ids) => this.update(ids)"
+                                         placeholder="this.placeholder"/>
+                    <button t-if="this.props.resIds.length" class="btn btn-link btn-sm px-0 mt-2"
+                            t-on-click="() => this.update([])">Clear</button>
+                </div>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="om_inventory_reports.OptionsMenu">
+        <Dropdown menuClass="'o_om_menu o_om_options_menu'">
+            <button class="btn o_om_pill o_om_pill_icon" title="Options">
+                <i class="oi" data-icon="tune"/>
+            </button>
+            <t t-set-slot="content">
+                <h6 class="dropdown-header">Options</h6>
+                <t t-foreach="this.props.toggles" t-as="toggle" t-key="toggle.key">
+                    <DropdownItem closingMode="'none'" class="'o_om_toggle_item'"
+                                  onSelected="() => this.toggle(toggle.key)">
+                        <i class="oi me-2" t-att-data-icon="this.props.options[toggle.key] ? 'check_box' : 'square'"/>
+                        <t t-out="toggle.label"/>
+                    </DropdownItem>
+                </t>
+                <t t-foreach="this.props.extraOptions" t-as="option" t-key="option.key">
+                    <div class="px-3 py-1 d-flex align-items-center gap-2 o_om_number_option">
+                        <label class="flex-grow-1" t-att-for="'om_opt_' + option.key" t-out="option.label"/>
+                        <input class="o_input text-end" type="number" t-att-id="'om_opt_' + option.key"
+                               t-att-min="option.min" t-att-step="option.step || 1"
+                               t-att-value="this.props.options[option.key]" t-on-change="(ev) => this.setNumber(option, ev)"/>
+                    </div>
+                </t>
+                <div class="dropdown-divider"/>
+                <h6 class="dropdown-header">Row density</h6>
+                <DropdownItem closingMode="'none'" onSelected="() => this.props.onDensity('comfortable')">
+                    <i class="oi me-2" t-att-data-icon="this.props.density === 'comfortable' ? 'radio_button_checked' : 'radio_button_unchecked'"/>Comfortable
+                </DropdownItem>
+                <DropdownItem closingMode="'none'" onSelected="() => this.props.onDensity('compact')">
+                    <i class="oi me-2" t-att-data-icon="this.props.density === 'compact' ? 'radio_button_checked' : 'radio_button_unchecked'"/>Compact
+                </DropdownItem>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="om_inventory_reports.GroupByMenu">
+        <Dropdown menuClass="'o_om_menu o_om_groupby_menu'">
+            <button class="btn o_om_ghost o_om_groupby_toggle">
+                <i class="oi me-1" data-icon="account_tree"/>
+                <span class="text-muted me-1">Group by</span>
+                <span class="fw-medium" t-out="this.label"/>
+            </button>
+            <t t-set-slot="content">
+                <h6 class="dropdown-header">Levels, from the top</h6>
+                <div t-foreach="this.chosen" t-as="dim" t-key="dim.key" class="o_om_level">
+                    <span class="o_om_level_index" t-out="dim_index + 1"/>
+                    <i class="oi" t-att-data-icon="dim.icon"/>
+                    <span class="flex-grow-1" t-out="dim.label"/>
+                    <button class="btn btn-link btn-sm p-0" title="Up" t-att-disabled="dim_index === 0"
+                            t-on-click="() => this.move(dim_index, -1)"><i class="oi" data-icon="arrow_upward"/></button>
+                    <button class="btn btn-link btn-sm p-0" title="Down" t-att-disabled="dim_index === this.chosen.length - 1"
+                            t-on-click="() => this.move(dim_index, 1)"><i class="oi" data-icon="arrow_downward"/></button>
+                    <button class="btn btn-link btn-sm p-0" title="Remove" t-att-disabled="this.chosen.length === 1"
+                            t-on-click="() => this.remove(dim.key)"><i class="oi" data-icon="close"/></button>
+                </div>
+                <t t-if="this.others.length and this.chosen.length &lt; 3">
+                    <div class="dropdown-divider"/>
+                    <h6 class="dropdown-header">Add a level</h6>
+                    <t t-foreach="this.others" t-as="dim" t-key="dim.key">
+                        <DropdownItem closingMode="'none'" onSelected="() => this.add(dim.key)">
+                            <i class="oi me-2" t-att-data-icon="dim.icon"/><t t-out="dim.label"/>
+                        </DropdownItem>
+                    </t>
+                </t>
+            </t>
+        </Dropdown>
+    </t>
+
+    <t t-name="om_inventory_reports.ColumnsMenu">
+        <Dropdown menuClass="'o_om_menu o_om_columns_menu'">
+            <button class="btn o_om_ghost">
+                <i class="oi me-1" data-icon="view_column"/>Columns
+            </button>
+            <t t-set-slot="content">
+                <h6 class="dropdown-header">Columns</h6>
+                <div t-foreach="this.props.columns" t-as="column" t-key="column.key" class="o_om_level"
+                     t-att-class="{ 'text-muted': !column.visible }">
+                    <button class="btn btn-link btn-sm p-0" t-att-disabled="!column.optional"
+                            t-on-click="() => this.toggle(column)">
+                        <i class="oi" t-att-data-icon="column.visible ? 'check_box' : 'square'"/>
+                    </button>
+                    <span class="flex-grow-1" t-out="column.label"/>
+                    <button class="btn btn-link btn-sm p-0" title="Move left" t-att-disabled="column_index === 0"
+                            t-on-click="() => this.move(column, -1)"><i class="oi" data-icon="arrow_upward"/></button>
+                    <button class="btn btn-link btn-sm p-0" title="Move right"
+                            t-att-disabled="column_index === this.props.columns.length - 1"
+                            t-on-click="() => this.move(column, 1)"><i class="oi" data-icon="arrow_downward"/></button>
+                </div>
+                <div class="dropdown-divider"/>
+                <DropdownItem onSelected="() => this.reset()">
+                    <i class="oi me-2" data-icon="refresh"/>Default columns
+                </DropdownItem>
+            </t>
+        </Dropdown>
+    </t>
+
+</templates>
