@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="paperformat_dynamic_report" model="report.paperformat">
+        <field name="name">Dynamic Reports (A4 landscape)</field>
+        <field name="format">A4</field>
+        <field name="orientation">Landscape</field>
+        <field name="margin_top">32</field>
+        <field name="margin_bottom">18</field>
+        <field name="margin_left">8</field>
+        <field name="margin_right">8</field>
+        <field name="header_spacing">26</field>
+        <field name="dpi">90</field>
+    </record>
+
+    <record id="action_report_dynamic" model="ir.actions.report">
+        <field name="name">Dynamic Report</field>
+        <field name="model">om.report.view</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_report_engine.report_dynamic</field>
+        <field name="paperformat_id" ref="paperformat_dynamic_report"/>
+    </record>
+
+    <template id="report_dynamic">
+        <t t-call="web.html_container">
+            <t t-set="data_report_landscape" t-value="True"/>
+            <t t-call="web.external_layout">
+                <div class="page o_omr_pdf">
+                    <style>
+                        .o_omr_pdf { font-size: 9pt; }
+                        .o_omr_pdf h2 { margin-bottom: 2px; }
+                        .o_omr_pdf .o_omr_filter { color: #555; margin-bottom: 1px; }
+                        .o_omr_pdf .o_omr_filter strong { color: #333; margin-right: 6px; }
+                        .o_omr_pdf table.o_omr_lines th, .o_omr_pdf table.o_omr_lines td { border-left: 0 !important; border-right: 0 !important; border-top: 0; }
+                        .o_omr_pdf table.o_omr_lines { width: 100%; border-collapse: collapse; margin-top: 8px; }
+                        .o_omr_pdf table.o_omr_lines th { border-bottom: 1.5px solid #333; padding: 4px 5px; text-align: left; font-size: 8pt; text-transform: uppercase; }
+                        .o_omr_pdf table.o_omr_lines th.o_omr_head_group { text-align: center; border-bottom: 1px solid #999; }
+                        .o_omr_pdf table.o_omr_lines td { border-bottom: 1px solid #e3e3e3; padding: 3px 5px; }
+                        .o_omr_pdf .o_omr_num { text-align: right !important; white-space: nowrap; }
+                        .o_omr_pdf .o_omr_group, .o_omr_pdf .o_omr_section { font-weight: bold; }
+                        .o_omr_pdf .o_omr_group_0 td { background-color: #f2f2f2; }
+                        .o_omr_pdf .o_omr_detail td { color: #333; font-size: 8.5pt; }
+                        .o_omr_pdf .o_omr_opening td, .o_omr_pdf .o_omr_closing td { font-style: italic; color: #666; }
+                        .o_omr_pdf .o_omr_total td { font-weight: bold; border-top: 1.5px solid #333; border-bottom: 0; }
+                        .o_omr_pdf .o_omr_negative { color: #b42318; }
+                        .o_omr_pdf thead { display: table-header-group; }
+                        .o_omr_pdf tr { page-break-inside: avoid; }
+                    </style>
+                    <div t-if="export['recipient']" class="row mb-3">
+                        <div class="col-6 offset-6">
+                            <div t-out="export['recipient']"
+                                 t-options="{'widget': 'contact', 'fields': ['address', 'name', 'vat'], 'no_marker': True}"/>
+                        </div>
+                    </div>
+                    <h2 t-out="export['title']"/>
+                    <div t-foreach="export['filters']" t-as="item" class="o_omr_filter">
+                        <strong t-out="item[0]"/><span t-out="item[1]"/>
+                    </div>
+                    <table class="o_omr_lines">
+                        <thead>
+                            <tr t-if="header_groups">
+                                <th/>
+                                <th t-foreach="header_groups" t-as="group" t-att-colspan="group[1]"
+                                    t-att-class="'o_omr_head_group' if group[0] else ''" t-out="group[0]"/>
+                            </tr>
+                            <tr>
+                                <th t-out="export['name_label']"/>
+                                <th t-foreach="export['columns']" t-as="column"
+                                    t-att-class="'o_omr_num' if column['type'] in numeric else ''" t-out="column['label']"/>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="export['lines']" t-as="line" t-att-class="row_class(line)">
+                                <td t-attf-style="padding-left: #{4 + 12 * line['level']}px" t-out="line['name']"/>
+                                <t t-foreach="export['columns']" t-as="column">
+                                    <td t-att-class="cell_class(line, column)" t-out="cell(line, column)"/>
+                                </t>
+                            </tr>
+                            <tr t-if="export['total']" class="o_omr_total">
+                                <td t-out="export['total']['name']"/>
+                                <td t-foreach="export['columns']" t-as="column"
+                                    t-att-class="cell_class(export['total'], column)"
+                                    t-out="cell(export['total'], column)"/>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div t-if="export['notes']" class="mt-3 o_omr_notes">
+                        <h5>Notes</h5>
+                        <div t-foreach="export['notes']" t-as="item" style="margin-bottom: 4px;">
+                            <strong t-out="item['line']"/>,
+                            <span t-out="(item['group'] + ' ' if item['group'] else '') + item['column']"/>:
+                            <span style="white-space: pre-line" t-out="item['note']"/>
+                            <span class="text-muted"> (<t t-out="item['author']"/>)</span>
+                        </div>
+                    </div>
+                    <p t-if="export['note']" class="mt-3" t-out="export['note']"/>
+                    <p class="text-muted mt-3" style="font-size: 7.5pt">Printed on <t t-out="printed_on"/></p>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

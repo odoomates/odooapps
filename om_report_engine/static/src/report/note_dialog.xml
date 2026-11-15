@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_report_engine.NoteDialog">
+        <Dialog size="'md'" title="this.props.title">
+            <div class="o_omr_note_dialog">
+                <div t-if="this.props.subtitle" class="text-muted mb-2" t-out="this.props.subtitle"/>
+                <div t-if="!this.state.notes.length" class="text-muted mb-3">No note on this figure yet.</div>
+                <div t-foreach="this.state.notes" t-as="note" t-key="note.id" class="o_omr_note mb-2 p-2 rounded">
+                    <div class="d-flex align-items-center gap-2 small text-muted mb-1">
+                        <i class="oi" data-icon="sticky_note_2"/>
+                        <span class="fw-medium" t-out="note.author"/>
+                        <span t-out="this.when(note)"/>
+                        <span class="flex-grow-1"/>
+                        <button t-if="note.mine" class="btn btn-link btn-sm p-0" title="Edit"
+                                t-on-click="() => this.edit(note)"><i class="oi" data-icon="edit"/></button>
+                        <button t-if="note.mine" class="btn btn-link btn-sm p-0 text-danger" title="Delete"
+                                t-on-click="() => this.remove(note)"><i class="oi" data-icon="delete"/></button>
+                    </div>
+                    <div class="text-prewrap" t-out="note.note"/>
+                </div>
+                <textarea class="form-control mt-2" rows="3" placeholder="Write a note on this figure..."
+                          t-att-value="this.state.draft" t-on-input="(ev) => this.state.draft = ev.target.value"
+                          t-on-keydown="(ev) => this.onKeydown(ev)"/>
+                <div class="small text-muted mt-1">Everyone who can open the report sees the notes; only their author changes them.</div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary" t-att-disabled="this.state.saving or (!this.state.draft.trim() and !this.state.editing)"
+                        t-on-click="() => this.save()">
+                    <t t-if="this.state.editing">Save the note</t><t t-else="">Add the note</t>
+                </button>
+                <button t-if="this.state.editing" class="btn btn-secondary" t-on-click="() => this.cancel()">Cancel</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>
