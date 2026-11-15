@@ -41,7 +41,7 @@ class OmDynamicReportJournalAudit(models.AbstractModel):
         return [
             self._odr_target_move_choice(),
             {'key': 'sort_selection', 'label': self.env._("Sort entries by"), 'default': 'date', 'choices': [
-                ('date', self.env._("Date")), ('move_name', self.env._("Entry number"))]},
+                ['date', self.env._("Date")], ['move_name', self.env._("Entry number")]]},
         ]
 
     @api.model

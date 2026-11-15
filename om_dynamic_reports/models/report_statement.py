@@ -47,8 +47,8 @@ class OmDynamicReportStatement(models.AbstractModel):
         return [
             {'key': 'statement_type', 'label': self.env._("Statement"), 'icon': 'receipt_long', 'menu': 'bar',
              'default': 'activity', 'choices': [
-                 ('activity', self.env._("Activity")),
-                 ('open', self.env._("Open items")),
+                 ['activity', self.env._("Activity")],
+                 ['open', self.env._("Open items")],
              ]},
             self._odr_target_move_choice(),
         ]

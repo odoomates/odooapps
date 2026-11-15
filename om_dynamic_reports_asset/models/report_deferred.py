@@ -53,8 +53,8 @@ class OmDynamicReportDeferred(models.AbstractModel):
     @api.model
     def _om_choices(self):
         return [{'key': 'recognition', 'label': self.env._("Recognitions"), 'icon': 'event_repeat', 'menu': 'bar',
-                 'default': 'all', 'choices': [('all', self.env._("Posted and planned")),
-                                               ('posted', self.env._("Posted only"))]}]
+                 'default': 'all', 'choices': [['all', self.env._("Posted and planned")],
+                                               ['posted', self.env._("Posted only")]]}]
 
     # ------------------------------------------------------------------
     # Periods and columns
@@ -292,8 +292,8 @@ class OmDynamicReportDepreciation(models.AbstractModel):
     @api.model
     def _om_choices(self):
         return [{'key': 'recognition', 'label': self.env._("Depreciations"), 'icon': 'event_repeat',
-                 'menu': 'bar', 'default': 'posted', 'choices': [('posted', self.env._("Posted only")),
-                                                                 ('all', self.env._("Posted and planned"))]}]
+                 'menu': 'bar', 'default': 'posted', 'choices': [['posted', self.env._("Posted only")],
+                                                                 ['all', self.env._("Posted and planned")]]}]
 
     @api.model
     def _om_get_columns(self, options):

@@ -43,8 +43,8 @@ class OmDynamicReportCashFlow(models.AbstractModel):
     def _om_choices(self):
         return [
             {'key': 'method', 'label': self.env._("Method"), 'icon': 'account_tree', 'menu': 'bar',
-             'default': 'direct', 'choices': [('direct', self.env._("Direct method")),
-                                              ('indirect', self.env._("Indirect method"))]},
+             'default': 'direct', 'choices': [['direct', self.env._("Direct method")],
+                                              ['indirect', self.env._("Indirect method")]]},
             *super()._om_choices(),
         ]
 

@@ -43,9 +43,9 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
         return [
             self._odr_target_move_choice(),
             {'key': 'display_account', 'label': self.env._("Accounts"), 'default': 'movement', 'choices': [
-                ('movement', self.env._("With balance or movements")),
-                ('not_zero', self.env._("With closing balance not zero")),
-                ('all', self.env._("All accounts")),
+                ['movement', self.env._("With balance or movements")],
+                ['not_zero', self.env._("With closing balance not zero")],
+                ['all', self.env._("All accounts")],
             ]},
             self._odr_hierarchy_choice(),
         ]

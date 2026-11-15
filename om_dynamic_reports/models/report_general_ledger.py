@@ -46,13 +46,13 @@ class OmDynamicReportGeneralLedger(models.AbstractModel):
         return [
             self._odr_target_move_choice(),
             {'key': 'display_account', 'label': self.env._("Accounts"), 'default': 'movement', 'choices': [
-                ('movement', self.env._("With movements")),
-                ('not_zero', self.env._("With balance not zero")),
-                ('all', self.env._("All accounts")),
+                ['movement', self.env._("With movements")],
+                ['not_zero', self.env._("With balance not zero")],
+                ['all', self.env._("All accounts")],
             ]},
             {'key': 'sortby', 'label': self.env._("Sort journal items by"), 'default': 'date', 'choices': [
-                ('date', self.env._("Date")),
-                ('journal_partner', self.env._("Journal and partner")),
+                ['date', self.env._("Date")],
+                ['journal_partner', self.env._("Journal and partner")],
             ]},
             self._odr_hierarchy_choice(with_type=False),
         ]

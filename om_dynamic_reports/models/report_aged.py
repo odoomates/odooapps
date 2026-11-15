@@ -43,8 +43,8 @@ class OmDynamicReportAged(models.AbstractModel):
         return [
             self._odr_target_move_choice(),
             {'key': 'aging_basis', 'label': self.env._("Age by"), 'icon': 'event', 'menu': 'bar',
-             'default': 'due', 'choices': [('due', self.env._("Due date")),
-                                           ('invoice', self.env._("Invoice date"))]},
+             'default': 'due', 'choices': [['due', self.env._("Due date")],
+                                           ['invoice', self.env._("Invoice date")]]},
         ]
 
     @api.model
