@@ -138,7 +138,12 @@ class ReportOmReportEngineDynamic(models.AbstractModel):
     def _get_report_values(self, docids, data=None):
         exporter = self.env['om.report.export']
         export = exporter._om_export(data['params'])
+        # wkhtmltopdf knows no logical CSS properties: the sides of the language are given to the template
+        rtl = self.env['res.lang']._lang_get(self.env.lang or 'en_US').direction == 'rtl'
         return {
+            'direction': 'rtl' if rtl else 'ltr',
+            'start': 'right' if rtl else 'left',
+            'end': 'left' if rtl else 'right',
             'doc_ids': docids,
             'export': export,
             'company': export['company'],

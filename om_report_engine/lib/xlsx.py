@@ -23,6 +23,8 @@ def build_xlsx(exporter, export):
     output = io.BytesIO()
     workbook = xlsxwriter.Workbook(output, {'in_memory': True, 'strings_to_numbers': False})
     sheet = workbook.add_worksheet((export['title'] or 'Report')[:31])
+    if exporter.env['res.lang']._lang_get(exporter.env.lang or 'en_US').direction == 'rtl':
+        sheet.right_to_left()
     currency = export['currency']
     decimals = '0' * (currency.decimal_places or 0)
     amount = '#,##0.%s' % decimals if decimals else '#,##0'
