@@ -159,9 +159,9 @@ class OmDynamicReportBankReconciliation(models.AbstractModel):
             row('not_on_statement', self.env._("Transactions not in a statement"), figures['not_on_statement'],
                 drill=not currency.is_zero(figures['not_on_statement']))
             for key, name in (('unmatched_receipts', self.env._("Bank receipts to match")),
-                              ('unmatched_payments', self.env._("Bank payments to match")),
-                              ('outstanding_receipts', self.env._("Outstanding receipts")),
-                              ('outstanding_payments', self.env._("Outstanding payments"))):
+                              ['unmatched_payments', self.env._("Bank payments to match")],
+                              ['outstanding_receipts', self.env._("Outstanding receipts")],
+                              ['outstanding_payments', self.env._("Outstanding payments")]):
                 items = figures[key]
                 row(key, name, sum(item['values']['amount'] for item in items), items=items)
             row('once_matched', self.env._("Bank balance once all is matched"), figures['once_matched'],

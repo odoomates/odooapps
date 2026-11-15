@@ -73,11 +73,11 @@ class OmDynamicReport(models.AbstractModel):
         companies = self.env.companies.ids
         filters = {
             'journal_ids': {'label': self.env._("Journals"), 'model': 'account.journal', 'icon': 'book',
-                            'domain': [('company_id', 'child_of', companies)]},
+                            'domain': [['company_id', 'child_of', companies]]},
             'account_ids': {'label': self.env._("Accounts"), 'model': 'account.account', 'icon': 'account_tree',
-                            'domain': [('company_ids', 'parent_of', companies)]},
+                            'domain': [['company_ids', 'parent_of', companies]]},
             'account_tag_ids': {'label': self.env._("Account Tags"), 'model': 'account.account.tag',
-                                'icon': 'sell', 'domain': [('applicability', '=', 'accounts')]},
+                                'icon': 'sell', 'domain': [['applicability', '=', 'accounts']]},
             'partner_ids': {'label': self.env._("Partners"), 'model': 'res.partner', 'icon': 'person', 'domain': []},
             'partner_category_ids': {'label': self.env._("Partner Tags"), 'model': 'res.partner.category',
                                      'icon': 'label', 'domain': []},
@@ -95,8 +95,8 @@ class OmDynamicReport(models.AbstractModel):
     @api.model
     def _odr_target_move_choice(self):
         return {'key': 'target_move', 'label': self.env._("Entries"), 'icon': 'check_circle', 'menu': 'bar',
-                'default': 'posted', 'choices': [('posted', self.env._("Posted entries")),
-                                                 ('all', self.env._("All entries"))]}
+                'default': 'posted', 'choices': [['posted', self.env._("Posted entries")],
+                                                 ['all', self.env._("All entries")]]}
 
     # ------------------------------------------------------------------
     # Journal items
@@ -476,7 +476,7 @@ class OmDynamicReport(models.AbstractModel):
             {'key': 'analytic_column_ids', 'label': self.env._("Analytic Columns"),
              'model': 'account.analytic.account', 'icon': 'view_column', 'domain': []},
             {'key': 'analytic_plan_column_ids', 'label': self.env._("Plan Columns"),
-             'model': 'account.analytic.plan', 'icon': 'view_week', 'domain': [('parent_id', '=', False)]},
+             'model': 'account.analytic.plan', 'icon': 'view_week', 'domain': [['parent_id', '=', False]]},
         ]
 
     @api.model
@@ -517,7 +517,7 @@ class OmDynamicReport(models.AbstractModel):
         choices = [('none', self.env._("No grouping"))]
         if with_type:
             choices.append(('type', self.env._("Account type")))
-        choices += [('parent', self.env._("Parent account")), ('code', self.env._("Account code"))]
+        choices += [('parent', self.env._("Parent account")), ['code', self.env._("Account code")]]
         return {'key': 'hierarchy', 'label': self.env._("Group accounts by"), 'default': 'none',
                 'choices': choices}
 

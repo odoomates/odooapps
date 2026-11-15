@@ -57,15 +57,15 @@ class OmDynamicReportPartnerLedger(models.AbstractModel):
             self._odr_target_move_choice(),
             {'key': 'result_selection', 'label': self.env._("Accounts"), 'icon': 'account_balance_wallet',
              'menu': 'bar', 'default': 'customer_supplier', 'choices': [
-                 ('customer_supplier', self.env._("Receivable and Payable")),
-                 ('customer', self.env._("Receivable")),
-                 ('supplier', self.env._("Payable")),
+                 ['customer_supplier', self.env._("Receivable and Payable")],
+                 ['customer', self.env._("Receivable")],
+                 ['supplier', self.env._("Payable")],
              ]},
             {'key': 'balance_filter', 'label': self.env._("Partners"), 'default': 'all', 'choices': [
-                ('all', self.env._("All partners with entries")),
-                ('not_zero', self.env._("With balance not zero")),
-                ('debit', self.env._("With a debit balance")),
-                ('credit', self.env._("With a credit balance")),
+                ['all', self.env._("All partners with entries")],
+                ['not_zero', self.env._("With balance not zero")],
+                ['debit', self.env._("With a debit balance")],
+                ['credit', self.env._("With a credit balance")],
             ]},
         ]
 

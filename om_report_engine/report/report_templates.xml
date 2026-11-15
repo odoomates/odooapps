@@ -25,18 +25,18 @@
         <t t-call="web.html_container">
             <t t-set="data_report_landscape" t-value="True"/>
             <t t-call="web.external_layout">
-                <div class="page o_omr_pdf">
+                <div class="page o_omr_pdf" t-att-dir="direction">
                     <style>
                         .o_omr_pdf { font-size: 9pt; }
                         .o_omr_pdf h2 { margin-bottom: 2px; }
                         .o_omr_pdf .o_omr_filter { color: #555; margin-bottom: 1px; }
-                        .o_omr_pdf .o_omr_filter strong { color: #333; margin-right: 6px; }
+                        .o_omr_pdf .o_omr_filter strong { color: #333; margin-<t t-out="end"/>: 6px; }
                         .o_omr_pdf table.o_omr_lines th, .o_omr_pdf table.o_omr_lines td { border-left: 0 !important; border-right: 0 !important; border-top: 0; }
                         .o_omr_pdf table.o_omr_lines { width: 100%; border-collapse: collapse; margin-top: 8px; }
-                        .o_omr_pdf table.o_omr_lines th { border-bottom: 1.5px solid #333; padding: 4px 5px; text-align: left; font-size: 8pt; text-transform: uppercase; }
+                        .o_omr_pdf table.o_omr_lines th { border-bottom: 1.5px solid #333; padding: 4px 5px; text-align: <t t-out="start"/>; font-size: 8pt; text-transform: uppercase; }
                         .o_omr_pdf table.o_omr_lines th.o_omr_head_group { text-align: center; border-bottom: 1px solid #999; }
                         .o_omr_pdf table.o_omr_lines td { border-bottom: 1px solid #e3e3e3; padding: 3px 5px; }
-                        .o_omr_pdf .o_omr_num { text-align: right !important; white-space: nowrap; }
+                        .o_omr_pdf .o_omr_num { text-align: <t t-out="end"/> !important; white-space: nowrap; }
                         .o_omr_pdf .o_omr_group, .o_omr_pdf .o_omr_section { font-weight: bold; }
                         .o_omr_pdf .o_omr_group_0 td { background-color: #f2f2f2; }
                         .o_omr_pdf .o_omr_detail td { color: #333; font-size: 8.5pt; }
@@ -71,7 +71,7 @@
                         </thead>
                         <tbody>
                             <tr t-foreach="export['lines']" t-as="line" t-att-class="row_class(line)">
-                                <td t-attf-style="padding-left: #{4 + 12 * line['level']}px" t-out="line['name']"/>
+                                <td t-attf-style="padding-#{start}: #{4 + 12 * line['level']}px" t-out="line['name']"/>
                                 <t t-foreach="export['columns']" t-as="column">
                                     <td t-att-class="cell_class(line, column)" t-out="cell(line, column)"/>
                                 </t>
