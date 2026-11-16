@@ -1,0 +1,759 @@
+// Dynamic reports on screen. Only theme variables: light and dark themes follow.
+
+.o_omr_report {
+    --omr-row-height: 2.5rem;
+    --omr-radius: 0.75rem;
+    --omr-line: color-mix(in srgb, var(--border-color) 65%, transparent);
+    --omr-hover: color-mix(in srgb, var(--primary) 4%, var(--body-bg));
+    --omr-tint: color-mix(in srgb, var(--primary) 6%, var(--body-bg));
+    --omr-shadow: 0 0 0 1px var(--omr-line), 0 1px 2px rgba(16, 24, 40, 0.05);
+    --omr-shadow-hover: 0 0 0 1px var(--primary-border-subtle), 0 6px 16px rgba(16, 24, 40, 0.08);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+
+    &.o_omr_density_compact {
+        --omr-row-height: 1.9rem;
+    }
+
+    .o_omr_content {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0.25rem 1.25rem 1rem;
+        background-color: var(--tertiary-bg);
+    }
+
+    // ---------------------------------------------------------- buttons
+    .o_omr_pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.15rem;
+        height: 2.1rem;
+        padding: 0 0.8rem;
+        border: 1px solid var(--border-color);
+        border-radius: 2rem;
+        background-color: var(--body-bg);
+        color: var(--body-color);
+        font-weight: 500;
+        white-space: nowrap;
+        transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+
+        > .oi {
+            color: var(--secondary-color);
+        }
+
+        &:hover,
+        &.show {
+            border-color: var(--primary-border-subtle);
+            background-color: var(--omr-tint);
+        }
+
+        &.o_omr_pill_icon {
+            width: 2.1rem;
+            padding: 0;
+            justify-content: center;
+        }
+
+        &.o_omr_active {
+            border-color: var(--primary-border-subtle);
+            background-color: var(--primary-bg-subtle);
+            color: var(--primary-text-emphasis);
+
+            > .oi {
+                color: var(--primary-text-emphasis);
+            }
+        }
+    }
+
+    .o_omr_pill_count {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 1.25rem;
+        height: 1.25rem;
+        padding: 0 0.35rem;
+        margin-left: 0.3rem;
+        border-radius: 1rem;
+        background-color: var(--primary);
+        color: #fff;
+        font-size: 0.72rem;
+        font-weight: 700;
+    }
+
+    .o_omr_ghost {
+        display: inline-flex;
+        align-items: center;
+        height: 1.9rem;
+        padding: 0 0.6rem;
+        border: 0;
+        border-radius: 0.5rem;
+        background: transparent;
+        color: var(--secondary-color);
+        font-weight: 500;
+
+        &:hover,
+        &.show {
+            background-color: var(--secondary-bg);
+            color: var(--emphasis-color);
+        }
+    }
+
+    .o_omr_divider {
+        width: 1px;
+        height: 1.4rem;
+        margin: 0 0.2rem;
+        background-color: var(--border-color);
+    }
+
+    .o_omr_switcher {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.2rem;
+        height: 2.1rem;
+        padding: 0 0.9rem;
+        border: 1px solid var(--border-color);
+        border-radius: 2rem;
+        background-color: var(--body-bg);
+        font-weight: 600;
+        color: var(--emphasis-color);
+
+        &:hover,
+        &.show {
+            border-color: var(--primary-border-subtle);
+            background-color: var(--omr-tint);
+        }
+    }
+
+    .o_omr_subtitle {
+        margin-right: 0.5rem;
+        color: var(--secondary-color);
+        font-size: 0.9em;
+    }
+
+    .o_omr_date_filter {
+        display: inline-flex;
+        gap: 0.25rem;
+    }
+
+    // ---------------------------------------------------------- toolbar
+    .o_omr_toolbar {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        padding: 0.75rem 0 0.25rem;
+    }
+
+    .o_omr_filters {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.4rem;
+        padding: 0.5rem;
+        border-radius: var(--omr-radius);
+        background-color: var(--body-bg);
+        box-shadow: var(--omr-shadow);
+    }
+
+    .o_omr_viewbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0 0.1rem;
+    }
+
+    .o_omr_filter_toggle {
+        max-width: 18rem;
+    }
+
+    .o_omr_reset {
+        color: var(--secondary-color);
+        text-decoration: none;
+
+        &:hover {
+            color: var(--danger-text-emphasis);
+        }
+    }
+
+    .o_omr_search {
+        position: relative;
+        margin-left: auto;
+        min-width: 14rem;
+        flex: 0 1 19rem;
+
+        .oi {
+            position: absolute;
+            left: 0.7rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+            pointer-events: none;
+        }
+
+        input {
+            width: 100%;
+            height: 2.1rem;
+            padding: 0 0.8rem 0 2rem;
+            border: 1px solid var(--border-color);
+            border-radius: 2rem;
+            background-color: var(--body-bg);
+            transition: border-color 0.15s, box-shadow 0.15s;
+
+            &:focus {
+                border-color: var(--primary);
+                box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 18%, transparent);
+                outline: 0;
+            }
+        }
+    }
+
+    .o_omr_chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+        height: 1.8rem;
+        padding: 0 0.35rem 0 0.65rem;
+        border-radius: 2rem;
+        background-color: var(--primary-bg-subtle);
+        color: var(--primary-text-emphasis);
+        font-size: 0.85em;
+        font-weight: 500;
+
+        .btn {
+            color: inherit;
+            line-height: 1;
+        }
+    }
+
+
+    .o_omr_table_wrap {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow: auto;
+        border-radius: var(--omr-radius);
+        background-color: var(--body-bg);
+        box-shadow: var(--omr-shadow);
+        transition: opacity 0.15s;
+
+        &:focus {
+            outline: 0;
+        }
+
+        &.o_omr_reloading {
+            opacity: 0.55;
+        }
+    }
+
+    .o_omr_table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-variant-numeric: tabular-nums;
+
+        th,
+        td {
+            padding: 0 0.85rem;
+            height: var(--omr-row-height);
+            white-space: nowrap;
+            border-bottom: 1px solid var(--omr-line);
+            vertical-align: middle;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            z-index: 3;
+            height: 2.4rem;
+            background-color: var(--body-bg);
+            border-bottom: 1px solid var(--border-color);
+            color: var(--secondary-color);
+            font-weight: 600;
+            font-size: 0.7rem;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            user-select: none;
+
+            &.o_omr_sortable {
+                cursor: pointer;
+
+                &:hover {
+                    color: var(--emphasis-color);
+                }
+            }
+        }
+
+        // the first column stays when scrolling sideways
+        .o_omr_name_col,
+        .o_omr_name_cell {
+            position: sticky;
+            left: 0;
+            z-index: 2;
+            background-color: inherit;
+            min-width: 19rem;
+            max-width: 34rem;
+        }
+
+        thead .o_omr_name_col {
+            z-index: 4;
+            background-color: var(--body-bg);
+        }
+
+        tbody tr {
+            background-color: var(--body-bg);
+        }
+
+        .o_omr_name_cell {
+            padding-left: 0.6rem;
+        }
+
+        .o_omr_name_inner {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            height: var(--omr-row-height);
+            min-width: 0;
+        }
+
+        // indent guides: a thin line per level
+        .o_omr_guide {
+            position: relative;
+            flex: 0 0 1.1rem;
+            align-self: stretch;
+
+            &::before {
+                content: "";
+                position: absolute;
+                top: 0;
+                bottom: 0;
+                left: 0.55rem;
+                border-left: 1px solid var(--border-color);
+            }
+        }
+
+        .o_omr_name {
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .o_omr_caret,
+        .o_omr_caret_space {
+            flex: 0 0 1.1rem;
+            width: 1.1rem;
+            color: var(--secondary-color);
+        }
+
+        .o_omr_dim_icon {
+            color: var(--secondary-color);
+            font-size: 0.95em;
+        }
+
+        .o_omr_count {
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.05rem 0.45rem;
+            border-radius: 1rem;
+            background-color: var(--secondary-bg);
+            color: var(--secondary-color);
+        }
+
+        .o_omr_zero {
+            color: var(--tertiary-color, var(--secondary-color));
+        }
+
+        .o_omr_tone_danger {
+            color: var(--danger-text-emphasis);
+            font-weight: 600;
+        }
+
+        .o_omr_tone_warning {
+            color: var(--warning-text-emphasis);
+            font-weight: 600;
+        }
+
+        .o_omr_tone_success {
+            color: var(--success-text-emphasis);
+            font-weight: 600;
+        }
+
+        // data bars: a slim track left of the number, filled by the line's share of the largest sibling
+        .o_omr_bar_cell {
+            min-width: 10rem;
+        }
+
+        .o_omr_bar_wrap {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.6rem;
+        }
+
+        .o_omr_bar_track {
+            flex: 0 0 4.5rem;
+            height: 0.4rem;
+            border-radius: 1rem;
+            background-color: color-mix(in srgb, var(--primary) 9%, transparent);
+            overflow: hidden;
+        }
+
+        .o_omr_bar {
+            display: block;
+            height: 100%;
+            border-radius: 1rem;
+            background-color: color-mix(in srgb, var(--primary) 55%, transparent);
+        }
+
+        .text-danger .o_omr_bar {
+            background-color: color-mix(in srgb, var(--danger) 60%, transparent);
+        }
+
+        .o_omr_bar_value {
+            min-width: 4.5rem;
+            text-align: right;
+        }
+
+
+        // a header spanning the columns of a group (Initial Balance: Debit, Credit)
+        thead tr.o_omr_head_groups th {
+            height: 1.9rem;
+            border-bottom: 0;
+            text-align: center;
+            color: var(--emphasis-color);
+            letter-spacing: 0.06em;
+        }
+
+        thead tr.o_omr_head_groups th.o_omr_head_group span {
+            display: block;
+            padding-bottom: 0.2rem;
+            border-bottom: 2px solid var(--primary-border-subtle);
+        }
+
+        // the second header row sticks under the first one
+        thead tr.o_omr_head_groups + tr.o_omr_head_columns th {
+            top: 1.9rem;
+        }
+
+        .o_omr_row_section {
+            font-weight: 700;
+            color: var(--emphasis-color);
+            text-transform: uppercase;
+            font-size: 0.85em;
+            letter-spacing: 0.03em;
+        }
+
+        .o_omr_row_closing {
+            font-weight: 600;
+        }
+
+        // a figure with a note: a corner, and the note in the tooltip
+        td.o_omr_has_note {
+            position: relative;
+
+            &::after {
+                content: "";
+                position: absolute;
+                top: 0;
+                right: 0;
+                border-style: solid;
+                border-width: 0 0.55rem 0.55rem 0;
+                border-color: transparent var(--warning) transparent transparent;
+            }
+        }
+
+        // the button to read or write the notes of a figure, on hover
+        .o_omr_note_btn {
+            margin-right: 0.35rem;
+            vertical-align: baseline;
+            opacity: 0;
+            color: var(--secondary-color);
+            line-height: inherit;
+        }
+
+        td:hover > .o_omr_note_btn,
+        td.o_omr_has_note > .o_omr_note_btn {
+            opacity: 1;
+        }
+
+        td.o_omr_has_note > .o_omr_note_btn {
+            color: var(--warning-text-emphasis);
+        }
+
+        // a figure that opens what makes it
+        .o_omr_cell_drill {
+            cursor: pointer;
+
+            &:hover {
+                color: var(--primary-text-emphasis);
+                text-decoration: underline;
+            }
+        }
+
+        .o_omr_clickable {
+            cursor: pointer;
+        }
+
+        tbody tr:hover,
+        tbody tr.o_omr_focused {
+            background-color: var(--omr-hover);
+        }
+
+        tbody tr.o_omr_focused .o_omr_name_cell {
+            box-shadow: 3px 0 0 var(--primary) inset;
+        }
+
+        .o_omr_row_group {
+            font-weight: 600;
+            color: var(--emphasis-color);
+
+            &.o_omr_level_0 {
+                background-color: var(--omr-tint);
+            }
+        }
+
+        .o_omr_expanded .o_omr_caret {
+            color: var(--primary-text-emphasis);
+        }
+
+        .o_omr_row_leaf {
+            font-weight: 500;
+            color: var(--emphasis-color);
+        }
+
+        .o_omr_row_detail {
+            font-size: 0.9em;
+            color: var(--body-color);
+        }
+
+        .o_omr_row_opening,
+        .o_omr_row_closing {
+            font-style: italic;
+            font-size: 0.9em;
+            color: var(--secondary-color);
+        }
+
+        .o_omr_row_more td {
+            color: var(--primary);
+            cursor: pointer;
+        }
+
+        // row buttons show on hover
+        .o_omr_actions_col,
+        .o_omr_row_actions {
+            width: 4.5rem;
+            text-align: right;
+            padding-left: 0;
+            padding-right: 0.35rem;
+        }
+
+        .o_omr_row_actions .btn {
+            opacity: 0;
+            padding: 0.1rem 0.35rem;
+            border-radius: 0.4rem;
+            color: var(--secondary-color);
+
+            &:hover {
+                background-color: var(--secondary-bg);
+                color: var(--primary-text-emphasis);
+            }
+        }
+
+        tr:hover .o_omr_row_actions .btn,
+        tr.o_omr_focused .o_omr_row_actions .btn,
+        .o_omr_row_actions .btn.show {
+            opacity: 1;
+        }
+
+        tfoot td {
+            position: sticky;
+            bottom: 0;
+            z-index: 2;
+            height: 2.7rem;
+            background-color: var(--body-bg);
+            font-weight: 700;
+            color: var(--emphasis-color);
+            border-top: 2px solid var(--border-color);
+            border-bottom: 0;
+        }
+
+        tfoot .o_omr_name_cell {
+            z-index: 3;
+            background-color: var(--body-bg);
+        }
+    }
+
+    // ---------------------------------------------------------- states
+    .o_omr_state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        min-height: 16rem;
+        text-align: center;
+
+        > .oi {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 4rem;
+            height: 4rem;
+            border-radius: 50%;
+            background-color: var(--omr-tint);
+            font-size: 2rem;
+        }
+    }
+
+    .o_omr_skeleton {
+        display: block;
+        border-radius: 0.5rem;
+        background: linear-gradient(90deg, var(--secondary-bg) 25%, var(--body-bg) 50%, var(--secondary-bg) 75%);
+        background-size: 200% 100%;
+        animation: o_omr_shimmer 1.2s infinite linear;
+    }
+
+    .o_omr_skeleton_page {
+        padding-top: 0.75rem;
+    }
+
+    .o_omr_skeleton_bar {
+        height: 3rem;
+        width: 100%;
+    }
+
+    .o_omr_skeleton_card {
+        height: 4.3rem;
+        flex: 1;
+    }
+
+    .o_omr_skeleton_row {
+        height: 1.8rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .o_omr_skeleton_line {
+        height: 0.8rem;
+        width: 40%;
+    }
+
+    .o_omr_spin {
+        display: inline-block;
+        animation: o_omr_spin 0.9s infinite linear;
+    }
+}
+
+// ---------------------------------------------------------- menus (in popovers)
+.o_omr_menu {
+    min-width: 14rem;
+    padding: 0.35rem 0;
+    border-radius: 0.65rem;
+
+    .dropdown-header {
+        font-size: 0.7rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    .dropdown-item {
+        border-radius: 0.4rem;
+        margin: 0 0.35rem;
+        width: auto;
+    }
+
+    .dropdown-item.selected {
+        background-color: var(--primary-bg-subtle);
+        color: var(--primary-text-emphasis);
+    }
+
+    .o_omr_level {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 1rem;
+
+        .btn:disabled {
+            opacity: 0.25;
+        }
+    }
+
+    .o_omr_level_index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 1.3rem;
+        height: 1.3rem;
+        border-radius: 50%;
+        font-size: 0.7rem;
+        font-weight: 700;
+        background-color: var(--primary-bg-subtle);
+        color: var(--primary-text-emphasis);
+    }
+
+    .o_omr_number_option input {
+        width: 5rem;
+    }
+}
+
+.o_omr_switcher_menu {
+    width: 25rem;
+    max-height: 72vh;
+    overflow-y: auto;
+
+    .o_omr_report_item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.7rem;
+        padding-top: 0.45rem;
+        padding-bottom: 0.45rem;
+        white-space: normal;
+    }
+
+    .o_omr_report_icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 2rem;
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        background-color: var(--secondary-bg);
+        font-size: 1.05rem;
+        color: var(--secondary-color);
+    }
+
+    .selected .o_omr_report_icon {
+        background-color: var(--primary);
+        color: #fff;
+    }
+}
+
+.o_omr_views_menu {
+    width: 19rem;
+
+    .o_omr_view_item {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+    }
+}
+
+.o_omr_record_menu {
+    width: 24rem;
+}
+
+@keyframes o_omr_shimmer {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes o_omr_spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
