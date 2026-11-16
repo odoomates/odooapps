@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_view_form" model="ir.ui.view">
+        <field name="name">sale.order.form.om.quick.add</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="inside">
+                <field name="om_quick_add_ok" invisible="1"/>
+                <widget name="om_quick_add_scanner"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/control/button[@name='action_add_from_catalog']" position="after">
+                <button name="om_action_quick_paste" string="Paste lines" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok" data-hotkey="shift+v"
+                        context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_history" string="Bought before" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok or not parent.partner_id"
+                        context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_copy" string="Copy lines" type="object" class="px-4 btn-link"
+                        context="{'om_quick_add_id': parent.id}"
+                        invisible="not parent.om_quick_add_ok"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
