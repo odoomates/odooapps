@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_quick_add_copy_view_form" model="ir.ui.view">
+        <field name="name">om.quick.add.copy.form</field>
+        <field name="model">om.quick.add.copy</field>
+        <field name="arch" type="xml">
+            <form class="o_om_quick_add">
+                <field name="has_prices" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="several_models" invisible="1"/>
+                        <field name="source_model" invisible="not several_models" required="1"/>
+                        <field name="source_id" widget="many2one_reference" options="{'no_create': True}"
+                               placeholder="Search a document..."/>
+                    </group>
+                    <group invisible="not has_prices">
+                        <field name="keep_prices"/>
+                    </group>
+                </group>
+                <p class="text-muted" invisible="line_ids">
+                    Pick a document: its lines are listed here, to add all or some.
+                </p>
+                <field name="line_ids" nolabel="1" invisible="not line_ids">
+                    <list editable="bottom" create="0">
+                        <field name="product_id" force_save="1"/>
+                        <field name="source_quantity" force_save="1"/>
+                        <field name="uom_id" force_save="1" groups="uom.group_uom"/>
+                        <field name="price_unit" force_save="1" column_invisible="not parent.has_prices"/>
+                        <field name="discount" force_save="1" column_invisible="not parent.has_prices" optional="hide"/>
+                        <field name="quantity" class="fw-bold"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_add" string="Add" type="object" class="btn-primary" data-hotkey="q"
+                            invisible="not line_ids"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

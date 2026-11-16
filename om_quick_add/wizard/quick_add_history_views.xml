@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_quick_add_history_view_form" model="ir.ui.view">
+        <field name="name">om.quick.add.history.form</field>
+        <field name="model">om.quick.add.history</field>
+        <field name="arch" type="xml">
+            <form class="o_om_quick_add">
+                <field name="has_prices" invisible="1"/>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-2">
+                    <span class="text-muted">The latest first. Type a quantity in Add.</span>
+                    <div invisible="not has_prices" class="d-flex align-items-center gap-1">
+                        <field name="keep_prices" nolabel="1"/>
+                        <label for="keep_prices"/>
+                    </div>
+                </div>
+                <div invisible="line_ids" class="alert alert-info" role="status">
+                    Nothing confirmed for this partner yet.
+                </div>
+                <field name="line_ids" nolabel="1" invisible="not line_ids">
+                    <list editable="bottom" create="0" delete="0" decoration-bf="quantity &gt; 0">
+                        <field name="product_id"/>
+                        <field name="last_date"/>
+                        <field name="last_document_ref" optional="show"/>
+                        <field name="last_quantity"/>
+                        <field name="uom_id" groups="uom.group_uom" optional="show"/>
+                        <field name="last_price" column_invisible="not parent.has_prices"/>
+                        <field name="last_discount" column_invisible="not parent.has_prices" optional="hide"/>
+                        <field name="count" optional="show"/>
+                        <field name="total" optional="hide"/>
+                        <field name="quantity" class="fw-bold"/>
+                    </list>
+                </field>
+                <field name="last_document_ref" invisible="1"/>
+                <footer>
+                    <button name="action_add" string="Add" type="object" class="btn-primary" data-hotkey="q"
+                            invisible="not line_ids"/>
+                    <button name="action_fill_last" string="Fill the last quantities" type="object"
+                            class="btn-secondary" invisible="not line_ids"/>
+                    <button name="action_repeat_last" string="Repeat the last document" type="object"
+                            class="btn-secondary" invisible="not last_document_ref"
+                            help="Add every line of the last document of the partner."/>
+                    <button string="Cancel" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
