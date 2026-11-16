@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_report_engine.Report" owl="1">
+        <div class="o_action o_omr_report" t-att-class="'o_omr_density_' + this.state.density">
+            <ControlPanel display="{'top-right': false}">
+                <t t-set-slot="control-panel-bottom-left-buttons">
+                    <ExportMenu t-if="this.state.report" onExport="(format, all) => this.export(format, all)"
+                                exporting="this.state.exporting"/>
+                </t>
+                <t t-set-slot="control-panel-bottom-right">
+                    <div class="d-flex flex-wrap gap-1 align-items-center">
+                        <ReportSwitcher t-if="this.state.catalog.length &gt; 1" catalog="this.state.catalog"
+                                        current="this.state.reportModel" onSelect="(model) => this.switchReport(model)"/>
+                        <SavedViewsMenu views="this.state.views" viewId="this.state.viewId"
+                                        onApply="(view) => this.applyView(view)"
+                                        onSave="(values) => this.saveView(values)"
+                                        onDelete="(view) => this.deleteView(view)"/>
+                    </div>
+                </t>
+            </ControlPanel>
+            <div class="o_content o_omr_content">
+                <t t-set="report" t-value="this.state.report"/>
+                <t t-if="report">
+                    <div class="o_omr_toolbar">
+                        <div class="o_omr_filters">
+                            <DateFilter t-if="report.date_mode !== 'none'" mode="report.date_mode"
+                                        presets="report.date_presets" options="this.state.options"
+                                        onChange="(patch) => this.setOptions(patch)"/>
+                            <CompareMenu t-if="report.compare_choices.length" choices="report.compare_choices"
+                                         value="this.state.options.compare" periods="this.state.options.compare_periods"
+                                         label="report.compare_label" onChange="(patch) => this.setOptions(patch)"/>
+                            <t t-foreach="this.barChoices" t-as="choice" t-key="choice.key">
+                                <ChoiceMenu choice="choice" value="this.state.options[choice.key]"
+                                            onChange="(patch) => this.setOptions(patch)"/>
+                            </t>
+                            <span t-if="report.filters.length" class="o_omr_divider"/>
+                            <t t-foreach="report.filters" t-as="filter" t-key="filter.key">
+                                <RecordFilter filter="filter" resIds="this.state.options[filter.key] || []"
+                                              onChange="(ids) => this.setOptions({ [filter.key]: ids })"/>
+                            </t>
+                            <span class="o_omr_divider"/>
+                            <OptionsMenu toggles="report.toggles" choices="this.menuChoices" numbers="report.numbers"
+                                         options="this.state.options" density="this.state.density"
+                                         onChange="(patch) => this.setOptions(patch)"
+                                         onDensity="(density) => this.setDensity(density)"/>
+                            <button t-if="this.activeFilterCount" class="btn btn-link o_omr_reset"
+                                    t-on-click="() => this.clearFilters()">
+                                <i class="oi me-1" data-icon="close_small"/>Reset
+                            </button>
+                        </div>
+                        <div class="o_omr_viewbar">
+                            <span t-if="report.subtitle and report.date_mode === 'none'" class="o_omr_subtitle" t-out="report.subtitle"/>
+                            <GroupByMenu t-if="report.group_by.length" available="report.group_by"
+                                         groupBy="this.state.options.group_by || []"
+                                         onChange="(groupBy) => this.setOptions({ group_by: groupBy }, { keepExpanded: false })"/>
+                            <ColumnsMenu columns="report.columns" onChange="(columns) => this.setOptions({ columns: columns })"/>
+                            <button class="btn o_omr_ghost" title="Unfold all" t-on-click="() => this.expandAll()">
+                                <i class="oi me-1" data-icon="unfold_more"/>Unfold all
+                            </button>
+                            <button class="btn o_omr_ghost" title="Fold all" t-on-click="() => this.collapseAll()">
+                                <i class="oi me-1" data-icon="unfold_less"/>Fold all
+                            </button>
+                            <div class="o_omr_search">
+                                <i class="oi" data-icon="search"/>
+                                <input class="o_input" type="search" placeholder="Search in report..."
+                                       t-ref="search"
+                                       t-att-value="this.state.options.search" t-on-input="(ev) => this.onSearchInput(ev)"/>
+                            </div>
+                            <i t-if="this.state.reloading" class="oi o_omr_spin text-muted" data-icon="progress_activity"/>
+                        </div>
+                    </div>
+                    <div class="o_omr_table_wrap" t-att-class="{ 'o_omr_reloading': this.state.reloading }"
+                         t-ref="table" tabindex="0"
+                         t-on-scroll="() => this.onTableScroll()" t-on-keydown="(ev) => this.onKeydown(ev)">
+                        <div t-if="this.state.error" class="o_omr_state">
+                            <i class="oi text-danger" data-icon="error"/>
+                            <h5 t-out="this.state.error"/>
+                            <button class="btn btn-secondary" t-on-click="() => this.reload()">Try again</button>
+                        </div>
+                        <div t-elif="!this.state.lines.length" class="o_omr_state">
+                            <i class="oi text-muted" data-icon="search_off"/>
+                            <h5>Nothing to show</h5>
+                            <p class="text-muted">No data matches these filters for this period.</p>
+                            <button t-if="this.activeFilterCount" class="btn btn-secondary"
+                                    t-on-click="() => this.clearFilters()">Clear filters</button>
+                        </div>
+                        <ReportTable t-else="" rows="this.rows" columns="this.visibleColumns" total="report.total"
+                                     report="report" sort="this.state.options.sort" expanded="this.state.expanded"
+                                     focusedId="this.state.focusedId" nameLabel="report.name_label"
+                                     onToggle="(line) => this.toggleLine(line)" onOpen="(line) => this.openLine(line)"
+                                     onDrill="(line) => this.drillLine(line)" onLink="(link) => this.followLink(link)"
+                                     onButton="(line, button) => this.lineButton(line, button)"
+                                     onCellDrill="(line, column) => this.drillCell(line, column)"
+                                     onNote="(line, column) => this.openNotes(line, column)"
+                                     onLoadMore="(id) => this.loadMore(id)" onSort="(column) => this.sortBy(column)"
+                                     onFocus="(id) => this.state.focusedId = id"/>
+                    </div>
+                </t>
+                <div t-else="" class="o_omr_skeleton_page">
+                    <div class="o_omr_skeleton o_omr_skeleton_bar"/>
+                    <div t-foreach="[1, 2, 3, 4, 5, 6, 7, 8]" t-as="i" t-key="i" class="o_omr_skeleton o_omr_skeleton_row"/>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

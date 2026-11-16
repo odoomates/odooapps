@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_report_engine.MultiRecordSelector" owl="1">
+        <div class="o_omr_record_selector d-flex flex-wrap align-items-center gap-1">
+            <span t-foreach="this.props.resIds" t-as="id" t-key="id" class="badge rounded-pill text-bg-light border">
+                <t t-out="this.names[id] or ''"/>
+                <a href="#" class="ms-1 text-muted" title="Remove" t-on-click.prevent="() => this.remove(id)">×</a>
+            </span>
+            <div class="flex-grow-1">
+                <AutoComplete value="''" sources="this.sources" placeholder="this.props.placeholder || ''"
+                              onSelect.bind="onSelect" autoSelect="true"/>
+            </div>
+        </div>
+    </t>
+
+</templates>
