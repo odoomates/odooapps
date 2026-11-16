@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_report_view_rule_read" model="ir.rule">
+        <field name="name">Saved views: own or shared in the company</field>
+        <field name="model_id" ref="model_om_report_view"/>
+        <field name="domain_force">['&amp;', ('company_id', 'in', company_ids), '|', ('user_id', '=', user.id), ('shared', '=', True)]</field>
+        <field name="perm_read" eval="True"/>
+        <field name="perm_write" eval="False"/>
+        <field name="perm_create" eval="False"/>
+        <field name="perm_unlink" eval="False"/>
+    </record>
+    <record id="om_report_view_rule_write" model="ir.rule">
+        <field name="name">Saved views: changed by their owner only</field>
+        <field name="model_id" ref="model_om_report_view"/>
+        <field name="domain_force">[('user_id', '=', user.id), ('company_id', 'in', company_ids)]</field>
+        <field name="perm_read" eval="False"/>
+        <field name="perm_write" eval="True"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_unlink" eval="True"/>
+    </record>
+    <record id="om_report_fold_rule" model="ir.rule">
+        <field name="name">Report folds: the own ones</field>
+        <field name="model_id" ref="model_om_report_fold"/>
+        <field name="domain_force">[('user_id', '=', user.id)]</field>
+    </record>
+</odoo>
