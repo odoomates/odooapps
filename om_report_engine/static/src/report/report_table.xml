@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_report_engine.ReportTable">
+        <table class="o_omr_table">
+            <thead>
+                <tr t-if="this.headerGroups.length" class="o_omr_head_groups">
+                    <th class="o_omr_name_col"/>
+                    <t t-foreach="this.headerGroups" t-as="group" t-key="group.key">
+                        <th t-att-colspan="group.span" t-att-class="{ 'o_omr_head_group': group.label }">
+                            <span t-out="group.label"/>
+                        </th>
+                    </t>
+                    <th class="o_omr_actions_col"/>
+                </tr>
+                <tr class="o_omr_head_columns">
+                    <th class="o_omr_name_col" t-att-class="{ 'o_omr_sortable': this.sortable }"
+                        t-on-click="() => this.sortable and this.props.onSort({ key: 'name', type: 'char' })">
+                        <span t-out="this.props.nameLabel"/>
+                        <i t-if="this.sortIcon({ key: 'name' })" class="oi ms-1" t-att-data-icon="this.sortIcon({ key: 'name' })"/>
+                    </th>
+                    <t t-foreach="this.props.columns" t-as="column" t-key="column.key">
+                        <th t-att-class="{ 'text-end': this.isNumeric(column), 'o_omr_sortable': column.sortable }"
+                            t-att-title="column.help or ''" t-att-data-column="column.key"
+                            t-on-click="() => column.sortable and this.props.onSort(column)">
+                            <i t-if="this.sortIcon(column)" class="oi me-1" t-att-data-icon="this.sortIcon(column)"/>
+                            <span t-out="column.label"/>
+                        </th>
+                    </t>
+                    <th class="o_omr_actions_col"/>
+                </tr>
+            </thead>
+            <tbody>
+                <t t-foreach="this.props.rows" t-as="row" t-key="row.id">
+                    <tr t-if="row.kind === 'loading'" class="o_omr_row_loading">
+                        <td t-att-colspan="this.props.columns.length + 2">
+                            <span class="o_omr_skeleton o_omr_skeleton_line"
+                                  t-att-style="'margin-inline-start: ' + (1 + row.level * 1.5) + 'rem'"/>
+                        </td>
+                    </tr>
+                    <tr t-elif="row.kind === 'more'" class="o_omr_row_more" t-on-click="() => this.props.onLoadMore(row.parentId)">
+                        <td t-att-colspan="this.props.columns.length + 2"
+                            t-att-style="'padding-inline-start: ' + (2 + row.level * 1.5) + 'rem'">
+                            <button class="btn btn-link btn-sm p-0">
+                                <i class="oi me-1" data-icon="expand_more"/>Show <t t-out="row.next"/> more
+                                <span class="text-muted">(<t t-out="row.more"/> left)</span>
+                            </button>
+                        </td>
+                    </tr>
+                    <tr t-else="" t-att-class="this.rowClass(row)" t-att-data-id="row.id"
+                        t-on-click="(ev) => this.onRowClick(row, ev)">
+                        <td class="o_omr_name_cell">
+                            <span class="o_omr_name_inner">
+                                <span t-foreach="this.guides(row)" t-as="guide" t-key="guide" class="o_omr_guide"/>
+                                <i t-if="row.has_children" class="oi o_omr_caret"
+                                   t-att-data-icon="this.props.expanded.includes(row.id) ? 'keyboard_arrow_down' : 'keyboard_arrow_right'"/>
+                                <span t-else="" class="o_omr_caret_space"/>
+                                <i t-if="row.icon" class="oi o_omr_dim_icon" t-att-data-icon="row.icon"/>
+                                <span class="o_omr_name" t-att-title="row.name" t-out="row.name"/>
+                                <span t-if="row.kind === 'group' and row.count" class="o_omr_count" t-out="row.count"/>
+                            </span>
+                        </td>
+                        <t t-foreach="this.props.columns" t-as="column" t-key="column.key">
+                            <td t-att-class="this.cellClass(row, column) + (this.canDrillCell(row, column) ? ' o_omr_cell_drill' : '') + (this.notesOf(row, column).length ? ' o_omr_has_note' : '')"
+                                t-att-title="this.notesOf(row, column).length ? this.noteTitle(row, column) : (this.canDrillCell(row, column) ? column.label : '')"
+                                t-on-click="(ev) => this.onCellClick(row, column, ev)">
+                                <button t-if="this.canNote(row, column)" class="btn btn-link p-0 o_omr_note_btn"
+                                        title="Notes" t-on-click="(ev) => this.onNoteClick(row, column, ev)">
+                                    <i class="oi" data-icon="sticky_note_2"/>
+                                </button>
+                                <t t-out="this.cell(row, column)"/>
+                            </td>
+                        </t>
+                        <td class="o_omr_row_actions">
+                            <button t-if="row.drill" class="btn btn-link btn-sm" t-att-title="row.drill_label or 'Show entries'"
+                                    t-on-click="() => this.props.onDrill(row)">
+                                <i class="oi" data-icon="list"/>
+                            </button>
+                            <button t-if="row.open" class="btn btn-link btn-sm" title="Open"
+                                    t-on-click="() => this.props.onOpen(row)">
+                                <i class="oi" data-icon="open_in_new"/>
+                            </button>
+                            <Dropdown t-if="(row.links and row.links.length) or (row.actions and row.actions.length)"
+                                      menuClass="'o_omr_menu'">
+                                <button class="btn btn-link btn-sm" title="More">
+                                    <i class="oi" data-icon="more_horiz"/>
+                                </button>
+                                <t t-set-slot="content">
+                                    <t t-foreach="row.actions or []" t-as="button" t-key="button.key">
+                                        <DropdownItem onSelected="() => this.props.onButton(row, button)">
+                                            <i class="oi me-2" t-att-data-icon="button.icon or 'bolt'"/><t t-out="button.label"/>
+                                        </DropdownItem>
+                                    </t>
+                                    <div t-if="row.actions and row.actions.length and row.links and row.links.length"
+                                         class="dropdown-divider"/>
+                                    <t t-foreach="row.links or []" t-as="link" t-key="link_index">
+                                        <DropdownItem onSelected="() => this.props.onLink(link)">
+                                            <i class="oi me-2" t-att-data-icon="link.icon"/><t t-out="link.label"/>
+                                        </DropdownItem>
+                                    </t>
+                                </t>
+                            </Dropdown>
+                        </td>
+                    </tr>
+                </t>
+            </tbody>
+            <tfoot t-if="this.props.total">
+                <tr class="o_omr_row_total">
+                    <td class="o_omr_name_cell"><span class="o_omr_name_inner ps-3" t-out="this.props.total.name"/></td>
+                    <t t-foreach="this.props.columns" t-as="column" t-key="column.key">
+                        <td t-att-class="this.cellClass(this.props.total, column)" t-out="this.cell(this.props.total, column)"/>
+                    </t>
+                    <td/>
+                </tr>
+            </tfoot>
+        </table>
+    </t>
+
+</templates>
