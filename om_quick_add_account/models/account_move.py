@@ -37,6 +37,12 @@ class AccountMove(models.Model):
         return Domain('product_tmpl_id.seller_ids', 'any', [
             ('partner_id', 'child_of', partner.id), ('product_code', '=ilike', escape_like_value(code))])
 
+    def _om_qa_bar_price(self, product):
+        if self.is_purchase_document(include_receipts=True):
+            seller = product._select_seller(partner_id=self.partner_id, quantity=1.0, uom_id=product.uom_id)
+            return seller.price if seller else product.standard_price
+        return product.lst_price
+
     def _om_qa_lines(self):
         return self.invoice_line_ids.filtered(lambda l: l.display_type == 'product' and l.product_id)
 

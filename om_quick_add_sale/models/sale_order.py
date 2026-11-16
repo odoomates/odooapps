@@ -20,6 +20,11 @@ class SaleOrder(models.Model):
     def _om_qa_product_domain(self):
         return super()._om_qa_product_domain() & Domain('sale_ok', '=', True)
 
+    def _om_qa_bar_price(self, product):
+        if self.pricelist_id:
+            return self.pricelist_id._get_product_price(product, 1.0, currency=self.currency_id)
+        return product.lst_price
+
     def _om_qa_lines(self):
         return self.order_line.filtered(lambda l: l.product_id and not l.display_type and not l.is_downpayment)
 

@@ -34,6 +34,56 @@ def parse_number(text):
     return float(text)
 
 
+SEPARATOR_TOKENS = {'x', 'X', '×', '*', ':', '=', '-'}
+
+
+def split_cells(row):
+    """The cells of a row copied from a spreadsheet (tabs) or written as a list (semicolons, commas
+    between words); None for a row of words and numbers separated by spaces."""
+    if '\t' in row:
+        cells = row.split('\t')
+    elif ';' in row:
+        cells = row.split(';')
+    elif re.search(r',\s*\D|\D\s*,', row):
+        cells = row.split(',')
+    else:
+        return None
+    return [cell.strip() for cell in cells if cell.strip()]
+
+
+def row_candidates(row):
+    """The ways to read a row, as [(reference, quantity, price)], the one with the most numbers first."""
+    cells = split_cells(row)
+    if cells is not None:
+        if not cells:
+            return []
+        numbers = [parse_number(cell) for cell in cells]
+        ref_index = next((i for i, number in enumerate(numbers) if number is None), 0)
+        before = [n for n in numbers[:ref_index] if n is not None]
+        after = [n for n in numbers[ref_index + 1:] if n is not None]
+        quantity = (after[:1] or before[:1] or [None])[0]
+        price = after[1] if len(after) > 1 else None
+        return [(cells[ref_index], quantity, price)]
+    tokens = row.split()
+    candidates = []
+    # numbers at the end: quantity, then price
+    trailing = 0
+    while trailing < min(2, len(tokens) - 1) and parse_number(tokens[-1 - trailing]) is not None:
+        trailing += 1
+    for count in range(trailing, -1, -1):
+        ref_tokens = tokens[:len(tokens) - count]
+        while len(ref_tokens) > 1 and ref_tokens[-1] in SEPARATOR_TOKENS:
+            ref_tokens = ref_tokens[:-1]
+        numbers = [parse_number(t) for t in tokens[len(tokens) - count:]]
+        candidates.append((' '.join(ref_tokens), numbers[0] if numbers else None,
+                           numbers[1] if len(numbers) > 1 else None))
+    # a quantity first: "5 Desk", "5 x Desk", "5x Desk"
+    match = re.match(r'^(\d[\d.,]*)\s*(?:[xX×*]\s+|\s+)(.*\D.*)$', row)
+    if match and parse_number(match.group(1)) is not None:
+        candidates.append((match.group(2).strip(), parse_number(match.group(1)), None))
+    return candidates
+
+
 class OmQuickAddMixin(models.AbstractModel):
     """Quick ways to add products to a document with lines: paste a list, scan barcodes, the history of
     the partner, the lines of another document. A document inherits this mixin and says where its
@@ -252,6 +302,173 @@ class OmQuickAddMixin(models.AbstractModel):
     def _om_qa_copy_label(self):
         """The name of the documents in the Copy lines picker."""
         return self.env['ir.model']._get(self._name).name
+
+    # ------------------------------------------------------------------
+    # Reading a row: "FURN_8888 4 35", "3 x Office Lamp", a barcode...
+    # ------------------------------------------------------------------
+
+    def _om_qa_read_row(self, row):
+        """{'ref', 'quantity', 'price_unit', 'products'} of a row: the reading that designates one product,
+        else the first that finds some, else the first; None for an empty row."""
+        candidates = row_candidates(row)
+        if not candidates:
+            return None
+        readings = []
+        for ref, quantity, price in candidates:
+            products = self._om_qa_find_products(ref)
+            readings.append((ref, quantity, price, products))
+            if len(products) == 1:
+                break
+        ref, quantity, price, products = next((r for r in readings if len(r[3]) == 1), None) \
+            or next((r for r in readings if r[3]), None) or readings[0]
+        return {
+            'ref': ref,
+            'quantity': quantity if quantity and quantity > 0 else 1.0,
+            'price_unit': price if self._om_qa_has_prices else None,
+            'products': products,
+        }
+
+    # ------------------------------------------------------------------
+    # The add bar
+    # ------------------------------------------------------------------
+
+    def _om_qa_bar_price(self, product):
+        """The price shown next to a product in the add bar; None for documents without prices."""
+        return product.lst_price if self._om_qa_has_prices else None
+
+    def _om_qa_bar_product(self, product):
+        values = {
+            'id': product.id,
+            'name': product.display_name,
+            'code': product.default_code or '',
+            'price': self._om_qa_bar_price(product),
+            'uom': product.uom_id.name,
+        }
+        if 'qty_available' in product._fields and product.is_storable:
+            values['on_hand'] = product.qty_available
+        return values
+
+    def _om_qa_bar_search_products(self, ref, limit=SEARCH_LIMIT):
+        """The products matching what is typed: the exact codes first, then the names."""
+        ref = (ref or '').strip()
+        Product = self.env['product.product']
+        if not ref:
+            return Product
+        base = Domain(self._om_qa_product_domain())
+        found = Product
+        for domain in self._om_qa_exact_domains(ref):
+            found |= Product.search(base & domain, limit=limit)
+        if len(found) < limit:
+            found |= Product.search(base & (Domain('name', 'ilike', ref) | Domain('default_code', 'ilike', ref))
+                                    & Domain('id', 'not in', found.ids), limit=limit - len(found))
+        return found[:limit]
+
+    def _om_qa_bar_result(self, added, raised, product=None):
+        if product and added:
+            return _("%s added.", product.display_name)
+        if product and raised:
+            return _("%s: quantity raised.", product.display_name)
+        parts = []
+        if added:
+            parts.append(_("%s product(s) added", added))
+        if raised:
+            parts.append(_("%s quantity(ies) raised", raised))
+        return ", ".join(parts) + "." if parts else _("Nothing to add.")
+
+    def om_quick_add_bar_data(self):
+        """What the add bar shows before anything is typed: the history of the partner per product,
+        and its usual products."""
+        self.ensure_one()
+        entries = self._om_qa_history() if self._om_qa_partner() else []
+        history = {}
+        for entry in entries:
+            history.setdefault(entry['product'].id, {
+                'last_quantity': entry['quantity'],
+                'last_price': entry.get('price_unit'),
+                'count': entry['count'],
+                'date': fields.Date.to_string(entry['date']) if entry['date'] else False,
+            })
+        usual = sorted(entries, key=lambda e: (e['count'], e['date'] or fields.Date.to_date('1900-01-01')),
+                       reverse=True)[:12]
+        return {
+            'has_prices': self._om_qa_has_prices,
+            'history': history,
+            'usual': [self._om_qa_bar_product(entry['product']) for entry in usual],
+            'has_last': bool(entries),
+        }
+
+    def om_quick_add_bar_search(self, query):
+        """The products for what is typed, and the quantity and price typed with them."""
+        self.ensure_one()
+        candidates = row_candidates(query or '')
+        ref, quantity, price = candidates[0] if candidates else ('', None, None)
+        products = self._om_qa_bar_search_products(ref)
+        if not products and len(candidates) > 1:
+            # "Desk 2000": the number is part of the name
+            ref, quantity, price = candidates[-1]
+            products = self._om_qa_bar_search_products(ref)
+        return {
+            'quantity': quantity if quantity and quantity > 0 else 1.0,
+            'price': price if self._om_qa_has_prices else None,
+            'products': [self._om_qa_bar_product(product) for product in products],
+        }
+
+    def om_quick_add_bar_add(self, product_id, quantity=1.0, price=None):
+        """Add one product chosen in the add bar."""
+        self.ensure_one()
+        product = self.env['product.product'].browse(product_id).exists()
+        if not product:
+            return {'type': 'warning', 'message': _("This product no longer exists.")}
+        added, raised = self._om_qa_add([{'product': product, 'quantity': quantity or 1.0, 'price_unit': price}])
+        return {'type': 'success', 'message': self._om_qa_bar_result(added, raised, product), 'product_id': product.id}
+
+    def om_quick_add_bar_enter(self, query):
+        """Enter in the add bar without a product chosen: a code or a scan adds its product at once;
+        several products are given back to choose from."""
+        self.ensure_one()
+        reading = self._om_qa_read_row(query or '')
+        if not reading or not reading['products']:
+            return {'type': 'warning', 'message': _("Nothing found for %s.", (query or '').strip())}
+        products = reading['products']
+        if len(products) > 1:
+            return {'choices': [self._om_qa_bar_product(p) for p in products],
+                    'quantity': reading['quantity'], 'price': reading['price_unit']}
+        return self.om_quick_add_bar_add(products.id, reading['quantity'], reading['price_unit'])
+
+    def om_quick_add_bar_paste(self, text):
+        """Rows pasted in the add bar: those naming one product are added, the others are given back to
+        choose from."""
+        self.ensure_one()
+        items, pending = [], []
+        for row in (text or '').splitlines():
+            reading = self._om_qa_read_row(row)
+            if not reading:
+                continue
+            if len(reading['products']) == 1:
+                items.append({'product': reading['products'], 'quantity': reading['quantity'],
+                              'price_unit': reading['price_unit']})
+            else:
+                pending.append({'row': row.strip(), 'quantity': reading['quantity'], 'price': reading['price_unit'],
+                                'choices': [self._om_qa_bar_product(p) for p in reading['products']]})
+        added, raised = self._om_qa_add(items) if items else (0, 0)
+        return {'type': 'success' if items else 'warning', 'message': self._om_qa_bar_result(added, raised),
+                'pending': pending}
+
+    def om_quick_add_bar_usual(self, mode):
+        """The usual products of the partner at their last quantities ('usual'), or every line of its last
+        document ('last')."""
+        self.ensure_one()
+        entries = self._om_qa_history() if self._om_qa_partner() else []
+        if mode == 'last':
+            last = entries[0]['document'] if entries else False
+            items = [{'product': data['product'], 'quantity': data['quantity'], 'uom': data['uom']}
+                     for data in map(last._om_qa_line_data, last._om_qa_lines())] if last else []
+        else:
+            usual = sorted(entries, key=lambda e: (e['count'], e['date'] or fields.Date.to_date('1900-01-01')),
+                           reverse=True)[:12]
+            items = [{'product': e['product'], 'quantity': e['quantity'], 'uom': e['uom']} for e in usual]
+        added, raised = self._om_qa_add(items) if items else (0, 0)
+        return {'type': 'success' if items else 'warning', 'message': self._om_qa_bar_result(added, raised)}
 
     # ------------------------------------------------------------------
     # Actions
