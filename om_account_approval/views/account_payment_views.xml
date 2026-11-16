@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_account_payment_search_inherit_om_approval" model="ir.ui.view">
+        <field name="name">account.payment.search.om.approval</field>
+        <field name="model">account.payment</field>
+        <field name="inherit_id" ref="account.view_account_payment_search"/>
+        <field name="arch" type="xml">
+            <filter name="state_draft" position="after">
+                <filter name="om_approval_waiting" string="Waiting for Approval"
+                        domain="[('om_approval_waiting', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+</odoo>
