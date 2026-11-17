@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_shopify_cancel_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.cancel.wizard.form</field>
+        <field name="model">om.shopify.cancel.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="order_id" readonly="1"/>
+                    <field name="reason"/>
+                    <field name="refund"/>
+                    <field name="restock"/>
+                    <field name="notify"/>
+                    <field name="staff_note"/>
+                </group>
+                <footer>
+                    <button name="action_cancel" type="object" string="Cancel in Shopify" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_export_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.export.wizard.form</field>
+        <field name="model">om.shopify.export.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="store_ids" widget="many2many_tags"/>
+                    <field name="template_ids" widget="many2many_tags"/>
+                    <field name="images"/>
+                </group>
+                <div class="text-muted">Odoo is the master of the products it exports: their name, description,
+                    variants, prices, weight and image replace those of Shopify.</div>
+                <footer>
+                    <button name="action_export" type="object" string="Export" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_export_wizard_action" model="ir.actions.act_window">
+        <field name="name">Export to Shopify</field>
+        <field name="res_model">om.shopify.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list,form,kanban</field>
+        <field name="group_ids" eval="[Command.link(ref('om_shopify.group_om_shopify_user'))]"/>
+    </record>
+
+    <record id="om_shopify_import_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.import.wizard.form</field>
+        <field name="model">om.shopify.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="store_id"/>
+                    <field name="kind" widget="radio" options="{'horizontal': true}"/>
+                    <field name="references" placeholder="#1001, #1002"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_import_wizard_action" model="ir.actions.act_window">
+        <field name="name">Import by Number</field>
+        <field name="res_model">om.shopify.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_shopify_mapping_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.mapping.wizard.form</field>
+        <field name="model">om.shopify.mapping.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="store_id"/>
+                    <field name="file" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                </group>
+                <div class="text-muted">A CSV or Excel file with the columns <code>shopify_variant_id</code>, and
+                    <code>odoo_reference</code> or <code>odoo_barcode</code>.
+                    <field name="template_file" filename="'shopify_mapping.csv'" readonly="1" nolabel="1"
+                           widget="binary" options="{'filename': 'shopify_mapping.csv'}"/>
+                </div>
+                <footer>
+                    <button name="action_map" type="object" string="Link" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_mapping_wizard_action" model="ir.actions.act_window">
+        <field name="name">Map Products from a File</field>
+        <field name="res_model">om.shopify.mapping.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_shopify_setup_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.setup.wizard.form</field>
+        <field name="model">om.shopify.setup.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="step" widget="statusbar"/>
+                <div invisible="step != 'credentials'">
+                    <p class="text-muted">In the Shopify Dev Dashboard, create an app, give it the Admin API scopes,
+                        install it on your store, and copy its client ID and secret.</p>
+                    <group>
+                        <field name="shop_domain" placeholder="my-store.myshopify.com" required="step == 'credentials'"/>
+                        <field name="auth_type" widget="radio"/>
+                        <field name="client_id" invisible="auth_type == 'token'"/>
+                        <field name="client_secret" password="True"/>
+                        <field name="access_token" password="True" invisible="auth_type != 'token'"/>
+                        <field name="webhook_base_url" placeholder="https://odoo.example.com"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                </div>
+                <div invisible="step != 'settings'">
+                    <p>Connected to <strong><field name="shop_name" readonly="1"/></strong>.</p>
+                    <group>
+                        <field name="warehouse_id"/>
+                        <field name="journal_id"/>
+                        <field name="tax_mode" widget="radio"/>
+                    </group>
+                </div>
+                <div invisible="step != 'imports'">
+                    <group>
+                        <field name="import_products"/>
+                        <field name="order_import_from"/>
+                        <field name="export_stock"/>
+                    </group>
+                </div>
+                <footer>
+                    <button name="action_connect" type="object" string="Connect" class="btn-primary" invisible="step != 'credentials'"/>
+                    <div class="text-muted small" invisible="step != 'credentials' or auth_type != 'oauth'">Shopify asks the
+                        merchant to approve the app, then opens the store in Odoo.</div>
+                    <button name="action_settings" type="object" string="Next" class="btn-primary" invisible="step != 'settings'"/>
+                    <button name="action_finish" type="object" string="Start" class="btn-primary" invisible="step != 'imports'"/>
+                    <button special="cancel" string="Close"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_setup_wizard_action" model="ir.actions.act_window">
+        <field name="name">Connect a Shopify Store</field>
+        <field name="res_model">om.shopify.setup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

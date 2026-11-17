@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_shopify_product_template_view_list" model="ir.ui.view">
+        <field name="name">om.shopify.product.template.list</field>
+        <field name="model">om.shopify.product.template</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="product_tmpl_id"/>
+                <field name="store_id"/>
+                <field name="shopify_status" widget="badge" decoration-success="shopify_status == 'ACTIVE'"
+                       decoration-muted="shopify_status in ('ARCHIVED', 'deleted')"/>
+                <field name="sync_date"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_shopify_product_template_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.product.template.form</field>
+        <field name="model">om.shopify.product.template</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_open_in_shopify" type="object" string="Open in Shopify"/>
+                    <button name="action_shopify_export" type="object" string="Export to Shopify"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="product_tmpl_id"/>
+                            <field name="store_id"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="shopify_status"/>
+                            <field name="handle"/>
+                            <field name="external_id"/>
+                            <field name="sync_date"/>
+                        </group>
+                    </group>
+                    <field name="variant_ids" context="{'active_test': False}">
+                        <list create="0" delete="0" editable="bottom">
+                            <field name="name"/>
+                            <field name="product_id"/>
+                            <field name="sku"/>
+                            <field name="barcode"/>
+                            <field name="tracked"/>
+                            <field name="stock_rule"/>
+                            <field name="stock_value" invisible="stock_rule == 'actual'"/>
+                            <field name="active" widget="boolean_toggle"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_product_template_view_search" model="ir.ui.view">
+        <field name="name">om.shopify.product.template.search</field>
+        <field name="model">om.shopify.product.template</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="product_tmpl_id"/>
+                <field name="variant_ids" string="SKU" filter_domain="[('variant_ids.sku', 'ilike', self)]"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_store" string="Store" context="{'group_by': 'store_id'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'shopify_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_shopify_product_template_action" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="res_model">om.shopify.product.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No Shopify product yet</p>
+            <p>Click Import Products on a store: each Shopify product is linked to its Odoo product by SKU or barcode.</p>
+        </field>
+    </record>
+
+    <record id="product_template_form_view_inherit_om_shopify" model="ir.ui.view">
+        <field name="name">product.template.form.om.shopify</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <notebook position="inside">
+                <page string="Shopify" name="shopify" invisible="not shopify_binding_count"
+                      groups="om_shopify.group_om_shopify_user">
+                    <field name="shopify_binding_count" invisible="1"/>
+                    <field name="shopify_binding_ids" readonly="1">
+                        <list>
+                            <field name="store_id"/>
+                            <field name="name"/>
+                            <field name="shopify_status"/>
+                            <field name="sync_date"/>
+                            <button name="action_open_in_shopify" type="object" icon="open_in_new" title="Open in Shopify"/>
+                        </list>
+                    </field>
+                </page>
+            </notebook>
+        </field>
+    </record>
+</odoo>

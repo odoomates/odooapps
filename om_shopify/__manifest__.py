@@ -1,0 +1,33 @@
+{
+    'name': 'Shopify Connector',
+    'version': '1.0',
+    'author': 'Odoo Mates',
+    'category': 'Sales',
+    'summary': 'Shopify, Shopify Connector, Shopify Integration, Shopify Odoo, Shopify Store, Shopify Webhooks',
+    'description': 'Connect Shopify stores to Odoo: products both ways, prices, stock both ways, customers, orders '
+                   'with automatic invoicing and payment, fulfillment with tracking numbers, refunds, cancellations '
+                   'and payouts, through webhooks and a queue.',
+    'maintainer': 'Odoo Mates',
+    'support': 'odoomates@gmail.com',
+    'license': 'LGPL-3',
+    'depends': ['om_connector_base', 'sale_management', 'stock_delivery'],
+    'data': [
+        'security/om_shopify_groups.xml',
+        'security/ir.access.csv',
+        'data/product_data.xml',
+        'data/ir_cron.xml',
+        'views/om_shopify_store_views.xml',
+        'views/om_shopify_product_views.xml',
+        'views/om_shopify_location_views.xml',
+        'views/sale_order_views.xml',
+        'views/stock_picking_views.xml',
+        'views/account_move_views.xml',
+        'views/om_shopify_payout_views.xml',
+        'views/digest_views.xml',
+        'wizard/om_shopify_wizard_views.xml',
+        'views/om_shopify_webhook_views.xml',
+        'views/menu.xml',
+    ],
+    'application': True,
+    'images': ['static/description/banner.gif'],
+}
