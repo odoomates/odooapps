@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_connector_job_view_list" model="ir.ui.view">
+        <field name="name">om.connector.job.list</field>
+        <field name="model">om.connector.job</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-danger="state == 'failed'" decoration-muted="state == 'cancelled'"
+                  decoration-info="state == 'pending' and attempts > 0">
+                <field name="create_date" string="Queued On"/>
+                <field name="name"/>
+                <field name="backend_name"/>
+                <field name="record_name" optional="show"/>
+                <field name="attempts" optional="show"/>
+                <field name="eta" optional="hide"/>
+                <field name="date_done" optional="hide"/>
+                <field name="error" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'"
+                       decoration-danger="state == 'failed'" decoration-info="state == 'pending'"/>
+                <button name="action_retry" type="object" icon="refresh" title="Try Again" invisible="state not in ('failed', 'cancelled')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_connector_job_view_form" model="ir.ui.view">
+        <field name="name">om.connector.job.form</field>
+        <field name="model">om.connector.job</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_run_now" type="object" string="Run Now" class="btn-primary"
+                            invisible="state not in ('pending', 'failed')" groups="om_connector_base.group_om_connector_manager"/>
+                    <button name="action_retry" type="object" string="Try Again" invisible="state not in ('failed', 'cancelled')"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state not in ('pending', 'failed')"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="description"
+                                invisible="not record_name">
+                            <field name="record_name" string="Record" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="backend_name"/>
+                            <field name="create_date" string="Queued On"/>
+                            <field name="eta" invisible="state != 'pending' or not eta"/>
+                            <field name="date_done" invisible="not date_done"/>
+                        </group>
+                        <group>
+                            <field name="attempts"/>
+                            <field name="max_attempts" groups="base.group_no_one"/>
+                            <field name="priority" groups="base.group_no_one"/>
+                            <field name="result" invisible="not result"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Error" name="error" invisible="not error">
+                            <field name="error" class="font-monospace"/>
+                        </page>
+                        <page string="Data" name="payload">
+                            <field name="payload_text" class="font-monospace"/>
+                        </page>
+                        <page string="Technical" name="technical" groups="base.group_no_one">
+                            <group>
+                                <field name="model_name"/>
+                                <field name="method_name"/>
+                                <field name="dedupe_key"/>
+                                <field name="backend_model"/>
+                                <field name="backend_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_connector_job_view_search" model="ir.ui.view">
+        <field name="name">om.connector.job.search</field>
+        <field name="model">om.connector.job</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="error"/>
+                <field name="dedupe_key"/>
+                <filter name="filter_todo_failed" string="To Do or Failed" domain="[('state', 'in', ('pending', 'failed'))]"/>
+                <separator/>
+                <filter name="filter_pending" string="To Do" domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_failed" string="Failed" domain="[('state', '=', 'failed')]"/>
+                <filter name="filter_done" string="Done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter name="filter_today" string="Today"
+                        domain="[('create_date', '>=', context_today().strftime('%Y-%m-%d'))]"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_name" string="Job" context="{'group_by': 'name'}"/>
+                    <filter name="group_date" string="Queued On" context="{'group_by': 'create_date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_connector_job_action" model="ir.actions.act_window">
+        <field name="name">Jobs</field>
+        <field name="res_model">om.connector.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_filter_todo_failed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to do</p>
+            <p>The imports, exports and webhooks of the connectors are queued here, and tried again when they fail.</p>
+        </field>
+    </record>
+</odoo>
