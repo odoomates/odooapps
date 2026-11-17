@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="module_category_connector" model="ir.module.category">
+        <field name="name">Connectors</field>
+        <field name="parent_id" ref="base.module_category_sales"/>
+        <field name="sequence">50</field>
+    </record>
+
+    <record id="group_om_connector_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="category_id" ref="module_category_connector"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Sees the connections and their jobs, and tries failed jobs again.</field>
+    </record>
+
+    <record id="group_om_connector_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="category_id" ref="module_category_connector"/>
+        <field name="implied_ids" eval="[Command.link(ref('group_om_connector_user'))]"/>
+        <field name="users" eval="[Command.link(ref('base.user_root')), Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Sets up the connections and their credentials.</field>
+    </record>
+</odoo>
