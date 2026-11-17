@@ -1,0 +1,536 @@
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#474257;">
+<div style="background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);border-radius:16px;padding:40px 28px 34px 28px;text-align:center;color:#FFFFFF;margin:8px 0 0 0;">
+<div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#E6E0F5;text-transform:uppercase;margin:0 0 10px 0;">Odoo Mates &middot; free and open source</div>
+<h1 style="font-size:42px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">Shopify Connector</h1>
+<p style="font-size:19px;color:#F3F0FA;max-width:720px;margin:0 auto 20px auto;line-height:1.5;">Products, stock, customers, orders, fulfillment, refunds and payouts between your Shopify stores and Odoo, through webhooks and a queue you can follow.</p>
+<div style="margin:0 0 22px 0;">
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Beta</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Products both ways</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Stock both ways</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Orders invoiced and paid</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Payouts</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Community Edition</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Free, LGPL-3</span>
+</div>
+<div style="font-size:14px;color:#F3F0FA;margin:0 0 4px 0;">Needs the free Connector Base module (om_connector_base), installed with it.</div>
+<img src="banner.gif" alt="Shopify Connector" style="display:block;width:100%;max-width:960px;margin:22px auto 0 auto;border-radius:12px;border:4px solid #FFFFFF;"/>
+</div>
+<div style="border:1px solid #E3DDF1;border-left:5px solid #6A55A0;border-radius:12px;background-color:#F7F5FC;padding:16px 18px;margin:16px 0 0 0;">
+<div style="font-size:16px;font-weight:800;color:#2F2550;margin:0 0 4px 0;"><span style="display:inline-block;color:#FFFFFF;background-color:#6A55A0;border-radius:20px;padding:1px 10px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;vertical-align:middle;margin:0 8px 0 0;">Beta</span>This app is in beta: tell us what you think</div>
+<div style="font-size:14px;color:#474257;line-height:1.55;margin:0 0 6px 0;">The Shopify Connector is new and we are still shaping it with the stores that use it. We welcome your feedback and suggestions, and if something does not look right, report the issue and let us know: every message is read and helps decide what comes next.</div>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2020%20Shopify%20Connector%20(om_shopify)%20-%20Feedback" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #6A55A0;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:4px 4px 0 0;font-size:13px;font-weight:700;text-decoration:none;">&#128172;&nbsp; Send feedback</a>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2020%20Shopify%20Connector%20(om_shopify)%20-%20Suggestion" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #6A55A0;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:4px 4px 0 0;font-size:13px;font-weight:700;text-decoration:none;">&#128161;&nbsp; Suggest a feature</a>
+<a href="https://github.com/odoomates/odooapps/issues/new/choose" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #6A55A0;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:4px 4px 0 0;font-size:13px;font-weight:700;text-decoration:none;">&#128027;&nbsp; Report an issue</a>
+</div>
+<div style="padding:34px 0 4px 0;text-align:center;">
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Everything at a glance</h2>
+<p style="font-size:15px;color:#474257;max-width:760px;margin:0 auto 18px auto;line-height:1.6;">One app for the whole life of a Shopify order, from the product page to the bank.</p>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-cubes">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Products Both Ways</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Linked by SKU or barcode, created with variants, or exported.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-tags">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Prices</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">From a price list, with compare-at prices and Shopify price lists.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-archive">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Stock Both Ways</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Sent per location with limits per variant, or imported.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-shopping-cart">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Orders on Autopilot</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Confirmed, invoiced and paid by a workflow per payment method.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-truck">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Fulfillment</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Validate the delivery: Shopify gets the tracking number.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-undo">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Refunds and Cancels</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Both ways, with credit notes and returns.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-university">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Payouts</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Bank statement lines, or a journal entry through a transit account.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-bolt">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Webhooks and Jobs</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Orders in seconds; every sync is a job tried again on failure.</div>
+</div>
+</div>
+</div>
+</div>
+<div style="padding:44px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">In detail</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Everything it syncs</h2>
+<p style="font-size:15px;color:#474257;max-width:760px;margin:0 auto 18px auto;line-height:1.6;">Each part can be turned on or off store by store, in the tabs of the store.</p>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-plug" style="color:#6A55A0;margin:0 8px 0 0;"></i>Connection</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Dev Dashboard app installed by link (OAuth), or a custom app token. Expiring tokens renewed and rotated by Odoo.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-magic" style="color:#6A55A0;margin:0 8px 0 0;"></i>Setup Wizard</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Credentials, warehouse and payment journal, then the first imports, in three steps.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-cubes" style="color:#6A55A0;margin:0 8px 0 0;"></i>Product Import</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Bulk import of the whole catalogue, changes every day and by webhook, images included.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-upload" style="color:#6A55A0;margin:0 8px 0 0;"></i>Product Export</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Variants, prices, weight and image; as draft, active or unlisted; published on the Online Store.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-file-excel-o" style="color:#6A55A0;margin:0 8px 0 0;"></i>CSV / Excel Mapping</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Link catalogues whose SKUs and barcodes do not match from a file.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-list-alt" style="color:#6A55A0;margin:0 8px 0 0;"></i>Metafields</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Shopify metafields of products, variants, customers and orders mapped to Odoo fields, one or both ways.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-tags" style="color:#6A55A0;margin:0 8px 0 0;"></i>Prices</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">From an Odoo price list, compare-at prices from another, sent every day; fixed prices to Shopify price lists.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-archive" style="color:#6A55A0;margin:0 8px 0 0;"></i>Stock Export</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Free to use, on hand or forecasted, per location every 15 minutes, with limits per variant.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-download" style="color:#6A55A0;margin:0 8px 0 0;"></i>Stock Import</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Compare the stock of Shopify with Odoo, and apply it if you want.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-users" style="color:#6A55A0;margin:0 8px 0 0;"></i>Customers</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Imported with their addresses, matched by email, on demand or with the orders.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-building" style="color:#6A55A0;margin:0 8px 0 0;"></i>B2B Companies</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Companies and locations of Shopify B2B, with payment terms and tax exemption.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-shopping-cart" style="color:#6A55A0;margin:0 8px 0 0;"></i>Orders</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">By webhook, every 15 minutes, or by order number; test and point of sale orders if you want.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-gift" style="color:#6A55A0;margin:0 8px 0 0;"></i>Order Lines</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Discounts, shipping, taxes, tips, duties, gift cards and custom items, each on its own product.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-random" style="color:#6A55A0;margin:0 8px 0 0;"></i>Order Rules</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Workflow and warehouse chosen by payment method, payment or fulfillment status, tag or channel.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-credit-card" style="color:#6A55A0;margin:0 8px 0 0;"></i>Several Payments</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">An order paid with two methods gets two payments, each in the journal of its method.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-exclamation-triangle" style="color:#6A55A0;margin:0 8px 0 0;"></i>Risky Orders</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Held as quotations with the reasons of Shopify and an activity for the responsible of the store.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-pencil" style="color:#6A55A0;margin:0 8px 0 0;"></i>Order Edits</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Lines added, removed or changed in Shopify follow until delivery or invoice.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-truck" style="color:#6A55A0;margin:0 8px 0 0;"></i>Fulfillment</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Validated deliveries fulfill the order in Shopify, with carrier and tracking number, and email the customer.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-ban" style="color:#6A55A0;margin:0 8px 0 0;"></i>Cancellations</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Cancelled in Shopify, cancelled in Odoo; or cancel in Shopify from Odoo, refund and restock included.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-undo" style="color:#6A55A0;margin:0 8px 0 0;"></i>Refunds</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Shopify refunds become paid credit notes and returns; refund a credit note in Shopify from Odoo.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-university" style="color:#6A55A0;margin:0 8px 0 0;"></i>Payouts</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Bank statement lines, or one entry per payout through a transit account, with fees and adjustments.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-user-secret" style="color:#6A55A0;margin:0 8px 0 0;"></i>Privacy (GDPR)</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">The privacy webhooks of Shopify answered; redacted customers anonymized if you want.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-envelope-o" style="color:#6A55A0;margin:0 8px 0 0;"></i>Digest</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">The Shopify orders of the period in the KPI digest emails of Odoo.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-lock" style="color:#6A55A0;margin:0 8px 0 0;"></i>Security</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Secrets stored encrypted, webhooks checked with the signature of Shopify, user and manager rights.</div>
+</div>
+</div>
+</div>
+<div style="padding:44px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">Features</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">A closer look</h2>
+</div>
+<div class="row">
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Connection</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Connected in three steps</h3>
+<img src="setup.png" alt="Connected in three steps" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Client ID and secret of a Dev Dashboard app, or the token of a custom app.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Access tokens renewed by Odoo itself.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The API version of Shopify chosen on the store.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Locations, payment methods and webhooks set up for you.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Stores</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Your stores at a glance</h3>
+<img src="dashboard.png" alt="Your stores at a glance" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Orders, products, jobs to do and failed jobs of each store.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Import orders and products, send the stock in one click.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; As many stores as you want, in one or several companies.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; A responsible per store gets an activity when a job fails.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Orders</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Orders that invoice and pay themselves</h3>
+<img src="orders.png" alt="Orders that invoice and pay themselves" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; By webhook in seconds, and every 15 minutes in case one was missed.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; A workflow per payment method: confirm, invoice, register the payments.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Order rules by payment or fulfillment status, tag or channel.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Discounts, shipping, tips, duties, gift cards and custom items.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The Shopify order number on the Odoo order, with a prefix of your own.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Orders already fulfilled in Shopify are delivered in Odoo, not fulfilled again.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Taxes and markets</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Taxes your way, currencies included</h3>
+<img src="order_shopify.png" alt="Taxes your way, currencies included" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The rates charged by Shopify, or the taxes and fiscal positions of Odoo.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The currency of the store, or the one your customer paid in.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Lines edited in Shopify follow until the order is delivered or invoiced.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; New tax rates created on the account of your choice.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Risk</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Risky orders wait for you</h3>
+<img src="order_risk.png" alt="Risky orders wait for you" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Kept as a quotation when Shopify recommends to investigate or cancel.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; An activity with the reasons for the responsible of the store.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Release it, or cancel it in Shopify, refund included.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Products</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Products and variants, both ways</h3>
+<img src="product.png" alt="Products and variants, both ways" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Options become attributes; only the variants that exist in Shopify.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Catalogues with other codes linked from a CSV or Excel file.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Exported with variants, prices, weight and image, published if you want.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Metafields of products and variants sent with them.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Settings</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Matching and prices, store by store</h3>
+<img src="store_products.png" alt="Matching and prices, store by store" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Match on SKU, then barcode; create the missing products with images.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Prices from a price list, compare-at prices from another, sent every day.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Exported as draft, active or unlisted, on the Online Store if you want.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Stock</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">The right quantity in every location</h3>
+<img src="stock.png" alt="The right quantity in every location" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Free to use, on hand or forecasted, only for the products that moved.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Per variant: at most a quantity, a percentage or a quantity kept back.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Or count the stock of Shopify in Odoo.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Each Shopify location sends the stock of its own warehouse.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Orders shipped from the warehouse of their Shopify location.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Payouts</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Payouts in the bank journal</h3>
+<img src="payout.png" alt="Payouts in the bank journal" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Each charge and refund with its customer and invoice, fees on one line.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Or one journal entry per payout through a transit account.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Ready for the bank reconciliation of Odoo.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Fee, adjustment and clearing accounts of your choice.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Jobs</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Nothing gets lost</h3>
+<img src="jobs.png" alt="Nothing gets lost" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Every import, export and webhook is a job; a failed job leaves nothing half done.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Tried again after 2, 4, 8 minutes and more; a webhook sent twice runs once.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Failed jobs show their error, run again in one click, and give an activity.</div>
+</div>
+</div>
+</div>
+<div style="padding:30px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">How it works</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Connected in three steps</h2>
+</div>
+<div class="row">
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">1</span></div><div style="font-size:15px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Create a Shopify app</div><div style="font-size:14px;color:#474257;line-height:1.55;">In the Shopify Dev Dashboard, with the scopes listed in the questions below, and install it on your store.</div></div></div>
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">2</span></div><div style="font-size:15px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Connect the store</div><div style="font-size:14px;color:#474257;line-height:1.55;">Shopify &#8594; Configuration &#8594; Connect a Store: address, client ID and secret, warehouse and journal.</div></div></div>
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">3</span></div><div style="font-size:15px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Import and sync</div><div style="font-size:14px;color:#474257;line-height:1.55;">Import the products and the orders, send the stock, and sync the webhooks.</div></div></div>
+</div>
+<div style="padding:40px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">Install</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Get started</h2>
+</div>
+<div class="row">
+<div class="col-12 col-lg-7 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:20px;">
+<h3 style="font-size:21px;font-weight:800;color:#2F2550;margin:0 0 12px 0;">How to install it</h3>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">1</span>Copy the module to a folder of your own modules, e.g. <code style="background-color:#F3F0FA;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">/opt/odoo/custom-addons</code>, and add that folder to <code style="background-color:#F3F0FA;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">addons_path</code> in <code style="background-color:#F3F0FA;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">odoo.conf</code>.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">2</span>Restart Odoo.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">3</span>Activate the developer mode, then <b>Apps &rarr; Update Apps List</b>.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">4</span>Clear the Apps filter, search <b>om_shopify</b> and install it.</div>
+<div style="font-size:13px;color:#474257;margin:8px 0 0 0;line-height:1.5;">It installs <b>Connector Base</b> (om_connector_base), Sales and Inventory with it.</div>
+<div style="background-color:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;margin:10px 0 0 0;font-size:13px;color:#78350F;line-height:1.5;">
+<b>Do not use Apps &rarr; Import Module.</b> It is meant for data modules without Python, and leaves this module half loaded.</div>
+</div>
+</div>
+<div class="col-12 col-lg-5 mb-3">
+<div class="h-100" style="background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);border-radius:12px;padding:20px;">
+<h3 style="font-size:21px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">Free, for good</h3>
+<p style="font-size:14px;color:#F3F0FA;line-height:1.55;margin:0 0 4px 0;">The Shopify Connector is free and open source under LGPL-3, for Odoo 20. No subscription, no limit on stores, orders or products.</p>
+</div>
+</div>
+</div>
+<div style="padding:30px 0 4px 0;text-align:center;">
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Questions we get</h2>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Which Shopify app do I need?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">An app made in the Shopify Dev Dashboard (client ID and secret), or a custom app made in the admin of your store (access token). Scopes: read/write_products, read/write_inventory, read_locations, read/write_orders, read_customers, read/write_fulfillments and the merchant managed fulfillment orders; write_publications to publish, read_shopify_payments_payouts for the payouts.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Do I need webhooks?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">No, but they make orders arrive in seconds. Shopify sends them to an https address only: set the public address of your Odoo on the store and click Sync Webhooks. Without them, orders come every 15 minutes.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Can I connect several stores?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Yes, as many as you want, in one or several companies, each with its own warehouse, workflows, price lists and settings.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">What if an order is missed?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Orders are also fetched every 15 minutes from the last import, and any order can be imported by its number. A webhook sent twice runs once.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">How are refunds handled?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">A refund in Shopify becomes a credit note, paid in the journal of the payment method, with a return of the restocked products. A credit note refunded from Odoo is refunded in Shopify, with or without restock.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Who can use it?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Two levels of rights: Shopify users see the stores, orders and jobs; managers set up the stores and see the credentials, which are stored encrypted.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Which API does it use?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">The Shopify Admin GraphQL API, with a version you choose on the store. Odoo waits when Shopify limits the calls, instead of failing.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Do I need Odoo Enterprise?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">No. It runs on the Community Edition, and installs on Enterprise as well.</div>
+</div>
+</div>
+</div>
+<div style="background-color:#F3F0FA;border-radius:16px;padding:24px 20px 16px 20px;text-align:center;margin:18px 0 0 0;">
+<h2 style="font-size:22px;font-weight:800;color:#2F2550;margin:0 0 6px 0;">How is the app working for you?</h2>
+<p style="font-size:14px;color:#474257;margin:0 0 12px 0;">Your rating helps others find it; your requests and pull requests decide what comes next.</p>
+<a href="https://apps.odoo.com/apps/modules/20.0/om_shopify/" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#9733;&nbsp; Rate us on Odoo Apps</a>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2020%20Shopify%20Connector%20(om_shopify)%20-%20Feature%20request" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#128161;&nbsp; Request a feature</a>
+<a href="https://github.com/odoomates/odooapps/issues/new/choose" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#128027;&nbsp; Report an issue</a>
+<a href="https://github.com/odoomates/odooapps" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#9733;&nbsp; Star us on GitHub</a>
+</div>
+<div style="text-align:center;margin:18px 0 10px 0;">
+<img src="odoo_mates.png" alt="Odoo Mates" style="height:44px;margin:0 0 4px 0;"/>
+<div style="font-size:13px;color:#474257;">Email: <a href="mailto:odoomates@gmail.com" style="color:#6A55A0;font-weight:700;">odoomates@gmail.com</a></div>
+</div>
+</div>

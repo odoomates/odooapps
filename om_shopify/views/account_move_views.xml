@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_inherit_om_shopify" model="ir.ui.view">
+        <field name="name">account.move.form.om.shopify</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <field name="shopify_order_id" invisible="1"/>
+                <button name="action_shopify_refund" type="object" string="Refund in Shopify"
+                        invisible="move_type != 'out_refund' or state != 'posted' or shopify_refund_gid or not shopify_order_id"
+                        groups="om_shopify.group_om_shopify_user"/>
+            </header>
+            <field name="ref" position="after">
+                <field name="shopify_refund_gid" invisible="not shopify_refund_gid"/>
+            </field>
+        </field>
+    </record>
+</odoo>
