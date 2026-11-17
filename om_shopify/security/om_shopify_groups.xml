@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_groups_privilege_shopify" model="res.groups.privilege">
+        <field name="name">Shopify</field>
+        <field name="category_id" ref="base.module_category_sales"/>
+    </record>
+
+    <record id="group_om_shopify_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_shopify"/>
+        <field name="implied_ids" eval="[Command.link(ref('om_connector_base.group_om_connector_user'))]"/>
+        <field name="comment">Sees the Shopify stores, runs the imports and exports, and follows their jobs.</field>
+    </record>
+
+    <record id="group_om_shopify_manager" model="res.groups">
+        <field name="name">Administrator</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_shopify"/>
+        <field name="implied_ids" eval="[Command.link(ref('group_om_shopify_user')), Command.link(ref('om_connector_base.group_om_connector_manager'))]"/>
+        <field name="user_ids" eval="[Command.link(ref('base.user_root')), Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Connects the Shopify stores, sees their credentials and sets them up.</field>
+    </record>
+</odoo>
