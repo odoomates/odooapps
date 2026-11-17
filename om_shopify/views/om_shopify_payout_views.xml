@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_shopify_payout_view_list" model="ir.ui.view">
+        <field name="name">om.shopify.payout.list</field>
+        <field name="model">om.shopify.payout</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="store_id"/>
+                <field name="amount" sum="Total"/>
+                <field name="fee_amount" optional="show"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="unmatched_count" optional="show" decoration-warning="unmatched_count"/>
+                <field name="bank_line_id" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-danger="state == 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_shopify_payout_view_form" model="ir.ui.view">
+        <field name="name">om.shopify.payout.form</field>
+        <field name="model">om.shopify.payout</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_match_bank" type="object" string="Match the Bank Transaction"
+                            invisible="state != 'done' or bank_line_id or not move_id"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_move" type="object" class="oe_stat_button" icon="receipt_long"
+                                invisible="not move_id">
+                            <field name="move_id" widget="statinfo" string="Entry"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name"/></h1></div>
+                    <group>
+                        <group>
+                            <field name="store_id"/>
+                            <field name="date"/>
+                        </group>
+                        <group>
+                            <field name="amount"/>
+                            <field name="gross_amount" invisible="not move_id"/>
+                            <field name="fee_amount" invisible="not move_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="status"/>
+                        </group>
+                        <group invisible="not move_id">
+                            <field name="matched_count"/>
+                            <field name="unmatched_count" decoration-warning="unmatched_count"/>
+                            <field name="bank_line_id"/>
+                        </group>
+                    </group>
+                    <field name="statement_line_ids" readonly="1" invisible="move_id">
+                        <list>
+                            <field name="date"/>
+                            <field name="payment_ref"/>
+                            <field name="partner_id"/>
+                            <field name="amount" sum="Total"/>
+                            <field name="is_reconciled"/>
+                        </list>
+                    </field>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_shopify_payout_action" model="ir.actions.act_window">
+        <field name="name">Payouts</field>
+        <field name="res_model">om.shopify.payout</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No payout yet</p>
+            <p>Set a payout journal on a store using Shopify Payments: its payouts become bank statement lines.</p>
+        </field>
+    </record>
+
+    <record id="om_shopify_order_rule_view_list" model="ir.ui.view">
+        <field name="name">om.shopify.order.rule.list</field>
+        <field name="model">om.shopify.order.rule</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="store_id"/>
+                <field name="gateway_id"/>
+                <field name="financial_status"/>
+                <field name="fulfillment_status"/>
+                <field name="tag"/>
+                <field name="source"/>
+                <field name="workflow_id"/>
+                <field name="warehouse_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_shopify_order_rule_action" model="ir.actions.act_window">
+        <field name="name">Order Rules</field>
+        <field name="res_model">om.shopify.order.rule</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No order rule</p>
+            <p>Give a workflow or a warehouse to the orders of a payment method, a payment status, a tag or a channel.
+               The first matching rule wins.</p>
+        </field>
+    </record>
+</odoo>
