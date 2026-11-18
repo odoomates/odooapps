@@ -322,23 +322,34 @@ class OmInventoryReport(models.AbstractModel):
     @api.model
     def _om_filter_definitions(self):
         companies = self.env.companies.ids
+        # the labels apart: a tuple right after a translated string would be extracted as a term too
+        labels = {
+            'warehouse': self.env._("Warehouse"),
+            'location': self.env._("Location"),
+            'product': self.env._("Product"),
+            'category': self.env._("Category"),
+            'lot': self.env._("Lot/Serial"),
+            'owner': self.env._("Owner"),
+            'partner': self.env._("Partner"),
+            'picking_type': self.env._("Operation Type"),
+        }
         return {
-            'warehouse': {'label': self.env._("Warehouse"), 'model': 'stock.warehouse', 'icon': 'storefront',
+            'warehouse': {'label': labels['warehouse'], 'model': 'stock.warehouse', 'icon': 'storefront',
                           'option': 'warehouse_ids', 'domain': [('company_id', 'in', companies)]},
-            'location': {'label': self.env._("Location"), 'model': 'stock.location', 'icon': 'location_on',
+            'location': {'label': labels['location'], 'model': 'stock.location', 'icon': 'location_on',
                          'option': 'location_ids',
                          'domain': [('usage', 'in', ('internal', 'view')), ('company_id', 'in', companies + [False])]},
-            'product': {'label': self.env._("Product"), 'model': 'product.product', 'icon': 'package_2',
+            'product': {'label': labels['product'], 'model': 'product.product', 'icon': 'package_2',
                         'option': 'product_ids', 'domain': [('is_storable', '=', True)]},
-            'category': {'label': self.env._("Category"), 'model': 'product.category', 'icon': 'sell',
+            'category': {'label': labels['category'], 'model': 'product.category', 'icon': 'sell',
                          'option': 'category_ids', 'domain': []},
-            'lot': {'label': self.env._("Lot/Serial"), 'model': 'stock.lot', 'icon': 'barcode',
+            'lot': {'label': labels['lot'], 'model': 'stock.lot', 'icon': 'barcode',
                     'option': 'lot_ids', 'domain': [('company_id', 'in', companies + [False])]},
-            'owner': {'label': self.env._("Owner"), 'model': 'res.partner', 'icon': 'person',
+            'owner': {'label': labels['owner'], 'model': 'res.partner', 'icon': 'person',
                       'option': 'owner_ids', 'domain': []},
-            'partner': {'label': self.env._("Partner"), 'model': 'res.partner', 'icon': 'person',
+            'partner': {'label': labels['partner'], 'model': 'res.partner', 'icon': 'person',
                         'option': 'partner_ids', 'domain': []},
-            'picking_type': {'label': self.env._("Operation Type"), 'model': 'stock.picking.type',
+            'picking_type': {'label': labels['picking_type'], 'model': 'stock.picking.type',
                              'icon': 'local_shipping', 'option': 'picking_type_ids',
                              'domain': [('company_id', 'in', companies)]},
         }
@@ -707,11 +718,13 @@ class OmInventoryReport(models.AbstractModel):
 
     @api.model
     def _om_link_targets(self):
-        return [
-            ('stock_card', self.env._("Open Stock Card")),
-            ('stock_on_hand', self.env._("Open Stock on Hand")),
-            ('ageing', self.env._("Open Stock Ageing")),
-        ]
+        """ :return: [(report key, button label)] """
+        labels = {
+            'stock_card': self.env._("Open Stock Card"),
+            'stock_on_hand': self.env._("Open Stock on Hand"),
+            'ageing': self.env._("Open Stock Ageing"),
+        }
+        return list(labels.items())
 
     @api.model
     def _om_find_node(self, nodes, line_id):

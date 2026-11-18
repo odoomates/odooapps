@@ -282,10 +282,11 @@ class OmInventoryReportStockout(models.AbstractModel):
 
     @api.model
     def _om_link_targets(self):
-        return [
-            ('stock_card', self.env._("Open Stock Card")),
-            ('reorder', self.env._("Open Reorder Report")),
-        ]
+        labels = {
+            'stock_card': self.env._("Open Stock Card"),
+            'reorder': self.env._("Open Reorder Report"),
+        }
+        return list(labels.items())
 
 
 class OmInventoryReportOverstock(models.AbstractModel):
