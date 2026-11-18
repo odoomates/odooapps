@@ -1,6 +1,6 @@
 {
     'name': 'Inventory Reports',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Inventory/Inventory',
     'summary': 'Inventory reports on screen with filters, export to PDF and Excel: stock on hand, stock at date, '
                'stock card, product ledger, inventory summary, negative stock, stock ageing, slow moving, '

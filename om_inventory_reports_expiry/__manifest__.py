@@ -1,6 +1,6 @@
 {
     'name': 'Inventory Reports - Expiry',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Inventory/Inventory',
     'summary': 'Lot and serial number expiry report on screen: expired stock, expiring soon, best before, '
                'removal dates, export to PDF and Excel',

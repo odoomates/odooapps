@@ -1,6 +1,6 @@
 {
     'name': 'User Audit & Sessions',
-    'version': '0.9.0',
+    'version': '0.9.1',
     'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Completely free. Who signed in, from where, and what they read, changed, exported, '
