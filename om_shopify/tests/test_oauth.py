@@ -70,12 +70,14 @@ class TestOAuth(HttpCase):
     def test_forged_or_wrong_callback(self):
         state = self._start()
         params = {'code': 'abc', 'shop': 'partner-shop.myshopify.com', 'state': state, 'timestamp': '1'}
-        response, fake = self._callback({**params, 'hmac': sign('forged', params)})
-        self.assertEqual(response.status_code, 403)
-        self.assertFalse([c for c in fake.calls if c[0] == 'token'], "no code exchange without the signature")
-        other = {**params, 'shop': 'evil-shop.myshopify.com'}
-        response, _fake = self._callback({**other, 'hmac': sign('app-secret', other)})
-        self.assertEqual(response.status_code, 403)
+        with self.assertLogs('odoo.addons.om_shopify.controllers.oauth', 'WARNING') as logs:
+            response, fake = self._callback({**params, 'hmac': sign('forged', params)})
+            self.assertEqual(response.status_code, 403)
+            self.assertFalse([c for c in fake.calls if c[0] == 'token'], "no code exchange without the signature")
+            other = {**params, 'shop': 'evil-shop.myshopify.com'}
+            response, _fake = self._callback({**other, 'hmac': sign('app-secret', other)})
+            self.assertEqual(response.status_code, 403)
+        self.assertEqual(len(logs.records), 2, "each refused callback is logged")
         response, _fake = self._callback({**params, 'state': 'unknown', 'hmac': 'x'})
         self.assertEqual(response.status_code, 403)
         self.store.invalidate_recordset()
