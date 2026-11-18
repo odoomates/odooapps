@@ -153,8 +153,10 @@ class OmShopifyProductTemplate(models.Model):
         first = variants[0]
         tracked = any((v.get('inventoryItem') or {}).get('tracked') for v in data['variants'])
         new_template = template is None
+        # no tracking: the attribute lines replace the variants the tracking of the template looks at
+        Template = self.env['product.template'].with_context(tracking_disable=True)
         if new_template:
-            template = self.env['product.template'].create({
+            template = Template.create({
                 'name': data['title'],
                 'type': 'consu',
                 'is_storable': tracked,
@@ -164,6 +166,7 @@ class OmShopifyProductTemplate(models.Model):
                 'default_code': first.get('sku') or False if not options else False,
                 'barcode': self.env['om.shopify.product']._shopify_free_barcode(first.get('barcode')) if not options else False,
             })
+        template = template.with_context(tracking_disable=True)
         if not options:
             product = template.product_variant_ids[:1]
             self.env['om.shopify.product']._shopify_update_variant(product, first)
@@ -173,7 +176,8 @@ class OmShopifyProductTemplate(models.Model):
         Attribute = self.env['product.attribute']
         attribute_values = {}
         for option in options:
-            attribute = Attribute.search([('name', '=ilike', option['name'])], limit=1) or Attribute.create(
+            attribute = Attribute.search([('name', '=ilike', option['name']), ('create_variant', '!=', 'no_variant')],
+                                         limit=1) or Attribute.create(
                 {'name': option['name'], 'create_variant': 'dynamic'})
             values = attribute_values.setdefault(option['name'], {'attribute': attribute, 'values': {}})
             for value_name in [v['name'] for v in option.get('optionValues') or []]:

@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_woocommerce_store_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.store.form</field>
+        <field name="model">om.woocommerce.store</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_woo_connect" type="object" string="Connect" class="btn-primary"
+                            invisible="state == 'connected'" groups="om_woocommerce.group_om_woocommerce_manager"/>
+                    <button name="action_woo_authorize" type="object" string="Approve in WordPress"
+                            invisible="state == 'connected'" groups="om_woocommerce.group_om_woocommerce_manager"
+                            help="Log in to WordPress and approve Odoo: WooCommerce gives Odoo a new REST API key."/>
+                    <button name="action_woo_connect" type="object" string="Test Connection"
+                            invisible="state != 'connected'" groups="om_woocommerce.group_om_woocommerce_manager"/>
+                    <button name="action_woo_import_products" type="object" string="Import Products"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_import_orders" type="object" string="Import Orders"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_export_stock" type="object" string="Send Stock"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_import_stock" type="object" string="Import Stock"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_export_prices" type="object" string="Send Prices"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_import_customers" type="object" string="Import Customers"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_import_coupons" type="object" string="Import Coupons"
+                            invisible="state != 'connected'"/>
+                    <button name="action_woo_sync_webhooks" type="object" string="Sync Webhooks"
+                            invisible="state != 'connected'" groups="om_woocommerce.group_om_woocommerce_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <div class="alert alert-info mb-0" role="alert" groups="base.group_system"
+                     invisible="secret_key_source != 'database'">
+                    The WooCommerce keys are encrypted with the secret of the database. For a stronger key, add
+                    <code>om_connector_key = a-long-random-text</code> to the Odoo configuration file, restart, and enter
+                    the keys again.
+                </div>
+                <div class="alert alert-danger mb-0" role="alert" invisible="state != 'error' or not last_error">
+                    <field name="last_error"/>
+                </div>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_products" type="object" class="oe_stat_button" icon="inventory_2">
+                            <field name="product_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_orders" type="object" class="oe_stat_button" icon="shopping_cart">
+                            <field name="order_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_coupons" type="object" class="oe_stat_button" icon="sell">
+                            <field name="coupon_count" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_connector_jobs" type="object" class="oe_stat_button" icon="task_alt">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="connector_job_todo_count"/></span>
+                                <span class="o_stat_text">To Do</span>
+                            </div>
+                        </button>
+                        <button name="action_open_connector_jobs" type="object" class="oe_stat_button text-danger"
+                                icon="warning" invisible="not connector_job_failed_count">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="connector_job_failed_count"/></span>
+                                <span class="o_stat_text">Failed</span>
+                            </div>
+                        </button>
+                        <button name="action_open_webhooks" type="object" class="oe_stat_button" icon="bolt">
+                            <field name="webhook_count" string="Webhooks" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_site" type="object" class="oe_stat_button" icon="open_in_new"
+                                invisible="not site_url">
+                            <div class="o_stat_info"><span class="o_stat_text">WordPress</span></div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. My Store"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="site_url" placeholder="https://shop.example.com"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group invisible="not site_name">
+                            <field name="site_name"/>
+                            <field name="site_currency_id"/>
+                            <field name="site_timezone"/>
+                            <field name="weight_unit"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Orders" name="orders">
+                            <group>
+                                <group string="Import">
+                                    <field name="order_auto_import"/>
+                                    <field name="order_import_from"/>
+                                    <field name="order_last_sync"/>
+                                    <field name="order_status_ids" widget="many2many_tags"/>
+                                    <field name="order_use_woo_number"/>
+                                    <field name="order_prefix" invisible="not order_use_woo_number"/>
+                                </group>
+                                <group string="Sale Orders">
+                                    <field name="warehouse_id"/>
+                                    <field name="team_id"/>
+                                    <field name="user_id"/>
+                                    <field name="workflow_id"/>
+                                    <field name="tax_mode"/>
+                                    <field name="tax_account_id" invisible="tax_mode != 'woocommerce'"/>
+                                    <field name="order_deliver_completed"/>
+                                    <field name="responsible_id"/>
+                                </group>
+                                <group string="Refunds">
+                                    <field name="refund_import"/>
+                                    <field name="refund_create_return" invisible="not refund_import"/>
+                                    <field name="refund_validate_return" invisible="not refund_create_return"/>
+                                    <field name="refund_api"/>
+                                    <field name="refund_restock"/>
+                                </group>
+                                <group string="Products of the Order Lines">
+                                    <field name="shipping_product_id"/>
+                                    <field name="fee_product_id"/>
+                                    <field name="custom_product_id"/>
+                                    <field name="refund_adjustment_product_id"/>
+                                </group>
+                            </group>
+                            <separator string="Order Rules"/>
+                            <div class="text-muted mb-2">The first rule an order matches gives its workflow and its
+                                warehouse; else the payment method gives the workflow, and the store the warehouse.</div>
+                            <field name="order_rule_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="gateway_id"/>
+                                    <field name="status_id"/>
+                                    <field name="created_via"/>
+                                    <field name="shipping_method"/>
+                                    <field name="workflow_id"/>
+                                    <field name="warehouse_id"/>
+                                </list>
+                            </field>
+                            <separator string="Payment Methods"/>
+                            <div class="text-muted mb-2">The workflow of the orders paid with each payment method. A new
+                                payment method gets the default workflow.</div>
+                            <field name="gateway_ids">
+                                <list editable="bottom" create="0">
+                                    <field name="title"/>
+                                    <field name="name"/>
+                                    <field name="workflow_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Products" name="products">
+                            <group>
+                                <group>
+                                    <field name="product_match"/>
+                                    <field name="product_auto_create"/>
+                                    <field name="product_import_images"/>
+                                </group>
+                                <group>
+                                    <field name="product_auto_import"/>
+                                    <field name="product_last_sync"/>
+                                    <field name="customer_last_sync"/>
+                                    <field name="coupon_last_sync"/>
+                                </group>
+                                <group string="Export to WooCommerce">
+                                    <field name="product_export_status"/>
+                                    <field name="product_export_category"/>
+                                    <field name="product_export_tags"/>
+                                </group>
+                                <group string="Prices">
+                                    <field name="price_pricelist_id"/>
+                                    <field name="compare_pricelist_id"/>
+                                    <field name="price_auto_export"/>
+                                    <field name="price_last_sync"/>
+                                </group>
+                            </group>
+                            <div class="text-muted mb-3">To export products, select them in Sales &gt; Products and use
+                                Actions &gt; Export to WooCommerce.</div>
+                            <separator string="Meta Data"/>
+                            <div class="text-muted mb-2">WooCommerce meta data copied to Odoo fields on import, or sent
+                                with the product export.</div>
+                            <field name="meta_ids">
+                                <list editable="bottom">
+                                    <field name="resource"/>
+                                    <field name="key"/>
+                                    <field name="model_name" column_invisible="1"/>
+                                    <field name="field_id" options="{'no_create': True}"/>
+                                    <field name="direction"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Stock &amp; Delivery" name="stock">
+                            <group>
+                                <group string="Stock">
+                                    <field name="stock_export"/>
+                                    <field name="stock_field" invisible="not stock_export"/>
+                                    <field name="stock_last_sync" invisible="not stock_export"/>
+                                    <field name="stock_import_apply"/>
+                                </group>
+                                <group string="Completion">
+                                    <field name="fulfillment_push"/>
+                                    <field name="fulfillment_tracking" invisible="not fulfillment_push"/>
+                                </group>
+                            </group>
+                            <separator string="Shipping Methods"/>
+                            <div class="text-muted mb-2">The carrier of the orders shipped with each method: the shipping
+                                line gets its product, the deliveries its name. A new method is listed when an order
+                                shipped with it is imported.</div>
+                            <field name="shipping_ids">
+                                <list editable="bottom" create="0">
+                                    <field name="title"/>
+                                    <field name="name"/>
+                                    <field name="carrier_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Connection" name="connection" groups="om_woocommerce.group_om_woocommerce_manager">
+                            <group>
+                                <group string="REST API Key">
+                                    <field name="consumer_key" password="True" placeholder="ck_…"/>
+                                    <field name="consumer_secret" password="True" placeholder="cs_…"/>
+                                    <field name="query_auth"/>
+                                    <field name="rest_route" invisible="not rest_route"/>
+                                    <field name="secret_key_source"/>
+                                </group>
+                                <group string="Webhooks">
+                                    <field name="webhook_base_url" placeholder="https://odoo.example.com"/>
+                                    <field name="webhook_url" widget="CopyClipboardChar"/>
+                                </group>
+                                <group string="Images of the Exported Products">
+                                    <field name="wp_username"/>
+                                    <field name="wp_app_password" password="True" placeholder="xxxx xxxx xxxx xxxx"/>
+                                </group>
+                            </group>
+                            <div class="text-muted">
+                                <p class="mb-1">In WordPress, open <strong>WooCommerce &gt; Settings &gt; Advanced &gt; REST
+                                    API</strong>, click Add key, give it the <strong>Read/Write</strong> permission, and copy
+                                    its consumer key and secret here.</p>
+                                <p class="mb-1">For the images of the exported products, open <strong>Users &gt; Profile &gt;
+                                    Application Passwords</strong> in WordPress with a user allowed to upload files, add a
+                                    password, and copy the user name and the password here.</p>
+                                <p class="mb-0">Odoo makes the webhooks itself, signed with a secret of its own; Sync Webhooks
+                                    turns on again those WooCommerce disabled after failed deliveries.</p>
+                            </div>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_store_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.store.list</field>
+        <field name="model">om.woocommerce.store</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="site_url"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="connector_job_failed_count" string="Failed Jobs" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'connected'"
+                       decoration-danger="state == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_store_view_kanban" model="ir.ui.view">
+        <field name="name">om.woocommerce.store.kanban</field>
+        <field name="model">om.woocommerce.store</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_dashboard" highlight_color="color">
+                <field name="color"/>
+                <templates>
+                    <t t-name="menu">
+                        <a role="menuitem" type="open" class="dropdown-item">Settings</a>
+                        <field name="color" widget="kanban_color_picker"/>
+                    </t>
+                    <t t-name="card">
+                        <div class="d-flex align-items-start gap-2">
+                            <div class="flex-grow-1 text-truncate">
+                                <field name="name" class="fw-bold fs-4"/>
+                                <div class="text-muted text-truncate"><field name="site_url"/></div>
+                            </div>
+                            <field name="state" widget="badge" class="flex-shrink-0 me-4"
+                                   decoration-success="state == 'connected'" decoration-danger="state == 'error'"/>
+                        </div>
+                        <div class="d-flex gap-4 mt-3 fs-5" name="store_stats">
+                            <a name="action_open_orders" type="object"><field name="order_count" class="fw-bold"/> orders</a>
+                            <a name="action_open_products" type="object"><field name="product_count" class="fw-bold"/> products</a>
+                        </div>
+                        <div class="d-flex gap-3 mt-2 small">
+                            <a name="action_open_connector_jobs" type="object" class="text-muted">
+                                <field name="connector_job_todo_count"/> jobs to do
+                            </a>
+                            <a name="action_open_connector_jobs" type="object" class="text-danger"
+                               invisible="not connector_job_failed_count">
+                                <field name="connector_job_failed_count"/> failed
+                            </a>
+                        </div>
+                        <div class="text-muted small mt-1" invisible="not order_last_sync">
+                            Orders imported on <field name="order_last_sync"/>
+                        </div>
+                        <div class="mt-3 d-flex gap-2 flex-wrap" name="store_actions">
+                            <button name="action_woo_connect" type="object" class="btn btn-primary btn-sm"
+                                    invisible="state == 'connected'" groups="om_woocommerce.group_om_woocommerce_manager">Connect</button>
+                            <button name="action_woo_import_orders" type="object" class="btn btn-secondary btn-sm"
+                                    invisible="state != 'connected'">Import Orders</button>
+                            <button name="action_woo_import_products" type="object" class="btn btn-secondary btn-sm"
+                                    invisible="state != 'connected'">Import Products</button>
+                            <button name="action_woo_export_stock" type="object" class="btn btn-secondary btn-sm"
+                                    invisible="state != 'connected'">Send Stock</button>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_store_view_search" model="ir.ui.view">
+        <field name="name">om.woocommerce.store.search</field>
+        <field name="model">om.woocommerce.store</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="site_url"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_store_action_dashboard" model="ir.actions.act_window">
+        <field name="name">WooCommerce Stores</field>
+        <field name="res_model">om.woocommerce.store</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Connect your first WooCommerce store</p>
+            <p>Use Configuration &gt; Connect a Store: the address of the site and a REST API key of WooCommerce,
+               then the first imports.</p>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_store_action" model="ir.actions.act_window">
+        <field name="name">Stores</field>
+        <field name="res_model">om.woocommerce.store</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'active_test': False}</field>
+    </record>
+
+    <record id="om_woocommerce_job_action" model="ir.actions.act_window">
+        <field name="name">Jobs</field>
+        <field name="res_model">om.connector.job</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('backend_model', '=', 'om.woocommerce.store')]</field>
+        <field name="context">{'search_default_filter_todo_failed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to do</p>
+            <p>The imports, exports and webhooks of your WooCommerce stores are queued here, and tried again when they
+               fail.</p>
+        </field>
+    </record>
+</odoo>

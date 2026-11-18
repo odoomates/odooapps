@@ -4,6 +4,7 @@ import hmac
 import json
 
 from odoo.tests import HttpCase, tagged
+from odoo.tools import mute_logger
 
 
 @tagged('post_install', '-at_install')
@@ -43,6 +44,7 @@ class TestWebhook(HttpCase):
         self.assertEqual(self.store.state, 'error')
         self.assertFalse(self.store.access_token)
 
+    @mute_logger('odoo.addons.om_shopify.controllers.webhook')
     def test_wrong_signature_or_shop(self):
         self.assertEqual(self._post({'id': 1}, secret='forged').status_code, 401)
         self.assertEqual(self._post({'id': 1}, shop='other.myshopify.com').status_code, 401)

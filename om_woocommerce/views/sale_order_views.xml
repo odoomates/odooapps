@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_order_form_inherit_om_woocommerce" model="ir.ui.view">
+        <field name="name">sale.order.form.om.woocommerce</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <header position="inside">
+                <button name="action_woo_cancel" type="object" string="Cancel in WooCommerce"
+                        invisible="not woo_store_id or woo_cancelled or state == 'cancel' or woo_status == 'completed'"
+                        groups="om_woocommerce.group_om_woocommerce_user"/>
+            </header>
+            <notebook position="inside">
+                <page string="WooCommerce" name="woocommerce" invisible="not woo_store_id">
+                    <group>
+                        <group>
+                            <field name="woo_store_id"/>
+                            <field name="woo_order_number"/>
+                            <field name="woo_gateway_id"/>
+                            <field name="woo_workflow_id"/>
+                            <field name="woo_created_via"/>
+                        </group>
+                        <group>
+                            <field name="woo_status"/>
+                            <field name="woo_paid"/>
+                            <field name="woo_transaction_id" invisible="not woo_transaction_id"/>
+                            <field name="woo_coupon_ids" widget="many2many_tags" invisible="not woo_coupon_ids"/>
+                            <field name="woo_cancelled"/>
+                            <button name="action_woo_sync" type="object" string="Update from WooCommerce"
+                                    class="btn-link p-0" icon="sync"/>
+                            <button name="action_open_in_woocommerce" type="object" string="Open in WooCommerce"
+                                    class="btn-link p-0" icon="open_in_new"/>
+                        </group>
+                    </group>
+                </page>
+            </notebook>
+        </field>
+    </record>
+
+    <record id="view_order_tree_inherit_om_woocommerce" model="ir.ui.view">
+        <field name="name">sale.order.list.om.woocommerce</field>
+        <field name="model">sale.order</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="sale.view_order_tree"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="before">
+                <field name="woo_order_number" string="WooCommerce Order"/>
+                <field name="woo_store_id" optional="hide"/>
+            </field>
+            <field name="partner_id" position="after">
+                <field name="woo_status" optional="show" widget="badge"
+                       decoration-success="woo_status == 'completed'" decoration-info="woo_status == 'processing'"
+                       decoration-warning="woo_status == 'on-hold'"
+                       decoration-muted="woo_status in ('cancelled', 'refunded', 'failed')"/>
+                <field name="woo_paid" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_sales_order_filter_inherit_om_woocommerce" model="ir.ui.view">
+        <field name="name">sale.order.search.om.woocommerce</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="woo_order_number"/>
+            </field>
+            <filter name="my_sale_orders_filter" position="after">
+                <filter name="filter_woocommerce" string="WooCommerce" domain="[('woo_store_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_sale_order_action" model="ir.actions.act_window">
+        <field name="name">Orders</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,form,kanban,pivot,graph</field>
+        <field name="view_id" ref="view_order_tree_inherit_om_woocommerce"/>
+        <field name="domain">[('woo_store_id', '!=', False)]</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No WooCommerce order yet</p>
+            <p>The orders of the connected stores are imported every 15 minutes, and at once with webhooks.</p>
+        </field>
+    </record>
+</odoo>

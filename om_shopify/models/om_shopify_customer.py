@@ -69,17 +69,11 @@ class OmShopifyCustomer(models.Model):
         partner = None
         if customer.get('id'):
             partner = self._connector_find(store, customer['id']).partner_id
-        if not partner and email:
-            partner = self.env['res.partner'].search([
-                ('email', '=ilike', email), ('parent_id', '=', False),
-                ('company_id', 'in', [False, store.company_id.id]),
-            ], limit=1)
         if not partner:
             name = ' '.join(filter(None, [customer.get('firstName'), customer.get('lastName')])) \
                 or billing.get('name') or shipping.get('name') or email or order.get('name')
-            vals = {'name': name, 'email': email or False, 'phone': phone,
-                    **self._shopify_address_vals(billing or shipping)}
-            partner = self.env['res.partner'].create(vals)
+            partner = self.env['res.partner']._connector_find_or_create(
+                store.company_id, email, name, self._shopify_address(billing or shipping), phone)
         if customer.get('id'):
             self._connector_bind(store, customer['id'], partner)
         invoice = self._shopify_child(partner, 'invoice', billing) if billing else partner
@@ -87,43 +81,27 @@ class OmShopifyCustomer(models.Model):
         return partner, invoice, delivery
 
     @api.model
-    def _shopify_address_vals(self, address):
+    def _shopify_address(self, address):
+        """ A Shopify address in the format of ``om_connector_base``. """
         if not address:
             return {}
-        country = self.env['res.country'].search([('code', '=', address.get('countryCodeV2'))], limit=1) \
-            if address.get('countryCodeV2') else self.env['res.country']
-        state = self.env['res.country.state']
-        if country and address.get('provinceCode'):
-            state = state.search([('country_id', '=', country.id), ('code', '=', address['provinceCode'])], limit=1)
         return {
-            'street': address.get('address1') or False,
-            'street2': address.get('address2') or False,
-            'city': address.get('city') or False,
-            'zip': address.get('zip') or False,
-            'country_id': country.id,
-            'state_id': state.id,
+            'name': address.get('name'),
+            'street': address.get('address1'),
+            'street2': address.get('address2'),
+            'city': address.get('city'),
+            'zip': address.get('zip'),
+            'state_code': address.get('provinceCode'),
+            'country_code': address.get('countryCodeV2'),
+            'phone': address.get('phone'),
         }
+
+    @api.model
+    def _shopify_address_vals(self, address):
+        return self.env['res.partner']._connector_address_vals(self._shopify_address(address))
 
     @api.model
     def _shopify_child(self, partner, address_type, address):
         """ The address of ``partner``: itself when it is the same, else one of its own addresses of
         this type, found or created. Never the address of another contact. """
-        vals = self._shopify_address_vals(address)
-        name = address.get('name') or partner.name
-
-        def same(record):
-            return all((record[key].id if hasattr(record[key], 'id') else record[key] or False) == value
-                       for key, value in vals.items())
-
-        if same(partner) and name == partner.name:
-            return partner
-        child = partner.child_ids.filtered(lambda c: c.type == address_type and c.name == name and same(c))[:1]
-        if child:
-            return child
-        return self.env['res.partner'].create({
-            'parent_id': partner.id,
-            'type': address_type,
-            'name': name,
-            'phone': address.get('phone') or False,
-            **vals,
-        })
+        return partner._connector_address(address_type, self._shopify_address(address))
