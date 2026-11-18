@@ -1,4 +1,6 @@
 from odoo import _, api, fields, models
+from odoo.exceptions import UserError
+from odoo.tools import float_round
 
 
 class OmConnectorBackendMixin(models.AbstractModel):
@@ -38,6 +40,72 @@ class OmConnectorBackendMixin(models.AbstractModel):
 
     def _connector_job_failed(self, job):
         """ Called when ``job`` of this connection fails for good. """
+
+    # ------------------------------------------------------------------
+    # Orders: pricelist and taxes (the connection has a ``company_id``)
+    # ------------------------------------------------------------------
+
+    def _connector_pricelist(self, currency_code, label):
+        """ A pricelist in the currency ``currency_code`` of an order, when it is not the currency of
+        the company (found, or created as "<label> <currency>"). """
+        self.ensure_one()
+        if not currency_code or currency_code == self.company_id.currency_id.name:
+            return self.env['product.pricelist']
+        currency = self.env['res.currency'].with_context(active_test=False).search([('name', '=', currency_code)],
+                                                                                   limit=1)
+        if not currency:
+            raise UserError(_("Unknown currency %(currency)s.", currency=currency_code))
+        if not currency.active:
+            currency.sudo().active = True
+        Pricelist = self.env['product.pricelist'].sudo()
+        return Pricelist.search([('currency_id', '=', currency.id), ('company_id', 'in', [False, self.company_id.id])],
+                                limit=1) or Pricelist.create({
+                                    'name': f"{label} {currency.name}",
+                                    'currency_id': currency.id, 'company_id': self.company_id.id})
+
+    def _connector_taxes(self, rates, included, account=None):
+        """ The Odoo sale taxes of ``rates``, found or created.
+
+        :param rates: ``[(percent, title)]``, e.g. ``[(10.0, 'State Tax')]``
+        :param included: the prices of the order include the taxes
+        :param account: the tax account of the taxes created, else the one of the company """
+        self.ensure_one()
+        Tax = self.env['account.tax'].sudo().with_company(self.company_id)
+        taxes = Tax.browse()
+        for percent, title in rates or []:
+            rate = float_round(float(percent or 0.0), precision_digits=4)
+            if not rate:
+                continue
+            candidates = Tax.search([
+                ('company_id', '=', self.company_id.id), ('type_tax_use', '=', 'sale'),
+                ('amount_type', '=', 'percent'), ('amount', '=', rate),
+            ])
+            tax = candidates.filtered(lambda t: t.price_include == included)[:1]
+            if not tax:
+                tax = Tax.create({
+                    'name': f"{title or _('Tax')} {rate:g}%" + (_(" (included)") if included else ''),
+                    'amount': rate,
+                    'amount_type': 'percent',
+                    'type_tax_use': 'sale',
+                    'price_include_override': 'tax_included' if included else 'tax_excluded',
+                    'company_id': self.company_id.id,
+                    'country_id': self.company_id.account_fiscal_country_id.id,
+                })
+                if account:
+                    (tax.invoice_repartition_line_ids | tax.refund_repartition_line_ids).filtered(
+                        lambda l: l.repartition_type == 'tax').account_id = account
+            taxes |= tax
+        return taxes
+
+    def _connector_activity(self, summary, note, once=True):
+        """ An activity for the responsible of the connection (``responsible_id``, else its creator);
+        with ``once``, not while one with this summary is open. """
+        self.ensure_one()
+        if once and self.activity_ids.filtered(lambda a: a.summary == summary):
+            return
+        responsible = self.responsible_id if 'responsible_id' in self._fields else self.env['res.users']
+        self.activity_schedule('mail.mail_activity_data_todo', summary=summary, note=note,
+                               user_id=(responsible or self.create_uid or self.env.user).id)
 
     def _connector_job_domain(self):
         return [('backend_model', '=', self._name), ('backend_id', 'in', self.ids)]

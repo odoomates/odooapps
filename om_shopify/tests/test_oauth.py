@@ -5,6 +5,7 @@ from urllib.parse import parse_qs, urlparse
 
 from odoo import fields
 from odoo.tests import HttpCase, tagged
+from odoo.tools import mute_logger
 
 from odoo.addons.om_shopify.tools import ShopifyAuthError
 
@@ -67,6 +68,7 @@ class TestOAuth(HttpCase):
         response, _fake = self._callback({**params, 'hmac': sign('app-secret', params)})
         self.assertEqual(response.status_code, 403, "the same callback cannot be replayed")
 
+    @mute_logger('odoo.addons.om_shopify.controllers.oauth')
     def test_forged_or_wrong_callback(self):
         state = self._start()
         params = {'code': 'abc', 'shop': 'partner-shop.myshopify.com', 'state': state, 'timestamp': '1'}

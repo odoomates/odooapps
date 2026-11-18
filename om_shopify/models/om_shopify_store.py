@@ -8,7 +8,7 @@ from datetime import timedelta
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools import SQL, float_round
+from odoo.tools import SQL
 
 from odoo.addons.om_connector_base.tools import RetryableJobError, crypto, request_with_retry
 
@@ -727,52 +727,12 @@ class OmShopifyStore(models.Model):
 
     def _shopify_pricelist(self, currency_code):
         """ A pricelist in the currency of the order, when it is not the currency of the company. """
-        self.ensure_one()
-        if not currency_code or currency_code == self.company_id.currency_id.name:
-            return self.env['product.pricelist']
-        currency = self.env['res.currency'].with_context(active_test=False).search([('name', '=', currency_code)],
-                                                                                   limit=1)
-        if not currency:
-            raise UserError(_("Unknown currency %(currency)s.", currency=currency_code))
-        if not currency.active:
-            currency.sudo().active = True
-        Pricelist = self.env['product.pricelist'].sudo()
-        return Pricelist.search([('currency_id', '=', currency.id), ('company_id', 'in', [False, self.company_id.id])],
-                                limit=1) or Pricelist.create({
-                                    'name': _("Shopify %(currency)s", currency=currency.name),
-                                    'currency_id': currency.id, 'company_id': self.company_id.id})
+        return self._connector_pricelist(currency_code, _("Shopify"))
 
     def _shopify_taxes(self, tax_lines, taxes_included):
         """ The Odoo sale taxes of the rates of ``tax_lines``, found or created. """
-        self.ensure_one()
-        Tax = self.env['account.tax'].sudo().with_company(self.company_id)
-        include = 'tax_included' if taxes_included else 'tax_excluded'
-        taxes = Tax.browse()
-        for line in tax_lines or []:
-            rate = float_round(float(line.get('rate') or 0.0) * 100.0, precision_digits=4)
-            if not rate:
-                continue
-            candidates = Tax.search([
-                ('company_id', '=', self.company_id.id), ('type_tax_use', '=', 'sale'),
-                ('amount_type', '=', 'percent'), ('amount', '=', rate),
-            ])
-            tax = candidates.filtered(lambda t: t.price_include == taxes_included)[:1]
-            if not tax:
-                title = line.get('title') or _("Tax")
-                tax = Tax.create({
-                    'name': f"{title} {rate:g}%" + (_(" (included)") if taxes_included else ''),
-                    'amount': rate,
-                    'amount_type': 'percent',
-                    'type_tax_use': 'sale',
-                    'price_include_override': include,
-                    'company_id': self.company_id.id,
-                    'country_id': self.company_id.account_fiscal_country_id.id,
-                })
-                if self.tax_account_id:
-                    (tax.invoice_repartition_line_ids | tax.refund_repartition_line_ids).filtered(
-                        lambda l: l.repartition_type == 'tax').account_id = self.tax_account_id
-            taxes |= tax
-        return taxes
+        rates = [(float(line.get('rate') or 0.0) * 100.0, line.get('title')) for line in tax_lines or []]
+        return self._connector_taxes(rates, taxes_included, self.tax_account_id)
 
     # ------------------------------------------------------------------
     # Scheduled work
@@ -1174,12 +1134,8 @@ class OmShopifyStore(models.Model):
     def _connector_job_failed(self, job):
         """ An activity for the responsible of the store, once while a failure is not looked at. """
         self.ensure_one()
-        summary = _("Shopify jobs failed")
-        if self.activity_ids.filtered(lambda a: a.summary == summary):
-            return
-        self.activity_schedule('mail.mail_activity_data_todo', summary=summary,
-                               user_id=(self.responsible_id or self.create_uid or self.env.user).id,
-                               note=_("%(job)s failed: %(error)s", job=job.name, error=(job.error or '')[:300]))
+        self._connector_activity(_("Shopify jobs failed"),
+                                 _("%(job)s failed: %(error)s", job=job.name, error=(job.error or '')[:300]))
 
     # ------------------------------------------------------------------
     # Privacy (GDPR)
@@ -1208,8 +1164,7 @@ class OmShopifyStore(models.Model):
 
     def _shopify_gdpr_activity(self, summary, note):
         self.ensure_one()
-        self.activity_schedule('mail.mail_activity_data_todo', summary=summary, note=note,
-                               user_id=(self.responsible_id or self.create_uid or self.env.user).id)
+        self._connector_activity(summary, note, once=False)
 
     def _shopify_scrub_jobs(self, needles=None):
         """ Remove the Shopify data kept in the finished jobs: all of them, or those that mention one of
