@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_woocommerce_coupon_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.coupon.list</field>
+        <field name="model">om.woocommerce.coupon</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="code"/>
+                <field name="store_id" optional="show"/>
+                <field name="discount_type"/>
+                <field name="amount"/>
+                <field name="free_shipping" optional="hide"/>
+                <field name="date_expires" optional="show"/>
+                <field name="usage_count"/>
+                <field name="usage_limit" optional="show"/>
+                <field name="woo_id" optional="hide"/>
+                <field name="sync_date" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_coupon_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.coupon.form</field>
+        <field name="model">om.woocommerce.coupon</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_woo_export" type="object" string="Send to WooCommerce" class="btn-primary"
+                            groups="om_woocommerce.group_om_woocommerce_manager"/>
+                    <button name="action_open_in_woocommerce" type="object" string="Open in WooCommerce"
+                            invisible="not woo_id"/>
+                    <button name="action_woo_delete" type="object" string="Delete in WooCommerce" invisible="not woo_id"
+                            groups="om_woocommerce.group_om_woocommerce_manager"
+                            confirm="The coupon is deleted in WooCommerce and archived in Odoo."/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_orders" type="object" class="oe_stat_button" icon="shopping_cart">
+                            <field name="order_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="code"/>
+                        <h1><field name="code" placeholder="e.g. summer10"/></h1>
+                        <field name="description" placeholder="Description (for you)"/>
+                    </div>
+                    <group>
+                        <group string="Discount">
+                            <field name="store_id"/>
+                            <field name="discount_type"/>
+                            <field name="amount"/>
+                            <field name="free_shipping"/>
+                            <field name="date_expires"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="Usage">
+                            <field name="usage_limit"/>
+                            <field name="usage_limit_per_user"/>
+                            <field name="usage_count"/>
+                            <field name="woo_id"/>
+                            <field name="sync_date"/>
+                        </group>
+                        <group string="Restrictions">
+                            <field name="minimum_amount"/>
+                            <field name="maximum_amount"/>
+                            <field name="individual_use"/>
+                            <field name="exclude_sale_items"/>
+                            <field name="email_restrictions" placeholder="jane@example.com, *@example.org"/>
+                        </group>
+                        <group string="Products">
+                            <field name="product_ids" widget="many2many_tags"/>
+                            <field name="excluded_product_ids" widget="many2many_tags"/>
+                            <div class="text-muted" colspan="2">Only the products linked to the store are sent.</div>
+                        </group>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_coupon_view_search" model="ir.ui.view">
+        <field name="name">om.woocommerce.coupon.search</field>
+        <field name="model">om.woocommerce.coupon</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="code"/>
+                <field name="store_id"/>
+                <filter name="filter_not_sent" string="Not in WooCommerce" domain="[('woo_id', '=', False)]"/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_store" string="Store" context="{'group_by': 'store_id'}"/>
+                    <filter name="group_type" string="Discount Type" context="{'group_by': 'discount_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_coupon_action" model="ir.actions.act_window">
+        <field name="name">Coupons</field>
+        <field name="res_model">om.woocommerce.coupon</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No coupon yet</p>
+            <p>Click Import Coupons on a store, or make a coupon here and send it to WooCommerce.</p>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_coupon_action_export" model="ir.actions.server">
+        <field name="name">Send to WooCommerce</field>
+        <field name="model_id" ref="model_om_woocommerce_coupon"/>
+        <field name="binding_model_id" ref="model_om_woocommerce_coupon"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('om_woocommerce.group_om_woocommerce_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_woo_export()</field>
+    </record>
+</odoo>

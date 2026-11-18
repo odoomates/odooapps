@@ -1,0 +1,497 @@
+<div style="font-family:-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#474257;">
+<div style="background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);border-radius:16px;padding:40px 28px 34px 28px;text-align:center;color:#FFFFFF;margin:8px 0 0 0;">
+<div style="font-size:12px;font-weight:700;letter-spacing:2px;color:#E6E0F5;text-transform:uppercase;margin:0 0 10px 0;">Odoo Mates &middot; free and open source</div>
+<h1 style="font-size:42px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">WooCommerce Connector</h1>
+<p style="font-size:19px;color:#F3F0FA;max-width:720px;margin:0 auto 20px auto;line-height:1.5;">Products, prices, stock, customers, orders, coupons, completion and refunds between your WooCommerce stores and Odoo, through webhooks and a queue you can follow.</p>
+<div style="margin:0 0 22px 0;">
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Beta</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Products both ways</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Stock both ways</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Orders invoiced and paid</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Coupons</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Community Edition</span>
+<span style="display:inline-block;border:1px solid #D5CBEA;border-radius:20px;padding:4px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;color:#FFFFFF;">Free, LGPL-3</span>
+</div>
+<div style="font-size:14px;color:#F3F0FA;margin:0 0 4px 0;">Needs the free Connector Base module (om_connector_base), installed with it.</div>
+<img src="banner.gif" alt="WooCommerce Connector" style="display:block;width:100%;max-width:960px;margin:22px auto 0 auto;border-radius:12px;border:4px solid #FFFFFF;"/>
+</div>
+<div style="border:1px solid #E3DDF1;border-left:5px solid #6A55A0;border-radius:12px;background-color:#F7F5FC;padding:16px 18px;margin:16px 0 0 0;">
+<div style="font-size:16px;font-weight:800;color:#2F2550;margin:0 0 4px 0;"><span style="display:inline-block;color:#FFFFFF;background-color:#6A55A0;border-radius:20px;padding:1px 10px;font-size:11px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;vertical-align:middle;margin:0 8px 0 0;">Beta</span>This app is in beta: tell us what you think</div>
+<div style="font-size:14px;color:#474257;line-height:1.55;margin:0 0 6px 0;">The WooCommerce Connector is new and we are still shaping it with the stores that use it. We welcome your feedback and suggestions, and if something does not look right, report the issue and let us know: every message is read and helps decide what comes next.</div>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2020%20WooCommerce%20Connector%20(om_woocommerce)%20-%20Feedback" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #6A55A0;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:4px 4px 0 0;font-size:13px;font-weight:700;text-decoration:none;">&#128172;&nbsp; Send feedback</a>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2020%20WooCommerce%20Connector%20(om_woocommerce)%20-%20Suggestion" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #6A55A0;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:4px 4px 0 0;font-size:13px;font-weight:700;text-decoration:none;">&#128161;&nbsp; Suggest a feature</a>
+<a href="https://github.com/odoomates/odooapps/issues/new/choose" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #6A55A0;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:4px 4px 0 0;font-size:13px;font-weight:700;text-decoration:none;">&#128027;&nbsp; Report an issue</a>
+</div>
+<div style="padding:34px 0 4px 0;text-align:center;">
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Everything at a glance</h2>
+<p style="font-size:15px;color:#474257;max-width:760px;margin:0 auto 18px auto;line-height:1.6;">One app for the whole life of a WooCommerce order, from the product page to the refund.</p>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-cubes">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Products Both Ways</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Linked by SKU or GTIN, created with variations, or exported.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-tags">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Prices</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">From a price list, as sale prices under a regular price.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-archive">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Stock Both Ways</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Sent by batches with limits per variant, or imported.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-shopping-cart">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Orders on Autopilot</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Confirmed, invoiced and paid by a workflow per payment method.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-truck">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Completion</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Validate the delivery: the order is completed, with its tracking number.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-undo">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Refunds and Cancels</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Both ways, with credit notes, returns and gateway refunds.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-ticket">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Coupons</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Imported, made in Odoo and sent, linked to their orders.</div>
+</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-3 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;border-top:3px solid #6A55A0;">
+<span style="float:left;display:inline-block;width:38px;height:38px;border-radius:10px;background-color:#F3F0FA;color:#6A55A0;text-align:center;line-height:38px;font-size:17px;">
+<i class="fa fa-bolt">
+</i>
+</span>
+<div style="margin:0 0 0 50px;">
+<div style="font-size:14px;font-weight:700;color:#2F2550;margin:0 0 3px 0;">Webhooks and Jobs</div>
+<div style="font-size:12.5px;color:#474257;line-height:1.45;">Orders in seconds; every sync is a job tried again on failure.</div>
+</div>
+</div>
+</div>
+</div>
+<div style="padding:44px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">In detail</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Everything it syncs</h2>
+<p style="font-size:15px;color:#474257;max-width:760px;margin:0 auto 18px auto;line-height:1.6;">Each part can be turned on or off store by store, in the tabs of the store.</p>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-plug" style="color:#6A55A0;margin:0 8px 0 0;"></i>Connection</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Approve Odoo in WordPress, or paste a REST API key. Sites without pretty permalinks and servers that drop the Authorization header work too.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-magic" style="color:#6A55A0;margin:0 8px 0 0;"></i>Setup Wizard</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Site, warehouse, payment journal, statuses and matching, then the first imports, in three steps.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-cubes" style="color:#6A55A0;margin:0 8px 0 0;"></i>Product Import</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Simple and variable products, changes every day and by webhook, images and gallery included.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-upload" style="color:#6A55A0;margin:0 8px 0 0;"></i>Product Export</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Variations, prices, weight, stock, category, tags and attributes; as draft, private or published.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-picture-o" style="color:#6A55A0;margin:0 8px 0 0;"></i>Images</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Uploaded to the WordPress media library with an Application Password, only when they change.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-file-excel-o" style="color:#6A55A0;margin:0 8px 0 0;"></i>CSV / Excel Mapping</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Link catalogues whose SKUs and GTINs do not match from a file.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-list-alt" style="color:#6A55A0;margin:0 8px 0 0;"></i>Meta Data</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">WooCommerce meta keys of products, variations, customers and orders mapped to Odoo fields, one or both ways.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-tags" style="color:#6A55A0;margin:0 8px 0 0;"></i>Prices</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">From an Odoo price list, on sale under a regular price list, sent every day by batches.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-archive" style="color:#6A55A0;margin:0 8px 0 0;"></i>Stock Export</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Free to use, on hand or forecasted, every 15 minutes by batches, with limits per variant.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-download" style="color:#6A55A0;margin:0 8px 0 0;"></i>Stock Import</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Compare the stock of WooCommerce with Odoo, and apply it if you want.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-users" style="color:#6A55A0;margin:0 8px 0 0;"></i>Customers</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Registered customers with their addresses; guests found by email.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-shopping-cart" style="color:#6A55A0;margin:0 8px 0 0;"></i>Orders</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">By webhook, every 15 minutes, or by order number, in the statuses you choose.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-gift" style="color:#6A55A0;margin:0 8px 0 0;"></i>Order Lines</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Coupons, shipping, fees and taxes, prices with or without taxes, currency of the order.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-random" style="color:#6A55A0;margin:0 8px 0 0;"></i>Order Rules</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Workflow and warehouse chosen by payment method, status, created via or shipping method.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-truck" style="color:#6A55A0;margin:0 8px 0 0;"></i>Carriers</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Each shipping method of WooCommerce mapped to an Odoo carrier, with its product and tracking links.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-check-square-o" style="color:#6A55A0;margin:0 8px 0 0;"></i>Completion</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Validated deliveries complete the order, with the tracking number in a note or in Shipment Tracking.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-ban" style="color:#6A55A0;margin:0 8px 0 0;"></i>Cancellations</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Cancelled in WooCommerce, cancelled in Odoo; or cancel in WooCommerce from Odoo.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-undo" style="color:#6A55A0;margin:0 8px 0 0;"></i>Refunds</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">WooCommerce refunds become paid credit notes and returns; refund a credit note from Odoo, through the gateway if you want.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-ticket" style="color:#6A55A0;margin:0 8px 0 0;"></i>Coupons</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Imported and kept in sync by webhook, made in Odoo and sent, with their limits, products and orders.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-envelope-o" style="color:#6A55A0;margin:0 8px 0 0;"></i>Digest</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">The WooCommerce orders of the period in the KPI digest emails of Odoo.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 col-lg-4 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:12px 14px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 3px 0;"><i class="fa fa-lock" style="color:#6A55A0;margin:0 8px 0 0;"></i>Security</div>
+<div style="font-size:13px;color:#474257;line-height:1.5;">Keys stored encrypted, webhooks checked with their signature, user and manager rights.</div>
+</div>
+</div>
+</div>
+<div style="padding:44px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">Features</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">A closer look</h2>
+</div>
+<div class="row">
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Connection</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Connected in three steps</h3>
+<img src="setup.png" alt="Connected in three steps" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Approve Odoo in WordPress: no key to copy.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Or paste a REST API key with the Read/Write permission.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Warehouse, journal, statuses and product matching set on the way.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Webhooks made and signed by Odoo itself.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Stores</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Your stores at a glance</h3>
+<img src="dashboard.png" alt="Your stores at a glance" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Orders, products, jobs to do and failed jobs of each store.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Import orders and products, send the stock in one click.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; As many stores as you want, in one or several companies.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; A responsible per store gets an activity when a job fails.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Orders</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Orders that invoice and pay themselves</h3>
+<img src="orders.png" alt="Orders that invoice and pay themselves" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; By webhook in seconds, and every 15 minutes in case one was missed.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; A workflow per payment method: confirm, invoice, register the payment.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Order rules by payment method, status, created via or shipping method.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Coupons, shipping, fees and taxes on their own lines.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The WooCommerce order number on the Odoo order, with a prefix of your own.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Taxes and carriers</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Taxes your way, carriers mapped</h3>
+<img src="order_woo.png" alt="Taxes your way, carriers mapped" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The rates charged by WooCommerce, or the taxes and fiscal positions of Odoo.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Prices with or without taxes, in the currency of the order.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Each shipping method gives its Odoo carrier and delivery product.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Completed orders get the tracking number of the delivery.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Products</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Products and variations, both ways</h3>
+<img src="product.png" alt="Products and variations, both ways" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Variations become variants; only those that exist in WooCommerce.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Exported with variations, prices, weight, stock, category and tags.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Images uploaded to WordPress, only when they change.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Publish or unpublish from Odoo.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Settings</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Matching and prices, store by store</h3>
+<img src="store_products.png" alt="Matching and prices, store by store" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Match on SKU, then GTIN; create the missing products with images.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Prices from a price list, on sale under a regular price list, sent every day.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Meta data mapped to the Odoo fields you choose.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Coupons</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Coupons in Odoo</h3>
+<img src="coupons.png" alt="Coupons in Odoo" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Imported with their discount, limits, products and expiry date.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Made or changed in Odoo, sent to WooCommerce in one click.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; The orders that used each coupon, one click away.</div>
+</div>
+</div>
+<div class="col-12 col-lg-6 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Stock</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">The right quantity in WooCommerce</h3>
+<img src="stock.png" alt="The right quantity in WooCommerce" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Free to use, on hand or forecasted, only for the products that moved.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Per variant: at most a quantity, a percentage or a quantity kept back.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Or count the stock of WooCommerce in Odoo.</div>
+</div>
+</div>
+<div class="col-12 mb-4">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;">
+<div style="font-size:11px;font-weight:700;letter-spacing:1.2px;color:#6A55A0;text-transform:uppercase;margin:0 0 3px 0;">Jobs</div>
+<h3 style="font-size:19px;font-weight:800;color:#2F2550;margin:0 0 10px 0;">Nothing gets lost</h3>
+<img src="jobs.png" alt="Nothing gets lost" style="display:block;width:100%;border-radius:8px;border:1px solid #E3DDF1;margin:0 0 10px 0;"/>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Every import, export and webhook is a job; a failed job leaves nothing half done.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Tried again after 2, 4, 8 minutes and more; a webhook sent twice runs once.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;margin:0 0 3px 0;">
+<span style="color:#059669;font-weight:700;">&#10003;</span>&nbsp; Failed jobs show their error, run again in one click, and give an activity.</div>
+</div>
+</div>
+</div>
+<div style="padding:30px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">How it works</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Connected in three steps</h2>
+</div>
+<div class="row">
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">1</span></div><div style="font-size:15px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Open the wizard</div><div style="font-size:14px;color:#474257;line-height:1.55;">WooCommerce &#8594; Configuration &#8594; Connect a Store: the address of your site.</div></div></div>
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">2</span></div><div style="font-size:15px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Approve Odoo</div><div style="font-size:14px;color:#474257;line-height:1.55;">Log in to WordPress and approve Odoo, or paste a REST API key with the Read/Write permission.</div></div></div>
+<div class="col-12 col-md-4 mb-3"><div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:16px 18px;"><div><span style="display:inline-block;width:28px;height:28px;border-radius:14px;background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);color:#FFFFFF;text-align:center;line-height:28px;font-size:14px;font-weight:700;margin:0 0 8px 0;">3</span></div><div style="font-size:15px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Import and sync</div><div style="font-size:14px;color:#474257;line-height:1.55;">Products, customers and orders come in, the stock goes out, webhooks keep it live.</div></div></div>
+</div>
+<div style="padding:40px 0 4px 0;text-align:center;">
+<div style="font-size:12px;font-weight:700;letter-spacing:1.5px;color:#6A55A0;text-transform:uppercase;margin:0 0 6px 0;">Install</div>
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Get started</h2>
+</div>
+<div class="row">
+<div class="col-12 col-lg-7 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:20px;">
+<h3 style="font-size:21px;font-weight:800;color:#2F2550;margin:0 0 12px 0;">How to install it</h3>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">1</span>Copy the module to a folder of your own modules, e.g. <code style="background-color:#F3F0FA;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">/opt/odoo/custom-addons</code>, and add that folder to <code style="background-color:#F3F0FA;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">addons_path</code> in <code style="background-color:#F3F0FA;color:#3E2D4F;border-radius:4px;padding:1px 5px;font-size:12.5px;">odoo.conf</code>.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">2</span>Restart Odoo.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">3</span>Activate the developer mode, then <b>Apps &rarr; Update Apps List</b>.</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.55;margin:0 0 8px 0;">
+<span style="display:inline-block;width:22px;height:22px;border-radius:11px;background-color:#6A55A0;color:#FFFFFF;font-size:12px;font-weight:700;text-align:center;line-height:22px;margin:0 8px 0 0;">4</span>Clear the Apps filter, search <b>om_woocommerce</b> and install it.</div>
+<div style="font-size:13px;color:#474257;margin:8px 0 0 0;line-height:1.5;">It installs <b>Connector Base</b> (om_connector_base), Sales and Inventory with it.</div>
+<div style="background-color:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:9px 12px;margin:10px 0 0 0;font-size:13px;color:#78350F;line-height:1.5;">
+<b>Do not use Apps &rarr; Import Module.</b> It is meant for data modules without Python, and leaves this module half loaded.</div>
+</div>
+</div>
+<div class="col-12 col-lg-5 mb-3">
+<div class="h-100" style="background-color:#65519A;background-image:linear-gradient(135deg,#7B68B5 0%,#4F3A80 100%);border-radius:12px;padding:20px;">
+<h3 style="font-size:21px;font-weight:800;color:#FFFFFF;margin:0 0 8px 0;">Free, for good</h3>
+<p style="font-size:14px;color:#F3F0FA;line-height:1.55;margin:0 0 4px 0;">The WooCommerce Connector is free and open source under LGPL-3, for Odoo 20. No subscription, no limit on stores, orders or products.</p>
+</div>
+</div>
+</div>
+<div style="padding:30px 0 4px 0;text-align:center;">
+<h2 style="font-size:28px;font-weight:800;color:#2F2550;margin:0 0 8px 0;">Questions we get</h2>
+</div>
+<div class="row">
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">What do I need on the WooCommerce side?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">WooCommerce 3.5 or newer on an https site, and an administrator who approves Odoo, or a REST API key with the Read/Write permission (WooCommerce &#8594; Settings &#8594; Advanced &#8594; REST API). No plugin to install.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Do I need webhooks?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">No, but they make orders arrive in seconds. WooCommerce sends them to an https address only: set the public address of your Odoo on the store and click Sync Webhooks. Without them, orders come every 15 minutes.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">How are the images of exported products sent?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Through the media library of WordPress, with a WordPress user and one of its Application Passwords (Users &#8594; Profile). Without one, the products are exported without images.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Can I connect several stores?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Yes, as many as you want, in one or several companies, each with its own warehouse, workflows, price lists and settings.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">What if an order is missed?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Orders are also fetched every 15 minutes from the last import, and any order can be imported by its number. A webhook sent twice runs once.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">How are refunds handled?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">A refund in WooCommerce becomes a credit note, paid in the journal of the payment method, with a return if you want. A credit note refunded from Odoo is refunded in WooCommerce, through the payment gateway if you want, with or without restock.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Who can use it?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">Two levels of rights: WooCommerce users see the stores, orders, coupons and jobs; managers set up the stores and see the keys, which are stored encrypted.</div>
+</div>
+</div>
+<div class="col-12 col-md-6 mb-3">
+<div class="h-100" style="border:1px solid #E3DDF1;border-radius:12px;background-color:#FFFFFF;padding:14px 16px;">
+<div style="font-size:14.5px;font-weight:700;color:#2F2550;margin:0 0 4px 0;">Do I need Odoo Enterprise?</div>
+<div style="font-size:13.5px;color:#474257;line-height:1.5;">No. It runs on the Community Edition, and installs on Enterprise as well.</div>
+</div>
+</div>
+</div>
+<div style="background-color:#F3F0FA;border-radius:16px;padding:24px 20px 16px 20px;text-align:center;margin:18px 0 0 0;">
+<h2 style="font-size:22px;font-weight:800;color:#2F2550;margin:0 0 6px 0;">How is the app working for you?</h2>
+<p style="font-size:14px;color:#474257;margin:0 0 12px 0;">Your rating helps others find it; your requests and pull requests decide what comes next.</p>
+<a href="https://apps.odoo.com/apps/modules/20.0/om_woocommerce/" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#9733;&nbsp; Rate us on Odoo Apps</a>
+<a href="mailto:odoomates@gmail.com?subject=Odoo%2020%20WooCommerce%20Connector%20(om_woocommerce)%20-%20Feature%20request" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#128161;&nbsp; Request a feature</a>
+<a href="https://github.com/odoomates/odooapps/issues/new/choose" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#128027;&nbsp; Report an issue</a>
+<a href="https://github.com/odoomates/odooapps" target="_blank" rel="noopener" style="display:inline-block;border:1px solid #E3DDF1;background-color:#FFFFFF;color:#2F2550;border-radius:20px;padding:6px 14px;margin:0 4px 8px 4px;font-size:13px;font-weight:600;text-decoration:none;">&#9733;&nbsp; Star us on GitHub</a>
+</div>
+<div style="text-align:center;margin:18px 0 10px 0;">
+<img src="odoo_mates.png" alt="Odoo Mates" style="height:44px;margin:0 0 4px 0;"/>
+<div style="font-size:13px;color:#474257;">Email: <a href="mailto:odoomates@gmail.com" style="color:#6A55A0;font-weight:700;">odoomates@gmail.com</a></div>
+</div>
+</div>
