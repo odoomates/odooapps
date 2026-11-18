@@ -1,6 +1,6 @@
 {
     'name': 'Shopify Connector',
-    'version': '1.0',
+    'version': '1.0.1',
     'author': 'Odoo Mates',
     'category': 'Sales',
     'summary': 'Shopify, Shopify Connector, Shopify Integration, Shopify Odoo, Shopify Store, Shopify Webhooks',
