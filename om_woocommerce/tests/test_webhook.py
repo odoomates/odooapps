@@ -37,7 +37,8 @@ class TestWebhook(HttpCase):
 
     def test_wrong_signature(self):
         body = json.dumps({'id': 1}).encode()
-        self.assertEqual(self.post(body, secret='not-the-secret').status_code, 401)
+        with self.assertLogs('odoo.addons.om_woocommerce.controllers.webhook', 'WARNING'):
+            self.assertEqual(self.post(body, secret='not-the-secret').status_code, 401)
         self.assertFalse(self.jobs())
 
     def test_ping_and_unknown(self):

@@ -12,7 +12,11 @@ CHECK_DASHBOARDS_JS = """
     const expected = %(expected)s;
     const { helpers } = odoo.loader.modules.get("@odoo/o-spreadsheet");
     const loader = odoo.__WOWL_DEBUG__.root.env.services.spreadsheet_dashboard_loader;
-    await loader.load();
+    // the action has loaded the dashboards already: loading them again would give the dashboard on the screen a
+    // new model while it is shown
+    if (!loader.getDashboardGroups().length) {
+        await loader.load();
+    }
     const found = {};
     for (const group of loader.getDashboardGroups()) {
         for (const dashboard of group.dashboards) {

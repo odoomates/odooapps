@@ -44,8 +44,10 @@ class TestWebhook(HttpCase):
         self.assertFalse(self.store.access_token)
 
     def test_wrong_signature_or_shop(self):
-        self.assertEqual(self._post({'id': 1}, secret='forged').status_code, 401)
-        self.assertEqual(self._post({'id': 1}, shop='other.myshopify.com').status_code, 401)
+        with self.assertLogs('odoo.addons.om_shopify.controllers.webhook', 'WARNING') as logs:
+            self.assertEqual(self._post({'id': 1}, secret='forged').status_code, 401)
+            self.assertEqual(self._post({'id': 1}, shop='other.myshopify.com').status_code, 401)
+        self.assertEqual(len(logs.records), 2, "each refused webhook is logged")
         self.assertFalse(self._jobs())
 
     def test_unhandled_topic_is_ignored(self):
