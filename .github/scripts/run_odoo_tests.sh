@@ -39,6 +39,15 @@ dropdb --if-exists "$db" >/dev/null 2>&1
 # (child_of, moving a record with its children) right
 createdb --encoding=UTF8 --lc-collate=C --template=template0 "$db" || exit 1
 
+# the first start of Chrome on a new machine can take longer than the 10 seconds Odoo waits for it, which skips
+# the browser test with a warning: start it once before
+for chrome in google-chrome chromium chromium-browser; do
+    if command -v "$chrome" >/dev/null; then
+        timeout 60 "$chrome" --headless --no-sandbox --disable-gpu --dump-dom about:blank >/dev/null 2>&1
+        break
+    fi
+done
+
 echo "Installing $modules on $db, testing $tags"
 "$python" "$odoo/odoo-bin" -c "$conf" -d "$db" -i "$modules" --with-demo --test-tags "$tags" \
     --stop-after-init --http-port "${HTTP_PORT:-8069}" > "$log" 2>&1
