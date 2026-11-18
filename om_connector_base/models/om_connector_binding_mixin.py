@@ -28,7 +28,8 @@ class OmConnectorBindingMixin(models.AbstractModel):
     @api.model
     def _connector_bind(self, backend, external_id, record, vals=None):
         """ Link ``external_id`` to ``record`` for ``backend``, creating or updating the binding. """
-        binding = self._connector_find(backend, external_id)
+        # an archived binding too: the external ID is unique per backend
+        binding = self.with_context(active_test=False)._connector_find(backend, external_id)
         values = {self._connector_record_field: record.id, 'sync_date': fields.Datetime.now(), **(vals or {})}
         if binding:
             binding.write(values)

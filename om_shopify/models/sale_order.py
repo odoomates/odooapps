@@ -1,10 +1,8 @@
 import logging
-import uuid
 from collections import defaultdict
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
-from odoo.tools import float_round
 
 from ..tools import queries
 
@@ -194,10 +192,8 @@ class SaleOrder(models.Model):
         pricelist = store._shopify_pricelist(currency_code)
         if pricelist:
             vals['pricelist_id'] = pricelist.id
-        if tags := [t for t in data.get('tags') or [] if t]:
-            Tag = self.env['crm.tag']
-            vals['tag_ids'] = [fields.Command.set([
-                (Tag.search([('name', '=', tag)], limit=1) or Tag.create({'name': tag})).id for tag in tags])]
+        if tags := self._connector_tags(data.get('tags')):
+            vals['tag_ids'] = [fields.Command.set(tags.ids)]
         vals.update(self._shopify_risk_vals(data))
         if b2b and b2b.get('payment_term'):
             vals['payment_term_id'] = b2b['payment_term'].id
@@ -287,7 +283,7 @@ class SaleOrder(models.Model):
                 'name': shipping.get('title') or store.shipping_product_id.name,
                 'product_uom_qty': 1,
                 'price_unit': price,
-                'discount': self._shopify_discount(price, discount_amount),
+                'discount': self._connector_discount(price, discount_amount),
                 'is_delivery': True,
             }
             if store.tax_mode == 'shopify':
@@ -311,18 +307,12 @@ class SaleOrder(models.Model):
             'name': item.get('name') or product.display_name,
             'product_uom_qty': quantity,
             'price_unit': price,
-            'discount': self._shopify_discount(price * quantity, discount_amount),
+            'discount': self._connector_discount(price * quantity, discount_amount),
             'shopify_line_gid': item['id'],
         }
         if store.tax_mode == 'shopify':
             vals['tax_ids'] = [fields.Command.set(store._shopify_taxes(item.get('taxLines'), taxes_included).ids)]
         return vals
-
-    @api.model
-    def _shopify_discount(self, amount, discount_amount):
-        if not amount or not discount_amount:
-            return 0.0
-        return float_round(discount_amount / amount * 100.0, precision_digits=6)
 
     @api.model
     def _shopify_line_product(self, store, item):
@@ -344,15 +334,10 @@ class SaleOrder(models.Model):
         return store.custom_product_id
 
     def _shopify_check_total(self, data, money='shopMoney'):
-        """ Note on the order when its total is not the one of Shopify (a rounding, a tax set up
-        differently): the order is kept, the user checks it. """
+        """ Note on the order when its total is not the one of Shopify. """
         self.ensure_one()
         total = float(((data.get('totalPriceSet') or {}).get(money) or {}).get('amount') or 0.0)
-        if self.currency_id.compare_amounts(self.amount_total, total) != 0:
-            self.message_post(body=_(
-                "The total of this order in Odoo (%(odoo)s) is not the total in Shopify (%(shopify)s): check its "
-                "taxes and discounts.",
-                odoo=self.currency_id.format(self.amount_total), shopify=self.currency_id.format(total)))
+        self._connector_check_total(total, _("Shopify"))
 
     # ------------------------------------------------------------------
     # Workflow, payments, deliveries
@@ -437,15 +422,8 @@ class SaleOrder(models.Model):
     def _shopify_deliver(self):
         """ The order was fulfilled in Shopify before it reached Odoo: its deliveries are done. """
         self.ensure_one()
-        pickings = self.picking_ids.filtered(lambda p: p.state not in ('done', 'cancel')
-                                             and p.picking_type_code == 'outgoing')
-        if not pickings:
-            return
-        for move in pickings.move_ids.filtered(lambda m: m.state not in ('done', 'cancel')):
-            move.quantity = move.product_uom_qty
-            move.picked = True
-        pickings.with_context(skip_backorder=True, skip_sanity_check=True, om_shopify_no_fulfill=True)._action_done()
-        self._shopify_invoice_delivered()
+        if self._connector_deliver({'om_shopify_no_fulfill': True}):
+            self._shopify_invoice_delivered()
 
     # ------------------------------------------------------------------
     # Updates
@@ -554,65 +532,24 @@ class SaleOrder(models.Model):
         total = amount(refund.get('totalRefundedSet'))
         if not total:
             return self.env['account.move']
-        invoice = self.invoice_ids.filtered(lambda m: m.move_type == 'out_invoice' and m.state == 'posted')[:1]
-        if not invoice:
+        if not self.invoice_ids.filtered(lambda m: m.move_type == 'out_invoice' and m.state == 'posted'):
             self.message_post(body=_("Shopify refunded %(amount)s before this order was invoiced: the refunded "
                                      "quantities leave the order, no credit note is needed.",
                                      amount=self.currency_id.format(total)))
             return self.env['account.move']
         lines_by_gid = {line.shopify_line_gid: line for line in self.order_line if line.shopify_line_gid}
-        line_vals = []
+        lines = []
         for refund_line in (refund.get('refundLineItems') or {}).get('nodes') or []:
             sale_line = lines_by_gid.get((refund_line.get('lineItem') or {}).get('id'))
-            # only what was invoiced is credited on its line; the rest is in the adjustment
-            quantity = min(refund_line.get('quantity') or 0, sale_line.qty_invoiced if sale_line else 0)
-            if quantity <= 0:
-                continue
-            line_vals.append({
-                'product_id': sale_line.product_id.id,
-                'name': sale_line.name,
-                'quantity': quantity,
-                'price_unit': sale_line.price_unit,
-                'discount': sale_line.discount,
-                'tax_ids': [fields.Command.set(sale_line.tax_ids.ids)],
-                'sale_line_ids': [fields.Command.link(sale_line.id)],
-            })
+            if sale_line:
+                lines.append((sale_line, refund_line.get('quantity') or 0))
         shipping = sum(amount(s.get('subtotalAmountSet'))
                        for s in (refund.get('refundShippingLines') or {}).get('nodes') or [])
-        if shipping:
-            delivery = self.order_line.filtered('is_delivery')[:1]
-            line_vals.append({
-                'product_id': store.shipping_product_id.id,
-                'name': _("Shipping refund"),
-                'quantity': 1,
-                'price_unit': shipping,
-                'tax_ids': [fields.Command.set(delivery.tax_ids.ids)] if delivery else [fields.Command.clear()],
-                'sale_line_ids': [fields.Command.link(delivery.id)] if delivery else [],
-            })
-        credit_note = self.env['account.move'].with_company(self.company_id).create({
-            'move_type': 'out_refund',
-            'partner_id': self.partner_invoice_id.id,
-            'invoice_origin': self.name,
-            'ref': _("Shopify refund %(order)s", order=self.shopify_order_name),
-            'reversed_entry_id': invoice.id,
-            'currency_id': self.currency_id.id,
-            'journal_id': invoice.journal_id.id,
-            'shopify_store_id': store.id,
-            'shopify_refund_gid': refund['id'],
-            'narration': refund.get('note') or False,
-            'invoice_line_ids': [fields.Command.create(vals) for vals in line_vals],
-        })
-        # what Shopify refunded besides the lines and the shipping: an adjustment
-        difference = self.currency_id.round(total - credit_note.amount_total)
-        if not self.currency_id.is_zero(difference):
-            credit_note.invoice_line_ids = [fields.Command.create({
-                'product_id': store.refund_adjustment_product_id.id,
-                'name': _("Refund adjustment"),
-                'quantity': 1,
-                'price_unit': difference,
-                'tax_ids': [fields.Command.clear()],
-            })]
-        credit_note.action_post()
+        credit_note = self._connector_credit_note(
+            lines, total, _("Shopify refund %(order)s", order=self.shopify_order_name),
+            shipping=shipping, shipping_product=store.shipping_product_id,
+            adjustment_product=store.refund_adjustment_product_id, narration=refund.get('note') or False,
+            extra_vals={'shopify_store_id': store.id, 'shopify_refund_gid': refund['id']})
         workflow = self._shopify_workflow()
         if workflow and workflow.register_payment:
             for transaction in (refund.get('transactions') or {}).get('nodes') or []:
@@ -641,29 +578,14 @@ class SaleOrder(models.Model):
     def _shopify_return(self, refund):
         """ Return to stock the products Shopify restocked with this refund. """
         self.ensure_one()
+        lines_by_gid = {line.shopify_line_gid: line for line in self.order_line if line.shopify_line_gid}
         quantities = defaultdict(float)
         for refund_line in (refund.get('refundLineItems') or {}).get('nodes') or []:
-            if refund_line.get('restockType') == 'RETURN' and refund_line.get('quantity'):
-                quantities[(refund_line.get('lineItem') or {}).get('id')] += refund_line['quantity']
-        picking = self.picking_ids.filtered(lambda p: p.state == 'done' and p.picking_type_code == 'outgoing')[:1]
-        if not quantities or not picking:
-            return
-        wizard = self.env['stock.return.picking'].create({'picking_id': picking.id})
-        for return_line in wizard.product_return_moves:
-            origin = return_line.move_id
-            wanted = min(quantities.get(origin.sale_line_id.shopify_line_gid, 0.0), origin.quantity)
-            return_line.quantity = max(wanted, 0.0)
-            if wanted > 0:
-                quantities[origin.sale_line_id.shopify_line_gid] -= wanted
-        if not any(line.quantity > 0 for line in wizard.product_return_moves):
-            return None
-        returned = wizard._create_return()
-        if self.shopify_store_id.refund_validate_return:
-            for move in returned.move_ids:
-                move.quantity = move.product_uom_qty
-                move.picked = True
-            returned.with_context(skip_backorder=True, om_shopify_no_fulfill=True)._action_done()
-        return returned
+            sale_line = lines_by_gid.get((refund_line.get('lineItem') or {}).get('id'))
+            if sale_line and refund_line.get('restockType') == 'RETURN' and refund_line.get('quantity'):
+                quantities[sale_line] += refund_line['quantity']
+        return self._connector_return(quantities, validate=self.shopify_store_id.refund_validate_return,
+                                      context={'om_shopify_no_fulfill': True})
 
 
 class SaleOrderLine(models.Model):
