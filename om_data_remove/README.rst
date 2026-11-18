@@ -2,9 +2,10 @@
 Odoo 20 Remove Data
 ===================
 
-This module adds a Data Cleaning screen that clears every transaction of an Odoo 20 Community database
-in one go, and reports what is left in each table of the database. It is meant for a test database or
-for a fresh database before going live: the deletion cannot be undone.
+This module adds a Data Cleaning screen that clears every transaction of an Odoo 20 database, Community
+or Enterprise, in one go, and reports what is left in each table of the database. Set Odoo up and test it
+in the database you go live with, clear the test transactions, keep the master data and the configuration,
+and uninstall the module before the first real transaction: the deletion cannot be undone.
 
 Features
 ========
@@ -77,13 +78,16 @@ the report refuse anyone else.
 Usage
 =====
 
-Take a backup of the database first: nothing here can be undone, and the only way back is to restore
-that backup. Do not install this module on a production database.
+Nothing here can be undone. Use it before going live only, while the database holds test data, and
+uninstall the module before the first real transaction, so that the live data cannot be cleared later.
+The transactions of every company of the database are cleared.
 
 Go to Settings > Data Cleaning, check what will be deleted, click Clear All Transactions, type DELETE in
 the confirmation and click Clear All Transactions. The report of the database tables opens once the
 transactions are deleted. Database Tables shows the same report without deleting anything. Click Delete
 Rows on a table of the report to empty it as well.
+The documents of custom, third-party and Enterprise-only apps are not in the standard list: the report
+shows their tables with their row count, and Delete Rows empties them. Then uninstall Remove Data from Apps.
 
 Credits
 =======
