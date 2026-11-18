@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_woocommerce_gateway_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.gateway.list</field>
+        <field name="model">om.woocommerce.gateway</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="0">
+                <field name="store_id"/>
+                <field name="title"/>
+                <field name="name"/>
+                <field name="workflow_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="om_woocommerce_gateway_action" model="ir.actions.act_window">
+        <field name="name">Payment Methods</field>
+        <field name="res_model">om.woocommerce.gateway</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No payment method yet</p>
+            <p>A payment method is listed when an order paid with it is imported; pick then the workflow of its orders.</p>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_shipping_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.shipping.list</field>
+        <field name="model">om.woocommerce.shipping</field>
+        <field name="arch" type="xml">
+            <list editable="bottom" create="0">
+                <field name="store_id"/>
+                <field name="title"/>
+                <field name="name"/>
+                <field name="carrier_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="om_woocommerce_shipping_action" model="ir.actions.act_window">
+        <field name="name">Shipping Methods</field>
+        <field name="res_model">om.woocommerce.shipping</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No shipping method yet</p>
+            <p>A shipping method is listed when an order shipped with it is imported; pick then the carrier of its
+               orders.</p>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_order_rule_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.order.rule.list</field>
+        <field name="model">om.woocommerce.order.rule</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="store_id"/>
+                <field name="gateway_id"/>
+                <field name="status_id"/>
+                <field name="created_via"/>
+                <field name="shipping_method"/>
+                <field name="workflow_id"/>
+                <field name="warehouse_id"/>
+            </list>
+        </field>
+    </record>
+    <record id="om_woocommerce_order_rule_action" model="ir.actions.act_window">
+        <field name="name">Order Rules</field>
+        <field name="res_model">om.woocommerce.order.rule</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="om_woocommerce_order_status_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.order.status.list</field>
+        <field name="model">om.woocommerce.order.status</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+            </list>
+        </field>
+    </record>
+    <record id="om_woocommerce_order_status_action" model="ir.actions.act_window">
+        <field name="name">Order Statuses</field>
+        <field name="res_model">om.woocommerce.order.status</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <record id="om_woocommerce_webhook_view_list" model="ir.ui.view">
+        <field name="name">om.woocommerce.webhook.list</field>
+        <field name="model">om.woocommerce.webhook</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="store_id"/>
+                <field name="topic"/>
+                <field name="status" widget="badge" decoration-success="status == 'active'"
+                       decoration-danger="status == 'disabled'"/>
+                <field name="woo_id" optional="hide"/>
+                <field name="delivery_url" optional="hide"/>
+            </list>
+        </field>
+    </record>
+    <record id="om_woocommerce_webhook_action" model="ir.actions.act_window">
+        <field name="name">Webhooks</field>
+        <field name="res_model">om.woocommerce.webhook</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>

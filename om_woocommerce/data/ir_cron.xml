@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+    <record id="ir_cron_om_woocommerce_import_orders" model="ir.cron">
+        <field name="name">WooCommerce: import the new orders</field>
+        <field name="model_id" ref="model_om_woocommerce_store"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_woo_import_orders()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+    </record>
+    <record id="ir_cron_om_woocommerce_export_stock" model="ir.cron">
+        <field name="name">WooCommerce: send the stock</field>
+        <field name="model_id" ref="model_om_woocommerce_store"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_woo_export_stock()</field>
+        <field name="interval_number">15</field>
+        <field name="interval_type">minutes</field>
+    </record>
+    <record id="ir_cron_om_woocommerce_import_products" model="ir.cron">
+        <field name="name">WooCommerce: import the changed products</field>
+        <field name="model_id" ref="model_om_woocommerce_store"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_woo_import_products()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+    <record id="ir_cron_om_woocommerce_daily" model="ir.cron">
+        <field name="name">WooCommerce: send the prices</field>
+        <field name="model_id" ref="model_om_woocommerce_store"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_woo_daily()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+    </record>
+</odoo>
