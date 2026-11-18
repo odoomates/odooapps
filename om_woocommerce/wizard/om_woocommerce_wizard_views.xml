@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_woocommerce_cancel_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.cancel.wizard.form</field>
+        <field name="model">om.woocommerce.cancel.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="order_id" readonly="1"/>
+                    <field name="note"/>
+                </group>
+                <div class="text-muted">The order gets the status Cancelled in WooCommerce, which puts its products back
+                    in stock there. The money of a paid order is given back by a refund, made in WooCommerce or from a
+                    credit note in Odoo.</div>
+                <footer>
+                    <button name="action_cancel" type="object" string="Cancel in WooCommerce" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_export_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.export.wizard.form</field>
+        <field name="model">om.woocommerce.export.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="store_ids" widget="many2many_tags"/>
+                    <field name="template_ids" widget="many2many_tags"/>
+                    <field name="images" invisible="not images_possible"/>
+                    <field name="images_possible" invisible="1"/>
+                </group>
+                <div class="text-muted">Odoo is the master of the products it exports: their name, description,
+                    attributes, variations, prices, weight and image replace those of WooCommerce. A new product gets
+                    the status set on the store.</div>
+                <div class="text-muted mt-2" invisible="images_possible">The images are sent when the store has a
+                    WordPress user and an Application Password (Connection tab of the store).</div>
+                <footer>
+                    <button name="action_export" type="object" string="Export" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_export_wizard_action" model="ir.actions.act_window">
+        <field name="name">Export to WooCommerce</field>
+        <field name="res_model">om.woocommerce.export.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="binding_model_id" ref="product.model_product_template"/>
+        <field name="binding_view_types">list,form,kanban</field>
+        <field name="groups_id" eval="[Command.link(ref('om_woocommerce.group_om_woocommerce_user'))]"/>
+    </record>
+
+    <record id="om_woocommerce_import_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.import.wizard.form</field>
+        <field name="model">om.woocommerce.import.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="store_id"/>
+                    <field name="kind" widget="radio" options="{'horizontal': true}"/>
+                    <field name="references" placeholder="1001, 1002"/>
+                </group>
+                <footer>
+                    <button name="action_import" type="object" string="Import" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_import_wizard_action" model="ir.actions.act_window">
+        <field name="name">Import by Number</field>
+        <field name="res_model">om.woocommerce.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_woocommerce_mapping_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.mapping.wizard.form</field>
+        <field name="model">om.woocommerce.mapping.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <group>
+                    <field name="store_id"/>
+                    <field name="file" filename="filename"/>
+                    <field name="filename" invisible="1"/>
+                </group>
+                <div class="text-muted">A CSV or Excel file with the columns <code>woocommerce_id</code> (the ID of a
+                    product or a variation), and <code>odoo_reference</code> or <code>odoo_barcode</code>.
+                    <field name="template_filename" invisible="1"/>
+                    <field name="template_file" filename="template_filename" readonly="1" nolabel="1" widget="binary"/>
+                </div>
+                <footer>
+                    <button name="action_map" type="object" string="Link" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_mapping_wizard_action" model="ir.actions.act_window">
+        <field name="name">Map Products from a File</field>
+        <field name="res_model">om.woocommerce.mapping.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_woocommerce_setup_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.woocommerce.setup.wizard.form</field>
+        <field name="model">om.woocommerce.setup.wizard</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="step" widget="statusbar"/>
+                <field name="public_url_ok" invisible="1"/>
+                <div invisible="step != 'credentials'">
+                    <group>
+                        <field name="site_url" placeholder="https://shop.example.com" required="step == 'credentials'"/>
+                        <field name="auth_method" widget="radio"/>
+                        <field name="webhook_base_url" placeholder="https://odoo.example.com"
+                               required="step == 'credentials' and auth_method == 'authorize'"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                    <div class="alert alert-info" role="alert" invisible="auth_method != 'authorize'">
+                        After the settings, Odoo opens your WordPress site: log in as an administrator and click
+                        <strong>Approve</strong>. WooCommerce then gives Odoo a REST API key, and the first imports start.
+                    </div>
+                    <div class="alert alert-warning" role="alert"
+                         invisible="auth_method != 'authorize' or public_url_ok">
+                        WooCommerce sends the key to an https address only. Set the public https address of this Odoo
+                        (for example the address of a tunnel), or paste a REST API key.
+                    </div>
+                    <div invisible="auth_method != 'keys'">
+                        <p class="text-muted">In WordPress, open WooCommerce &gt; Settings &gt; Advanced &gt; REST API,
+                            click Add key, give it the <strong>Read/Write</strong> permission, and copy its consumer key
+                            and secret.
+                            <field name="keys_url" widget="url" text="Open the REST API keys of the site"
+                                   invisible="not keys_url" readonly="1" nolabel="1"/></p>
+                        <group>
+                            <field name="consumer_key" password="True" placeholder="ck_…"
+                                   required="step == 'credentials' and auth_method == 'keys'"/>
+                            <field name="consumer_secret" password="True" placeholder="cs_…"
+                                   required="step == 'credentials' and auth_method == 'keys'"/>
+                        </group>
+                    </div>
+                </div>
+                <div invisible="step != 'settings'">
+                    <p invisible="not site_name">Connected to <strong><field name="site_name" readonly="1"/></strong>.</p>
+                    <group>
+                        <group string="Orders">
+                            <field name="warehouse_id"/>
+                            <field name="journal_id"/>
+                            <field name="tax_mode" widget="radio"/>
+                            <field name="order_status_ids" widget="many2many_tags"/>
+                        </group>
+                        <group string="Products">
+                            <field name="product_match"/>
+                            <field name="product_auto_create"/>
+                        </group>
+                    </group>
+                </div>
+                <div invisible="step != 'imports'">
+                    <group>
+                        <group string="First Imports">
+                            <field name="import_products"/>
+                            <field name="import_customers"/>
+                            <field name="import_orders"/>
+                            <field name="order_import_from" invisible="not import_orders"/>
+                            <field name="export_stock"/>
+                        </group>
+                        <group string="Images of the Exported Products">
+                            <field name="wp_username"/>
+                            <field name="wp_app_password" password="True" placeholder="xxxx xxxx xxxx xxxx"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">Everything runs as jobs in the background: follow them in WooCommerce &gt;
+                        Jobs. Each setting can be changed later on the store.</div>
+                </div>
+                <footer>
+                    <button name="action_back" type="object" string="Back" invisible="step == 'credentials'"/>
+                    <button name="action_connect" type="object" string="Connect" class="btn-primary"
+                            invisible="step != 'credentials' or auth_method != 'keys'"/>
+                    <button name="action_connect" type="object" string="Next" class="btn-primary"
+                            invisible="step != 'credentials' or auth_method != 'authorize'"/>
+                    <button name="action_settings" type="object" string="Next" class="btn-primary"
+                            invisible="step != 'settings'"/>
+                    <button name="action_finish" type="object" string="Start" class="btn-primary"
+                            invisible="step != 'imports' or auth_method != 'keys'"/>
+                    <button name="action_finish" type="object" string="Approve in WordPress" class="btn-primary"
+                            invisible="step != 'imports' or auth_method != 'authorize'"/>
+                    <button special="cancel" string="Close"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_woocommerce_setup_wizard_action" model="ir.actions.act_window">
+        <field name="name">Connect a WooCommerce Store</field>
+        <field name="res_model">om.woocommerce.setup.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

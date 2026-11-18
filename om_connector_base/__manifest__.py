@@ -1,6 +1,6 @@
 {
     'name': 'Connector Base',
-    'version': '1.0',
+    'version': '1.1',
     'author': 'Odoo Mates',
     'category': 'Sales',
     'summary': 'Job queue, retries, external ID mappings and webhook helpers for shop and marketplace connectors',
@@ -9,7 +9,7 @@
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'license': 'LGPL-3',
-    'depends': ['mail', 'sale_management'],
+    'depends': ['mail', 'sale_management', 'sale_stock'],
     'data': [
         'security/om_connector_groups.xml',
         'security/ir.model.access.csv',
