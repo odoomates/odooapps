@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:07+0000\n"
-"PO-Revision-Date: 2026-10-22 07:07+0000\n"
+"POT-Creation-Date: 2026-11-20 08:48+0000\n"
+"PO-Revision-Date: 2026-11-20 08:48+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -16,14 +16,83 @@ msgstr ""
 "Plural-Forms: \n"
 
 #. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "%(dates)s and %(last)s"
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "%(lock)s opened to %(date)s, %(until)s: %(reason)s"
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid ""
+"%s draft entries are dated in the period being locked: they cannot be posted"
+" once it is locked."
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_duration__1h
+msgid "1 Hour"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_duration__15min
+msgid "15 Minutes"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_duration__24h
+msgid "24 Hours"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_duration__5min
+msgid "5 Minutes"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid ""
+":\n"
+"                                opened, not changed. The company keeps its lock date; an exception lets the\n"
+"                                entries of the period be changed, for the time and the people chosen below. The\n"
+"                                reason is logged in the chatter of the company."
+msgstr ""
+
+#. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_form
 msgid "<span class=\"o_stat_text\">Closing Entry</span>"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid "<strong>Periods already opened by exceptions</strong>"
 msgstr ""
 
 #. module: om_fiscal_year
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
 msgid "A closed fiscal year cannot be deleted. Reopen it first."
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__exception_needed
+msgid ""
+"A lock date is removed or moved back: an exception to it is created, the "
+"company keeps its date."
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid ""
+"A tax closing is posted on %(date)s, after the tax lock date: set the tax "
+"lock date to %(date)s so that the periods closed cannot change any more."
 msgstr ""
 
 #. module: om_fiscal_year
@@ -366,8 +435,24 @@ msgid "Draft Entries"
 msgstr ""
 
 #. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "Draft Entries to Post or Delete"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__draft_move_ids
+msgid "Draft Move"
+msgstr ""
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__draft_move_count
 msgid "Draft Move Count"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__draft_warning
+msgid "Draft Warning"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -379,6 +464,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_period_closing.py:0
 msgid "Draft entries dated up to the end of the period"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exception_duration
+msgid "During"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -409,6 +499,40 @@ msgid ""
 "Equity account receiving the earnings. Accounts of type Current Year "
 "Earnings cannot be used: their balance is not carried forward to the next "
 "fiscal years."
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_applies_to__everyone
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_lock_exception_list
+msgid "Everyone"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exception_applies_to
+msgid "Exception For"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exception_needed
+msgid "Exception Needed"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exceptions_for_everyone
+msgid "Exceptions For Everyone"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exceptions_for_me
+msgid "Exceptions For Me"
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid ""
+"Fill in the Reason field to reopen the %s. It says why the period is "
+"reopened and is logged with the exception."
 msgstr ""
 
 #. module: om_fiscal_year
@@ -452,6 +576,23 @@ msgid "Followers (Partners)"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid "For everyone:"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid "For you:"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_duration__forever
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_lock_exception_list
+msgid "Forever"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__fiscalyear_lock_date
 #: model:ir.model.fields,field_description:om_fiscal_year.field_res_config_settings__fiscalyear_lock_date
 msgid "Global Lock Date"
 msgstr ""
@@ -544,13 +685,19 @@ msgid "Like the \"Global Lock Date\", but no exceptions are possible."
 msgstr ""
 
 #. module: om_fiscal_year
-#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__fiscalyear_lock_date
-msgid "Lock Date for All Users"
+#: model:ir.actions.act_window,name:om_fiscal_year.action_account_lock_exception
+#: model:ir.ui.menu,name:om_fiscal_year.menu_account_lock_exception
+msgid "Lock Date Exceptions"
 msgstr ""
 
 #. module: om_fiscal_year
 #: model:ir.ui.menu,name:om_fiscal_year.menu_action_change_lock_date
 msgid "Lock Dates"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exception_fields
+msgid "Lock Dates Opened"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -628,6 +775,11 @@ msgid "New Closing"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model_terms:ir.actions.act_window,help:om_fiscal_year.action_account_lock_exception
+msgid "No lock date exception"
+msgstr ""
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__tax_lock_date
 msgid ""
 "No users can edit journal entries related to a tax prior and inclusive of "
@@ -673,6 +825,11 @@ msgid "OK"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model:ir.model.fields.selection,name:om_fiscal_year.selection__change_lock_date__exception_applies_to__me
+msgid "Only Me"
+msgstr ""
+
+#. module: om_fiscal_year
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
 msgid "Only accounting administrators can close or reopen a fiscal year."
@@ -682,6 +839,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_period_closing.py:0
 msgid "Only accounting administrators can close or reopen a period."
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid ""
+"Only the soft lock dates can be removed: the hard lock date cannot be "
+"undone."
 msgstr ""
 
 #. module: om_fiscal_year
@@ -696,6 +861,16 @@ msgstr ""
 #. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_fiscal_year_closing__open_previous_year_count
 msgid "Open Previous Year Count"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_lock_exception_list
+msgid "Opened By"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_lock_exception_list
+msgid "Opened On"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -788,6 +963,11 @@ msgid "Purchase Lock date"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__exception_reason
+msgid "Reason"
+msgstr ""
+
+#. module: om_fiscal_year
 #: model:account.period.closing.task,name:om_fiscal_year.closing_task_bank
 msgid "Reconcile the bank and cash accounts with their statements"
 msgstr ""
@@ -815,6 +995,18 @@ msgid "Record the vendor bills received for the period"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid "Remove date"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.actions.act_window,help:om_fiscal_year.action_account_lock_exception
+msgid ""
+"Removing or moving back a lock date in Lock Dates opens the period through an exception, for a\n"
+"                   time and for some people, with its reason."
+msgstr ""
+
+#. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_fiscal_year_form
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
 msgid "Reopen"
@@ -836,6 +1028,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
 msgid "Reopening of %s"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid "Required, e.g. Late vendor bill of December"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -863,6 +1060,11 @@ msgid "Review the tax accounts and prepare the tax return"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_lock_exception_list
+msgid "Revoke"
+msgstr ""
+
+#. module: om_fiscal_year
 #: model:ir.model.fields,field_description:om_fiscal_year.field_account_period_closing__message_has_sms_error
 msgid "SMS Delivery error"
 msgstr ""
@@ -877,6 +1079,11 @@ msgstr ""
 #. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
 msgid "Save"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_change_lock_date
+msgid "See them"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -926,6 +1133,11 @@ msgstr ""
 #. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_list
 msgid "Tasks To Do"
+msgstr ""
+
+#. module: om_fiscal_year
+#: model:ir.model.fields,field_description:om_fiscal_year.field_change_lock_date__tax_closing_warning
+msgid "Tax Closing Warning"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -987,6 +1199,11 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_fiscal_year/models/account_fiscal_year.py:0
 msgid "The fiscal year %s is already closed."
+msgstr ""
+
+#. module: om_fiscal_year
+#: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_lock_exception_list
+msgid "The lock date applies again at once. Revoke the exception?"
 msgstr ""
 
 #. module: om_fiscal_year
@@ -1120,6 +1337,11 @@ msgid "When Closed"
 msgstr ""
 
 #. module: om_fiscal_year
+#: model:ir.model.fields,help:om_fiscal_year.field_change_lock_date__exception_reason
+msgid "Why the period is opened: logged in the chatter of the company."
+msgstr ""
+
+#. module: om_fiscal_year
 #: model:ir.ui.menu,name:om_fiscal_year.menu_fiscal_year_closing
 msgid "Year-End Closing"
 msgstr ""
@@ -1171,6 +1393,24 @@ msgid ""
 msgstr ""
 
 #. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "for good"
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "no date"
+msgstr ""
+
+#. module: om_fiscal_year
 #: model_terms:ir.ui.view,arch_db:om_fiscal_year.view_account_period_closing_form
 msgid "point(s) must be dealt with before closing."
+msgstr ""
+
+#. module: om_fiscal_year
+#. odoo-python
+#: code:addons/om_fiscal_year/wizard/change_lock_date.py:0
+msgid "until %s"
 msgstr ""
