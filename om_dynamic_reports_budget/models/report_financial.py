@@ -29,28 +29,44 @@ class OmDynamicReportFinancial(models.AbstractModel):
         columns = super()._om_get_columns(options)
         if not self._odr_budget_shown(options):
             return columns
-        index = next((i for i, column in enumerate(columns) if column['key'] == 'balance'), len(columns) - 1)
-        columns[index + 1:index + 1] = [
-            {'key': 'budget', 'label': self.env._("Budget"), 'type': 'monetary', 'optional': False,
-             'help': self.env._("What the budgets chosen plan for the period.")},
-            {'key': 'budget_achievement', 'label': self.env._("Achievement %"), 'type': 'percent',
-             'help': self.env._("The balance of the period, as a percentage of the budget.")},
-        ]
-        return columns
+        compared = bool(self._om_compare_periods(options))
+        result = []
+        for column in columns:
+            key = column['key']
+            if key != 'balance' and not key.startswith('balance_'):
+                result.append(column)
+                continue
+            suffix = key[len('balance'):]
+            group = column.get('group') or False
+            if compared:
+                # each period gets its balance, its budget and the achievement, under the label of the period
+                group = column['label']
+                column = {**column, 'label': self.env._("Balance"), 'group': group}
+            result += [
+                column,
+                {'key': 'budget' + suffix, 'label': self.env._("Budget"), 'type': 'monetary', 'optional': False,
+                 'group': group, 'help': self.env._("What the budgets chosen plan for the period.")},
+                {'key': 'budget_achievement' + suffix, 'label': self.env._("Achievement %"), 'type': 'percent',
+                 'group': group, 'help': self.env._("The balance of the period, as a percentage of the budget.")},
+            ]
+        return result
 
     @api.model
     def _odr_extra_columns(self, options, index, period, account_sums):
         columns = super()._odr_extra_columns(options, index, period, account_sums)
-        if index == 0 and self._odr_budget_shown(options):
+        if self._odr_budget_shown(options):
             columns['budget'] = self._odr_budget_sums(options, period, account_sums)
         return columns
 
     @api.model
     def _odr_values(self, amounts_by_period, sign, options, account_id=False):
         values = super()._odr_values(amounts_by_period, sign, options, account_id)
-        if 'budget' in values:
-            budget = values['budget']
-            values['budget_achievement'] = values['balance'] / budget * 100 if budget else False
+        for index in range(len(amounts_by_period)):
+            suffix = '_%s' % index if index else ''
+            if 'budget' + suffix in values:
+                budget = values['budget' + suffix]
+                values['budget_achievement' + suffix] = (values['balance' + suffix] / budget * 100
+                                                         if budget else False)
         return values
 
     @api.model
