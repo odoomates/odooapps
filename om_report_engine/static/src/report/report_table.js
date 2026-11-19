@@ -60,6 +60,7 @@ export class ReportTable extends Component {
         return formatValue(value, row.types?.[column.key] || column.type, {
             digits: column.digits ?? 2,
             currencyId: this.props.report.currency_id,
+            rounding: this.props.report.rounding,
         });
     }
 
