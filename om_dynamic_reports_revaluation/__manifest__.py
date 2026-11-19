@@ -14,6 +14,7 @@
     'data': [
         'views/menu.xml',
     ],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': True,
     'application': False,
