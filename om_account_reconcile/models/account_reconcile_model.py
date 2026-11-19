@@ -1,10 +1,153 @@
 import re
 
-from odoo import models
+from odoo import api, fields, models, Command, _
+
+# the number of times a transaction is booked by hand on the same account before a rule is proposed for it
+LEARN_AFTER = 3
 
 
 class AccountReconcileModel(models.Model):
     _inherit = 'account.reconcile.model'
+
+    om_auto_created = fields.Boolean(
+        string='Learned', readonly=True, copy=False,
+        help='Created from transactions booked by hand on the same account; review it and change it as you wish.')
+    om_use_count = fields.Integer(string='Times Used', readonly=True, copy=False)
+    om_bank_fee_journal_id = fields.Many2one(
+        'account.journal', string='Bank Fees of', readonly=True, copy=False, index='btree_not_null',
+        help='Technical: the bank journal this "Bank Fees" model was created for.')
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        models = super().create(vals_list)
+        models._om_reapply_to_open_transactions()
+        return models
+
+    def write(self, vals):
+        result = super().write(vals)
+        if set(vals) - {'om_use_count', 'sequence', 'name'}:
+            self._om_reapply_to_open_transactions()
+        return result
+
+    def _om_reapply_to_open_transactions(self):
+        """ A new or changed automatic model is tried again on the transactions not reconciled yet. """
+        automatic = self.filtered(lambda model: model.active and (
+            model.trigger == 'auto_reconcile' or model.mapped_partner_id))
+        if not automatic:
+            return
+        st_lines = self.env['account.bank.statement.line'].search([
+            ('company_id', 'in', automatic.company_id.ids),
+            ('is_reconciled', '=', False),
+            ('om_auto_processed', '=', True),
+        ])
+        if st_lines:
+            st_lines.om_auto_processed = False
+            cron = self.env.ref('om_account_reconcile.ir_cron_auto_reconcile', raise_if_not_found=False)
+            if cron:
+                cron._trigger()
+
+    # -------------------------------------------------------------------------
+    # Bank fees
+    # -------------------------------------------------------------------------
+
+    @api.model
+    def _om_sync_bank_fee_models(self, companies):
+        """ One "Bank Fees" model per bank journal of the companies with a bank fees account; archived when the
+        account is removed. """
+        for company in companies:
+            existing = self.with_context(active_test=False).search([
+                ('company_id', '=', company.id), ('om_bank_fee_journal_id', '!=', False)])
+            account = company.om_bank_fee_account_id
+            if not account:
+                existing.filtered('active').active = False
+                continue
+            journals = self.env['account.journal'].search([('company_id', '=', company.id), ('type', '=', 'bank')])
+            for journal in journals:
+                model = existing.filtered(lambda model: model.om_bank_fee_journal_id == journal)[:1]
+                if model:
+                    model.write({'active': True})
+                    model.line_ids[:1].account_id = account
+                    continue
+                self.create({
+                    'name': _('Bank Fees (%s)', journal.name),
+                    'company_id': company.id,
+                    'rule_type': 'reco_model',
+                    'trigger': 'manual',
+                    'om_bank_fee_journal_id': journal.id,
+                    'match_journal_ids': [Command.set(journal.ids)],
+                    'line_ids': [Command.create({
+                        'account_id': account.id,
+                        'label': _('Bank fees'),
+                        'amount_type': 'percentage',
+                        'amount_string': '100',
+                    })],
+                })
+
+    # -------------------------------------------------------------------------
+    # Learning from the transactions booked by hand
+    # -------------------------------------------------------------------------
+
+    @api.model
+    def _om_label_keyword(self, label):
+        """ The first word of a label worth matching on: letters only, at least 3 of them, e.g. STRIPE for
+        "STRIPE PAYOUT 12/03". """
+        for word in re.findall(r'[^\W\d_]+', label or ''):
+            if len(word) >= 3:
+                return word.upper()
+        return False
+
+    @api.model
+    def _om_learn_from(self, st_line, writeoff):
+        """ Propose a rule once transactions of the same partner, or with the same first word in their label, were
+        booked by hand on the same account `LEARN_AFTER` times in the journal.
+
+        :param writeoff: the counterpart typed by hand (see `_om_prepare_writeoff_lines_vals`)
+        :return: the model created, or an empty recordset
+        """
+        account = self.env['account.account'].browse(writeoff['account_id'])
+        partner = st_line.partner_id.commercial_partner_id
+        keyword = False if partner else self._om_label_keyword(st_line.payment_ref)
+        if not partner and not keyword:
+            return self.browse()
+        domain = [
+            ('company_id', '=', st_line.company_id.id),
+            ('statement_line_id.journal_id', '=', st_line.journal_id.id),
+            ('account_id', '=', account.id),
+            ('reconcile_model_id', '=', False),
+            ('move_id', '!=', st_line.move_id.id),
+        ]
+        if partner:
+            domain.append(('partner_id', 'child_of', partner.id))
+        else:
+            domain += [('partner_id', '=', False), ('statement_line_id.payment_ref', 'ilike', keyword)]
+        earlier = self.env['account.move.line'].search(domain).move_id
+        if len(earlier) + 1 < LEARN_AFTER:
+            return self.browse()
+        existing = self.with_context(active_test=False).search([
+            ('company_id', '=', st_line.company_id.id),
+            ('line_ids.account_id', '=', account.id),
+        ]).filtered(lambda model: (partner and partner in model.match_partner_ids)
+                    or (keyword and (model.match_label_param or '').upper() == keyword))
+        if existing:
+            return self.browse()
+        return self.create({
+            'name': _('%(who)s on %(account)s', who=partner.name or keyword, account=account.code or account.name),
+            'company_id': st_line.company_id.id,
+            'rule_type': 'reco_model',
+            'trigger': 'manual',
+            'om_auto_created': True,
+            'match_journal_ids': [Command.set(st_line.journal_id.ids)],
+            'match_partner_ids': [Command.set(partner.ids)] if partner else [],
+            'match_label': False if partner else 'contains',
+            'match_label_param': False if partner else keyword,
+            'line_ids': [Command.create({
+                'account_id': account.id,
+                'amount_type': 'percentage',
+                'amount_string': '100',
+                'tax_ids': [Command.set(writeoff.get('tax_ids') or [])],
+                'analytic_distribution': writeoff.get('analytic_distribution') or False,
+            })],
+        })
 
     def _om_label_texts(self, st_line):
         texts = [st_line.payment_ref or '']

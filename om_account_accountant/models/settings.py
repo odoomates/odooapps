@@ -6,6 +6,8 @@ class ResConfigSettings(models.TransientModel):
 
     credit_limit_block = fields.Boolean(
         related="company_id.credit_limit_block", readonly=False)
+    om_invoice_signature = fields.Boolean(related="company_id.om_invoice_signature", readonly=False)
+    om_invoice_signer_id = fields.Many2one(related="company_id.om_invoice_signer_id", readonly=False)
     anglo_saxon_accounting = fields.Boolean(
         related="company_id.anglo_saxon_accounting",
         readonly=False, string="Use anglo-saxon accounting",

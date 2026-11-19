@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_users_form_invoice_signature" model="ir.ui.view">
+        <field name="name">res.users.form.om.invoice.signature</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form"/>
+        <field name="arch" type="xml">
+            <group name="other_preferences" position="inside">
+                <field name="om_invoice_signature_image" widget="signature"/>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_users_form_simple_modif_invoice_signature" model="ir.ui.view">
+        <field name="name">res.users.preferences.om.invoice.signature</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="arch" type="xml">
+            <group name="other_preferences" position="inside">
+                <field name="om_invoice_signature_image" widget="signature" readonly="0"/>
+            </group>
+        </field>
+    </record>
+
+    <record id="view_move_form_invoice_signature" model="ir.ui.view">
+        <field name="name">account.move.form.om.invoice.signature</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_user_id'][@widget='many2one_avatar_user'][not(@optional)]" position="after">
+                <field name="om_show_signature" invisible="1"/>
+                <field name="om_signing_user_id" widget="many2one_avatar_user"
+                       invisible="not om_show_signature or move_type not in ('out_invoice', 'out_refund', 'out_receipt')"
+                       domain="[('share', '=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <template id="report_invoice_document_signature" inherit_id="account.report_invoice_document">
+        <xpath expr="//div[@name='comment']" position="after">
+            <div t-if="o.om_show_signature and o.om_signing_user_id and o.move_type in ('out_invoice', 'out_refund', 'out_receipt')"
+                 class="text-end mt-4 avoid-page-break-inside" name="om_signature">
+                <img t-if="o.om_signing_user_id.om_invoice_signature_image"
+                     t-att-src="image_data_uri(o.om_signing_user_id.om_invoice_signature_image)"
+                     style="max-height: 4rem; max-width: 12rem;" alt="Signature"/>
+                <div class="border-top d-inline-block pt-1" style="min-width: 12rem;">
+                    <span t-field="o.om_signing_user_id.name"/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

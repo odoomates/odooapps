@@ -51,6 +51,37 @@ Features
 * Only users of the accounting group can reconcile, and a transaction or a group
   of items being reconciled is locked so that two users cannot reconcile it
   twice.
+* Find the partner of a new transaction, only when it is certain: the one
+  partner owning the bank account of the other party, the one company with
+  exactly the name written by the bank, or the one partner of the open invoice
+  or bill whose number is in the reference. When several partners fit, or when
+  they disagree, the partner is left empty.
+* Match an invoice paid at its discounted amount within its early payment
+  discount date in full, the discount going to the early payment discount
+  account.
+* Find a payment from the cheque number written on the transaction, and show
+  and search the cheque numbers in the list of items, with cheque printing
+  installed.
+* Match items differing by a small amount within a payment tolerance, and items
+  in another currency within a percentage; the difference of an automatic
+  reconciliation goes to a payment difference account.
+* Keep a transaction open on the receivable or the payable of its partner, e.g.
+  an advance to match with the invoice later.
+* See the messages, the activities and the attachments of a transaction on the
+  screen, and create a draft bill or invoice of its amount from a document.
+* Tick several transactions to set their partner, or to book them on an account.
+* Match a transaction of the bank from the outstanding credits of the invoice.
+* Learn a reconciliation model once transactions of the same partner, or with
+  the same first word in their label, are booked by hand on the same account
+  three times; count the times each model is used; offer a "Bank Fees" model on
+  every bank journal; try a new or changed automatic model again on the open
+  transactions.
+* Match items of two accounts, or of several partners, after a journal entry
+  moving them to the account and the partner chosen; take taxes out of a
+  write-off; fill a write-off in from a reconciliation model; date the entries
+  after the lock date; refuse partial matching when asked.
+* Reconcile Automatically: the perfect pairs, or the items of a partner adding
+  up to zero, on chosen accounts, partners and dates.
 
 Installation
 ============
@@ -71,6 +102,16 @@ Download the module and add it to your Odoo addons folder. Restart the server
 and log on to your Odoo server. Select the Apps menu and upgrade the module by
 clicking on the upgrade button.
 
+Version 1.1.0 adds fields to the companies and to the reconciliation models:
+upgrade the module before using it, or the server stops on the missing
+columns. From the command line::
+
+    odoo-bin -c <your config> -d <your database> -u om_account_reconcile --stop-after-init
+
+The new settings get their default values on the existing companies: finding
+the partner of new transactions is on, the tolerances are zero (off), and the
+payment difference and bank fees accounts are empty.
+
 
 Configuration
 =============
@@ -81,6 +122,13 @@ reconciled in the background. It is on by default and is set per company.
 
 Define your reconciliation models if you want bank fees, rounding differences or
 recurring counterparts to be proposed or applied automatically.
+
+In the same section:
+
+* Find the Partner of New Transactions, on by default.
+* Payment Tolerance: an amount, a percentage for the items in another currency,
+  and the account of the difference of an automatic reconciliation.
+* Bank Fees: the account of the "Bank Fees" model offered on every bank journal.
 
 
 Usage
@@ -94,6 +142,26 @@ To match open items that did not come from the bank, go to Accounting >
 Accounting > Reconciliation > Open Items, or to Match Journal Items in the same
 menu, select the items of one account and press Match.
 
+
+Release Notes
+=============
+
+1.1.0
+-----
+
+* Partner of new transactions found when it is certain (bank account, exact
+  company name, invoice reference); left empty otherwise.
+* Early payment discounts, cheque numbers, payment and foreign currency
+  tolerances in the matching.
+* Transactions of the bank in the outstanding credits of the invoices.
+* Learned reconciliation models, use count, "Bank Fees" models, automatic models
+  tried again on the open transactions.
+* Match Journal Items: transfer between accounts or partners, taxes on the
+  write-off, model presets, lock date, partial matching option; Reconcile
+  Automatically.
+* Reconciliation screen: notes and documents, bill or invoice from a document,
+  several transactions at once, keep on the partner's receivable or payable.
+* New fields: upgrade the module with ``-u om_account_reconcile`` (see Upgrade).
 
 Credits
 =======

@@ -127,6 +127,12 @@ What this module adds on top
   the cost of a good as an expense when it is invoiced to the customer.
 * Keeps the In Payment status on invoices, so a registered payment does not mark
   the invoice paid before the payment is reconciled.
+* Adds a Split action on the journal items, spreading an item over other
+  accounts: in place on a draft entry, by a reclassification entry on a posted
+  one, so that the posted books stay as they were.
+* Adds a signature on the customer invoices: the name and the signature of the
+  signing user, the salesperson of the invoice by default. Each user draws or
+  uploads their signature in their preferences.
 
 
 Recurring entries
@@ -173,6 +179,15 @@ clicking on the upgrade button.
 
 Upgrade the modules it installs at the same time, so the menus and the groups
 stay consistent.
+
+Version 1.6.0 adds fields to the companies, the invoices and the users: upgrade
+it, together with Odoo 20 Reconciliation 1.1.0, before using it. From the command
+line::
+
+    odoo-bin -c <your config> -d <your database> -u om_account_accountant,om_account_reconcile --stop-after-init
+
+The signature on invoices is off on the existing companies until it is turned
+on in the settings.
 
 
 Configuration
@@ -221,6 +236,19 @@ Yes, with the Community module ``l10n_account_withholding_tax`` from the
 Apps menu: it withholds the tax on the payment, and the Tax Report prints it in
 a Withholding section of its own.
 
+
+Release Notes
+=============
+
+1.6.0
+-----
+
+* Split a journal item over other accounts: in place on a draft entry, by a
+  reclassification entry on a posted one (Action > Split).
+* Signature on invoices: the name and the signature of the signing user, the
+  salesperson by default, printed on the customer invoices.
+* New fields: upgrade with ``-u om_account_accountant,om_account_reconcile``
+  (see Upgrade).
 
 Bug Tracker
 ===========
