@@ -78,6 +78,16 @@ Download the module and add it to your Odoo addons folder. Restart the server
 and log on to your Odoo server. Select the Apps menu and upgrade the module by
 clicking on the upgrade button.
 
+Version 2.1.0 changes how the degressive factor is applied (see the release
+notes). Back up the database first, then upgrade the module. From the command
+line::
+
+    odoo-bin -c <your config> -d <your database> -u om_account_asset --stop-after-init
+
+The upgrade changes no entry. It posts a note on each degressive asset and
+category with periods shorter than a year, and an activity for the user who
+created each of those assets.
+
 
 Configuration
 =============
@@ -108,6 +118,29 @@ Print the schedule from Accounting > Reporting > Management > Depreciation
 Schedule, and open the analysis from Accounting > Reporting > Management >
 Asset Analysis.
 
+
+Release Notes
+=============
+
+2.1.0
+-----
+
+* The degressive factor is a yearly rate: 0.3 depreciates 30% of the value left
+  at the start of each year of the life of the asset, spread over the periods of
+  the year. It was applied to every period, so an asset depreciated by month or
+  by quarter lost 30% every month or quarter. Assets depreciated by year are not
+  affected.
+* Existing assets are not recomputed. Each degressive asset with periods shorter
+  than a year gets a note listing its entries not posted yet, and an activity
+  for the user who created it. To compute those entries with the yearly rate,
+  press Compute Depreciation, now shown on running assets for the accounting
+  managers; the posted entries stay as they are. An asset that was depreciated
+  too much then depreciates nothing more until the end of the year, and follows
+  the method from the next year. To correct the past years instead, use Modify
+  Depreciation.
+* If you entered a rate per month or per quarter on purpose, leave those assets
+  as they are, and enter the yearly rate on their categories for the new assets.
+* Upgrade with ``-u om_account_asset`` (see Upgrade).
 
 Credits
 =======

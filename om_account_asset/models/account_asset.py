@@ -126,7 +126,9 @@ class AccountAssetCategory(models.Model):
     )
     method_progress_factor = fields.Float(
         'Degressive Factor', default=0.3,
-        tracking=True
+        tracking=True,
+        help='Yearly rate of the degressive method: 0.3 depreciates 30% of the value left at the start of each year, '
+             'spread over the periods of the year.'
     )
     method_time = fields.Selection(
         TIME_METHODS, string='Time Method', required=True, default='number',
@@ -304,7 +306,9 @@ class AccountAssetAsset(models.Model):
     )
     method_progress_factor = fields.Float(
         string='Degressive Factor', default=0.3,
-        tracking=True
+        tracking=True,
+        help='Yearly rate of the degressive method: 0.3 depreciates 30% of the value left at the start of each year, '
+             'spread over the periods of the year.'
     )
     value_residual = fields.Monetary(
         compute='_amount_residual', string='Residual Value',
@@ -499,14 +503,29 @@ class AccountAssetAsset(models.Model):
         self.ensure_one()
         currency = self.currency_id
         start = self._get_lifetime_start()
-        remaining_months = self._get_lifetime_months() - _month_fraction(start, cursor)
+        elapsed_months = _month_fraction(start, cursor)
+        remaining_months = self._get_lifetime_months() - elapsed_months
         depreciable_value = self.value - self.salvage_value
+        # the degressive factor is a yearly rate: the depreciation of a year of the life of the asset is its value at
+        # the start of the year times the factor, spread over the periods of the year
+        year_months, year_residual, year_booked = self._get_degressive_year_start(
+            start, cursor, elapsed_months, residual_amount)
+        # what the year may still depreciate: nothing more once its share is reached, e.g. an asset depreciated too
+        # much before, which then follows the method from the next year
+        year_left = year_residual * self.method_progress_factor - year_booked
         values = []
         for _dummy in range(5000):
             if currency.is_zero(residual_amount):
                 break
             period_end = self._get_period_end_after(cursor)
             months = _month_fraction(cursor, period_end)
+            if self.method_period >= 12:
+                # a period of a year or more is a year of its own, whatever its length (e.g. a prorata first year)
+                year_months, year_residual, year_left = 0.0, residual_amount, None
+            elif year_months >= 12 - 1e-6:
+                year_months -= 12
+                year_residual = residual_amount
+                year_left = year_residual * self.method_progress_factor
             is_last = remaining_months <= months + 1e-6
             if self.method_time == 'rate':
                 amount = depreciable_value * self.method_rate / 100.0 * months / 12.0
@@ -514,15 +533,18 @@ class AccountAssetAsset(models.Model):
                 amount = residual_amount
             elif self.method == 'linear':
                 amount = residual_amount * months / remaining_months
-            elif self.method == 'degressive':
-                amount = residual_amount * self.method_progress_factor * months / self.method_period
             else:
-                amount = max(residual_amount * self.method_progress_factor * months / self.method_period,
-                             residual_amount * months / remaining_months)
+                degressive = year_residual * self.method_progress_factor * months / 12.0
+                if year_left is not None:
+                    degressive = max(min(degressive, year_left), 0.0)
+                amount = degressive if self.method == 'degressive' \
+                    else max(degressive, residual_amount * months / remaining_months)
             if is_last or abs(amount) > abs(residual_amount):
                 amount = residual_amount
             amount = currency.round(amount)
             residual_amount -= amount
+            if year_left is not None:
+                year_left -= amount
 
             entry_amount = amount
             if imported_amount:
@@ -535,8 +557,24 @@ class AccountAssetAsset(models.Model):
             if not currency.is_zero(entry_amount):
                 values.append((cursor, period_end, entry_amount))
             remaining_months -= months
+            year_months += months
             cursor = period_end
         return values
+
+    def _get_degressive_year_start(self, start, cursor, elapsed_months, residual_amount):
+        """ The months already gone in the current year of the life of the asset, and the residual value at its start:
+        the residual now plus the depreciation booked since the start of the year.
+
+        :return: (months, residual value, depreciation booked in the year so far)
+        """
+        self.ensure_one()
+        year_months = elapsed_months % 12 if elapsed_months > 1e-6 else 0.0
+        if self.method_period >= 12 or year_months < 1e-6:
+            return 0.0, residual_amount, 0.0
+        year_start = start + relativedelta(months=int(elapsed_months - year_months + 1e-6))
+        booked = sum(self._get_board_moves().filtered(
+            lambda move: move.state != 'cancel' and year_start < move.date <= cursor).mapped('asset_depreciation_amount'))
+        return year_months, residual_amount + booked, booked
 
     def _recompute_board(self, keep_until=None):
         """ Replace the draft depreciation entries by a new board.
