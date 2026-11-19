@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_quick_add_paste_view_form" model="ir.ui.view">
+        <field name="name">om.quick.add.paste.form</field>
+        <field name="model">om.quick.add.paste</field>
+        <field name="arch" type="xml">
+            <form class="o_om_quick_add">
+                <field name="step" invisible="1"/>
+                <field name="has_prices" invisible="1"/>
+                <div invisible="step != 'paste'">
+                    <p class="text-muted mb-2">
+                        One product per row: its barcode, reference or name, then the quantity<span invisible="not has_prices"> and, if you want, the price</span>.
+                        Copy the rows from Excel, an email or a message, for example:
+                    </p>
+                    <pre class="o_om_quick_add_example text-muted small mb-2">FURN_8220    5
+Large Desk   2    450.00
+3 x Office Chair</pre>
+                    <field name="text" nolabel="1" class="o_om_quick_add_text"
+                           placeholder="Paste the rows here..."/>
+                </div>
+                <div invisible="step != 'check'">
+                    <p class="mb-2">
+                        <span class="text-success fw-bold"><field name="found_count" class="d-inline"/> found</span>
+                        <span invisible="not open_count">,
+                            <span class="text-warning fw-bold"><field name="open_count" class="d-inline"/> to check</span>:
+                            choose the product of the rows in orange or red, or leave them empty to skip them.
+                        </span>
+                    </p>
+                    <field name="line_ids" nolabel="1">
+                        <list editable="bottom" create="0" decoration-warning="state == 'choose'"
+                              decoration-danger="state == 'missing'">
+                            <field name="sequence" column_invisible="1"/>
+                            <field name="candidate_ids" column_invisible="1"/>
+                            <field name="has_price" column_invisible="1"/>
+                            <field name="row"/>
+                            <field name="product_id" options="{'no_create': True}"
+                                   domain="[('id', 'in', candidate_ids)] if candidate_ids else []"/>
+                            <field name="quantity"/>
+                            <field name="price_unit" column_invisible="not parent.has_prices" decoration-muted="not has_price"
+                                   string="Pasted price"/>
+                            <field name="state" widget="badge" decoration-success="state == 'found'"
+                                   decoration-warning="state == 'choose'" decoration-danger="state == 'missing'"/>
+                        </list>
+                    </field>
+                </div>
+                <footer>
+                    <button name="action_check" string="Check" type="object" class="btn-primary"
+                            invisible="step != 'paste'" data-hotkey="q"/>
+                    <button name="action_add" string="Add the products" type="object" class="btn-primary"
+                            invisible="step != 'check'" data-hotkey="q"/>
+                    <button name="action_back" string="Back" type="object" class="btn-secondary"
+                            invisible="step != 'check'"/>
+                    <button string="Cancel" special="cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

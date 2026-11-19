@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="stock_picking_view_form" model="ir.ui.view">
+        <field name="name">stock.picking.form.om.quick.add</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='move_ids']" position="before">
+                <widget name="om_quick_add_bar"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <field name="om_quick_add_ok" invisible="1"/>
+                <widget name="om_quick_add_scanner"/>
+            </xpath>
+            <xpath expr="//field[@name='move_ids']/list/control" position="inside">
+                <button name="om_action_quick_paste" string="Paste lines" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok" context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_history" string="History" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok or not parent.partner_id" context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_copy" string="Copy lines" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok" context="{'om_quick_add_id': parent.id}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
