@@ -197,6 +197,14 @@ Report Engine. From the command line::
 Release Notes
 =============
 
+1.3.0
+-----
+
+* Tax Return: compared with earlier periods or custom dates, the columns of the
+  return repeated under each period, with the variation for a return of one
+  amount column; a figure of a compared period opens its journal items.
+* Upgrade with ``-u om_dynamic_reports``.
+
 20.0.1.2.0
 ----------
 

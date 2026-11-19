@@ -26,6 +26,7 @@ class OmDynamicReportTaxGrid(models.AbstractModel):
     _report_section = 'statements'
     _report_sequence = 6
     _report_icon = 'fact_check'
+    _report_compare = True
 
     @api.model
     def _om_report_title(self):
@@ -75,9 +76,27 @@ class OmDynamicReportTaxGrid(models.AbstractModel):
         report = self._odr_tax_return(options)
         if not report:
             return []
-        return [{'key': 'c_%s' % column['label'], 'label': column['name'],
-                 'type': FIGURE_TYPES.get(column['type'], 'monetary'), 'drill': True}
-                for column in self._odr_columns_of(report)]
+        report_columns = self._odr_columns_of(report)
+        periods = self._odr_period_options(options)
+        compared = len(periods) > 1
+        columns = []
+        for index, period in enumerate(periods):
+            suffix = '_%s' % index if index else ''
+            # compared, the columns of the return repeat under each period
+            group = self._om_period_label(period) if compared else False
+            columns += [{'key': 'c_%s%s' % (column['label'], suffix), 'label': column['name'], 'group': group,
+                         'type': FIGURE_TYPES.get(column['type'], 'monetary'), 'drill': True}
+                        for column in report_columns]
+        if self._odr_variation_column(report_columns, periods):
+            columns.append({'key': 'variation', 'label': self.env._("Variation %"), 'type': 'percent',
+                            'help': self.env._("Change from the compared period to this one.")})
+        return columns
+
+    @api.model
+    def _odr_variation_column(self, report_columns, periods):
+        """The column of the variation compares the amounts of a return of one amount column with one period."""
+        return (len(periods) == 2 and len(report_columns) == 1
+                and FIGURE_TYPES.get(report_columns[0]['type'], 'monetary') == 'monetary')
 
     @api.model
     def _odr_evaluator(self, options, report):
@@ -94,21 +113,30 @@ class OmDynamicReportTaxGrid(models.AbstractModel):
             return [], False
         # the journal items are read from the database: write the pending changes first
         self.env.flush_all()
-        evaluator = self._odr_evaluator(options, report)
+        periods = self._odr_period_options(options)
+        evaluators = [self._odr_evaluator(period, report) for period in periods]
         columns = self._odr_columns_of(report)
+        variation = self._odr_variation_column(columns, periods)
 
         def build(report_line, parent_id, level):
             node_id = '%s|line-%s' % (parent_id, report_line.id) if parent_id else 'line-%s' % report_line.id
             expressions = {expression.label: expression for expression in report_line.expression_ids}
             values = {}
-            for column in columns:
-                expression = expressions.get(column['label'])
-                value = evaluator.value(expression) if expression else None
-                if expression and expression.blank_if_zero and not value:
-                    value = None
-                elif isinstance(value, float) and not value:
-                    value = 0.0  # not -0.0
-                values['c_%s' % column['label']] = value if value is not None else False
+            for index, evaluator in enumerate(evaluators):
+                suffix = '_%s' % index if index else ''
+                for column in columns:
+                    expression = expressions.get(column['label'])
+                    value = evaluator.value(expression) if expression else None
+                    if expression and expression.blank_if_zero and not value:
+                        value = None
+                    elif isinstance(value, float) and not value:
+                        value = 0.0  # not -0.0
+                    values['c_%s%s' % (column['label'], suffix)] = value if value is not None else False
+            if variation:
+                key = 'c_%s' % columns[0]['label']
+                current, previous = values.get(key), values.get(key + '_1')
+                values['variation'] = ((current or 0.0) - previous) / abs(previous) * 100 \
+                    if isinstance(previous, float) and previous else False
             children = [build(child, node_id, level + 1)
                         for child in report_line.children_ids.sorted(lambda line: (line.sequence, line.id))]
             name = report_line.name
@@ -126,13 +154,15 @@ class OmDynamicReportTaxGrid(models.AbstractModel):
         """The journal items of a grid: those with its tax tags, or those of its domain."""
         report = self._odr_tax_return(options)
         line_part = line_id.rsplit('|', 1)[-1]
+        # a compared column ends with the rank of its period: 'c_balance_1'
+        column_key, period = self._odr_cell_scope(options, column_key)
         if not report or not line_part.startswith('line-') or not column_key.startswith('c_'):
             return False
         report_line = self.env['account.report.line'].browse(int(line_part[5:])).exists()
         expression = report_line.expression_ids.filtered(lambda expression: expression.label == column_key[2:])[:1]
         if not expression or expression.engine not in ('tax_tags', 'domain'):
             return False
-        evaluator = self._odr_evaluator(options, report)
+        evaluator = self._odr_evaluator(period, report)
         domain = evaluator._domain(expression.date_scope)
         if expression.engine == 'tax_tags':
             country = (report.country_id or self.env.company.account_fiscal_country_id).id

@@ -271,6 +271,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">13.6</span><span>Daily reports</span></div>
     <div class="toc-line"><span class="n">13.7</span><span>Printing one journal entry</span></div>
     <div class="toc-line"><span class="n">13.8</span><span>Dashboards</span></div>
+    <div class="toc-line"><span class="n">13.9</span><span>Dynamic reports, an option</span></div>
 
     <div class="toc-part"><span class="n">14</span><span class="t">Routines</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">14.1</span><span>Every day</span></div>
@@ -740,6 +741,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td><strong>Miscellaneous</strong></td><td>Manual entries, payroll, depreciation, revaluation, opening balance.</td><td>Nothing in particular; keep one general journal for adjustments.</td></tr>
         </tbody>
     </table>
+    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; New Journal</span> creates one from what it
+        is for: pick Bank, Credit Card, Cash, Sales, Purchase or Miscellaneous, and the name and the short code are
+        proposed, with the account number and the BIC for a bank. Its accounts are created as for any new journal.</p>
     <ol>
         <li>Create one bank journal per real bank account and write the account number on it.
             The statement import uses that number to find the right journal by itself.</li>
@@ -902,6 +906,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>If the bill goes over a budget line, a warning banner appears at the top. With
             <strong>Block Documents Over Budget</strong> on, only an accounting manager can post
             it (section 8.4).</li>
+        <li>In the list of bills, the eye of the <strong>Document</strong> column opens the scan of the bill over
+            the list: check the bills against their documents without opening each of them.</li>
     </ul>
 
     <h2><span class="n">5.3</span> Journal entries by hand</h2>
@@ -1136,6 +1142,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             the deferred lines at the end of each period, moving out what they recognise after it,
             reversed on the first day of the next one.</li>
     </ul>
+    <p>To keep some deferrals apart, e.g. prepaid insurance, open the income or expense account, tick
+        <strong>Own Deferral Account</strong> and choose its balance sheet account: its lines are deferred there
+        instead of the account of the settings. A draft invoice or bill warns when its deferral dates look like a
+        typing mistake: more than a year away from the date of the document, ending before its month, or more than
+        ten years long.</p>
     <h3>Deferring a line</h3>
     <ol>
         <li>On the invoice or bill, show the optional columns <strong>Start Date</strong> and
@@ -1325,9 +1336,17 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li><strong>Depreciation account</strong> &mdash; the accumulated depreciation, on the balance sheet.</li>
         <li><strong>Expense account</strong> &mdash; where the periodic charge is posted.</li>
         <li><strong>Journal</strong> &mdash; usually the miscellaneous one.</li>
-        <li><strong>Method</strong> &mdash; linear or degressive, the number of depreciations and their period.</li>
+        <li><strong>Method</strong> &mdash; linear, degressive, degressive then linear, or no depreciation; the
+            number of depreciations and their period. The <strong>degressive factor</strong> is a yearly rate: 0.3
+            depreciates 30% of the value left at the start of each year, spread over the periods of the year.</li>
         <li><strong>Prorata temporis</strong> &mdash; start depreciating on the purchase date rather than the first of the period.</li>
+        <li><strong>Computation</strong> &mdash; Constant Periods (every month counts the same) or Based on Days per
+            Period (every day counts the same, so a 31-day month depreciates more than February).</li>
+        <li><strong>Salvage Value (%)</strong> &mdash; the share of the value of a new asset that is not depreciated.</li>
+        <li><strong>Properties</strong> &mdash; fields of your own, e.g. a serial number, filled on each asset.</li>
     </ul>
+    <p>To start quickly, <strong>Action &rsaquo; Create Standard Categories</strong> on the list of categories
+        creates Buildings, Furniture, Vehicles, Machinery, Computers and Land, with the accounts proposed.</p>
     <figure>
         <img src="img/asset-category.jpg" alt="Asset category"/>
         <figcaption>An asset category: the accounts, the journal and the method every asset of
@@ -1344,6 +1363,10 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             value.</li>
         <li>Confirm the asset to put it in service.</li>
     </ol>
+    <p>A vendor refund of an asset line creates a negative asset, linked to the refunded asset, which reverses
+        its depreciation. To make one asset from several bill lines or journal items, select them in Journal Items
+        and choose <strong>Action &rsaquo; Create Asset</strong>. Taxes booked on the asset account are part of its
+        value. Group related assets with an <strong>Asset Group</strong>.</p>
     <figure>
         <img src="img/asset-board.jpg" alt="Asset board"/>
         <figcaption>An asset with its depreciation board.</figcaption>
@@ -1356,6 +1379,13 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <p>When an asset is sold or scrapped, use <strong>Sell or Dispose</strong>: the remaining
         value is written off to the gain and loss accounts of the settings (section 2.13) and
         the asset is closed.</p>
+    <p>Land, or an asset under construction, uses <strong>No Depreciation</strong>: it keeps its value. When it
+        is put into use, press <strong>Activate Depreciation</strong> and choose the category and the date: the
+        value moves to the asset account of that category if it differs, and the depreciation starts on that
+        date.</p>
+    <p><strong>Compute Depreciation</strong>, on a running asset, computes the entries not posted yet again from
+        its method; the posted ones stay as they are. Use it after an upgrade that changes a computation, such as
+        the yearly degressive factor: each asset concerned has a note listing its entries before the change.</p>
 
     <h2><span class="n">7.4</span> Assets that already existed</h2>
     <p>For an asset bought before you went live, create it with its original purchase value and
@@ -1368,7 +1398,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <p><span class="path">Reporting &rsaquo; Management &rsaquo; Depreciation Schedule</span>
         gives the gross value, the depreciation of the period and the closing values, category
         by category &mdash; the schedule an auditor asks for. <strong>Asset Analysis</strong> is
-        the same data in pivot and graph form.</p>
+        the same data in pivot and graph form. On screen, the Depreciation Schedule of the dynamic reports groups
+        the assets by category, asset account, asset group or analytic account.</p>
     <figure>
         <img src="img/depreciation-schedule.jpg" alt="Depreciation schedule"/>
         <figcaption>The depreciation schedule.</figcaption>
@@ -1611,6 +1642,10 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td><strong>Tax Return Lock Date</strong></td><td>Nothing that would change a filed tax return can be touched.</td></tr>
         </tbody>
     </table>
+    <p>The Lock Dates wizard shows the periods already opened by exceptions, for you and for everyone. Before you
+        save, it warns about the draft entries dated in the period being locked (<strong>See them</strong> opens the
+        list, to post or delete them) and about a tax closing posted after the tax lock date, with the date to
+        set.</p>
     <div class="note">
         <p class="label">Tip</p>
         <p>Move the lock date forward every month as soon as the period is reconciled and
@@ -1834,6 +1869,40 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <img src="img/dashboard-overview.jpg" alt="Accounting overview dashboard"/>
         <figcaption>The Accounting Overview dashboard.</figcaption>
     </figure>
+
+    <h2><span class="n">13.9</span> Dynamic reports, an option</h2>
+    <p><em>Dynamic Accounting Reports</em> (<code>om_dynamic_reports</code>) is a free companion module, installed
+        separately from the Apps. It shows the reports on screen instead of in a PDF, under
+        <span class="path">Reporting &rsaquo; Dynamic Reports</span>; the PDF reports keep their menus.</p>
+    <ul class="plain">
+        <li><strong>The reports</strong> &mdash; Executive Summary, Balance Sheet, Profit and Loss, Cash Flow
+            Statement, Tax Report, Tax Return, EC Sales List, Trial Balance, General Ledger, Day Book, Bank and Cash
+            Books, Bank Reconciliation, Journals Audit, Partner Ledger, Aged Receivable and Payable, Customer and
+            Vendor Statements, and the Analytic Report.</li>
+        <li><strong>The filters at the top</strong> &mdash; the period with arrows, posted or all entries, journals,
+            accounts, partners, analytic accounts, and the <strong>Saved Filters</strong> of the Journal Items
+            list.</li>
+        <li><strong>Compare</strong> &mdash; the previous periods, the same period of the previous years, or dates of
+            your choice, with the variation; the Tax Return too, grid by grid.</li>
+        <li><strong>Columns</strong> &mdash; analytic accounts as columns, or a <strong>horizontal group</strong>
+            splitting the amounts by journal, partner, product or any field of the journal items
+            (<span class="path">Configuration &rsaquo; Accounting &rsaquo; Horizontal Groups</span>).</li>
+        <li><strong>Options &rsaquo; Amounts</strong> &mdash; with decimals, in units, in thousands or in
+            millions.</li>
+        <li><strong>On every line</strong> &mdash; unfold an account into its journal items, click a figure to open
+            the items behind it, add a note to a figure.</li>
+        <li><strong>Saved views</strong> keep the filters you use, for you or for everyone, and the reports export
+            to PDF, Excel and CSV.</li>
+    </ul>
+    <p>With the modules of this suite, the dynamic reports gain more by themselves:</p>
+    <ul class="plain">
+        <li><strong>Assets</strong> &mdash; the Depreciation Schedule, grouped by category, asset account, asset
+            group or analytic account, and the Deferred Revenue and Deferred Expense reports.</li>
+        <li><strong>Budgets</strong> &mdash; a Budgets filter on the Profit and Loss, with a Budget column and the
+            Achievement %, for the period and for each period it is compared with.</li>
+        <li><strong>Currency revaluation</strong> &mdash; the Unrealized Currency Gains/Losses report at a date, from
+            which the revaluation entry is posted.</li>
+    </ul>
 </div>
 
 <!-- =========================================================== PART 14 -->

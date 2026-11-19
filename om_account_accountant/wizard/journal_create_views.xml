@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_journal_create_form" model="ir.ui.view">
+        <field name="name">om.journal.create.form</field>
+        <field name="model">om.journal.create</field>
+        <field name="arch" type="xml">
+            <form string="New Journal">
+                <field name="company_id" invisible="1"/>
+                <field name="journal_type" widget="badges_selection" nolabel="1"/>
+                <group>
+                    <group>
+                        <field name="name"/>
+                        <field name="code"/>
+                    </group>
+                    <group>
+                        <field name="currency_id" options="{'no_create': True}" groups="base.group_multi_currency"/>
+                        <field name="bank_account_number" invisible="journal_type != 'bank'"/>
+                        <field name="bank_bic" invisible="journal_type != 'bank'"/>
+                    </group>
+                </group>
+                <div class="text-muted">
+                    The accounts of the journal are created for it; its settings can be changed on the journal later.
+                </div>
+                <footer>
+                    <button name="action_create" type="object" string="Create" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_journal_create" model="ir.actions.act_window">
+        <field name="name">New Journal</field>
+        <field name="res_model">om.journal.create</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_om_journal_create"
+              name="New Journal"
+              action="action_om_journal_create"
+              parent="account.account_account_menu"
+              sequence="31"
+              groups="account.group_account_manager"/>
+
+    <record id="view_in_invoice_tree_attachment_preview" model="ir.ui.view">
+        <field name="name">account.move.list.om.attachment.preview</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list/field[1]" position="before">
+                <field name="message_main_attachment_id" widget="om_attachment_preview" string="Document"
+                       optional="show" nolabel="1"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

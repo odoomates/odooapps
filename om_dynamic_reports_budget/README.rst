@@ -22,6 +22,13 @@ Management.
 Release Notes
 =============
 
+1.1.0
+-----
+
+* The budget columns follow the comparison: each period compared gets its
+  Balance, Budget and Achievement %, under the label of the period.
+* Upgrade with ``-u om_dynamic_reports_budget``.
+
 20.0.1.0.0
 ----------
 

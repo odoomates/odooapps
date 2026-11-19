@@ -8,7 +8,7 @@ accounting modules in one click and adds the menus, groups, settings and
 dashboards that make them work as one system rather than seventeen separate
 apps.
 
-A 47-page user guide ships with the module, at
+A 49-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -89,6 +89,10 @@ covers them too.
   ``om_account_batch_payment_reconcile`` installs itself and adds the batches
   to the reconciliation screen.
   https://apps.odoo.com/apps/modules/20.0/om_account_batch_payment
+* ``om_dynamic_reports`` — Dynamic Accounting Reports: the reports on screen,
+  with filters, comparison, horizontal groups, drill-down and export; with the
+  assets, the budgets and the currency revaluation, their own reports come with
+  it. https://apps.odoo.com/apps/modules/20.0/om_dynamic_reports
 * ``om_account_deferred`` — Deferred Revenue and Expense: revenue and expense
   spread over the months they belong to from the start and end dates of the
   invoice and bill lines, with the Deferred Revenue and Deferred Expense
@@ -133,6 +137,11 @@ What this module adds on top
 * Adds a signature on the customer invoices: the name and the signature of the
   signing user, the salesperson of the invoice by default. Each user draws or
   uploads their signature in their preferences.
+* Adds a New Journal menu: choose what the journal is for (bank, credit card,
+  cash, sales, purchase or miscellaneous), and its name, short code and, for a
+  bank, its account number are proposed.
+* Adds a Document column to the vendor bills list: the eye opens the scan of the
+  bill over the list, to check the bills against their documents.
 
 
 Recurring entries
@@ -239,6 +248,14 @@ a Withholding section of its own.
 
 Release Notes
 =============
+
+1.7.0
+-----
+
+* New Journal: a journal created from what it is for.
+* Vendor bills list: preview of the document of each bill.
+* User guide: the new reports, the assets, the deferrals and the lock dates.
+* No new field on existing records: upgrade with ``-u om_account_accountant``.
 
 1.6.0
 -----

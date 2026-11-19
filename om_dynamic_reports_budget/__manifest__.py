@@ -1,6 +1,6 @@
 {
     'name': 'Dynamic Accounting Reports - Budgets',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.1.0',
     'category': 'Accounting/Accounting',
     'summary': 'Budget and achievement columns in the dynamic Profit and Loss, from Budget Management',
     'description': 'Bridge between Dynamic Accounting Reports and Budget Management: pick budgets on the Profit and '
