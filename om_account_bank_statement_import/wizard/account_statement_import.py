@@ -2,6 +2,8 @@ import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.osv import expression
+from odoo.tools.sql import escape_psql
 from odoo.addons.base.models.res_bank import sanitize_account_number
 
 from ..parsers import camt, csv_file, mt940, ofx, qif
@@ -154,6 +156,64 @@ class AccountStatementImport(models.TransientModel):
             },
         }
 
+    def _find_certain_partner(self, account_number, partner_name, company, cache):
+        """ :return: the partner of the other party of a transaction, only when it is certain: the one partner
+        owning its bank account, the one company with exactly its name, or the same partner from both. Nothing
+        when several partners fit, or when the bank account and the name point to different partners: a wrong
+        partner is worse than none.
+
+        :param dict cache: the partners already found, by account number and by name, for one import
+        """
+        partners = (self._find_partners_by_account(account_number, company, cache)
+                    | self._find_partners_by_name(partner_name, company, cache))
+        return partners if len(partners) == 1 else self.env['res.partner']
+
+    def _find_partners_by_account(self, account_number, company, cache):
+        """ :return: the partners owning the bank account, a contact person counting as their company """
+        sanitized = sanitize_account_number(account_number or '')
+        if not sanitized:
+            return self.env['res.partner']
+        key = ('account', sanitized, company.id)
+        if key not in cache:
+            PartnerBank = self.env['res.partner.bank']
+            cache[key] = PartnerBank.search(expression.AND([
+                [('sanitized_acc_number', '=', sanitized), ('partner_id.active', '=', True)],
+                PartnerBank._check_company_domain(company),
+            ])).partner_id.commercial_partner_id
+        return cache[key]
+
+    def _find_partners_by_name(self, partner_name, company, cache):
+        """ :return: the companies with exactly the name written by the bank, ignoring case and extra spaces. A
+        person is never matched by name only, as different people often have the same name. """
+        Partner = self.env['res.partner']
+        words = (partner_name or '').split()
+        if not words:
+            return Partner
+        name = ' '.join(words).casefold()
+        key = ('name', name, company.id)
+        if key not in cache:
+            # the words in this order, whatever the spaces between them; the exact name is checked below
+            pattern = '%' + '%'.join(escape_psql(word) for word in words) + '%'
+            companies = Partner.search(expression.AND([
+                [('name', '=ilike', pattern), ('is_company', '=', True)],
+                Partner._check_company_domain(company),
+            ]))
+            cache[key] = companies.filtered(lambda partner: ' '.join((partner.name or '').split()).casefold() == name)
+        return cache[key]
+
+    def _set_partners(self, lines_values, journal):
+        """ Set the partner of the new statement lines from the bank account number and the name of the
+        other party of their transaction, when the file has them and the partner of exactly that name
+        (_find_partner, as the import of 17.0 did) was not found. """
+        cache = {}
+        for line in lines_values:
+            if line.get('partner_id') or not (line.get('account_number') or line.get('partner_name')):
+                continue
+            partner = self._find_certain_partner(line.get('account_number'), line.get('partner_name'),
+                                         journal.company_id, cache)
+            if partner:
+                line['partner_id'] = partner.id
+
     def _import_statement(self, statement, filename, attachment):
         """ Create the statement of one account of one file, without the transactions already imported.
 
@@ -175,6 +235,7 @@ class AccountStatementImport(models.TransientModel):
         skipped = len(values) - len(new_values)
         if not new_values:
             return self.env['account.bank.statement'], skipped
+        self._set_partners(new_values, journal)
 
         created = self.env['account.bank.statement'].create({
             'name': statement.get('name') or filename,
