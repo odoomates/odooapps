@@ -10,6 +10,7 @@
     'support': 'odoomates@gmail.com',
     'license': 'LGPL-3',
     'depends': ['om_dynamic_reports', 'om_account_budget'],
+    'images': ['static/description/banner.gif'],
     'installable': True,
     'auto_install': True,
     'application': False,
