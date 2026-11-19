@@ -1,11 +1,11 @@
 {
     'name': 'Dynamic Accounting Reports',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.1.0',
     'category': 'Accounting/Accounting',
     'summary': 'Dynamic accounting reports on screen for Odoo 20 Community: Executive Summary, Balance Sheet, Profit and Loss, Cash Flow, '
                'Tax Report, Trial Balance, General Ledger, Day Book, Bank Book, Cash Book, Journals Audit, Partner Ledger, Aged Receivable, Aged Payable, '
                'Analytic Report, '
-               'with comparison, filters, '
+               'with comparison, horizontal groups, filters, '
                'drill-down to journal items, saved views and export to PDF and Excel',
     'description': 'Dynamic financial reports: the report on screen with its filters at the top, accounts and '
                    'partners that unfold into their journal items, drill-down, saved views, and export to PDF, '
@@ -17,7 +17,9 @@
     'images': ['static/description/banner.gif'],
     'depends': ['om_report_engine', 'accounting_pdf_reports'],
     'data': [
+        'security/ir.access.csv',
         'views/menu.xml',
+        'views/horizontal_group_views.xml',
     ],
     'assets': {
         'web.assets_tests': [

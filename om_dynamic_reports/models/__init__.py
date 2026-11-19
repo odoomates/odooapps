@@ -13,3 +13,4 @@ from . import report_tax
 from . import report_journal_audit
 from . import report_books
 from . import report_day_book
+from . import horizontal_group

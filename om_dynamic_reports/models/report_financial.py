@@ -27,6 +27,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
     _report_compare = True
     # the root section's amount closes the report (Net Profit), or not (a balance sheet adds up to zero)
     _odr_root_total = True
+    _odr_horizontal = True
 
     @api.model
     def _odr_root_report(self):
@@ -50,7 +51,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
 
     @api.model
     def _om_choices(self):
-        return [self._odr_target_move_choice()]
+        return [self._odr_target_move_choice(), *self._odr_horizontal_choice()]
 
     @api.model
     def _om_get_columns(self, options):
@@ -61,18 +62,19 @@ class OmDynamicReportFinancial(models.AbstractModel):
                 {'key': 'credit', 'label': self.env._("Credit"), 'type': 'monetary', 'drill': True},
             ]
         periods = self._om_compare_periods(options)
-        analytic = self._odr_analytic_columns(options)
-        if analytic:
-            # per period, a column per analytic account or plan, then the total of the period
+        split = self._odr_split_columns(options)
+        if split:
+            # per period, a column per value of the horizontal group or per analytic account or plan,
+            # then the total of the period
             for index, period in enumerate([options] + periods):
                 suffix = '_%s' % index if index else ''
                 group = self._om_period_label(period)
-                for key, label, _domain in analytic:
-                    columns.append({'key': 'an_%s%s' % (key, suffix), 'label': label, 'type': 'monetary',
+                for key, label in split:
+                    columns.append({'key': key + suffix, 'label': label, 'type': 'monetary',
                                     'group': group, 'drill': True})
                 columns.append({'key': 'balance' + suffix, 'label': self.env._("Total"), 'type': 'monetary',
                                 'group': group, 'optional': False, 'drill': True,
-                                'help': self.env._("Every entry of the period, with or without analytic.")})
+                                'help': self._odr_split_total_help(options)})
             return columns
         columns.append({'key': 'balance', 'type': 'monetary', 'optional': False, 'drill': True,
                         'label': self._om_period_label(options) if periods else self.env._("Balance")})
@@ -89,21 +91,33 @@ class OmDynamicReportFinancial(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
-    def _odr_account_sums(self, options):
+    def _odr_account_sums(self, options, extra=()):
         """{account id: {'debit', 'credit', 'balance'}} of the period of ``options``: the flows of a
         period at the average rates of their months; the balances at a date at its rate, but for the
-        income and expense in them, at the rates they were earned at (IAS 21)."""
+        income and expense in them, at the rates they were earned at (IAS 21). With ``extra``
+        fields, by (account id, their values)."""
         domain = self._odr_domain(options) + self._odr_period_domain(options)
+        groupbys = ['account_id', *extra]
         if self._report_date_mode != 'as_of':
-            return self._odr_sums(domain, 'account_id', flow=True)
-        sums = self._odr_sums(domain, 'account_id')
-        if self._odr_converts():
-            Account = self.env['account.account'].with_context(active_test=False)
-            earned = [account.id for account in Account.browse(list(sums))
-                      if account.internal_group in ('income', 'expense')]
-            if earned:
-                sums.update(self._odr_sums(domain + [('account_id', 'in', earned)], 'account_id', flow=True))
-        return sums
+            sums = self._odr_grouped_sums(domain, groupbys, flow=True)
+        else:
+            sums = self._odr_grouped_sums(domain, groupbys)
+            if self._odr_converts():
+                Account = self.env['account.account'].with_context(active_test=False)
+                earned = [account.id for account in Account.browse({key[0] for key in sums})
+                          if account.internal_group in ('income', 'expense')]
+                if earned:
+                    sums.update(self._odr_grouped_sums(domain + [('account_id', 'in', earned)], groupbys, flow=True))
+        return sums if extra else {key[0]: values for key, values in sums.items()}
+
+    @api.model
+    def _odr_horizontal_scope(self, options):
+        # the values of the columns are those of the accounts of the statement only
+        domain = super()._odr_horizontal_scope(options)
+        sections = self._odr_root_report()._get_children_by_order()
+        account_ids = sections.filtered(lambda s: s.type == 'accounts').account_ids.ids
+        types = sections.filtered(lambda s: s.type == 'account_type').account_type_ids.mapped('type')
+        return domain + ['|', ('account_id', 'in', account_ids), ('account_id.account_type', 'in', types)]
 
     @api.model
     def _odr_rates_label(self, options):
@@ -172,7 +186,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
     @api.model
     def _odr_values(self, amounts_by_period, sign, options, account_id=False):
         """The columns of a section (or of one of its accounts) over the periods; each period gives
-        {'total': amounts, 'columns': {analytic column key: amounts}}."""
+        {'total': amounts, 'columns': {split column key: amounts}}."""
         values = {}
         for index, period in enumerate(amounts_by_period):
             suffix = '_%s' % index if index else ''
@@ -184,7 +198,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
                 values['credit'] = sums['credit']
             for key, column_amounts in period['columns'].items():
                 column_sums = column_amounts['accounts'].get(account_id, EMPTY) if account_id else column_amounts
-                values['an_%s%s' % (key, suffix)] = column_sums['balance'] * sign or 0.0
+                values[key + suffix] = column_sums['balance'] * sign or 0.0
         if len(amounts_by_period) == 2:
             current, previous = values['balance'], values['balance_1']
             values['variation'] = (current - previous) / abs(previous) * 100 if previous else False
@@ -203,15 +217,20 @@ class OmDynamicReportFinancial(models.AbstractModel):
             return [], False
         sections = root._get_children_by_order()
         analytic = self._odr_analytic_columns(options)
+        horizontal = self._odr_horizontal_names(options) if self._odr_horizontal_group(options) else []
         period_amounts = []
         translations = []
         flow = self._report_date_mode != 'as_of'
         for report, period in self._odr_periods(options):
             account_sums = report._odr_account_sums(period)
+            if horizontal:
+                split = report._odr_horizontal_split(options, report._odr_account_sums(period, horizontal))
+            else:
+                split = {'an_%s' % key: report._odr_analytic_sums(period, domain, self._odr_period_domain(period),
+                                                                   flow=flow) for key, _label, domain in analytic}
             period_amounts.append({
                 'total': self._odr_section_amounts(sections, account_sums),
-                'columns': {key: self._odr_section_amounts(sections, report._odr_analytic_sums(
-                    period, domain, self._odr_period_domain(period), flow=flow)) for key, _label, domain in analytic},
+                'columns': {key: self._odr_section_amounts(sections, sums) for key, sums in split.items()},
             })
             # converted at different rates, the balances no longer add up to zero: what is left is the
             # currency translation adjustment, in the equity
@@ -310,6 +329,11 @@ class OmDynamicReportFinancial(models.AbstractModel):
         if key.startswith('an_'):
             return self._odr_analytic_cell_action(options, key, account, self._odr_period_domain(period), name)
         domain = self._odr_domain(period) + self._odr_period_domain(period) + [('account_id', '=', account_id)]
+        if key.startswith('hg_'):
+            column_domain = self._odr_horizontal_cell_domain(options, key)
+            if column_domain is False:
+                return False
+            domain += column_domain
         return self._odr_journal_items_action(domain, name)
 
     @api.model
