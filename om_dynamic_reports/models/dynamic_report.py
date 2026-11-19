@@ -32,6 +32,7 @@ class OmDynamicReport(models.AbstractModel):
     _report_app = 'accounting'
     _report_group = 'account.group_account_readonly,account.group_account_manager'
     _report_default_preset = 'this_year'
+    _report_rounding = True
     # the report splits its amounts in the columns of a horizontal group
     _odr_horizontal = False
 
@@ -89,6 +90,9 @@ class OmDynamicReport(models.AbstractModel):
                                      'icon': 'label', 'domain': []},
             'analytic_account_ids': {'label': self.env._("Analytic"), 'model': 'account.analytic.account',
                                      'icon': 'donut_small', 'domain': []},
+            'aml_filter_ids': {'label': self.env._("Saved Filters"), 'model': 'ir.filters', 'icon': 'bookmark',
+                               'domain': [['model_id', '=', 'account.move.line'],
+                                          '|', ['user_ids', '=', False], ['user_ids', 'in', [self.env.uid]]]},
         }
         return {'key': key, **filters[key]}
 
@@ -252,7 +256,23 @@ class OmDynamicReport(models.AbstractModel):
             domain.append(('partner_id.category_id', 'in', options['partner_category_ids']))
         if options.get('analytic_account_ids'):
             domain.append(('analytic_distribution', 'in', options['analytic_account_ids']))
+        if options.get('aml_filter_ids'):
+            domain += self._odr_saved_filters_domain(options['aml_filter_ids'])
         return domain
+
+    @api.model
+    def _odr_saved_filters_domain(self, filter_ids):
+        """The journal items of the saved filters chosen (the favorites of the Journal Items list): those of any
+        of them."""
+        saved = self.env['ir.filters'].browse(filter_ids).exists().filtered(
+            lambda saved_filter: saved_filter.model_id == 'account.move.line')
+        domains = []
+        for saved_filter in saved:
+            try:
+                domains.append(saved_filter._get_eval_domain())
+            except (ValueError, SyntaxError):
+                continue
+        return list(Domain.OR(domains)) if domains else []
 
     @api.model
     def _odr_period_domain(self, options):

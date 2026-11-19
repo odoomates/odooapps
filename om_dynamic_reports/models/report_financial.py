@@ -39,7 +39,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
 
     @api.model
     def _om_filters(self):
-        return self._odr_filters('journal_ids', 'analytic_account_ids') + self._odr_analytic_column_filters()
+        return self._odr_filters('journal_ids', 'analytic_account_ids', 'aml_filter_ids') + self._odr_analytic_column_filters()
 
     @api.model
     def _om_toggles(self):
@@ -184,6 +184,16 @@ class OmDynamicReportFinancial(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
+    def _odr_extra_columns(self, options, index, period, account_sums):
+        """{column key: {account id: {'debit', 'credit', 'balance'}}} of columns of a period other modules add,
+        e.g. the budget, summed per section like the balance.
+
+        :param index: the rank of the period, 0 for the period of the report
+        :param account_sums: the sums of the period per account
+        """
+        return {}
+
+    @api.model
     def _odr_values(self, amounts_by_period, sign, options, account_id=False):
         """The columns of a section (or of one of its accounts) over the periods; each period gives
         {'total': amounts, 'columns': {split column key: amounts}}."""
@@ -221,13 +231,14 @@ class OmDynamicReportFinancial(models.AbstractModel):
         period_amounts = []
         translations = []
         flow = self._report_date_mode != 'as_of'
-        for report, period in self._odr_periods(options):
+        for index, (report, period) in enumerate(self._odr_periods(options)):
             account_sums = report._odr_account_sums(period)
             if horizontal:
                 split = report._odr_horizontal_split(options, report._odr_account_sums(period, horizontal))
             else:
                 split = {'an_%s' % key: report._odr_analytic_sums(period, domain, self._odr_period_domain(period),
                                                                    flow=flow) for key, _label, domain in analytic}
+            split.update(report._odr_extra_columns(options, index, period, account_sums))
             period_amounts.append({
                 'total': self._odr_section_amounts(sections, account_sums),
                 'columns': {key: self._odr_section_amounts(sections, sums) for key, sums in split.items()},
