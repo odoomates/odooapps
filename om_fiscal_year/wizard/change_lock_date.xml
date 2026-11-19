@@ -54,6 +54,26 @@
                                 <field name="hard_lock_date"/>
                             </group>
                         </group>
+                        <div class="alert alert-warning" role="alert" invisible="not draft_warning">
+                            <field name="draft_warning" readonly="1" class="d-inline"/>
+                            <button name="action_open_draft_moves" type="object" string="See them"
+                                    class="btn btn-link p-0 ms-1 align-baseline"/>
+                        </div>
+                        <div class="alert alert-warning" role="alert" invisible="not tax_closing_warning">
+                            <field name="tax_closing_warning" readonly="1"/>
+                        </div>
+                        <div class="alert alert-info" role="status"
+                             invisible="not exceptions_for_me and not exceptions_for_everyone">
+                            <p class="mb-1"><strong>Periods already opened by exceptions</strong></p>
+                            <div invisible="not exceptions_for_me">
+                                For you:
+                                <field name="exceptions_for_me" readonly="1"/>
+                            </div>
+                            <div invisible="not exceptions_for_everyone">
+                                For everyone:
+                                <field name="exceptions_for_everyone" readonly="1"/>
+                            </div>
+                        </div>
                         <div class="alert alert-warning mb-0" role="status" invisible="not exception_needed">
                             <p>
                                 <strong><field name="exception_fields" class="d-inline" readonly="1"/></strong>:
