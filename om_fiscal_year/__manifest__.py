@@ -1,11 +1,11 @@
 {
     'name': 'Odoo 20 Fiscal Year & Lock Date',
-    'version': '1.3.2',
+    'version': '1.4.0',
     'category': 'Accounting',
     'summary': 'Odoo 20 Fiscal Year, Year-End Closing, Lock Date in Odoo 20',
     'description': 'Odoo 20 Fiscal Year, Fiscal Year in Odoo 20',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
