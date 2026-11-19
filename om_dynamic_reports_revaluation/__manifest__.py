@@ -1,6 +1,6 @@
 {
     'name': 'Dynamic Accounting Reports - Currency Revaluation',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Accounting/Accounting',
     'summary': 'Unrealized currency gains and losses on screen, posted with Currency Revaluation',
     'description': 'Bridge between Dynamic Accounting Reports and Currency Revaluation: what is open in a foreign '

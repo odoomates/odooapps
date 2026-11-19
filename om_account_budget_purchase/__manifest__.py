@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Budget Management - Purchase',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Accounting',
     'summary': 'Budget control of purchase orders and committed amounts',
     'description': 'Warn or block purchase orders going over budget and show the amounts committed by confirmed '
