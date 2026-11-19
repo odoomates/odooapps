@@ -520,14 +520,16 @@ class TestAssetFeatures(AccountTestInvoicingCommon):
         self.assertEqual(assets.mapped('name'), ['Laptop (1/3)', 'Laptop (2/3)', 'Laptop (3/3)'])
         self.assertEqual(set(assets.mapped('state')), {'open'})
 
-        # the credit note keeps the category of the line but does not create assets
+        # the vendor refund keeps the category of the line and creates negative assets, one per refunded asset
         with freeze_time('2025-01-20'):
             refund = bill._reverse_moves()
             refund.invoice_date = date(2025, 1, 20)
             refund.action_post()
         self.assertEqual(refund.invoice_line_ids.asset_category_id, self.category)
-        self.assertFalse(refund.asset_ids)
-        self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 3)
+        refund_assets = refund.asset_ids.sorted('id')
+        self.assertEqual(refund_assets.mapped('value'), [-333.34, -333.34, -333.34])
+        self.assertEqual(refund_assets.refunded_asset_id, assets)
+        self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 6)
 
     def test_asset_from_a_bill_in_a_foreign_currency(self):
         """ The asset is worth what the bill booked on the asset account, at the rate of the bill, even when

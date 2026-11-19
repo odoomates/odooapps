@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-19 18:56+0000\n"
-"PO-Revision-Date: 2026-11-19 18:56+0000\n"
+"POT-Creation-Date: 2026-11-19 19:21+0000\n"
+"PO-Revision-Date: 2026-11-19 19:21+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -92,6 +92,7 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__asset_count
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__asset_count
 #: model:ir.model.fields,field_description:om_account_asset.field_account_bank_statement_line__asset_count
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move__asset_count
 msgid "# Assets"
@@ -152,6 +153,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 msgid "%s: Depreciation"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid "%s: Depreciation activated"
 msgstr ""
 
 #. module: om_account_asset
@@ -279,6 +286,11 @@ msgid "Accounting"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_standard_categories_form
+msgid "Accounts"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.res_config_settings_view_form
 msgid ""
 "Accounts booking the difference between the sale price and the book value of"
@@ -286,7 +298,13 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#: model:account.account,name:om_account_asset.1_om_asset_demo_accumulated_depreciation
+msgid "Accumulated Depreciation"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__account_depreciation_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__account_depreciation_id
 msgid "Accumulated Depreciation Account"
 msgstr ""
 
@@ -308,8 +326,30 @@ msgid "Action Needed"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_activate_form
+msgid "Activate"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.actions.act_window,name:om_account_asset.action_asset_activate
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
+msgid "Activate Depreciation"
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_activate_form
+msgid "Activate the Depreciation"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model,name:om_account_asset.model_asset_activate
+msgid "Activate the Depreciation of an Asset"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__active
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__active
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__active
 msgid "Active"
 msgstr ""
 
@@ -416,12 +456,16 @@ msgstr ""
 
 #. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_group_form
 msgid "Archived"
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_create_from_lines.py:0
 #: model:ir.model.fields,field_description:om_account_asset.field_account_bank_statement_line__depreciation_asset_id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move__depreciation_asset_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__asset_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__asset_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__asset_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__asset_id
@@ -435,6 +479,7 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__account_asset_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__account_asset_id
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_search
 msgid "Asset Account"
 msgstr ""
@@ -485,14 +530,35 @@ msgid "Asset Entry Type"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model,name:om_account_asset.model_account_asset_group
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__group_id
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_group_form
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_search
+msgid "Asset Group"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.actions.act_window,name:om_account_asset.action_account_asset_group
+#: model:ir.ui.menu,name:om_account_asset.menu_account_asset_group
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_group_list
+msgid "Asset Groups"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__asset_method_time
 msgid "Asset Method Time"
 msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__name
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__name
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Asset Name"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__asset_properties_definition
+msgid "Asset Properties"
 msgstr ""
 
 #. module: om_account_asset
@@ -567,12 +633,14 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.actions.act_window,name:om_account_asset.action_account_asset_asset_form
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__asset_ids
 #: model:ir.model.fields,field_description:om_account_asset.field_account_bank_statement_line__asset_ids
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move__asset_ids
 #: model:ir.ui.menu,name:om_account_asset.menu_action_account_asset_asset_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_purchase_tree
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_category_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_category_search
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_group_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_invoice_asset_category
 msgid "Assets"
 msgstr ""
@@ -646,6 +714,12 @@ msgid "Auto-Confirm Assets"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_asset__prorata_computation_type__daily_computation
+#: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_category__prorata_computation_type__daily_computation
+msgid "Based on Days per Period"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_asset__date_first_depreciation__last_day_period
 #: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_category__date_first_depreciation__last_day_period
 msgid "Based on Last Day of Purchase Period"
@@ -674,9 +748,23 @@ msgid "Book Value Today"
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "Buildings"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__buildings
+msgid "Buildings (25 years)"
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_activate_form
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_create_from_lines_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.asset_depreciation_schedule_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.asset_pause_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.asset_sell_form
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_standard_categories_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Cancel"
 msgstr ""
@@ -700,7 +788,14 @@ msgid "Cancelled, the entries that could not be deleted are reversed by %s"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_standard_categories_form
+msgid "Categories"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__category_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__category_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__category_id
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_category_search
 msgid "Category"
 msgstr ""
@@ -731,6 +826,12 @@ msgstr ""
 
 #. module: om_account_asset
 #. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid "Choose a category with a depreciation method."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
 #: code:addons/om_account_asset/wizard/asset_modify.py:0
 msgid "Choose the counterpart account of the value increase of \"%s\"."
 msgstr ""
@@ -742,7 +843,8 @@ msgid ""
 "Choose the method to use to compute the amount of depreciation entries.\n"
 "  * Linear: Calculated on basis of: Gross Value / Number of Depreciations\n"
 "  * Degressive: Calculated on basis of: Residual Value * Degressive Factor\n"
-"  * Degressive then Linear: Degressive, switching to linear as soon as spreading the residual value over the remaining life gives a higher amount"
+"  * Degressive then Linear: Degressive, switching to linear as soon as spreading the residual value over the remaining life gives a higher amount\n"
+"  * No Depreciation: the asset keeps its value, e.g. land or an asset under construction, until its depreciation is activated"
 msgstr ""
 
 #. module: om_account_asset
@@ -776,12 +878,22 @@ msgstr ""
 #: model:ir.model,name:om_account_asset.model_res_company
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__company_id
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__company_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__company_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__company_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__company_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__company_id
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_asset_asset_report_search
 msgid "Company"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__prorata_computation_type
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__prorata_computation_type
+msgid "Computation"
 msgstr ""
 
 #. module: om_account_asset
@@ -796,6 +908,17 @@ msgid "Compute Depreciation"
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "Computer Equipment"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__computers
+msgid "Computer Equipment (3 years)"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model,name:om_account_asset.model_res_config_settings
 msgid "Config Settings"
 msgstr ""
@@ -807,9 +930,20 @@ msgid "Confirm"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__confirm
+msgid "Confirm the Asset"
+msgstr ""
+
+#. module: om_account_asset
 #. odoo-python
 #: code:addons/om_account_asset/models/account.py:0
 msgid "Confirm the asset \"%s\" before posting its depreciation entries."
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_asset__prorata_computation_type__constant_periods
+#: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_category__prorata_computation_type__constant_periods
+msgid "Constant Periods"
 msgstr ""
 
 #. module: om_account_asset
@@ -820,27 +954,71 @@ msgid "Cost"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_create_from_lines_form
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_standard_categories_form
+msgid "Create"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.actions.act_window,name:om_account_asset.action_asset_create_from_lines
+msgid "Create Asset"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.actions.act_window,name:om_account_asset.action_asset_standard_categories
+msgid "Create Standard Categories"
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_create_from_lines_form
+msgid "Create an Asset"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model,name:om_account_asset.model_asset_create_from_lines
+msgid "Create an Asset from Journal Items"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.actions.act_window,help:om_account_asset.action_account_asset_asset_list_normal_purchase
 msgid "Create an asset category"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.actions.act_window,help:om_account_asset.action_account_asset_group
+msgid "Create an asset group"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model,name:om_account_asset.model_asset_standard_categories
+msgid "Create the Standard Asset Categories"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__create_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__create_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__create_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__create_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__create_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__create_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__create_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__create_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__create_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__create_date
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__create_date
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__create_date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__create_date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__create_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__create_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__create_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__create_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__create_date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__create_date
 msgid "Created on"
 msgstr ""
 
@@ -852,6 +1030,7 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__currency_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__currency_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__currency_id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__currency_id
 msgid "Currency"
@@ -880,6 +1059,7 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__date
@@ -1025,7 +1205,13 @@ msgid "Depreciation Entries: Expense Account"
 msgstr ""
 
 #. module: om_account_asset
+#: model:account.account,name:om_account_asset.1_om_asset_demo_depreciation_expense
+msgid "Depreciation Expense"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__account_depreciation_expense_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__account_depreciation_expense_id
 msgid "Depreciation Expense Account"
 msgstr ""
 
@@ -1074,6 +1260,13 @@ msgid "Depreciation Schedule Report"
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid ""
+"Depreciation activated on %(date)s with the category %(category)s. %(note)s"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__opening_depreciation
 msgid ""
 "Depreciation already booked before the asset was recorded in Odoo, e.g. in a"
@@ -1110,14 +1303,18 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__display_name
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_account_chart_template__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move_line__display_name
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__display_name
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__display_name
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_ir_module_module__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_product_template__display_name
 #: model:ir.model.fields,field_description:om_account_asset.field_report_om_account_asset_report_depreciation_schedule__display_name
@@ -1291,6 +1488,17 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "Furniture and Fixtures"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__furniture
+msgid "Furniture and Fixtures (10 years)"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.res_config_settings_view_form
 msgid "Gain"
 msgstr ""
@@ -1309,6 +1517,7 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__value
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__value
 msgid "Gross Value"
 msgstr ""
 
@@ -1323,22 +1532,42 @@ msgid "Group the Register by Category"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.actions.act_window,help:om_account_asset.action_account_asset_group
+msgid ""
+"Group the assets that belong together, whatever their category: the machines of a production line,\n"
+"                the equipment of an office."
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__has_message
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__has_message
 msgid "Has Message"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__prorata_computation_type
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_category__prorata_computation_type
+msgid ""
+"How a period is weighted in the depreciation:\n"
+"  * Constant Periods: every month counts the same, the days of an incomplete month as a fraction of it.\n"
+"  * Based on Days per Period: every day counts the same, so a period of 31 days depreciates more than one of 28 days."
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__id
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_chart_template__id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move__id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_move_line__id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__id
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__id
 #: model:ir.model.fields,field_description:om_account_asset.field_ir_module_module__id
 #: model:ir.model.fields,field_description:om_account_asset.field_product_template__id
 #: model:ir.model.fields,field_description:om_account_asset.field_report_om_account_asset_report_depreciation_schedule__id
@@ -1434,6 +1663,7 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__journal_id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__journal_id
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__journal_id
 msgid "Journal"
 msgstr ""
 
@@ -1456,27 +1686,53 @@ msgid "Journal Item"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__original_move_line_ids
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__line_ids
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
+msgid "Journal Items"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Label"
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "Land"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__land
+msgid "Land (no depreciation)"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__write_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__write_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__write_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__write_uid
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__write_date
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__write_date
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__write_date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__write_date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_create_from_lines__write_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__write_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__write_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__write_date
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__write_date
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__write_date
 msgid "Last Updated on"
 msgstr ""
 
@@ -1524,6 +1780,17 @@ msgstr ""
 msgid ""
 "Lower than the current value: a re-evaluation entry records the loss of "
 "value. Higher: an asset is created for the value increase."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "Machinery and Equipment"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__machinery
+msgid "Machinery and Equipment (7 years)"
 msgstr ""
 
 #. module: om_account_asset
@@ -1601,6 +1868,7 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__name
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__name
 msgid "Name"
 msgstr ""
 
@@ -1649,6 +1917,12 @@ msgid "Next Activity Type"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_asset__method__none
+#: model:ir.model.fields.selection,name:om_account_asset.selection__account_asset_category__method__none
+msgid "No Depreciation"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.report_depreciation_schedule
 msgid "No asset for this period."
 msgstr ""
@@ -1665,6 +1939,7 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__note
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_group__note
 msgid "Note"
 msgstr ""
 
@@ -1781,6 +2056,14 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 msgid "Only running assets can be paused."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid ""
+"Only running assets without depreciation can have their depreciation "
+"activated."
 msgstr ""
 
 #. module: om_account_asset
@@ -1919,6 +2202,11 @@ msgid "Product"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__asset_properties
+msgid "Properties"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__prorata
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__prorata
 msgid "Prorata Temporis"
@@ -1945,6 +2233,7 @@ msgid "Re-evaluation"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__note
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__note
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_pause__note
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_sell__note
@@ -1964,6 +2253,31 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__code
 msgid "Reference"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__refunded_asset_id
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
+msgid "Refund Of"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_move.py:0
+msgid "Refund: %s"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__refund_ids
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_search
+msgid "Refunds"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid "Refunds of %s"
 msgstr ""
 
 #. module: om_account_asset
@@ -2055,6 +2369,11 @@ msgid "Salvage Value"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__salvage_value_pct
+msgid "Salvage Value (%)"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_move_filter_asset
 msgid "Scheduled Depreciation"
 msgstr ""
@@ -2068,6 +2387,12 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/wizard/asset_sell.py:0
 msgid "Select the invoice lines of the sale."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_create_from_lines.py:0
+msgid "Select the journal items of the asset."
 msgstr ""
 
 #. module: om_account_asset
@@ -2110,6 +2435,13 @@ msgid "Set an ending date on \"%s\" to compute its depreciation board."
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__refunded_asset_id
+msgid ""
+"Set on the negative asset of a vendor refund: the asset of the bill that was"
+" refunded."
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__parent_id
 msgid ""
 "Set on value increases: the asset whose value was increased by a re-"
@@ -2141,6 +2473,13 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_category__salvage_value_pct
+msgid ""
+"Share of the gross value of a new asset of this category that is not "
+"depreciated."
+msgstr ""
+
+#. module: om_account_asset
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 msgid "Sold on %(date)s (%(invoices)s). %(note)s"
@@ -2152,8 +2491,24 @@ msgid "Sold or Disposed"
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_create_from_lines.py:0
+msgid "Some journal items already have an asset: %s"
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_standard_categories_form
+msgid "Standard Asset Categories"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_schedule__date_from
 msgid "Start Date"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_activate__date
+msgid "Start Depreciating On"
 msgstr ""
 
 #. module: om_account_asset
@@ -2212,6 +2567,21 @@ msgid ""
 "The asset is depreciated up to the date, then a posted entry removes the share of its gross value\n"
 "                    and accumulated depreciation and books the difference with the sale price as a gain or a loss.\n"
 "                    The rest of the asset keeps depreciating over the same life."
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_activate_form
+msgid ""
+"The asset starts depreciating with the method of the category chosen. When that category books its\n"
+"                    assets on another account, a journal entry moves the value there. The time the asset waited does\n"
+"                    not shorten its life."
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_asset_activate__category_id
+msgid ""
+"The asset takes the depreciation method of this category; when the category "
+"books its assets on another account, the value is moved there."
 msgstr ""
 
 #. module: om_account_asset
@@ -2316,6 +2686,29 @@ msgstr ""
 
 #. module: om_account_asset
 #. odoo-python
+#: code:addons/om_account_asset/wizard/asset_create_from_lines.py:0
+msgid "The journal items add up to zero."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_create_from_lines.py:0
+msgid "The journal items must be posted."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_create_from_lines.py:0
+msgid "The journal items must belong to one company."
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__original_move_line_ids
+msgid "The journal items the asset was created from."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
 #: code:addons/om_account_asset/wizard/asset_modify.py:0
 msgid "The new depreciable and salvage values must be positive."
 msgstr ""
@@ -2389,6 +2782,12 @@ msgstr ""
 #. module: om_account_asset
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
+msgid "The salvage value of \"%s\" must be between 0 and 100%%."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
 msgid "The share of the asset disposed of must be between 0 and 100%."
 msgstr ""
 
@@ -2396,6 +2795,19 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/wizard/asset_depreciation_schedule.py:0
 msgid "The start date must be before the end date."
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_standard_categories_form
+msgid ""
+"The usual asset categories, with a linear depreciation over their usual life, Land without\n"
+"                    depreciation. Check the accounts once; change any category afterwards as you need."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/models/account_asset.py:0
+msgid "The value is moved to the new account by %s"
 msgstr ""
 
 #. module: om_account_asset
@@ -2415,6 +2827,12 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "These categories exist already."
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__method_time
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__method_time
 msgid "Time Method"
@@ -2428,6 +2846,7 @@ msgstr ""
 #. module: om_account_asset
 #. odoo-python
 #: code:addons/om_account_asset/wizard/asset_depreciation_schedule.py:0
+#: model_terms:ir.ui.view,arch_db:om_account_asset.asset_create_from_lines_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.report_depreciation_schedule
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Total"
@@ -2507,6 +2926,17 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "Vehicles"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_standard_categories__vehicles
+msgid "Vehicles (5 years)"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_purchase_tree
 msgid "Vendor"
@@ -2549,6 +2979,11 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_asset_standard_categories__account_asset_id
+msgid "Where the gross value of the assets is booked."
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields.selection,name:om_account_asset.selection__asset_sell__scope__full
 msgid "Whole Asset"
 msgstr ""
@@ -2561,6 +2996,11 @@ msgstr ""
 #. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.asset_sell_form
 msgid "Why is the asset sold or disposed of?"
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_search
+msgid "Without Depreciation"
 msgstr ""
 
 #. module: om_account_asset
@@ -2597,6 +3037,12 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "computers"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "depreciable)"
 msgstr ""
@@ -2612,14 +3058,37 @@ msgid "e.g. Laptop iBook"
 msgstr ""
 
 #. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_group_form
+msgid "e.g. Production line 1"
+msgstr ""
+
+#. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_move_form_asset_entry
 msgid "entry of the asset"
 msgstr ""
 
 #. module: om_account_asset
 #. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "furniture"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 msgid "id"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "land"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "machinery"
 msgstr ""
 
 #. module: om_account_asset
@@ -2633,4 +3102,10 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_asset/wizard/asset_depreciation_schedule.py:0
 msgid "until %s"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_standard_categories.py:0
+msgid "vehicles"
 msgstr ""

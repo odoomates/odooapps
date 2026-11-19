@@ -78,9 +78,9 @@ Download the module and add it to your Odoo addons folder. Restart the server
 and log on to your Odoo server. Select the Apps menu and upgrade the module by
 clicking on the upgrade button.
 
-Version 2.1.0 changes how the degressive factor is applied (see the release
-notes). Back up the database first, then upgrade the module. From the command
-line::
+Versions 2.1.0 and 2.2.0 change how the degressive factor is applied and add
+fields (see the release notes). Back up the database first, then upgrade the
+module. From the command line::
 
     odoo-bin -c <your config> -d <your database> -u om_account_asset --stop-after-init
 
@@ -121,6 +121,25 @@ Asset Analysis.
 
 Release Notes
 =============
+
+2.2.0
+-----
+
+* Vendor refunds create negative assets, depreciated the other way round and
+  linked to the asset of the bill they refund.
+* Create Asset on journal items: one asset from several bill lines or journal
+  items; each asset keeps the journal items it was created from.
+* The taxes booked on the asset account (a tax that cannot be recovered and
+  whose repartition has no account) are part of the value of the asset.
+* Prorata based on the days of each period, besides constant periods.
+* No Depreciation method, e.g. land or an asset under construction, and an
+  Activate Depreciation action giving it the method of a category and moving its
+  value to the asset account of that category.
+* Salvage value as a percentage on the categories.
+* Asset groups, custom properties defined per category, and a Create Standard
+  Categories action on the categories.
+* New fields get their defaults on the existing assets and categories (constant
+  periods, no salvage percentage, no group): upgrade with ``-u om_account_asset``.
 
 2.1.0
 -----
