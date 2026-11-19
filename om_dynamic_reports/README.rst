@@ -39,6 +39,14 @@ Reports
   amounts left without analytic or split over several accounts never make a
   sum of columns look like the total. They combine with the comparison periods.
   The analytic amounts are those of the posted entries.
+* **Horizontal groups** on the Balance Sheet, the Profit and Loss and the
+  Trial Balance: set them up in Configuration > Accounting > Horizontal Groups
+  with one or more fields of the journal items (journal, partner, product,
+  salesperson...), and each value found in the entries of the report gets a
+  column; with two fields, each combination of values. A domain keeps some
+  values only. Each period keeps its own Total, the columns combine with the
+  comparison periods, and any figure opens its journal items. A report shows
+  either a horizontal group or analytic columns, at most 50 columns.
 * The three statements compare with the same period of the previous years or with the previous
   periods, up to twelve columns, with the variation in % against one period;
   debit and credit columns on demand.
