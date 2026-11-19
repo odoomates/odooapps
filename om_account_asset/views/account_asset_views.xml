@@ -20,6 +20,8 @@
                             invisible="state != 'paused'" groups="account.group_account_manager"/>
                     <button name="%(action_asset_pause)d" string="Pause" type="action"
                             invisible="state != 'open'" groups="account.group_account_manager"/>
+                    <button name="%(action_asset_activate)d" string="Activate Depreciation" type="action" class="btn-primary"
+                            invisible="state != 'open' or method != 'none'" groups="account.group_account_manager"/>
                     <button name="%(action_asset_sell)d" string="Sell / Dispose" type="action"
                             invisible="state not in ('open', 'paused', 'close') or disposal_date"
                             groups="account.group_account_manager"/>
@@ -35,6 +37,8 @@
                     <field name="active" invisible="1"/>
                     <field name="type" invisible="1"/>
                     <field name="parent_id" invisible="1"/>
+                    <field name="refunded_asset_id" invisible="1"/>
+                    <field name="refund_ids" invisible="1"/>
                     <field name="invoice_id" invisible="1"/>
                     <field name="disposal_move_id" invisible="1"/>
                     <field name="currency_id" invisible="1"/>
@@ -50,6 +54,10 @@
                         </button>
                         <button class="oe_stat_button" name="open_parent_asset" type="object" icon="account_tree"
                                 string="Parent Asset" invisible="not parent_id"/>
+                        <button class="oe_stat_button" name="open_refunded_asset" type="object" icon="undo"
+                                string="Refund Of" invisible="not refunded_asset_id"/>
+                        <button class="oe_stat_button" name="open_refunds" type="object" icon="redo"
+                                string="Refunds" invisible="not refund_ids"/>
                         <button class="oe_stat_button" name="open_disposal_move" type="object" icon="sell"
                                 string="Disposal Entry" invisible="not disposal_move_id"/>
                     </div>
@@ -74,6 +82,7 @@
                                            readonly="state != 'draft'"/>
                                     <field name="account_asset_id" string="Fixed Asset Account"/>
                                     <field name="code" readonly="state != 'draft'"/>
+                                    <field name="group_id" options="{'no_quick_create': True}"/>
                                 </group>
                                 <group string="Current Values">
                                     <field name="salvage_value" string="Not Depreciable Value" widget="monetary"
@@ -94,7 +103,7 @@
                                 <group string="Depreciation Method">
                                     <field name="method" readonly="state != 'draft'" invisible="type == 'sale'"/>
                                     <field name="method_progress_factor" readonly="state != 'draft'"
-                                           invisible="method == 'linear'" required="method != 'linear'"/>
+                                           invisible="method in ('linear', 'none')" required="method not in ('linear', 'none')"/>
                                     <field name="method_time" string="Duration Based On" readonly="state != 'draft'"
                                            invisible="type != 'purchase'"/>
                                     <field name="method_number" string="Number of Entries" readonly="state != 'draft'"
@@ -108,10 +117,12 @@
                                         <field name="method_period" class="oe_inline" readonly="state != 'draft'"/> months
                                     </div>
                                     <field name="prorata" readonly="state != 'draft'"/>
+                                    <field name="prorata_computation_type" readonly="state != 'draft'"
+                                           invisible="method == 'none'"/>
                                     <field name="date_first_depreciation" string="First Depreciation" readonly="state != 'draft'"/>
                                     <field name="first_depreciation_manual_date" readonly="state != 'draft'"
-                                           invisible="date_first_depreciation != 'manual'"
-                                           required="date_first_depreciation == 'manual'"/>
+                                           invisible="date_first_depreciation != 'manual' or method == 'none'"
+                                           required="date_first_depreciation == 'manual' and method != 'none'"/>
                                 </group>
                                 <group string="Accounting">
                                     <field name="company_id" options="{'no_create': True}" readonly="state != 'draft'"
@@ -125,6 +136,19 @@
                                            groups="analytic.group_analytic_accounting"/>
                                 </group>
                             </group>
+                        </page>
+                        <page string="Journal Items" name="original_lines" invisible="not original_move_line_ids">
+                            <field name="original_move_line_ids" readonly="1">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="move_id"/>
+                                    <field name="account_id"/>
+                                    <field name="partner_id"/>
+                                    <field name="name"/>
+                                    <field name="company_currency_id" column_invisible="1"/>
+                                    <field name="balance" sum="Total"/>
+                                </list>
+                            </field>
                         </page>
                         <page string="Depreciation Board" name="board" invisible="not depreciation_move_ids">
                             <field name="depreciation_move_ids" mode="list"
@@ -163,6 +187,7 @@
                             </group>
                         </page>
                     </notebook>
+                    <field name="asset_properties" columns="2"/>
                 </sheet>
                 <chatter/>
             </form>
@@ -203,6 +228,7 @@
                   decoration-muted="(state in ('close', 'cancelled'))">
                 <field name="name"/>
                 <field name="category_id" string="Asset Category"/>
+                <field name="group_id" optional="hide"/>
                 <field name="date"/>
                 <field name="partner_id" string="Vendor"/>
                 <field name="value"/>
@@ -233,8 +259,12 @@
                 <filter string="Cancelled" name="cancelled" domain="[('state','=', 'cancelled')]"
                         help="Assets in cancelled state"/>
                 <field name="category_id" string="Asset Category"/>
+                <field name="group_id"/>
                 <field name="partner_id" filter_domain="[('partner_id','child_of',self)]"/>
+                <filter string="Without Depreciation" name="no_depreciation" domain="[('method', '=', 'none')]"/>
+                <filter string="Refunds" name="refunds" domain="[('value', '&lt;', 0)]"/>
                 <group>
+                    <filter string="Asset Group" name="by_group" domain="[]" context="{'group_by': 'group_id'}"/>
                     <filter string="Date" name="month" domain="[]" context="{'group_by':'date'}"/>
                     <filter string="Asset Category" name="category" domain="[]" context="{'group_by':'category_id'}"/>
                 </group>

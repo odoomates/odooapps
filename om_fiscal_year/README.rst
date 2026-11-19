@@ -49,6 +49,9 @@ Features
   of the company. Accounting > Closing > Lock Date Exceptions lists them and
   revokes the active ones.
 * Only the lock dates changed in the wizard are written.
+* The wizard lists the periods already opened by an exception, for you and for
+  everyone, warns about the draft entries dated in a period being locked, with a
+  link to them, and about a tax closing posted after the tax lock date.
 * Locking a period with unreconciled bank transactions shows them from the
   warning.
 * Fiscal years, period closings, their checks and the closing tasks are
@@ -72,6 +75,11 @@ To upgrade this module, you need to:
 Download the module and add it to your Odoo addons folder. Restart the server
 and log on to your Odoo server. Select the Apps menu and upgrade the module by
 clicking on the upgrade button.
+
+Version 1.4.0 adds no field and changes no data; upgrade it to get the new lock date wizard. From the command
+line::
+
+    odoo-bin -c <your config> -d <your database> -u om_fiscal_year --stop-after-init
 
 
 Configuration
@@ -107,6 +115,18 @@ Lock dates can also be changed directly from Accounting > Accounting > Closing >
 Lock Dates. To reopen a locked period, remove or move back its lock date there,
 choose for whom and how long, and write the reason.
 
+
+Release Notes
+=============
+
+1.4.0
+-----
+
+* The Lock Dates wizard lists the periods already opened by an exception, for you and for everyone, with
+  their date, end and reason.
+* It warns about the draft entries dated in a period being locked, with a link to them, and about a tax
+  closing posted after the tax lock date.
+* Upgrade with ``-u om_fiscal_year``.
 
 Credits
 =======

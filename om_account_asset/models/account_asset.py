@@ -13,7 +13,18 @@ DEPRECIATION_METHODS = [
     ('linear', 'Linear'),
     ('degressive', 'Degressive'),
     ('degressive_then_linear', 'Degressive then Linear'),
+    ('none', 'No Depreciation'),
 ]
+PRORATA_COMPUTATION_TYPES = [
+    ('constant_periods', 'Constant Periods'),
+    ('daily_computation', 'Based on Days per Period'),
+]
+PRORATA_COMPUTATION_HELP = (
+    "How a period is weighted in the depreciation:\n"
+    "  * Constant Periods: every month counts the same, the days of an incomplete month as a fraction of it.\n"
+    "  * Based on Days per Period: every day counts the same, so a period of 31 days depreciates more than one "
+    "of 28 days."
+)
 TIME_METHODS = [
     ('number', 'Number of Entries'),
     ('end', 'Ending Date'),
@@ -24,7 +35,9 @@ METHOD_HELP = (
     "  * Linear: Calculated on basis of: Gross Value / Number of Depreciations\n"
     "  * Degressive: Calculated on basis of: Residual Value * Degressive Factor\n"
     "  * Degressive then Linear: Degressive, switching to linear as soon as spreading "
-    "the residual value over the remaining life gives a higher amount"
+    "the residual value over the remaining life gives a higher amount\n"
+    "  * No Depreciation: the asset keeps its value, e.g. land or an asset under construction, until its "
+    "depreciation is activated"
 )
 TIME_METHOD_HELP = (
     "Choose the method to use to compute the dates and number of entries.\n"
@@ -37,6 +50,7 @@ BOARD_FIELDS = {
     'value', 'salvage_value', 'opening_depreciation', 'date', 'method', 'method_number',
     'method_period', 'method_end', 'method_rate', 'method_progress_factor', 'method_time', 'prorata',
     'date_first_depreciation', 'first_depreciation_manual_date', 'category_id', 'currency_id',
+    'prorata_computation_type',
 }
 # a partial disposal removes a share of the depreciation from the board
 BOARD_ENTRY_TYPES = ('depreciation', 'revaluation', 'partial_disposal')
@@ -178,7 +192,26 @@ class AccountAssetCategory(models.Model):
              ' year (depending on the periodicity of the depreciations).\n'
              '  * Based on purchase date: The depreciation dates will be based on the purchase date.', tracking=True)
 
+    prorata_computation_type = fields.Selection(
+        PRORATA_COMPUTATION_TYPES, string='Computation', required=True, default='constant_periods',
+        help=PRORATA_COMPUTATION_HELP, tracking=True)
+    asset_properties_definition = fields.PropertiesDefinition(string='Asset Properties')
+    salvage_value_pct = fields.Float(
+        string='Salvage Value (%)', tracking=True,
+        help='Share of the gross value of a new asset of this category that is not depreciated.')
+
     asset_count = fields.Integer(compute='_compute_asset_count', string='# Assets')
+
+    @api.constrains('salvage_value_pct')
+    def _check_salvage_value_pct(self):
+        for category in self:
+            if not 0.0 <= category.salvage_value_pct < 100.0:
+                raise ValidationError(_('The salvage value of "%s" must be between 0 and 100%%.', category.name))
+
+    def _get_salvage_value(self, value):
+        """ The salvage value of a new asset of this category worth `value`. """
+        self.ensure_one()
+        return self.company_id.currency_id.round(value * self.salvage_value_pct / 100.0)
 
     def _compute_asset_count(self):
         counts = dict(self.env['account.asset.asset']._read_group(
@@ -346,6 +379,20 @@ class AccountAssetAsset(models.Model):
              "the first depreciations, so no journal entry is created for it."
     )
     invoice_id = fields.Many2one('account.move', string='Invoice', copy=False)
+    original_move_line_ids = fields.Many2many(
+        'account.move.line', 'om_asset_move_line_rel', 'asset_id', 'line_id', string='Journal Items', copy=False,
+        readonly=True, help='The journal items the asset was created from.')
+    refunded_asset_id = fields.Many2one(
+        'account.asset.asset', string='Refund Of', copy=False, readonly=True, index='btree_not_null',
+        help='Set on the negative asset of a vendor refund: the asset of the bill that was refunded.')
+    refund_ids = fields.One2many('account.asset.asset', 'refunded_asset_id', string='Refunds')
+    group_id = fields.Many2one('account.asset.group', string='Asset Group', tracking=True, index='btree_not_null',
+                               check_company=True)
+    asset_properties = fields.Properties(string='Properties', definition='category_id.asset_properties_definition',
+                                         copy=True)
+    prorata_computation_type = fields.Selection(
+        PRORATA_COMPUTATION_TYPES, string='Computation', required=True, default='constant_periods',
+        help=PRORATA_COMPUTATION_HELP, tracking=True)
     type = fields.Selection(related="category_id.type", string='Type', required=True)
     account_analytic_id = fields.Many2one('account.analytic.account', string='Analytic Account', tracking=True)
     date_first_depreciation = fields.Selection([
@@ -501,15 +548,23 @@ class AccountAssetAsset(models.Model):
         :return: list of ``(period_start, period_end, amount)``
         """
         self.ensure_one()
+        if self.method == 'none':
+            return []
         currency = self.currency_id
+        # a negative asset (a vendor refund) is depreciated the other way round: computed as a positive one
+        sign = -1 if float_compare(self.value - self.salvage_value, 0.0, precision_rounding=currency.rounding) < 0 else 1
+        residual_amount, imported_amount = sign * residual_amount, sign * imported_amount
         start = self._get_lifetime_start()
         elapsed_months = _month_fraction(start, cursor)
         remaining_months = self._get_lifetime_months() - elapsed_months
-        depreciable_value = self.value - self.salvage_value
+        daily = self.prorata_computation_type == 'daily_computation'
+        lifetime_end = self._get_lifetime_end() if daily else False
+        depreciable_value = sign * (self.value - self.salvage_value)
         # the degressive factor is a yearly rate: the depreciation of a year of the life of the asset is its value at
         # the start of the year times the factor, spread over the periods of the year
         year_months, year_residual, year_booked = self._get_degressive_year_start(
-            start, cursor, elapsed_months, residual_amount)
+            start, cursor, elapsed_months, sign * residual_amount)
+        year_residual, year_booked = sign * year_residual, sign * year_booked
         # what the year may still depreciate: nothing more once its share is reached, e.g. an asset depreciated too
         # much before, which then follows the method from the next year
         year_left = year_residual * self.method_progress_factor - year_booked
@@ -519,6 +574,15 @@ class AccountAssetAsset(models.Model):
                 break
             period_end = self._get_period_end_after(cursor)
             months = _month_fraction(cursor, period_end)
+            if daily:
+                # every day weighs the same: the share of the period in the life left, a year counting 365 days
+                days = (period_end - cursor).days
+                remaining_days = (lifetime_end - cursor).days
+                life_share = days / remaining_days if remaining_days > 0 else 1.0
+                year_share = days / 365.0
+            else:
+                life_share = months / remaining_months if remaining_months > 1e-6 else 1.0
+                year_share = months / 12.0
             if self.method_period >= 12:
                 # a period of a year or more is a year of its own, whatever its length (e.g. a prorata first year)
                 year_months, year_residual, year_left = 0.0, residual_amount, None
@@ -528,17 +592,17 @@ class AccountAssetAsset(models.Model):
                 year_left = year_residual * self.method_progress_factor
             is_last = remaining_months <= months + 1e-6
             if self.method_time == 'rate':
-                amount = depreciable_value * self.method_rate / 100.0 * months / 12.0
+                amount = depreciable_value * self.method_rate / 100.0 * year_share
             elif is_last:
                 amount = residual_amount
             elif self.method == 'linear':
-                amount = residual_amount * months / remaining_months
+                amount = residual_amount * life_share
             else:
-                degressive = year_residual * self.method_progress_factor * months / 12.0
+                degressive = year_residual * self.method_progress_factor * year_share
                 if year_left is not None:
                     degressive = max(min(degressive, year_left), 0.0)
                 amount = degressive if self.method == 'degressive' \
-                    else max(degressive, residual_amount * months / remaining_months)
+                    else max(degressive, residual_amount * life_share)
             if is_last or abs(amount) > abs(residual_amount):
                 amount = residual_amount
             amount = currency.round(amount)
@@ -555,7 +619,7 @@ class AccountAssetAsset(models.Model):
                     entry_amount = currency.round(entry_amount - imported_amount)
                     imported_amount = 0.0
             if not currency.is_zero(entry_amount):
-                values.append((cursor, period_end, entry_amount))
+                values.append((cursor, period_end, sign * entry_amount))
             remaining_months -= months
             year_months += months
             cursor = period_end
@@ -808,6 +872,59 @@ class AccountAssetAsset(models.Model):
             })
             asset._recompute_board()
             asset.message_post(body=_('Depreciation resumed on %(date)s. %(note)s', date=on_date, note=note or ''))
+
+    def activate_depreciation(self, on_date, category, note=None):
+        """ Start depreciating an asset kept at its value (no depreciation method), e.g. a building finished or land
+        prepared for use, with the method of `category`. When the category books its assets on another account, the
+        value is moved there by a journal entry. The time before `on_date` does not shorten the life of the asset. """
+        self.ensure_one()
+        if self.method != 'none' or self.state != 'open':
+            raise UserError(_('Only running assets without depreciation can have their depreciation activated.'))
+        if category.method == 'none':
+            raise UserError(_('Choose a category with a depreciation method.'))
+        self._check_lock_date(on_date)
+        old_account = self.account_asset_id
+        values = self.onchange_category_id_values(category.id)['value']
+        values.pop('account_analytic_id', None)
+        values.pop('analytic_distribution', None)
+        self.write({**values, 'category_id': category.id})
+        transfer = self.env['account.move']
+        if category.account_asset_id != old_account:
+            company_currency = self.company_id.currency_id
+            balance = self.currency_id._convert(self.value, company_currency, self.company_id, on_date)
+            line_vals = {
+                'name': _('%s: Depreciation activated', self.name),
+                'partner_id': self.partner_id.id,
+                'analytic_distribution': self.analytic_distribution,
+                'currency_id': self.currency_id.id,
+            }
+            transfer = self.env['account.move'].create({
+                'ref': line_vals['name'],
+                'date': on_date,
+                'journal_id': category.journal_id.id,
+                'move_type': 'entry',
+                'partner_id': self.partner_id.id,
+                'line_ids': [
+                    Command.create({**line_vals, 'account_id': category.account_asset_id.id,
+                                    'balance': balance, 'amount_currency': self.value}),
+                    Command.create({**line_vals, 'account_id': old_account.id,
+                                    'balance': -balance, 'amount_currency': -self.value}),
+                ],
+            })
+            transfer._post(soft=False)
+        # the life starts on the day the depreciation is activated
+        waited = max(_month_fraction(self._get_lifetime_start(), on_date - timedelta(days=1)), 0.0)
+        self.write({
+            'paused_months': self.paused_months + waited,
+            'depreciation_restart_date': on_date,
+        })
+        self._recompute_board()
+        body = _('Depreciation activated on %(date)s with the category %(category)s. %(note)s',
+                 date=on_date, category=category.name, note=note or '')
+        if transfer:
+            body = Markup('%s %s') % (body, _('The value is moved to the new account by %s', self._links_markup(transfer)))
+        self.message_post(body=body)
+        return transfer
 
     def _create_value_increase(self, increase_date, amount, counterpart_account):
         """ Create and confirm the asset carrying a value increase of `self`, depreciated
@@ -1147,8 +1264,10 @@ class AccountAssetAsset(models.Model):
     @api.constrains('value', 'salvage_value', 'opening_depreciation')
     def _check_already_depreciated_amount(self):
         for asset in self:
-            if float_compare(asset.opening_depreciation, 0.0, precision_rounding=asset.currency_id.rounding) < 0 \
-                    or float_compare(asset.opening_depreciation, asset.value - asset.salvage_value,
+            # a negative asset (a vendor refund) has a negative depreciation before import, if any
+            sign = -1 if asset.value < 0 else 1
+            if float_compare(sign * asset.opening_depreciation, 0.0, precision_rounding=asset.currency_id.rounding) < 0 \
+                    or float_compare(sign * asset.opening_depreciation, sign * (asset.value - asset.salvage_value),
                                      precision_rounding=asset.currency_id.rounding) > 0:
                 raise ValidationError(_(
                     'The depreciation before import of "%s" must be between 0 and its depreciable value.', asset.name))
@@ -1160,6 +1279,12 @@ class AccountAssetAsset(models.Model):
         if vals:
             for k, v in vals['value'].items():
                 setattr(self, k, v)
+
+    @api.onchange('category_id', 'value')
+    def _onchange_salvage_value_pct(self):
+        for asset in self:
+            if asset.category_id.salvage_value_pct:
+                asset.salvage_value = asset.category_id._get_salvage_value(asset.value)
 
     def onchange_category_id_values(self, category_id):
         if category_id:
@@ -1174,6 +1299,7 @@ class AccountAssetAsset(models.Model):
                     'method_end': category.method_end,
                     'method_rate': category.method_rate,
                     'prorata': category.prorata,
+                    'prorata_computation_type': category.prorata_computation_type,
                     'date_first_depreciation': category.date_first_depreciation,
                     'account_analytic_id': category.account_analytic_id.id,
                     'analytic_distribution': category.analytic_distribution,
@@ -1240,6 +1366,14 @@ class AccountAssetAsset(models.Model):
         self.ensure_one()
         return self._open_record_action(self.invoice_id)
 
+    def open_refunded_asset(self):
+        self.ensure_one()
+        return self._open_record_action(self.refunded_asset_id)
+
+    def open_refunds(self):
+        self.ensure_one()
+        return self.refund_ids._get_assets_action(_('Refunds of %s', self.name))
+
     def open_parent_asset(self):
         self.ensure_one()
         return self._open_record_action(self.parent_id)
@@ -1260,4 +1394,35 @@ class AccountAssetAsset(models.Model):
         }
         if len(self.children_ids) == 1:
             action.update({'view_mode': 'form', 'res_id': self.children_ids.id})
+        return action
+
+
+class AccountAssetGroup(models.Model):
+    """ Assets that belong together, whatever their category: the machines of a production line, the equipment of
+    an office, the parts of a building. """
+    _name = 'account.asset.group'
+    _description = 'Asset Group'
+    _order = 'name, id'
+    _check_company_auto = True
+
+    name = fields.Char(required=True)
+    company_id = fields.Many2one('res.company', string='Company', default=lambda self: self.env.company)
+    active = fields.Boolean(default=True)
+    note = fields.Text()
+    asset_ids = fields.One2many('account.asset.asset', 'group_id', string='Assets')
+    asset_count = fields.Integer(compute='_compute_asset_count', string='# Assets')
+
+    @api.depends('asset_ids')
+    def _compute_asset_count(self):
+        counts = dict(self.env['account.asset.asset']._read_group(
+            [('group_id', 'in', self.ids)], ['group_id'], ['__count']))
+        for group in self:
+            group.asset_count = counts.get(group, 0)
+
+    def action_view_assets(self):
+        self.ensure_one()
+        action = self.asset_ids._get_assets_action(_('Assets of %s', self.name))
+        if len(self.asset_ids) != 1:
+            action['domain'] = [('group_id', '=', self.id)]
+        action['context'] = {'default_group_id': self.id}
         return action

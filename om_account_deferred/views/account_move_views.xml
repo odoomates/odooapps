@@ -11,6 +11,13 @@
                 <field name="om_deferred_end_date" optional="hide"/>
             </xpath>
 
+            <xpath expr="//sheet" position="before">
+                <field name="om_deferred_warning" invisible="1"/>
+                <div class="alert alert-warning mb-0" role="alert" invisible="not om_deferred_warning or state != 'draft'">
+                    <field name="om_deferred_warning" readonly="1"/>
+                </div>
+            </xpath>
+
             <xpath expr="//div[@name='button_box']" position="inside">
                 <button type="object" name="action_om_open_deferrals"
                         class="oe_stat_button" icon="fa-calendar"

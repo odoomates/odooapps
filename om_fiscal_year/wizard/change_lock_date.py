@@ -1,7 +1,11 @@
 from datetime import timedelta
 
+from markupsafe import Markup
+
 from odoo import SUPERUSER_ID, _, api, fields, models
 from odoo.exceptions import UserError
+from odoo.fields import Domain
+from odoo.tools.misc import format_date, format_datetime
 
 from odoo.addons.account.models.company import LOCK_DATE_FIELDS, SOFT_LOCK_DATE_FIELDS
 
@@ -23,8 +27,8 @@ class ChangeLockDate(models.TransientModel):
     _description = 'Change Lock Date'
 
     @api.model
-    def default_get(self, vals):
-        res = super().default_get(vals)
+    def default_get(self, fields):
+        res = super().default_get(fields)
         company_rec = self.env.company
         res.update({
             'company_id': company_rec.id,
@@ -72,6 +76,106 @@ class ChangeLockDate(models.TransientModel):
          ('forever', 'Forever')], string='During', required=True, default='5min')
     exception_reason = fields.Char(string='Reason',
                                    help='Why the period is opened: logged in the chatter of the company.')
+
+    # what is already open, and what the new dates would leave behind
+    exceptions_for_me = fields.Html(compute='_compute_exceptions', sanitize=False)
+    exceptions_for_everyone = fields.Html(compute='_compute_exceptions', sanitize=False)
+    draft_move_ids = fields.Many2many('account.move', compute='_compute_warnings')
+    draft_warning = fields.Char(compute='_compute_warnings')
+    tax_closing_warning = fields.Char(compute='_compute_warnings')
+
+    @api.depends('company_id')
+    def _compute_exceptions(self):
+        for wizard in self:
+            exceptions = self.env['account.lock_exception'].search([
+                ('company_id', '=', wizard.company_id.id), ('state', '=', 'active')], order='create_date desc')
+            wizard.exceptions_for_me = wizard._exceptions_html(
+                exceptions.filtered(lambda exception: exception.user_id == self.env.user))
+            wizard.exceptions_for_everyone = wizard._exceptions_html(
+                exceptions.filtered(lambda exception: not exception.user_id))
+
+    def _exceptions_html(self, exceptions):
+        if not exceptions:
+            return False
+        labels = dict(self.env['account.lock_exception']._fields['lock_date_field']._description_selection(self.env))
+        rows = Markup('').join(
+            Markup('<li>%s</li>') % _(
+                '%(lock)s opened to %(date)s, %(until)s: %(reason)s',
+                lock=labels.get(exception.lock_date_field, exception.lock_date_field),
+                date=format_date(self.env, exception.lock_date) if exception.lock_date else _('no date'),
+                until=_('until %s', format_datetime(self.env, exception.end_datetime)) if exception.end_datetime
+                else _('for good'),
+                reason=exception.reason or '')
+            for exception in exceptions)
+        return Markup('<ul class="mb-0">%s</ul>') % rows
+
+    def _closed_lock_dates(self):
+        """ :return: {lock date field: new date} of the lock dates the wizard sets or moves forward """
+        self.ensure_one()
+        company = self.company_id
+        return {field: self[field] for field in LOCK_DATE_FIELDS
+                if self[field] and (not company[field] or self[field] > company[field])}
+
+    @api.depends('company_id', *LOCK_DATE_FIELDS)
+    def _compute_warnings(self):
+        AccountMove = self.env['account.move']
+        for wizard in self:
+            closed = wizard._closed_lock_dates()
+            domains = []
+            for field, date in closed.items():
+                domain = [('date', '<=', date)]
+                if field == 'sale_lock_date':
+                    domain.append(('journal_id.type', '=', 'sale'))
+                elif field == 'purchase_lock_date':
+                    domain.append(('journal_id.type', '=', 'purchase'))
+                elif field == 'tax_lock_date':
+                    domain.append(('line_ids.tax_line_id', '!=', False))
+                domains.append(domain)
+            drafts = AccountMove
+            if domains:
+                drafts = AccountMove.search(
+                    Domain('company_id', '=', wizard.company_id.id) & Domain('state', '=', 'draft')
+                    & Domain.OR(domains))
+            wizard.draft_move_ids = drafts
+            wizard.draft_warning = _(
+                '%s draft entries are dated in the period being locked: they cannot be posted once it is locked.',
+                len(drafts)) if drafts else False
+            wizard.tax_closing_warning = wizard._tax_closing_warning()
+
+    def _tax_closing_warning(self):
+        """ A warning when tax closings are posted after the tax lock date: the periods they close can still
+        change. A tax closing is an entry clearing the tax accounts, without taxes of its own. """
+        self.ensure_one()
+        lock_date = self.tax_lock_date or self.company_id.tax_lock_date
+        tax_accounts = self.env['account.tax.repartition.line'].search([
+            ('company_id', '=', self.company_id.id), ('account_id', '!=', False)]).account_id
+        if not tax_accounts:
+            return False
+        domain = [
+            ('company_id', '=', self.company_id.id), ('parent_state', '=', 'posted'),
+            ('move_id.move_type', '=', 'entry'), ('account_id', 'in', tax_accounts.ids),
+            ('tax_line_id', '=', False), ('tax_ids', '=', False),
+        ]
+        if lock_date:
+            domain.append(('date', '>', lock_date))
+        closings = self.env['account.move.line'].search(domain).move_id.filtered(
+            lambda move: not move.line_ids.tax_ids and not move.line_ids.tax_line_id)
+        if not closings:
+            return False
+        last = max(closings.mapped('date'))
+        return _('A tax closing is posted on %(date)s, after the tax lock date: set the tax lock date to %(date)s so '
+                 'that the periods closed cannot change any more.', date=format_date(self.env, last))
+
+    def action_open_draft_moves(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Draft Entries to Post or Delete'),
+            'res_model': 'account.move',
+            'view_mode': 'list,form',
+            'domain': [('id', 'in', self.draft_move_ids.ids)],
+            'context': {'create': False},
+        }
 
     @api.depends('company_id', *SOFT_LOCK_DATE_FIELDS)
     def _compute_exception_needed(self):

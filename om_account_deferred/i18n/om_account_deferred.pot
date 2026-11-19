@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-10 12:07+0000\n"
-"PO-Revision-Date: 2026-11-10 12:07+0000\n"
+"POT-Creation-Date: 2026-11-19 19:07+0000\n"
+"PO-Revision-Date: 2026-11-19 19:07+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -35,6 +35,7 @@ msgid "A deferral needs both a start and an end date."
 msgstr ""
 
 #. module: om_account_deferred
+#: model:ir.model,name:om_account_deferred.model_account_account
 #: model:ir.model.fields,field_description:om_account_deferred.field_om_deferred_report_line__account_id
 #: model_terms:ir.ui.view,arch_db:om_account_deferred.om_deferred_report_line_view_search
 #: model_terms:ir.ui.view,arch_db:om_account_deferred.res_config_settings_view_form
@@ -55,6 +56,11 @@ msgstr ""
 msgid ""
 "Balance sheet account holding income that has been invoiced but not yet "
 "earned. Usually a deferred income liability account."
+msgstr ""
+
+#. module: om_account_deferred
+#: model:ir.model.fields,help:om_account_deferred.field_account_account__om_deferred_account_id
+msgid "Balance sheet account holding what this account defers."
 msgstr ""
 
 #. module: om_account_deferred
@@ -90,6 +96,20 @@ msgstr ""
 #. module: om_account_deferred
 #: model_terms:ir.ui.view,arch_db:om_account_deferred.om_deferred_report_view_form
 msgid "Cancel"
+msgstr ""
+
+#. module: om_account_deferred
+#. odoo-python
+#: code:addons/om_account_deferred/models/account_move.py:0
+msgid ""
+"Check the deferral dates of %(lines)s: they are more than a year away from "
+"the date of the document, or end before its month."
+msgstr ""
+
+#. module: om_account_deferred
+#. odoo-python
+#: code:addons/om_account_deferred/models/account_account.py:0
+msgid "Choose the deferral account of %s."
 msgstr ""
 
 #. module: om_account_deferred
@@ -132,6 +152,11 @@ msgstr ""
 msgid ""
 "Customer invoice lines with a Start Date and an End Date: their income is "
 "spread over those periods."
+msgstr ""
+
+#. module: om_account_deferred
+#: model:ir.model.fields,field_description:om_account_deferred.field_account_account__om_deferred_account_id
+msgid "Deferral Account"
 msgstr ""
 
 #. module: om_account_deferred
@@ -273,6 +298,7 @@ msgid ""
 msgstr ""
 
 #. module: om_account_deferred
+#: model:ir.model.fields,field_description:om_account_deferred.field_account_account__display_name
 #: model:ir.model.fields,field_description:om_account_deferred.field_account_move__display_name
 #: model:ir.model.fields,field_description:om_account_deferred.field_account_move_line__display_name
 #: model:ir.model.fields,field_description:om_account_deferred.field_om_deferred_report__display_name
@@ -358,6 +384,7 @@ msgid ""
 msgstr ""
 
 #. module: om_account_deferred
+#: model:ir.model.fields,field_description:om_account_deferred.field_account_account__id
 #: model:ir.model.fields,field_description:om_account_deferred.field_account_move__id
 #: model:ir.model.fields,field_description:om_account_deferred.field_account_move_line__id
 #: model:ir.model.fields,field_description:om_account_deferred.field_om_deferred_report__id
@@ -493,6 +520,12 @@ msgid "Om Deferred Generation"
 msgstr ""
 
 #. module: om_account_deferred
+#: model:ir.model.fields,field_description:om_account_deferred.field_account_bank_statement_line__om_deferred_warning
+#: model:ir.model.fields,field_description:om_account_deferred.field_account_move__om_deferred_warning
+msgid "Om Deferred Warning"
+msgstr ""
+
+#. module: om_account_deferred
 #: model:ir.model.fields,field_description:om_account_deferred.field_account_bank_statement_line__om_has_deferrals
 #: model:ir.model.fields,field_description:om_account_deferred.field_account_move__om_has_deferrals
 msgid "Om Has Deferrals"
@@ -533,6 +566,19 @@ msgstr ""
 #. module: om_account_deferred
 #: model_terms:ir.ui.view,arch_db:om_account_deferred.om_deferred_report_line_view_list
 msgid "Open the document"
+msgstr ""
+
+#. module: om_account_deferred
+#: model:ir.model.fields,field_description:om_account_deferred.field_account_account__om_is_deferred
+msgid "Own Deferral Account"
+msgstr ""
+
+#. module: om_account_deferred
+#: model:ir.model.fields,help:om_account_deferred.field_account_account__om_is_deferred
+msgid ""
+"Park the deferred amounts of this income or expense account on an account of"
+" its own, instead of the deferral account of the settings: e.g. prepaid "
+"insurance apart from the other prepaid expenses."
 msgstr ""
 
 #. module: om_account_deferred
@@ -608,9 +654,21 @@ msgid ""
 msgstr ""
 
 #. module: om_account_deferred
+#: model:ir.model.fields,help:om_account_deferred.field_account_bank_statement_line__om_deferred_warning
+#: model:ir.model.fields,help:om_account_deferred.field_account_move__om_deferred_warning
+msgid "Technical: the lines whose deferral dates look like a typing mistake."
+msgstr ""
+
+#. module: om_account_deferred
 #: model:ir.model.fields,help:om_account_deferred.field_account_bank_statement_line__om_has_deferrals
 #: model:ir.model.fields,help:om_account_deferred.field_account_move__om_has_deferrals
 msgid "Technical: whether any line on this document asks to be deferred."
+msgstr ""
+
+#. module: om_account_deferred
+#. odoo-python
+#: code:addons/om_account_deferred/models/account_account.py:0
+msgid "The deferral account of %s must be a balance sheet account."
 msgstr ""
 
 #. module: om_account_deferred
@@ -682,6 +740,12 @@ msgstr ""
 #: model:ir.model.fields.selection,name:om_account_deferred.selection__res_company__om_deferred_expense_periodicity__year
 #: model:ir.model.fields.selection,name:om_account_deferred.selection__res_company__om_deferred_revenue_periodicity__year
 msgid "Yearly"
+msgstr ""
+
+#. module: om_account_deferred
+#. odoo-python
+#: code:addons/om_account_deferred/models/account_move.py:0
+msgid "a line"
 msgstr ""
 
 #. module: om_account_deferred

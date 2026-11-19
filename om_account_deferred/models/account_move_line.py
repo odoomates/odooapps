@@ -45,6 +45,19 @@ class AccountMoveLine(models.Model):
                 raise ValidationError(_(
                     "A deferral needs both a start and an end date."))
 
+    def _om_deferred_dates_abnormal(self):
+        """ Whether the deferral dates look like a typing mistake: starting or ending more than a year away from
+        the date of the document, e.g. 2062 for 2026, or ending before the month of the document, all of it being
+        recognised at once. """
+        self.ensure_one()
+        start, end = self.om_deferred_start_date, self.om_deferred_end_date
+        day = self.move_id.invoice_date or self.move_id.date
+        if not (start and end and day):
+            return False
+        year_before, year_after = day - relativedelta(years=1), day + relativedelta(years=1)
+        return start < year_before or start > year_after or end < day + relativedelta(day=1) \
+            or end > day + relativedelta(years=10)
+
     # ------------------------------------------------------------------
     # The schedule
     # ------------------------------------------------------------------
