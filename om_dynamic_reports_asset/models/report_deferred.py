@@ -291,9 +291,43 @@ class OmDynamicReportDepreciation(models.AbstractModel):
 
     @api.model
     def _om_choices(self):
-        return [{'key': 'recognition', 'label': self.env._("Depreciations"), 'icon': 'event_repeat',
-                 'menu': 'bar', 'default': 'posted', 'choices': [['posted', self.env._("Posted only")],
-                                                                 ['all', self.env._("Posted and planned")]]}]
+        groupings = [['category', self.env._("By category")], ['account', self.env._("By asset account")],
+                     ['group', self.env._("By asset group")]]
+        if self.env.user.has_group('analytic.group_analytic_accounting'):
+            groupings.append(['analytic', self.env._("By analytic account")])
+        return [
+            {'key': 'recognition', 'label': self.env._("Depreciations"), 'icon': 'event_repeat',
+             'menu': 'bar', 'default': 'posted', 'choices': [['posted', self.env._("Posted only")],
+                                                             ['all', self.env._("Posted and planned")]]},
+            {'key': 'grouping', 'label': self.env._("Group"), 'icon': 'account_tree', 'menu': 'bar',
+             'default': 'category', 'choices': groupings},
+        ]
+
+    @api.model
+    def _odr_asset_group(self, asset, options):
+        """(key, name) of the line an asset is shown under, by the grouping of the options; the analytic account
+        is the one of the asset, or the largest of its analytic distribution."""
+        grouping = options.get('grouping') or 'category'
+        if grouping == 'account':
+            record = asset.account_asset_id
+        elif grouping == 'group':
+            record = asset.group_id
+        elif grouping == 'analytic':
+            record = asset.account_analytic_id
+            if not record and asset.analytic_distribution:
+                shares = {}
+                for key, share in asset.analytic_distribution.items():
+                    for account_id in str(key).split(','):
+                        if account_id.isdigit():
+                            shares[int(account_id)] = shares.get(int(account_id), 0.0) + share
+                if shares:
+                    record = self.env['account.analytic.account'].browse(max(shares, key=shares.get)).exists()
+        else:
+            record = asset.category_id
+        if not record:
+            return ('none', self.env._("Without asset group") if grouping == 'group'
+                    else self.env._("Without analytic account"))
+        return ('%s-%s' % (grouping, record.id), record.display_name)
 
     @api.model
     def _om_get_columns(self, options):
@@ -374,19 +408,22 @@ class OmDynamicReportDepreciation(models.AbstractModel):
         keys = [key for key in ('gross_opening', 'gross_additions', 'gross_disposals', 'gross_closing',
                                 'dep_opening', 'dep_period', 'dep_disposals', 'dep_closing', 'book_value')]
         currency = self._om_currency()
-        by_category = defaultdict(list)
+        by_group = defaultdict(list)
+        names = {}
         for asset in assets:
             values = self._odr_asset_figures(asset, moves_by_asset[asset.id], date_from, date_to)
             values = {key: self._odr_asset_amount(value, asset) for key, value in values.items()}
             if not all(currency.is_zero(values[key]) for key in keys):
-                by_category[asset.category_id].append((asset, values))
+                group_key, names[group_key] = self._odr_asset_group(asset, options)
+                by_group[group_key].append((asset, values))
         nodes = []
         total = dict.fromkeys(keys, 0.0)
-        for category in sorted(by_category, key=lambda c: (c.name or '').casefold()):
-            category_id = 'category-%s' % category.id
+        # the assets without a group or an analytic account come last
+        for group_key in sorted(by_group, key=lambda key: (key == 'none', names[key].casefold())):
+            category_id = 'category-%s' % group_key
             category_values = dict.fromkeys(keys, 0.0)
             children = []
-            for asset, values in by_category[category]:
+            for asset, values in by_group[group_key]:
                 for key in keys:
                     category_values[key] += values[key]
                 asset_id = '%s|asset-%s' % (category_id, asset.id)
@@ -396,8 +433,8 @@ class OmDynamicReportDepreciation(models.AbstractModel):
                     drill=True, drill_label=self.env._("Depreciation entries"))))
             for key in keys:
                 total[key] += category_values[key]
-            nodes.append(self._odr_node(category_id, category.name, self._om_line(
-                category_id, category.name, category_values, kind='group', has_children=True,
+            nodes.append(self._odr_node(category_id, names[group_key], self._om_line(
+                category_id, names[group_key], category_values, kind='group', has_children=True,
                 count=len(children), unfolded=True), children))
         return nodes, total if nodes else False
 
