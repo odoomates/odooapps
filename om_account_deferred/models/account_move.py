@@ -34,6 +34,19 @@ class AccountMove(models.Model):
             move.om_deferred_generation = move.company_id.om_deferred_expense_generation if kind == 'expense' \
                 else move.company_id.om_deferred_revenue_generation
 
+    om_deferred_warning = fields.Char(
+        compute='_compute_om_deferred_warning',
+        help="Technical: the lines whose deferral dates look like a typing mistake.")
+
+    @api.depends('line_ids.om_deferred_start_date', 'line_ids.om_deferred_end_date', 'invoice_date', 'date')
+    def _compute_om_deferred_warning(self):
+        for move in self:
+            labels = [line.name or line.product_id.display_name or _("a line")
+                      for line in move.invoice_line_ids if line._om_deferred_dates_abnormal()]
+            move.om_deferred_warning = _(
+                "Check the deferral dates of %(lines)s: they are more than a year away from the date of the "
+                "document, or end before its month.", lines=', '.join(labels)) if labels else False
+
     @api.depends('om_deferral_ids')
     def _compute_om_deferral_count(self):
         for move in self:
@@ -48,9 +61,12 @@ class AccountMove(models.Model):
     # ------------------------------------------------------------------
     # Generating
     # ------------------------------------------------------------------
-    def _om_deferral_settings(self, kind):
-        """ The journal and the account of one side, refusing to go on without them. """
-        settings = (self.company_id or self.env.company)._om_deferred_settings(kind)
+    def _om_deferral_settings(self, kind, account=None):
+        """ The journal and the account of one side, refusing to go on without them. The income or expense
+        ``account`` deferred may have a deferral account of its own, used instead of the one of the settings. """
+        settings = dict((self.company_id or self.env.company)._om_deferred_settings(kind))
+        if account and account._om_own_deferral_account():
+            settings['account_id'] = account._om_own_deferral_account()
         names = {'expense': _("deferred expense"), 'revenue': _("deferred revenue")}
         if not settings['account_id']:
             raise UserError(_(
@@ -100,7 +116,7 @@ class AccountMove(models.Model):
             label = _("Deferral of %(document)s", document=move.name or '')
             by_key = defaultdict(list)
             for line in lines:
-                settings = move._om_deferral_settings(line._om_deferral_kind())
+                settings = move._om_deferral_settings(line._om_deferral_kind(), line.account_id)
                 pair = (line.account_id, settings['account_id'], line.partner_id, line.product_id,
                         line.analytic_distribution)
                 journal = settings['journal_id']
@@ -179,10 +195,10 @@ class AccountMove(models.Model):
         if not totals:
             raise UserError(_("Nothing is deferred after %(date)s.", date=period_end))
         settings = self._om_deferral_settings(kind)
-        deferred_account = settings['account_id']
         label = _("Grouped deferral of %(date)s", date=period_end)
         line_commands = []
         for (account, analytic), amount in totals.items():
+            deferred_account = self._om_deferral_settings(kind, account)['account_id']
             line_commands += self._om_deferral_line_pair(
                 label, account, deferred_account, -amount, analytic=dict(analytic) or None)
         move = self.create({

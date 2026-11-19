@@ -26,6 +26,11 @@ Features
 * Open the deferral entries of a document from its Deferrals button. Resetting the document to draft reverses
   its posted deferral entries and deletes the others; a credit note defers its lines the other way round.
 * The analytic distribution of a line is carried to its deferral entries.
+* Give an income or expense account a deferral account of its own (Own Deferral Account on the account),
+  e.g. prepaid insurance apart from the other prepaid expenses: its lines are deferred there instead of the
+  account of the settings, on validation and in the grouped entries.
+* A draft invoice or bill warns when deferral dates look like a typing mistake: more than a year away from the
+  date of the document, ending before its month, or more than ten years long.
 
 Configuration
 =============
@@ -40,6 +45,26 @@ Usage
 Show the Start Date and End Date columns of the invoice lines (optional columns), fill them in on the lines
 to defer and post the document. With Manually & Grouped, open Accounting > Reporting > Deferred Revenue or
 Deferred Expense at the end of each period, choose the period and click Generate Entries.
+
+Upgrade
+=======
+
+Version 0.2.0 adds fields to the accounts: upgrade the module before using it. From the command line::
+
+    odoo-bin -c <your config> -d <your database> -u om_account_deferred --stop-after-init
+
+No account has a deferral account of its own after the upgrade: the deferrals go on using the accounts of the
+settings until one is set.
+
+Release Notes
+=============
+
+0.2.0
+-----
+
+* Own deferral account per income or expense account.
+* Warning on draft invoices and bills when the deferral dates look like a typing mistake.
+* Upgrade with ``-u om_account_deferred``.
 
 Credits
 =======

@@ -1,6 +1,6 @@
 {
     'name': 'Deferred Revenue and Expense',
-    'version': '0.1.1',
+    'version': '0.2.0',
     'author': 'Odoo Mates',
     'category': 'Accounting/Accounting',
     'summary': 'Deferred Revenue, Deferred Expense, Prepaid Expenses, Revenue Recognition from the invoice line, '
@@ -16,6 +16,7 @@
         'security/ir.access.csv',
         'views/res_config_settings_views.xml',
         'views/account_move_views.xml',
+        'views/account_account_views.xml',
         'views/deferred_report_views.xml',
         'report/deferred_report_templates.xml',
     ],
