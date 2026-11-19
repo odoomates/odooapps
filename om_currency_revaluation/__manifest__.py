@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Currency Revaluation',
-    'version': '1.0.2',
+    'version': '1.0.3',
     'category': 'Accounting',
     'summary': 'Revalue the open foreign currency balances at the closing rate, with unrealized gains and losses',
     'description': """
