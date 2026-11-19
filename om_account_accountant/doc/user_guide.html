@@ -886,6 +886,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>When the money arrives, <strong>Register Payment</strong> (section 5.4) or match it
             on the bank reconciliation screen (section 6.3).</li>
     </ol>
+    <p>To sign the invoices, turn on <strong>Signature on Invoices</strong> in
+        <span class="path">Configuration &rsaquo; Settings &rsaquo; Customer Invoices</span>, and choose the
+        <strong>Signing User</strong>, or leave it empty for the salesperson of each invoice. Each user draws or uploads
+        their signature in their preferences. The name and the signature are printed at the bottom of the invoice; the
+        <strong>Signed By</strong> field of the invoice changes the signer of one invoice.</p>
 
     <h2><span class="n">5.2</span> Vendor bills</h2>
     <p><span class="path">Vendors &rsaquo; Bills</span>. Same cycle, and two things worth
@@ -912,6 +917,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Post it. A posted entry can no longer be edited; correct it with a reversal instead
             (<strong>Reverse Entry</strong>), which keeps the audit trail intact.</li>
     </ol>
+    <p>To spread an amount over several accounts, select the journal item and choose
+        <strong>Action &rsaquo; Split</strong>: add the accounts, with a percentage or an amount each, and a partner,
+        a label or an analytic distribution if needed. On a draft entry the item is split in place. On a posted entry
+        it stays as it is, and a reclassification entry, dated as you choose, moves the parts to the new accounts.
+        Items with taxes, or already reconciled, cannot be split.</p>
     <figure>
         <img src="img/journal-items.jpg" alt="Journal items"/>
         <figcaption>The journal items, with the filters every accountant needs.</figcaption>
@@ -1208,6 +1218,33 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Mark a transaction <strong>to check</strong> when you are unsure; it stays visible
             for a colleague.</li>
     </ol>
+    <p>What the screen does for you:</p>
+    <ul class="plain">
+        <li><strong>The partner</strong> of a new transaction is set when it is certain: the one partner owning the
+            bank account of the other party, the one company with exactly the name written by the bank, or the one
+            partner of the open invoice or bill whose number is in the reference. When several partners fit, or when
+            they disagree, the partner stays empty, as a wrong partner is worse than none.</li>
+        <li><strong>Cheque numbers</strong>: with cheque printing installed, a cheque number written on the
+            transaction finds its payment, and the number is shown and can be searched in the list of items.</li>
+        <li><strong>Early payment discount</strong>: an invoice paid at its discounted amount within the discount date
+            is matched in full, the discount going to the early payment discount account of the company.</li>
+        <li><strong>Tolerance</strong>: with a payment tolerance, and a foreign currency tolerance for the items in
+            another currency, an item differing by a small amount still matches. When the transaction is reconciled
+            automatically, the difference goes to the payment difference account.</li>
+    </ul>
+    <p>And what you can do from it:</p>
+    <ul class="plain">
+        <li><strong>Keep on the partner's receivable</strong> (or payable, for money going out), in the
+            <strong>Counterpart</strong> tab: the transaction stays open there, e.g. an advance to match with the
+            invoice later.</li>
+        <li><strong>Notes and documents</strong>: the messages, the activities and the attachments of the transaction.
+            <strong>Create bill from document</strong> (or invoice, for money coming in) makes a draft of the amount
+            with the document attached, to check, post and match.</li>
+        <li><strong>Several transactions at once</strong>: tick them in the list to set their partner, or to book them
+            on an account, such as bank fees.</li>
+        <li><strong>From the invoice</strong>: the transactions of the partner not reconciled yet appear in the
+            outstanding credits of the invoice, and clicking one matches them.</li>
+    </ul>
     <figure>
         <img src="img/bank-reconciliation.jpg" alt="Reconciliation screen"/>
         <figcaption>The reconciliation screen: the transaction, its counterparts and the
@@ -1229,8 +1266,17 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             an automatic trigger, partner mapping models that fill in the partner of a new
             transaction, and the rule that reconciles a transaction matching exactly one open
             item by amount and reference. A scheduled action treats new transactions daily and
-            runs again as soon as more are imported.</p>
+            runs again as soon as more are imported. A new or changed automatic model is tried again
+            on the transactions still open.</p>
     </div>
+    <p>When transactions of the same partner, or with the same first word in their label, have been booked by hand
+        on the same account three times, a reconciliation model is <strong>learned</strong> from them: find it with the
+        <strong>Learned</strong> filter of the reconciliation models, check its conditions, and use it, or set it to
+        run automatically. Each model counts the times it is used. With a <strong>Bank Fees Account</strong> in the
+        settings, a "Bank Fees" model is offered on every bank journal.</p>
+    <p>The settings of the reconciliation are in <span class="path">Configuration &rsaquo; Settings &rsaquo; Bank
+        &amp; Cash</span>: the automatic reconciliation, finding the partner of new transactions, the payment
+        tolerances with their payment difference account, and the bank fees account.</p>
 
     <h2><span class="n">6.4</span> Match Journal Items</h2>
     <p><span class="path">Accounting &rsaquo; Reconciliation &rsaquo; Match Journal Items</span>.
@@ -1241,9 +1287,17 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Select the items that belong together and press <strong>Match</strong>. The wizard
             shows the debit, the credit and the difference.</li>
         <li>Write the difference off on a journal, account, date and label of your choice &mdash;
-            or leave it, and the items are matched partially.</li>
+            or leave it, and the items are matched partially. Untick <strong>Allow Partial Matching</strong> to
+            refuse items that do not add up. A reconciliation <strong>Model</strong> fills the write-off in, and
+            <strong>Taxes</strong> take the tax out of the difference, e.g. for a discount given. When the date falls
+            in a locked period, the wizard says so and the entry is dated on the first open day.</li>
+        <li>Items of two accounts, or of several partners, can be matched too: a journal entry first moves them to the
+            account and the partner you choose, e.g. a payment booked on the wrong customer.</li>
         <li><strong>Match Suggestions</strong> reconciles, in one go, every group of items of the
             same account and partner whose amounts cancel each other.</li>
+        <li><span class="path">Reconciliation &rsaquo; Reconcile Automatically</span> does it on chosen accounts,
+            partners and dates: the perfect pairs of opposite amounts, or all the items of a partner adding up to
+            zero.</li>
     </ol>
     <figure>
         <img src="img/match-journal-items.jpg" alt="Match journal items"/>

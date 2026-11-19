@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Community',
-    'version': '1.5.9',
+    'version': '1.6.0',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, '
@@ -41,6 +41,7 @@
     ],
     'data': [
         'security/group.xml',
+        'security/ir.access.csv',
         'views/menu.xml',
         'views/review_menu.xml',
         'views/settings.xml',
@@ -50,6 +51,8 @@
         'views/payment_method.xml',
         'views/reconciliation.xml',
         'views/account_journal.xml',
+        'views/invoice_signature.xml',
+        'wizard/split_move_line_views.xml',
     ],
     'application': True,
     'images': ['static/description/banner.gif'],
