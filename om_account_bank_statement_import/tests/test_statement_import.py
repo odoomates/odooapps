@@ -158,3 +158,74 @@ class TestStatementImport(AccountTestInvoicingCommon):
         self.assertEqual(lines.mapped('payment_ref'), ['Test 1', 'Test 2'])
         self.assertEqual(lines.mapped('ref'), ['Ref 1', 'Ref 2'])
         self.assertTrue(lines.partner_id)
+
+    def _import_csv_with_partners(self, rows):
+        """ Import a CSV file of transactions given as (other party, its bank account, amount) """
+        file_map = self.env['account.statement.import.map'].create({
+            'name': 'Bank with the other party', 'date_format': '%d/%m/%Y',
+            'column_date': 'Date', 'column_label': 'Label', 'column_amount': 'Amount',
+            'column_partner': 'Counter Party', 'column_account_number': 'Account',
+        })
+        content = 'Date,Label,Amount,Counter Party,Account\n' + ''.join(
+            f'01/03/2026,Transaction {index},{amount},{name},{account}\n'
+            for index, (name, account, amount) in enumerate(rows, start=1))
+        action = self._import(content, 'statement.csv', journal_id=self.journal.id, map_id=file_map.id)
+        return self._statements_of(action).line_ids.sorted('payment_ref')
+
+    def test_the_partner_is_found_from_the_name_of_the_other_party(self):
+        """ Only a company is matched by name """
+        Partner = self.env['res.partner']
+        bluebell = Partner.create({'name': 'Bluebell Telecom Ltd', 'is_company': True})
+        harbour = Partner.create({'name': 'Harbour  Print', 'is_company': True})
+        Partner.create({'name': 'Harbour Print Services', 'is_company': True})
+        acme = Partner.create({'name': 'Acme Corporation', 'is_company': True})
+        Partner.create({'name': 'Jane Whitfield', 'parent_id': acme.id})
+        Partner.create({'name': 'Northwind Traders', 'is_company': True})
+        Partner.create({'name': 'NORTHWIND TRADERS', 'is_company': True})
+        Partner.create({'name': 'Ravenmoor Council', 'is_company': True})
+        Partner.create({'name': 'Old Supplier Ltd', 'is_company': True, 'active': False})
+        Partner.create({'name': 'Sister Company Ltd', 'is_company': True,
+                        'company_id': self.setup_company_data('Sister Company')['company'].id})
+
+        lines = self._import_csv_with_partners([
+            ('BLUEBELL TELECOM LTD', '', -10),        # 1. the exact name, whatever the case
+            ('harbour print', '', -25),               # 2. and whatever the spaces; not the longer name
+            ('BLUEBELL TELECOM', '', -15),            # 3. part of a name only: not certain
+            ('Jane Whitfield', '', 120),              # 4. a person is not matched by name
+            ('Northwind Traders', '', -80),           # 5. two companies: none rather than the wrong one
+            ('Ravenmoor Council Tax', '', -150),      # 6. more than the name: not certain
+            ('City Parking Fines', '', -60),          # 7. no such partner
+            ('Old Supplier Ltd', '', -50),            # 8. an archived partner is left out
+            ('Sister Company Ltd', '', -5),           # 9. a partner of another company is left out
+        ])
+        # the partner of exactly the name written by the bank comes first, as the import of 16.0 found it
+        jane = Partner.search([('name', '=', 'Jane Whitfield')])
+        northwind = Partner.search([('name', '=', 'Northwind Traders')])
+        self.assertEqual([line.partner_id for line in lines],
+                         [bluebell, harbour, Partner, jane, northwind, Partner, Partner, Partner, Partner])
+        # the name written by the bank is kept
+        self.assertEqual(lines[2].partner_name, 'BLUEBELL TELECOM')
+
+    def test_the_partner_is_found_from_the_bank_account_of_the_other_party(self):
+        Partner = self.env['res.partner']
+        supplier = Partner.create({'name': 'Paper Mill Ltd', 'is_company': True})
+        PartnerBank = self.env['res.partner.bank']
+        PartnerBank.create({'acc_number': 'GB29 NWBK 6016 1331 9268 19', 'partner_id': supplier.id})
+        Partner.create({'name': 'Paper Mill Trading', 'is_company': True})
+        contractor = Partner.create({'name': 'Kestrel Builders', 'is_company': True})
+        person = Partner.create({'name': 'Tom Kestrel', 'parent_id': contractor.id})
+        PartnerBank.create({'acc_number': 'GB94 BARC 1020 1530 0934 59', 'partner_id': person.id})
+        for owner in Partner.create([{'name': 'Shared One', 'is_company': True}, {'name': 'Shared Two'}]):
+            PartnerBank.create({'acc_number': 'DE89 3704 0044 0532 0130 00', 'partner_id': owner.id})
+
+        lines = self._import_csv_with_partners([
+            ('PM LTD', 'gb29 nwbk 6016 1331 9268 19', -200),            # 1. the owner of the account
+            ('Paper Mill Ltd', 'GB29NWBK60161331926819', -100),         # 2. the account and the name agree
+            ('Paper Mill Trading', 'GB29NWBK60161331926819', -300),     # 3. they disagree: none
+            ('T KESTREL', 'GB94BARC10201530093459', -400),              # 4. a contact's account: their company
+            ('Shared One', 'DE89370400440532013000', -50),              # 5. two owners: none, whatever the name
+        ])
+        # the partner of exactly the name written by the bank comes first, as the import of 16.0 found it
+        trading = Partner.search([('name', '=', 'Paper Mill Trading')])
+        shared_one = Partner.search([('name', '=', 'Shared One')])
+        self.assertEqual([line.partner_id for line in lines], [supplier, supplier, trading, contractor, shared_one])
