@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Community',
-    'version': '1.6.0',
+    'version': '1.7.0',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, '
@@ -53,7 +53,13 @@
         'views/account_journal.xml',
         'views/invoice_signature.xml',
         'wizard/split_move_line_views.xml',
+        'wizard/journal_create_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'om_account_accountant/static/src/attachment_preview/*',
+        ],
+    },
     'application': True,
     'images': ['static/description/banner.gif'],
 }
