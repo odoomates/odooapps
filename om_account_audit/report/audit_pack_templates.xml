@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="report_audit_pack">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="pack">
+                <t t-set="section" t-value="sections[pack.id]"/>
+                <t t-call="web.external_layout">
+                    <t t-set="company" t-value="pack.company_id"/>
+                    <div class="page">
+                        <h2>Audit Pack</h2>
+                        <p>
+                            <strong t-field="pack.company_id.name"/>,
+                            from <span t-field="pack.date_from"/> to <span t-field="pack.date_to"/>.
+                            Printed by <span t-out="user.name"/> on
+                            <span t-out="context_timestamp(datetime.datetime.now()).strftime('%Y-%m-%d %H:%M')"/>.
+                        </p>
+
+                        <h4 class="mt-4">1. Data Inalterability</h4>
+                        <t t-set="check" t-value="section['check']"/>
+                        <p t-if="not check">No data inalterability check was run.</p>
+                        <t t-if="check">
+                            <p>
+                                Check of <span t-field="check.date"/>:
+                                <strong t-field="check.state"/>.
+                            </p>
+                            <table class="table table-sm o_main_table">
+                                <thead>
+                                    <tr>
+                                        <th>Journal</th>
+                                        <th>Result</th>
+                                        <th>First Entry</th>
+                                        <th>Last Entry</th>
+                                        <th>Last Hash</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr t-foreach="check.line_ids" t-as="line">
+                                        <td><span t-field="line.journal_name"/></td>
+                                        <td>
+                                            <span t-field="line.status"/>
+                                            <div class="text-muted small" t-field="line.message"/>
+                                        </td>
+                                        <td><span t-field="line.first_move_name"/> <span t-field="line.first_move_date"/></td>
+                                        <td><span t-field="line.last_move_name"/> <span t-field="line.last_move_date"/></td>
+                                        <td class="small text-break"><span t-field="line.last_hash"/></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </t>
+
+                        <h4 class="mt-4">2. Journal Entries of the Period</h4>
+                        <t t-set="counts" t-value="section['counts']"/>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr><td>Posted</td><td class="text-end" t-out="counts['posted']"/></tr>
+                                <tr><td>Posted and secured</td><td class="text-end" t-out="counts['secured']"/></tr>
+                                <tr><td>Posted and not secured</td><td class="text-end" t-out="counts['not_secured']"/></tr>
+                                <tr><td>Draft</td><td class="text-end" t-out="counts['draft']"/></tr>
+                                <tr><td>Cancelled</td><td class="text-end" t-out="counts['cancelled']"/></tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">3. Lock Dates and Closings</h4>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr t-foreach="section['locks']" t-as="lock">
+                                    <td t-out="lock[0]"/>
+                                    <td class="text-end"><t t-if="lock[1]" t-out="lock[1]"/><t t-else="">-</t></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p t-if="not section['closings']">No period closing in this period.</p>
+                        <table t-if="section['closings']" class="table table-sm">
+                            <thead>
+                                <tr><th>Period</th><th>Status</th><th>Closed By</th><th>Closed On</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="section['closings']" t-as="closing">
+                                    <td><span t-field="closing.name"/></td>
+                                    <td><span t-field="closing.state"/></td>
+                                    <td><span t-field="closing.closed_by_id"/></td>
+                                    <td><span t-field="closing.closed_on"/></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">4. Changes Logged on the Journal Entries</h4>
+                        <p t-if="not section['changes']">No change logged in this period.</p>
+                        <table t-if="section['changes']" class="table table-sm">
+                            <thead>
+                                <tr><th>Date</th><th>By</th><th>Entry</th><th>Change</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="section['changes']" t-as="change">
+                                    <td t-out="change['date']"/>
+                                    <td t-out="change['author']"/>
+                                    <td t-out="change['record']"/>
+                                    <td class="small" t-out="change['description']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <h4 class="mt-4">5. Users with Accounting Access</h4>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr><th>User</th><th>Login</th><th>Access</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="section['users']" t-as="person">
+                                    <td t-out="person['name']"/>
+                                    <td t-out="person['login']"/>
+                                    <td t-out="person['access']"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>
