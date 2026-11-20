@@ -1,0 +1,255 @@
+$o-sign-accent: $o-action;
+
+.o_sign_editor {
+    --o-sign-role-color: #{$o-gray-500};
+    background-color: $o-view-background-color;
+    user-select: none;
+
+    input, select, textarea {
+        user-select: text;
+    }
+}
+
+// toolbar ===================================================================
+.o_sign_editor_toolbar {
+    min-height: 64px;
+    background-color: $o-view-background-color;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.04);
+
+    .o_sign_editor_title {
+        font-size: 1.15rem;
+        font-weight: 600;
+    }
+
+    .o_sign_zoom_label {
+        min-width: 56px;
+    }
+}
+
+.o_sign_status_dirty {
+    color: #8a5a00;
+    background-color: #fff3d6;
+}
+
+// canvas: the pages =========================================================
+.o_sign_editor_canvas {
+    background-color: #f6f5f9;
+    background-image: radial-gradient(circle, rgba(113, 75, 103, 0.13) 1px, transparent 1.2px);
+    background-size: 22px 22px;
+}
+
+.o_sign_editor_pages {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    min-width: min-content;
+    padding-left: 24px;
+    padding-right: 24px;
+}
+
+.o_sign_page {
+    position: relative;
+    flex: 0 0 auto;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(16, 24, 40, 0.1), 0 6px 20px rgba(16, 24, 40, 0.08);
+
+    .o_sign_page_canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+    }
+
+    .o_sign_page_number {
+        position: absolute;
+        right: 0;
+        bottom: -20px;
+        color: $o-gray-500;
+        font-size: 0.75rem;
+    }
+}
+
+// fields ====================================================================
+.o_sign_field {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+    padding: 0 4px;
+    overflow: hidden;
+    border: 1px solid var(--o-sign-role-color);
+    border-radius: 3px;
+    color: $o-gray-900;
+    background-color: color-mix(in srgb, var(--o-sign-role-color) 22%, transparent);
+    font-size: 0.75rem;
+    line-height: 1;
+    cursor: move;
+    touch-action: none;
+
+    .oi {
+        flex: 0 0 auto;
+        color: color-mix(in srgb, var(--o-sign-role-color) 70%, #000);
+    }
+
+    .o_sign_field_text {
+        min-width: 0;
+    }
+
+    .o_sign_field_required {
+        color: $o-danger;
+        font-weight: 700;
+    }
+
+    .o_sign_field_resize {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 10px;
+        height: 10px;
+        border-top-left-radius: 3px;
+        background-color: var(--o-sign-role-color);
+        cursor: nwse-resize;
+        opacity: 0;
+    }
+
+    &:hover .o_sign_field_resize,
+    &.o_sign_field_selected .o_sign_field_resize {
+        opacity: 1;
+    }
+
+    &.o_sign_field_selected {
+        z-index: 2;
+        box-shadow: 0 0 0 2px var(--o-sign-role-color), 0 4px 12px rgba(16, 24, 40, 0.18);
+    }
+
+    &.o_sign_field_small {
+        justify-content: center;
+        padding: 0;
+
+        .o_sign_field_text,
+        .o_sign_field_required {
+            display: none;
+        }
+    }
+
+    &.o_sign_field_readonly {
+        cursor: pointer;
+    }
+}
+
+.o_sign_field_ghost {
+    position: fixed;
+    z-index: 1100;
+    width: 150px;
+    height: 28px;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    background-color: color-mix(in srgb, var(--o-sign-role-color) 35%, #fff);
+    box-shadow: 0 6px 18px rgba(16, 24, 40, 0.2);
+}
+
+// side panel ================================================================
+.o_sign_editor_panel {
+    flex: 0 0 340px;
+    background-color: $o-view-background-color;
+}
+
+.o_sign_panel_section {
+    padding: 16px 18px;
+    border-bottom: 1px solid $o-gray-200;
+}
+
+.o_sign_panel_title {
+    margin-bottom: 8px;
+    color: $o-gray-700;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.o_sign_hint {
+    color: $o-gray-600;
+    font-size: 0.8rem;
+}
+
+.o_sign_role_dot {
+    display: inline-block;
+    flex: 0 0 auto;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: var(--o-sign-role-color);
+}
+
+.o_sign_role_choice {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid $o-gray-300;
+    border-radius: 20px;
+    background-color: $o-view-background-color;
+
+    &.active {
+        border-color: var(--o-sign-role-color);
+        background-color: color-mix(in srgb, var(--o-sign-role-color) 15%, #fff);
+        font-weight: 600;
+    }
+}
+
+.o_sign_palette {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+
+.o_sign_palette_item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 9px;
+    border: 1px solid $o-gray-300;
+    border-left: 4px solid var(--o-sign-role-color);
+    border-radius: 6px;
+    color: $o-gray-800;
+    background-color: $o-view-background-color;
+    font-size: 0.85rem;
+    text-align: left;
+    cursor: grab;
+    touch-action: none;
+    transition: box-shadow 0.15s, transform 0.15s;
+
+    &:hover:not(:disabled) {
+        box-shadow: 0 2px 8px rgba(16, 24, 40, 0.1);
+        transform: translateY(-1px);
+    }
+
+    &:disabled {
+        cursor: default;
+        opacity: 0.6;
+    }
+}
+
+.o_sign_role {
+    border-left: 4px solid var(--o-sign-role-color);
+
+    &.o_sign_role_active {
+        box-shadow: 0 0 0 1px var(--o-sign-role-color);
+    }
+
+    .o_sign_role_order {
+        flex: 0 0 52px;
+        width: 52px;
+    }
+
+    .o_sign_role_color {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border: 0;
+    }
+}
