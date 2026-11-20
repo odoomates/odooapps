@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:09+0000\n"
-"PO-Revision-Date: 2026-10-22 07:09+0000\n"
+"POT-Creation-Date: 2026-11-20 08:11+0000\n"
+"PO-Revision-Date: 2026-11-20 08:11+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -82,7 +82,6 @@ msgstr ""
 
 #. module: om_account_asset
 #: model:ir.actions.server,name:om_account_asset.account_asset_cron_ir_actions_server
-#: model:ir.cron,cron_name:om_account_asset.account_asset_cron
 msgid "Account Asset: Generate asset entries"
 msgstr ""
 
@@ -115,7 +114,7 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,help:om_account_asset.field_account_asset_category__account_depreciation_expense_id
 msgid ""
-"Account used in the periodical entries, to record a part of the asset as "
+"Account used in the periodical entries to record a part of the asset as "
 "expense."
 msgstr ""
 
@@ -123,13 +122,6 @@ msgstr ""
 #: model:ir.model.fields,help:om_account_asset.field_account_asset_category__account_asset_id
 msgid ""
 "Account used to record the purchase of the asset at its original price."
-msgstr ""
-
-#. module: om_account_asset
-#. odoo-javascript
-#: code:addons/om_account_asset/static/src/js/account_asset.js:0
-#, python-format
-msgid "Accounting entries waiting for manual verification"
 msgstr ""
 
 #. module: om_account_asset
@@ -196,15 +188,15 @@ msgid "Amount of Installment Lines"
 msgstr ""
 
 #. module: om_account_asset
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__analytic_distribution
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__analytic_distribution
-msgid "Analytic"
-msgstr ""
-
-#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__account_analytic_id
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__account_analytic_id
 msgid "Analytic Account"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__analytic_distribution
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__analytic_distribution
+msgid "Analytic Distribution"
 msgstr ""
 
 #. module: om_account_asset
@@ -401,6 +393,12 @@ msgstr ""
 #. module: om_account_asset
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
 msgid "Category of asset"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/migrations/1.2.0/post-migrate.py:0
+msgid "Check the degressive depreciation"
 msgstr ""
 
 #. module: om_account_asset
@@ -752,6 +750,12 @@ msgid "Disposed of"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__distribution_analytic_account_ids
+#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__distribution_analytic_account_ids
+msgid "Distribution Analytic Account"
+msgstr ""
+
+#. module: om_account_asset
 #. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 #, python-format
@@ -983,17 +987,6 @@ msgid "Journal Item"
 msgstr ""
 
 #. module: om_account_asset
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset____last_update
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category____last_update
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_depreciation_line____last_update
-#: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report____last_update
-#: model:ir.model.fields,field_description:om_account_asset.field_asset_depreciation_confirmation_wizard____last_update
-#: model:ir.model.fields,field_description:om_account_asset.field_asset_modify____last_update
-#: model:ir.model.fields,field_description:om_account_asset.field_asset_sell____last_update
-msgid "Last Modified on"
-msgstr ""
-
-#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__write_uid
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_depreciation_line__write_uid
@@ -1022,12 +1015,6 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_depreciation_line__move_check
 msgid "Linked"
-msgstr ""
-
-#. module: om_account_asset
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__message_main_attachment_id
-#: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__message_main_attachment_id
-msgid "Main Attachment"
 msgstr ""
 
 #. module: om_account_asset
@@ -1122,15 +1109,28 @@ msgid ""
 msgstr ""
 
 #. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/migrations/1.2.0/post-migrate.py:0
+msgid ""
+"Nothing was changed. To compute the entries not posted yet with the yearly "
+"rate, press Compute Depreciation; the posted ones stay as they are. If the "
+"factor was entered for a period on purpose, leave the asset as it is."
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__message_needaction_counter
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__message_needaction_counter
 msgid "Number of Actions"
 msgstr ""
 
 #. module: om_account_asset
+#: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__method_number
+msgid "Number of Depreciation"
+msgstr ""
+
+#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_asset__method_number
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_category__method_number
-#: model:ir.model.fields,field_description:om_account_asset.field_asset_modify__method_number
 msgid "Number of Depreciations"
 msgstr ""
 
@@ -1195,12 +1195,9 @@ msgid "Post Depreciation Lines"
 msgstr ""
 
 #. module: om_account_asset
-#. odoo-javascript
-#: code:addons/om_account_asset/static/src/js/account_asset.js:0
 #: model:ir.model.fields,field_description:om_account_asset.field_account_asset_depreciation_line__move_posted_check
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__move_check
 #: model_terms:ir.ui.view,arch_db:om_account_asset.view_asset_asset_report_search
-#, python-format
 msgid "Posted"
 msgstr ""
 
@@ -1355,6 +1352,13 @@ msgstr ""
 
 #. module: om_account_asset
 #. odoo-python
+#: code:addons/om_account_asset/wizard/asset_modify.py:0
+#, python-format
+msgid "Set an ending date to modify this asset."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
 #: code:addons/om_account_asset/models/account_asset.py:0
 #, python-format
 msgid "Set the gain and loss accounts of the category \"%s\"."
@@ -1413,6 +1417,53 @@ msgstr ""
 
 #. module: om_account_asset
 #. odoo-python
+#: code:addons/om_account_asset/migrations/1.2.0/post-migrate.py:0
+msgid ""
+"The degressive factor is now a yearly rate: %(factor)s depreciates "
+"%(percent)s%% of the value left at the start of each year, spread over its "
+"periods. Before this version it was applied to every period of %(months)s "
+"month(s)."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/migrations/1.2.0/post-migrate.py:0
+msgid ""
+"The degressive factor is now a yearly rate: %(factor)s depreciates "
+"%(percent)s%% of the value left at the start of each year. Before this "
+"version it was applied to every period. If you entered a rate per period on "
+"purpose, enter the yearly rate instead, so that the new assets of this "
+"category depreciate as you expect."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/migrations/1.2.0/post-migrate.py:0
+msgid "The degressive factor is now a yearly rate; see the note of the asset."
+msgstr ""
+
+#. module: om_account_asset
+#: model_terms:ir.ui.view,arch_db:om_account_asset.view_account_asset_asset_form
+msgid ""
+"The depreciation entries not posted yet are computed again from the method "
+"of the asset; the posted ones stay as they are. Continue?"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_modify.py:0
+#, python-format
+msgid "The ending date must be after the purchase date of the asset."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/migrations/1.2.0/post-migrate.py:0
+msgid "The entries not posted yet, before any change:"
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
 #: code:addons/om_account_asset/wizard/asset_modify.py:0
 #, python-format
 msgid ""
@@ -1433,6 +1484,13 @@ msgstr ""
 msgid ""
 "The number of depreciations or the period length of your asset category "
 "cannot be 0."
+msgstr ""
+
+#. module: om_account_asset
+#. odoo-python
+#: code:addons/om_account_asset/wizard/asset_modify.py:0
+#, python-format
+msgid "The period length must be greater than 0."
 msgstr ""
 
 #. module: om_account_asset
@@ -1494,13 +1552,6 @@ msgid "Type of the exception activity on record."
 msgstr ""
 
 #. module: om_account_asset
-#. odoo-javascript
-#: code:addons/om_account_asset/static/src/js/account_asset.js:0
-#, python-format
-msgid "Unposted"
-msgstr ""
-
-#. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__unposted_value
 msgid "Unposted Amount"
 msgstr ""
@@ -1549,6 +1600,14 @@ msgstr ""
 #. module: om_account_asset
 #: model:ir.model.fields,field_description:om_account_asset.field_asset_asset_report__name
 msgid "Year"
+msgstr ""
+
+#. module: om_account_asset
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_asset__method_progress_factor
+#: model:ir.model.fields,help:om_account_asset.field_account_asset_category__method_progress_factor
+msgid ""
+"Yearly rate of the degressive method: 0.3 depreciates 30% of the value left "
+"at the start of each year, spread over the periods of the year."
 msgstr ""
 
 #. module: om_account_asset
