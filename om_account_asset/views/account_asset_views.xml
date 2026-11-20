@@ -19,6 +19,8 @@
                     <button name="set_to_draft" string="Set to Draft" type="object"
                             invisible="entry_count != 0 or state != 'open'"/>
                     <button name="%(action_asset_modify)d" invisible="state != 'open'" string="Modify Depreciation" type="action"/>
+                    <button name="%(action_asset_activate)d" string="Activate Depreciation" type="action" class="btn-primary"
+                            invisible="state != 'open' or method != 'none'" groups="account.group_account_manager"/>
                     <field name="state" widget="statusbar" statusbar_visible="draft,open"/>
                 </header>
                 <sheet>
@@ -26,8 +28,14 @@
                         <button class="oe_stat_button" name="open_entries" type="object" icon="fa-pencil">
                             <field string="Items" name="entry_count" widget="statinfo"/>
                         </button>
+                        <button class="oe_stat_button" name="open_refunded_asset" type="object" icon="fa-undo"
+                                string="Refund Of" invisible="not refunded_asset_id"/>
+                        <button class="oe_stat_button" name="open_refunds" type="object" icon="fa-repeat"
+                                string="Refunds" invisible="not refund_ids"/>
                     </div>
                     <field name="disposal_move_id" invisible="1"/>
+                    <field name="refunded_asset_id" invisible="1"/>
+                    <field name="refund_ids" invisible="1"/>
                     <widget name="web_ribbon" title="Disposed" bg_color="text-bg-secondary"
                             invisible="not disposal_date"/>
                     <div class="oe_title">
@@ -43,12 +51,13 @@
                                    readonly="state != 'draft'"
                                    context="{'default_type': 'purchase'}" help="Category of asset"/>
                             <field name="code" readonly="state != 'draft'"/>
+                            <field name="group_id" options="{'no_quick_create': True}"/>
                             <field name="date" help="Date of asset" readonly="state != 'draft'"/>
                             <field name="date_first_depreciation" readonly="state != 'draft'"/>
                             <field name="first_depreciation_manual_date"
                                    readonly="state != 'draft'"
-                                   invisible="date_first_depreciation != 'manual'"
-                                   required="date_first_depreciation == 'manual'"/>
+                                   invisible="date_first_depreciation != 'manual' or method == 'none'"
+                                   required="date_first_depreciation == 'manual' and method != 'none'"/>
                             <field name="type" invisible="1"/>
                             <field name="account_analytic_id" groups="analytic.group_analytic_accounting"/>
                         </group>
@@ -117,7 +126,7 @@
                                        invisible="type == 'sale'" readonly="state != 'draft'"/>
                                 <field name="method_progress_factor"
                                        readonly="state != 'draft'"
-                                       invisible="method == 'linear'"
+                                       invisible="method in ('linear', 'none')"
                                        required="method == 'degressive'"/>
                                 <field name="method_time" string="Time Method Based On"
                                        widget="radio"
@@ -126,6 +135,8 @@
                                 <field name="prorata"
                                        invisible="method_time == 'end'"
                                        readonly="state != 'draft'"/>
+                                <field name="prorata_computation_type" readonly="state != 'draft'"
+                                       invisible="method == 'none'"/>
                             </group>
                             <group>
                                 <field name="method_number"
@@ -139,7 +150,21 @@
                                        required="method_time == 'end'"/>
                             </group>
                         </page>
+                        <page string="Journal Items" name="original_lines" invisible="not original_move_line_ids">
+                            <field name="original_move_line_ids" readonly="1">
+                                <list>
+                                    <field name="date"/>
+                                    <field name="move_id"/>
+                                    <field name="account_id"/>
+                                    <field name="partner_id"/>
+                                    <field name="name"/>
+                                    <field name="company_currency_id" column_invisible="1"/>
+                                    <field name="balance" sum="Total"/>
+                                </list>
+                            </field>
+                        </page>
                     </notebook>
+                    <field name="asset_properties" columns="2"/>
                 </sheet>
                 <chatter/>
             </form>
@@ -179,6 +204,7 @@
             <list string="Assets" decoration-info="(state == 'draft')" decoration-muted="(state == 'close')">
                 <field name="name"/>
                 <field name="category_id" string="Asset Category"/>
+                <field name="group_id" optional="hide"/>
                 <field name="date"/>
                 <field name="partner_id" string="Vendor"/>
                 <field name="value"/>
@@ -202,8 +228,12 @@
                 <filter string="Closed" name="closed" domain="[('state','=', 'close')]"
                         help="Assets in closed state"/>
                 <field name="category_id" string="Asset Category"/>
+                <field name="group_id"/>
                 <field name="partner_id" filter_domain="[('partner_id','child_of',self)]"/>
-                <group expand="0" string="Group By...">
+                <filter string="Without Depreciation" name="no_depreciation" domain="[('method', '=', 'none')]"/>
+                <filter string="Refunds" name="refunds" domain="[('value', '&lt;', 0)]"/>
+                <group>
+                    <filter string="Asset Group" name="by_group" domain="[]" context="{'group_by': 'group_id'}"/>
                     <filter string="Date" name="month" domain="[]" context="{'group_by':'date'}"/>
                     <filter string="Asset Category" name="category" domain="[]" context="{'group_by':'category_id'}"/>
                 </group>
