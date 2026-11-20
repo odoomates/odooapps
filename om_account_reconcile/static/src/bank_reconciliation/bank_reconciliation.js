@@ -5,6 +5,8 @@ import { useHotkey } from "@web/core/hotkeys/hotkey_hook";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { useService } from "@web/core/utils/hooks";
+import { sprintf } from "@web/core/utils/strings";
+import { getDataURLFromFile } from "@web/core/utils/urls";
 import { useDebounced } from "@web/core/utils/timing";
 import { ControlPanel } from "@web/search/control_panel/control_panel";
 import { formatMonetary } from "@web/views/fields/formatters";
@@ -63,6 +65,10 @@ export class OmBankReconciliation extends Component {
             candidates: [],
             writeoff: emptyWriteoff(),
             busy: false,
+            // transactions ticked in the list, for the actions on several of them
+            checkedIds: [],
+            bulkPartnerId: false,
+            bulkAccountId: false,
         });
         this.debouncedSearchTransactions = useDebounced(() => this.loadTransactions(), 300);
         this.debouncedSearchCandidates = useDebounced(() => this.loadCandidates(), 300);
@@ -364,6 +370,8 @@ export class OmBankReconciliation extends Component {
             ? [...this.state.transactions, ...result.transactions]
             : result.transactions;
         this.state.count = result.count;
+        const listedIds = new Set(this.state.transactions.map((tr) => tr.id));
+        this.state.checkedIds = this.state.checkedIds.filter((id) => listedIds.has(id));
         const stillListed = this.state.transactions.some((tr) => tr.id === this.state.selectedId);
         if (!stillListed) {
             const first = this.state.transactions[0];
@@ -510,12 +518,122 @@ export class OmBankReconciliation extends Component {
     }
 
     // ------------------------------------------------------------------
+    // Several transactions at once
+    // ------------------------------------------------------------------
+
+    isChecked(id) {
+        return this.state.checkedIds.includes(id);
+    }
+
+    toggleChecked(id) {
+        const checked = this.state.checkedIds;
+        this.state.checkedIds = checked.includes(id) ? checked.filter((other) => other !== id) : [...checked, id];
+    }
+
+    toggleAllChecked() {
+        const open = this.state.transactions.filter((tr) => !tr.is_reconciled).map((tr) => tr.id);
+        this.state.checkedIds = this.state.checkedIds.length === open.length ? [] : open;
+    }
+
+    setBulkPartner(partnerId) {
+        this.state.bulkPartnerId = partnerId || false;
+    }
+
+    setBulkAccount(accountId) {
+        this.state.bulkAccountId = accountId || false;
+    }
+
+    async bulkSetPartner() {
+        if (!this.state.checkedIds.length || !this.state.bulkPartnerId) {
+            return;
+        }
+        const count = await this.orm.call("account.bank.statement.line", "om_bank_rec_bulk_set_partner", [
+            this.state.checkedIds,
+            this.state.bulkPartnerId,
+        ]);
+        this.notification.add(sprintf(_t("The partner is set on %s transaction(s)."), count), { type: "success" });
+        await this.afterBulk();
+    }
+
+    async bulkBook() {
+        if (!this.state.checkedIds.length || !this.state.bulkAccountId) {
+            return;
+        }
+        this.state.busy = true;
+        try {
+            const count = await this.orm.call("account.bank.statement.line", "om_bank_rec_bulk_book", [
+                this.state.checkedIds,
+                this.state.bulkAccountId,
+            ]);
+            this.notification.add(sprintf(_t("%s transaction(s) booked on the account."), count), { type: "success" });
+        } finally {
+            this.state.busy = false;
+        }
+        await this.afterBulk();
+    }
+
+    async afterBulk() {
+        this.state.checkedIds = [];
+        this.state.bulkPartnerId = false;
+        this.state.bulkAccountId = false;
+        await this.loadTransactions();
+        if (this.state.selectedId) {
+            await this.selectTransaction(this.state.selectedId, { force: true });
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Documents
+    // ------------------------------------------------------------------
+
+    async onDocumentPicked(ev) {
+        const file = ev.target.files?.[0];
+        ev.target.value = "";
+        if (!file || !this.transaction) {
+            return;
+        }
+        const dataUrl = await getDataURLFromFile(file);
+        const moveId = await this.orm.call(
+            "account.bank.statement.line",
+            "om_bank_rec_create_document",
+            [[this.transaction.id], file.name, dataUrl.split(",")[1]],
+            { partner_id: this.state.proposal.partner_id }
+        );
+        this.actionService.doAction(
+            {
+                type: "ir.actions.act_window",
+                res_model: "account.move",
+                res_id: moveId,
+                views: [[false, "form"]],
+                target: "new",
+            },
+            { onClose: () => this.selectTransaction(this.transaction.id, { force: true }) }
+        );
+    }
+
+    // ------------------------------------------------------------------
     // Proposal
     // ------------------------------------------------------------------
 
     async setPartner(partnerId) {
         this.state.proposal.partner_id = partnerId || false;
-        await this.refreshPreview();
+        await Promise.all([this.refreshPreview(), this.loadModels()]);
+    }
+
+    async loadModels() {
+        // the conditions of the models on the partner follow the partner chosen, not saved yet
+        if (!this.transaction || this.isReconciled) {
+            return;
+        }
+        const id = this.transaction.id;
+        const partnerId = this.state.proposal.partner_id;
+        const models = await this.orm.call("account.bank.statement.line", "om_bank_rec_models", [
+            [id],
+            partnerId,
+        ]);
+        if (this.transaction?.id === id && this.state.proposal.partner_id === partnerId) {
+            this.state.data.models = models;
+        }
     }
 
     async addMatch(candidate) {
@@ -593,6 +711,32 @@ export class OmBankReconciliation extends Component {
             partner_id: this.state.proposal.partner_id,
         });
         this.state.writeoff = emptyWriteoff();
+        await this.refreshPreview();
+    }
+
+    async bookOnPartnerAccount() {
+        /** Keep the transaction open on the receivable or payable of the partner, e.g. an advance payment. */
+        const partnerId = this.state.proposal.partner_id;
+        if (!partnerId) {
+            this.notification.add(_t("Choose the partner first."), { type: "warning" });
+            return;
+        }
+        const account = await this.orm.call(
+            "account.bank.statement.line",
+            "om_bank_rec_partner_account",
+            [[this.transaction.id], partnerId]
+        );
+        if (!account) {
+            this.notification.add(_t("The partner has no receivable or payable account."), { type: "warning" });
+            return;
+        }
+        const direction = this.remaining ? Math.sign(this.remaining) : -Math.sign(this.transaction.amount);
+        this.state.proposal.writeoffs.push({
+            ...emptyWriteoff(),
+            account_id: account.id,
+            amount: direction * Math.abs(this.remaining),
+            partner_id: partnerId,
+        });
         await this.refreshPreview();
     }
 

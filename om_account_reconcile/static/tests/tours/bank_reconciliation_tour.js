@@ -28,6 +28,31 @@ tour.register("om_bank_reconciliation_tour", { test: true }, [
             run: "click",
         },
         {
+            content: "Open the reconciliation models",
+            trigger: ".o_om_bank_rec_header:contains(Tour bank fee) ~ .nav-tabs a[data-tab=models]",
+            run: "click",
+        },
+        {
+            content: "The model of the bank is not proposed without a partner",
+            trigger: ".o_om_bank_rec_models button.btn-secondary:contains(Tour Bank Fees)",
+            run() {},
+        },
+        {
+            content: "Choose the bank as partner",
+            trigger: ".o_om_bank_rec_partner .o_record_selector input",
+            run: "text Tour Bank Ltd",
+        },
+        {
+            content: "Pick it in the dropdown",
+            trigger: ".o-autocomplete--dropdown-item:contains(Tour Bank Ltd)",
+            run: "click",
+        },
+        {
+            content: "The model of the bank is proposed for its partner",
+            trigger: ".o_om_bank_rec_models button.btn-primary:contains(Tour Bank Fees)",
+            run() {},
+        },
+        {
             content: "Open the counterpart form",
             trigger: ".o_om_bank_rec_header:contains(Tour bank fee) ~ .nav-tabs a[data-tab=writeoff]",
             run: "click",

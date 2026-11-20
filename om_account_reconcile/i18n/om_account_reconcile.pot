@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-10-22 07:09+0000\n"
-"PO-Revision-Date: 2026-10-22 07:09+0000\n"
+"POT-Creation-Date: 2026-11-20 09:22+0000\n"
+"PO-Revision-Date: 2026-11-20 09:22+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -17,9 +17,30 @@ msgstr ""
 
 #. module: om_account_reconcile
 #. odoo-python
+#: code:addons/om_account_reconcile/models/account_reconcile_model.py:0
+#, python-format
+msgid "%(who)s on %(account)s"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
 #: code:addons/om_account_reconcile/models/account_move_line.py:0
 #, python-format
 msgid "%s group(s) of journal items matched."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/wizard/auto_reconcile_wizard.py:0
+#, python-format
+msgid "%s group(s) of journal items reconciled."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.js:0
+#, python-format
+msgid "%s transaction(s) booked on the account."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -27,13 +48,6 @@ msgstr ""
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.js:0
 #, python-format
 msgid "%s transaction(s) reconciled automatically."
-msgstr ""
-
-#. module: om_account_reconcile
-#: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
-msgid ""
-"<span class=\"fa fa-lg fa-building-o\" title=\"Values set here are company-"
-"specific.\" groups=\"base.group_multi_company\"/>"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -47,10 +61,27 @@ msgid "<strong>Target Moves:</strong>"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_res_company__om_bank_fee_account_id
+#: model:ir.model.fields,help:om_account_reconcile.field_res_config_settings__om_bank_fee_account_id
+msgid ""
+"A reconciliation model \"Bank Fees\" is offered on every bank journal, "
+"booking the transaction on this account."
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-python
 #: code:addons/om_account_reconcile/models/account_bank_statement_line.py:0
 #, python-format
 msgid "A transaction cannot be matched with itself."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_res_company__om_reconcile_tolerance
+#: model:ir.model.fields,help:om_account_reconcile.field_res_config_settings__om_reconcile_tolerance
+msgid ""
+"A transaction differing from an open item by at most this amount still "
+"matches it; when the transaction is reconciled automatically, the difference"
+" goes to the payment difference account."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -60,9 +91,16 @@ msgstr ""
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__account_id
 #, python-format
 msgid "Account"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__account_ids
+msgid "Accounts"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -102,6 +140,11 @@ msgid "All Posted Entries"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__allow_partials
+msgid "Allow Partial Matching"
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
@@ -122,6 +165,15 @@ msgstr ""
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
 msgid "Amount Left"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_res_company__om_reconcile_fx_tolerance
+#: model:ir.model.fields,help:om_account_reconcile.field_res_config_settings__om_reconcile_fx_tolerance
+msgid ""
+"An item in another currency than the transaction still matches it when the "
+"converted amounts differ by at most this percentage, as the rate of the bank"
+" differs from the rate of the day."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -152,6 +204,30 @@ msgid "Balance per bank statement"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_account_reconcile_model_search
+msgid "Bank Fees"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_reconcile_model.py:0
+#, python-format
+msgid "Bank Fees (%s)"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_company__om_bank_fee_account_id
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_config_settings__om_bank_fee_account_id
+msgid "Bank Fees Account"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_account_reconcile_model__om_bank_fee_journal_id
+msgid "Bank Fees of"
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-python
 #: code:addons/om_account_reconcile/models/bank_reconciliation_screen.py:0
 #: model:ir.actions.client,name:om_account_reconcile.action_bank_reconciliation
@@ -177,7 +253,22 @@ msgid "Bank Statement Line"
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_reconcile_model.py:0
+#, python-format
+msgid "Bank fees"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Book on account"
+msgstr ""
+
+#. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_bank_reconciliation_report
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_om_auto_reconcile_wizard_form
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_om_reconcile_items_wizard_form
 msgid "Cancel"
 msgstr ""
@@ -185,6 +276,13 @@ msgstr ""
 #. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.report_bank_reconciliation
 msgid "Cash position per books"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Cheque"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -209,6 +307,25 @@ msgid "Choose the journal and the account of the write-off."
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/wizard/reconcile_items_wizard.py:0
+#, python-format
+msgid "Choose the journal of the transfer entry."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.js:0
+#, python-format
+msgid "Choose the partner first."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields.selection,name:om_account_reconcile.selection__om_auto_reconcile_wizard__mode__zero_balance
+msgid "Clear the balance: all the items of a partner adding up to zero"
+msgstr ""
+
+#. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_bank_statement_form
 msgid "Closing Balance"
 msgstr ""
@@ -219,6 +336,7 @@ msgid "Companies"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__company_id
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__company_id
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__company_id
 msgid "Company"
@@ -248,12 +366,49 @@ msgid "Counterpart"
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/bank_reconciliation_screen.py:0
+#, python-format
+msgid "Create a purchase or a sales journal first."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Create bill from document"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Create invoice from document"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__create_uid
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__create_uid
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__create_uid
 msgid "Created by"
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/bank_reconciliation_screen.py:0
+#, python-format
+msgid "Created from the transaction %s of the bank reconciliation."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_account_reconcile_model__om_auto_created
+msgid ""
+"Created from transactions booked by hand on the same account; review it and "
+"change it as you wish."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__create_date
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__create_date
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__create_date
 msgid "Created on"
@@ -298,6 +453,7 @@ msgid "Difference"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__display_name
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__display_name
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__display_name
 msgid "Display Name"
@@ -319,10 +475,32 @@ msgid "Entry"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_reconcile_items_wizard__writeoff_model_id
+msgid "Fill the write-off in from the first line of a reconciliation model."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_company__om_reconcile_find_partner
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_config_settings__om_reconcile_find_partner
+msgid "Find the Partner of New Transactions"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_company__om_reconcile_fx_tolerance
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_config_settings__om_reconcile_fx_tolerance
+msgid "Foreign Currency Tolerance (%)"
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-python
 #: code:addons/om_account_reconcile/report/report_bank_reconciliation.py:0
 #, python-format
 msgid "Form content is missing, this report cannot be printed."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__date_from
+msgid "From"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -333,6 +511,7 @@ msgid "Go to the transactions of the journal"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__id
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__id
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__id
 msgid "ID"
@@ -351,11 +530,17 @@ msgstr ""
 #. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: model:ir.model,name:om_account_reconcile.model_account_journal
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__writeoff_journal_id
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_bank_statement_line_search
 #, python-format
 msgid "Journal"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model,name:om_account_reconcile.model_account_move
+msgid "Journal Entry"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -381,6 +566,20 @@ msgstr ""
 #. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Keep on the partner's payable"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Keep on the partner's receivable"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
@@ -393,18 +592,14 @@ msgid "Label"
 msgstr ""
 
 #. module: om_account_reconcile
-#: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report____last_update
-#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard____last_update
-msgid "Last Modified on"
-msgstr ""
-
-#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__write_uid
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__write_uid
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__write_uid
 msgid "Last Updated by"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__write_date
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_bank_reconciliation_report__write_date
 #: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__write_date
 msgid "Last Updated on"
@@ -413,6 +608,22 @@ msgstr ""
 #. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.account_journal_dashboard_kanban_view
 msgid "Latest Statement"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_account_reconcile_model__om_auto_created
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_account_reconcile_model_search
+msgid "Learned"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_auto_reconcile_wizard__account_ids
+msgid "Leave empty for every account allowing reconciliation."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_auto_reconcile_wizard__partner_ids
+msgid "Leave empty for every partner."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -425,6 +636,16 @@ msgstr ""
 #. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.report_bank_reconciliation
 msgid "Less: uncleared payments"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__line_account_ids
+msgid "Line Account"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__line_partner_ids
+msgid "Line Partner"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -442,10 +663,8 @@ msgid "Load more"
 msgstr ""
 
 #. module: om_account_reconcile
-#. odoo-javascript
-#: code:addons/om_account_reconcile/static/src/bank_reconciliation/record_selector.js:0
-#, python-format
-msgid "Loading..."
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__lock_date_message
+msgid "Lock Date Message"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -471,6 +690,13 @@ msgid "Match Suggestions"
 msgstr ""
 
 #. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
+msgid ""
+"Match a transaction with an open item differing by a small amount, or by a "
+"small percentage for an item in another currency."
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
@@ -482,6 +708,16 @@ msgstr ""
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
 msgid "Matched with"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__writeoff_model_id
+msgid "Model"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__needs_transfer
+msgid "Needs Transfer"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -563,6 +799,20 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
+msgid "Notes and documents"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_move.py:0
+#, python-format
+msgid "Nothing is left to pay on %s."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
 msgid "Nothing is reconciled on this journal yet."
 msgstr ""
 
@@ -578,6 +828,20 @@ msgstr ""
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
 msgid "Nothing left to reconcile on this journal."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/wizard/auto_reconcile_wizard.py:0
+#, python-format
+msgid "Nothing to reconcile with these criteria."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
+msgid ""
+"Offer a reconciliation model booking the bank fees on this account on every "
+"bank journal."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -633,11 +897,57 @@ msgid "Open the entry"
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_move.py:0
+#, python-format
+msgid "Outstanding credits"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_move.py:0
+#, python-format
+msgid "Outstanding debits"
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.report_bank_reconciliation
 #, python-format
 msgid "Partner"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__partner_ids
+msgid "Partners"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_company__om_reconcile_tolerance_account_id
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_config_settings__om_reconcile_tolerance_account_id
+msgid "Payment Difference Account"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_company__om_reconcile_tolerance
+#: model:ir.model.fields,field_description:om_account_reconcile.field_res_config_settings__om_reconcile_tolerance
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
+msgid "Payment Tolerance"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_bank_statement_line.py:0
+#, python-format
+msgid "Payment difference"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields.selection,name:om_account_reconcile.selection__om_auto_reconcile_wizard__mode__one_to_one
+msgid "Perfect pairs: an item and another of the opposite amount"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -673,10 +983,24 @@ msgstr ""
 #. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__mode
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.account_journal_dashboard_kanban_view
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_bank_statement_line_form
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_om_auto_reconcile_wizard_form
 #, python-format
 msgid "Reconcile"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.actions.act_window,name:om_account_reconcile.action_om_auto_reconcile_wizard
+#: model:ir.ui.menu,name:om_account_reconcile.menu_om_auto_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_om_auto_reconcile_wizard_form
+msgid "Reconcile Automatically"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model,name:om_account_reconcile.model_om_auto_reconcile_wizard
+msgid "Reconcile Journal Items Automatically"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -695,8 +1019,9 @@ msgstr ""
 #. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
 msgid ""
-"Reconcile the new bank and cash transactions with the automatic reconciliation models and\n"
-"                            the open items matching them exactly by amount and reference."
+"Reconcile the new bank and cash transactions with the automatic "
+"reconciliation models and the open items matching them exactly by amount and"
+" reference."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -731,7 +1056,6 @@ msgstr ""
 
 #. module: om_account_reconcile
 #: model:ir.actions.server,name:om_account_reconcile.ir_cron_auto_reconcile_ir_actions_server
-#: model:ir.cron,cron_name:om_account_reconcile.ir_cron_auto_reconcile
 msgid "Reconciliation: reconcile new bank transactions"
 msgstr ""
 
@@ -746,7 +1070,6 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
-#: code:addons/om_account_reconcile/static/src/bank_reconciliation/record_selector.xml:0
 #, python-format
 msgid "Remove"
 msgstr ""
@@ -756,11 +1079,6 @@ msgstr ""
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
 msgid "Reset"
-msgstr ""
-
-#. module: om_account_reconcile
-#: model:ir.model.fields,field_description:om_account_reconcile.field_res_company__root_id
-msgid "Root"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -821,6 +1139,40 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
+msgid "Select to act on several"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "Set partner"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.res_config_settings_view_form
+msgid ""
+"Set the partner of a new transaction only when it is certain: the owner of "
+"the bank account, the company with exactly the name written by the bank, or "
+"the partner of the invoice or bill it refers to. When several partners fit, "
+"it stays empty."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_res_company__om_reconcile_find_partner
+#: model:ir.model.fields,help:om_account_reconcile.field_res_config_settings__om_reconcile_find_partner
+msgid ""
+"Set the partner of a new transaction when it is certain: the one partner "
+"owning the bank account of the other party, the one company with exactly the"
+" name written by the bank, or the one partner of the open invoice or bill "
+"whose number is the reference of the transaction. When several partners fit,"
+" the partner is left empty."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
 msgid "Settles in full"
 msgstr ""
 
@@ -852,6 +1204,8 @@ msgstr ""
 #. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__writeoff_tax_ids
 #, python-format
 msgid "Taxes"
 msgstr ""
@@ -863,8 +1217,14 @@ msgid ""
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_account_reconcile_model__om_bank_fee_journal_id
+msgid "Technical: the bank journal this \"Bank Fees\" model was created for."
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-python
 #: code:addons/om_account_reconcile/models/account_bank_statement_line.py:0
+#: code:addons/om_account_reconcile/models/account_move_line.py:0
 #: code:addons/om_account_reconcile/models/account_move_line.py:0
 #, python-format
 msgid "The account %s does not allow reconciliation."
@@ -885,6 +1245,15 @@ msgid "The amount of the counterpart cannot be zero."
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/wizard/reconcile_items_wizard.py:0
+#, python-format
+msgid ""
+"The books are locked until %(date)s: the entry will be dated on the first "
+"open day after it."
+msgstr ""
+
+#. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_bank_statement_form
 msgid ""
 "The closing balance does not match the opening balance and the transactions: check the\n"
@@ -892,8 +1261,45 @@ msgid ""
 msgstr ""
 
 #. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_reconcile_items_wizard__writeoff_tax_ids
+msgid ""
+"The difference includes these taxes: they are taken out of it and booked on "
+"their own accounts."
+msgstr ""
+
+#. module: om_account_reconcile
 #: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_om_reconcile_items_wizard_form
 msgid "The items are matched partially: the difference stays open."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_om_reconcile_items_wizard_form
+msgid ""
+"The items are on different accounts or partners: a journal entry first moves them to the ones\n"
+"                    chosen below, then they are matched."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/wizard/reconcile_items_wizard.py:0
+#, python-format
+msgid ""
+"The items do not add up to zero: write the difference off, or allow partial "
+"matching."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_reconcile_items_wizard__transfer_partner_id
+msgid ""
+"The items of the other partners are moved to this one by the same journal "
+"entry."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_reconcile_items_wizard__transfer_account_id
+msgid ""
+"The items on the other account are moved to this one by a journal entry "
+"before being matched."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -946,6 +1352,13 @@ msgstr ""
 #. odoo-python
 #: code:addons/om_account_reconcile/models/account_move_line.py:0
 #, python-format
+msgid "The journal items to match must use at most two accounts."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_move_line.py:0
+#, python-format
 msgid "The journal items to match must use the same account."
 msgstr ""
 
@@ -971,6 +1384,20 @@ msgid ""
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.js:0
+#, python-format
+msgid "The partner has no receivable or payable account."
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.js:0
+#, python-format
+msgid "The partner is set on %s transaction(s)."
+msgstr ""
+
+#. module: om_account_reconcile
 #: model:ir.model.fields,help:om_account_reconcile.field_om_bank_reconciliation_report__date
 msgid "The reconciliation is drawn up as at the close of this day."
 msgstr ""
@@ -978,6 +1405,8 @@ msgstr ""
 #. module: om_account_reconcile
 #. odoo-python
 #: code:addons/om_account_reconcile/models/account_bank_statement_line.py:0
+#: code:addons/om_account_reconcile/models/account_move.py:0
+#: code:addons/om_account_reconcile/models/bank_reconciliation_screen.py:0
 #, python-format
 msgid "The transaction %s is already reconciled."
 msgstr ""
@@ -1015,6 +1444,13 @@ msgid ""
 msgstr ""
 
 #. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_account_reconcile_model_form
+msgid ""
+"This model was learned from transactions booked by hand on the same account.\n"
+"                    Check its conditions, then use it from the bank reconciliation, or set it to run automatically."
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-python
 #: code:addons/om_account_reconcile/models/bank_reconciliation_screen.py:0
 #, python-format
@@ -1028,6 +1464,16 @@ msgstr ""
 msgid ""
 "This transaction is being reconciled by someone else, please try again in a "
 "moment."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_account_reconcile_model__om_use_count
+msgid "Times Used"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_auto_reconcile_wizard__date_to
+msgid "To"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -1091,10 +1537,32 @@ msgid "Transactions"
 msgstr ""
 
 #. module: om_account_reconcile
+#. odoo-python
+#: code:addons/om_account_reconcile/models/account_move_line.py:0
+#, python-format
+msgid "Transfer to %s"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__transfer_account_id
+msgid "Transfer to Account"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,field_description:om_account_reconcile.field_om_reconcile_items_wizard__transfer_partner_id
+msgid "Transfer to Partner"
+msgstr ""
+
+#. module: om_account_reconcile
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
 msgid "Undo reconciliation"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_account_reconcile_model_form
+msgid "Used"
 msgstr ""
 
 #. module: om_account_reconcile
@@ -1122,6 +1590,21 @@ msgid ""
 "When bank or cash transactions are created or imported, apply the automatic "
 "reconciliation models and reconcile the transactions matching exactly one "
 "open item by amount and reference."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_om_reconcile_items_wizard__allow_partials
+msgid ""
+"When the items do not add up to zero, match them anyway and leave the "
+"difference open."
+msgstr ""
+
+#. module: om_account_reconcile
+#: model:ir.model.fields,help:om_account_reconcile.field_res_company__om_reconcile_tolerance_account_id
+#: model:ir.model.fields,help:om_account_reconcile.field_res_config_settings__om_reconcile_tolerance_account_id
+msgid ""
+"Where the difference within the tolerance goes when a transaction is "
+"reconciled automatically."
 msgstr ""
 
 #. module: om_account_reconcile
@@ -1182,6 +1665,13 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
+msgid "e.g. Discount given"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
 msgid "e.g. Early payment discount"
 msgstr ""
 
@@ -1194,5 +1684,24 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
 #, python-format
+msgid "early payment discount"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
 msgid "items"
+msgstr ""
+
+#. module: om_account_reconcile
+#. odoo-javascript
+#: code:addons/om_account_reconcile/static/src/bank_reconciliation/bank_reconciliation.xml:0
+#, python-format
+msgid "selected"
+msgstr ""
+
+#. module: om_account_reconcile
+#: model_terms:ir.ui.view,arch_db:om_account_reconcile.view_account_reconcile_model_form
+msgid "times"
 msgstr ""
