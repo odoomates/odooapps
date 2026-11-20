@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 17 Reconciliation',
-    'version': '17.0.1.0.3',
+    'version': '17.0.1.1.0',
     'category': 'Accounting',
     'summary': 'Bank Reconciliation, Match Journal Items, Reconciliation Models, Auto Reconciliation',
     'description': 'Reconcile bank and cash transactions with invoices, bills, payments and write-offs, '
@@ -14,6 +14,7 @@
         'security/ir.model.access.csv',
         'data/ir_cron.xml',
         'views/res_config_settings_views.xml',
+        'views/account_reconcile_model_views.xml',
         'views/account_bank_statement_views.xml',
         'views/bank_reconciliation_views.xml',
         'wizard/reconcile_items_wizard_views.xml',

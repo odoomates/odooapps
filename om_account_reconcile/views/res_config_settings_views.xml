@@ -11,6 +11,31 @@
                          help="Reconcile the new bank and cash transactions with the automatic reconciliation models and the open items matching them exactly by amount and reference.">
                     <field name="om_reconcile_auto"/>
                 </setting>
+                <setting id="om_reconcile_find_partner" company_dependent="1"
+                         help="Set the partner of a new transaction only when it is certain: the owner of the bank account, the company with exactly the name written by the bank, or the partner of the invoice or bill it refers to. When several partners fit, it stays empty.">
+                    <field name="om_reconcile_find_partner"/>
+                </setting>
+                <setting id="om_reconcile_tolerance" string="Payment Tolerance" company_dependent="1"
+                         help="Match a transaction with an open item differing by a small amount, or by a small percentage for an item in another currency.">
+                    <div class="content-group">
+                        <div class="row mt-2">
+                            <label for="om_reconcile_tolerance" class="col-lg-5 o_light_label"/>
+                            <field name="om_reconcile_tolerance"/>
+                        </div>
+                        <div class="row">
+                            <label for="om_reconcile_fx_tolerance" class="col-lg-5 o_light_label"/>
+                            <field name="om_reconcile_fx_tolerance"/>
+                        </div>
+                        <div class="row">
+                            <label for="om_reconcile_tolerance_account_id" class="col-lg-5 o_light_label"/>
+                            <field name="om_reconcile_tolerance_account_id" options="{'no_create': True}"/>
+                        </div>
+                    </div>
+                </setting>
+                <setting id="om_bank_fee_account" string="Bank Fees" company_dependent="1"
+                         help="Offer a reconciliation model booking the bank fees on this account on every bank journal.">
+                    <field name="om_bank_fee_account_id" options="{'no_create': True}"/>
+                </setting>
             </block>
         </field>
     </record>

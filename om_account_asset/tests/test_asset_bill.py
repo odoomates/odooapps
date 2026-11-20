@@ -72,10 +72,12 @@ class TestAssetBill(AccountTestInvoicingCommon):
         self.assertEqual(bill.asset_ids.category_id, self.category)
         self.assertEqual(bill.asset_ids.value, 1000.0)
 
-    def test_credit_note_creates_no_asset(self):
+    def test_vendor_refund_creates_a_negative_asset(self):
         bill = self._create_bill()
         bill.action_post()
         refund = bill._reverse_moves([{'invoice_date': bill.invoice_date, 'date': bill.date}], cancel=True)
         self.assertEqual(refund.state, 'posted')
-        self.assertFalse(refund.asset_ids)
-        self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 1)
+        # the refund gives a negative asset, linked to the asset of the bill it refunds
+        self.assertEqual(refund.asset_ids.value, -1000.0)
+        self.assertEqual(refund.asset_ids.refunded_asset_id, bill.asset_ids)
+        self.assertEqual(len(self.env['account.asset.asset'].search([('category_id', '=', self.category.id)])), 2)

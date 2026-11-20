@@ -32,7 +32,7 @@ class OmDynamicReportPartnerLedger(models.AbstractModel):
 
     @api.model
     def _om_filters(self):
-        filters = self._odr_filters('partner_ids', 'partner_category_ids', 'journal_ids', 'account_ids')
+        filters = self._odr_filters('partner_ids', 'partner_category_ids', 'journal_ids', 'account_ids', 'aml_filter_ids')
         for spec in filters:
             if spec['key'] == 'account_ids':
                 spec['domain'] = spec['domain'] + [

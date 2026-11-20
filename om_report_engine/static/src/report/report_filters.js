@@ -179,14 +179,30 @@ export class DateFilter extends Component {
 /** Compare with earlier periods: the one before, or the same period a year earlier; how many. */
 export class CompareMenu extends Component {
     static template = "om_report_engine.CompareMenu";
-    static components = { Dropdown, DropdownItem };
+    static components = { DateTimeInput, Dropdown, DropdownItem };
     static props = {
         choices: Array,
         value: { type: [String, Boolean], optional: true },
         periods: { type: Number, optional: true },
         label: { type: String, optional: true },
+        // the period of the user's choice: its start (none for a report at a date) and its end
+        dateFrom: { type: [String, Boolean], optional: true },
+        dateTo: { type: [String, Boolean], optional: true },
+        dateMode: { type: String, optional: true },
         onChange: Function,
     };
+
+    get compareFrom() {
+        return this.props.dateFrom ? deserializeDate(this.props.dateFrom) : false;
+    }
+
+    get compareTo() {
+        return this.props.dateTo ? deserializeDate(this.props.dateTo) : false;
+    }
+
+    setCompareDate(key, value) {
+        this.props.onChange({ [key]: value ? serializeDate(value) : false });
+    }
 
     get current() {
         return this.props.choices.find((c) => c.key === this.props.value);

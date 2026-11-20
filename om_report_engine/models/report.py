@@ -23,6 +23,14 @@ _cache_lock = threading.Lock()
 
 COLUMN_TYPES = ('char', 'date', 'datetime', 'monetary', 'float', 'int', 'percent', 'ratio', 'days')
 NUMERIC_TYPES = ('monetary', 'float', 'int', 'percent', 'ratio', 'days')
+
+# how the amounts are shown: (key, factor, suffix); 'decimals' as the currency rounds them
+ROUNDING_UNITS = (
+    ('decimals', 1, ''),
+    ('units', 1, ''),
+    ('thousands', 1000, 'K'),
+    ('millions', 1000000, 'M'),
+)
 LINE_KINDS = ('group', 'leaf', 'detail', 'opening', 'closing', 'section', 'total')
 
 
@@ -94,6 +102,8 @@ class OmReport(models.AbstractModel):
     _report_page_size = PAGE_SIZE
     # comparison with earlier periods (the report says how in _om_compare_*)
     _report_compare = False
+    # the amounts can be shown in units, thousands or millions
+    _report_rounding = False
 
     # grouping rows: the dimensions offered and those chosen by default
     _report_group_by = ()
@@ -199,6 +209,31 @@ class OmReport(models.AbstractModel):
         return []
 
     @api.model
+    def _om_engine_choices(self):
+        """The one-of options the engine adds to every report declaring them (the rounding of the amounts)."""
+        if not self._report_rounding:
+            return []
+        return [{'key': 'rounding_unit', 'label': _("Amounts"), 'default': 'decimals', 'choices': [
+            ['decimals', _("With decimals")],
+            ['units', _("In units")],
+            ['thousands', _("In thousands (K)")],
+            ['millions', _("In millions (M)")],
+        ]}]
+
+    @api.model
+    def _om_all_choices(self):
+        return self._om_choices() + self._om_engine_choices()
+
+    @api.model
+    def _om_rounding(self, options):
+        """{'factor', 'suffix'} the amounts are divided by and followed with, False to show them as they are."""
+        unit = options.get('rounding_unit') or 'decimals'
+        if not self._report_rounding or unit == 'decimals':
+            return False
+        _key, factor, suffix = next(item for item in ROUNDING_UNITS if item[0] == unit)
+        return {'factor': factor, 'suffix': suffix}
+
+    @api.model
     def _om_numbers(self):
         """Numeric options: [{'key', 'label', 'default', 'min', 'max', 'step'}]."""
         return []
@@ -216,12 +251,14 @@ class OmReport(models.AbstractModel):
             'group_by': list(self._report_default_group_by),
             'compare': False,
             'compare_periods': 1,
+            'compare_date_from': False,
+            'compare_date_to': False,
         }
         for spec in self._om_filters():
             options[spec['key']] = []
         for spec in self._om_toggles():
             options[spec['key']] = bool(spec.get('default'))
-        for spec in self._om_choices():
+        for spec in self._om_all_choices():
             options[spec['key']] = spec.get('default', spec['choices'][0][0])
         for spec in self._om_numbers():
             options[spec['key']] = spec.get('default', 0)
@@ -238,7 +275,7 @@ class OmReport(models.AbstractModel):
             options[spec['key']] = [int(i) for i in options[spec['key']] or [] if str(i).isdigit()]
         for spec in self._om_toggles():
             options[spec['key']] = bool(options[spec['key']])
-        for spec in self._om_choices():
+        for spec in self._om_all_choices():
             if options[spec['key']] not in [value for value, _label in spec['choices']]:
                 options[spec['key']] = defaults[spec['key']]
         for spec in self._om_numbers():
@@ -269,8 +306,15 @@ class OmReport(models.AbstractModel):
             options['columns'] = False
         if not isinstance(options['sort'], dict) or not options['sort'].get('key'):
             options['sort'] = False
-        if not self._report_compare or options['compare'] not in [c['key'] for c in self._om_compare_choices()]:
+        if not self._report_compare or options['compare'] not in [c['key'] for c in self._om_all_compare_choices()]:
             options['compare'] = False
+        for key in ('compare_date_from', 'compare_date_to'):
+            try:
+                options[key] = options[key] and fields.Date.to_string(fields.Date.to_date(options[key]))
+            except (TypeError, ValueError):
+                options[key] = False
+        if self._report_date_mode == 'as_of':
+            options['compare_date_from'] = False
         try:
             options['compare_periods'] = min(max(int(options['compare_periods'] or 1), 1), 12)
         except (TypeError, ValueError):
@@ -392,10 +436,23 @@ class OmReport(models.AbstractModel):
         ]
 
     @api.model
+    def _om_all_compare_choices(self):
+        """The comparisons of the report, then a period of the user's choice."""
+        return self._om_compare_choices() + [{'key': 'custom', 'label': _("Custom dates")}]
+
+    @api.model
     def _om_compare_periods(self, options):
         """The periods compared with, nearest first: [{'date_from', 'date_to', 'label'}]."""
         if not options.get('compare'):
             return []
+        if options['compare'] == 'custom':
+            if not options.get('compare_date_to') or (
+                    self._report_date_mode == 'range' and not options.get('compare_date_from')):
+                return []
+            period = {**options, 'date_preset': 'custom', 'date_from': options.get('compare_date_from') or False,
+                      'date_to': options['compare_date_to']}
+            return [{'date_from': period['date_from'], 'date_to': period['date_to'],
+                     'label': self._om_period_label(period)}]
         periods = []
         current = dict(options)
         for _index in range(options['compare_periods']):
@@ -845,7 +902,8 @@ class OmReport(models.AbstractModel):
             'numbers': [{**n, 'label': str(n['label'])} for n in self._om_numbers()],
             'group_by': [{'key': key, 'label': str(dimensions[key]['label']), 'icon': dimensions[key].get('icon')}
                          for key in self._report_group_by if key in dimensions],
-            'compare_choices': self._om_compare_choices() if self._report_compare else [],
+            'compare_choices': self._om_all_compare_choices() if self._report_compare else [],
+            'rounding': self._om_rounding(options),
             'compare_label': ', '.join(p['label'] for p in self._om_compare_periods(options)),
             'columns': self._om_columns(options),
             'name_label': self._om_name_label(options),
@@ -947,7 +1005,7 @@ class OmReport(models.AbstractModel):
     def _om_choices_meta(self):
         return [{**spec, 'label': str(spec['label']), 'menu': spec.get('menu', 'options'),
                  'choices': [[value, str(label)] for value, label in spec['choices']]}
-                for spec in self._om_choices()]
+                for spec in self._om_all_choices()]
 
     @api.model
     def _om_filter_summary(self, options):
@@ -964,7 +1022,7 @@ class OmReport(models.AbstractModel):
             if ids:
                 records = self.env[spec['model']].with_context(active_test=False).browse(ids).exists()
                 summary.append((str(spec['label']), ', '.join(records.mapped('display_name'))))
-        for spec in self._om_choices():
+        for spec in self._om_all_choices():
             labels = dict(spec['choices'])
             if spec.get('summary', True):
                 summary.append((str(spec['label']), str(labels.get(options[spec['key']], ''))))
@@ -1028,6 +1086,7 @@ class OmReport(models.AbstractModel):
             'lines': flat,
             'total': self._om_total(data, options),
             'currency': self._om_currency(),
+            'rounding': self._om_rounding(options),
             'company': self.env.company,
             'options': options,
             'recipient': False,
