@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 19 Reconciliation',
-    'version': '1.1.1',
+    'version': '1.2.0',
     'category': 'Accounting',
     'summary': 'Bank Reconciliation, Match Journal Items, Reconciliation Models, Auto Reconciliation',
     'description': 'Reconcile bank and cash transactions with invoices, bills, payments and write-offs, '
