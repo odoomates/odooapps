@@ -12,16 +12,40 @@
                     <div class="d-flex flex-wrap gap-1 align-items-center">
                         <ReportSwitcher t-if="this.state.catalog.length &gt; 1" catalog="this.state.catalog"
                                         current="this.state.reportModel" onSelect="(model) => this.switchReport(model)"/>
-                        <SavedViewsMenu views="this.state.views" viewId="this.state.viewId"
+                        <SavedViewsMenu t-if="!this.isOverview" views="this.state.views" viewId="this.state.viewId"
                                         onApply="(view) => this.applyView(view)"
                                         onSave="(values) => this.saveView(values)"
-                                        onDelete="(view) => this.deleteView(view)"/>
+                                        onDelete="(view) => this.deleteView(view)"
+                                        onSchedule="(view) => this.scheduleView(view)"/>
                     </div>
                 </t>
             </ControlPanel>
             <div class="o_content o_omr_content">
                 <t t-set="report" t-value="this.state.report"/>
-                <t t-if="report">
+                <div t-if="this.isOverview and this.state.overview" class="o_omr_overview">
+                    <t t-foreach="this.state.overview.cards" t-as="card" t-key="card.model">
+                        <div class="o_omr_overview_card" t-att-data-report="card.model">
+                            <button class="o_omr_overview_head" t-on-click="() => this.openFromOverview(card)">
+                                <span class="o_omr_kpi_icon"><i class="oi" t-att-data-icon="card.icon"/></span>
+                                <span class="d-flex flex-column flex-grow-1 text-start">
+                                    <span class="fw-semibold" t-out="card.name"/>
+                                    <small class="text-muted" t-out="card.subtitle or card.description"/>
+                                </span>
+                                <i class="oi text-muted" data-icon="chevron_right"/>
+                            </button>
+                            <div class="o_omr_overview_kpis">
+                                <t t-foreach="card.kpis" t-as="kpi" t-key="kpi.key">
+                                    <button class="o_omr_overview_kpi" t-att-class="'o_omr_tone_' + (kpi.tone or 'neutral')"
+                                            t-on-click="() => this.openFromOverview(card, kpi)">
+                                        <span class="o_omr_kpi_label" t-out="kpi.label"/>
+                                        <span class="o_omr_kpi_value" t-out="this.formatKpi(card, kpi)"/>
+                                    </button>
+                                </t>
+                            </div>
+                        </div>
+                    </t>
+                </div>
+                <t t-elif="report">
                     <div class="o_omr_toolbar">
                         <div class="o_omr_filters">
                             <DateFilter t-if="report.date_mode !== 'none'" mode="report.date_mode"
@@ -63,6 +87,15 @@
                             <button class="btn o_omr_ghost" title="Fold all" t-on-click="() => this.collapseAll()">
                                 <i class="oi me-1" data-icon="unfold_less"/>Fold all
                             </button>
+                            <t t-foreach="this.chips" t-as="chip" t-key="chip.key">
+                                <span class="o_omr_chip">
+                                    <i class="oi" t-att-data-icon="chip.icon"/>
+                                    <span t-out="chip.label"/>
+                                    <button class="btn btn-link p-0" title="Remove" t-on-click="chip.remove">
+                                        <i class="oi" data-icon="close_small"/>
+                                    </button>
+                                </span>
+                            </t>
                             <div class="o_omr_search">
                                 <i class="oi" data-icon="search"/>
                                 <input class="o_input" type="search" placeholder="Search in report..."
@@ -72,6 +105,11 @@
                             <i t-if="this.state.reloading" class="oi o_omr_spin text-muted" data-icon="progress_activity"/>
                         </div>
                     </div>
+                    <KpiCards t-if="report.kpis and report.kpis.length" kpis="report.kpis"
+                              active="this.state.options.kpi_filter" report="report"
+                              onSelect="(kpi) => this.toggleKpi(kpi)"/>
+                    <ReportChart t-if="report.chart" chart="report.chart" report="report"
+                                 active="this.state.options.kpi_filter" onSelect="(item) => this.toggleKpi(item)"/>
                     <div class="o_omr_table_wrap" t-att-class="{ 'o_omr_reloading': this.state.reloading }"
                          t-ref="this.tableRef" tabindex="0"
                          t-on-scroll="() => this.onTableScroll()" t-on-keydown="(ev) => this.onKeydown(ev)">
@@ -84,7 +122,7 @@
                             <i class="oi text-muted" data-icon="search_off"/>
                             <h5>Nothing to show</h5>
                             <p class="text-muted">No data matches these filters for this period.</p>
-                            <button t-if="this.activeFilterCount" class="btn btn-secondary"
+                            <button t-if="this.activeFilterCount or this.state.options.kpi_filter" class="btn btn-secondary"
                                     t-on-click="() => this.clearFilters()">Clear filters</button>
                         </div>
                         <ReportTable t-else="" rows="this.rows" columns="this.visibleColumns" total="report.total"
@@ -99,7 +137,7 @@
                                      onFocus="(id) => this.state.focusedId = id"/>
                     </div>
                 </t>
-                <div t-else="" class="o_omr_skeleton_page">
+                <div t-elif="this.state.loading or !this.isOverview" class="o_omr_skeleton_page">
                     <div class="o_omr_skeleton o_omr_skeleton_bar"/>
                     <div t-foreach="[1, 2, 3, 4, 5, 6, 7, 8]" t-as="i" t-key="i" class="o_omr_skeleton o_omr_skeleton_row"/>
                 </div>

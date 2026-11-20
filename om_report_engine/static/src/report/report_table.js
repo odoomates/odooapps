@@ -37,6 +37,41 @@ export class ReportTable extends Component {
         return headerGroups(this.props.columns);
     }
 
+    /** The largest value of the bar column among each line's siblings. */
+    get barMax() {
+        const column = this.props.columns.find((c) => c.bar);
+        const max = {};
+        const count = {};
+        if (!column) {
+            return max;
+        }
+        for (const row of this.props.rows) {
+            if (!["group", "leaf"].includes(row.kind)) {
+                continue;
+            }
+            const value = Math.abs(row.values?.[column.key] || 0);
+            const parent = row.parent_id || "root";
+            max[parent] = Math.max(max[parent] || 0, value);
+            count[parent] = (count[parent] || 0) + 1;
+        }
+        // a bar compares a line with its siblings: none for a line alone
+        for (const parent in count) {
+            if (count[parent] < 2) {
+                delete max[parent];
+            }
+        }
+        return max;
+    }
+
+    barStyle(row, column, barMax) {
+        const max = barMax[row.parent_id || "root"];
+        const value = Math.abs(row.values?.[column.key] || 0);
+        if (!max || !["group", "leaf"].includes(row.kind)) {
+            return false;
+        }
+        return `width: ${value ? Math.max(3, Math.round((value / max) * 100)) : 0}%`;
+    }
+
     get sortable() {
         return this.props.report.group_by.length > 0;
     }
@@ -58,7 +93,7 @@ export class ReportTable extends Component {
             return "";
         }
         return formatValue(value, row.types?.[column.key] || column.type, {
-            digits: column.digits ?? 2,
+            digits: column.digits,
             currencyId: this.props.report.currency_id,
             rounding: this.props.report.rounding,
         });
@@ -77,6 +112,14 @@ export class ReportTable extends Component {
         }
         if (column.group) {
             classes.push("o_omr_grouped");
+        }
+        if (column.bar) {
+            classes.push("o_omr_bar_cell");
+        }
+        // a figure the report colours (a status, a class): values[<key>_tone]
+        const tone = row.values?.[`${column.key}_tone`];
+        if (tone) {
+            classes.push(`o_omr_tone_${tone}`);
         }
         return classes.join(" ");
     }

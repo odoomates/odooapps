@@ -55,6 +55,7 @@ export class SavedViewsMenu extends Component {
         onApply: t.function(),
         onSave: t.function(),
         onDelete: t.function(),
+        onSchedule: t.function().optional(),
     });
 
     setup() {

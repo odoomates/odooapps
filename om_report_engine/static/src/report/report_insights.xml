@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_report_engine.KpiCards">
+        <div class="o_omr_kpis">
+            <t t-foreach="this.props.kpis" t-as="kpi" t-key="kpi.key">
+                <button class="o_omr_kpi" t-att-data-kpi="kpi.key"
+                        t-att-class="this.kpiClass(kpi)"
+                        t-att-disabled="!kpi.filter"
+                        t-on-click="() => this.props.onSelect(kpi)">
+                    <span class="o_omr_kpi_icon"><i class="oi" t-att-data-icon="kpi.icon or 'info'"/></span>
+                    <span class="o_omr_kpi_body">
+                        <span class="o_omr_kpi_label" t-out="kpi.label"/>
+                        <span class="o_omr_kpi_value" t-out="this.format(kpi)"/>
+                        <span t-if="this.hasPrevious(kpi)" class="o_omr_kpi_previous">
+                            <span t-if="this.delta(kpi)" class="o_omr_kpi_delta"
+                                  t-att-class="kpi.delta_pct &gt; 0 ? 'o_omr_up' : kpi.delta_pct &lt; 0 ? 'o_omr_down' : ''">
+                                <i class="oi" t-att-data-icon="kpi.delta_pct &gt; 0 ? 'arrow_upward' : 'arrow_downward'"/>
+                                <t t-out="this.delta(kpi)"/>
+                            </span>
+                            <span>vs <t t-out="this.previous(kpi)"/></span>
+                        </span>
+                    </span>
+                    <i t-if="kpi.filter" class="oi o_omr_kpi_hint" t-att-data-icon="kpi.filter === this.props.active ? 'close_small' : 'filter_alt'"/>
+                </button>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="om_report_engine.ReportChart">
+        <t t-set="chart" t-value="this.props.chart"/>
+        <div class="o_omr_chart" t-att-class="'o_omr_chart_type_' + chart.type">
+            <div class="o_omr_chart_title" t-out="chart.title"/>
+
+            <!-- horizontal bars, largest value the full width -->
+            <div t-if="chart.type === 'bar'" class="o_omr_chart_bars">
+                <t t-foreach="this.items" t-as="item" t-key="item.key">
+                    <button class="o_omr_chart_bar" t-att-class="this.itemClass(item)" t-att-disabled="!item.filter"
+                            t-att-title="item.caption or item.label" t-on-click="() => this.select(item)">
+                        <span class="o_omr_chart_label" t-out="item.label"/>
+                        <span class="o_omr_chart_track">
+                            <span class="o_omr_chart_fill" t-att-style="'width: ' + this.barWidth(item)"/>
+                        </span>
+                        <span class="o_omr_chart_value" t-out="this.format(item.value)"/>
+                    </button>
+                </t>
+            </div>
+
+            <!-- a donut and its legend -->
+            <div t-elif="chart.type === 'donut'" class="o_omr_chart_donut">
+                <svg viewBox="0 0 42 42" class="o_omr_donut" role="img" t-att-aria-label="chart.title">
+                    <circle class="o_omr_donut_ring" cx="21" cy="21" r="15.9155"/>
+                    <t t-foreach="this.slices" t-as="slice" t-key="slice.item.key">
+                        <circle class="o_omr_donut_slice" t-att-class="this.itemClass(slice.item)"
+                                cx="21" cy="21" r="15.9155" t-att-stroke-dasharray="slice.dash"
+                                t-att-stroke-dashoffset="slice.offset" t-on-click="() => this.select(slice.item)"/>
+                    </t>
+                </svg>
+                <div class="o_omr_chart_legend">
+                    <t t-foreach="this.items" t-as="item" t-key="item.key">
+                        <button class="o_omr_chart_legend_item" t-att-class="this.itemClass(item)"
+                                t-att-disabled="!item.filter" t-on-click="() => this.select(item)">
+                            <span class="o_omr_chart_dot"/>
+                            <span class="o_omr_chart_label">
+                                <t t-out="item.label"/>
+                                <small t-if="item.caption" class="text-muted ms-1" t-out="item.caption"/>
+                            </span>
+                            <span class="o_omr_chart_value" t-out="this.format(item.value)"/>
+                            <span class="o_omr_chart_share" t-out="this.format(this.share(item), 'percent')"/>
+                        </button>
+                    </t>
+                </div>
+            </div>
+
+            <!-- two classifications against each other, a cell per pair -->
+            <div t-elif="chart.type === 'matrix'" class="o_omr_chart_matrix"
+                 t-att-style="'grid-template-columns: auto repeat(' + chart.cols.length + ', minmax(0, 1fr))'">
+                <span/>
+                <t t-foreach="chart.cols" t-as="col" t-key="col.key">
+                    <span class="o_omr_matrix_head" t-out="col.label"/>
+                </t>
+                <t t-foreach="chart.rows" t-as="row" t-key="row.key">
+                    <span class="o_omr_matrix_head o_omr_matrix_row" t-out="row.label"/>
+                    <t t-foreach="chart.cols" t-as="col" t-key="col.key">
+                        <t t-set="cell" t-value="this.cell(row, col)"/>
+                        <button class="o_omr_matrix_cell" t-att-class="this.itemClass(cell)"
+                                t-att-style="this.cellStyle(row, col)" t-att-disabled="!cell.value"
+                                t-att-title="cell.caption" t-on-click="() => this.select(cell)">
+                            <span class="o_omr_matrix_count" t-out="this.format(cell.value)"/>
+                            <span t-if="chart.amount_type" class="o_omr_matrix_amount"
+                                  t-out="this.format(cell.amount, chart.amount_type)"/>
+                            <span class="o_omr_matrix_caption" t-out="cell.caption"/>
+                        </button>
+                    </t>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

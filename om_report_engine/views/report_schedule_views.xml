@@ -2,8 +2,8 @@
 <odoo>
 
     <record id="report_schedule_view_form" model="ir.ui.view">
-        <field name="name">om.inventory.report.schedule.form</field>
-        <field name="model">om.inventory.report.schedule</field>
+        <field name="name">om.report.schedule.form</field>
+        <field name="model">om.report.schedule</field>
         <field name="arch" type="xml">
             <form string="Scheduled Report">
                 <header>
@@ -18,6 +18,7 @@
                     <group>
                         <group string="Report">
                             <field name="view_id" options="{'no_create': True}"/>
+                            <field name="report_name" invisible="not view_id"/>
                             <field name="file_format" widget="radio" options="{'horizontal': true}"/>
                             <field name="expand_all"/>
                         </group>
@@ -25,7 +26,7 @@
                             <field name="interval"/>
                             <field name="next_date"/>
                             <field name="last_sent" invisible="not last_sent"/>
-                            <field name="user_id" options="{'no_create': True}"/>
+                            <field name="user_id" options="{'no_create': True}" groups="base.group_system"/>
                             <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
                             <field name="active" invisible="1"/>
                         </group>
@@ -40,24 +41,26 @@
     </record>
 
     <record id="report_schedule_view_list" model="ir.ui.view">
-        <field name="name">om.inventory.report.schedule.list</field>
-        <field name="model">om.inventory.report.schedule</field>
+        <field name="name">om.report.schedule.list</field>
+        <field name="model">om.report.schedule</field>
         <field name="arch" type="xml">
             <list string="Scheduled Reports">
                 <field name="name"/>
+                <field name="report_name"/>
                 <field name="view_id"/>
                 <field name="file_format"/>
                 <field name="interval"/>
                 <field name="next_date"/>
                 <field name="partner_ids" widget="many2many_tags"/>
+                <field name="user_id" optional="hide"/>
                 <field name="last_sent" optional="show"/>
             </list>
         </field>
     </record>
 
     <record id="report_schedule_view_search" model="ir.ui.view">
-        <field name="name">om.inventory.report.schedule.search</field>
-        <field name="model">om.inventory.report.schedule</field>
+        <field name="name">om.report.schedule.search</field>
+        <field name="model">om.report.schedule</field>
         <field name="arch" type="xml">
             <search>
                 <field name="name"/>
@@ -70,12 +73,12 @@
 
     <record id="action_report_schedule" model="ir.actions.act_window">
         <field name="name">Scheduled Reports</field>
-        <field name="res_model">om.inventory.report.schedule</field>
+        <field name="res_model">om.report.schedule</field>
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
-            <p class="o_view_nocontent_smiling_face">Send an inventory report by email, regularly</p>
-            <p>Save a view of a report (its filters, grouping and columns), then choose who receives it,
-               how often, and as PDF or Excel.</p>
+            <p class="o_view_nocontent_smiling_face">Send a report by email, regularly</p>
+            <p>Save a view of a report (its filters, options and columns), then choose who receives it,
+               how often, and as PDF, Excel or CSV.</p>
         </field>
     </record>
 

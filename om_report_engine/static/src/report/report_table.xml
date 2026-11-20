@@ -31,6 +31,7 @@
                 </tr>
             </thead>
             <tbody>
+                <t t-set="barMax" t-value="this.barMax"/>
                 <t t-foreach="this.props.rows" t-as="row" t-key="row.id">
                     <tr t-if="row.kind === 'loading'" class="o_omr_row_loading">
                         <td t-att-colspan="this.props.columns.length + 2">
@@ -68,7 +69,12 @@
                                         title="Notes" t-on-click="(ev) => this.onNoteClick(row, column, ev)">
                                     <i class="oi" data-icon="sticky_note_2"/>
                                 </button>
-                                <t t-out="this.cell(row, column)"/>
+                                <span t-if="column.bar" class="o_omr_bar_wrap">
+                                    <t t-set="bar" t-value="this.barStyle(row, column, barMax)"/>
+                                    <span t-if="bar" class="o_omr_bar_track"><span class="o_omr_bar" t-att-style="bar"/></span>
+                                    <span class="o_omr_bar_value" t-out="this.cell(row, column)"/>
+                                </span>
+                                <t t-else="" t-out="this.cell(row, column)"/>
                             </td>
                         </t>
                         <td class="o_omr_row_actions">

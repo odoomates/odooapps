@@ -13,6 +13,7 @@ class OmInventoryReportTransfers(models.AbstractModel):
     _description = 'Transfers Report'
 
     _report_key = 'transfers'
+    _report_overview = 9
     _report_name = _lt('Transfers')
     _report_section = 'operations'
     _report_sequence = 80
@@ -131,7 +132,7 @@ class OmInventoryReportTransfers(models.AbstractModel):
         return []
 
     @api.model
-    def _om_toggles(self, options):
+    def _om_toggles(self):
         return [{'key': 'include_cancelled', 'label': self.env._("Include cancelled transfers")}]
 
     @api.model

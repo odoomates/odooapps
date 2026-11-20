@@ -12,6 +12,7 @@ class OmInventoryReportValuation(models.AbstractModel):
     _description = 'Stock Valuation Report'
 
     _report_key = 'valuation'
+    _report_overview = 2
     _report_name = _lt('Stock Valuation')
     _report_section = 'valuation'
     _report_sequence = 12

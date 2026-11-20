@@ -19,12 +19,17 @@ import {
     ReportSwitcher,
     SavedViewsMenu,
 } from "./report_filters";
+import { formatValue } from "./format";
 import { NoteDialog } from "./note_dialog";
+import { chartFilterLabel, KpiCards, ReportChart } from "./report_insights";
 import { ReportTable } from "./report_table";
 
 const ENGINE = "om.report";
 const VIEW_MODEL = "om.report.view";
 const FOLD_MODEL = "om.report.fold";
+const SCHEDULE_MODEL = "om.report.schedule";
+// the catalog entry of the overview of an app (see om.report.om_get_overview)
+const OVERVIEW = "overview";
 
 /**
  * What the reader left the report like, by action: going into a record and
@@ -37,7 +42,8 @@ const savedStates = new WeakMap();
  * A dynamic report on screen. Everything it draws comes from the report model
  * (see om.report): the filters, the options, the columns and the lines. The
  * action says which report with `om_report_model` in its context, and which
- * reports share the switcher with `om_report_app`.
+ * reports share the switcher with `om_report_app`; `om_report_model: "overview"`
+ * opens the overview of the app, a card per report with its key figures.
  */
 export class OmReport extends Component {
     static template = "om_report_engine.Report";
@@ -49,8 +55,10 @@ export class OmReport extends Component {
         DateFilter,
         ExportMenu,
         GroupByMenu,
+        KpiCards,
         OptionsMenu,
         RecordFilter,
+        ReportChart,
         ReportSwitcher,
         ReportTable,
         SavedViewsMenu,
@@ -82,6 +90,7 @@ export class OmReport extends Component {
             density: localStorage.getItem("om_report_engine_density") || "comfortable",
             focusedId: false,
             exporting: false,
+            overview: null,
         });
         this.debouncedReload = useDebounced(() => this.reload({ keepExpanded: true }), 350);
         // the folds are remembered for the user once they stop clicking
@@ -126,8 +135,16 @@ export class OmReport extends Component {
         await this.reload({ keepExpanded: true, autoUnfold: !saved && !this.foldsRemembered });
     }
 
+    get isOverview() {
+        return this.state.reportModel === OVERVIEW;
+    }
+
     /** The lines the user left unfolded the last time, if any. */
     async loadFolds() {
+        if (this.isOverview) {
+            this.foldsRemembered = true;
+            return;
+        }
         const expanded = await this.orm.call(FOLD_MODEL, "om_get", [this.state.reportModel]);
         this.foldsRemembered = Array.isArray(expanded);
         if (this.foldsRemembered) {
@@ -141,11 +158,25 @@ export class OmReport extends Component {
     }
 
     async loadViews() {
-        this.state.views = await this.orm.call(VIEW_MODEL, "om_list", [this.state.reportModel]);
+        this.state.views = this.isOverview
+            ? []
+            : await this.orm.call(VIEW_MODEL, "om_list", [this.state.reportModel]);
     }
 
     async reload({ keepExpanded = false, autoUnfold = false } = {}) {
         const requestId = ++this.requestId;
+        if (this.isOverview) {
+            this.state.report = null;
+            const overview = await this.orm.call(ENGINE, "om_get_overview", [this.context.om_report_app]);
+            if (requestId === this.requestId) {
+                this.state.overview = overview;
+                this.state.loading = false;
+                this.state.reloading = false;
+                this.env.config?.setDisplayName?.(this.props.action.name || _t("Overview"));
+                this.saveState();
+            }
+            return;
+        }
         this.state.reloading = !this.state.loading;
         this.state.error = null;
         const expanded = keepExpanded ? this.state.expanded : [];
@@ -237,6 +268,7 @@ export class OmReport extends Component {
             options[filter.key] = [];
         }
         options.search = "";
+        options.kpi_filter = false;
         this.state.options = options;
         this.state.viewId = false;
         this.reload();
@@ -246,6 +278,56 @@ export class OmReport extends Component {
         const options = this.state.options;
         const keys = (this.state.report?.filters || []).map((f) => f.key);
         return keys.filter((key) => options[key]?.length).length + (options.search ? 1 : 0);
+    }
+
+    /** The filters set by a key figure, a chart and the search, each removable. */
+    get chips() {
+        const report = this.state.report;
+        if (!report) {
+            return [];
+        }
+        const chips = [];
+        const kpiFilter = this.state.options.kpi_filter;
+        if (kpiFilter) {
+            const kpi = (report.kpis || []).find((k) => k.filter === kpiFilter);
+            chips.push({
+                key: "kpi",
+                label: kpi ? kpi.label : chartFilterLabel(report.chart, kpiFilter) || kpiFilter,
+                icon: "filter_alt",
+                remove: () => this.setOptions({ kpi_filter: false }),
+            });
+        }
+        if (this.state.options.search) {
+            chips.push({
+                key: "search",
+                label: `"${this.state.options.search}"`,
+                icon: "search",
+                remove: () => this.setOptions({ search: "" }),
+            });
+        }
+        return chips;
+    }
+
+    /** A key figure, chart bar or matrix cell narrows the report down; clicked again, it no longer does. */
+    toggleKpi(kpi) {
+        if (!kpi.filter) {
+            return;
+        }
+        const active = this.state.options.kpi_filter === kpi.filter;
+        this.setOptions({ kpi_filter: active ? false : kpi.filter });
+    }
+
+    formatKpi(card, kpi) {
+        return (
+            formatValue(kpi.value, kpi.type, {
+                digits: kpi.type === "float" ? card.digits : undefined,
+                currencyId: card.currency_id,
+            }) || "0"
+        );
+    }
+
+    openFromOverview(card, kpi = null) {
+        this.switchReport(card.model, kpi?.filter ? { kpi_filter: kpi.filter } : null);
     }
 
     setDensity(density) {
@@ -292,6 +374,7 @@ export class OmReport extends Component {
         Object.assign(this.state, {
             reportModel: model,
             report: null,
+            overview: null,
             lines: [],
             expanded: [],
             children: {},
@@ -326,6 +409,19 @@ export class OmReport extends Component {
         await this.loadViews();
         this.state.viewId = viewId;
         this.notification.add(_t('View "%s" saved.', name), { type: "success" });
+    }
+
+    /** The form of a scheduled report sending the view by email. */
+    async scheduleView(view) {
+        this.saveState();
+        await this.action.doAction({
+            type: "ir.actions.act_window",
+            name: _t("Scheduled Report"),
+            res_model: SCHEDULE_MODEL,
+            views: [[false, "form"]],
+            target: "current",
+            context: { default_view_id: view.id, default_name: view.name },
+        });
     }
 
     async deleteView(view) {

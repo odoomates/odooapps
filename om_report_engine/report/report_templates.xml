@@ -45,6 +45,8 @@
                         .o_omr_pdf .o_omr_negative { color: #b42318; }
                         .o_omr_pdf thead { display: table-header-group; }
                         .o_omr_pdf tr { page-break-inside: avoid; }
+                        .o_omr_pdf .o_omr_kpi { display: inline-block; margin: 6px 28px 6px 0; vertical-align: top; }
+                        .o_omr_pdf .o_omr_kpi_value { font-size: 12pt; font-weight: bold; }
                     </style>
                     <div t-if="export['recipient']" class="row mb-3">
                         <div class="col-6 offset-6">
@@ -55,6 +57,12 @@
                     <h2 t-out="export['title']"/>
                     <div t-foreach="export['filters']" t-as="item" class="o_omr_filter">
                         <strong t-out="item[0]"/><span t-out="item[1]"/>
+                    </div>
+                    <div t-if="export.get('kpis')" class="o_omr_kpis">
+                        <div t-foreach="export['kpis']" t-as="kpi" class="o_omr_kpi">
+                            <div class="text-muted" t-out="kpi['label']"/>
+                            <div class="o_omr_kpi_value" t-out="format_kpi(kpi)"/>
+                        </div>
                     </div>
                     <table class="o_omr_lines">
                         <thead>

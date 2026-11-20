@@ -1,6 +1,6 @@
 {
     'name': 'Inventory Reports - Valuation',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.1.0',
     'category': 'Inventory/Inventory',
     'summary': 'Inventory valuation report on screen and stock values in the inventory reports: valuation at date, '
                'value of dead and old stock, ABC analysis by cost, export to PDF and Excel',
