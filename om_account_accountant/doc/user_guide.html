@@ -220,6 +220,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">5.6</span><span>Recurring payments</span></div>
     <div class="toc-line"><span class="n">5.7</span><span>Printing cheques</span></div>
 
+    <div class="toc-line"><span class="n">5.8</span><span>Deferred revenue and expenses</span></div>
     <div class="toc-part"><span class="n">6</span><span class="t">Bank and cash</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">6.1</span><span>Importing the statement</span></div>
     <div class="toc-line"><span class="n">6.2</span><span>Building a file map for your bank</span></div>
@@ -238,6 +239,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">8.1</span><span>Budgetary positions</span></div>
     <div class="toc-line"><span class="n">8.2</span><span>Creating a budget</span></div>
     <div class="toc-line"><span class="n">8.3</span><span>Following a budget</span></div>
+    <div class="toc-line"><span class="n">8.4</span><span>Stopping the overspend</span></div>
+    <div class="toc-line"><span class="n">8.5</span><span>Budget control of purchase orders</span></div>
 
     <div class="toc-part"><span class="n">9</span><span class="t">Getting paid: follow-ups</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">9.1</span><span>Follow-up plans</span></div>
@@ -267,6 +270,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">13.6</span><span>Daily reports</span></div>
     <div class="toc-line"><span class="n">13.7</span><span>Printing one journal entry</span></div>
     <div class="toc-line"><span class="n">13.8</span><span>Dashboards</span></div>
+    <div class="toc-line"><span class="n">13.9</span><span>Dynamic reports, an option</span></div>
 
     <div class="toc-part"><span class="n">14</span><span class="t">Routines</span><span class="rule"></span></div>
     <div class="toc-line"><span class="n">14.1</span><span>Every day</span></div>
@@ -726,6 +730,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td><strong>Miscellaneous</strong></td><td>Manual entries, payroll, depreciation, revaluation, opening balance.</td><td>Nothing in particular; keep one general journal for adjustments.</td></tr>
         </tbody>
     </table>
+    <p><span class="path">Configuration &rsaquo; Accounting &rsaquo; New Journal</span> creates one from what it
+        is for: pick Bank, Credit Card, Cash, Sales, Purchase or Miscellaneous, and the name and the short code are
+        proposed, with the account number and the BIC for a bank. Its accounts are created as for any new journal.</p>
     <ol>
         <li>Create one bank journal per real bank account and write the account number on it.
             The statement import uses that number to find the right journal by itself.</li>
@@ -872,6 +879,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>When the money arrives, <strong>Register Payment</strong> (section 5.4) or match it
             on the bank reconciliation screen (section 6.3).</li>
     </ol>
+    <p>To sign the invoices, turn on <strong>Signature on Invoices</strong> in
+        <span class="path">Configuration &rsaquo; Settings &rsaquo; Customer Invoices</span>, and choose the
+        <strong>Signing User</strong>, or leave it empty for the salesperson of each invoice. Each user draws or uploads
+        their signature in their preferences. The name and the signature are printed at the bottom of the invoice; the
+        <strong>Signed By</strong> field of the invoice changes the signer of one invoice.</p>
 
     <h2><span class="n">5.2</span> Vendor bills</h2>
     <p><span class="path">Vendors &rsaquo; Bills</span>. Same cycle, and two things worth
@@ -880,6 +892,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Put the vendor's own document number in <strong>Bill Reference</strong>. Odoo warns
             you if the same reference comes in twice from the same vendor, which catches most
             duplicate payments.</li>
+        <li>If the bill goes over a budget line, a warning banner appears at the top. With
+            <strong>Block Documents Over Budget</strong> on, only an accounting manager can post
+            it (section 8.4).</li>
+        <li>In the list of bills, the eye of the <strong>Document</strong> column opens the scan of the bill over
+            the list: check the bills against their documents without opening each of them.</li>
     </ul>
 
     <h2><span class="n">5.3</span> Journal entries by hand</h2>
@@ -895,6 +912,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Post it. A posted entry can no longer be edited; correct it with a reversal instead
             (<strong>Reverse Entry</strong>), which keeps the audit trail intact.</li>
     </ol>
+    <p>To spread an amount over several accounts, select the journal item and choose
+        <strong>Action &rsaquo; Split</strong>: add the accounts, with a percentage or an amount each, and a partner,
+        a label or an analytic distribution if needed. On a draft entry the item is split in place. On a posted entry
+        it stays as it is, and a reclassification entry, dated as you choose, moves the parts to the new accounts.
+        Items with taxes, or already reconciled, cannot be split.</p>
     <figure>
         <img src="img/journal-items.jpg" alt="Journal items"/>
         <figcaption>The journal items, with the filters every accountant needs.</figcaption>
@@ -1010,6 +1032,55 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             cheques of your bank &mdash; the magnetic line is already on the paper. Turn it on
             only for blank cheque stock, and upload an E-13B font.</p>
     </div>
+
+    <h2><span class="n">5.8</span> Deferred revenue and expenses</h2>
+    <p>A yearly insurance paid in January is an expense of the twelve months it covers, and a
+        yearly subscription invoiced in advance is revenue of the months it serves. This needs
+        <em>Deferred Revenue and Expense</em> (<code>om_account_deferred</code>), a separate free
+        module.</p>
+    <h3>Setting it up, once</h3>
+    <p>In <span class="path">Configuration &rsaquo; Settings</span>, section Deferred Revenue and
+        Expense, fill in the Deferred Expense and the Deferred Revenue blocks: the
+        <strong>Journal</strong>, the <strong>Account</strong> (a current asset such as Prepaid
+        Expenses for the expenses, a current liability such as Deferred Income for the revenue),
+        then:</p>
+    <ul>
+        <li><strong>Based on</strong>: <strong>By Months</strong> gives each month the share of the
+            month it covers, <strong>By Days</strong> splits the amount by days, <strong>By Full
+            Months</strong> counts every month the line touches as a whole one. The last period
+            takes the rounding, so the entries always add up to the line.</li>
+        <li><strong>Generate Entries</strong>: <strong>On invoice validation</strong> (<strong>On
+            bill validation</strong> for the expenses) posts, with the document, one entry moving its
+            deferred lines out of profit and loss to the deferred account, then one entry per period
+            bringing back the share of that period. Entries of past dates are posted at once, the
+            others on their date. <strong>Manually &amp; Grouped</strong> makes one entry for all
+            the deferred lines at the end of each period, moving out what they recognise after it,
+            reversed on the first day of the next one.</li>
+    </ul>
+    <p>To keep some deferrals apart, e.g. prepaid insurance, open the income or expense account, tick
+        <strong>Own Deferral Account</strong> and choose its balance sheet account: its lines are deferred there
+        instead of the account of the settings. A draft invoice or bill warns when its deferral dates look like a
+        typing mistake: more than a year away from the date of the document, ending before its month, or more than
+        ten years long.</p>
+    <h3>Deferring a line</h3>
+    <ol>
+        <li>On the invoice or bill, show the optional columns <strong>Start Date</strong> and
+            <strong>End Date</strong> and fill them in on the lines to defer. Only income and
+            expense lines are deferred: a customer invoice gives deferred revenue, a vendor bill a
+            deferred expense.</li>
+        <li>Post the document. The <strong>Deferrals</strong> button opens its deferral entries,
+            which carry the analytic distribution of the line.</li>
+        <li>With Manually &amp; Grouped, open <span class="path">Reporting &rsaquo; Deferred
+            Revenue</span> or <span class="path">Deferred Expense</span> at the period end, choose the
+            period and click <strong>Generate Entries</strong>.</li>
+    </ol>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p>The two reports show, per account and per document, the total, the amount not started
+            yet, and what is recognised before the period, in it and after it. Resetting a document
+            to draft reverses its posted deferral entries and deletes the others; a credit note
+            defers its lines the other way round.</p>
+    </div>
 </div>
 
 <!-- ============================================================ PART 6 -->
@@ -1075,6 +1146,33 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Mark a transaction <strong>to check</strong> when you are unsure; it stays visible
             for a colleague.</li>
     </ol>
+    <p>What the screen does for you:</p>
+    <ul class="plain">
+        <li><strong>The partner</strong> of a new transaction is set when it is certain: the one partner owning the
+            bank account of the other party, the one company with exactly the name written by the bank, or the one
+            partner of the open invoice or bill whose number is in the reference. When several partners fit, or when
+            they disagree, the partner stays empty, as a wrong partner is worse than none.</li>
+        <li><strong>Cheque numbers</strong>: with cheque printing installed, a cheque number written on the
+            transaction finds its payment, and the number is shown and can be searched in the list of items.</li>
+        <li><strong>Early payment discount</strong>: an invoice paid at its discounted amount within the discount date
+            is matched in full, the discount going to the early payment discount account of the company.</li>
+        <li><strong>Tolerance</strong>: with a payment tolerance, and a foreign currency tolerance for the items in
+            another currency, an item differing by a small amount still matches. When the transaction is reconciled
+            automatically, the difference goes to the payment difference account.</li>
+    </ul>
+    <p>And what you can do from it:</p>
+    <ul class="plain">
+        <li><strong>Keep on the partner's receivable</strong> (or payable, for money going out), in the
+            <strong>Counterpart</strong> tab: the transaction stays open there, e.g. an advance to match with the
+            invoice later.</li>
+        <li><strong>Notes and documents</strong>: the messages, the activities and the attachments of the transaction.
+            <strong>Create bill from document</strong> (or invoice, for money coming in) makes a draft of the amount
+            with the document attached, to check, post and match.</li>
+        <li><strong>Several transactions at once</strong>: tick them in the list to set their partner, or to book them
+            on an account, such as bank fees.</li>
+        <li><strong>From the invoice</strong>: the transactions of the partner not reconciled yet appear in the
+            outstanding credits of the invoice, and clicking one matches them.</li>
+    </ul>
     <figure>
         <img src="img/bank-reconciliation.jpg" alt="Reconciliation screen"/>
         <figcaption>The reconciliation screen: the transaction, its counterparts and the
@@ -1086,8 +1184,17 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             an automatic trigger, partner mapping models that fill in the partner of a new
             transaction, and the rule that reconciles a transaction matching exactly one open
             item by amount and reference. A scheduled action treats new transactions daily and
-            runs again as soon as more are imported.</p>
+            runs again as soon as more are imported. A new or changed automatic model is tried again
+            on the transactions still open.</p>
     </div>
+    <p>When transactions of the same partner, or with the same first word in their label, have been booked by hand
+        on the same account three times, a reconciliation model is <strong>learned</strong> from them: find it with the
+        <strong>Learned</strong> filter of the reconciliation models, check its conditions, and use it, or set it to
+        run automatically. Each model counts the times it is used. With a <strong>Bank Fees Account</strong> in the
+        settings, a "Bank Fees" model is offered on every bank journal.</p>
+    <p>The settings of the reconciliation are in <span class="path">Configuration &rsaquo; Settings &rsaquo; Bank
+        &amp; Cash</span>: the automatic reconciliation, finding the partner of new transactions, the payment
+        tolerances with their payment difference account, and the bank fees account.</p>
 
     <h2><span class="n">6.4</span> Match Journal Items</h2>
     <p><span class="path">Accounting &rsaquo; Reconciliation &rsaquo; Match Journal Items</span>.
@@ -1098,9 +1205,17 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li>Select the items that belong together and press <strong>Match</strong>. The wizard
             shows the debit, the credit and the difference.</li>
         <li>Write the difference off on a journal, account, date and label of your choice &mdash;
-            or leave it, and the items are matched partially.</li>
+            or leave it, and the items are matched partially. Untick <strong>Allow Partial Matching</strong> to
+            refuse items that do not add up. A reconciliation <strong>Model</strong> fills the write-off in, and
+            <strong>Taxes</strong> take the tax out of the difference, e.g. for a discount given. When the date falls
+            in a locked period, the wizard says so and the entry is dated on the first open day.</li>
+        <li>Items of two accounts, or of several partners, can be matched too: a journal entry first moves them to the
+            account and the partner you choose, e.g. a payment booked on the wrong customer.</li>
         <li><strong>Match Suggestions</strong> reconciles, in one go, every group of items of the
             same account and partner whose amounts cancel each other.</li>
+        <li><span class="path">Reconciliation &rsaquo; Reconcile Automatically</span> does it on chosen accounts,
+            partners and dates: the perfect pairs of opposite amounts, or all the items of a partner adding up to
+            zero.</li>
     </ol>
     <figure>
         <img src="img/match-journal-items.jpg" alt="Match journal items"/>
@@ -1128,9 +1243,18 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <li><strong>Depreciation account</strong> &mdash; the accumulated depreciation, on the balance sheet.</li>
         <li><strong>Expense account</strong> &mdash; where the periodic charge is posted.</li>
         <li><strong>Journal</strong> &mdash; usually the miscellaneous one.</li>
-        <li><strong>Method</strong> &mdash; linear or degressive, the number of depreciations and their period.</li>
+        <li><strong>Method</strong> &mdash; linear, degressive, or no depreciation; the number of depreciations and
+            their period. The <strong>degressive factor</strong> is a yearly rate: 0.3 depreciates 30% of the value
+            left at the start of each year, spread over the periods of the year.</li>
         <li><strong>Prorata temporis</strong> &mdash; start depreciating on the purchase date rather than the first of the period.</li>
+        <li><strong>Computation</strong> &mdash; Constant Periods (every month counts the same) or Based on Days per
+            Period (every day counts the same, so a 31-day month depreciates more than February).</li>
+        <li><strong>Salvage Value (%)</strong> &mdash; the share of the value of a new asset that is not depreciated.</li>
+        <li><strong>Properties</strong> &mdash; fields of your own, e.g. a serial number, filled on each asset.</li>
     </ul>
+    <p>To start quickly, <strong>Action &rsaquo; Create Standard Categories</strong> on the list of categories
+        creates Buildings, Furniture and Fixtures, Vehicles, Machinery and Equipment, Computer Equipment and Land,
+        with the accounts proposed.</p>
     <figure>
         <img src="img/asset-category.jpg" alt="Asset category"/>
         <figcaption>An asset category: the accounts, the journal and the method every asset of
@@ -1147,6 +1271,11 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             value.</li>
         <li>Confirm the asset to put it in service.</li>
     </ol>
+    <p>A vendor refund of an asset line creates a negative asset, linked to the refunded asset, which reverses
+        its depreciation. To make one asset from several bill lines or journal items, select them in Journal Items
+        and choose <strong>Action &rsaquo; Create Asset</strong>. Taxes booked on the asset account, such as a tax
+        that cannot be recovered, are part of its value. Group related assets with an <strong>Asset Group</strong>
+        (<span class="path">Configuration &rsaquo; Accounting &rsaquo; Asset Groups</span>).</p>
     <figure>
         <img src="img/asset-board.jpg" alt="Asset board"/>
         <figcaption>An asset with its depreciation board.</figcaption>
@@ -1160,6 +1289,13 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         value is depreciated in one last entry and the asset is closed. Invoice the sale itself to
         the buyer as usual. <strong>Modify Depreciation</strong> changes the number or the length
         of the periods still to come, from the next one.</p>
+    <p>Land, or an asset under construction, uses <strong>No Depreciation</strong>: it keeps its value. When it
+        is put into use, press <strong>Activate Depreciation</strong> and choose the category and the date: the
+        value moves to the asset account of that category if it differs, and the depreciation starts on that
+        date.</p>
+    <p><strong>Compute Depreciation</strong>, on a running asset, computes the entries not posted yet again from
+        its method; the posted ones stay as they are. Use it after an upgrade that changes a computation, such as
+        the yearly degressive factor: each asset concerned has a note listing its entries before the change.</p>
 
     <h2><span class="n">7.4</span> Assets that already existed</h2>
     <p>For an asset bought before you went live, create it with the value still to depreciate
@@ -1172,7 +1308,8 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <p><span class="path">Reporting &rsaquo; Management &rsaquo; Assets</span> gives
         the gross value, the depreciation posted and the depreciation still to post, by asset,
         category and date, in pivot and graph form. The <strong>Assets</strong> dashboard of the
-        Dashboards app shows the same figures at a glance.</p>
+        Dashboards app shows the same figures at a glance. On screen, the Depreciation Schedule of the dynamic
+        reports (section 13.9) groups the assets by category, asset account, asset group or analytic account.</p>
     <figure>
         <img src="img/asset-analysis.jpg" alt="Assets analysis"/>
         <figcaption>The Assets Analysis: the depreciation posted and to post.</figcaption>
@@ -1227,6 +1364,33 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <img src="img/budget-analysis.jpg" alt="Budget analysis"/>
         <figcaption>The Budgets Analysis.</figcaption>
     </figure>
+
+    <h2><span class="n">8.4</span> Stopping the overspend</h2>
+    <p>A draft vendor bill that would push a cost line of a confirmed or approved budget over its planned amount
+        shows a warning banner, naming each line with its planned and actual amounts, this bill and how much it goes
+        over. Turn on <strong>Block Documents Over Budget</strong> in <span class="path">Configuration &rsaquo;
+        Settings &rsaquo; Analytics</span> and posting such a bill is refused for everyone but an accounting
+        manager, with the same lines named in the message.</p>
+
+    <h2><span class="n">8.5</span> Budget control of purchase orders</h2>
+    <div class="note">
+        <p class="label">Good to know</p>
+        <p><strong>Separate module.</strong> This section needs <em>Odoo 17 Budget Management -
+            Purchase</em> (<code>om_account_budget_purchase</code>), which this app does not
+            install. It is free on the Odoo Apps store: download it into your addons path and
+            update the apps list &mdash; it installs itself as soon as Purchase and the budgets
+            are both present, or install it by hand from Apps.</p>
+    </div>
+    <p>With it installed you get:</p>
+    <ul class="plain">
+        <li>A <strong>Committed</strong> column on every cost line of a confirmed budget: what
+            the confirmed purchase orders have already promised and not yet billed. As the bills
+            are posted, the amount moves from Committed to Actual by itself.</li>
+        <li>A warning banner on the purchase order, while it is still a quotation, naming the
+            budget lines it would push over, the committed amounts counted in.</li>
+        <li>With <strong>Block Documents Over Budget</strong> on, confirming such an order is refused for anyone
+            but an accounting manager.</li>
+    </ul>
 </div>
 
 <!-- ============================================================ PART 9 -->
@@ -1389,6 +1553,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td><strong>Tax Return Lock Date</strong></td><td>Nothing that would change a filed tax return can be touched.</td></tr>
         </tbody>
     </table>
+    <p>Before you save, the Lock Dates wizard warns about the draft entries dated in the period being locked
+    (<strong>See them</strong> opens the
+        list, to post or delete them).</p>
     <div class="note">
         <p class="label">Tip</p>
         <p>Move the lock date forward every month as soon as the period is reconciled and
@@ -1501,6 +1668,12 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         and type the dates. The report prints the base and the tax of each tax, sales and
         purchases apart. A cash basis tax counts in the period it is paid, not the period it
         is invoiced.</p>
+    <p><strong>The tax return, grid by grid.</strong> Set <em>Report</em> to <em>By Tax Grid</em>
+        on the same wizard and pick the <em>Tax Return</em> of your country: the report prints the return
+        as the fiscal localization lays it out, each grid with its amount and the totals, ready to copy
+        into the portal of the tax office. The tax returns come with the localization modules (l10n_*)
+        of some 95 countries. On screen, the Tax Return of Dynamic Accounting Reports shows the same
+        grids, each opening its journal items (section 13.9).</p>
     <p><strong>Closing the tax period.</strong> An accounting manager clicks <em>Close Tax
         Period</em> on the Tax Report, picks the journal and the tax payable and receivable
         accounts, and confirms. Odoo drafts an entry on the last day of the period that empties
@@ -1599,6 +1772,41 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
         <img src="img/dashboard-overview.jpg" alt="Accounting overview dashboard"/>
         <figcaption>The Accounting Overview dashboard.</figcaption>
     </figure>
+
+    <h2><span class="n">13.9</span> Dynamic reports, an option</h2>
+    <p><em>Dynamic Accounting Reports</em> (<code>om_dynamic_reports</code>) is a free companion module, installed
+        separately from the Apps. It shows the reports on screen instead of in a PDF, under
+        <span class="path">Reporting &rsaquo; Dynamic Reports</span>; the PDF reports keep their menus.</p>
+    <ul class="plain">
+        <li><strong>The reports</strong> &mdash; Executive Summary, Balance Sheet, Profit and Loss, Cash Flow
+            Statement, Tax Report, Tax Return, EC Sales List, Trial Balance, General Ledger, Day Book, Bank and Cash
+            Books, Bank Reconciliation, Journals Audit, Partner Ledger, Aged Receivable and Payable, Customer and
+            Vendor Statements, and the Analytic Report.</li>
+        <li><strong>The filters at the top</strong> &mdash; the period with arrows, posted or all entries, journals,
+            accounts, partners, analytic accounts, and the <strong>Saved Filters</strong> of the Journal Items
+            list.</li>
+        <li><strong>Compare</strong> &mdash; the previous periods, the same period of the previous years, or dates of
+            your choice, with the variation; the Tax Return too, grid by grid.</li>
+        <li><strong>Columns</strong> &mdash; analytic accounts as columns, or a <strong>horizontal group</strong>
+            splitting the amounts by journal, partner, product or any field of the journal items
+            (<span class="path">Configuration &rsaquo; Accounting &rsaquo; Horizontal Groups</span>).</li>
+        <li><strong>Options &rsaquo; Amounts</strong> &mdash; with decimals, in units, in thousands or in
+            millions.</li>
+        <li><strong>On every line</strong> &mdash; unfold an account into its journal items, click a figure to open
+            the items behind it, add a note to a figure.</li>
+        <li><strong>Saved views</strong> keep the filters you use, for you or for everyone, and the reports export
+            to PDF, Excel and CSV.</li>
+    </ul>
+    <p>With the modules of this suite, the dynamic reports gain more by themselves:</p>
+    <ul class="plain">
+        <li><strong>Assets</strong> &mdash; the Depreciation Schedule, grouped by category, asset account, asset
+            group or analytic account, and, with <code>om_account_deferred</code>, the Deferred Revenue and
+            Deferred Expense reports.</li>
+        <li><strong>Budgets</strong> &mdash; a Budgets filter on the Profit and Loss, with a Budget column and the
+            Achievement %, for the period and for each period it is compared with.</li>
+        <li><strong>Currency revaluation</strong> &mdash; the Unrealized Currency Gains/Losses report at a date, from
+            which the revaluation entry is posted.</li>
+    </ul>
 </div>
 
 <!-- =========================================================== PART 14 -->
