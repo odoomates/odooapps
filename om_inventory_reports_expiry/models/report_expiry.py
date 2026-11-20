@@ -14,6 +14,7 @@ class OmInventoryReportExpiry(models.AbstractModel):
     _description = 'Lot Expiry Report'
 
     _report_key = 'expiry'
+    _report_overview = 11
     _report_name = _lt('Lot Expiry')
     _report_section = 'stock'
     _report_sequence = 52
