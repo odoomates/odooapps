@@ -342,7 +342,8 @@ def _reference_finder(rest):
 
 def _first_date_finder(date_order):
     def finder(rest):
-        dates = find_dates(rest[:40], date_order)
+        # the separators left after the label, however wide the gap to the date
+        dates = find_dates(re.sub(r'^[\s:#.\-]*', '', rest)[:40], date_order)
         return dates[0][0] if dates else None
     return finder
 
