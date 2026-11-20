@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_form_om_deferred" model="ir.ui.view">
+        <field name="name">account.account.form.inherit.om.deferred</field>
+        <field name="model">account.account</field>
+        <field name="inherit_id" ref="account.view_account_form"/>
+        <field name="arch" type="xml">
+            <field name="tag_ids" position="after">
+                <field name="om_is_deferred" attrs="{'invisible': [('internal_group', 'not in', ('income', 'expense'))]}"/>
+                <field name="om_deferred_account_id"
+                       attrs="{'invisible': [('om_is_deferred', '=', False)], 'required': [('om_is_deferred', '=', True)]}"
+                       options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
