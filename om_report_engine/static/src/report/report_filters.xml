@@ -169,7 +169,19 @@
                         <t t-out="choice.label"/>
                     </DropdownItem>
                 </t>
-                <div t-if="this.props.value" class="px-3 py-1 d-flex align-items-center gap-2 o_omr_number_option">
+                <div t-if="this.props.value === 'custom'" class="px-3 py-1 o_omr_compare_dates">
+                    <div t-if="this.props.dateMode !== 'as_of'" class="d-flex align-items-center gap-2 mb-1">
+                        <label class="flex-grow-1">From</label>
+                        <DateTimeInput type="'date'" value="this.compareFrom"
+                                       onChange="(value) => this.setCompareDate('compare_date_from', value)"/>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <label class="flex-grow-1"><t t-if="this.props.dateMode === 'as_of'">At</t><t t-else="">To</t></label>
+                        <DateTimeInput type="'date'" value="this.compareTo"
+                                       onChange="(value) => this.setCompareDate('compare_date_to', value)"/>
+                    </div>
+                </div>
+                <div t-elif="this.props.value" class="px-3 py-1 d-flex align-items-center gap-2 o_omr_number_option">
                     <label class="flex-grow-1" for="omr_compare_periods">Number of periods</label>
                     <input class="o_input text-end" type="number" id="omr_compare_periods" min="1" max="12"
                            t-att-value="this.props.periods" t-on-change="(ev) => this.setPeriods(ev)"/>

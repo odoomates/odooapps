@@ -29,7 +29,7 @@ class OmDynamicReportDayBook(models.AbstractModel):
 
     @api.model
     def _om_filters(self):
-        return self._odr_filters('journal_ids', 'account_ids', 'partner_ids')
+        return self._odr_filters('journal_ids', 'account_ids', 'partner_ids', 'aml_filter_ids')
 
     @api.model
     def _om_choices(self):

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_deferred_report_view_form" model="ir.ui.view">
+        <field name="name">om.deferred.report.form</field>
+        <field name="model">om.deferred.report</field>
+        <field name="arch" type="xml">
+            <form string="Deferred Report">
+                <group>
+                    <group>
+                        <field name="kind" invisible="1"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                        <field name="generation" invisible="1"/>
+                    </group>
+                </group>
+                <div class="text-muted">
+                    Total: the amount of each deferred line. Not Started: lines starting after the period.
+                    Before, Current and Later: what is recognised before the period, in it and after it.
+                </div>
+                <footer>
+                    <button name="action_show" type="object" string="Show" class="btn-primary" data-hotkey="q"/>
+                    <button name="action_print" type="object" string="Print" class="btn-secondary"/>
+                    <button name="action_generate" type="object" string="Generate Entries" class="btn-secondary"
+                            invisible="generation != 'manual'"
+                            confirm="Generate the grouped deferral entry of this period and its reversal on the first day of the next period?"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_deferred_report_line_view_list" model="ir.ui.view">
+        <field name="name">om.deferred.report.line.list</field>
+        <field name="model">om.deferred.report.line</field>
+        <field name="arch" type="xml">
+            <list string="Deferred Lines" create="0" edit="0" delete="0">
+                <field name="account_id"/>
+                <field name="move_id"/>
+                <field name="partner_id" optional="show"/>
+                <field name="name" optional="show"/>
+                <field name="start_date"/>
+                <field name="end_date"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="total" sum="Total"/>
+                <field name="not_started" sum="Not Started"/>
+                <field name="before" sum="Before"/>
+                <field name="current" sum="Current"/>
+                <field name="later" sum="Later"/>
+                <button name="action_open_document" type="object" icon="fa-external-link" title="Open the document"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_deferred_report_line_view_search" model="ir.ui.view">
+        <field name="name">om.deferred.report.line.search</field>
+        <field name="model">om.deferred.report.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="account_id"/>
+                <field name="move_id"/>
+                <group>
+                    <filter name="group_account" string="Account" context="{'group_by': 'account_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_deferred_expense_report" model="ir.actions.act_window">
+        <field name="name">Deferred Expense</field>
+        <field name="res_model">om.deferred.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_kind': 'expense'}</field>
+    </record>
+
+    <record id="action_om_deferred_revenue_report" model="ir.actions.act_window">
+        <field name="name">Deferred Revenue</field>
+        <field name="res_model">om.deferred.report</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+        <field name="context">{'default_kind': 'revenue'}</field>
+    </record>
+
+    <menuitem id="menu_om_deferred_revenue_report" name="Deferred Revenue" action="action_om_deferred_revenue_report"
+              parent="account.account_reports_management_menu" sequence="60" groups="account.group_account_readonly,account.group_account_invoice"/>
+    <menuitem id="menu_om_deferred_expense_report" name="Deferred Expense" action="action_om_deferred_expense_report"
+              parent="account.account_reports_management_menu" sequence="61" groups="account.group_account_readonly,account.group_account_invoice"/>
+
+</odoo>

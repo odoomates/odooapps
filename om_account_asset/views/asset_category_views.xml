@@ -87,8 +87,11 @@
                         <group invisible="type == 'sale'" string="Depreciation Method">
                             <field name="method" widget="radio"/>
                             <field name="method_progress_factor"
-                                   invisible="method == 'linear'" required="method == 'degressive'"/>
+                                   invisible="method in ('linear', 'none')" required="method == 'degressive'"/>
                             <field name="prorata" invisible="method_time == 'end'"/>
+                            <field name="prorata_computation_type" invisible="method == 'none'"/>
+                            <field name="salvage_value_pct" invisible="method == 'none'"/>
+                            <field name="asset_properties_definition"/>
                         </group>
                     </group>
                 </sheet>

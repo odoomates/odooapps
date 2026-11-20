@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_tax_grid">
+        <t t-call="web.html_container"
+            data_report_dpi="110">
+            <t t-call="web.internal_layout">
+                <div class="page o_om_report">
+                        <t t-call="accounting_pdf_reports.report_style"/>
+                    <h2><span t-out="report.name"/> <t t-if="report.country_id">(<span t-out="report.country_id.name"/>)</t></h2>
+
+                    <div id="informations" class="row mb-4">
+                        <div class="col">
+                            <strong>Period:</strong>
+                            <div><span t-out="data['date_from']" t-options="{'widget': 'date'}"/> - <span t-out="data['date_to']" t-options="{'widget': 'date'}"/></div>
+                        </div>
+                        <div class="col">
+                            <strong>Target Moves:</strong>
+                            <div t-if="data['target_move'] == 'all'">All Entries</div>
+                            <div t-if="data['target_move'] == 'posted'">All Posted Entries</div>
+                        </div>
+                    </div>
+
+                    <table class="table table-sm table-reports">
+                        <thead>
+                            <tr>
+                                <th/>
+                                <th t-foreach="columns" t-as="column" class="text-end"><span t-out="column['name']"/></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="lines" t-as="line" t-att-class="'fw-bold' if line['title'] else None">
+                                <td t-att-style="'padding-left: %spx' % (4 + 16 * (line['level'] or 0))"><span t-out="line['name']"/></td>
+                                <td t-foreach="line['values']" t-as="cell" class="text-end text-nowrap">
+                                    <t t-set="value" t-value="cell['value']"/>
+                                    <t t-if="value is None or value is False"/>
+                                    <t t-elif="isinstance(value, str)"><span t-out="value"/></t>
+                                    <t t-elif="cell['figure_type'] == 'percentage'"><span t-out="'%.2f %%' % value"/></t>
+                                    <t t-elif="cell['figure_type'] == 'integer'"><span t-out="'%d' % value"/></t>
+                                    <t t-elif="cell['figure_type'] == 'float'"><span t-out="'%.2f' % value"/></t>
+                                    <t t-else=""><span t-out="value" t-options="{'widget': 'monetary', 'display_currency': res_company.currency_id}"/></t>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+        </t>
+    </template>
+
+</odoo>

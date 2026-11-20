@@ -1,11 +1,11 @@
 {
     'name': 'Odoo 18 Fiscal Year & Lock Date',
-    'version': '1.2.2',
+    'version': '1.3.0',
     'category': 'Accounting',
     'summary': 'Odoo 18 Fiscal Year, Year-End Closing, Period Closing, Lock Date in Odoo 18',
     'description': 'Odoo 18 Fiscal Year, Fiscal Year in Odoo 18',
     'live_test_url': 'https://www.youtube.com/watch?v=Kj4hR7_uNs4',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',

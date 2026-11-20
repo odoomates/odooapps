@@ -84,6 +84,9 @@ class OmReportExport(models.AbstractModel):
         if column.get('blank_zero') and value == 0 and line.get('kind') == 'detail':
             return ''
         if kind == 'monetary':
+            rounding = export.get('rounding')
+            if rounding:
+                return self._om_rounded_amount(value, export['currency'], rounding)
             return format_amount(self.env, value, export['currency'])
         if kind == 'float':
             return formatLang(self.env, value, digits=column.get('digits', 2))
@@ -100,6 +103,15 @@ class OmReportExport(models.AbstractModel):
         if kind == 'date':
             return format_date(self.env, value)
         return str(value)
+
+    @api.model
+    def _om_rounded_amount(self, value, currency, rounding):
+        """An amount in units, thousands or millions, without decimals: "12,345 K $"."""
+        number = formatLang(self.env, value / rounding['factor'], digits=0)
+        if rounding['suffix']:
+            number = '%s %s' % (number, rounding['suffix'])
+        return '%s %s' % (currency.symbol, number) if currency.position == 'before' \
+            else '%s %s' % (number, currency.symbol)
 
     @api.model
     def _om_local_datetime(self, value):

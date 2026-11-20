@@ -34,7 +34,7 @@ class OmDynamicReportGeneralLedger(models.AbstractModel):
     @api.model
     def _om_filters(self):
         return self._odr_filters('journal_ids', 'account_ids', 'account_tag_ids', 'partner_ids',
-                                 'analytic_account_ids')
+                                 'analytic_account_ids', 'aml_filter_ids')
 
     @api.model
     def _om_toggles(self):
