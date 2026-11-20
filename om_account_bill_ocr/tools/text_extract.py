@@ -1,0 +1,172 @@
+""" The text of a bill: the text layer of a PDF when it has one, else the text read by Tesseract.
+
+Everything runs on the server, with no external service: pdftotext (poppler-utils) keeps the layout of the
+columns, the PDF library of Odoo is the fallback when it is not installed, and the scans and the photos are read by the
+tesseract-ocr package, the pages of a scanned PDF turned into images by pdftoppm. """
+import io
+import logging
+import shutil
+import subprocess
+import tempfile
+from pathlib import Path
+
+from PIL import Image
+
+from odoo.tools.pdf import PdfReader
+
+_logger = logging.getLogger(__name__)
+
+# a page with less text than this is a scan: its text layer, if any, is only a few stray characters
+MIN_TEXT_PER_PAGE = 40
+# the pages read: a bill is on the first ones, and reading a long scan takes time
+MAX_PAGES = 5
+TIMEOUT = 120
+# the size of a page read by OCR, its longer side in pixels: 300 dpi on an A4 or a Letter page, and no more on a
+# page drawn huge, which would need gigabytes of memory to render
+MAX_PAGE_PIXELS = 3508
+# a photo larger than this, in pixels, is a mistake or an attack, not a bill
+MAX_IMAGE_PIXELS = 60_000_000
+IMAGE_MIMETYPES = ('image/png', 'image/jpeg', 'image/jpg', 'image/tiff', 'image/bmp', 'image/gif', 'image/webp')
+
+
+class OcrUnavailable(Exception):
+    """ The bill is a scan or a photo, and Tesseract is not installed. """
+
+
+class BillTooLarge(Exception):
+    """ The image of the bill is too large to be read. """
+
+
+def tesseract_available():
+    return bool(shutil.which('tesseract'))
+
+
+def _run(args, **kwargs):
+    return subprocess.run(args, capture_output=True, timeout=TIMEOUT, check=True, **kwargs)
+
+
+def _pdf_text_layer(raw):
+    """ The text layer of a PDF, the columns kept in place. """
+    if shutil.which('pdftotext'):
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / 'bill.pdf'
+            path.write_bytes(raw)
+            try:
+                result = _run(['pdftotext', '-layout', '-l', str(MAX_PAGES), '-enc', 'UTF-8', str(path), '-'])
+                return result.stdout.decode('utf-8', 'replace')
+            except (subprocess.SubprocessError, OSError):
+                _logger.info("pdftotext could not read the bill, falling back on the PDF library", exc_info=True)
+    try:
+        reader = PdfReader(io.BytesIO(raw))
+        pages = reader.pages[:MAX_PAGES]
+        return '\n\f'.join(_page_text(page) for page in pages)
+    except Exception:  # noqa: BLE001 any broken PDF is a bill without text
+        _logger.info("the PDF library could not read the bill", exc_info=True)
+        return ''
+
+
+def _page_text(page):
+    """ The text of a page, the columns kept in place. """
+    try:
+        return page.extract_text(extraction_mode='layout') or ''
+    except TypeError:
+        return _page_text_by_position(page)
+
+
+def _page_text_by_position(page):
+    """ The text of a page laid out from the position of each piece of text, for a PDF library without a layout
+    mode: the pieces on the same height make a line, each at the column of its horizontal position. """
+    pieces = []
+
+    def visit(text, cm, tm, _font, size):
+        if text and text.strip():
+            x = tm[4] * cm[0] + tm[5] * cm[2] + cm[4]
+            y = tm[4] * cm[1] + tm[5] * cm[3] + cm[5]
+            pieces.append((y, x, text.replace('\n', ' '), size or 10))
+
+    try:
+        page.extract_text(visitor_text=visit)
+    except TypeError:
+        return page.extract_text() or ''
+    if not pieces:
+        return ''
+    # a character takes about half the size of its font
+    char_width = max(sorted(size for _y, _x, _text, size in pieces)[len(pieces) // 2] * 0.5, 1)
+    rows = []
+    for y, x, text, _size in sorted(pieces, key=lambda piece: (-piece[0], piece[1])):
+        if rows and abs(rows[-1][0] - y) < 3:
+            rows[-1][1].append((x, text))
+        else:
+            rows.append((y, [(x, text)]))
+    lines = []
+    for _y, row in rows:
+        line = ''
+        for x, text in sorted(row):
+            column = int(x / char_width)
+            line += ' ' * max(column - len(line), 1 if line else 0) + text.strip()
+        lines.append(line)
+    return '\n'.join(lines)
+
+
+def _page_count(raw):
+    try:
+        return len(PdfReader(io.BytesIO(raw)).pages)
+    except Exception:  # noqa: BLE001
+        return 1
+
+
+def _ocr_image(path, languages):
+    result = _run(['tesseract', str(path), 'stdout', '-l', languages, '--psm', '6',
+                   '-c', 'preserve_interword_spaces=1'])
+    return result.stdout.decode('utf-8', 'replace')
+
+
+def _ocr_pdf(raw, languages):
+    if not shutil.which('pdftoppm'):
+        raise OcrUnavailable("pdftoppm")
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / 'bill.pdf'
+        path.write_bytes(raw)
+        _run(['pdftoppm', '-scale-to', str(MAX_PAGE_PIXELS), '-gray', '-png', '-l', str(MAX_PAGES), str(path),
+              str(Path(tmp) / 'page')])
+        pages = sorted(Path(tmp).glob('page*.png'))
+        return '\n\f'.join(_ocr_image(page, languages) for page in pages)
+
+
+def _ocr_raw_image(raw, languages):
+    try:
+        with Image.open(io.BytesIO(raw)) as image:
+            width, height = image.size
+    except Image.DecompressionBombError as error:
+        raise BillTooLarge(str(error)) from error
+    except Exception:  # noqa: BLE001 Tesseract says what it makes of a file Pillow cannot open
+        width = height = 0
+    if width * height > MAX_IMAGE_PIXELS:
+        raise BillTooLarge(f"{width} x {height}")
+    with tempfile.TemporaryDirectory() as tmp:
+        path = Path(tmp) / 'bill.img'
+        path.write_bytes(raw)
+        return _ocr_image(path, languages)
+
+
+def is_image(mimetype, name=''):
+    name = (name or '').lower()
+    return (mimetype or '') in IMAGE_MIMETYPES or name.endswith(('.png', '.jpg', '.jpeg', '.tif', '.tiff', '.webp'))
+
+
+def extract_text(raw, mimetype, name='', languages='eng'):
+    """ Return (text, source), source being 'text' for a text layer and 'ocr' for a scan or a photo.
+
+    :raise OcrUnavailable: the file is a scan or a photo and Tesseract is not installed.
+    """
+    if is_image(mimetype, name):
+        if not tesseract_available():
+            raise OcrUnavailable("tesseract")
+        return _ocr_raw_image(raw, languages), 'ocr'
+    text = _pdf_text_layer(raw)
+    pages = min(_page_count(raw), MAX_PAGES)
+    if len(''.join(text.split())) >= MIN_TEXT_PER_PAGE * max(pages, 1) // 2:
+        return text, 'text'
+    if not tesseract_available():
+        raise OcrUnavailable("tesseract")
+    return _ocr_pdf(raw, languages), 'ocr'

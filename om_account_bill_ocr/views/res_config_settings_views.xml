@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_bill_ocr" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.bill.ocr</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <!-- the bills are read by this module -->
+            <setting id="account_ocr_settings" position="attributes">
+                <attribute name="invisible">1</attribute>
+            </setting>
+            <setting id="account_ocr_settings" position="after">
+                <setting id="om_bill_ocr_settings" string="Vendor Bill OCR" company_dependent="1"
+                         help="Read the uploaded vendor bills: PDFs, scans and photos, on your own server">
+                    <div class="content-group">
+                        <div class="row mt8">
+                            <label for="om_bill_ocr_mode" string="Read" class="col-lg-4 o_light_label"/>
+                            <field name="om_bill_ocr_mode"/>
+                        </div>
+                        <div class="row" invisible="om_bill_ocr_mode == 'off'">
+                            <label for="om_bill_ocr_languages" string="OCR Languages" class="col-lg-4 o_light_label"/>
+                            <field name="om_bill_ocr_languages" placeholder="eng"/>
+                        </div>
+                        <div class="text-muted mt8" invisible="om_bill_ocr_mode == 'off' or not om_bill_ocr_tesseract">
+                            Tesseract is installed: the scans and the photos are read too.
+                        </div>
+                        <div class="text-warning mt8" invisible="om_bill_ocr_mode == 'off' or om_bill_ocr_tesseract">
+                            The PDFs with text are read. To read the scans and the photos too, install the
+                            tesseract-ocr and poppler-utils packages on the server.
+                        </div>
+                        <div class="mt8" invisible="om_bill_ocr_mode == 'off'">
+                            <button name="%(om_account_bill_ocr.action_om_bill_ocr_profile)d" type="action"
+                                    string="What the Bills Taught" class="btn-link p-0"/>
+                        </div>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+
+</odoo>
