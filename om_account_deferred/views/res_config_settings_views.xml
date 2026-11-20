@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.form.inherit.om.deferred</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='analytic']" position="before">
+                <block title="Deferred Revenue and Expense" id="om_deferred">
+                    <setting string="Deferred Expense"
+                             help="Vendor bill lines with a Start Date and an End Date: their cost is spread over those periods.">
+                        <div class="content-group mt16">
+                                    <div class="row">
+                                        <label for="om_deferred_expense_journal_id" class="col-lg-5 o_light_label" string="Journal"/>
+                                        <field name="om_deferred_expense_journal_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_expense_account_id" class="col-lg-5 o_light_label" string="Account"/>
+                                        <field name="om_deferred_expense_account_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_expense_method" class="col-lg-5 o_light_label" string="Based on"/>
+                                        <field name="om_deferred_expense_method"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_expense_generation" class="col-lg-5 o_light_label" string="Generate Entries"/>
+                                        <field name="om_deferred_expense_generation"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_expense_periodicity" class="col-lg-5 o_light_label" string="Periodicity"/>
+                                        <field name="om_deferred_expense_periodicity"/>
+                                    </div>
+                        </div>
+                    </setting>
+                    <setting string="Deferred Revenue"
+                             help="Customer invoice lines with a Start Date and an End Date: their income is spread over those periods.">
+                        <div class="content-group mt16">
+                                    <div class="row">
+                                        <label for="om_deferred_revenue_journal_id" class="col-lg-5 o_light_label" string="Journal"/>
+                                        <field name="om_deferred_revenue_journal_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_revenue_account_id" class="col-lg-5 o_light_label" string="Account"/>
+                                        <field name="om_deferred_revenue_account_id"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_revenue_method" class="col-lg-5 o_light_label" string="Based on"/>
+                                        <field name="om_deferred_revenue_method"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_revenue_generation" class="col-lg-5 o_light_label" string="Generate Entries"/>
+                                        <field name="om_deferred_revenue_generation"/>
+                                    </div>
+                                    <div class="row">
+                                        <label for="om_deferred_revenue_periodicity" class="col-lg-5 o_light_label" string="Periodicity"/>
+                                        <field name="om_deferred_revenue_periodicity"/>
+                                    </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
