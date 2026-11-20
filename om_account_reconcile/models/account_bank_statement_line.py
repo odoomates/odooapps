@@ -3,6 +3,9 @@ import re
 
 from odoo import api, fields, models, Command, _
 from odoo.exceptions import UserError
+from odoo.osv import expression
+from odoo.tools.sql import escape_psql
+from odoo.addons.base.models.res_bank import sanitize_account_number
 
 from .tools import lock_rows
 
@@ -31,6 +34,8 @@ class AccountBankStatementLine(models.Model):
     @api.model_create_multi
     def create(self, vals_list):
         st_lines = super().create(vals_list)
+        st_lines.filtered(lambda st_line: not st_line.partner_id
+                          and st_line.company_id.om_reconcile_find_partner)._om_set_detected_partners()
         if any(st_lines.company_id.mapped('om_reconcile_auto')):
             cron = self.env.ref('om_account_reconcile.ir_cron_auto_reconcile', raise_if_not_found=False)
             if cron:
@@ -41,6 +46,82 @@ class AccountBankStatementLine(models.Model):
         """ Open the reconciliation screen on this transaction. """
         self.ensure_one()
         return self.journal_id.om_action_open_bank_reconciliation(state='all', st_line_id=self.id)
+
+    # -------------------------------------------------------------------------
+    # Partner
+    # -------------------------------------------------------------------------
+
+    def _om_set_detected_partners(self):
+        """ Set the partner of the transactions found by `_om_detect_partner`. """
+        cache = {}
+        for st_line in self:
+            partner = st_line._om_detect_partner(cache)
+            if partner:
+                st_line.partner_id = partner
+
+    def _om_detect_partner(self, cache=None):
+        """ :return: the partner of the transaction, only when it is certain: the one partner owning the bank
+        account of the other party, the one company with exactly the name written by the bank, the one partner of
+        the open invoice or bill whose number or payment reference is in the reference of the transaction, or the
+        same partner from several of them. Nothing when several partners fit, or when they point to different
+        partners: a wrong partner is worse than none.
+
+        :param dict cache: the partners already found, for transactions handled together
+        """
+        self.ensure_one()
+        cache = {} if cache is None else cache
+        partners = (self._om_partners_by_account(cache) | self._om_partners_by_name(cache)
+                    | self._om_partners_by_reference())
+        return partners if len(partners) == 1 else self.env['res.partner']
+
+    def _om_partners_by_account(self, cache):
+        """ :return: the partners owning the bank account of the other party, a contact counting as its company """
+        sanitized = sanitize_account_number(self.account_number or '')
+        if not sanitized:
+            return self.env['res.partner']
+        key = ('account', sanitized, self.company_id.id)
+        if key not in cache:
+            PartnerBank = self.env['res.partner.bank']
+            cache[key] = PartnerBank.search(expression.AND([
+                [('sanitized_acc_number', '=', sanitized), ('partner_id.active', '=', True)],
+                PartnerBank._check_company_domain(self.company_id),
+            ])).partner_id.commercial_partner_id
+        return cache[key]
+
+    def _om_partners_by_name(self, cache):
+        """ :return: the companies with exactly the name written by the bank, ignoring case and extra spaces. A
+        person is never matched by name only, as different people often have the same name. """
+        Partner = self.env['res.partner']
+        words = (self.partner_name or '').split()
+        if not words:
+            return Partner
+        name = ' '.join(words).casefold()
+        key = ('name', name, self.company_id.id)
+        if key not in cache:
+            # the words in this order, whatever the spaces between them; the exact name is checked below
+            pattern = '%' + '%'.join(escape_psql(word) for word in words) + '%'
+            companies = Partner.search(expression.AND([
+                [('name', '=ilike', pattern), ('is_company', '=', True)],
+                Partner._check_company_domain(self.company_id),
+            ]))
+            cache[key] = companies.filtered(lambda partner: ' '.join((partner.name or '').split()).casefold() == name)
+        return cache[key]
+
+    def _om_partners_by_reference(self):
+        """ :return: the partners of the open invoices and bills whose number or payment reference is a reference
+        written on the transaction """
+        tokens = self._om_reference_tokens()
+        if not tokens:
+            return self.env['res.partner']
+        moves = self.env['account.move'].search([
+            ('move_type', 'in', self.env['account.move'].get_invoice_types(include_receipts=True)),
+            ('state', '=', 'posted'),
+            ('payment_state', 'in', ('not_paid', 'partial')),
+            ('company_id', 'child_of', self.company_id.root_id.id),
+            ('partner_id', '!=', False),
+            '|', ('name', 'in', list(tokens)), ('payment_reference', 'in', list(tokens)),
+        ])
+        return moves.commercial_partner_id
 
     # -------------------------------------------------------------------------
     # Access
@@ -74,6 +155,60 @@ class AccountBankStatementLine(models.Model):
             return amount_currency
         return self._prepare_counterpart_amounts_using_st_line_rate(
             self.company_id.currency_id, balance, balance)['amount_currency']
+
+    def _om_tolerance(self):
+        """ Payment tolerance of the company, in the transaction currency. """
+        tolerance = self.company_id.om_reconcile_tolerance
+        if not tolerance:
+            return 0.0
+        return abs(self._prepare_counterpart_amounts_using_st_line_rate(
+            self.company_id.currency_id, tolerance, tolerance)['amount_currency'])
+
+    def _om_amount_matches(self, aml, residual):
+        """ Whether the open item covers `residual` (a journal item amount in transaction currency): exactly, its
+        discounted amount within the early payment discount, within the payment tolerance, or for an item in
+        another currency within the foreign currency tolerance. """
+        trans_currency, _company_currency = self._om_currencies()
+        aml_amount = self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency, aml.amount_residual)
+        if trans_currency.compare_amounts(aml_amount, residual) == 0:
+            return True
+        if aml.currency_id != trans_currency \
+                and aml.currency_id.compare_amounts(aml.amount_residual_currency, residual) == 0:
+            return True
+        if self._om_early_discount_amls(aml, residual):
+            return True
+        if (aml_amount > 0) != (residual > 0):
+            return False
+        difference = abs(abs(aml_amount) - abs(residual))
+        if difference <= self._om_tolerance() + trans_currency.rounding / 2:
+            return True
+        fx_tolerance = self.company_id.om_reconcile_fx_tolerance
+        return bool(fx_tolerance and aml.currency_id != trans_currency
+                    and difference <= abs(residual) * fx_tolerance / 100.0)
+
+    def _om_early_discount_amls(self, amls, to_cover):
+        """ The items paid with their early payment discount: the transaction, dated within the discount date of
+        their invoices, pays exactly their discounted amount, in their currency, and nothing was paid on them yet.
+
+        :param to_cover: what the counterparts have to cover, as a journal item amount in transaction currency
+        :return: the items, or an empty recordset when the discount does not apply
+        """
+        AccountMoveLine = self.env['account.move.line']
+        trans_currency, _company_currency = self._om_currencies()
+        if not amls or trans_currency.is_zero(to_cover):
+            return AccountMoveLine
+        for aml in amls:
+            if aml.display_type != 'payment_term' or not aml.discount_date \
+                    or aml.currency_id != trans_currency \
+                    or aml.currency_id.compare_amounts(aml.amount_residual_currency, aml.amount_currency) != 0 \
+                    or not aml.move_id._is_eligible_for_early_payment_discount(trans_currency, self.date):
+                return AccountMoveLine
+        # what is left to cover has the sign of the open items it is matched with
+        discounted = sum(amls.mapped('discount_amount_currency'))
+        if trans_currency.compare_amounts(discounted, to_cover) != 0 \
+                or trans_currency.compare_amounts(discounted, sum(amls.mapped('amount_residual_currency'))) == 0:
+            return AccountMoveLine
+        return amls
 
     # -------------------------------------------------------------------------
     # Lines of a reconciliation
@@ -195,9 +330,21 @@ class AccountBankStatementLine(models.Model):
         to_cover = -self.amount_residual
         # the direction of the transaction: once covered, what is left to cover is 0, not the other way round
         cover_sign = 1 if to_cover > 0 else -1
-        for match in proposal.get('matches') or []:
+        matches = proposal.get('matches') or []
+        # invoices paid with their early payment discount are matched in full, the discount being booked below
+        discounted = AccountMoveLine
+        if matches and not proposal.get('writeoffs') and all(match.get('amount') is None for match in matches):
+            discounted = self._om_early_discount_amls(
+                AccountMoveLine.browse([match['aml_id'] for match in matches]), -self.amount_residual)
+        for match in matches:
             aml = AccountMoveLine.browse(match['aml_id'])
             amount = match.get('amount')
+            if aml in discounted:
+                vals = self._om_prepare_match_line_vals(aml)
+                to_cover += self._om_to_transaction_amount(
+                    self.env['res.currency'].browse(vals['currency_id']), vals['amount_currency'], vals['balance'])
+                lines.append((vals, aml))
+                continue
             aml_amount = self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency,
                                                         aml.amount_residual)
             left = max(to_cover * cover_sign, 0.0)
@@ -212,6 +359,15 @@ class AccountBankStatementLine(models.Model):
             to_cover += self._om_to_transaction_amount(
                 self.env['res.currency'].browse(vals['currency_id']), vals['amount_currency'], vals['balance'])
             lines.append((vals, aml))
+        if discounted:
+            _remaining_trans, open_balance = self._om_remaining(lines)
+            discount_values = self.env['account.move']._get_invoice_counterpart_amls_for_early_payment_discount(
+                [{'aml': aml, 'amount_currency': -aml.amount_residual_currency, 'balance': -aml.amount_residual}
+                 for aml in discounted],
+                open_balance,
+            )
+            for values_list in discount_values.values():
+                lines.extend((vals, AccountMoveLine) for vals in values_list)
         for writeoff in proposal.get('writeoffs') or []:
             if self.company_id.currency_id.is_zero(writeoff.get('amount') or 0.0):
                 continue
@@ -306,7 +462,24 @@ class AccountBankStatementLine(models.Model):
         if plan:
             self.env['account.move.line']._reconcile_plan(plan)
         self.invalidate_recordset(['is_reconciled', 'amount_residual'])
+        self._om_after_reconcile(proposal)
         return True
+
+    def _om_after_reconcile(self, proposal):
+        """ Count the models used, and learn a rule from a transaction booked by hand on one account. """
+        writeoffs = proposal.get('writeoffs') or []
+        RecoModel = self.env['account.reconcile.model'].sudo()
+        used = RecoModel.browse({writeoff['reconcile_model_id'] for writeoff in writeoffs
+                                 if writeoff.get('reconcile_model_id')})
+        for model in used.exists():
+            model.om_use_count += 1
+        typed = [writeoff for writeoff in writeoffs if not writeoff.get('reconcile_model_id')]
+        if not proposal.get('matches') and len(typed) == 1 and len(writeoffs) == 1:
+            try:
+                with self.env.cr.savepoint():
+                    RecoModel._om_learn_from(self, typed[0])
+            except Exception as error:  # noqa: BLE001 - learning must never stop a reconciliation
+                _logger.warning("No rule learned from transaction %s: %s", self.id, error)
 
     def _om_undo(self):
         self._om_check_access()
@@ -327,6 +500,10 @@ class AccountBankStatementLine(models.Model):
                     tokens.add(token)
         return tokens
 
+    def _om_has_check_numbers(self):
+        """ Whether the payments carry a cheque number (Community cheque printing installed). """
+        return 'check_number' in self.env['account.payment']._fields
+
     def _om_candidates_domain(self):
         self.ensure_one()
         return self._get_default_amls_matching_domain()
@@ -340,6 +517,8 @@ class AccountBankStatementLine(models.Model):
             text_domain = ['|', '|', '|', '|',
                            ('move_id.name', 'ilike', search), ('ref', 'ilike', search), ('name', 'ilike', search),
                            ('move_id.payment_reference', 'ilike', search), ('partner_id.name', 'ilike', search)]
+            if self._om_has_check_numbers():
+                text_domain = ['|', ('payment_id.check_number', 'ilike', search)] + text_domain
             try:
                 number = float(search.replace(',', ''))
             except ValueError:
@@ -373,6 +552,8 @@ class AccountBankStatementLine(models.Model):
                 token_domain = (['|'] + token_domain if token_domain else []) + [
                     '|', '|', ('move_id.name', 'ilike', token), ('move_id.payment_reference', 'ilike', token),
                     ('ref', 'ilike', token)]
+            if self._om_has_check_numbers():
+                token_domain = ['|', ('payment_id.check_number', 'in', list(tokens))] + token_domain
             candidates |= AccountMoveLine.search(base_domain + token_domain, limit=200)
         if not trans_currency.is_zero(residual):
             candidates |= AccountMoveLine.search(base_domain + [
@@ -381,15 +562,14 @@ class AccountBankStatementLine(models.Model):
 
         scored = []
         normalized_label = (self.payment_ref or '').upper().replace(' ', '')
+        has_check_numbers = self._om_has_check_numbers()
         for aml in candidates:
             score = 0
-            aml_trans_residual = self._om_to_transaction_amount(aml.currency_id, aml.amount_residual_currency,
-                                                                aml.amount_residual)
-            if trans_currency.compare_amounts(aml_trans_residual, residual) == 0 or (
-                    aml.currency_id != trans_currency
-                    and aml.currency_id.compare_amounts(aml.amount_residual_currency, residual) == 0):
+            if not trans_currency.is_zero(residual) and self._om_amount_matches(aml, residual):
                 score += SCORE_AMOUNT
             references = [aml.move_id.name, aml.move_id.payment_reference, aml.ref]
+            if has_check_numbers:
+                references.append(aml.payment_id.check_number)
             if any(reference and len(reference) > 3 and reference.upper().replace(' ', '') in normalized_label
                    for reference in references):
                 score += SCORE_REFERENCE
@@ -491,11 +671,38 @@ class AccountBankStatementLine(models.Model):
             scored = self._om_scored_candidates(limit=2)
             perfect = [aml for aml, score in scored if score >= SCORE_PERFECT]
             if len(perfect) == 1:
-                proposal = {'matches': [{'aml_id': perfect[0].id}]}
-                if self._om_is_complete(proposal):
+                proposal = self._om_complete_within_tolerance({'matches': [{'aml_id': perfect[0].id}]})
+                if proposal:
                     self._om_reconcile(proposal)
                     return True
         return False
+
+    def _om_complete_within_tolerance(self, proposal):
+        """ :return: a proposal reconciling the transaction in full, or None: the items closed in full when they cover
+        it exactly, or within the payment tolerance with the difference written off to the payment difference
+        account; else the proposal itself when it is complete (e.g. an early payment discount). """
+        trans_currency, company_currency = self._om_currencies()
+        AccountMoveLine = self.env['account.move.line']
+        # the items in full: an invoice paid a little less than its amount is closed, not left open by the difference
+        full = {**proposal, 'matches': [
+            {**match, 'amount': abs(AccountMoveLine.browse(match['aml_id']).amount_residual_currency)}
+            for match in proposal.get('matches') or []
+        ]}
+        remaining_trans, remaining_balance = self._om_remaining(self._om_prepare_proposal_lines(full))
+        if trans_currency.is_zero(remaining_trans) and company_currency.is_zero(remaining_balance):
+            return full
+        account = self.company_id.om_reconcile_tolerance_account_id
+        tolerance = self._om_tolerance()
+        if account and tolerance and abs(remaining_trans) <= tolerance + trans_currency.rounding / 2:
+            full['writeoffs'] = [*(proposal.get('writeoffs') or []), {
+                'account_id': account.id,
+                'amount': remaining_trans,
+                'label': _('Payment difference'),
+                'partner_id': self.partner_id.id,
+            }]
+            if self._om_is_complete(full):
+                return full
+        return proposal if self._om_is_complete(proposal) else None
 
     def _om_is_complete(self, proposal):
         remaining_trans, remaining_balance = self._om_remaining(self._om_prepare_proposal_lines(proposal))

@@ -9,22 +9,41 @@
                 <field name="company_currency_id" invisible="1"/>
                 <field name="company_id" invisible="1"/>
                 <field name="is_balanced" invisible="1"/>
+                <field name="needs_transfer" invisible="1"/>
+                <field name="line_account_ids" invisible="1"/>
+                <field name="line_partner_ids" invisible="1"/>
+                <div class="alert alert-warning" role="alert" invisible="not lock_date_message">
+                    <field name="lock_date_message"/>
+                </div>
+                <div class="alert alert-info" role="status" invisible="not needs_transfer">
+                    The items are on different accounts or partners: a journal entry first moves them to the ones
+                    chosen below, then they are matched.
+                </div>
                 <group>
                     <group>
-                        <field name="account_id"/>
+                        <field name="account_id" invisible="needs_transfer"/>
+                        <field name="transfer_account_id" invisible="len(line_account_ids) &lt; 2"
+                               required="len(line_account_ids) &gt; 1" options="{'no_create': True}"/>
+                        <field name="transfer_partner_id" invisible="len(line_partner_ids) &lt; 2"
+                               options="{'no_create': True}"/>
                         <field name="debit"/>
                         <field name="credit"/>
                         <field name="difference" decoration-warning="not is_balanced" decoration-success="is_balanced"/>
                     </group>
-                    <group invisible="is_balanced">
-                        <field name="writeoff"/>
+                    <group invisible="is_balanced and not needs_transfer">
+                        <field name="allow_partials" invisible="is_balanced or writeoff"/>
+                        <field name="writeoff" invisible="is_balanced"/>
+                        <field name="writeoff_model_id" invisible="not writeoff" options="{'no_create': True}"/>
                         <field name="writeoff_account_id" invisible="not writeoff" required="writeoff"/>
-                        <field name="writeoff_journal_id" invisible="not writeoff" required="writeoff"/>
-                        <field name="writeoff_date" invisible="not writeoff" required="writeoff"/>
+                        <field name="writeoff_tax_ids" invisible="not writeoff" widget="many2many_tags"/>
+                        <field name="writeoff_journal_id" invisible="not writeoff and not needs_transfer"
+                               required="writeoff or needs_transfer"/>
+                        <field name="writeoff_date" invisible="not writeoff and not needs_transfer"
+                               required="writeoff or needs_transfer"/>
                         <field name="writeoff_label" invisible="not writeoff"/>
                     </group>
                 </group>
-                <div class="text-muted" invisible="is_balanced or writeoff">
+                <div class="text-muted" invisible="is_balanced or writeoff or not allow_partials">
                     The items are matched partially: the difference stays open.
                 </div>
                 <field name="line_ids" readonly="1">
@@ -94,6 +113,46 @@
         <field name="state">code</field>
         <field name="code">action = model.om_action_match_suggestions([('id', 'in', env.context.get('active_ids', []))])</field>
     </record>
+
+    <record id="view_om_auto_reconcile_wizard_form" model="ir.ui.view">
+        <field name="name">om.auto.reconcile.wizard.form</field>
+        <field name="model">om.auto.reconcile.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reconcile Automatically">
+                <field name="company_id" invisible="1"/>
+                <group>
+                    <field name="mode" widget="radio"/>
+                </group>
+                <group>
+                    <group>
+                        <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_reconcile" type="object" string="Reconcile" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_auto_reconcile_wizard" model="ir.actions.act_window">
+        <field name="name">Reconcile Automatically</field>
+        <field name="res_model">om.auto.reconcile.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_om_auto_reconcile"
+              action="action_om_auto_reconcile_wizard"
+              parent="om_account_reconcile.menu_reconciliation"
+              sequence="35"
+              groups="account.group_account_basic"/>
 
     <menuitem id="menu_move_line_match"
               action="action_move_line_match"
