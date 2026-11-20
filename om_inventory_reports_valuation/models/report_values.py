@@ -207,7 +207,7 @@ class OmInventoryReportAgeing(models.AbstractModel):
         columns = super()._om_get_columns(options)
         columns.insert(1, value_column(self.env))
         columns.append(value_column(self.env, 'old_value', self.env._("Value Over %s Days",
-                                                                      self._om_period(options) * (BUCKETS - 2)),
+                                                                      self._om_bucket_days(options) * (BUCKETS - 2)),
                                     visible=False))
         return columns
 
