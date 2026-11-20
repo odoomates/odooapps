@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="rule_sign_request_signed_by" model="ir.rule">
+            <field name="name">sign.request.signed.by</field>
+            <field name="model_id" ref="model_sign_request"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">[('signer_ids.partner_id', '=', user.partner_id.id), ('state', '!=', 'draft')]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_request_user" model="ir.rule">
+            <field name="name">sign.request.user</field>
+            <field name="model_id" ref="model_sign_request"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('requested_by_id', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_request_manager" model="ir.rule">
+            <field name="name">sign.request.manager</field>
+            <field name="model_id" ref="model_sign_request"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="sign_request_company_rule" model="ir.rule">
+            <field name="name">Signature requests: multi-company</field>
+            <field name="model_id" ref="model_sign_request"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_request_signer_signer" model="ir.rule">
+            <field name="name">sign.request.signer.signer</field>
+            <field name="model_id" ref="model_sign_request_signer"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">[('request_id.signer_ids.partner_id', '=', user.partner_id.id), ('request_id.state', '!=', 'draft')]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_request_signer_user" model="ir.rule">
+            <field name="name">sign.request.signer.user</field>
+            <field name="model_id" ref="model_sign_request_signer"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('request_id.requested_by_id', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_request_signer_manager" model="ir.rule">
+            <field name="name">sign.request.signer.manager</field>
+            <field name="model_id" ref="model_sign_request_signer"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_log_signer" model="ir.rule">
+            <field name="name">sign.log.signer</field>
+            <field name="model_id" ref="model_sign_log"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">[('request_id.signer_ids.partner_id', '=', user.partner_id.id), ('request_id.state', '!=', 'draft')]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_log_user" model="ir.rule">
+            <field name="name">sign.log.user</field>
+            <field name="model_id" ref="model_sign_log"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('request_id.requested_by_id', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_log_manager" model="ir.rule">
+            <field name="name">sign.log.manager</field>
+            <field name="model_id" ref="model_sign_log"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="sign_request_signer_company_rule" model="ir.rule">
+            <field name="name">Signers: multi-company</field>
+            <field name="model_id" ref="model_sign_request_signer"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="sign_log_company_rule" model="ir.rule">
+            <field name="name">Signature evidence: multi-company</field>
+            <field name="model_id" ref="model_sign_log"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_template_user" model="ir.rule">
+            <field name="name">sign.template.user</field>
+            <field name="model_id" ref="model_sign_template"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_template_user_own" model="ir.rule">
+            <field name="name">sign.template.user.own</field>
+            <field name="model_id" ref="model_sign_template"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_template_manager" model="ir.rule">
+            <field name="name">sign.template.manager</field>
+            <field name="model_id" ref="model_sign_template"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="sign_template_company_rule" model="ir.rule">
+            <field name="name">Sign templates: multi-company</field>
+            <field name="model_id" ref="model_sign_template"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_template_role_user" model="ir.rule">
+            <field name="name">sign.template.role.user</field>
+            <field name="model_id" ref="model_sign_template_role"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_template_role_user_own" model="ir.rule">
+            <field name="name">sign.template.role.user.own</field>
+            <field name="model_id" ref="model_sign_template_role"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('template_id.create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_template_role_manager" model="ir.rule">
+            <field name="name">sign.template.role.manager</field>
+            <field name="model_id" ref="model_sign_template_role"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="sign_template_role_company_rule" model="ir.rule">
+            <field name="name">Sign template roles: multi-company</field>
+            <field name="model_id" ref="model_sign_template_role"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_template_field_user" model="ir.rule">
+            <field name="name">sign.template.field.user</field>
+            <field name="model_id" ref="model_sign_template_field"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_template_field_user_own" model="ir.rule">
+            <field name="name">sign.template.field.user.own</field>
+            <field name="model_id" ref="model_sign_template_field"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('template_id.create_uid', '=', user.id)]</field>
+            <field name="perm_read" eval="False"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_template_field_manager" model="ir.rule">
+            <field name="name">sign.template.field.manager</field>
+            <field name="model_id" ref="model_sign_template_field"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="sign_template_field_company_rule" model="ir.rule">
+            <field name="name">Sign template fields: multi-company</field>
+            <field name="model_id" ref="model_sign_template_field"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="rule_sign_request_value_signer" model="ir.rule">
+            <field name="name">sign.request.value.signer</field>
+            <field name="model_id" ref="model_sign_request_value"/>
+            <field name="groups" eval="[(4, ref('base.group_user'))]"/>
+            <field name="domain_force">[('signer_id.partner_id', '=', user.partner_id.id), ('request_id.state', '!=', 'draft')]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_request_value_user" model="ir.rule">
+            <field name="name">sign.request.value.user</field>
+            <field name="model_id" ref="model_sign_request_value"/>
+            <field name="groups" eval="[(4, ref('group_sign_user'))]"/>
+            <field name="domain_force">[('request_id.requested_by_id', '=', user.id)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="rule_sign_request_value_manager" model="ir.rule">
+            <field name="name">sign.request.value.manager</field>
+            <field name="model_id" ref="model_sign_request_value"/>
+            <field name="groups" eval="[(4, ref('group_sign_manager'))]"/>
+            <field name="domain_force">[(1, '=', 1)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="False"/>
+            <field name="perm_create" eval="False"/>
+            <field name="perm_unlink" eval="False"/>
+        </record>
+
+        <record id="sign_request_value_company_rule" model="ir.rule">
+            <field name="name">Signature request fields: multi-company</field>
+            <field name="model_id" ref="model_sign_request_value"/>
+            <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+        <record id="sign_share_visit_company_rule" model="ir.rule">
+            <field name="name">Shared link visits: multi-company</field>
+            <field name="model_id" ref="model_sign_share_visit"/>
+            <field name="domain_force">['|', ('company_id', '=', False), ('company_id', 'in', company_ids)]</field>
+            <field name="perm_read" eval="True"/>
+            <field name="perm_write" eval="True"/>
+            <field name="perm_create" eval="True"/>
+            <field name="perm_unlink" eval="True"/>
+        </record>
+
+    </data>
+</odoo>
