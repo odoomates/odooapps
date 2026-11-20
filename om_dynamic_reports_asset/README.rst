@@ -16,6 +16,7 @@ Adds three reports to the Dynamic Accounting Reports, from Assets Management:
   start, the depreciation of the period, what the disposals removed and the
   accumulated depreciation at the end; the net book value. A sale or a disposal
   removes what was left. Click a depreciation figure to open its entries.
+  Group the assets by category, asset account, asset group or analytic account.
 
 The deferrals are recognition schedules: per deferral, its total, what it recognized
 before the period, in each month of the period (quarters or years for a long
@@ -25,6 +26,15 @@ recognition entries, a deferral to open it.
 
 The module installs by itself with Dynamic Accounting Reports and Assets
 Management.
+
+Release Notes
+=============
+
+16.0.1.1.0
+----------
+
+* Depreciation Schedule grouped by category, asset account, asset group or
+  analytic account. Upgrade with ``-u om_dynamic_reports_asset``.
 
 Credits
 =======
