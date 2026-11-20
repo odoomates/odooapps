@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="crossovered_budget_view_form_committed" model="ir.ui.view">
+        <field name="name">crossovered.budget.form.committed</field>
+        <field name="model">crossovered.budget</field>
+        <field name="inherit_id" ref="om_account_budget.crossovered_budget_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='crossovered_budget_line']/tree/field[@name='practical_amount']" position="after">
+                <field name="committed_amount" string="Committed" optional="show"
+                       column_invisible="parent.state == 'draft'"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
