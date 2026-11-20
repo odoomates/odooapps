@@ -82,7 +82,9 @@ class AccountAssetCategory(models.Model):
         help="State here the time between 2 depreciations, in months", required=True
     )
     method_progress_factor = fields.Float(
-        'Degressive Factor', default=0.3
+        'Degressive Factor', default=0.3,
+        help='Yearly rate of the degressive method: 0.3 depreciates 30% of the value left at the start of each year, '
+             'spread over the periods of the year.'
     )
     method_time = fields.Selection(
         [('number', 'Number of Entries'), ('end', 'Ending Date')],
@@ -187,7 +189,9 @@ class AccountAssetAsset(models.Model):
     )
     method_end = fields.Date(string='Ending Date')
     method_progress_factor = fields.Float(
-        string='Degressive Factor', default=0.3
+        string='Degressive Factor', default=0.3,
+        help='Yearly rate of the degressive method: 0.3 depreciates 30% of the value left at the start of each year, '
+             'spread over the periods of the year.'
     )
     value_residual = fields.Monetary(compute='_amount_residual', string='Residual Value')
     method_time = fields.Selection(
@@ -269,7 +273,9 @@ class AccountAssetAsset(models.Model):
 
     def _compute_board_amount(self, sequence, residual_amount, amount_to_depr,
                               undone_dotation_number, posted_depreciation_line_ids,
-                              total_days, depreciation_date):
+                              total_days, depreciation_date, year_residual=None):
+        """ :param year_residual: for a degressive asset depreciated by periods shorter than a year, the residual
+        value at the start of the year of the life of the asset the line belongs to """
         amount = 0
         if sequence == undone_dotation_number:
             amount = residual_amount
@@ -290,18 +296,42 @@ class AccountAssetAsset(models.Model):
                             days = (self.company_id.compute_fiscalyear_dates(date)['date_to'] - date).days + 1
                             amount = (amount_to_depr / self.method_number) / total_days * days
             elif self.method == 'degressive':
-                amount = residual_amount * self.method_progress_factor
+                # the degressive factor is a yearly rate: a period shorter than a year depreciates its share of the
+                # value left at the start of the year
+                if self.method_period < 12 and year_residual is not None:
+                    period_amount = year_residual * self.method_progress_factor * self.method_period / 12.0
+                else:
+                    period_amount = residual_amount * self.method_progress_factor
+                amount = period_amount
                 if self.prorata:
                     if sequence == 1:
                         date = self.date
                         if self.method_period % 12 != 0:
                             month_days = calendar.monthrange(date.year, date.month)[1]
                             days = month_days - date.day + 1
-                            amount = (residual_amount * self.method_progress_factor) / month_days * days
+                            amount = period_amount / month_days * days
                         else:
                             days = (self.company_id.compute_fiscalyear_dates(date)['date_to'] - date).days + 1
                             amount = (residual_amount * self.method_progress_factor) / total_days * days
         return amount
+
+    def _get_degressive_year(self, sequence):
+        """ The year of the life of the asset of the depreciation line `sequence` (from 1): with the prorata
+        temporis, the first line is a part of the first period. """
+        self.ensure_one()
+        return int((sequence - 1) * self.method_period // 12)
+
+    def _get_degressive_year_start(self, sequence, residual_amount, posted_lines):
+        """ The year of the life of the asset of the line `sequence`, the residual value at its start (the residual
+        now plus the depreciation posted since the start of the year) and what the year may still depreciate.
+
+        :return: (year, residual value at the start of the year, amount left for the year)
+        """
+        self.ensure_one()
+        year = self._get_degressive_year(sequence)
+        booked = sum(line.amount for line in posted_lines if self._get_degressive_year(line.sequence) == year)
+        year_residual = residual_amount + booked
+        return year, year_residual, year_residual * self.method_progress_factor - booked
 
     def _compute_board_undone_dotation_nb(self, depreciation_date, total_days):
         undone_dotation_number = self.method_number
@@ -373,12 +403,28 @@ class AccountAssetAsset(models.Model):
                 # indexes over the whole board
                 undone_dotation_number += len(posted_depreciation_line_ids)
 
+            # a degressive asset depreciated by periods shorter than a year: the residual value at the start of the
+            # current year of its life, and what the year may still depreciate
+            yearly = self.method == 'degressive' and self.method_period < 12
+            year, year_residual, year_left = self._get_degressive_year_start(
+                len(posted_depreciation_line_ids) + 1, residual_amount, posted_depreciation_line_ids)
             for x in range(len(posted_depreciation_line_ids), undone_dotation_number):
                 sequence = x + 1
+                if yearly and self._get_degressive_year(sequence) != year:
+                    year = self._get_degressive_year(sequence)
+                    year_residual = residual_amount
+                    year_left = year_residual * self.method_progress_factor
                 amount = self._compute_board_amount(sequence, residual_amount, amount_to_depr,
                                                     undone_dotation_number, posted_depreciation_line_ids,
-                                                    total_days, depreciation_date)
+                                                    total_days, depreciation_date,
+                                                    year_residual=year_residual if yearly else None)
+                if yearly and sequence != undone_dotation_number:
+                    # nothing more once the share of the year is reached, e.g. an asset depreciated too much before,
+                    # which then follows the method from the next year
+                    amount = max(min(amount, year_left), 0.0)
                 amount = self.currency_id.round(amount)
+                if yearly:
+                    year_left -= amount
                 if float_is_zero(amount, precision_rounding=self.currency_id.rounding):
                     # skip the line but still move on to the next period, otherwise the
                     # following lines would all be dated on the same day
