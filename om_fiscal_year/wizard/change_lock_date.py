@@ -1,5 +1,10 @@
 from odoo import models, fields, api, SUPERUSER_ID, _
 from odoo.exceptions import UserError
+from odoo.osv import expression
+from odoo.tools.misc import format_date
+
+# the lock dates of the wizard, as on the company
+LOCK_DATE_FIELDS = ('period_lock_date', 'fiscalyear_lock_date', 'tax_lock_date')
 
 
 class ChangeLockDate(models.TransientModel):
@@ -35,6 +40,75 @@ class ChangeLockDate(models.TransientModel):
         help='No users, including Advisers, can edit accounts prior to and inclusive of '
              'this date. Use it for fiscal year locking.'
     )
+
+    # what the new dates would leave behind
+    draft_move_ids = fields.Many2many('account.move', compute='_compute_warnings')
+    draft_warning = fields.Char(compute='_compute_warnings')
+    tax_closing_warning = fields.Char(compute='_compute_warnings')
+
+    def _closed_lock_dates(self):
+        """ :return: {lock date field: new date} of the lock dates the wizard sets or moves forward """
+        self.ensure_one()
+        company = self.company_id
+        return {field: self[field] for field in LOCK_DATE_FIELDS
+                if self[field] and (not company[field] or self[field] > company[field])}
+
+    @api.depends('company_id', *LOCK_DATE_FIELDS)
+    def _compute_warnings(self):
+        AccountMove = self.env['account.move']
+        for wizard in self:
+            domains = []
+            for field, date in wizard._closed_lock_dates().items():
+                domain = [('date', '<=', date)]
+                if field == 'tax_lock_date':
+                    domain.append(('line_ids.tax_line_id', '!=', False))
+                domains.append(domain)
+            drafts = AccountMove
+            if domains:
+                drafts = AccountMove.search(expression.AND([
+                    [('company_id', '=', wizard.company_id.id), ('state', '=', 'draft')],
+                    expression.OR(domains),
+                ]))
+            wizard.draft_move_ids = drafts
+            wizard.draft_warning = _(
+                '%s draft entries are dated in the period being locked: they cannot be posted once it is locked.',
+                len(drafts)) if drafts else False
+            wizard.tax_closing_warning = wizard._tax_closing_warning()
+
+    def _tax_closing_warning(self):
+        """ A warning when tax closings are posted after the tax lock date: the periods they close can still
+        change. A tax closing is an entry clearing the tax accounts, without taxes of its own. """
+        self.ensure_one()
+        lock_date = self.tax_lock_date or self.company_id.tax_lock_date
+        tax_accounts = self.env['account.tax.repartition.line'].search([
+            ('company_id', '=', self.company_id.id), ('account_id', '!=', False)]).account_id
+        if not tax_accounts:
+            return False
+        domain = [
+            ('company_id', '=', self.company_id.id), ('parent_state', '=', 'posted'),
+            ('move_id.move_type', '=', 'entry'), ('account_id', 'in', tax_accounts.ids),
+            ('tax_line_id', '=', False), ('tax_ids', '=', False),
+        ]
+        if lock_date:
+            domain.append(('date', '>', lock_date))
+        closings = self.env['account.move.line'].search(domain).move_id.filtered(
+            lambda move: not move.line_ids.tax_ids and not move.line_ids.tax_line_id)
+        if not closings:
+            return False
+        last = max(closings.mapped('date'))
+        return _('A tax closing is posted on %(date)s, after the tax lock date: set the tax lock date to %(date)s so '
+                 'that the periods closed cannot change any more.', date=format_date(self.env, last))
+
+    def action_open_draft_moves(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _('Draft Entries to Post or Delete'),
+            'res_model': 'account.move',
+            'view_mode': 'tree,form',
+            'domain': [('id', 'in', self.draft_move_ids.ids)],
+            'context': {'create': False},
+        }
 
     def update_lock_date(self):
         self.ensure_one()
