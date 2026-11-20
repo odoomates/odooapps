@@ -52,6 +52,7 @@ class AccountBankStatementLine(models.Model):
             'residual_transaction': trans_currency.round(self._om_to_transaction_amount(
                 aml.currency_id, aml.amount_residual_currency, aml.amount_residual)),
             'score': score or 0,
+            'check_number': (aml.payment_id.check_number or '') if self._om_has_check_numbers() else '',
         }
 
     def _om_screen_entry_lines(self):
@@ -123,16 +124,32 @@ class AccountBankStatementLine(models.Model):
             'matches': [{'aml_id': aml.id, 'amount': None, 'candidate': self._om_screen_candidate(aml)}
                         for aml in amls],
         }
+        data['models'] = self._om_screen_models()
+        return data
+
+    def _om_screen_models(self, partner=None):
+        """ Reconciliation models offered for the transaction, the applicable ones being highlighted.
+
+        :param partner: see `account.reconcile.model._om_is_applicable`
+        """
+        self.ensure_one()
         models = self.env['account.reconcile.model'].search([
             ('company_id', '=', self.company_id.id),
             # the counterpart models of Odoo 17, applied from the screen: all of them write a journal entry
             ('rule_type', 'in', ('writeoff_button', 'writeoff_suggestion')),
         ])
-        data['models'] = [
-            {'id': model.id, 'name': model.name, 'applicable': model._om_is_applicable(self)}
+        return [
+            {'id': model.id, 'name': model.name, 'applicable': model._om_is_applicable(self, partner=partner)}
             for model in models if not model.match_journal_ids or self.journal_id in model.match_journal_ids
         ]
-        return data
+
+    def om_bank_rec_models(self, partner_id=False):
+        """ Reconciliation models of the transaction for the partner chosen in the screen, not saved yet. """
+        self.ensure_one()
+        self._om_check_access()
+        if self.is_reconciled:
+            return []
+        return self._om_screen_models(partner=self.env['res.partner'].browse(partner_id or []))
 
     def om_bank_rec_candidates(self, search=None, limit=40, offset=0):
         self.ensure_one()
@@ -155,10 +172,18 @@ class AccountBankStatementLine(models.Model):
         remaining_trans, remaining_balance = self._om_remaining(lines)
         trans_currency, company_currency = self._om_currencies()
         preview_lines = []
+        # without counterparts typed in, the lines added by the engine are those of an early payment discount
+        engine_lines = not proposal['writeoffs']
         for vals, aml in lines:
             currency = self.env['res.currency'].browse(vals['currency_id'])
+            if aml:
+                kind = 'match'
+            elif engine_lines:
+                kind = 'discount'
+            else:
+                kind = 'tax' if vals.get('tax_repartition_line_id') else 'writeoff'
             preview_lines.append({
-                'kind': 'match' if aml else ('tax' if vals.get('tax_repartition_line_id') else 'writeoff'),
+                'kind': kind,
                 'aml_id': aml.id,
                 'account_display': self.env['account.account'].browse(vals['account_id']).display_name,
                 'label': vals.get('name') or '',
@@ -190,9 +215,13 @@ class AccountBankStatementLine(models.Model):
         model = self.env['account.reconcile.model'].browse(model_id)
         if model.company_id != self.company_id:
             raise UserError(_('This reconciliation model belongs to another company.'))
+        # the partner chosen in the screen, the one of the transaction when the proposal has none
+        partner = None
+        if 'partner_id' in (proposal or {}):
+            partner = self.env['res.partner'].browse(proposal['partner_id'] or [])
         lines = self._om_prepare_proposal_lines(self._om_clean_proposal(proposal))
         remaining_trans, _remaining_balance = self._om_remaining(lines)
-        return model._om_get_writeoffs(self, residual=remaining_trans)
+        return model._om_get_writeoffs(self, residual=remaining_trans, partner=partner)
 
     @api.model
     def om_bank_rec_auto_reconcile(self, st_line_ids):
@@ -205,6 +234,82 @@ class AccountBankStatementLine(models.Model):
         self._om_check_access()
         self.move_id.to_check = to_check
         return self.om_bank_rec_get_data()
+
+    def om_bank_rec_partner_account(self, partner_id):
+        """ The receivable account of the partner for money coming in, its payable account for money going out:
+        the transaction is kept open there, e.g. an advance to match with the invoice later. """
+        self.ensure_one()
+        self._om_check_access()
+        partner = self.env['res.partner'].browse(partner_id).with_company(self.company_id)
+        account = partner.property_account_receivable_id if self.amount > 0 else partner.property_account_payable_id
+        return {'id': account.id, 'display_name': account.display_name} if account else False
+
+    @api.model
+    def om_bank_rec_bulk_set_partner(self, st_line_ids, partner_id):
+        """ Set the partner of the transactions selected, those not reconciled yet. """
+        st_lines = self.browse(st_line_ids).filtered(lambda st_line: not st_line.is_reconciled)
+        st_lines._om_check_access()
+        st_lines.partner_id = partner_id or False
+        return len(st_lines)
+
+    @api.model
+    def om_bank_rec_bulk_book(self, st_line_ids, account_id):
+        """ Book what is left to reconcile on each transaction selected on the account, e.g. bank fees. """
+        st_lines = self.browse(st_line_ids).filtered(lambda st_line: not st_line.is_reconciled)
+        st_lines._om_check_access()
+        for st_line in st_lines:
+            remaining_trans, _remaining_balance = st_line._om_remaining([])
+            st_line._om_reconcile({'writeoffs': [{
+                'account_id': account_id,
+                'amount': remaining_trans,
+                'label': st_line.payment_ref,
+                'partner_id': st_line.partner_id.id,
+            }]})
+        return len(st_lines)
+
+    def om_bank_rec_create_document(self, filename, datas, partner_id=False):
+        """ A draft vendor bill (money going out) or customer invoice (money coming in) of what is left to reconcile,
+        with the document attached, to check, post and match with the transaction.
+
+        :return: the id of the draft
+        """
+        self.ensure_one()
+        self._om_check_access()
+        if self.is_reconciled:
+            raise UserError(_('The transaction %s is already reconciled.', self.display_name))
+        trans_currency, _company_currency = self._om_currencies()
+        remaining_trans, _remaining_balance = self._om_remaining([])
+        outgoing = self.amount < 0
+        journal = self.env['account.journal'].search([
+            *self.env['account.journal']._check_company_domain(self.company_id),
+            ('type', '=', 'purchase' if outgoing else 'sale'),
+        ], limit=1)
+        if not journal:
+            raise UserError(_('Create a purchase or a sales journal first.'))
+        move = self.env['account.move'].create({
+            'move_type': 'in_invoice' if outgoing else 'out_invoice',
+            'journal_id': journal.id,
+            'partner_id': partner_id or self.partner_id.id or False,
+            'invoice_date': self.date,
+            'currency_id': trans_currency.id,
+            'ref': self.payment_ref,
+            'invoice_line_ids': [fields.Command.create({
+                'name': self.payment_ref or filename,
+                'quantity': 1.0,
+                'price_unit': abs(remaining_trans),
+                'tax_ids': [],
+            })],
+        })
+        attachment = self.env['ir.attachment'].create({
+            'name': filename,
+            'datas': datas,
+            'res_model': 'account.move',
+            'res_id': move.id,
+        })
+        move.message_main_attachment_id = attachment
+        move.message_post(body=_('Created from the transaction %s of the bank reconciliation.', self.display_name),
+                          attachment_ids=attachment.ids)
+        return move.id
 
     def _om_clean_proposal(self, proposal):
         """ Keep only the values the engine expects from what the screen sends. """
@@ -233,6 +338,14 @@ class AccountBankStatementLine(models.Model):
 
 class AccountJournal(models.Model):
     _inherit = 'account.journal'
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        journals = super().create(vals_list)
+        banks = journals.filtered(lambda journal: journal.type == 'bank' and journal.company_id.om_bank_fee_account_id)
+        if banks:
+            self.env['account.reconcile.model'].sudo()._om_sync_bank_fee_models(banks.company_id)
+        return journals
 
     def om_action_open_bank_reconciliation(self, state='to_reconcile', st_line_id=False):
         """ :param state: the transactions listed first: to_reconcile, to_review, reconciled or all """
