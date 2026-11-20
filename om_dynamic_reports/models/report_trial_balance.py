@@ -21,6 +21,7 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
     _report_sequence = 10
     _report_icon = 'balance'
     _report_compare = True
+    _odr_horizontal = True
 
     @api.model
     def _om_report_title(self):
@@ -32,7 +33,7 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
 
     @api.model
     def _om_filters(self):
-        return (self._odr_filters('journal_ids', 'account_ids', 'account_tag_ids', 'analytic_account_ids')
+        return (self._odr_filters('journal_ids', 'account_ids', 'account_tag_ids', 'analytic_account_ids', 'aml_filter_ids')
                 + self._odr_analytic_column_filters())
 
     @api.model
@@ -45,6 +46,7 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
                 ['all', _("All accounts")],
             ]},
             self._odr_hierarchy_choice(),
+            *self._odr_horizontal_choice(),
         ]
 
     @api.model
@@ -52,7 +54,7 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
         columns = []
         periods = self._odr_period_options(options)
         compared = len(periods) > 1
-        analytic = self._odr_analytic_columns(options)
+        split = self._odr_split_columns(options)
         for index, period in enumerate(periods):
             suffix = '_%s' % index if index else ''
             if compared:
@@ -69,9 +71,9 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
                     columns.append({'key': key + suffix, 'label': label, 'type': 'monetary', 'group': group,
                                     'visible': not key.endswith('balance'), 'drill': True})
                 if group == movements:
-                    # the movements of the period of each analytic column, under the same header
-                    for key, label, _domain in analytic:
-                        columns.append({'key': 'an_%s%s' % (key, suffix), 'label': label, 'type': 'monetary',
+                    # the movements of the period of each split column, under the same header
+                    for key, label in split:
+                        columns.append({'key': key + suffix, 'label': label, 'type': 'monetary',
                                         'group': group, 'drill': True})
         return columns
 
@@ -92,9 +94,17 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
         return {key + suffix: value for key, value in values.items()}
 
     @api.model
-    def _odr_period_analytic(self, options):
-        """{column key: {account id: balance}} of the analytic columns over one period."""
-        return {key: {account_id: sums['balance'] for account_id, sums in self._odr_analytic_sums(
+    def _odr_period_analytic(self, options, layout_options=None):
+        """{column key: {account id: balance}} of the split columns over one period: those of the
+        horizontal group (laid out by ``layout_options``, those of the report), or the analytic
+        columns."""
+        if self._odr_horizontal_group(options):
+            names = self._odr_horizontal_names(options)
+            grouped = self._odr_grouped_sums(
+                self._odr_domain(options) + self._odr_period_domain(options), ['account_id', *names])
+            return {key: {account_id: sums['balance'] for account_id, sums in by_account.items()}
+                    for key, by_account in self._odr_horizontal_split(layout_options or options, grouped).items()}
+        return {'an_%s' % key: {account_id: sums['balance'] for account_id, sums in self._odr_analytic_sums(
             options, domain, self._odr_period_domain(options)).items()}
             for key, _label, domain in self._odr_analytic_columns(options)}
 
@@ -131,8 +141,8 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
         periods = self._odr_period_options(options)
         suffixes = ['_%s' % index if index else '' for index in range(len(periods))]
         figures = [report._odr_period_figures(period) for report, period in self._odr_periods(options)]
-        analytic = [report._odr_period_analytic(period) for report, period in self._odr_periods(options)]
-        analytic_keys = [key for key, _label, _domain in self._odr_analytic_columns(options)]
+        analytic = [report._odr_period_analytic(period, options) for report, period in self._odr_periods(options)]
+        analytic_keys = [key for key, _label in self._odr_split_columns(options)]
 
         Account = self.env['account.account'].with_context(active_test=False)
         account_ids = set()
@@ -156,12 +166,12 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
             for suffix, (by_account, _undistributed), by_column in zip(suffixes, figures, analytic):
                 values.update(self._odr_values(*by_account.get(account.id, (EMPTY, EMPTY)), suffix=suffix))
                 for key in analytic_keys:
-                    values['an_%s%s' % (key, suffix)] = by_column[key].get(account.id, 0.0)
+                    values[key + suffix] = by_column.get(key, {}).get(account.id, 0.0)
             if self._odr_shown(values, options, suffixes):
                 leaves.append((account, values))
 
         sum_keys = [key + suffix for suffix in suffixes for key in AMOUNTS]
-        sum_keys += ['an_%s%s' % (key, suffix) for suffix in suffixes for key in analytic_keys]
+        sum_keys += [key + suffix for suffix in suffixes for key in analytic_keys]
         tree = self._odr_group_accounts(
             leaves, options, lambda account, values, parent_id, level:
             self._odr_account_node(account, values, options, parent_id, level), sum_keys)
@@ -206,6 +216,13 @@ class OmDynamicReportTrialBalance(models.AbstractModel):
         label = self._om_period_label(period)
         if key.startswith('an_'):
             return self._odr_analytic_cell_action(options, key, account, self._odr_period_domain(period),
+                                                  '%s - %s' % (account.display_name, label))
+        if key.startswith('hg_'):
+            column_domain = self._odr_horizontal_cell_domain(options, key)
+            if column_domain is False:
+                return False
+            domain = self._odr_domain(period) + self._odr_period_domain(period) + column_domain
+            return self._odr_journal_items_action(domain + [('account_id', '=', account_id)],
                                                   '%s - %s' % (account.display_name, label))
         domain = self._odr_domain(period)
         movements = [domain + self._odr_period_domain(period)]
