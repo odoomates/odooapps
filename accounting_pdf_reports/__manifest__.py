@@ -1,11 +1,11 @@
 {
     'name': 'Odoo 16 Accounting Financial Reports',
-    'version': '16.0.2.2.1',
+    'version': '16.0.2.3.0',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 16, Accounting Financial Reports, '
                    'Odoo 16 Financial Reports',
     'summary': 'Accounting Reports For Odoo 16',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'license': 'LGPL-3',
     'maintainer': 'Odoo Mates',
@@ -41,6 +41,7 @@
         'report/report_financial.xml',
         'report/report_annual.xml',
         'report/report_tax.xml',
+        'report/report_tax_grid.xml',
         'report/report_aged_partner.xml',
         'report/report_journal_audit.xml',
         'report/report_cash_flow.xml',
