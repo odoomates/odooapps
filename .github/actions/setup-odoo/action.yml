@@ -29,6 +29,15 @@ runs:
           sleep 15
         done
         timeout 600 sudo apt-get install -yq $opts libldap2-dev libsasl2-dev libpq-dev libcairo2-dev pkg-config postgresql-client
+    - name: Chrome for the browser tests
+      shell: bash
+      # on a new runner Chrome can take longer than the 10 seconds Odoo waits for it, and the browser test is then
+      # skipped with a warning: Chrome is started once here, and the tests wait for it up to 30 seconds
+      run: |
+        sed -i 's/^CHECK_BROWSER_ITERATIONS = 100$/CHECK_BROWSER_ITERATIONS = 300/' odoo/odoo/tests/common.py
+        grep -q '^CHECK_BROWSER_ITERATIONS = 300$' odoo/odoo/tests/common.py \
+          || echo "::warning::the wait for Chrome of the Odoo tests was not changed"
+        timeout 60 google-chrome --headless --no-sandbox --disable-gpu --dump-dom about:blank > /dev/null 2>&1 || true
     - uses: actions/setup-python@v7
       with:
         python-version: '3.13'
