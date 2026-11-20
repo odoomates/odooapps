@@ -16,7 +16,10 @@ On screen
   range; arrows move to the previous or next period. "As of" reports take one
   date. A report may compute the year its own way (fiscal year).
 * Comparison with the previous periods or the same period of earlier years,
-  for reports that support it.
+  for reports that support it, or with a period of custom dates.
+* Amounts with decimals, in units, in thousands (K) or in millions (M), for
+  reports that allow it: on screen, in the PDF and in the Excel file (the CSV
+  keeps the exact amounts).
 * A dropdown per record filter (journals, partners, products...), searchable,
   with several records at once.
 * One-of options as their own dropdown or in the options menu; on/off options;
@@ -153,6 +156,25 @@ Usage
 
 The engine adds no menu: it is installed with the reports built on it, such as
 Dynamic Accounting Reports.
+
+Upgrade
+=======
+
+Version 19.0.1.1.0 adds options to the reports and changes their screen: upgrade
+the module, and the reports using it, then reload the browser. From the command
+line::
+
+    odoo-bin -c <your config> -d <your database> -u om_report_engine --stop-after-init
+
+Release Notes
+=============
+
+19.0.1.1.0
+----------
+
+* Rounding of the amounts (``_report_rounding``): with decimals, in units, in
+  thousands or in millions, on screen, in the PDF and in Excel.
+* Comparison with a period of custom dates.
 
 Credits
 =======
