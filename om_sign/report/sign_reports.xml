@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the page added after an uploaded PDF -->
+    <record id="action_report_sign_page" model="ir.actions.report">
+        <field name="name">Signature Page</field>
+        <field name="model">sign.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_sign.report_sign_page</field>
+    </record>
+
+    <template id="report_sign_page">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <h4 class="mb-1">Signatures</h4>
+                        <p class="text-muted mb-4">
+                            <t t-out="o.name"/> · <t t-out="o.reference"/>
+                        </p>
+                        <t t-call="om_sign.signature_blocks">
+                            <t t-set="entries" t-value="o._signer_entries(o.signer_ids)"/>
+                        </t>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <!-- the certificate closing every signed PDF -->
+    <record id="action_report_sign_audit" model="ir.actions.report">
+        <field name="name">Signature Certificate</field>
+        <field name="model">sign.request</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_sign.report_sign_audit</field>
+    </record>
+
+    <template id="report_sign_audit">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-size: 12px;">
+                        <h4>Signature Certificate</h4>
+                        <table class="table table-sm mb-4">
+                            <tr><th style="width: 30%;">Reference</th><td t-out="o.reference"/></tr>
+                            <tr><th>Document</th><td t-out="o.name"/></tr>
+                            <tr><th>Sent by</th><td><t t-out="o.requested_by_id.name"/>, <t t-out="o.date_sent"/> UTC</td></tr>
+                            <tr><th>Completed</th><td><t t-out="o.date_signed"/> UTC</td></tr>
+                            <tr><th>Fingerprint of the document sent (SHA-256)</th>
+                                <td class="text-break" style="font-family: monospace;" t-out="o.document_hash"/></tr>
+                            <tr><th>Verification</th><td class="text-break" t-out="o._get_verify_url()"/></tr>
+                        </table>
+                        <h5>Signers</h5>
+                        <table class="table table-sm mb-4">
+                            <thead>
+                                <tr><th>Signer</th><th>Signature</th><th>Signed</th><th>From</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="o.signer_ids" t-as="signer">
+                                    <td>
+                                        <strong t-out="signer.signed_name or signer.partner_id.name"/>
+                                        <div t-out="signer.role_name"/>
+                                        <div class="text-muted" t-out="signer.email"/>
+                                        <div t-if="signer.code_verified" class="text-muted">Email confirmed by code</div>
+                                    </td>
+                                    <td><img t-if="signer.signature" t-att-src="image_data_uri(signer.signature)"
+                                             style="max-height: 50px; max-width: 160px;" alt="Signature"/></td>
+                                    <td><t t-out="signer.date_signed"/> UTC</td>
+                                    <td>
+                                        <t t-set="signed_log" t-value="o.log_ids.filtered(lambda l: l.signer_id == signer and l.event == 'signed')[:1]"/>
+                                        <div t-out="signed_log.ip"/>
+                                        <div class="text-muted small text-break" t-out="signed_log.user_agent"/>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <h5>History</h5>
+                        <table class="table table-sm">
+                            <tbody>
+                                <tr t-foreach="o.log_ids" t-as="log">
+                                    <td style="width: 25%;"><t t-out="log.date"/> UTC</td>
+                                    <td t-out="dict(log._fields['event']._description_selection(log.env)).get(log.event)"/>
+                                    <td t-out="log.partner_id.name"/>
+                                    <td t-out="log.ip"/>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
