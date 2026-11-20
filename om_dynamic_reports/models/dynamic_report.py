@@ -3,7 +3,11 @@ from datetime import timedelta
 from dateutil.relativedelta import relativedelta
 
 from odoo import api, fields, models, _
+from odoo.osv.expression import AND, OR
 from odoo.addons.om_report_engine.models.report import PAGE_SIZE
+
+# the most columns a horizontal group gives a report; the values past it are left out
+MAX_HORIZONTAL_COLUMNS = 50
 
 DETAIL_FIELDS = ['date', 'move_name', 'move_id', 'journal_id', 'partner_id', 'account_id', 'name', 'ref',
                  'matching_number', 'date_maturity', 'debit', 'credit', 'balance', 'amount_currency', 'currency_id']
@@ -28,6 +32,9 @@ class OmDynamicReport(models.AbstractModel):
     _report_app = 'accounting'
     _report_group = 'account.group_account_readonly,account.group_account_manager'
     _report_default_preset = 'this_year'
+    _report_rounding = True
+    # the report splits its amounts in the columns of a horizontal group
+    _odr_horizontal = False
 
     # ------------------------------------------------------------------
     # Catalog and periods
@@ -83,6 +90,9 @@ class OmDynamicReport(models.AbstractModel):
                                      'icon': 'label', 'domain': []},
             'analytic_account_ids': {'label': _("Analytic"), 'model': 'account.analytic.account',
                                      'icon': 'donut_small', 'domain': []},
+            'aml_filter_ids': {'label': _("Saved Filters"), 'model': 'ir.filters', 'icon': 'bookmark',
+                               'domain': [['model_id', '=', 'account.move.line'],
+                                          '|', ['user_ids', '=', False], ['user_ids', 'in', [self.env.uid]]]},
         }
         return {'key': key, **filters[key]}
 
@@ -245,7 +255,23 @@ class OmDynamicReport(models.AbstractModel):
             domain.append(('partner_id.category_id', 'in', options['partner_category_ids']))
         if options.get('analytic_account_ids'):
             domain.append(('analytic_distribution', 'in', options['analytic_account_ids']))
+        if options.get('aml_filter_ids'):
+            domain += self._odr_saved_filters_domain(options['aml_filter_ids'])
         return domain
+
+    @api.model
+    def _odr_saved_filters_domain(self, filter_ids):
+        """The journal items of the saved filters chosen (the favorites of the Journal Items list): those of any
+        of them."""
+        saved = self.env['ir.filters'].browse(filter_ids).exists().filtered(
+            lambda saved_filter: saved_filter.model_id == 'account.move.line')
+        domains = []
+        for saved_filter in saved:
+            try:
+                domains.append(saved_filter._get_eval_domain())
+            except (ValueError, SyntaxError):
+                continue
+        return OR(domains) if domains else []
 
     @api.model
     def _odr_period_domain(self, options):
@@ -275,24 +301,36 @@ class OmDynamicReport(models.AbstractModel):
         """{group value: {'debit', 'credit', 'balance'}} of the journal items of ``domain``, in the
         currency of the report: at the closing rate, or for a ``flow`` (income, expense, the cash of
         a period) month by month at the average rate of each month."""
+        return {key[0]: sums for key, sums in self._odr_grouped_sums(domain, [groupby], flow).items()}
+
+    @api.model
+    def _odr_grouped_sums(self, domain, groupbys, flow=False):
+        """{(group values): {'debit', 'credit', 'balance'}}: _odr_sums by several fields at once,
+        the records given by their ids (False for none)."""
         result = {}
         aggregates = ['debit:sum', 'credit:sum', 'balance:sum']
+        count = len(groupbys)
+
+        def key_of(row):
+            return tuple(value.id if hasattr(value, 'id') else value for value in row[:count])
+
         if not self._odr_converts():
-            for key, debit, credit, balance in self._om_read_group(self.env['account.move.line'], domain, [groupby], aggregates):
-                result[key.id if hasattr(key, 'id') else key] = {'debit': debit, 'credit': credit, 'balance': balance}
+            for row in self._om_read_group(self.env['account.move.line'], domain, list(groupbys), aggregates):
+                debit, credit, balance = row[-3:]
+                result[key_of(row)] = {'debit': debit, 'credit': credit, 'balance': balance}
             return result
-        groupbys = [groupby] if groupby == 'company_id' else [groupby, 'company_id']
+        full = list(groupbys) + ([] if 'company_id' in groupbys else ['company_id'])
+        company_index = full.index('company_id')
         if flow:
-            groupbys.append('date:month')
-        for row in self._om_read_group(self.env['account.move.line'], domain, groupbys, aggregates):
-            key, company = row[0], row[0] if groupby == 'company_id' else row[1]
+            full.append('date:month')
+        for row in self._om_read_group(self.env['account.move.line'], domain, full, aggregates):
+            company = row[company_index]
             debit, credit, balance = row[-3:]
             if flow:
-                convert = lambda amount: self._odr_convert_flow(amount, company, row[len(groupbys) - 1])  # noqa: E731
+                convert = lambda amount: self._odr_convert_flow(amount, company, row[len(full) - 1])  # noqa: E731
             else:
                 convert = lambda amount: self._odr_convert(amount, company)  # noqa: E731
-            bucket = result.setdefault(key.id if hasattr(key, 'id') else key,
-                                       {'debit': 0.0, 'credit': 0.0, 'balance': 0.0})
+            bucket = result.setdefault(key_of(row), {'debit': 0.0, 'credit': 0.0, 'balance': 0.0})
             bucket['debit'] += convert(debit)
             bucket['credit'] += convert(credit)
             bucket['balance'] += convert(balance)
@@ -503,6 +541,166 @@ class OmDynamicReport(models.AbstractModel):
             bucket['balance'] -= (self._odr_convert_flow(amount, company, row[2]) if flow
                                   else self._odr_convert(amount, company))
         return result
+
+    # ------------------------------------------------------------------
+    # Horizontal groups
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _odr_horizontal_groups(self):
+        """The horizontal groups the report offers."""
+        groups = self.env['om.report.horizontal.group'].sudo().search(
+            [('company_id', 'in', [False] + self.env.companies.ids), ('rule_ids', '!=', False)])
+        return groups.filtered(lambda group: group._odr_applies_to(self._name))
+
+    @api.model
+    def _odr_horizontal_choice(self):
+        """The dropdown of the horizontal groups, in a list: [] without any."""
+        groups = self._odr_horizontal_groups() if self._odr_horizontal else []
+        if not groups:
+            return []
+        return [{'key': 'horizontal_group', 'label': _("Horizontal Group"), 'icon': 'view_column',
+                 'menu': 'bar', 'default': 'none',
+                 'choices': [['none', _("No horizontal group")]]
+                 + [[str(group.id), group.name] for group in groups]}]
+
+    @api.model
+    def _odr_horizontal_group(self, options):
+        """The horizontal group the report is split by, or an empty recordset."""
+        value = str(options.get('horizontal_group') or '')
+        if not self._odr_horizontal or not value.isdigit():
+            return self.env['om.report.horizontal.group']
+        group = self.env['om.report.horizontal.group'].sudo().browse(int(value)).exists()
+        return group if group and group.rule_ids and group._odr_applies_to(self._name) else group.browse()
+
+    @api.model
+    def _om_clean_options(self, options):
+        options = super()._om_clean_options(options)
+        if self._odr_horizontal_group(options):
+            # one kind of split columns at a time: the horizontal group wins over the analytic columns
+            options.update(analytic_column_ids=[], analytic_plan_column_ids=[])
+        return options
+
+    @api.model
+    def _odr_horizontal_fields(self, group):
+        """The journal item fields of the rules of ``group``, in order."""
+        AccountMoveLine = self.env['account.move.line']
+        return [rule for rule in group.rule_ids if rule.field_id.name in AccountMoveLine._fields]
+
+    @api.model
+    def _odr_horizontal_scope(self, options):
+        """The journal items the values of the columns are taken from: those of every period shown."""
+        periods = self._odr_period_options(options)
+        domain = self._odr_domain(options) + [('date', '<=', max(period['date_to'] for period in periods))]
+        starts = [period.get('date_from') for period in periods]
+        if self._report_date_mode != 'as_of' and all(starts):
+            domain.append(('date', '>=', min(starts)))
+        return domain
+
+    @api.model
+    def _odr_horizontal_key(self, values):
+        # no '_' and no plain number after the last one: _odr_cell_scope reads that as the period
+        return 'hg_' + '-'.join('v%s' % (value or 0) for value in values)
+
+    @api.model
+    def _odr_horizontal_layout(self, options):
+        """([{'key', 'label', 'values', 'domain'}], truncated) of the columns of the horizontal group:
+        one per combination of values found in the journal items of the report, the values of each
+        rule kept by its domain and in the order of their model."""
+        group = self._odr_horizontal_group(options)
+        rules = self._odr_horizontal_fields(group)
+        if not rules:
+            return [], False
+        cache = self.env.cr.cache.setdefault('om_dynamic_reports.horizontal_layout', {})
+        cache_key = (self._name, self.env.uid, tuple(self.env.companies.ids), self.env.lang, group.id,
+                     str(group.write_date), str(max(rules, key=lambda r: r.write_date).write_date),
+                     repr(sorted((key, str(value)) for key, value in options.items())))
+        if cache_key in cache:
+            return cache[cache_key]
+        names = [rule.field_id.name for rule in rules]
+        combinations = [tuple(value.id for value in row[:len(names)]) for row in
+                        self._om_read_group(self.env['account.move.line'], self._odr_horizontal_scope(options), names, [])]
+        orders, labels = [], {}
+        for index, rule in enumerate(rules):
+            Model = self.env[rule.field_id.relation].with_context(active_test=False)
+            ids = {combination[index] for combination in combinations if combination[index]}
+            kept = Model.search(AND([[('id', 'in', list(ids))], rule._odr_domain()])) if ids else Model
+            order = {record.id: position for position, record in enumerate(kept)}
+            if rule.domain in (False, '', '[]'):
+                # the journal items without a value get a column of their own, so the columns add up
+                order[False] = len(order)
+                labels[(index, False)] = _("No %s", rule.field_id.field_description)
+            shown = [record.display_name for record in kept]
+            for record in kept:
+                label = record.display_name
+                if shown.count(label) > 1 and 'company_id' in record._fields and record.company_id:
+                    # the same name in several companies, such as their Sales journals
+                    label = '%s (%s)' % (label, record.company_id.name)
+                labels[(index, record.id)] = label
+            orders.append(order)
+        combinations = sorted(
+            (combination for combination in combinations
+             if all(value in order for value, order in zip(combination, orders))),
+            key=lambda combination: [order[value] for value, order in zip(combination, orders)])
+        truncated = len(combinations) > MAX_HORIZONTAL_COLUMNS
+        columns = [{
+            'key': self._odr_horizontal_key(combination),
+            'label': ' / '.join(labels[(index, value)] for index, value in enumerate(combination)),
+            'values': combination,
+            'domain': [(name, '=', value) for name, value in zip(names, combination)],
+        } for combination in combinations[:MAX_HORIZONTAL_COLUMNS]]
+        cache[cache_key] = (columns, truncated)
+        return columns, truncated
+
+    @api.model
+    def _odr_horizontal_columns(self, options):
+        """[(key, label, domain on the journal items)] of the columns of the horizontal group."""
+        return [(column['key'], column['label'], column['domain'])
+                for column in self._odr_horizontal_layout(options)[0]]
+
+    @api.model
+    def _odr_horizontal_names(self, options):
+        """The journal item fields the amounts are grouped by besides the account."""
+        return [rule.field_id.name for rule in self._odr_horizontal_fields(self._odr_horizontal_group(options))]
+
+    @api.model
+    def _odr_horizontal_split(self, options, grouped):
+        """{column key: {account id: sums}} of sums grouped by account and the fields of the group."""
+        keys = {column['values']: column['key'] for column in self._odr_horizontal_layout(options)[0]}
+        result = {key: {} for key in keys.values()}
+        for (account_id, *values), sums in grouped.items():
+            key = keys.get(tuple(values))
+            if key:
+                self._odr_add(result[key], {account_id: sums})
+        return result
+
+    @api.model
+    def _odr_horizontal_cell_domain(self, options, column_key):
+        """The domain of the journal items of a column of the horizontal group, or False."""
+        domains = {key: domain for key, _label, domain in self._odr_horizontal_columns(options)}
+        return domains.get(column_key, False)
+
+    @api.model
+    def _odr_split_columns(self, options):
+        """[(key, label)] of the columns the amounts of a period are split in: those of the
+        horizontal group, or the analytic columns."""
+        if self._odr_horizontal_group(options):
+            return [(key, label) for key, label, _domain in self._odr_horizontal_columns(options)]
+        return [('an_%s' % key, label) for key, label, _domain in self._odr_analytic_columns(options)]
+
+    @api.model
+    def _odr_split_total_help(self, options):
+        if self._odr_horizontal_group(options):
+            return _("Every entry of the period, whatever its column.")
+        return _("Every entry of the period, with or without analytic.")
+
+    @api.model
+    def _om_subtitle(self, options):
+        subtitle = super()._om_subtitle(options)
+        if self._odr_horizontal_group(options) and self._odr_horizontal_layout(options)[1]:
+            note = _("first %s columns of the horizontal group", MAX_HORIZONTAL_COLUMNS)
+            subtitle = '%s (%s)' % (subtitle, note) if subtitle else note
+        return subtitle
 
     # ------------------------------------------------------------------
     # Account hierarchy

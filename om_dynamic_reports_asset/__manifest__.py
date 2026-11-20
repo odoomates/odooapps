@@ -1,6 +1,6 @@
 {
     'name': 'Dynamic Accounting Reports - Assets and Deferrals',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.1.0',
     'category': 'Accounting/Accounting',
     'summary': 'Depreciation Schedule, Deferred Revenue and Deferred Expense in the dynamic accounting reports, '
                'from Assets Management',

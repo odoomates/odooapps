@@ -27,6 +27,7 @@ class OmDynamicReportCashFlow(models.AbstractModel):
     _report_sequence = 3
     _report_icon = 'payments'
     _odr_root_total = False
+    _odr_horizontal = False
 
     @api.model
     def _om_report_title(self):

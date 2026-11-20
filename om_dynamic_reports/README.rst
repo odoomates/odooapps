@@ -39,6 +39,14 @@ Reports
   amounts left without analytic or split over several accounts never make a
   sum of columns look like the total. They combine with the comparison periods.
   The analytic amounts are those of the posted entries.
+* **Horizontal groups** on the Balance Sheet, the Profit and Loss and the
+  Trial Balance: set them up in Configuration > Accounting > Horizontal Groups
+  with one or more fields of the journal items (journal, partner, product,
+  salesperson...), and each value found in the entries of the report gets a
+  column; with two fields, each combination of values. A domain keeps some
+  values only. Each period keeps its own Total, the columns combine with the
+  comparison periods, and any figure opens its journal items. A report shows
+  either a horizontal group or analytic columns, at most 50 columns.
 * The three statements compare with the same period of the previous years or with the previous
   periods, up to twelve columns, with the variation in % against one period;
   debit and credit columns on demand.
@@ -75,6 +83,14 @@ Reports
   the withholding taxes, and the net tax due; a tax unfolds into its accounts.
   Only the tax due on the period counts (a cash basis tax on its payment), as in
   the PDF report. Click a base or a tax to see its journal items.
+* **Tax Return**: the tax return of your country as its localization lays it
+  out (Belgium, France, Germany...), grid by grid, with the totals of the
+  grids; click a grid to see the journal items it adds up. The figures are those
+  of the PDF Tax Report by Tax Grid.
+* **EC Sales List**: per customer of another country of the European Union with
+  a VAT number, the goods and the services invoiced in the period, the credit
+  notes deducted; click an amount to see the invoice lines. For the companies of
+  the Union.
 * **Journals Audit**: every journal with its debit and credit; a journal
   unfolds into its entries (by date or by number), an entry into its journal
   items, and the taxes of the journal at the end.
@@ -106,7 +122,10 @@ On screen
   next period.
 * Posted entries only, or the draft ones too.
 * Filters on journals, accounts, account tags, partners, partner tags and
-  analytic accounts.
+  analytic accounts, and on the saved filters (favorites) of the Journal Items
+  list: the journal items of any of them.
+* Comparison with a period of custom dates.
+* Amounts with decimals, in units, in thousands (K) or in millions (M).
 * Click an account to unfold it, the list icon to open its journal items, an
   item to open its journal entry; the "..." menu of a Trial Balance account
   opens it in the General Ledger.
@@ -166,6 +185,41 @@ Access
   users too.
 * Analytic Report: the accounting administrators and auditors, with analytic
   accounting enabled.
+
+Upgrade
+=======
+
+Version 16.0.1.2.0 adds reports and options: upgrade it together with Dynamic
+Report Engine. From the command line::
+
+    odoo-bin -c <your config> -d <your database> -u om_report_engine,om_dynamic_reports --stop-after-init
+
+Release Notes
+=============
+
+16.0.1.3.0
+----------
+
+* Tax Return: compared with earlier periods or custom dates, the columns of the
+  return repeated under each period, with the variation for a return of one
+  amount column; a figure of a compared period opens its journal items.
+* Upgrade with ``-u om_dynamic_reports``.
+
+16.0.1.2.0
+----------
+
+* Tax Return: the tax return of the country as its localization lays it out,
+  grid by grid, each grid opening its journal items.
+* EC Sales List: the sales to the customers of the other countries of the
+  European Union with a VAT number, goods and services apart (companies of the
+  Union).
+* Saved journal item filters as a filter of the Balance Sheet, the Profit and
+  Loss, the Trial Balance, the General Ledger, the Partner Ledger, the Journals
+  Audit and the Day Book.
+* Amounts in units, thousands or millions; comparison with custom dates.
+* With Budget Management, Dynamic Accounting Reports - Budgets adds the budget
+  to the Profit and Loss; with Currency Revaluation, Dynamic Accounting Reports
+  - Currency Revaluation adds the unrealized currency gains and losses.
 
 Credits
 =======

@@ -86,8 +86,11 @@
                         <group attrs="{'invisible': [('type','=','sale')]}" string="Depreciation Method">
                             <field name="method" widget="radio"/>
                             <field name="method_progress_factor"
-                                   attrs="{'invisible':[('method','=','linear')], 'required':[('method','=','degressive')]}"/>
+                                   attrs="{'invisible':[('method','in',('linear', 'none'))], 'required':[('method','=','degressive')]}"/>
                             <field name="prorata" attrs="{'invisible': [('method_time','=','end')]}"/>
+                            <field name="prorata_computation_type" attrs="{'invisible': [('method','=','none')]}"/>
+                            <field name="salvage_value_pct" attrs="{'invisible': [('method','=','none')]}"/>
+                            <field name="asset_properties_definition"/>
                         </group>
                     </group>
                 </sheet>

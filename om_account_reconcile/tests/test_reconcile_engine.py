@@ -258,6 +258,43 @@ class TestReconcileEngine(AccountTestInvoicingCommon):
         self.assertEqual(st_line._om_auto_reconcile(), st_line)
         self.assertTrue(st_line.move_id.to_check)
 
+    def test_model_for_the_partner_chosen(self):
+        """ The partner chosen in the screen, not saved yet, counts for the conditions of the models. """
+        model = self.env['account.reconcile.model'].create({
+            'name': 'Fees of partner A', 'rule_type': 'writeoff_button',
+            'match_partner_ids': [Command.set(self.partner_a.ids)],
+            'line_ids': [Command.create({
+                'account_id': self.expense_account.id, 'amount_type': 'percentage', 'amount_string': '100'})],
+        })
+        Partner = self.env['res.partner']
+        st_line = self._transaction(-20.0, label='monthly fee', partner=False)
+        self.assertFalse(model._om_is_applicable(st_line))
+        self.assertTrue(model._om_is_applicable(st_line, partner=self.partner_a))
+        self.assertFalse(model._om_is_applicable(st_line, partner=self.partner_b))
+
+        def applicable(models):
+            return next(screen_model['applicable'] for screen_model in models if screen_model['id'] == model.id)
+
+        self.assertFalse(applicable(st_line.om_bank_rec_get_data()['models']))
+        self.assertTrue(applicable(st_line.om_bank_rec_models(self.partner_a.id)))
+        self.assertFalse(applicable(st_line.om_bank_rec_models(self.partner_b.id)))
+        # nothing is saved on the transaction
+        self.assertFalse(st_line.partner_id)
+
+        # a transaction of partner A whose partner is cleared in the screen
+        st_line_a = self._transaction(-20.0, label='monthly fee')
+        self.assertTrue(applicable(st_line_a.om_bank_rec_get_data()['models']))
+        self.assertFalse(applicable(st_line_a.om_bank_rec_models(False)))
+        self.assertFalse(model._om_is_applicable(st_line_a, partner=Partner))
+
+        # the counterparts of the model take the partner chosen
+        writeoffs = st_line.om_bank_rec_model_writeoffs(
+            model.id, {'partner_id': self.partner_a.id, 'matches': [], 'writeoffs': []})
+        self.assertEqual([writeoff['partner_id'] for writeoff in writeoffs], self.partner_a.ids)
+        self.assertEqual(
+            [writeoff['partner_id'] for writeoff in st_line_a.om_bank_rec_model_writeoffs(model.id, {})],
+            self.partner_a.ids)
+
     def test_regex_and_fixed_amounts(self):
         model = self.env['account.reconcile.model'].create({
             'name': 'Commission', 'rule_type': 'writeoff_button',

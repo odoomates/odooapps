@@ -9,22 +9,41 @@
                 <field name="company_currency_id" invisible="1"/>
                 <field name="company_id" invisible="1"/>
                 <field name="is_balanced" invisible="1"/>
+                <field name="needs_transfer" invisible="1"/>
+                <field name="line_account_ids" invisible="1"/>
+                <field name="line_partner_ids" invisible="1"/>
+                <field name="several_accounts" invisible="1"/>
+                <field name="several_partners" invisible="1"/>
+                <div class="alert alert-warning" role="alert" attrs="{'invisible': [('lock_date_message', '=', False)]}">
+                    <field name="lock_date_message" nolabel="1"/>
+                </div>
+                <div class="alert alert-info" role="status" attrs="{'invisible': [('needs_transfer', '=', False)]}">
+                    The items are on different accounts or partners: a journal entry first moves them to the ones
+                    chosen below, then they are matched.
+                </div>
                 <group>
                     <group>
-                        <field name="account_id"/>
+                        <field name="account_id" attrs="{'invisible': [('needs_transfer', '!=', False)]}"/>
+                        <field name="transfer_account_id" attrs="{'invisible': [('several_accounts', '=', False)], 'required': [('several_accounts', '!=', False)]}"
+                               options="{'no_create': True}"/>
+                        <field name="transfer_partner_id" attrs="{'invisible': [('several_partners', '=', False)]}"
+                               options="{'no_create': True}"/>
                         <field name="debit"/>
                         <field name="credit"/>
                         <field name="difference" decoration-warning="not is_balanced" decoration-success="is_balanced"/>
                     </group>
-                    <group attrs="{'invisible': [('is_balanced', '!=', False)]}">
-                        <field name="writeoff"/>
+                    <group attrs="{'invisible': [('is_balanced', '!=', False), ('needs_transfer', '=', False)]}">
+                        <field name="allow_partials" attrs="{'invisible': ['|', ('is_balanced', '!=', False), ('writeoff', '!=', False)]}"/>
+                        <field name="writeoff" attrs="{'invisible': [('is_balanced', '!=', False)]}"/>
+                        <field name="writeoff_model_id" attrs="{'invisible': [('writeoff', '=', False)]}" options="{'no_create': True}"/>
                         <field name="writeoff_account_id" attrs="{'invisible': [('writeoff', '=', False)], 'required': [('writeoff', '!=', False)]}"/>
-                        <field name="writeoff_journal_id" attrs="{'invisible': [('writeoff', '=', False)], 'required': [('writeoff', '!=', False)]}"/>
-                        <field name="writeoff_date" attrs="{'invisible': [('writeoff', '=', False)], 'required': [('writeoff', '!=', False)]}"/>
+                        <field name="writeoff_tax_ids" attrs="{'invisible': [('writeoff', '=', False)]}" widget="many2many_tags"/>
+                        <field name="writeoff_journal_id" attrs="{'invisible': [('writeoff', '=', False), ('needs_transfer', '=', False)], 'required': ['|', ('writeoff', '!=', False), ('needs_transfer', '!=', False)]}"/>
+                        <field name="writeoff_date" attrs="{'invisible': [('writeoff', '=', False), ('needs_transfer', '=', False)], 'required': ['|', ('writeoff', '!=', False), ('needs_transfer', '!=', False)]}"/>
                         <field name="writeoff_label" attrs="{'invisible': [('writeoff', '=', False)]}"/>
                     </group>
                 </group>
-                <div class="text-muted" attrs="{'invisible': ['|', ('is_balanced', '!=', False), ('writeoff', '!=', False)]}">
+                <div class="text-muted" attrs="{'invisible': ['|', '|', ('is_balanced', '!=', False), ('writeoff', '!=', False), ('allow_partials', '=', False)]}">
                     The items are matched partially: the difference stays open.
                 </div>
                 <field name="line_ids" readonly="1">
@@ -94,6 +113,46 @@
         <field name="state">code</field>
         <field name="code">action = model.om_action_match_suggestions([('id', 'in', env.context.get('active_ids', []))])</field>
     </record>
+
+    <record id="view_om_auto_reconcile_wizard_form" model="ir.ui.view">
+        <field name="name">om.auto.reconcile.wizard.form</field>
+        <field name="model">om.auto.reconcile.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Reconcile Automatically">
+                <field name="company_id" invisible="1"/>
+                <group>
+                    <field name="mode" widget="radio"/>
+                </group>
+                <group>
+                    <group>
+                        <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                        <field name="partner_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                    </group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_reconcile" type="object" string="Reconcile" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_auto_reconcile_wizard" model="ir.actions.act_window">
+        <field name="name">Reconcile Automatically</field>
+        <field name="res_model">om.auto.reconcile.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_om_auto_reconcile"
+              action="action_om_auto_reconcile_wizard"
+              parent="om_account_reconcile.menu_reconciliation"
+              sequence="35"
+              groups="account.group_account_user"/>
 
     <menuitem id="menu_move_line_match"
               action="action_move_line_match"

@@ -1,6 +1,6 @@
 from collections import defaultdict
 
-from odoo import _, api, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 # the documents that add to what a customer owes
@@ -9,6 +9,19 @@ CREDIT_LIMIT_TYPES = ('out_invoice', 'out_receipt')
 
 class AccountMove(models.Model):
     _inherit = "account.move"
+
+    om_signing_user_id = fields.Many2one(
+        'res.users', string='Signed By', compute='_compute_om_signing_user_id', store=True, readonly=False,
+        copy=False, help='The user whose name and signature are printed on the invoice.')
+    om_show_signature = fields.Boolean(related='company_id.om_invoice_signature')
+
+    @api.depends('company_id.om_invoice_signature', 'company_id.om_invoice_signer_id', 'invoice_user_id', 'move_type')
+    def _compute_om_signing_user_id(self):
+        for move in self:
+            if not move.om_signing_user_id or move.state == 'draft':
+                move.om_signing_user_id = (move.company_id.om_invoice_signer_id or move.invoice_user_id) \
+                    if move.company_id.om_invoice_signature and move.is_sale_document(include_receipts=True) \
+                    else False
 
     @api.model
     def _get_invoice_in_payment_state(self):

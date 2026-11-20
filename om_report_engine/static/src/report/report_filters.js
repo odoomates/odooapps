@@ -186,8 +186,17 @@ export class CompareMenu extends Component {
         value: { type: [String, Boolean], optional: true },
         periods: { type: Number, optional: true },
         label: { type: String, optional: true },
+        // the period of the user's choice: its start (none for a report at a date) and its end
+        dateFrom: { type: [String, Boolean], optional: true },
+        dateTo: { type: [String, Boolean], optional: true },
+        dateMode: { type: String, optional: true },
         onChange: Function,
     };
+
+    setCompareDate(key, ev) {
+        // an <input type="date"> gives the date as YYYY-MM-DD, the format of the options
+        this.props.onChange({ [key]: ev.target.value || false });
+    }
 
     get current() {
         return this.props.choices.find((c) => c.key === this.props.value);

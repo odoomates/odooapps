@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_report_horizontal_group_list" model="ir.ui.view">
+        <field name="name">om.report.horizontal.group.list</field>
+        <field name="model">om.report.horizontal.group</field>
+        <field name="arch" type="xml">
+            <tree string="Horizontal Groups">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="report_model_ids" widget="many2many_tags" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </tree>
+        </field>
+    </record>
+
+    <record id="view_om_report_horizontal_group_form" model="ir.ui.view">
+        <field name="name">om.report.horizontal.group.form</field>
+        <field name="model">om.report.horizontal.group</field>
+        <field name="arch" type="xml">
+            <form string="Horizontal Group">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="bg-danger" attrs="{'invisible': [('active', '=', True)]}"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. By journal"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="report_model_ids" widget="many2many_tags" placeholder="All reports"
+                                   options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="rule_ids">
+                        <tree editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="field_id" options="{'no_create': True, 'no_open': True}"/>
+                            <field name="relation" invisible="1"/>
+                            <field name="domain" widget="domain" options="{'model': 'relation', 'in_dialog': True}"/>
+                        </tree>
+                    </field>
+                    <div class="text-muted">
+                        The reports split their amounts in a column per value of each field found in their
+                        journal items; with several rules, a column per combination of values.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_report_horizontal_group_search" model="ir.ui.view">
+        <field name="name">om.report.horizontal.group.search</field>
+        <field name="model">om.report.horizontal.group</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_report_horizontal_group" model="ir.actions.act_window">
+        <field name="name">Horizontal Groups</field>
+        <field name="res_model">om.report.horizontal.group</field>
+        <field name="view_mode">tree,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a horizontal group
+            </p>
+            <p>
+                Split the Balance Sheet, the Profit and Loss and the Trial Balance in columns by journal,
+                partner, product or any other field of the journal items.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_om_report_horizontal_group"
+              name="Horizontal Groups"
+              action="action_om_report_horizontal_group"
+              sequence="71"
+              groups="account.group_account_manager"
+              parent="account.account_account_menu"/>
+
+</odoo>
