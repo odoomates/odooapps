@@ -14,11 +14,11 @@ class AssetCreateFromLines(models.TransientModel):
     value = fields.Monetary(string='Gross Value', compute='_compute_from_lines')
     category_id = fields.Many2one(
         'account.asset.category', string='Category', required=True,
-        compute='_compute_from_lines', store=True, readonly=False, precompute=True,
+        compute='_compute_defaults', store=True, readonly=False, precompute=True,
         domain="[('type', '=', 'purchase'), ('company_id', '=', company_id)]")
-    name = fields.Char(string='Asset Name', required=True, compute='_compute_from_lines', store=True, readonly=False,
+    name = fields.Char(string='Asset Name', required=True, compute='_compute_defaults', store=True, readonly=False,
                        precompute=True)
-    date = fields.Date(string='Date', required=True, compute='_compute_from_lines', store=True, readonly=False,
+    date = fields.Date(string='Date', required=True, compute='_compute_defaults', store=True, readonly=False,
                        precompute=True)
     confirm = fields.Boolean(string='Confirm the Asset', default=True)
 
@@ -32,13 +32,20 @@ class AssetCreateFromLines(models.TransientModel):
 
     @api.depends('line_ids')
     def _compute_from_lines(self):
-        Category = self.env['account.asset.category']
         for wizard in self:
             lines = wizard.line_ids
             company = lines.company_id[:1] or self.env.company
             wizard.company_id = company
             wizard.currency_id = company.currency_id
             wizard.value = company.currency_id.round(sum(lines.mapped('balance')))
+
+    @api.depends('line_ids')
+    def _compute_defaults(self):
+        # stored and editable, apart from the computed figures above
+        Category = self.env['account.asset.category']
+        for wizard in self:
+            lines = wizard.line_ids
+            company = lines.company_id[:1] or self.env.company
             category = lines.asset_category_id[:1] or Category._get_bill_categories(lines.account_id[:1], company) \
                 or Category.search([('account_asset_id', 'in', lines.account_id.ids), ('type', '=', 'purchase'),
                                     ('company_id', '=', company.id)], limit=1)
