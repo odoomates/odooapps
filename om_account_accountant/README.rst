@@ -8,7 +8,7 @@ accounting modules in one click and adds the menus, groups, settings and
 dashboards that make them work as one system rather than seventeen separate
 apps.
 
-A 50-page user guide ships with the module, at
+A 51-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It covers setting up, the daily work,
 bank reconciliation, assets, budgets, closing and every report, with the
 screens shown at each step.
@@ -84,6 +84,10 @@ install it from the Apps menu. The user guide covers it too.
   ``om_account_batch_payment_reconcile`` installs itself and adds the batches
   to the reconciliation screen.
   https://apps.odoo.com/apps/modules/19.0/om_account_batch_payment
+* ``om_dynamic_reports`` — Dynamic Accounting Reports: the reports on screen,
+  with filters, comparison, horizontal groups, drill-down and export; with the
+  assets and the currency revaluation, their own reports come with it.
+  https://apps.odoo.com/apps/modules/19.0/om_dynamic_reports
 
 
 What this module adds on top
@@ -118,6 +122,17 @@ What this module adds on top
   the cost of a good as an expense when it is invoiced to the customer.
 * Keeps the In Payment status on invoices, so a registered payment does not mark
   the invoice paid before the payment is reconciled.
+* Adds a Split action on the journal items, spreading an item over other
+  accounts: in place on a draft entry, by a reclassification entry on a posted
+  one, so that the posted books stay as they were.
+* Adds a signature on the customer invoices: the name and the signature of the
+  signing user, the salesperson of the invoice by default. Each user draws or
+  uploads their signature in their preferences.
+* Adds a New Journal menu: choose what the journal is for (bank, credit card,
+  cash, sales, purchase or miscellaneous), and its name, short code and, for a
+  bank, its account number are proposed.
+* Adds a Document column to the vendor bills list: the eye opens the scan of the
+  bill over the list, to check the bills against their documents.
 
 
 Installation
@@ -158,6 +173,15 @@ the others, so upgrade the suite as a whole:
 The data is kept: the upgrade only adds to it. Nothing new switches itself on:
 the automatic currency rates, the automatic reconciliation and the blocking over
 the credit limit stay off until they are set up.
+
+Version 1.4.0 adds fields to the companies, the invoices and the users: upgrade
+it, together with Odoo 19 Reconciliation 1.2.0, before using it. From the command
+line::
+
+    odoo-bin -c <your config> -d <your database> -u om_account_accountant,om_account_reconcile --stop-after-init
+
+The signature on invoices is off on the existing companies until it is turned
+on in the settings.
 
 
 Configuration
@@ -206,6 +230,21 @@ Yes, with the Community module ``l10n_account_withholding_tax`` from the
 Apps menu: it withholds the tax on the payment, and the Tax Report prints it in
 a Withholding section of its own.
 
+
+Release Notes
+=============
+
+1.4.0
+-----
+
+* Split a journal item over other accounts: in place on a draft entry, by a
+  reclassification entry on a posted one (Action > Split).
+* Signature on invoices: the name and the signature of the signing user, the
+  salesperson by default, printed on the customer invoices.
+* New Journal: a journal created from what it is for.
+* Vendor bills list: preview of the document of each bill.
+* New fields: upgrade with ``-u om_account_accountant,om_account_reconcile``
+  (see Upgrade).
 
 Bug Tracker
 ===========

@@ -32,8 +32,8 @@ class AssetSell(models.TransientModel):
         related='asset_id.category_id.account_asset_loss_id', readonly=False)
 
     @api.model
-    def default_get(self, fields_list):
-        res = super().default_get(fields_list)
+    def default_get(self, fields):
+        res = super().default_get(fields)
         if not res.get('asset_id') and self.env.context.get('active_model') == 'account.asset.asset':
             res['asset_id'] = self.env.context.get('active_id')
         return res

@@ -26,8 +26,11 @@ def build_xlsx(exporter, export):
     if exporter.env['res.lang']._lang_get(exporter.env.lang or 'en_US').direction == 'rtl':
         sheet.right_to_left()
     currency = export['currency']
-    decimals = '0' * (currency.decimal_places or 0)
+    rounding = export.get('rounding')
+    decimals = '' if rounding else '0' * (currency.decimal_places or 0)
     amount = '#,##0.%s' % decimals if decimals else '#,##0'
+    if rounding and rounding['suffix']:
+        amount = '%s" %s"' % (amount, rounding['suffix'])
     if currency.position == 'before':
         money_format = '"%s" %s;-"%s" %s' % (currency.symbol, amount, currency.symbol, amount)
     else:
@@ -120,6 +123,8 @@ def build_xlsx(exporter, export):
             if _hidden(column, line) or value in (None, False, ''):
                 sheet.write_blank(row, index, None, cell_format)
             elif cell_type in NUMERIC:
+                if cell_type == 'monetary' and rounding:
+                    value = round(value / rounding['factor'])
                 sheet.write_number(row, index, value, cell_format)
             elif column['type'] == 'datetime':
                 sheet.write_datetime(row, index, exporter._om_local_datetime(value), cell_format)

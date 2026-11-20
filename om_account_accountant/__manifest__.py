@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 19 Accounting Community',
-    'version': '1.3.4',
+    'version': '1.4.0',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, '
@@ -13,7 +13,7 @@
                    'Account Lock Date, Fiscal Year and Period Closing, Cheque Printing, '
                    'Automatic Currency Rates, Accounting Dashboard',
     'live_test_url': 'https://www.youtube.com/c/OdooMates',
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates, Odoo SA',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',
@@ -39,6 +39,7 @@
     ],
     'data': [
         'security/group.xml',
+        'security/ir.model.access.csv',
         'views/menu.xml',
         'views/review_menu.xml',
         'views/settings.xml',
@@ -49,7 +50,15 @@
         'views/payment_method.xml',
         'views/reconciliation.xml',
         'views/account_journal.xml',
+        'views/invoice_signature.xml',
+        'wizard/split_move_line_views.xml',
+        'wizard/journal_create_views.xml',
     ],
+    'assets': {
+        'web.assets_backend': [
+            'om_account_accountant/static/src/attachment_preview/*',
+        ],
+    },
     'application': True,
     'images': ['static/description/banner.gif'],
 }

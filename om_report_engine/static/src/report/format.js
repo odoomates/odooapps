@@ -1,3 +1,4 @@
+import { getCurrency } from "@web/core/currency";
 import { deserializeDate, deserializeDateTime, formatDate, formatDateTime } from "@web/core/l10n/dates";
 import { localization } from "@web/core/l10n/localization";
 import { formatFloat, formatInteger, formatMonetary } from "@web/views/fields/formatters";
@@ -8,12 +9,24 @@ export const NUMERIC = ["monetary", "float", "int", "percent", "ratio", "days"];
 export const DETAIL_KINDS = ["detail", "opening", "closing"];
 
 /** A value of the report, formatted for its column type. */
-export function formatValue(value, type, { digits = 2, currencyId = false } = {}) {
+export function formatValue(value, type, { digits = 2, currencyId = false, rounding = false } = {}) {
     if (value === undefined || value === null || value === false || value === "") {
         return "";
     }
     switch (type) {
         case "monetary":
+            if (rounding) {
+                // in units, thousands or millions, without decimals: "12,345 K $"
+                let amount = formatFloat(value / rounding.factor, { digits: [16, 0] });
+                if (rounding.suffix) {
+                    amount = `${amount} ${rounding.suffix}`;
+                }
+                const currency = getCurrency(currencyId);
+                if (!currency) {
+                    return amount;
+                }
+                return currency.position === "after" ? `${amount} ${currency.symbol}` : `${currency.symbol} ${amount}`;
+            }
             return formatMonetary(value, { currencyId });
         case "float":
             return formatFloat(value, { digits: [16, digits] });
