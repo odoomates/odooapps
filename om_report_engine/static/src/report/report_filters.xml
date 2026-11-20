@@ -59,7 +59,11 @@
                 <DropdownItem t-if="this.currentView and this.currentView.mine" onSelected="() => this.save(true)">
                     <i class="oi me-2" data-icon="save"/>Update "<t t-out="this.currentView.name"/>"
                 </DropdownItem>
-                <div class="px-3 py-2">
+                <DropdownItem t-if="this.currentView and this.props.onSchedule"
+                              onSelected="() => this.props.onSchedule(this.currentView)">
+                    <i class="oi me-2" data-icon="mail"/>Email this view regularly...
+                </DropdownItem>
+                <div class="px-3 py-2 o_omr_save_view">
                     <div class="small text-muted mb-1">Save the current filters, options and columns</div>
                     <input class="form-control form-control-sm mb-2" placeholder="View name"
                            t-att-value="this.state.name" t-on-input="(ev) => this.state.name = ev.target.value"

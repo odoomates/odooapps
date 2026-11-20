@@ -97,12 +97,18 @@ class OmReportExport(models.AbstractModel):
         if kind == 'ratio':
             return formatLang(self.env, value, digits=2)
         if kind == 'days':
-            return self.env._("%s days", formatLang(self.env, value, digits=1))
+            return self.env._("%s days", formatLang(self.env, value, digits=column.get('digits', 1)))
         if kind == 'datetime':
             return format_datetime(self.env, fields.Datetime.to_datetime(value), dt_format='short')
         if kind == 'date':
             return format_date(self.env, value)
         return str(value)
+
+    @api.model
+    def _om_kpi_value(self, export, kpi):
+        """A key figure as printed."""
+        column = {'key': 'value', 'type': kpi.get('type') or 'float', 'digits': export.get('digits', 2)}
+        return self._om_cell(export, {'kind': 'total', 'values': {'value': kpi.get('value') or 0.0}}, column) or '0'
 
     @api.model
     def _om_rounded_amount(self, value, currency, rounding):
@@ -161,6 +167,7 @@ class ReportOmReportEngineDynamic(models.AbstractModel):
             'company': export['company'],
             'header_groups': exporter._om_header_groups(export['columns']),
             'cell': lambda line, column: exporter._om_cell(export, line, column),
+            'format_kpi': lambda kpi: exporter._om_kpi_value(export, kpi),
             'numeric': NUMERIC_TYPES,
             'row_class': self._om_row_class,
             'cell_class': self._om_cell_class,

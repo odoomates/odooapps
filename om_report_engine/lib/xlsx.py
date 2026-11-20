@@ -45,7 +45,8 @@ def build_xlsx(exporter, export):
             props = dict(base)
             props['num_format'] = {
                 'monetary': money_format, 'float': '#,##0.%s' % ('0' * digits) if digits else '#,##0',
-                'int': '#,##0', 'percent': '0.0" %"', 'ratio': '0.00', 'days': '0.0" d"',
+                'int': '#,##0', 'percent': '0.0" %"', 'ratio': '0.00',
+                'days': '0.%s" d"' % ('0' * digits) if digits else '0" d"',
                 'datetime': 'yyyy-mm-dd hh:mm', 'date': 'yyyy-mm-dd',
             }.get(kind, '@')
             if style == 'group':
@@ -112,7 +113,7 @@ def build_xlsx(exporter, export):
         widths[0] = max(widths[0], min(len(line['name'] or '') + 2 * level + 2, 70))
         for index, column in enumerate(columns, start=1):
             cell_type = (line.get('types') or {}).get(column['key']) or column['type']
-            cell_format = fmt(cell_type, line_style, level, column.get('digits', 2))
+            cell_format = fmt(cell_type, line_style, level, column.get('digits', 1 if cell_type == 'days' else 2))
             value = (line.get('values') or {}).get(column['key'])
             if column.get('blank_zero') and value == 0 and kind == 'detail':
                 value = None

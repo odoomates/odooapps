@@ -9,7 +9,7 @@ export const NUMERIC = ["monetary", "float", "int", "percent", "ratio", "days"];
 export const DETAIL_KINDS = ["detail", "opening", "closing"];
 
 /** A value of the report, formatted for its column type. */
-export function formatValue(value, type, { digits = 2, currencyId = false, rounding = false } = {}) {
+export function formatValue(value, type, { digits, currencyId = false, rounding = false } = {}) {
     if (value === undefined || value === null || value === false || value === "") {
         return "";
     }
@@ -29,7 +29,7 @@ export function formatValue(value, type, { digits = 2, currencyId = false, round
             }
             return formatMonetary(value, { currencyId });
         case "float":
-            return formatFloat(value, { digits: [16, digits] });
+            return formatFloat(value, { digits: [16, digits ?? 2] });
         case "int":
             return formatInteger(value);
         case "percent":
@@ -37,7 +37,7 @@ export function formatValue(value, type, { digits = 2, currencyId = false, round
         case "ratio":
             return formatFloat(value, { digits: [16, 2] });
         case "days":
-            return _t("%s days", formatFloat(value, { digits: [16, 1] }));
+            return _t("%s days", formatFloat(value, { digits: [16, digits ?? 1] }));
         case "datetime":
             return formatDateTime(deserializeDateTime(value), {
                 format: localization.dateTimeFormat.replace(/:ss/, ""),

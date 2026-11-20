@@ -32,6 +32,8 @@ ROUNDING_UNITS = (
     ('millions', 1000000, 'M'),
 )
 LINE_KINDS = ('group', 'leaf', 'detail', 'opening', 'closing', 'section', 'total')
+# the catalog entry of the overview of an app
+OVERVIEW = 'overview'
 
 
 class OmReport(models.AbstractModel):
@@ -110,6 +112,15 @@ class OmReport(models.AbstractModel):
     _report_default_group_by = ()
     # leaves have detail lines, loaded when unfolded (_om_detail_lines)
     _report_has_details = False
+    # the groups open unfolded when the report is opened
+    _report_expand_default = False
+    # sums compared with earlier periods, for a report that groups rows: the engine computes the rows of
+    # each period compared with and adds a column of the period, the change and the change in % to each
+    _report_compare_keys = ()
+    # the main column, drawn with a bar in each cell to compare the lines at a glance
+    _report_bar_column = False
+    # a card of the report on the overview of its app, in this order (see om_get_overview)
+    _report_overview = False
 
     # ------------------------------------------------------------------
     # Catalog
@@ -152,10 +163,20 @@ class OmReport(models.AbstractModel):
 
     @api.model
     def om_get_catalog(self, app=False):
-        """The reports of the switcher, by section."""
+        """The reports of the switcher, by section; the overview of the app first when it has one."""
         sections = self._om_sections()
         catalog = []
-        for report in self._om_report_models(app):
+        reports = self._om_report_models(app)
+        if app and any(report._report_overview for report in reports):
+            catalog.append({
+                'model': OVERVIEW,
+                'name': self.env._("Overview"),
+                'description': self.env._("Key figures of every report, at a glance."),
+                'icon': 'grid_view',
+                'section': 'overview',
+                'section_name': self.env._("Overview"),
+            })
+        for report in reports:
             section_names = {**sections, **report._om_sections()}
             catalog.append({
                 'model': report._name,
@@ -169,6 +190,29 @@ class OmReport(models.AbstractModel):
 
     def _om_report_title(self):
         return str(self._report_name)
+
+    @api.model
+    def om_get_overview(self, app):
+        """A card per report of ``app`` that has ``_report_overview``, with its first key figures as
+        the report opens by default."""
+        reports = sorted((r for r in self._om_report_models(app) if r._report_overview),
+                         key=lambda r: r._report_overview)
+        cards = []
+        for report in reports:
+            options = report._om_normalize_options({})
+            prepared = report._om_prepare(options)
+            data = prepared._om_compute(options)
+            cards.append({
+                'model': report._name,
+                'name': report._om_report_title(),
+                'icon': report._report_icon,
+                'description': str(report._report_description or ''),
+                'subtitle': prepared._om_subtitle(options),
+                'kpis': prepared._om_get_kpis(data, options)[:4],
+                'currency_id': prepared._om_currency().id,
+                'digits': prepared._om_digits(),
+            })
+        return {'cards': cards}
 
     # ------------------------------------------------------------------
     # Access
@@ -253,6 +297,8 @@ class OmReport(models.AbstractModel):
             'compare_periods': 1,
             'compare_date_from': False,
             'compare_date_to': False,
+            # a key figure, chart bar or matrix cell the report is narrowed down to (_om_kpi_filter_rows)
+            'kpi_filter': False,
         }
         for spec in self._om_filters():
             options[spec['key']] = []
@@ -306,8 +352,10 @@ class OmReport(models.AbstractModel):
             options['columns'] = False
         if not isinstance(options['sort'], dict) or not options['sort'].get('key'):
             options['sort'] = False
-        if not self._report_compare or options['compare'] not in [c['key'] for c in self._om_all_compare_choices()]:
+        if not self._om_compares() or options['compare'] not in [c['key'] for c in self._om_all_compare_choices()]:
             options['compare'] = False
+        if not isinstance(options['kpi_filter'], str) or not options['kpi_filter']:
+            options['kpi_filter'] = False
         for key in ('compare_date_from', 'compare_date_to'):
             try:
                 options[key] = options[key] and fields.Date.to_string(fields.Date.to_date(options[key]))
@@ -429,6 +477,11 @@ class OmReport(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
+    def _om_compares(self):
+        """Whether the report can be compared with earlier periods."""
+        return bool(self._report_compare) or (bool(self._report_compare_keys) and self._report_date_mode != 'none')
+
+    @api.model
     def _om_compare_choices(self):
         return [
             {'key': 'previous_period', 'label': self.env._("Previous period")},
@@ -507,12 +560,23 @@ class OmReport(models.AbstractModel):
     @api.model
     def _om_columns(self, options):
         columns = self._om_get_columns(options)
+        if options.get('compare') and self._report_compare_keys:
+            compared = []
+            for column in columns:
+                compared.append(column)
+                if column['key'] in self._report_compare_keys:
+                    compared += self._om_compare_columns(column, options)
+            columns = compared
         # the choice of the user: {'shown': [keys], 'hidden': [keys], 'order': [keys]}; a column
         # neither shown nor hidden (one added since, by a comparison...) keeps its default
         chosen = options.get('columns') or {}
         if isinstance(chosen, list):
-            # the visible columns, as the choice was kept before
-            chosen = {'shown': chosen, 'hidden': [c['key'] for c in columns if c['key'] not in chosen]}
+            # the visible columns, as the choice was kept before; the columns of a comparison stay
+            # shown unless the list names some of them
+            compared = {c['compare_of'] for c in columns if c.get('compare_of') and c['key'] in chosen}
+            chosen = {'shown': chosen, 'hidden': [
+                c['key'] for c in columns if c['key'] not in chosen
+                and (not c.get('compare_of') or c['compare_of'] in compared)]}
         shown, hidden = set(chosen.get('shown') or []), set(chosen.get('hidden') or [])
         order = {key: index for index, key in enumerate(chosen.get('order') or [])}
         for column in columns:
@@ -526,6 +590,7 @@ class OmReport(models.AbstractModel):
             column.setdefault('drill', False)
             column.setdefault('sortable', bool(self._report_group_by) and not column['detail_only'])
             column['label'] = str(column['label'])
+            column['bar'] = bool(self._report_bar_column) and column['key'] == self._report_bar_column
             if column['group']:
                 column['group'] = str(column['group'])
             if column['optional'] and column['key'] in shown:
@@ -535,6 +600,39 @@ class OmReport(models.AbstractModel):
         if order:
             natural = {column['key']: index for index, column in enumerate(columns)}
             columns.sort(key=lambda c: (order.get(c['key'], len(order) + natural[c['key']])))
+        return columns
+
+    @api.model
+    def _om_compare_suffix(self, index):
+        """The suffix of the keys of the period compared with ``index`` (0 the nearest)."""
+        return '_cmp' if not index else '_cmp%s' % (index + 1)
+
+    @api.model
+    def _om_compare_columns(self, column, options):
+        """The columns added after a compared column: one per period compared with, then the change
+        and the change in % against the nearest one."""
+        periods = self._om_compare_periods(options)
+        named = len(periods) == 1 and options['compare'] in ('previous_period', 'previous_year')
+        base = {'compare_of': column['key'], 'optional': True, 'visible': True, 'group': column.get('group', False),
+                'sortable': column.get('sortable', True)}
+        columns = []
+        for index, period in enumerate(periods):
+            if named:
+                label = self.env._("Previous") if options['compare'] == 'previous_period' else self.env._("Last Year")
+            else:
+                label = period['label']
+            columns.append({**base, 'key': column['key'] + self._om_compare_suffix(index),
+                            'label': '%s (%s)' % (column['label'], label), 'type': column['type'],
+                            'digits': column.get('digits'), 'aggregate': 'sum', 'help': period['label']})
+        if periods:
+            columns += [
+                {**base, 'key': column['key'] + '_delta', 'label': 'Δ %s' % column['label'],
+                 'type': column['type'], 'digits': column.get('digits'), 'aggregate': 'sum'},
+                {**base, 'key': column['key'] + '_pct', 'label': 'Δ %', 'type': 'percent'},
+            ]
+        for compare_column in columns:
+            if compare_column.get('digits') is None:
+                compare_column.pop('digits', None)
         return columns
 
     # ------------------------------------------------------------------
@@ -571,15 +669,77 @@ class OmReport(models.AbstractModel):
     def _om_compute(self, options):
         """What the report computed for ``options``, kept a while (see _om_compute_cached).
 
-        By default: the rows of _om_get_rows grouped as options['group_by'] says.
+        By default: the rows of _om_get_rows grouped as options['group_by'] says,
+        with the rows of the periods compared with when the report compares sums
+        (_report_compare_keys). ``all_rows`` are the rows before the filters, for
+        the key figures.
         """
         columns = self._om_columns(options)
-        rows = self._om_filter_rows(self._om_get_rows(options), options, columns)
-        tree, total = self._om_build_tree(rows, options, columns)
+        all_rows = self._om_enrich_rows(self._om_get_rows(options), options)
+        rows = self._om_filter_rows(all_rows, options, columns)
+        compare_rows = self._om_compare_rows(options, rows) if options.get('compare') else []
+        tree, total = self._om_build_tree(rows + compare_rows, options, columns)
         if options['search']:
             tree = self._om_search_tree(tree, options['search'])
         self._om_sort_nodes(tree, options)
-        return {'tree': tree, 'total': total, 'rows': rows}
+        return {'tree': tree, 'total': total, 'rows': rows, 'all_rows': all_rows}
+
+    @api.model
+    def _om_compare_rows(self, options, rows):
+        """The rows of the periods compared with, carrying only their sums under the keys of the
+        period ('<key>_cmp', '<key>_cmp2'...), so that they fall in the same groups as the rows of
+        the period and add up with them."""
+        if not self._report_compare_keys:
+            return []
+        match = self._om_compare_match_keys(options)
+        shown = None
+        if options['kpi_filter'] or options['search']:
+            # only for what the rows of the period show
+            shown = {tuple(row.get(key) for key in match) for row in rows}
+        precision = self._om_zero_precision()
+        result = []
+        for index, period in enumerate(self._om_compare_periods(options)):
+            suffix = self._om_compare_suffix(index)
+            period_options = {**options, 'date_preset': 'custom', 'date_from': period['date_from'],
+                              'date_to': period['date_to'], 'compare': False, 'kpi_filter': False, 'search': ''}
+            sum_keys = [c['key'] for c in self._om_columns(period_options)
+                        if c['aggregate'] == 'sum' and c['type'] in NUMERIC_TYPES]
+            for row in self._om_enrich_rows(self._om_get_rows(period_options), period_options):
+                new = {k: v for k, v in row.items() if k.endswith('_id') or k in self._om_compare_carried()}
+                new.update({key + suffix: row.get(key) or 0.0 for key in sum_keys})
+                new['_cmp'] = True
+                if options.get('hide_zero') and not any(abs(new[key + suffix]) >= precision for key in sum_keys):
+                    continue
+                if shown is not None and tuple(new.get(key) for key in match) not in shown:
+                    continue
+                result.append(new)
+        return result
+
+    @api.model
+    def _om_compare_match_keys(self, options):
+        """The keys of a row telling which rows of a period compared with belong to the rows shown."""
+        return [dim + '_id' for dim in options['group_by']]
+
+    @api.model
+    def _om_zero_precision(self):
+        """Below this, a figure is a zero (to hide the zero lines)."""
+        return 1e-6
+
+    @api.model
+    def _om_compare_carried(self):
+        """Keys of a row, besides its dimensions, kept on the rows of the periods compared with."""
+        return ()
+
+    @api.model
+    def _om_compare_node(self, node, options):
+        """The change and the change in % of the compared sums, against the nearest period."""
+        if not options.get('compare') or not self._report_compare_keys:
+            return
+        values = node['values']
+        for key in self._report_compare_keys:
+            current, previous = values.get(key) or 0.0, values.get(key + '_cmp') or 0.0
+            values[key + '_delta'] = current - previous
+            values[key + '_pct'] = (current - previous) / abs(previous) * 100 if previous else False
 
     @api.model
     def _om_lines(self, data, options, parent_id=False, offset=0, limit=PAGE_SIZE):
@@ -592,7 +752,7 @@ class OmReport(models.AbstractModel):
             if not node:
                 return [], 0
             if not node['children']:
-                if node['leaf'] and self._report_has_details:
+                if node['leaf'] and self._om_has_details(options):
                     return self._om_page(self._om_detail_lines(node, options), offset, limit)
                 return [], 0
             nodes = node['children']
@@ -700,7 +860,20 @@ class OmReport(models.AbstractModel):
     def _om_filter_rows(self, rows, options, columns):
         if options.get('hide_zero'):
             keys = [c['key'] for c in columns if c['aggregate'] == 'sum' and c['type'] in NUMERIC_TYPES]
-            rows = [r for r in rows if any(abs(r.get(k) or 0.0) >= 1e-6 for k in keys)]
+            precision = self._om_zero_precision()
+            rows = [r for r in rows if any(abs(r.get(k) or 0.0) >= precision for k in keys)]
+        if options.get('kpi_filter'):
+            rows = self._om_kpi_filter_rows(rows, options['kpi_filter'], options)
+        return rows
+
+    @api.model
+    def _om_enrich_rows(self, rows, options):
+        """The rows completed with what derives from them (the category of a product...)."""
+        return rows
+
+    @api.model
+    def _om_kpi_filter_rows(self, rows, kpi, options):
+        """The rows of a key figure, chart bar or matrix cell (``kpi`` is its 'filter')."""
         return rows
 
     @api.model
@@ -740,19 +913,22 @@ class OmReport(models.AbstractModel):
                 node = {
                     'id': node_id, 'parent_id': parent_id, 'level': level, 'dim': dim, 'res_id': res_id,
                     'name': names[dim].get(res_id) if res_id else self._om_empty_name(dim),
-                    'rows': bucket,
+                    'rows': [r for r in bucket if not r.get('_cmp')],
                     'values': {k: sum(r.get(k) or 0.0 for r in bucket) for k in sum_keys},
                     'leaf': level == len(group_by) - 1,
                 }
                 node['children'] = make(bucket, level + 1, node_id)
                 self._om_finalize_node(node, options)
+                self._om_compare_node(node, options)
                 nodes.append(node)
             return nodes
 
         tree = make(rows, 0, False)
-        total = {'id': 'total', 'name': self.env._("Total"), 'rows': rows, 'dim': False, 'res_id': False,
+        total = {'id': 'total', 'name': self.env._("Total"), 'rows': [r for r in rows if not r.get('_cmp')],
+                 'dim': False, 'res_id': False, 'parent_id': False, 'level': 0,
                  'values': {k: sum(r.get(k) or 0.0 for r in rows) for k in sum_keys}, 'children': [], 'leaf': False}
         self._om_finalize_node(total, options)
+        self._om_compare_node(total, options)
         return tree, total
 
     @api.model
@@ -769,14 +945,25 @@ class OmReport(models.AbstractModel):
                 value = node['values'].get(key)
                 if value is None or value is False:
                     return (0, 0)
-                if isinstance(value, (date, datetime)):
+                if isinstance(value, datetime):
+                    return (1, value.timestamp())
+                if isinstance(value, date):
                     return (1, value.toordinal())
                 if isinstance(value, (int, float)):
                     return (1, value)
                 return (2, str(value).casefold())
             nodes.sort(key=value_key, reverse=reverse)
         else:
-            nodes.sort(key=lambda node: (node['res_id'] is False, (node['name'] or '').casefold()), reverse=reverse)
+            dimensions = self._om_dimensions()
+
+            def name_key(node):
+                # the values of a selection in the order the report gives them (Class A, B, C...)
+                selection = dimensions.get(node['dim'], {}).get('selection')
+                if selection and node['res_id'] in selection:
+                    return (False, '%06d' % list(selection).index(node['res_id']))
+                return (node['res_id'] is False, (node['name'] or '').casefold())
+
+            nodes.sort(key=name_key, reverse=reverse)
         for node in nodes:
             self._om_sort_nodes(node['children'], options)
 
@@ -806,15 +993,30 @@ class OmReport(models.AbstractModel):
     @api.model
     def _om_node_line(self, node, options):
         dimension = self._om_dimensions().get(node['dim'], {})
-        model = dimension.get('model')
-        return self._om_line(
+        line = self._om_line(
             node['id'], node['name'], node['values'], parent_id=node['parent_id'], level=node['level'],
             kind='leaf' if node['leaf'] else 'group',
-            has_children=bool(node['children']) or (node['leaf'] and self._report_has_details),
-            open_record=(model, node['res_id']) if model and node['res_id'] else False,
+            has_children=bool(node['children']) or (node['leaf'] and self._om_has_details(options)),
             count=len(node['children']), dim=node['dim'], icon=dimension.get('icon'),
             links=self._om_node_links(node, options),
         )
+        line['open'] = self._om_node_open(node, options)
+        if self._report_expand_default and node['children']:
+            line['unfolded'] = True
+        return line
+
+    @api.model
+    def _om_node_open(self, node, options):
+        """{'res_model', 'res_id'} of the record a line of a group opens, or False."""
+        model = self._om_dimensions().get(node['dim'], {}).get('model')
+        if not model or not node['res_id']:
+            return False
+        return {'res_model': model, 'res_id': node['res_id']}
+
+    @api.model
+    def _om_has_details(self, options):
+        """Whether the leaves have detail lines (_om_detail_lines)."""
+        return self._report_has_details
 
     @api.model
     def _om_node_links(self, node, options):
@@ -824,6 +1026,59 @@ class OmReport(models.AbstractModel):
     def _om_detail_lines(self, node, options):
         """Detail lines of a leaf, built with _om_line(kind='detail')."""
         return []
+
+    # ------------------------------------------------------------------
+    # Key figures and chart
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _om_get_kpis(self, data, options):
+        """The key figures above the table: [{'key', 'label', 'value', 'type', 'icon', 'tone',
+        'filter', 'compare_key'}]. A figure with a ``filter`` narrows the report down to its rows
+        when clicked (see _om_kpi_filter_rows); one whose key (or ``compare_key``) is a compared
+        sum shows the figure of the period compared with. tone: neutral, success, warning, danger,
+        info."""
+        return []
+
+    @api.model
+    def _om_compare_kpis(self, kpis, data, options):
+        """The key figures with the figure of the nearest period compared with and the change in %."""
+        if not options.get('compare') or not self._report_compare_keys or not data.get('total'):
+            return kpis
+        total = data['total']['values']
+        for kpi in kpis:
+            key = kpi.get('compare_key', kpi['key'])
+            if key in self._report_compare_keys:
+                kpi['previous'] = total.get(key + '_cmp') or 0.0
+                kpi['delta_pct'] = total.get(key + '_pct')
+        return kpis
+
+    @api.model
+    def _om_get_chart(self, data, options):
+        """A chart drawn above the table, or None.
+
+        {'type': 'bar' | 'donut', 'title', 'value_type', 'items': [{'key', 'label', 'value', 'tone',
+        'filter', 'caption'}]} or {'type': 'matrix', 'title', 'rows': [{'key', 'label'}], 'cols':
+        [{'key', 'label'}], 'cells': {row key: {col key: {'value', 'caption', 'tone', 'filter'}}}}. An
+        item or a cell with a filter narrows the report down like a key figure.
+        """
+        return None
+
+    @api.model
+    def _om_top_items(self, rows, key, label_key='product_id', limit=10, tone=None):
+        """The ``limit`` largest sums of ``key`` by ``label_key`` (a dimension), as chart items."""
+        totals = defaultdict(float)
+        for row in rows:
+            if row.get(label_key):
+                totals[row[label_key]] += row.get(key) or 0.0
+        top = sorted(((v, k) for k, v in totals.items() if v > 0), reverse=True)[:limit]
+        names = self._om_names(label_key[:-3], [k for _v, k in top])
+        return [{'key': str(k), 'label': names.get(k, ''), 'value': v, 'tone': tone} for v, k in top]
+
+    @api.model
+    def _om_digits(self):
+        """The decimals of the 'float' figures that do not say theirs (key figures, chart)."""
+        return 2
 
     # ------------------------------------------------------------------
     # Cache
@@ -902,7 +1157,7 @@ class OmReport(models.AbstractModel):
             'numbers': [{**n, 'label': str(n['label'])} for n in self._om_numbers()],
             'group_by': [{'key': key, 'label': str(dimensions[key]['label']), 'icon': dimensions[key].get('icon')}
                          for key in self._report_group_by if key in dimensions],
-            'compare_choices': self._om_all_compare_choices() if self._report_compare else [],
+            'compare_choices': self._om_all_compare_choices() if self._om_compares() else [],
             'rounding': self._om_rounding(options),
             'compare_label': ', '.join(p['label'] for p in self._om_compare_periods(options)),
             'columns': self._om_columns(options),
@@ -915,6 +1170,9 @@ class OmReport(models.AbstractModel):
             'currency_id': self._om_currency().id,
             'subtitle': self._om_subtitle(options),
             'page_size': self._report_page_size,
+            'kpis': self._om_compare_kpis(self._om_get_kpis(data, options), data, options),
+            'chart': self._om_get_chart(data, options),
+            'digits': self._om_digits(),
         }
 
     @api.model
@@ -1089,6 +1347,8 @@ class OmReport(models.AbstractModel):
             'rounding': self._om_rounding(options),
             'company': self.env.company,
             'options': options,
+            'kpis': self._om_compare_kpis(self._om_get_kpis(data, options), data, options),
+            'digits': self._om_digits(),
             'recipient': False,
             'note': '',
             **self._om_export_extra(options),
