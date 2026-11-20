@@ -11,6 +11,7 @@ class OmInventoryReportReorder(models.AbstractModel):
     _description = 'Reorder Report'
 
     _report_key = 'reorder'
+    _report_overview = 4
     _report_name = _lt('Reorder Report')
     _report_section = 'stock'
     _report_sequence = 45
@@ -99,7 +100,7 @@ class OmInventoryReportReorder(models.AbstractModel):
         return super()._om_node_open(node, options)
 
     @api.model
-    def _om_toggles(self, options):
+    def _om_toggles(self):
         toggles = [{'key': 'only_below', 'label': self.env._("Only products below minimum")}]
         if 'location' in self._report_filters:
             toggles.append({'key': 'child_locations', 'label': self.env._("Include sub-locations")})

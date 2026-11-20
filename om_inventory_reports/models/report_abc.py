@@ -104,7 +104,7 @@ class OmInventoryReportAbc(models.AbstractModel):
             node['values']['unit_cost'] = rows[0]['unit_cost']
 
     @api.model
-    def _om_toggles(self, options):
+    def _om_toggles(self):
         return [{'key': 'abc_by_qty', 'label': self.env._("Rank by quantity instead of value")}]
 
     @api.model

@@ -13,6 +13,7 @@ class OmInventoryReportAdjustments(models.AbstractModel):
     _description = 'Adjustments and Scrap Report'
 
     _report_key = 'adjustments'
+    _report_overview = 10
     _report_name = _lt('Adjustments & Scrap')
     _report_section = 'operations'
     _report_sequence = 85

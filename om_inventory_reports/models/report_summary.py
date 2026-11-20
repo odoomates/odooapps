@@ -44,7 +44,7 @@ class OmInventoryReportSummary(models.AbstractModel):
         return dimensions
 
     @api.model
-    def _om_period(self, options):
+    def _om_grain(self, options):
         """The period the report is grouped by (day, week, month), if any."""
         return next((g for g in options['group_by'] if g in PERIODS), None)
 
@@ -123,7 +123,7 @@ class OmInventoryReportSummary(models.AbstractModel):
     @api.model
     def _om_get_rows(self, options):
         start, end = self._om_period_bounds(options)
-        period = self._om_period(options)
+        period = self._om_grain(options)
         if period:
             return self._om_period_rows(options, period, start, end)
         return self._om_move_balances(options, start, end)

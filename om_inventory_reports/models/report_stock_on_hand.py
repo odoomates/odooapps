@@ -13,6 +13,7 @@ class OmInventoryReportStockOnHand(models.AbstractModel):
     _description = 'Stock on Hand Report'
 
     _report_key = 'stock_on_hand'
+    _report_overview = 1
     _report_name = _lt('Stock on Hand')
     _report_section = 'stock'
     _report_sequence = 10

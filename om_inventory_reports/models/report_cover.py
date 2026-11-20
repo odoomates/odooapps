@@ -121,8 +121,8 @@ class OmInventoryReportCover(models.AbstractModel):
         values['cover'] = max(values.get('closing') or 0.0, 0.0) / values['daily'] if values['daily'] > 0 else False
 
     @api.model
-    def _om_toggles(self, options):
-        toggles = [t for t in super()._om_toggles(options) if t['key'] != 'hide_zero']
+    def _om_toggles(self):
+        toggles = [t for t in super()._om_toggles() if t['key'] != 'hide_zero']
         return toggles
 
 
@@ -134,6 +134,7 @@ class OmInventoryReportStockout(models.AbstractModel):
     _description = 'Stock-out Forecast Report'
 
     _report_key = 'stockout'
+    _report_overview = 5
     _report_name = _lt('Stock-out Forecast')
     _report_sequence = 47
     _report_section = 'stock'
@@ -223,11 +224,11 @@ class OmInventoryReportStockout(models.AbstractModel):
         return rows
 
     @api.model
-    def _om_toggles(self, options):
+    def _om_toggles(self):
         return [
             {'key': 'count_incoming', 'label': self.env._("Count incoming receipts")},
             {'key': 'only_at_risk', 'label': self.env._("Only products at risk")},
-        ] + super()._om_toggles(options)
+        ] + super()._om_toggles()
 
     @api.model
     def _om_extra_options_meta(self, options):
@@ -297,6 +298,7 @@ class OmInventoryReportOverstock(models.AbstractModel):
     _description = 'Overstock Report'
 
     _report_key = 'overstock'
+    _report_overview = 6
     _report_name = _lt('Overstock')
     _report_sequence = 57
     _report_icon = 'inventory_2'
@@ -377,9 +379,9 @@ class OmInventoryReportOverstock(models.AbstractModel):
         return rows
 
     @api.model
-    def _om_toggles(self, options):
+    def _om_toggles(self):
         return [{'key': 'only_excess', 'label': self.env._("Only products in excess")}] + \
-            super()._om_toggles(options)
+            super()._om_toggles()
 
     @api.model
     def _om_extra_options_meta(self, options):

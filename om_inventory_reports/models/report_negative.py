@@ -12,6 +12,7 @@ class OmInventoryReportNegative(models.AbstractModel):
     _description = 'Negative Stock Report'
 
     _report_key = 'negative'
+    _report_overview = 3
     _report_name = _lt('Negative Stock')
     _report_section = 'stock'
     _report_sequence = 40
@@ -66,8 +67,8 @@ class OmInventoryReportNegative(models.AbstractModel):
         node['values']['in_date'] = min(dates) if dates else False
 
     @api.model
-    def _om_toggles(self, options):
-        return [t for t in super()._om_toggles(options) if t['key'] != 'hide_zero']
+    def _om_toggles(self):
+        return [t for t in super()._om_toggles() if t['key'] != 'hide_zero']
 
     @api.model
     def _om_get_kpis(self, data, options):

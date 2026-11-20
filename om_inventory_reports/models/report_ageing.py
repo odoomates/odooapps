@@ -15,6 +15,7 @@ class OmInventoryReportAgeing(models.AbstractModel):
     _description = 'Stock Ageing Report'
 
     _report_key = 'ageing'
+    _report_overview = 8
     _report_name = _lt('Stock Ageing')
     _report_section = 'analysis'
     _report_sequence = 50
@@ -28,12 +29,12 @@ class OmInventoryReportAgeing(models.AbstractModel):
     _report_bar_column = 'quantity'
 
     @api.model
-    def _om_period(self, options):
+    def _om_bucket_days(self, options):
         return max(int(options.get('period_days') or 30), 1)
 
     @api.model
     def _om_bucket_labels(self, options):
-        period = self._om_period(options)
+        period = self._om_bucket_days(options)
         labels = []
         for index in range(BUCKETS - 1):
             labels.append(self.env._("%(start)s-%(end)s days", start=index * period + (index > 0), end=(index + 1) * period))
@@ -60,7 +61,7 @@ class OmInventoryReportAgeing(models.AbstractModel):
 
     @api.model
     def _om_get_rows(self, options):
-        period = self._om_period(options)
+        period = self._om_bucket_days(options)
         now = fields.Datetime.now()
         conditions = [
             SQL("q.location_id = ANY(%s)", self._om_location_ids(options)),
@@ -127,7 +128,7 @@ class OmInventoryReportAgeing(models.AbstractModel):
              'icon': 'inventory_2'},
             {'key': 'age', 'label': self.env._("Average age"), 'value': total.get('age_avg', 0), 'type': 'days',
              'icon': 'hourglass_bottom'},
-            {'key': 'old', 'label': self.env._("Older than %s days", self._om_period(options) * old_index),
+            {'key': 'old', 'label': self.env._("Older than %s days", self._om_bucket_days(options) * old_index),
              'value': old, 'type': 'float', 'icon': 'history', 'tone': 'warning' if old else 'success',
              'filter': 'old'},
             {'key': 'old_share', 'label': self.env._("Share of old stock"),

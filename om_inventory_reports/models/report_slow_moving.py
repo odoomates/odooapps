@@ -16,6 +16,7 @@ class OmInventoryReportSlowMoving(models.AbstractModel):
     _description = 'Slow-Moving and Dead Stock Report'
 
     _report_key = 'slow_moving'
+    _report_overview = 7
     _report_name = _lt('Slow-Moving & Dead Stock')
     _report_section = 'analysis'
     _report_sequence = 55
@@ -125,8 +126,8 @@ class OmInventoryReportSlowMoving(models.AbstractModel):
         return [{'key': 'idle_days', 'label': self.env._("Slow after (days)"), 'min': 1, 'step': 1}]
 
     @api.model
-    def _om_toggles(self, options):
-        return [t for t in super()._om_toggles(options) if t['key'] != 'hide_zero']
+    def _om_toggles(self):
+        return [t for t in super()._om_toggles() if t['key'] != 'hide_zero']
 
     @api.model
     def _om_get_kpis(self, data, options):

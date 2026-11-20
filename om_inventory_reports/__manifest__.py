@@ -1,6 +1,6 @@
 {
     'name': 'Inventory Reports',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.1.0',
     'category': 'Inventory/Inventory',
     'summary': 'Inventory reports on screen with filters, export to PDF and Excel: stock on hand, stock at date, '
                'stock card, product ledger, inventory summary, negative stock, stock ageing, slow moving, '
@@ -13,20 +13,10 @@
     'support': 'odoomates@gmail.com',
     'license': 'LGPL-3',
     'images': ['static/description/banner.gif'],
-    'depends': ['stock', 'mail'],
-    'external_dependencies': {'python': ['xlsxwriter']},
+    'depends': ['stock', 'om_report_engine'],
     'data': [
-        'security/ir.access.csv',
-        'data/ir_cron_data.xml',
-        'report/report_templates.xml',
-        'views/report_schedule_views.xml',
         'views/menu.xml',
     ],
-    'assets': {
-        'web.assets_backend': [
-            'om_inventory_reports/static/src/report_action/*',
-        ],
-    },
     'installable': True,
     'application': False,
 }
