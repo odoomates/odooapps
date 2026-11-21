@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_groups_privilege_report_designer" model="res.groups.privilege">
+        <field name="name">Report Designer</field>
+        <field name="category_id" ref="base.module_category_productivity"/>
+    </record>
+
+    <record id="group_om_report_designer_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="sequence">10</field>
+        <field name="privilege_id" ref="res_groups_privilege_report_designer"/>
+        <field name="implied_ids" eval="[Command.link(ref('base.group_user'))]"/>
+        <field name="comment">Runs the published reports allowed to them.</field>
+    </record>
+
+    <record id="group_om_report_designer_manager" model="res.groups">
+        <field name="name">Designer</field>
+        <field name="sequence">20</field>
+        <field name="privilege_id" ref="res_groups_privilege_report_designer"/>
+        <field name="implied_ids" eval="[Command.link(ref('group_om_report_designer_user'))]"/>
+        <field name="user_ids" eval="[Command.link(ref('base.user_root')), Command.link(ref('base.user_admin'))]"/>
+        <field name="comment">Designs, publishes and removes reports.</field>
+    </record>
+</odoo>

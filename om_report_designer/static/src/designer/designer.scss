@@ -1,0 +1,440 @@
+$o-om-rd-accent: #017e84;
+$o-om-rd-select: #2f80ed;
+
+.o_om_rd_designer {
+    background-color: $o-view-background-color;
+
+    .o_om_rd_name {
+        max-width: 22rem;
+    }
+}
+
+.o_om_rd_section_title {
+    font-size: 0.75rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: $o-gray-600;
+    margin-bottom: 0.35rem;
+}
+
+.o_om_rd_label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: bold;
+    color: $o-gray-700;
+    margin-bottom: 0.2rem;
+}
+
+// sidebar --------------------------------------------------------------
+
+.o_om_rd_sidebar {
+    width: 260px;
+    min-width: 260px;
+}
+
+.o_om_rd_tools {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+}
+
+.o_om_rd_tool {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 6px;
+    border: 1px solid $o-gray-300;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    cursor: grab;
+    user-select: none;
+    background-color: $o-white;
+
+    &:hover {
+        border-color: $o-om-rd-accent;
+    }
+    .o_om_rd_tool_symbol {
+        width: 1.1rem;
+        text-align: center;
+        font-weight: bold;
+        color: $o-om-rd-accent;
+    }
+    .o_om_rd_tool_label {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.o_om_rd_field {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+    border-radius: 3px;
+    font-size: 0.82rem;
+    cursor: grab;
+    user-select: none;
+
+    &:hover {
+        background-color: $o-gray-100;
+    }
+    .o_om_rd_field_toggle {
+        width: 0.9rem;
+        flex-shrink: 0;
+        color: $o-gray-600;
+        cursor: pointer;
+    }
+    .o_om_rd_field_icon {
+        width: 1rem;
+        flex-shrink: 0;
+        text-align: center;
+        font-size: 0.75rem;
+        color: $o-gray-500;
+    }
+    &.o_om_rd_field_lines .o_om_rd_field_label {
+        font-weight: bold;
+        color: $o-om-rd-accent;
+    }
+}
+
+// canvas ---------------------------------------------------------------
+
+.o_om_rd_canvas {
+    padding: 24px 32px 64px;
+    background-color: $o-gray-200;
+}
+
+.o_om_rd_sheet,
+.o_om_rd_preview_sheet {
+    margin: 0 auto;
+    background-color: $o-white;
+    box-shadow: 0 1px 6px rgba(0, 0, 0, 0.18);
+    box-sizing: border-box;
+}
+
+.o_om_rd_dband {
+    position: relative;
+    margin-bottom: 2px;
+
+    &.o_om_rd_band_selected > .o_om_rd_dband_tab {
+        background-color: rgba($o-om-rd-accent, 0.15);
+        border-color: $o-om-rd-accent;
+    }
+}
+
+.o_om_rd_dband_tab {
+    height: 18px;
+    padding: 0 6px;
+    font-size: 11px;
+    line-height: 18px;
+    font-family: $font-family-base;
+    color: $o-gray-700;
+    background-color: $o-gray-100;
+    border-top: 1px dashed $o-gray-400;
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+    overflow: hidden;
+
+    .o_om_rd_dband_actions {
+        visibility: hidden;
+
+        button {
+            border: 0;
+            background: transparent;
+            padding: 0 4px;
+            color: $o-gray-700;
+            line-height: 16px;
+
+            &:hover {
+                color: $o-om-rd-accent;
+            }
+        }
+    }
+    &:hover .o_om_rd_dband_actions {
+        visibility: visible;
+    }
+}
+
+.o_om_rd_dband_body {
+    position: relative;
+    outline: 1px dotted $o-gray-300;
+
+    &.o_om_rd_show_grid {
+        background-image:
+            linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+    }
+    &.o_om_rd_drop_target {
+        outline: 2px dashed $o-om-rd-accent;
+        background-color: rgba($o-om-rd-accent, 0.05);
+    }
+}
+
+.o_om_rd_band_empty {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: $font-family-base;
+    font-size: 11px;
+    color: $o-gray-500;
+    pointer-events: none;
+
+    &.position-static {
+        padding: 0 8px;
+    }
+}
+
+.o_om_rd_band_resize {
+    height: 5px;
+    margin-top: -2px;
+    position: relative;
+    z-index: 2;
+    cursor: ns-resize;
+
+    &:hover {
+        background-color: rgba($o-om-rd-accent, 0.4);
+    }
+}
+
+// elements -------------------------------------------------------------
+
+.o_om_rd_del {
+    position: absolute;
+    box-sizing: border-box;
+    cursor: move;
+    user-select: none;
+
+    &:hover {
+        outline: 1px solid rgba($o-om-rd-select, 0.5);
+    }
+    &.o_om_rd_del_field .o_om_rd_dcell {
+        background-color: rgba($o-om-rd-accent, 0.07);
+        color: darken($o-om-rd-accent, 5%);
+    }
+    &.o_om_rd_del_line::before {
+        // a thin line is hard to catch: give it a taller invisible grip
+        content: "";
+        position: absolute;
+        inset: -4px 0;
+    }
+    &.o_om_rd_selected {
+        outline: 1px solid $o-om-rd-select;
+        z-index: 1;
+    }
+}
+
+.o_om_rd_dcell {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    line-height: 1.2;
+
+    > span {
+        overflow: hidden;
+        text-overflow: clip;
+    }
+    img {
+        display: inline-block;
+        align-self: inherit;
+    }
+}
+
+.o_om_rd_image_placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    font-family: $font-family-base;
+    font-size: 11px;
+    color: $o-gray-600;
+    background-color: $o-gray-100;
+    border: 1px dashed $o-gray-400;
+}
+
+.o_om_rd_inline_edit {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    outline: 2px solid $o-om-rd-select;
+    resize: none;
+    padding: 0 2px;
+    font-family: inherit;
+    line-height: 1.2;
+    background-color: $o-white;
+}
+
+.o_om_rd_handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background-color: $o-white;
+    border: 1px solid $o-om-rd-select;
+    z-index: 2;
+
+    &.o_om_rd_handle_n { top: -4px; left: calc(50% - 4px); cursor: ns-resize; }
+    &.o_om_rd_handle_s { bottom: -4px; left: calc(50% - 4px); cursor: ns-resize; }
+    &.o_om_rd_handle_e { right: -4px; top: calc(50% - 4px); cursor: ew-resize; }
+    &.o_om_rd_handle_w { left: -4px; top: calc(50% - 4px); cursor: ew-resize; }
+    &.o_om_rd_handle_ne { right: -4px; top: -4px; cursor: nesw-resize; }
+    &.o_om_rd_handle_sw { left: -4px; bottom: -4px; cursor: nesw-resize; }
+    &.o_om_rd_handle_nw { left: -4px; top: -4px; cursor: nwse-resize; }
+    &.o_om_rd_handle_se { right: -4px; bottom: -4px; cursor: nwse-resize; }
+}
+
+.o_om_rd_guide {
+    position: absolute;
+    pointer-events: none;
+    z-index: 3;
+
+    &.o_om_rd_guide_x {
+        top: 0;
+        bottom: 0;
+        border-left: 1px solid #e83e8c;
+    }
+    &.o_om_rd_guide_y {
+        left: 0;
+        right: 0;
+        border-top: 1px solid #e83e8c;
+    }
+}
+
+body.o_om_rd_dragging {
+    user-select: none;
+
+    .o_om_rd_del.o_om_rd_selected {
+        pointer-events: none;
+    }
+}
+
+// tables ---------------------------------------------------------------
+
+.o_om_rd_dtable {
+    position: relative;
+    min-height: 24px;
+    outline: 1px dotted $o-gray-300;
+    padding: 2px 0;
+
+    &.o_om_rd_drop_target {
+        outline: 2px dashed $o-om-rd-accent;
+        background-color: rgba($o-om-rd-accent, 0.05);
+    }
+}
+
+.o_om_rd_dtable_head {
+    font-weight: bold;
+    border-bottom: 1px solid #000000;
+    min-height: 20px;
+}
+
+.o_om_rd_dtable_row,
+.o_om_rd_dtable_head {
+    align-items: stretch;
+
+    &.o_om_rd_bordered .o_om_rd_dcol {
+        border: 1px solid #000000;
+        margin-left: -1px;
+        margin-top: -1px;
+    }
+}
+
+.o_om_rd_dtable_total {
+    font-weight: bold;
+}
+
+.o_om_rd_dcol {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    padding: 0 4px;
+    overflow: hidden;
+    box-sizing: border-box;
+    cursor: grab;
+    user-select: none;
+
+    > span {
+        flex-grow: 1;
+    }
+    &.o_om_rd_dcol_value {
+        color: darken($o-om-rd-accent, 5%);
+        background-color: rgba($o-om-rd-accent, 0.07);
+        font-weight: normal;
+    }
+    &.o_om_rd_selected {
+        outline: 2px solid $o-om-rd-select;
+        outline-offset: -2px;
+        z-index: 1;
+    }
+    .o_om_rd_col_resize {
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 6px;
+        cursor: ew-resize;
+
+        &:hover {
+            background-color: rgba($o-om-rd-select, 0.4);
+        }
+    }
+}
+
+.o_om_rd_column_marker {
+    width: 3px;
+    margin: 0 -1.5px;
+    background-color: #e83e8c;
+    flex-shrink: 0;
+    z-index: 2;
+}
+
+// properties -----------------------------------------------------------
+
+.o_om_rd_props {
+    width: 290px;
+    min-width: 290px;
+
+    h6 {
+        font-weight: bold;
+        margin-bottom: 0.75rem;
+    }
+    .o_om_rd_digits {
+        width: 4.5rem;
+        flex-shrink: 0;
+    }
+    .form-control-color {
+        width: 2.2rem;
+        flex-shrink: 0;
+        padding: 0.15rem;
+    }
+}
+
+.o_om_rd_grid4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+}
+
+.o_om_rd_grid3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+
+.o_om_rd_grid2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+}
+
+.o_om_rd_preview_bar {
+    max-width: 60rem;
+    margin: 0 auto;
+}
