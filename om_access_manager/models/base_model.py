@@ -40,6 +40,10 @@ class IrModelAccess(models.Model):
                 model=self.env['ir.model']._get(model).name or model))
         return super()._make_access_error(model, mode)
 
+    def _om_core_allows(self, model, mode):
+        """ Whether Odoo's own rights, without the profiles, allow ``mode`` on ``model``. """
+        return model in super()._get_allowed_models(mode)
+
 
 class IrRule(models.Model):
     _inherit = 'ir.rule'
@@ -81,6 +85,14 @@ class IrRule(models.Model):
                     "Ask your administrator if you need to.",
                     operation=_operation_label(self.env, operation), model=model_label))
         return super()._make_access_error(operation, records)
+
+    def _om_core_allows(self, records, mode):
+        """ Whether Odoo's own record rules, without the profiles, allow ``mode`` on ``records``. """
+        domain = super()._compute_domain(records._name, mode)
+        if domain == expression.FALSE_DOMAIN:
+            return False
+        records = records.sudo().with_context(active_test=False)
+        return not domain or records.filtered_domain(domain) == records
 
 
 class Base(models.AbstractModel):
@@ -177,7 +189,38 @@ class Base(models.AbstractModel):
                 raise self.env['om.access.profile']._om_refusal(
                     _("Your access profile does not allow changing the properties of a form."),
                     model=self._name, record_ids=self.ids)
+        if self._om_write_while_creating():
+            return super(Base, self.sudo()).write(vals)
         return super().write(vals)
+
+    @api.model
+    def _create(self, data_list):
+        records = super()._create(data_list)
+        if not self.env.su:
+            created = self.env.cr.cache.setdefault('om_access_created', {})
+            created.setdefault((self.env.uid, self._name), set()).update(records._ids)
+        return records
+
+    def _om_write_while_creating(self):
+        """ Whether the current user created ``self`` in this transaction and only the
+        profile refuses to write it. create() writes the records it makes again:
+        a variant writes its values on its template, inverse fields (cost,
+        barcode...) are written once the record exists. A profile that allows
+        create but not edit must let these writes through, or nothing can be
+        created. Odoo's own rights still apply. """
+        if self.env.su or not self._ids:
+            return False
+        created = self.env.cr.cache.get('om_access_created', {}).get((self.env.uid, self._name))
+        if not created or not created.issuperset(self._ids):
+            return False
+        try:
+            self.check_access_rights('write')
+            self.check_access_rule('write')
+            return False
+        except AccessError:
+            pass
+        return (self.env['ir.model.access']._om_core_allows(self._name, 'write')
+                and self.env['ir.rule']._om_core_allows(self, 'write'))
 
     def _om_changes_properties(self, vals):
         """ Whether ``vals`` changes the definition of properties: written on the
