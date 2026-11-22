@@ -2,6 +2,7 @@
 # every setting of its data is made. The panel writes the ordinary lines of the
 # profile (model, menu, field, button, element lines, hidden reports and
 # actions, allowed records), so the other tabs show the same rules.
+import ast
 import logging
 
 from lxml import etree
@@ -16,6 +17,79 @@ from .om_access_profile_menu import RECORD_CHOICES
 from .om_access_profile_model import DOMAIN_FIELDS, DRAFT_DOMAIN
 
 _logger = logging.getLogger(__name__)
+
+# the data a simple record filter does not offer to filter on: what only the system uses
+SIMPLE_FILTER_SKIPPED = ('ir.', 'mail.', 'bus.', 'res.users.', 'base.', 'web_')
+
+
+def _om_parse_simple_filter(domain):
+    """ The rows of a record filter written as a simple one, or None.
+
+    A simple filter is an OR of conditions, each 'field in these ids' or 'field
+    is the user': [{'field': name, 'ids': [ids], 'me': bool}], one row a field.
+    """
+    text = (domain or '').strip()
+    if not text:
+        return []
+    try:
+        node = ast.parse(text, mode='eval').body
+    except SyntaxError:
+        return None
+    if not isinstance(node, ast.List):
+        return None
+    leaves = [item for item in node.elts if not (isinstance(item, ast.Constant) and item.value == '|')]
+    if len(node.elts) - len(leaves) != max(len(leaves) - 1, 0):
+        return None
+    rows = {}
+    for leaf in leaves:
+        if not (isinstance(leaf, (ast.Tuple, ast.List)) and len(leaf.elts) == 3):
+            return None
+        name, operator, value = leaf.elts
+        if not (isinstance(name, ast.Constant) and isinstance(name.value, str)
+                and isinstance(operator, ast.Constant) and operator.value in ('in', '=')):
+            return None
+        row = rows.setdefault(name.value, {'field': name.value, 'ids': [], 'me': False})
+        if isinstance(value, ast.Name) and value.id == 'uid' and operator.value == '=':
+            row['me'] = True
+        elif isinstance(value, ast.List) and operator.value == 'in':
+            for item in value.elts:
+                if isinstance(item, ast.Name) and item.id == 'uid':
+                    row['me'] = True
+                elif isinstance(item, ast.Constant) and type(item.value) is int:
+                    row['ids'].append(item.value)
+                else:
+                    return None
+        else:
+            return None
+    return list(rows.values())
+
+
+# the data most often limited along with what it belongs to, offered first
+LINKED_FIRST = ('sale.order', 'account.move', 'purchase.order', 'crm.lead', 'project.task', 'stock.picking',
+                'account.payment', 'hr.expense', 'helpdesk.ticket', 'mrp.production')
+
+
+def _om_simple_filter_domain(rows, model, prefix=''):
+    """ The record filter of these rows, False when they filter nothing; with ``prefix``, the filter of
+    the data linked to them through that field (partner_id.category_id...). """
+    terms = []
+    for row in rows:
+        field = model._fields.get(row.get('field'))
+        # 'id': the records themselves (these projects), as the field to their own data
+        is_self = row.get('field') == 'id'
+        if field is None or not (is_self or field.type in ('many2one', 'many2many')):
+            continue
+        comodel = model._name if is_self else field.comodel_name
+        path = prefix + field.name
+        ids = sorted({int(record_id) for record_id in row.get('ids') or ()})
+        if ids:
+            terms.append('(%r, %r, %r)' % (path, 'in', ids))
+        if row.get('me') and comodel == 'res.users':
+            terms.append("(%r, 'in', [uid])" % path if field.type == 'many2many' and not prefix
+                         else "(%r, '=', uid)" % path)
+    if not terms:
+        return False
+    return '[%s]' % ', '.join(["'|'"] * (len(terms) - 1) + terms)
 
 # the switches of some data, in the order of the panel
 SWITCHES = (
@@ -126,13 +200,16 @@ class OmAccessProfile(models.Model):
                     'type': action_model, 'id': action.id, 'label': action.name, 'kind': 'action'})
         for entries in result.values():
             entries.sort(key=lambda entry: (entry['kind'] != 'report', (entry['label'] or '').lower()))
-            # two reports of the same name (a quotation and its variant): say which
-            labels = [entry['label'] for entry in entries]
-            for entry in entries:
-                if labels.count(entry['label']) > 1 and entry['kind'] == 'report':
-                    report = self.env['ir.actions.report'].sudo().browse(entry['id'])
-                    entry['label'] = f"{entry['label']} ({report.report_name})"
+            self._om_name_report_twins(entries)
         return result
+
+    def _om_name_report_twins(self, entries):
+        """ Two reports of the same name (a quotation and its variant): each says which. """
+        labels = [entry['label'] for entry in entries]
+        for entry in entries:
+            if entry['type'] == 'ir.actions.report' and labels.count(entry['label']) > 1:
+                report = self.env['ir.actions.report'].sudo().browse(entry['id'])
+                entry['label'] = f"{entry['label']} ({report.report_name})"
 
     def om_toggle_print(self, action_type, action_id, hidden):
         """ Hide or show a report or an Action menu entry, from its row of the tree. """
@@ -327,6 +404,9 @@ class OmAccessProfile(models.Model):
         for line in self.button_ids.filtered(lambda line: line.model_id.model == model_name):
             lines.setdefault((line.button_type, line.button_name), line)
         found = {}
+        # where each button is and how it looks, to draw it as on the screen: in the form
+        # header, a smart button, or elsewhere; a main (highlighted) button
+        looks = {}
         for view_type, root in archs:
             for node in root.xpath(BUTTON_XPATH):
                 button_type = node.get('type') or 'object'
@@ -334,12 +414,19 @@ class OmAccessProfile(models.Model):
                 if button_type not in ('object', 'action') or key in found or not self._om_top_level(node):
                     continue
                 found[key] = Scan._label(node, button_type, key[1])
+                css = (node.get('class') or '').split()
+                place = ('stat' if 'oe_stat_button' in css
+                         else 'header' if any(ancestor.tag == 'header' for ancestor in node.iterancestors())
+                         else 'other')
+                looks[key] = {'place': place, 'primary': bool({'oe_highlight', 'btn-primary'} & set(css)),
+                              'icon': node.get('icon') or ''}
         for key, line in lines.items():
             found.setdefault(key, line.button_label or line.button_name)
         return [{
             'button_type': button_type, 'button_name': name, 'label': label,
             'mode': lines[(button_type, name)].mode if (button_type, name) in lines else 'visible',
             'condition': lines[(button_type, name)].condition or '' if (button_type, name) in lines else '',
+            **looks.get((button_type, name), {'place': 'other', 'primary': False, 'icon': ''}),
         } for (button_type, name), label in found.items()]
 
     def _om_panel_elements(self, menu, archs, model_name):
@@ -388,6 +475,7 @@ class OmAccessProfile(models.Model):
             for action in self.env[action_model].sudo().search([('binding_model_id.model', '=', model_name)]):
                 entries.append({'type': action_model, 'id': action.id, 'label': action.name,
                                 'kind': _("Action"), 'hidden': action in self[field_name]})
+        self._om_name_report_twins(entries)
         return entries
 
     def _om_also_opened_by(self, menu, model_name):
@@ -484,6 +572,14 @@ class OmAccessProfile(models.Model):
                               records='all', edit_draft_only=False)
                 source = False
             archs = self._om_view_archs(menu, model_name)
+            simple = _om_parse_simple_filter(line.domain) if line and rights['records'] == 'custom' else None
+            # Edit drafts only goes with it; another per operation filter does not
+            others = [name for name in DOMAIN_FIELDS[1:]
+                      if not (rights['edit_draft_only'] and name in ('domain_write', 'domain_unlink'))]
+            if simple and not any((line[name] or '').strip() for name in others):
+                rights['records'] = 'some'
+            else:
+                simple = None
             data.update({
                 'model': model_name,
                 'model_label': self.env['ir.model']._get(model_name).name,
@@ -494,6 +590,9 @@ class OmAccessProfile(models.Model):
                 'record_choices': self._om_record_choices(model_name),
                 'drafts_possible': 'draft' in self.env['om.access.profile.model']._preset_domains(model_name),
                 'fields': profile._om_panel_fields(archs, model_name),
+                'simple_filter': profile._om_simple_filter_values(simple or [], model_name),
+                'linked': profile._om_linked_suggestions(simple or [], model_name),
+                'filter_fields': profile._om_filter_fields(archs, model_name),
                 'buttons': profile._om_panel_buttons(archs, model_name),
                 'elements': profile._om_panel_elements(menu, archs, model_name),
                 'print': profile._om_panel_print(model_name),
@@ -501,6 +600,115 @@ class OmAccessProfile(models.Model):
                 'apply_to_admin': profile.apply_to_admin,
             })
         return data
+
+    def _om_filter_fields(self, archs, model_name):
+        """ The fields a simple record filter offers: the links to other data, those on the screens
+        of the menu first. """
+        model = self.env[model_name]
+        shown = [node.get('name') for _view_type, root in archs for node in root.iter('field')]
+        fields = []
+        for name, field in model._fields.items():
+            if (field.type not in ('many2one', 'many2many') or not (field.store or field.search)
+                    or not field.comodel_name or field.comodel_name.startswith(SIMPLE_FILTER_SKIPPED)
+                    or name in ('create_uid', 'write_uid') or field.comodel_name not in self.env):
+                continue
+            fields.append({
+                'name': name,
+                'label': field._description_string(self.env),
+                'model': field.comodel_name,
+                'is_user': field.comodel_name == 'res.users',
+                'shown': name in shown,
+                # a many2many is filtered through its table, indexed by Odoo; a many2one needs its own index
+                'indexed': field.type == 'many2many' or bool(field.index),
+            })
+        fields.sort(key=lambda field: (not field['shown'], field['label'].lower()))
+        # the records themselves first: only these projects, these teams
+        fields.insert(0, {
+            'name': 'id', 'label': self.env['ir.model']._get(model_name).name, 'model': model_name,
+            'is_user': model_name == 'res.users', 'shown': True, 'indexed': True,
+        })
+        return fields
+
+    def _om_simple_filter_values(self, rows, model_name):
+        """ The rows of a simple filter, with the names of their records. """
+        model = self.env[model_name]
+        result = []
+        for row in rows:
+            field = model._fields.get(row['field'])
+            comodel = model_name if row['field'] == 'id' else field is not None and field.comodel_name
+            if field is None or not comodel:
+                continue
+            records = self.env[comodel].sudo().browse(row['ids']).exists()
+            result.append({
+                'field': field.name, 'model': comodel, 'me': row['me'],
+                'records': [{'id': record.id, 'name': record.display_name} for record in records],
+            })
+        return result
+
+    def _om_linked_suggestions(self, rows, model_name):
+        """ The data linked to the records a simple filter keeps (the sales orders of these customers),
+        offered to be limited the same way in one click. """
+        if not rows:
+            return []
+        model = self.env[model_name]
+        links = self.env['ir.model.fields'].sudo().search([
+            ('ttype', '=', 'many2one'), ('relation', '=', model_name), ('store', '=', True),
+            ('model_id.transient', '=', False), ('model', '!=', model_name)])
+        lines = {line.model_id.model: line for line in self.model_ids}
+        result = []
+        for link in links:
+            if (link.model not in self.env or link.model.startswith(SIMPLE_FILTER_SKIPPED)
+                    or self.env[link.model]._abstract or link.name in ('create_uid', 'write_uid')):
+                continue
+            domain = _om_simple_filter_domain(rows, model, prefix=link.name + '.')
+            line = lines.get(link.model)
+            current = (line.domain or '').strip() if line else ''
+            result.append({
+                'model': link.model,
+                'field': link.name,
+                'label': '%s (%s)' % (self.env['ir.model']._get(link.model).name, link.field_description),
+                'applied': current == domain,
+                'own_filter': bool(current) and current != domain,
+            })
+        result.sort(key=lambda item: (item['model'] not in LINKED_FIRST,
+                                      LINKED_FIRST.index(item['model']) if item['model'] in LINKED_FIRST else 0,
+                                      not item['applied'], item['field'] != 'partner_id', item['label'].lower()))
+        # one link a data, the one in use or else the main one (the customer, not the delivery address)
+        seen, kept = set(), []
+        for item in result:
+            if item['model'] not in seen:
+                seen.add(item['model'])
+                kept.append(item)
+        return kept[:8]
+
+    def _om_set_data_linked(self, menu, model_name, change):
+        """ Limit the data linked to the records of the simple filter of this data, the same way. """
+        line = self._om_model_line(model_name, create=False)
+        rows = _om_parse_simple_filter(line.domain) if line else None
+        target, field_name = change.get('model'), change.get('field')
+        if not rows or target not in self.env or field_name not in self.env[target]._fields:
+            raise UserError(_("Set the records to keep first."))
+        field = self.env[target]._fields[field_name]
+        if field.type != 'many2one' or field.comodel_name != model_name:
+            raise UserError(_("This data is not linked to %s.", model_name))
+        domain = _om_simple_filter_domain(rows, self.env[model_name], prefix=field_name + '.')
+        target_line = self._om_model_line(target)
+        if change.get('remove'):
+            if (target_line.domain or '').strip() == domain:
+                _om_write_changes(target_line, {'domain': False})
+        else:
+            _om_write_changes(target_line, {'domain': domain})
+        self._om_drop_if_empty(target_line)
+
+    def _om_set_data_filter(self, menu, model_name, change):
+        """ The simple record filter of the data: its rows, in place of the record filter. """
+        if not model_name:
+            raise UserError(_("This menu opens no data."))
+        domain = _om_simple_filter_domain(change.get('rows') or [], self.env[model_name])
+        self._om_set_data_line(menu, model_name, {})
+        line = self._om_model_line(model_name)
+        _om_write_changes(line, {'domain': domain})
+        self._om_drop_if_empty(line)
 
     def _om_current_level(self, menu, rule):
         """ The access level a menu with children is at, if it matches one. """
@@ -532,7 +740,7 @@ class OmAccessProfile(models.Model):
         model_name = menu.action and self.env['om.access.app.wizard']._menu_model(menu)
         kind = change.get('kind')
         handler = getattr(self, f'_om_set_{kind}', None) if kind in (
-            'data_rights', 'data_reset', 'data_line', 'grant', 'menu_rights', 'menu_reset', 'level', 'field', 'button',
+            'data_rights', 'data_reset', 'data_line', 'data_filter', 'data_linked', 'grant', 'menu_rights', 'menu_reset', 'level', 'field', 'button',
             'element', 'print', 'allowed', 'hide_menu') else None
         if handler is None:
             raise UserError(_("Unknown change: %s", kind))

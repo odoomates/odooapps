@@ -16,9 +16,9 @@ class OmAccessAssign(models.TransientModel):
     ], string='What to Do', default='add', required=True)
 
     @api.model
-    def default_get(self, fields_list):
-        values = super().default_get(fields_list)
-        if 'user_ids' in fields_list and self.env.context.get('active_model') == 'res.users':
+    def default_get(self, fields):
+        values = super().default_get(fields)
+        if 'user_ids' in fields and self.env.context.get('active_model') == 'res.users':
             values.setdefault('user_ids', [(6, 0, self.env.context.get('active_ids') or [])])
         return values
 
