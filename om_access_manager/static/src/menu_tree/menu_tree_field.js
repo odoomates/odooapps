@@ -162,7 +162,7 @@ export class MenuTreeField extends Component {
                 marks.push({ icon: "print", title: _t("Reports or actions hidden") });
             }
             if (data.switches) {
-                marks.push({ icon: "toggle-off", title: _t("Switches on") });
+                marks.push({ icon: "toggle-off", title: _t("Restrictions on") });
             }
         }
         return marks;
