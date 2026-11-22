@@ -30,7 +30,7 @@ class OmAccessRightsMixin(models.AbstractModel):
     """ The four rights and the switches of some data: a model line sets them on
     one model, a menu line on the data of its whole branch. """
     _name = 'om.access.rights.mixin'
-    _description = 'Access Rights and Switches'
+    _description = 'Access Rights and Restrictions'
 
     perm_read = fields.Boolean(string='Read', default=True)
     perm_write = fields.Boolean(string='Edit', default=True)
@@ -67,9 +67,8 @@ class OmAccessProfileModel(models.Model):
 
     domain = fields.Char(
         string='Record Filter',
-        help="Applies to all four operations. Only the records matching it are "
-             "reachable. Evaluated with 'user', 'company_id' and 'company_ids', "
-             "like a standard access domain.")
+        help="Only the records matching it can be seen and changed, by every operation. Click New "
+             "Rule, choose a field, say Project, and pick the values by name.")
     domain_read = fields.Char(
         string='Read Filter',
         help="Narrows the records the user may read, on top of the general "

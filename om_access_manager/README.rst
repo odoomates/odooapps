@@ -60,7 +60,7 @@ The menu tree
   real menus of the database. Untick a menu to hide it with everything below
   it; click a menu to set, beside the tree, what its users may do there: its
   data and records, fields, buttons, tabs, filters, views, Print and Action
-  menu entries and switches. Changes are saved at once.
+  menu entries and restrictions. Changes are saved at once.
 * **A whole app at once**: on an app or a submenu, the same rights and records
   for everything below it, data added later by other modules included, with
   one-click levels (full access, no configuration, read only, no access). A
@@ -188,7 +188,7 @@ Checking and keeping track
   it finds is noted in the chatter of the profile.
 * **Effective access on the user form**: what the user really ends up with, all
   of their profiles combined.
-* **History**: every change of a profile, of its switches and of its rules is
+* **History**: every change of a profile, of its restrictions and of its rules is
   logged in its chatter, with who made it and when.
 * **Versions**: each save that changes a profile keeps a version of it, with
   who saved it and a summary. A version shows what it changed and what has
@@ -278,7 +278,7 @@ Usage
    click an app to pick a level (*Read only*, *No configuration*...), and click
    the menus that differ to set their rights, records, fields and buttons.
    Everything set beside the tree is saved at once and written in the history.
-3. Set the **Switches** that apply to the whole system, and the **Sign-in**
+3. Set the **Restrictions** that apply to the whole system, and the **Sign-in**
    rules if needed.
 4. Check the result with **Preview as User**, then let them work. The **Health
    Check** keeps an eye on the profiles every week.
@@ -307,7 +307,7 @@ Read this before you use the module to protect anything that matters.
   still reachable by its URL or another menu. What the server refuses: the
   rights and record filters of the data, blocked buttons, hidden and read-only
   fields (at the boundary, see below), hidden reports and actions, the chatter
-  and activity switches, the apps of the Settings, and export, import,
+  and activity restrictions, the apps of the Settings, and export, import,
   archiving and duplication. This is why the default mode of a button rule is
   *Hide and block*, and why denying *Read* is the way to deny a data.
 * **Hidden and read-only fields are enforced at the boundary, not inside

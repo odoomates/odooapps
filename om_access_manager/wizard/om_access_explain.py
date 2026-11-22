@@ -36,8 +36,8 @@ class OmAccessExplain(models.TransientModel):
     report = fields.Html(compute='_compute_report', sanitize=False)
 
     @api.model
-    def default_get(self, fields_list):
-        values = super().default_get(fields_list)
+    def default_get(self, fields):
+        values = super().default_get(fields)
         context = self.env.context
         if context.get('active_model') == 'res.users' and context.get('active_id'):
             values.setdefault('user_id', context['active_id'])

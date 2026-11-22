@@ -30,9 +30,9 @@ class OmAccessCopyRestrictions(models.TransientModel):
                                 help="The hidden menus and the rights set on menus.")
 
     @api.model
-    def default_get(self, fields_list):
-        values = super().default_get(fields_list)
-        if 'profile_id' in fields_list and self.env.context.get('active_model') == 'om.access.profile':
+    def default_get(self, fields):
+        values = super().default_get(fields)
+        if 'profile_id' in fields and self.env.context.get('active_model') == 'om.access.profile':
             values.setdefault('profile_id', self.env.context.get('active_id'))
         return values
 
