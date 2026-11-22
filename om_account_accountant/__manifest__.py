@@ -20,6 +20,7 @@
     'support': 'odoomates@gmail.com',
     'depends': [
         'accounting_pdf_reports',
+        'om_print_journal_entry',
         'om_account_asset',
         'om_account_budget',
         'om_account_bank_statement_import',
