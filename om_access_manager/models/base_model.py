@@ -146,7 +146,31 @@ class Base(models.AbstractModel):
                 raise self.env['om.access.profile']._om_refusal(
                     _("Your access profile does not allow changing the properties of a form."),
                     model=self._name, record_ids=self.ids)
+        if self._om_created_here() and not self.has_access('write'):
+            # create() writes the records it makes again: a variant writes its
+            # values on its template, inverse fields (cost, barcode...) are
+            # written once the record exists. A profile that allows create but
+            # not edit lets these writes through, as long as Odoo's own rights do.
+            core = super()._access_domain('write')
+            records = self.sudo().with_context(active_test=False)
+            if not core.is_false() and (core.is_true() or records.filtered_domain(core) == records):
+                return super(Base, self.sudo()).write(vals)
         return super().write(vals)
+
+    @api.model
+    def _create(self, data_list):
+        records = super()._create(data_list)
+        if not self.env.su:
+            created = self.env.cr.cache.setdefault('om_access_created', {})
+            created.setdefault((self.env.uid, self._name), set()).update(records._ids)
+        return records
+
+    def _om_created_here(self):
+        """ Whether the current user created every record of ``self`` in this transaction. """
+        if self.env.su or not self._ids:
+            return False
+        created = self.env.cr.cache.get('om_access_created', {}).get((self.env.uid, self._name))
+        return bool(created) and created.issuperset(self._ids)
 
     def _om_changes_properties(self, vals):
         """ Whether ``vals`` changes the definition of properties: written on the
