@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_pdc_view_form" model="ir.ui.view">
+        <field name="name">account.pdc.form</field>
+        <field name="model">account.pdc</field>
+        <field name="arch" type="xml">
+            <form string="Post-dated Cheque">
+                <header>
+                    <button name="action_register" type="object" string="Register" class="btn-primary"
+                            invisible="state != 'draft'"/>
+                    <button name="action_deposit" type="object" string="Deposit" class="btn-primary"
+                            invisible="state != 'registered' or pdc_type != 'receive'"/>
+                    <button name="action_clear" type="object" string="Clear" class="btn-primary"
+                            invisible="state not in ('registered', 'deposited')"/>
+                    <button name="action_bounce" type="object" string="Bounce"
+                            invisible="state not in ('registered', 'deposited')"
+                            confirm="The cheque bounced: its registration is reversed and its invoices are open again. Go on?"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'draft'"/>
+                    <button name="action_draft" type="object" string="Reset to Draft" invisible="state != 'cancel'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,registered,deposited,cleared"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_moves" type="object" class="oe_stat_button" icon="fa-bars"
+                                invisible="move_count == 0">
+                            <field name="move_count" widget="statinfo" string="Entries"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Bounced" bg_color="text-bg-danger" invisible="state != 'bounced'"/>
+                    <div class="oe_title">
+                        <h1><field name="name" readonly="1"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="pdc_type" invisible="1"/>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="amount" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="cheque_number" readonly="state not in ('draft', 'registered')"/>
+                            <field name="bank_name" readonly="state not in ('draft', 'registered')"/>
+                            <field name="memo"/>
+                        </group>
+                        <group>
+                            <field name="date" readonly="state != 'draft'"
+                                   string="Received On" invisible="pdc_type != 'receive'"/>
+                            <field name="date" readonly="state != 'draft'"
+                                   string="Issued On" invisible="pdc_type != 'issue'"/>
+                            <field name="cheque_date" readonly="state not in ('draft', 'registered', 'deposited')"/>
+                            <field name="days_to_maturity" invisible="state not in ('draft', 'registered', 'deposited')"/>
+                            <field name="clear_date" invisible="not clear_date"/>
+                            <field name="journal_id" readonly="state not in ('draft', 'registered', 'deposited')"/>
+                            <field name="pdc_account_id" readonly="state != 'draft'" groups="account.group_account_user"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Invoices" name="invoices">
+                            <field name="commercial_partner_id" invisible="1"/>
+                            <field name="invoice_ids" readonly="state != 'draft'"
+                                   context="{'search_default_partner_id': commercial_partner_id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="invoice_date"/>
+                                    <field name="invoice_date_due"/>
+                                    <field name="amount_total_signed" string="Total"/>
+                                    <field name="amount_residual_signed" string="Amount Due"/>
+                                    <field name="payment_state" widget="badge"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Entries" name="entries" invisible="state == 'draft'">
+                            <group>
+                                <field name="register_move_id"/>
+                                <field name="clear_move_id" invisible="not clear_move_id"/>
+                                <field name="bounce_move_id" invisible="not bounce_move_id"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="account_pdc_view_list" model="ir.ui.view">
+        <field name="name">account.pdc.list</field>
+        <field name="model">account.pdc</field>
+        <field name="arch" type="xml">
+            <list string="Post-dated Cheques" decoration-danger="state == 'bounced'" decoration-muted="state in ('cleared', 'cancel')"
+                  decoration-warning="state in ('registered', 'deposited') and days_to_maturity &lt;= 0">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="cheque_number" optional="show"/>
+                <field name="bank_name" optional="hide"/>
+                <field name="date" optional="show"/>
+                <field name="cheque_date"/>
+                <field name="days_to_maturity" optional="show"/>
+                <field name="journal_id" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="amount" sum="Total"/>
+                <field name="state" widget="badge" decoration-info="state in ('registered', 'deposited')"
+                       decoration-success="state == 'cleared'" decoration-danger="state == 'bounced'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="account_pdc_view_search" model="ir.ui.view">
+        <field name="name">account.pdc.search</field>
+        <field name="model">account.pdc</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="cheque_number"/>
+                <filter name="to_clear" string="To Clear" domain="[('state', 'in', ('registered', 'deposited'))]"/>
+                <filter name="due" string="Due" domain="[('state', 'in', ('registered', 'deposited')), ('cheque_date', '&lt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="bounced" string="Bounced" domain="[('state', '=', 'bounced')]"/>
+                <separator/>
+                <filter name="cheque_date" string="Cheque Date" date="cheque_date"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_partner" string="Partner" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_cheque_date" string="Cheque Date" context="{'group_by': 'cheque_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_account_pdc_receive" model="ir.actions.act_window">
+        <field name="name">Cheques Received</field>
+        <field name="res_model">account.pdc</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('pdc_type', '=', 'receive')]</field>
+        <field name="context">{'default_pdc_type': 'receive', 'search_default_to_clear': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register a post-dated cheque received</p>
+            <p>Register the cheque with the invoices it pays: they are settled at once, and the cheque waits on the
+                PDC account until you clear it into the bank on its date.</p>
+        </field>
+    </record>
+
+    <record id="action_account_pdc_issue" model="ir.actions.act_window">
+        <field name="name">Cheques Issued</field>
+        <field name="res_model">account.pdc</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('pdc_type', '=', 'issue')]</field>
+        <field name="context">{'default_pdc_type': 'issue', 'search_default_to_clear': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Register a post-dated cheque issued</p>
+            <p>Register the cheque with the bills it pays: they are settled at once, and the cheque waits on the
+                PDC account until it is cleared from the bank on its date.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_account_pdc_receive" name="Post-dated Cheques" action="action_account_pdc_receive"
+              parent="account.menu_finance_receivables" sequence="25" groups="account.group_account_invoice"/>
+    <menuitem id="menu_account_pdc_issue" name="Post-dated Cheques" action="action_account_pdc_issue"
+              parent="account.menu_finance_payables" sequence="25" groups="account.group_account_invoice"/>
+
+</odoo>
