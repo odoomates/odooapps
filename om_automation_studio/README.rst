@@ -7,6 +7,11 @@ happens to the records of a model, step by step, without code: conditions, waits
 emails, activities, messages and record changes. Each record then goes through the chart, and
 the chart shows where it is and the path it took.
 
+A 27-page user guide ships with the module, at ``static/description/user_guide.pdf``: the
+templates, the designer, every step and its settings, publishing and versions, approvals, runs, your
+own templates and recipes for common needs, for Odoo 16 to 20. Its source is ``doc/user_guide.html``;
+rebuild the PDF with ``python3 doc/build_user_guide.py``.
+
 Features
 ========
 
