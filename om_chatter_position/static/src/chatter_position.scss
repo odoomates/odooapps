@@ -1,0 +1,51 @@
+// The chatter beside the sheet, each side scrolling on its own. Odoo 15 Community
+// always puts the chatter under the form; forms in a dialog keep no chatter at all.
+@mixin om-chatter-beside {
+    display: flex;
+    height: 100%;
+
+    > .o_form_sheet_bg {
+        flex: 1 1 auto;
+        min-width: 0;
+        overflow-y: auto;
+        border-bottom: 0;
+
+        > .o_form_sheet {
+            margin-left: 16px;
+            margin-right: 16px;
+        }
+    }
+
+    > .o_FormRenderer_chatterContainer {
+        position: relative;
+        flex: 0 0 auto;
+        max-width: none;
+        margin: 0;
+        overflow-y: auto;
+        border-left: 1px solid var(--om-border, #{$border-color});
+        background-color: var(--om-surface, #{$o-view-background-color});
+    }
+}
+
+// Automatic and "Beside the form": beside the sheet on an extra wide screen (Odoo
+// marks the form .o_xxl_form_view), unless the user chose "Below the form"
+html:not(.o_om_chatter_below) .o_action_manager .o_form_view.o_xxl_form_view:has(> .o_FormRenderer_chatterContainer) {
+    @include om-chatter-beside;
+
+    > .o_FormRenderer_chatterContainer {
+        width: 35%;
+    }
+}
+
+// "Beside the form" from a large screen up too, the chatter taking 40% of the width
+// so the form keeps the larger part. The width is kept at a low weight, so a width
+// dragged by hand (Theme Lite) still wins.
+@include media-breakpoint-up(lg) {
+    html.o_om_chatter_side .o_action_manager .o_form_view:not(.o_xxl_form_view):has(> .o_FormRenderer_chatterContainer) {
+        @include om-chatter-beside;
+    }
+
+    html.o_om_chatter_side .o_form_view > .o_FormRenderer_chatterContainer {
+        width: 40%;
+    }
+}
