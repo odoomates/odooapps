@@ -1,0 +1,31 @@
+// "Below the form": the form and the chatter stacked, even on a wide screen, where
+// Odoo's form template would lay them out in a row
+.o_om_chatter_below .o_form_view {
+    .o_form_renderer.d-flex {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+
+    // With nothing beside it, the form takes the whole width: Odoo's caps on the
+    // renderer and the sheet are sized for a chatter sitting next to them, and
+    // would otherwise leave an empty strip on the right.
+    .o_form_renderer,
+    .o_form_sheet_bg {
+        max-width: none;
+    }
+}
+
+// "Beside the form" below a wide screen: the template stacks the form and the
+// chatter there, so the row of a wide screen is set here
+.o_form_view.o_om_chatter_beside .o_form_renderer.d-flex {
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    height: 100%;
+}
+
+// and the chatter takes 40% of the width, so the form keeps the larger part. Kept
+// at the weight of Odoo's own width, so a width dragged by hand still wins.
+:where(.o_form_view.o_om_chatter_beside) .o-mail-Form-chatter.o-aside {
+    flex-grow: 0;
+    width: 40%;
+}
