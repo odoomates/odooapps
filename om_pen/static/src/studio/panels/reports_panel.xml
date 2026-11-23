@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.ReportsPanel">
+        <t t-if="!this.state.report">
+            <div class="o_pen_panel o_pen_reports_panel">
+                <h2>PDF reports</h2>
+                <p class="o_pen_panel_lead">Build a report of <t t-out="this.props.store.info.model_name"/> from blocks,
+                    or add blocks above or below a report that already exists.</p>
+                <button class="btn btn-primary mb-3 o_pen_new_report" t-on-click="() => this.createReport()">
+                    <i class="oi me-1" data-icon="add"/> New report
+                </button>
+                <t t-if="this.state.list">
+                    <h4 class="o_pen_title">Made here</h4>
+                    <p t-if="!this.state.list.own.length" class="text-muted">None yet.</p>
+                    <t t-foreach="this.state.list.own" t-as="report" t-key="report.id">
+                        <div class="o_pen_report_row" t-att-data-report="report.name">
+                            <i class="oi me-2 text-muted" data-icon="picture_as_pdf"/>
+                            <strong t-out="report.name"/>
+                            <span t-if="report.added_to" class="text-muted ms-2">
+                                <t t-out="report.position === 'top' ? 'above' : 'below'"/> <t t-out="report.added_to"/>
+                            </span>
+                            <span class="flex-grow-1"/>
+                            <button class="btn btn-sm btn-light o_pen_report_edit" t-on-click="() => this.openId(report.id)">Edit</button>
+                        </div>
+                    </t>
+                    <h4 class="o_pen_title">From modules</h4>
+                    <t t-foreach="this.state.list.standard" t-as="report" t-key="report.id">
+                        <div class="o_pen_report_row" t-att-data-report="report.name">
+                            <i class="oi me-2 text-muted" data-icon="description"/>
+                            <span t-out="report.name"/>
+                            <span class="flex-grow-1"/>
+                            <button class="btn btn-sm btn-light me-1" t-on-click="() => this.extend(report, 'top')">Add blocks above</button>
+                            <button class="btn btn-sm btn-light o_pen_report_below" t-on-click="() => this.extend(report, 'bottom')">Add blocks below</button>
+                        </div>
+                    </t>
+                </t>
+            </div>
+        </t>
+        <t t-else="">
+            <t t-set="report" t-value="this.state.report"/>
+            <div class="o_pen_report_designer">
+                <aside class="o_pen_sidebar">
+                    <div class="o_pen_report_head">
+                        <button class="btn btn-sm btn-link px-0" t-on-click="() => this.back()">
+                            <i class="oi" data-icon="arrow_back"/> Reports
+                        </button>
+                        <span t-if="this.state.saving" class="text-muted small ms-auto">Saving…</span>
+                    </div>
+                    <nav class="o_pen_tabs">
+                        <button t-att-class="this.state.tab === 'blocks' ? 'active' : ''" t-on-click="() => this.state.tab = 'blocks'">Blocks</button>
+                        <button t-att-class="this.state.tab === 'block' ? 'active' : ''" t-on-click="() => this.state.tab = 'block'">Block</button>
+                        <button t-att-class="this.state.tab === 'settings' ? 'active' : ''" t-on-click="() => this.state.tab = 'settings'">Settings</button>
+                    </nav>
+                    <div class="o_pen_sidebar_body">
+                        <div t-if="this.state.error" class="alert alert-danger small" t-out="this.state.error"/>
+                        <t t-if="this.state.tab === 'blocks'">
+                            <h4 class="o_pen_title">Add a block</h4>
+                            <div class="o_pen_items">
+                                <t t-foreach="this.BLOCK_KINDS" t-as="kind" t-key="kind.kind">
+                                    <button class="o_pen_item" t-att-data-kind="kind.kind" t-on-click="() => this.addBlock(kind.kind)">
+                                        <i class="oi" t-att-data-icon="kind.icon"/>
+                                        <span t-out="kind.label"/>
+                                    </button>
+                                </t>
+                            </div>
+                            <h4 class="o_pen_title">In the report</h4>
+                            <t t-foreach="report.blocks" t-as="block" t-key="block_index">
+                                <div class="o_pen_search_item o_pen_block_row" t-att-class="this.state.selected === block_index ? 'o_pen_selected' : ''"
+                                     t-on-click="() => this.select(block_index)">
+                                    <span class="o_pen_search_label" t-out="this.blockLabel(block)"/>
+                                    <span class="flex-grow-1"/>
+                                    <button class="btn btn-sm btn-link p-0" t-on-click.stop="() => this.moveBlock(block_index, -1)"><i class="oi" data-icon="arrow_upward"/></button>
+                                    <button class="btn btn-sm btn-link p-0" t-on-click.stop="() => this.moveBlock(block_index, 1)"><i class="oi" data-icon="arrow_downward"/></button>
+                                    <button class="btn btn-sm btn-link p-0 text-danger" t-on-click.stop="() => this.removeBlock(block_index)"><i class="oi" data-icon="close"/></button>
+                                </div>
+                            </t>
+                        </t>
+                        <t t-elif="this.state.tab === 'block'">
+                            <t t-call="om_pen.ReportBlockEditor"/>
+                        </t>
+                        <t t-else="">
+                            <label class="o_pen_label">Name</label>
+                            <input class="form-control form-control-sm o_pen_report_name" t-att-value="report.name"
+                                   t-on-change="(ev) => this.setSetting('name', ev.target.value)"/>
+                            <t t-if="!report.added_to">
+                                <label class="o_pen_label">Page</label>
+                                <select class="form-select form-select-sm" t-on-change="(ev) => this.setSetting('layout', ev.target.value)">
+                                    <option value="external" t-att-selected="report.layout === 'external'">With the company header and footer</option>
+                                    <option value="basic" t-att-selected="report.layout === 'basic'">Blank page</option>
+                                </select>
+                                <label class="o_pen_label">Paper</label>
+                                <select class="form-select form-select-sm" t-on-change="(ev) => this.setSetting('paperformat_id', Number(ev.target.value) || false)">
+                                    <option value="">The company's default</option>
+                                    <t t-foreach="report.paperformats" t-as="paper" t-key="paper.id">
+                                        <option t-att-value="paper.id" t-att-selected="paper.id === report.paperformat_id" t-out="paper.name"/>
+                                    </t>
+                                </select>
+                                <label class="o_pen_label">File name</label>
+                                <input class="form-control form-control-sm" t-att-value="report.print_report_name"
+                                       placeholder="'Sheet - %s' % object.name"
+                                       t-on-change="(ev) => this.setSetting('print_report_name', ev.target.value)"/>
+                                <div class="form-check form-switch mt-2">
+                                    <input class="form-check-input" type="checkbox" id="pen_rep_menu" t-att-checked="report.print_menu"
+                                           t-on-change="(ev) => this.setSetting('print_menu', ev.target.checked)"/>
+                                    <label class="form-check-label" for="pen_rep_menu">In the Print menu</label>
+                                </div>
+                            </t>
+                            <t t-else="">
+                                <label class="o_pen_label">Where</label>
+                                <select class="form-select form-select-sm" t-on-change="(ev) => this.setSetting('position', ev.target.value)">
+                                    <option value="top" t-att-selected="report.position === 'top'">Above <t t-out="report.added_to"/></option>
+                                    <option value="bottom" t-att-selected="report.position === 'bottom'">Below <t t-out="report.added_to"/></option>
+                                </select>
+                            </t>
+                            <button class="btn btn-sm btn-outline-danger w-100 mt-4" t-on-click="() => this.deleteReport()">Delete this report</button>
+                        </t>
+                    </div>
+                </aside>
+                <main class="o_pen_report_preview">
+                    <div class="o_pen_viewbar">
+                        <span class="text-muted me-2">Preview on</span>
+                        <select class="form-select form-select-sm w-auto o_pen_report_record" t-on-change="(ev) => this.onRecordChange(ev)">
+                            <t t-foreach="this.state.records" t-as="record" t-key="record.id">
+                                <option t-att-value="record.id" t-att-selected="record.id === this.state.resId" t-out="record.name"/>
+                            </t>
+                        </select>
+                        <span class="flex-grow-1"/>
+                        <a t-if="this.pdfUrl" class="btn btn-sm btn-light" t-att-href="this.pdfUrl" target="_blank">
+                            <i class="oi me-1" data-icon="picture_as_pdf"/> PDF
+                        </a>
+                    </div>
+                    <iframe class="o_pen_report_frame" t-ref="this.previewRef" t-att-srcdoc="this.state.preview"
+                            t-on-load="() => this.onPreviewLoad()"/>
+                </main>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="om_pen.ReportBlockEditor">
+        <t t-set="block" t-value="this.block"/>
+        <p t-if="!block" class="o_pen_hint">Click a block in the preview or in the list.</p>
+        <t t-else="">
+            <div class="o_pen_prop_head mb-2"><span class="o_pen_prop_tag" t-out="block.kind"/></div>
+            <t t-if="['title', 'text'].includes(block.kind)">
+                <label class="o_pen_label">Text</label>
+                <textarea class="form-control form-control-sm o_pen_block_text" t-att-rows="block.kind === 'text' ? 5 : 2"
+                          t-on-change="(ev) => this.setBlock('text', ev.target.value)" t-out="block.text"/>
+                <select class="form-select form-select-sm mt-1" t-on-change="(ev) => this.insertPlaceholder(ev)">
+                    <option value="">Insert a field…</option>
+                    <t t-foreach="this.fieldList()" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-out="field.string"/>
+                    </t>
+                </select>
+                <t t-if="block.kind === 'title'">
+                    <label class="o_pen_label">Size</label>
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.setBlock('level', Number(ev.target.value))">
+                        <option value="1" t-att-selected="block.level === 1">Large</option>
+                        <option value="2" t-att-selected="block.level === 2">Medium</option>
+                        <option value="3" t-att-selected="block.level === 3">Small</option>
+                    </select>
+                </t>
+            </t>
+            <t t-if="['field', 'address', 'image', 'signature', 'qrcode', 'barcode'].includes(block.kind)">
+                <label class="o_pen_label">Field</label>
+                <t t-set="types" t-value="block.kind === 'address' ? ['many2one'] : ['image', 'signature'].includes(block.kind) ? ['binary'] : null"/>
+                <select class="form-select form-select-sm o_pen_block_field" t-on-change="(ev) => this.setBlock('field', ev.target.value)">
+                    <option value="">Pick a field…</option>
+                    <t t-foreach="this.fieldList(types)" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-att-selected="block.field === field.name" t-out="field.string"/>
+                    </t>
+                </select>
+                <input class="form-control form-control-sm mt-1" placeholder="or a path, e.g. company_id.logo" t-att-value="block.field"
+                       t-on-change="(ev) => this.setBlock('field', ev.target.value.trim())"/>
+                <t t-if="['field', 'image', 'signature'].includes(block.kind)">
+                    <label class="o_pen_label">Label</label>
+                    <input class="form-control form-control-sm" t-att-value="block.label or ''"
+                           t-on-change="(ev) => this.setBlock('label', ev.target.value)"/>
+                </t>
+            </t>
+            <t t-if="block.kind === 'fields'">
+                <label class="o_pen_label">Fields, two per row</label>
+                <t t-foreach="block.fields" t-as="item" t-key="item_index">
+                    <div class="o_pen_chart_field">
+                        <span t-out="(this.fields[item.field] or {}).string or item.field"/>
+                        <i class="oi ms-auto" data-icon="close" t-on-click="() => this.removeListField(item_index)"/>
+                    </div>
+                </t>
+                <select class="form-select form-select-sm o_pen_block_add_field" t-on-change="(ev) => this.addListField(ev)">
+                    <option value="">Add a field…</option>
+                    <t t-foreach="this.fieldList()" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-out="field.string"/>
+                    </t>
+                </select>
+            </t>
+            <t t-if="block.kind === 'table'">
+                <label class="o_pen_label">Lines</label>
+                <select class="form-select form-select-sm o_pen_block_lines" t-on-change="(ev) => this.onLinesChange(ev)">
+                    <option value="">Pick the lines…</option>
+                    <t t-foreach="this.fieldList(['one2many', 'many2many'])" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-att-selected="block.lines === field.name" t-out="field.string"/>
+                    </t>
+                </select>
+                <t t-if="this.linesModel">
+                    <label class="o_pen_label">Columns</label>
+                    <t t-foreach="block.columns" t-as="column" t-key="column_index">
+                        <div class="o_pen_chart_field">
+                            <span t-out="((this.state.fields[this.linesModel] or {})[column.field] or {}).string or column.field"/>
+                            <label class="ms-auto me-2 small"
+                                   t-if="['integer', 'float', 'monetary'].includes(((this.state.fields[this.linesModel] or {})[column.field] or {}).type)">
+                                <input type="checkbox" class="form-check-input me-1" t-att-checked="column.total"
+                                       t-on-change="(ev) => this.toggleTotal(column, ev.target.checked)"/>total
+                            </label>
+                            <i class="oi" data-icon="close" t-on-click="() => this.removeColumn(column_index)"/>
+                        </div>
+                    </t>
+                    <select class="form-select form-select-sm o_pen_block_add_column" t-on-change="(ev) => this.addColumn(ev)">
+                        <option value="">Add a column…</option>
+                        <t t-foreach="this.fieldList(null, this.linesModel)" t-as="field" t-key="field.name">
+                            <option t-att-value="field.name" t-out="field.string"/>
+                        </t>
+                    </select>
+                    <label class="o_pen_label">Bold lines where</label>
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.setBlock('highlight', ev.target.value)">
+                        <option value="">No highlight</option>
+                        <t t-foreach="this.fieldList(['boolean'], this.linesModel)" t-as="field" t-key="field.name">
+                            <option t-att-value="field.name" t-att-selected="block.highlight === field.name" t-out="field.string"/>
+                        </t>
+                    </select>
+                </t>
+            </t>
+            <t t-if="['spacer', 'image', 'signature'].includes(block.kind)">
+                <label class="o_pen_label">Height (px)</label>
+                <input type="number" class="form-control form-control-sm" t-att-value="block.height"
+                       t-on-change="(ev) => this.setBlock('height', Number(ev.target.value))"/>
+            </t>
+            <t t-if="!['spacer', 'page_break'].includes(block.kind)">
+                <label class="o_pen_label">Alignment</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setBlock('align', ev.target.value)">
+                    <option value="start" t-att-selected="!block.align or block.align === 'start'">Left</option>
+                    <option value="center" t-att-selected="block.align === 'center'">Centre</option>
+                    <option value="end" t-att-selected="block.align === 'end'">Right</option>
+                </select>
+                <label class="o_pen_label">Only when this field is set</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setBlock('condition', ev.target.value)">
+                    <option value="">Always shown</option>
+                    <t t-foreach="this.fieldList()" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-att-selected="block.condition === field.name" t-out="field.string"/>
+                    </t>
+                </select>
+            </t>
+            <button class="btn btn-sm btn-outline-danger w-100 mt-3" t-on-click="() => this.removeBlock(this.state.selected)">Remove this block</button>
+        </t>
+    </t>
+
+</templates>

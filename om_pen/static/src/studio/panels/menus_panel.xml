@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.MenusPanel">
+        <div class="o_pen_panel o_pen_menus_panel">
+            <h2>Menus</h2>
+            <p class="o_pen_panel_lead">Rename, reorder and hide the menus of an app, or add new ones.
+                A menu that comes from a module can be hidden, not deleted.</p>
+            <select class="form-select w-auto mb-3 o_pen_menu_app" t-on-change="(ev) => this.onAppChange(ev)">
+                <t t-foreach="this.state.apps" t-as="app" t-key="app.id">
+                    <option t-att-value="app.id" t-att-selected="app.id == this.state.appId"
+                            t-out="app.name + (app.active ? '' : ' (hidden)')"/>
+                </t>
+            </select>
+            <table class="table table-sm align-middle o_pen_menu_table" t-if="this.state.tree">
+                <tbody>
+                    <t t-foreach="this.rows" t-as="menu" t-key="menu.id">
+                        <tr t-att-class="menu.active ? '' : 'text-muted'" t-att-data-menu="menu.name">
+                            <td t-att-style="'padding-left: ' + (0.5 + menu.depth * 1.5) + 'rem'">
+                                <i class="oi me-1 text-muted" t-att-data-icon="menu.children.length ? 'folder' : 'arrow_right'"/>
+                                <t t-if="this.state.editing === menu.id">
+                                    <input class="form-control form-control-sm d-inline-block w-auto o_pen_menu_rename"
+                                           t-att-value="menu.name" t-on-change="(ev) => this.rename(menu, ev)"
+                                           t-on-blur="(ev) => this.rename(menu, ev)"/>
+                                </t>
+                                <span t-else="" class="o_pen_menu_name" t-on-dblclick="() => this.state.editing = menu.id"
+                                      t-att-class="menu.depth === 0 ? 'fw-bold' : ''" t-out="menu.name"/>
+                                <span t-if="!menu.active" class="badge text-bg-secondary ms-1">hidden</span>
+                            </td>
+                            <td class="text-muted small" t-out="menu.action"/>
+                            <td class="text-end text-nowrap">
+                                <button class="btn btn-sm btn-link" title="Rename" t-on-click="() => this.state.editing = menu.id">
+                                    <i class="oi" data-icon="edit"/>
+                                </button>
+                                <t t-if="menu.depth">
+                                    <button class="btn btn-sm btn-link" title="Move up" t-on-click="() => this.update(menu, {move: 'up'})">
+                                        <i class="oi" data-icon="arrow_upward"/>
+                                    </button>
+                                    <button class="btn btn-sm btn-link" title="Move down" t-on-click="() => this.update(menu, {move: 'down'})">
+                                        <i class="oi" data-icon="arrow_downward"/>
+                                    </button>
+                                </t>
+                                <button class="btn btn-sm btn-link o_pen_menu_toggle" t-att-title="menu.active ? 'Hide' : 'Show'"
+                                        t-on-click="() => this.update(menu, {active: !menu.active})">
+                                    <i class="oi" t-att-data-icon="menu.active ? 'visibility' : 'visibility_off'"/>
+                                </button>
+                                <button t-if="!menu.action" class="btn btn-sm btn-link o_pen_menu_add" title="Add a menu under this one"
+                                        t-on-click="() => this.addMenu(menu)">
+                                    <i class="oi" data-icon="add"/>
+                                </button>
+                                <button t-if="menu.model" class="btn btn-sm btn-link" title="Edit its views in the Studio"
+                                        t-on-click="() => this.editViews(menu)">
+                                    <i class="oi" data-icon="design_services"/>
+                                </button>
+                                <button t-if="!menu.standard and menu.depth" class="btn btn-sm btn-link text-danger o_pen_menu_delete"
+                                        title="Delete" t-on-click="() => this.deleteMenu(menu)">
+                                    <i class="oi" data-icon="delete"/>
+                                </button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+        </div>
+    </t>
+
+    <t t-name="om_pen.NewMenuDialog">
+        <Dialog size="'md'" title.translate="New menu">
+            <div class="o_pen_dialog">
+                <label class="o_pen_label">Name</label>
+                <input class="form-control o_pen_new_menu_name" t-model.proxy="this.state.name"/>
+                <label class="o_pen_label">It opens</label>
+                <select class="form-select" t-model.proxy="this.state.kind">
+                    <option value="model">A new kind of record, with its views</option>
+                    <option value="action">Something that exists</option>
+                    <option value="menu">Nothing: it holds other menus</option>
+                </select>
+                <t t-if="this.state.kind === 'action'">
+                    <select class="form-select mt-2" t-model.proxy="this.state.action_id">
+                        <option value="">Pick an action…</option>
+                        <t t-foreach="this.state.actions" t-as="action" t-key="action.id">
+                            <option t-att-value="action.id" t-out="action.name"/>
+                        </t>
+                    </select>
+                </t>
+                <t t-if="this.state.kind === 'model'">
+                    <div class="o_pen_features o_pen_features_small mt-2">
+                        <t t-foreach="this.FEATURES" t-as="feature" t-key="feature.key">
+                            <label class="o_pen_feature" t-att-class="this.state.features.includes(feature.key) ? 'active' : ''">
+                                <input type="checkbox" class="form-check-input me-2" t-att-checked="this.state.features.includes(feature.key)"
+                                       t-on-change="() => this.toggle(feature.key)"/>
+                                <strong t-out="feature.label"/>
+                            </label>
+                        </t>
+                    </div>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_pen_confirm" t-att-disabled="!this.state.name.trim()" t-on-click="() => this.confirm()">Add</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

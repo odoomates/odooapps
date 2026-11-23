@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.StudioAction">
+        <div class="o_pen_studio" t-att-class="this.store.state.busy ? 'o_pen_busy' : ''">
+            <header class="o_pen_topbar">
+                <div class="o_pen_brand">
+                    <i class="oi" data-icon="edit"/>
+                    <span>Pen Studio</span>
+                </div>
+                <div class="o_pen_model" t-if="this.store.info">
+                    <strong t-out="this.store.info.model_name"/>
+                    <span t-if="this.store.info.action and this.store.info.action.name !== this.store.info.model_name"
+                          class="text-white-50 ms-1" t-out="this.store.info.action.name"/>
+                </div>
+                <nav class="o_pen_sections">
+                    <button t-if="this.store.info" class="o_pen_section" data-section="views"
+                            t-att-class="this.store.state.section === 'views' ? 'active' : ''"
+                            t-on-click="() => this.store.state.section = 'views'">Views</button>
+                    <t t-foreach="this.sections" t-as="section" t-key="section.key">
+                        <button t-if="this.store.info or section.global" class="o_pen_section" t-att-data-section="section.key"
+                                t-att-class="this.store.state.section === section.key ? 'active' : ''"
+                                t-on-click="() => this.store.state.section = section.key" t-out="section.label"/>
+                    </t>
+                </nav>
+                <span class="flex-grow-1"/>
+                <t t-if="this.store.view and this.store.state.section === 'views'">
+                    <button class="btn btn-sm o_pen_undo" title="Undo (Ctrl+Z)" t-att-disabled="!this.store.view.can_undo or this.store.state.busy"
+                            t-on-click="() => this.store.undo()"><i class="oi" data-icon="undo"/></button>
+                    <button class="btn btn-sm o_pen_redo" title="Redo (Ctrl+Y)" t-att-disabled="!this.store.view.can_redo or this.store.state.busy"
+                            t-on-click="() => this.store.redo()"><i class="oi" data-icon="redo"/></button>
+                    <button class="btn btn-sm o_pen_versions" title="Published versions" t-on-click="() => this.openVersions()">
+                        <i class="oi" data-icon="history"/>
+                    </button>
+                    <t t-if="this.store.view.has_draft">
+                        <span class="o_pen_draft_badge"><t t-out="this.store.view.draft_count"/> unpublished</span>
+                        <button class="btn btn-sm btn-light o_pen_discard" t-on-click="() => this.confirmDiscard()">Discard</button>
+                        <button class="btn btn-sm btn-warning o_pen_publish" t-att-disabled="this.store.state.busy"
+                                t-on-click="() => this.store.publish()">Publish</button>
+                    </t>
+                    <span t-else="" class="o_pen_live_badge">Live</span>
+                </t>
+                <button class="btn btn-sm btn-light o_pen_close" t-on-click="() => this.close()">Close</button>
+            </header>
+
+            <t t-if="this.store.state.section === 'views' and this.store.view">
+                <div class="o_pen_viewbar">
+                    <t t-foreach="this.ui.viewTypes" t-as="type" t-key="type">
+                        <button class="o_pen_viewtype" t-att-data-type="type"
+                                t-att-class="this.store.info.view_type === type ? 'active' : ''"
+                                t-on-click="() => this.switchView(type)">
+                            <i class="oi" t-att-data-icon="this.VIEW_TYPE_INFO[type].icon"/>
+                            <span t-out="this.VIEW_TYPE_INFO[type].label"/>
+                        </button>
+                    </t>
+                    <div class="dropdown d-inline-block" t-if="this.missingViewTypes.length">
+                        <button class="o_pen_viewtype o_pen_viewtype_add" data-bs-toggle="dropdown" title="Show another view in this app">
+                            <i class="oi" data-icon="add"/>
+                        </button>
+                        <div class="dropdown-menu">
+                            <t t-foreach="this.missingViewTypes" t-as="type" t-key="type">
+                                <a href="#" class="dropdown-item" t-on-click.prevent="() => this.addViewType(type)">
+                                    <i class="oi me-2" t-att-data-icon="this.VIEW_TYPE_INFO[type].icon"/>
+                                    <t t-out="this.VIEW_TYPE_INFO[type].label"/>
+                                </a>
+                            </t>
+                        </div>
+                    </div>
+                    <span class="flex-grow-1"/>
+                    <span t-if="this.store.view.failed.length" class="badge text-bg-danger me-2"
+                          t-att-title="this.store.view.failed.join('\n')">
+                        <t t-out="this.store.view.failed.length"/> change(s) no longer fit
+                    </span>
+                    <span class="text-muted small me-2" t-out="this.store.info.view_name"/>
+                </div>
+                <div class="o_pen_body">
+                    <StudioSidebar store="this.store" onSpecial="(key) => this.onSpecial(key)"/>
+                    <StudioCanvas store="this.store" firstResId="this.ui.firstResId"
+                                  onDrop="(drag, target, position) => this.onDrop(drag, target, position)"/>
+                </div>
+            </t>
+            <t t-elif="this.sectionComponent">
+                <div class="o_pen_body o_pen_section_body">
+                    <t t-component="this.sectionComponent" store="this.store" studio="this"/>
+                </div>
+            </t>
+
+            <div t-if="this.store.state.drag and this.store.state.dragPos" class="o_pen_drag_chip"
+                 t-att-style="'left: ' + (this.store.state.dragPos.x + 12) + 'px; top: ' + (this.store.state.dragPos.y + 8) + 'px'">
+                <t t-out="this.store.state.drag.label"/>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- ============================== Approvals ============================== -->
+
+    <t t-name="om_pen.ApprovalsPanel">
+        <div class="o_pen_panel o_pen_approvals_panel">
+            <h2>Approvals</h2>
+            <p class="o_pen_panel_lead">A button of <t t-out="this.props.store.info.model_name"/> only runs once a group or
+                a person has approved it, for every record or only some. They see an approve and reject dialog when it is clicked.</p>
+            <table class="table table-sm align-middle" t-if="this.state.rules.length">
+                <thead><tr><th>Rule</th><th>Button</th><th>Approved by</th><th>Only for</th><th/></tr></thead>
+                <tbody>
+                    <t t-foreach="this.state.rules" t-as="rule" t-key="rule.id">
+                        <tr t-att-class="rule.active ? '' : 'text-muted'" t-att-data-rule="rule.name">
+                            <td t-out="rule.name"/>
+                            <td><code t-out="rule.button_string"/></td>
+                            <td t-out="rule.approver"/>
+                            <td><code t-if="rule.domain !== '[]'" t-out="rule.domain"/><span t-else="" class="text-muted">every record</span></td>
+                            <td class="text-end text-nowrap">
+                                <button class="btn btn-sm btn-link" t-on-click="() => this.editRule(rule)"><i class="oi" data-icon="edit"/></button>
+                                <button class="btn btn-sm btn-link" t-on-click="() => this.toggle(rule)"><i class="oi" t-att-data-icon="rule.active ? 'toggle_on' : 'toggle_off'"/></button>
+                                <button class="btn btn-sm btn-link text-danger" t-on-click="() => this.remove(rule)"><i class="oi" data-icon="delete"/></button>
+                            </td>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <p t-else="" class="text-muted">No button needs an approval yet.</p>
+            <button t-if="!this.state.form" class="btn btn-primary o_pen_new_approval" t-on-click="() => this.newRule()">
+                <i class="oi me-1" data-icon="add"/> New approval
+            </button>
+            <div t-if="this.state.form" class="o_pen_rule_form">
+                <div class="row g-2">
+                    <div class="col-md-4">
+                        <label class="o_pen_label">Button</label>
+                        <select class="form-select form-select-sm o_pen_approval_button" t-model.proxy="this.state.form.button">
+                            <option value="">Pick a button…</option>
+                            <t t-foreach="this.state.buttons" t-as="button" t-key="button.type + button.name">
+                                <option t-att-value="button.type + ':' + button.name" t-out="button.string + ' (' + button.name + ')'"/>
+                            </t>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="o_pen_label">Approved by</label>
+                        <div class="d-flex gap-1">
+                            <select class="form-select form-select-sm w-auto" t-model.proxy="this.state.form.approver">
+                                <option value="group">A group</option>
+                                <option value="user">A person</option>
+                            </select>
+                            <select t-if="this.state.form.approver === 'group'" class="form-select form-select-sm o_pen_approval_group" t-model.proxy="this.state.form.group_id">
+                                <option value="">Pick a group…</option>
+                                <t t-foreach="this.state.groups" t-as="group" t-key="group.id">
+                                    <option t-att-value="group.id" t-out="group.name"/>
+                                </t>
+                            </select>
+                            <select t-else="" class="form-select form-select-sm" t-model.proxy="this.state.form.user_id">
+                                <option value="">Pick a person…</option>
+                                <t t-foreach="this.state.users" t-as="user" t-key="user.id">
+                                    <option t-att-value="user.id" t-out="user.name"/>
+                                </t>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="o_pen_label">Only for</label>
+                        <button class="btn btn-sm btn-light w-100 text-start" t-on-click="() => this.pickDomain()">
+                            <t t-if="this.state.form.domain and this.state.form.domain !== '[]'"><code t-out="this.state.form.domain"/></t>
+                            <t t-else="">Every record</t>
+                        </button>
+                    </div>
+                    <div class="col-md-8">
+                        <label class="o_pen_label">Description</label>
+                        <input class="form-control form-control-sm" t-model.proxy="this.state.form.name" placeholder="e.g. Orders over 10,000 need the manager"/>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary btn-sm o_pen_save_approval" t-att-disabled="!this.state.form.button or !(this.state.form.group_id or this.state.form.user_id)"
+                            t-on-click="() => this.save()">Save</button>
+                    <button class="btn btn-light btn-sm ms-1" t-on-click="() => this.state.form = null">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- ============================== Automations ============================== -->
+
+    <t t-name="om_pen.AutomationsPanel">
+        <div class="o_pen_panel o_pen_automations_panel" t-if="this.state.data">
+            <h2>Automations</h2>
+            <t t-if="!this.state.data.installed">
+                <p class="o_pen_panel_lead">Automations run on their own when a record is created, changed, or a date
+                    comes: plan an activity, send an email, set a field. They need Odoo's Automation Rules app.</p>
+                <button class="btn btn-primary o_pen_install_automation" t-att-disabled="this.state.installing"
+                        t-on-click="() => this.install()">
+                    <t t-if="this.state.installing">Installing…</t><t t-else="">Install Automation Rules</t>
+                </button>
+            </t>
+            <t t-else="">
+                <p class="o_pen_panel_lead">What happens on its own to <t t-out="this.props.store.info.model_name"/> records.</p>
+                <div class="d-flex align-items-center gap-2 mb-2" t-if="this.state.data.rules.length">
+                    <span class="text-muted small">Test on</span>
+                    <select class="form-select form-select-sm w-auto o_pen_test_record" t-model.proxy="this.state.testId">
+                        <option value="">Pick a record…</option>
+                        <t t-foreach="this.state.records" t-as="record" t-key="record.id">
+                            <option t-att-value="record.id" t-out="record.name"/>
+                        </t>
+                    </select>
+                </div>
+                <table class="table table-sm align-middle" t-if="this.state.data.rules.length">
+                    <thead><tr><th>Automation</th><th>When</th><th>Does</th><th/></tr></thead>
+                    <tbody>
+                        <t t-foreach="this.state.data.rules" t-as="rule" t-key="rule.id">
+                            <tr t-att-class="rule.active ? '' : 'text-muted'" t-att-data-rule="rule.name">
+                                <td t-out="rule.name"/>
+                                <td t-out="rule.trigger"/>
+                                <td t-out="rule.actions.join(', ')"/>
+                                <td class="text-end text-nowrap">
+                                    <button class="btn btn-sm btn-link o_pen_test_rule" title="Run it now on the test record" t-on-click="() => this.test(rule)"><i class="oi" data-icon="play_arrow"/></button>
+                                    <button class="btn btn-sm btn-link" title="Switch on or off" t-on-click="() => this.update(rule, {active: !rule.active})"><i class="oi" t-att-data-icon="rule.active ? 'toggle_on' : 'toggle_off'"/></button>
+                                    <button class="btn btn-sm btn-link" title="Duplicate" t-on-click="() => this.update(rule, {duplicate: true})"><i class="oi" data-icon="content_copy"/></button>
+                                    <button class="btn btn-sm btn-link" title="All settings" t-on-click="() => this.openFull(rule)"><i class="oi" data-icon="settings"/></button>
+                                    <button class="btn btn-sm btn-link text-danger" title="Delete" t-on-click="() => this.remove(rule)"><i class="oi" data-icon="delete"/></button>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <button t-if="!this.state.form" class="btn btn-primary o_pen_new_automation" t-on-click="() => this.newRule()">
+                    <i class="oi me-1" data-icon="add"/> New automation
+                </button>
+                <div t-if="this.state.form" class="o_pen_rule_form">
+                    <t t-set="form" t-value="this.state.form"/>
+                    <div class="row g-2">
+                        <div class="col-md-4">
+                            <label class="o_pen_label">Name</label>
+                            <input class="form-control form-control-sm o_pen_automation_name" t-model.proxy="this.state.form.name"/>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="o_pen_label">When</label>
+                            <select class="form-select form-select-sm o_pen_automation_trigger" t-model.proxy="this.state.form.trigger">
+                                <t t-foreach="this.state.data.triggers" t-as="trigger" t-key="trigger[0]">
+                                    <option t-att-value="trigger[0]" t-out="trigger[1]"/>
+                                </t>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="o_pen_label">Only for</label>
+                            <button class="btn btn-sm btn-light w-100 text-start" t-on-click="() => this.pickDomain()">
+                                <t t-if="form.domain and form.domain !== '[]'"><code t-out="form.domain"/></t><t t-else="">Every record</t>
+                            </button>
+                        </div>
+                        <div class="col-md-4" t-if="form.trigger === 'on_write'">
+                            <label class="o_pen_label">When this field changes</label>
+                            <select class="form-select form-select-sm" t-model.proxy="this.state.form.field">
+                                <option value="">Any field</option>
+                                <t t-foreach="this.fieldsOf()" t-as="field" t-key="field.name">
+                                    <option t-att-value="field.name" t-out="field.string"/>
+                                </t>
+                            </select>
+                        </div>
+                        <t t-if="['on_time', 'on_time_created', 'on_time_updated'].includes(form.trigger)">
+                            <div class="col-md-4" t-if="form.trigger === 'on_time'">
+                                <label class="o_pen_label">After the date</label>
+                                <select class="form-select form-select-sm" t-model.proxy="this.state.form.date_field">
+                                    <option value="">Pick a date…</option>
+                                    <t t-foreach="this.fieldsOf(['date', 'datetime'])" t-as="field" t-key="field.name">
+                                        <option t-att-value="field.name" t-out="field.string"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="o_pen_label">Delay</label>
+                                <div class="d-flex gap-1">
+                                    <input type="number" class="form-control form-control-sm" t-model.proxy="this.state.form.delay"/>
+                                    <select class="form-select form-select-sm" t-model.proxy="this.state.form.delay_type">
+                                        <option value="minutes">minutes</option>
+                                        <option value="hour">hours</option>
+                                        <option value="day">days</option>
+                                        <option value="month">months</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </t>
+                        <div class="col-md-4">
+                            <label class="o_pen_label">Then</label>
+                            <select class="form-select form-select-sm o_pen_automation_action" t-model.proxy="this.state.form.action">
+                                <option value="activity" t-if="this.state.data.has_mail">Plan an activity</option>
+                                <option value="update">Set a field</option>
+                                <option value="email" t-if="this.state.data.templates.length">Send an email</option>
+                                <option value="note" t-if="this.state.data.has_mail">Log a note</option>
+                                <option value="code" t-if="this.props.store.info.is_admin">Run Python code</option>
+                            </select>
+                        </div>
+                        <t t-if="form.action === 'update'">
+                            <div class="col-md-4">
+                                <label class="o_pen_label">Field</label>
+                                <select class="form-select form-select-sm o_pen_automation_field" t-model.proxy="this.state.form.field_to_set">
+                                    <option value="">Pick a field…</option>
+                                    <t t-foreach="this.fieldsOf(['char', 'boolean', 'selection', 'integer', 'float', 'date', 'text'])" t-as="field" t-key="field.name">
+                                        <option t-att-value="field.name" t-out="field.string"/>
+                                    </t>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="o_pen_label">To</label>
+                                <input class="form-control form-control-sm o_pen_automation_value" t-model.proxy="this.state.form.value"/>
+                            </div>
+                        </t>
+                        <t t-if="form.action === 'activity'">
+                            <div class="col-md-4">
+                                <label class="o_pen_label">Activity</label>
+                                <input class="form-control form-control-sm o_pen_automation_summary" t-model.proxy="this.state.form.summary" placeholder="e.g. Call the customer"/>
+                            </div>
+                            <div class="col-md-2">
+                                <label class="o_pen_label">Due in days</label>
+                                <input type="number" class="form-control form-control-sm" t-model.proxy="this.state.form.days"/>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="o_pen_label">For</label>
+                                <select class="form-select form-select-sm" t-model.proxy="this.state.form.user_id">
+                                    <option value="">The record's responsible</option>
+                                    <t t-foreach="this.state.users" t-as="user" t-key="user.id">
+                                        <option t-att-value="user.id" t-out="user.name"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </t>
+                        <div class="col-md-4" t-if="form.action === 'email'">
+                            <label class="o_pen_label">Email</label>
+                            <select class="form-select form-select-sm" t-model.proxy="this.state.form.template_id">
+                                <option value="">Pick an email…</option>
+                                <t t-foreach="this.state.data.templates" t-as="template" t-key="template.id">
+                                    <option t-att-value="template.id" t-out="template.name"/>
+                                </t>
+                            </select>
+                        </div>
+                        <div class="col-md-8" t-if="form.action === 'note'">
+                            <label class="o_pen_label">Note</label>
+                            <input class="form-control form-control-sm" t-model.proxy="this.state.form.note"/>
+                        </div>
+                        <div class="col-12" t-if="form.action === 'code'">
+                            <label class="o_pen_label">Code (records are in <code>records</code>)</label>
+                            <textarea class="form-control form-control-sm font-monospace" rows="5" t-model.proxy="this.state.form.code"/>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary btn-sm o_pen_save_automation" t-att-disabled="!form.name.trim()" t-on-click="() => this.create()">Create</button>
+                        <button class="btn btn-light btn-sm ms-1" t-on-click="() => this.state.form = null">Cancel</button>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- ============================== Access ============================== -->
+
+    <t t-name="om_pen.AccessRow">
+        <tr t-att-class="access.active ? '' : 'text-muted'" t-att-data-access="access.name">
+            <td>
+                <t t-out="access.group or 'Everybody'"/>
+                <span t-if="access.standard" class="badge text-bg-light ms-1">module</span>
+            </td>
+            <t t-foreach="this.OPERATIONS" t-as="op" t-key="op[0]">
+                <td class="text-center">
+                    <i t-if="access.operations[op[0]]" class="oi text-success" data-icon="check"/>
+                </td>
+            </t>
+            <td><code t-if="access.domain" t-out="access.domain"/></td>
+            <td class="text-end text-nowrap">
+                <button class="btn btn-sm btn-link" title="Switch on or off" t-on-click="() => this.toggle(access)">
+                    <i class="oi" t-att-data-icon="access.active ? 'toggle_on' : 'toggle_off'"/>
+                </button>
+                <button t-if="!access.standard" class="btn btn-sm btn-link text-danger" title="Delete" t-on-click="() => this.remove(access)">
+                    <i class="oi" data-icon="delete"/>
+                </button>
+            </td>
+        </tr>
+    </t>
+
+    <t t-name="om_pen.AccessPanel">
+        <div class="o_pen_panel o_pen_access_panel">
+            <h2>Access rights</h2>
+            <p class="o_pen_panel_lead">Who can read, edit, create and delete <t t-out="this.props.store.info.model_name"/> records.
+                A permission gives a group access, possibly to some records only; a restriction limits everybody.</p>
+            <h4 class="o_pen_title">Permissions</h4>
+            <table class="table table-sm align-middle">
+                <thead><tr><th>Group</th><t t-foreach="this.OPERATIONS" t-as="op" t-key="op[0]"><th class="text-center" t-out="op[1]"/></t><th>Records</th><th/></tr></thead>
+                <tbody>
+                    <t t-foreach="this.permissions" t-as="access" t-key="access.id"><t t-call="om_pen.AccessRow"/></t>
+                </tbody>
+            </table>
+            <h4 class="o_pen_title">Restrictions</h4>
+            <table class="table table-sm align-middle">
+                <thead><tr><th>Applies to</th><t t-foreach="this.OPERATIONS" t-as="op" t-key="op[0]"><th class="text-center" t-out="op[1]"/></t><th>Records</th><th/></tr></thead>
+                <tbody>
+                    <t t-foreach="this.restrictions" t-as="access" t-key="access.id"><t t-call="om_pen.AccessRow"/></t>
+                </tbody>
+            </table>
+            <div t-if="!this.state.form" class="d-flex gap-2">
+                <button class="btn btn-primary btn-sm o_pen_new_permission" t-on-click="() => this.newAccess('permission')">Give a group access</button>
+                <button class="btn btn-light btn-sm o_pen_new_restriction" t-on-click="() => this.newAccess('restriction')">Restrict everybody</button>
+            </div>
+            <div t-if="this.state.form" class="o_pen_rule_form">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-4" t-if="this.state.form.kind === 'permission'">
+                        <label class="o_pen_label">Group</label>
+                        <select class="form-select form-select-sm o_pen_access_group" t-model.proxy="this.state.form.group_id">
+                            <option value="">Pick a group…</option>
+                            <t t-foreach="this.state.groups" t-as="group" t-key="group.id">
+                                <option t-att-value="group.id" t-out="group.name"/>
+                            </t>
+                        </select>
+                        <div class="d-flex gap-1 mt-1">
+                            <input class="form-control form-control-sm" placeholder="or a new group" t-model.proxy="this.state.newGroup"/>
+                            <button class="btn btn-sm btn-light" t-att-disabled="!this.state.newGroup.trim()" t-on-click="() => this.createGroup()">Create</button>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="o_pen_label">Can</label>
+                        <div class="d-flex gap-2">
+                            <t t-foreach="this.OPERATIONS" t-as="op" t-key="op[0]">
+                                <label class="small"><input type="checkbox" class="form-check-input me-1" t-model.proxy="this.state.form.operations[op[0]]"/><t t-out="op[1]"/></label>
+                            </t>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="o_pen_label">Records</label>
+                        <button class="btn btn-sm btn-light w-100 text-start" t-on-click="() => this.pickDomain()">
+                            <t t-if="this.state.form.domain"><code t-out="this.state.form.domain"/></t><t t-else="">All records</t>
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <button class="btn btn-primary btn-sm o_pen_save_access" t-on-click="() => this.save()">Save</button>
+                    <button class="btn btn-light btn-sm ms-1" t-on-click="() => this.state.form = null">Cancel</button>
+                </div>
+            </div>
+            <h4 class="o_pen_title mt-4">Check a user</h4>
+            <div class="d-flex gap-2 align-items-center">
+                <select class="form-select form-select-sm w-auto o_pen_check_user" t-model.proxy="this.state.checkUser">
+                    <option value="">Pick a user…</option>
+                    <t t-foreach="this.state.users" t-as="user" t-key="user.id">
+                        <option t-att-value="user.id" t-out="user.name"/>
+                    </t>
+                </select>
+                <button class="btn btn-sm btn-light o_pen_run_check" t-on-click="() => this.runCheck()">Check</button>
+            </div>
+            <div t-if="this.state.check" class="mt-2 o_pen_check_result">
+                <t t-foreach="this.OPERATIONS" t-as="op" t-key="op[0]">
+                    <span class="badge me-1" t-att-class="this.state.check[op[0]] ? 'text-bg-success' : 'text-bg-secondary'" t-out="op[1]"/>
+                </t>
+                <span class="ms-2">Sees <strong t-out="this.state.check.count"/> of <t t-out="this.state.check.total"/> records.</span>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.SearchItem">
+        <div class="o_pen_search_item" t-att-data-id="item.id"
+             t-att-class="this.store.state.selected === item.id ? 'o_pen_selected' : ''"
+             t-on-click="() => this.store.select(item.id)">
+            <t t-if="this.ui.editing === item.id">
+                <input class="form-control form-control-sm" t-att-value="this.label(item)"
+                       t-on-change="(ev) => this.rename(item, ev)" t-on-blur="(ev) => this.rename(item, ev)"/>
+            </t>
+            <span t-else="" class="o_pen_search_label" t-out="this.label(item)"
+                  t-on-dblclick="() => this.startRename(item)"/>
+            <span class="flex-grow-1"/>
+            <button t-if="item.tag === 'filter' and !this.isGroupBy(item)" class="btn btn-sm btn-link p-0 me-1"
+                    title="Edit the condition" t-on-click.stop="() => this.editDomain(item)">
+                <i class="oi" data-icon="filter_alt"/>
+            </button>
+            <button class="btn btn-sm btn-link p-0" title="Move up" t-on-click.stop="() => this.moveItem(list, item_index, -1)">
+                <i class="oi" data-icon="arrow_upward"/>
+            </button>
+            <button class="btn btn-sm btn-link p-0" title="Move down" t-on-click.stop="() => this.moveItem(list, item_index, 1)">
+                <i class="oi" data-icon="arrow_downward"/>
+            </button>
+            <button class="btn btn-sm btn-link p-0 text-danger o_pen_search_remove" title="Remove" t-on-click.stop="() => this.remove(item)">
+                <i class="oi" data-icon="close"/>
+            </button>
+        </div>
+    </t>
+
+    <t t-name="om_pen.SearchEditor">
+        <div class="o_pen_search_editor">
+            <section>
+                <h4 class="o_pen_title">Searched as you type</h4>
+                <t t-set="list" t-value="this.searchFields"/>
+                <t t-foreach="list" t-as="item" t-key="item.id">
+                    <t t-call="om_pen.SearchItem"/>
+                </t>
+                <select class="form-select form-select-sm mt-2 o_pen_search_add_field" t-on-change="(ev) => this.addField(ev)">
+                    <option value="">Add a field…</option>
+                    <t t-foreach="this.fields" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-out="field.string"/>
+                    </t>
+                </select>
+            </section>
+            <section>
+                <h4 class="o_pen_title">Filters</h4>
+                <t t-set="list" t-value="this.filters"/>
+                <t t-foreach="list" t-as="item" t-key="item.id">
+                    <t t-call="om_pen.SearchItem"/>
+                </t>
+                <div class="d-flex gap-1 mt-2">
+                    <input class="form-control form-control-sm o_pen_filter_name" placeholder="Name of the new filter"
+                           t-model.proxy="this.ui.filterName"/>
+                    <button class="btn btn-sm btn-primary o_pen_add_filter" t-on-click="() => this.addFilter()">Add</button>
+                </div>
+                <button class="btn btn-sm btn-link px-0" t-on-click="() => this.addSeparator()">Add a separator</button>
+            </section>
+            <section>
+                <h4 class="o_pen_title">Group by</h4>
+                <t t-set="list" t-value="this.groupBys"/>
+                <t t-foreach="list" t-as="item" t-key="item.id">
+                    <t t-call="om_pen.SearchItem"/>
+                </t>
+                <select class="form-select form-select-sm mt-2 o_pen_add_groupby" t-on-change="(ev) => this.addGroupBy(ev)">
+                    <option value="">Add a group by…</option>
+                    <t t-foreach="this.groupableFields" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-out="field.string"/>
+                    </t>
+                </select>
+            </section>
+            <p class="text-muted small mt-3">Double-click a name to rename it.</p>
+        </div>
+    </t>
+
+</templates>

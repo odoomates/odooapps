@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.AppsPanel">
+        <div class="o_pen_panel o_pen_apps_panel">
+            <h2>Build without code</h2>
+            <p class="o_pen_panel_lead">A new app with its own menu, or one more kind of record in an existing app.
+                Pick what it needs: everything can be changed afterwards in the Studio.</p>
+            <div class="btn-group mb-3">
+                <button class="btn" t-att-class="this.state.mode === 'app' ? 'btn-primary' : 'btn-light'"
+                        t-on-click="() => this.state.mode = 'app'">New app</button>
+                <button class="btn o_pen_mode_model" t-att-class="this.state.mode === 'model' ? 'btn-primary' : 'btn-light'"
+                        t-on-click="() => this.state.mode = 'model'">New model in an app</button>
+            </div>
+            <div class="row">
+                <div class="col-md-5">
+                    <t t-if="this.state.mode === 'app'">
+                        <label class="o_pen_label">App name</label>
+                        <input class="form-control o_pen_app_name" t-model.proxy="this.state.app_name" placeholder="e.g. Fleet Maintenance"/>
+                        <label class="o_pen_label">Icon colour</label>
+                        <div class="d-flex gap-1 align-items-center">
+                            <t t-foreach="this.COLORS" t-as="color" t-key="color">
+                                <button class="o_pen_swatch" t-att-class="this.state.color === color ? 'active' : ''"
+                                        t-att-style="'background:' + color" t-on-click="() => this.state.color = color"/>
+                            </t>
+                            <div class="o_pen_app_icon ms-3" t-att-style="'background:' + this.state.color">
+                                <t t-out="(this.state.app_name.trim()[0] || 'A').toUpperCase()"/>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <label class="o_pen_label">In the app</label>
+                        <select class="form-select o_pen_app_select" t-model.proxy="this.state.appId">
+                            <option value="">Pick an app…</option>
+                            <t t-foreach="this.state.apps" t-as="app" t-key="app.id">
+                                <option t-att-value="app.id" t-att-selected="app.id == this.state.appId" t-out="app.name"/>
+                            </t>
+                        </select>
+                    </t>
+                    <label class="o_pen_label">What one record is called</label>
+                    <input class="form-control o_pen_model_label" t-model.proxy="this.state.model_label"
+                           t-att-placeholder="this.state.mode === 'app' ? 'e.g. Machine (defaults to the app name)' : 'e.g. Spare Part'"/>
+                    <button class="btn btn-primary mt-4 o_pen_create_app" t-att-disabled="!this.canCreate" t-on-click="() => this.create()">
+                        <t t-if="this.state.saving">Creating…</t>
+                        <t t-elif="this.state.mode === 'app'">Create the app</t>
+                        <t t-else="">Create the model</t>
+                    </button>
+                </div>
+                <div class="col-md-7">
+                    <label class="o_pen_label">Features</label>
+                    <div class="o_pen_features">
+                        <t t-foreach="this.FEATURES" t-as="feature" t-key="feature.key">
+                            <label class="o_pen_feature" t-att-class="this.state.features.includes(feature.key) ? 'active' : ''"
+                                   t-att-data-feature="feature.key">
+                                <input type="checkbox" class="form-check-input me-2" t-att-checked="this.state.features.includes(feature.key)"
+                                       t-on-change="() => this.toggle(feature.key)"/>
+                                <span>
+                                    <strong t-out="feature.label"/>
+                                    <small class="d-block text-muted" t-out="feature.help"/>
+                                </span>
+                            </label>
+                        </t>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+</templates>

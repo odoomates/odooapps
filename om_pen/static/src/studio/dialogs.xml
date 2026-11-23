@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.NewFieldDialog">
+        <Dialog size="'md'" title="this.title">
+            <div class="o_pen_dialog o_pen_new_field">
+                <label class="o_pen_label">Label</label>
+                <input class="form-control o_pen_new_label" t-model.proxy="this.state.label" placeholder="e.g. Delivery Window"/>
+                <t t-if="['many2one', 'many2many', 'one2many'].includes(this.props.kind)">
+                    <label class="o_pen_label" t-if="this.props.kind === 'one2many'">Lines of</label>
+                    <label class="o_pen_label" t-else="">Links to</label>
+                    <select class="form-select o_pen_new_relation" t-on-change="(ev) => this.onRelationChange(ev)">
+                        <option value="">Pick a model…</option>
+                        <t t-foreach="this.data.models" t-as="model" t-key="model.model">
+                            <option t-att-value="model.model" t-out="model.name + ' (' + model.model + ')'"/>
+                        </t>
+                    </select>
+                    <t t-if="this.props.kind === 'one2many' and this.state.relation">
+                        <label class="o_pen_label">Linked back by</label>
+                        <select class="form-select" t-model.proxy="this.state.relation_field">
+                            <option value="">A new link (created for you)</option>
+                            <t t-foreach="this.data.inverses" t-as="inverse" t-key="inverse.name">
+                                <option t-att-value="inverse.name" t-out="inverse.string"/>
+                            </t>
+                        </select>
+                    </t>
+                </t>
+                <t t-if="this.props.kind === 'selection'">
+                    <label class="o_pen_label">Options, one per line</label>
+                    <textarea class="form-control o_pen_new_selection" rows="4" t-model.proxy="this.state.selection"/>
+                </t>
+                <t t-if="this.props.kind === 'related'">
+                    <label class="o_pen_label">Show the field</label>
+                    <input class="form-control o_pen_new_related" t-model.proxy="this.state.related"
+                           placeholder="partner_id.country_id"/>
+                    <small class="text-muted">Start with one of these links:
+                        <t t-foreach="this.data.steps.slice(0, 12)" t-as="step" t-key="step.name">
+                            <a href="#" class="me-1" t-on-click.prevent="() => this.state.related = step.name + '.'" t-out="step.string"/>
+                        </t>
+                    </small>
+                </t>
+                <t t-if="this.props.kind === 'total'">
+                    <label class="o_pen_label">Lines</label>
+                    <select class="form-select" t-on-change="(ev) => this.onLinesChange(ev)">
+                        <option value="">Pick the lines…</option>
+                        <t t-foreach="this.data.lineFields" t-as="field" t-key="field.name">
+                            <option t-att-value="field.name" t-out="field.string"/>
+                        </t>
+                    </select>
+                    <label class="o_pen_label">Show</label>
+                    <select class="form-select" t-model.proxy="this.state.operation">
+                        <option value="count">How many lines</option>
+                        <option value="sum">The total of a number of the lines</option>
+                    </select>
+                    <t t-if="this.state.operation === 'sum'">
+                        <label class="o_pen_label">Number to add up</label>
+                        <select class="form-select" t-model.proxy="this.state.measure">
+                            <option value="">Pick a number…</option>
+                            <t t-foreach="this.data.measures" t-as="measure" t-key="measure.name">
+                                <option t-att-value="measure.name" t-out="measure.string"/>
+                            </t>
+                        </select>
+                    </t>
+                </t>
+                <details class="mt-3">
+                    <summary class="text-muted small">Technical name</summary>
+                    <input class="form-control form-control-sm mt-1" t-model.proxy="this.state.name" placeholder="x_..."/>
+                </details>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_pen_confirm" t-att-disabled="!this.state.label.trim() or this.state.saving"
+                        t-on-click="() => this.confirm()">Create</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_pen.FieldSettingsDialog">
+        <Dialog size="'md'" title.translate="Field settings">
+            <div class="o_pen_dialog" t-if="this.state.info">
+                <p class="text-muted small"><code t-out="this.state.info.name"/> · <t t-out="this.state.info.type"/></p>
+                <t t-if="this.state.info.custom">
+                    <label class="o_pen_label">Label everywhere</label>
+                    <input class="form-control" t-model.proxy="this.state.label"/>
+                    <label class="o_pen_label">Help</label>
+                    <input class="form-control" t-model.proxy="this.state.help"/>
+                    <div class="form-check mt-2" t-if="!['one2many', 'many2many', 'boolean'].includes(this.state.info.type) and !this.state.info.compute">
+                        <input class="form-check-input" type="checkbox" id="pen_fs_required" t-model.proxy="this.state.required"/>
+                        <label class="form-check-label" for="pen_fs_required">Always required</label>
+                    </div>
+                    <t t-if="this.state.info.type === 'selection'">
+                        <label class="o_pen_label">Options</label>
+                        <t t-foreach="this.state.options" t-as="option" t-key="option_index">
+                            <div class="d-flex gap-1 mb-1">
+                                <input class="form-control form-control-sm" t-model.proxy="option.name"/>
+                                <button class="btn btn-sm btn-light" t-on-click="() => this.removeOption(option_index)">
+                                    <i class="oi" data-icon="close"/>
+                                </button>
+                            </div>
+                        </t>
+                        <button class="btn btn-sm btn-light" t-on-click="() => this.addOption()">Add an option</button>
+                    </t>
+                </t>
+                <t t-else="">
+                    <p class="text-muted">This field comes from a module: only its default value can be set here.
+                        Its label and visibility on this view are changed from the panel.</p>
+                </t>
+                <t t-if="this.simpleDefault">
+                    <label class="o_pen_label">Default value for new records</label>
+                    <t t-if="this.state.info.type === 'boolean'">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="pen_fs_default" t-model.proxy="this.state.default"/>
+                            <label class="form-check-label" for="pen_fs_default">Ticked</label>
+                        </div>
+                    </t>
+                    <t t-elif="this.state.info.type === 'selection'">
+                        <select class="form-select" t-model.proxy="this.state.default">
+                            <option value="">None</option>
+                            <t t-foreach="this.state.options" t-as="option" t-key="option_index">
+                                <option t-att-value="option.value" t-out="option.name"/>
+                            </t>
+                        </select>
+                    </t>
+                    <t t-else="">
+                        <input class="form-control o_pen_default"
+                               t-att-type="['integer', 'float', 'monetary'].includes(this.state.info.type) ? 'number' : this.state.info.type === 'date' ? 'date' : 'text'"
+                               t-model.proxy="this.state.default"/>
+                    </t>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_pen_confirm" t-on-click="() => this.save()">Save</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_pen.FieldDeleteDialog">
+        <Dialog size="'md'" title.translate="Delete a field">
+            <div class="o_pen_dialog" t-if="this.state.impact">
+                <p>Deleting <strong t-out="this.state.impact.label"/> removes it from every view and drops its data.</p>
+                <p t-if="this.state.impact.records" class="text-danger">
+                    <t t-out="this.state.impact.records"/> record(s) have a value in it.
+                </p>
+                <t t-if="this.state.impact.usage.length">
+                    <p class="mb-1">It is used by:</p>
+                    <ul class="o_pen_impact">
+                        <t t-foreach="this.state.impact.usage" t-as="use" t-key="use_index">
+                            <li><span class="text-muted" t-out="use.kind"/>: <t t-out="use.name"/></li>
+                        </t>
+                    </ul>
+                </t>
+                <p t-else="" class="text-muted">Nothing else uses it.</p>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-danger o_pen_confirm" t-att-disabled="this.state.deleting" t-on-click="() => this.confirm()">Delete the field</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_pen.SmartButtonDialog">
+        <Dialog size="'md'" title.translate="New smart button">
+            <div class="o_pen_dialog">
+                <label class="o_pen_label">Count and open</label>
+                <select class="form-select o_pen_smart_target" t-on-change="(ev) => this.onChoice(ev)">
+                    <option value="">Pick the linked records…</option>
+                    <t t-foreach="this.state.targets" t-as="target" t-key="target_index">
+                        <option t-att-value="target_index" t-out="target.label"/>
+                    </t>
+                </select>
+                <label class="o_pen_label">Label</label>
+                <input class="form-control" t-model.proxy="this.state.label"/>
+                <label class="o_pen_label">Icon</label>
+                <div class="o_pen_icons">
+                    <t t-foreach="this.icons" t-as="icon" t-key="icon">
+                        <button class="btn btn-light" t-att-class="this.state.icon === icon ? 'active' : ''"
+                                t-on-click="() => this.state.icon = icon">
+                            <i class="oi" t-att-data-icon="icon"/>
+                        </button>
+                    </t>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_pen_confirm" t-att-disabled="this.state.choice === ''" t-on-click="() => this.confirm()">Add</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_pen.HeaderButtonDialog">
+        <Dialog size="'md'" title.translate="New button">
+            <div class="o_pen_dialog">
+                <label class="o_pen_label">Label</label>
+                <input class="form-control o_pen_btn_label" t-model.proxy="this.state.string"/>
+                <label class="o_pen_label">When clicked</label>
+                <select class="form-select" t-model.proxy="this.state.mode">
+                    <option value="field">Set a field</option>
+                    <option value="action" t-if="this.state.actions.length">Run an action</option>
+                </select>
+                <t t-if="this.state.mode === 'field'">
+                    <label class="o_pen_label">Field</label>
+                    <select class="form-select o_pen_btn_field" t-model.proxy="this.state.field">
+                        <option value="">Pick a field…</option>
+                        <t t-foreach="this.settableFields" t-as="field" t-key="field.name">
+                            <option t-att-value="field.name" t-out="field.string"/>
+                        </t>
+                    </select>
+                    <label class="o_pen_label">To</label>
+                    <t t-if="this.selectedField and this.selectedField.selection">
+                        <select class="form-select" t-model.proxy="this.state.value">
+                            <t t-foreach="this.selectedField.selection" t-as="option" t-key="option[0]">
+                                <option t-att-value="option[0]" t-out="option[1]"/>
+                            </t>
+                        </select>
+                    </t>
+                    <input t-else="" class="form-control o_pen_btn_value" t-model.proxy="this.state.value"
+                           t-att-placeholder="this.selectedField and this.selectedField.type === 'boolean' ? 'True or False' : ''"/>
+                </t>
+                <t t-else="">
+                    <select class="form-select" t-model.proxy="this.state.action_id">
+                        <option value="">Pick an action…</option>
+                        <t t-foreach="this.state.actions" t-as="action" t-key="action.id">
+                            <option t-att-value="action.id" t-out="action.name"/>
+                        </t>
+                    </select>
+                </t>
+                <label class="o_pen_label">Ask for confirmation</label>
+                <input class="form-control" t-model.proxy="this.state.confirm" placeholder="Leave empty to run at once"/>
+                <div class="form-check mt-2">
+                    <input class="form-check-input" type="checkbox" id="pen_hb_primary" t-model.proxy="this.state.primary"/>
+                    <label class="form-check-label" for="pen_hb_primary">Highlighted</label>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_pen_confirm" t-att-disabled="!this.state.string.trim()" t-on-click="() => this.confirm()">Add</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_pen.RibbonDialog">
+        <Dialog size="'md'" title.translate="New ribbon">
+            <div class="o_pen_dialog">
+                <label class="o_pen_label">Text</label>
+                <input class="form-control" t-model.proxy="this.state.string"/>
+                <label class="o_pen_label">Colour</label>
+                <select class="form-select" t-model.proxy="this.state.bg_color">
+                    <t t-foreach="this.colors" t-as="color" t-key="color[0]">
+                        <option t-att-value="color[0]" t-out="color[1]"/>
+                    </t>
+                </select>
+                <label class="o_pen_label">Hide it when</label>
+                <input class="form-control" t-model.proxy="this.state.invisible" placeholder="e.g. active"/>
+                <small class="text-muted">A condition on the record. Leave it empty to always show the ribbon; it can be edited later from the panel.</small>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_pen_confirm" t-on-click="() => this.confirm()">Add</button>
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+    <t t-name="om_pen.VersionsDialog">
+        <Dialog size="'lg'" title.translate="Published versions">
+            <div class="o_pen_dialog">
+                <p t-if="!this.state.versions.length" class="text-muted">This view has not been published from the Studio yet.</p>
+                <t t-foreach="this.state.versions" t-as="version" t-key="version.id">
+                    <div class="o_pen_version">
+                        <div class="d-flex align-items-center gap-2">
+                            <strong t-out="version.date"/>
+                            <span class="text-muted" t-out="version.user"/>
+                            <span class="badge text-bg-light"><t t-out="version.changes"/> change(s)</span>
+                            <span class="flex-grow-1"/>
+                            <button class="btn btn-sm btn-light" t-on-click="() => this.showDiff(version)">Compare</button>
+                            <button class="btn btn-sm btn-light o_pen_restore" t-on-click="() => this.restore(version)">Restore</button>
+                        </div>
+                        <pre t-if="this.state.open === version.id and this.state.diff" class="o_pen_diff"><t t-foreach="this.state.diff" t-as="line" t-key="line_index"><span t-att-class="this.lineClass(line)" t-out="line + '\n'"/></t></pre>
+                    </div>
+                </t>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-secondary" t-on-click="() => this.props.close()">Close</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

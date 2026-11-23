@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.StudioCanvas">
+        <div class="o_pen_canvas" t-ref="this.rootRef"
+             t-att-class="this.store.state.drag ? 'o_pen_dragging' : ''">
+            <t t-if="this.isSearch">
+                <SearchEditor store="this.store"/>
+            </t>
+            <t t-elif="this.store.view">
+                <div class="o_pen_canvas_frame" t-att-class="'o_pen_canvas_' + this.store.view.view_type">
+                    <View t-key="this.store.state.canvasKey" t-props="this.viewProps"/>
+                </div>
+            </t>
+            <div t-att-class="this.indicatorClass" t-att-style="this.indicatorStyle"/>
+        </div>
+    </t>
+
+</templates>
