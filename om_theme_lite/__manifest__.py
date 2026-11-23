@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Mates Theme Lite',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0.2',
     'category': 'Productivity',
     'summary': 'Backend Theme Odoo 18, Odoo 18 UI Theme, Backend UI, App Launcher, Odoo 18 Theme',
     'description': """
