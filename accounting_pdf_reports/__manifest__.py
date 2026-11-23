@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 20 Accounting Financial Reports',
-    'version': '2.1.2',
+    'version': '2.1.3',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 20, Odoo 20 Financial Reports, Accounting Financial Reports, '
                    'Financial Statements, Accounting PDF Reports, Annual Report, Balance Sheet, Profit and Loss, '
