@@ -1,6 +1,6 @@
 {
     'name': 'Automation Studio',
-    'version': '0.2.2',
+    'version': '0.2.3',
     'author': 'Odoo Mates',
     'category': 'Productivity',
     'description': 'Draw an automation as a flowchart and let it run on your records: conditions, waits, '
