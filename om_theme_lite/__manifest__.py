@@ -17,7 +17,7 @@ list column widths that are remembered.
     'sequence': 10,
     'author': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'depends': ['web', 'mail', 'base_setup'],
+    'depends': ['web', 'mail', 'base_setup', 'om_chatter_position'],
     'data': [
         'data/ir_actions_client.xml',
         'views/res_users_views.xml',

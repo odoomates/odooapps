@@ -19,7 +19,6 @@ class IrHttp(models.AbstractModel):
             info['om_color_scheme_pref'] = user.om_color_scheme or 'light'
             info['om_app_order'] = user.om_app_order or []
             info['om_sidebar_type'] = user.om_sidebar_type or 'none'
-            info['om_chatter_position'] = user.om_chatter_position or 'auto'
             info['om_dialog_size'] = user.om_dialog_size or 'normal'
             company = self.env.company
             if company.om_home_background:
