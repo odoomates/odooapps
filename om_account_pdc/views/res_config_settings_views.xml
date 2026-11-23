@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_pdc" model="ir.ui.view">
+        <field name="name">res.config.settings.form.pdc</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='analytic']/preceding-sibling::h2[1]" position="before">
+                <h2>Post-dated Cheques</h2>
+                <div class="row mt16 o_settings_container" id="om_pdc">
+                    <div class="col-12 col-lg-6 o_setting_box" id="om_pdc_accounts">
+                        <div class="o_setting_left_pane"/>
+                        <div class="o_setting_right_pane">
+                            <span class="o_form_label">Post-dated Cheques</span>
+                            <div class="text-muted">
+                                The accounts holding the cheques until they are cleared, and the journal of their registration.
+                            </div>
+                            <div class="content-group mt16">
+                                <div class="row">
+                                    <label for="pdc_receivable_account_id" class="col-lg-5 o_light_label" string="PDC Receivable"/>
+                                    <field name="pdc_receivable_account_id"/>
+                                </div>
+                                <div class="row">
+                                    <label for="pdc_payable_account_id" class="col-lg-5 o_light_label" string="PDC Payable"/>
+                                    <field name="pdc_payable_account_id"/>
+                                </div>
+                                <div class="row">
+                                    <label for="pdc_journal_id" class="col-lg-5 o_light_label" string="Journal"/>
+                                    <field name="pdc_journal_id"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
