@@ -2,7 +2,6 @@
 
 import { patch } from "@web/core/utils/patch";
 import { browser } from "@web/core/browser/browser";
-import { session } from "@web/session";
 import { Chatter } from "@mail/components/chatter/chatter";
 import { ChatterTopbar } from "@mail/components/chatter_topbar/chatter_topbar";
 
@@ -37,16 +36,6 @@ function applyHideTracking(hide) {
 
 applyWidth(storedWidth());
 applyHideTracking(browser.localStorage.getItem(HIDE_TRACKING_KEY) === "1");
-
-/**
- * Beside the form or below it.
- *
- * Automatic puts the chatter beside the sheet once the screen is extra wide
- * (theme.scss), and "Below the form" keeps it underneath whatever the screen.
- */
-const chatterBelow = () => session.om_chatter_position === "bottom";
-
-document.documentElement.classList.toggle("o_om_chatter_below", chatterBelow());
 
 patch(ChatterTopbar.prototype, "om_theme_lite.chatter_tracking", {
     setup() {
