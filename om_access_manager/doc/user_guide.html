@@ -194,6 +194,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <div class="toc-line"><span class="n">2.2</span><span>Who carries a profile</span></div>
     <div class="toc-line"><span class="n">2.3</span><span>Additive or Override</span></div>
     <div class="toc-line"><span class="n">2.4</span><span>The Options tab</span></div>
+    <div class="toc-line"><span class="n">2.5</span><span>The Setup Wizard, step by step (Odoo 19)</span></div>
 
     <div class="toc-part"><span class="n">3</span><span class="t">Menus and apps</span></div>
     <div class="toc-line"><span class="n">3.1</span><span>The menu tree</span></div>
@@ -365,7 +366,7 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     <table>
         <thead><tr><th style="width:28%">Button</th><th>What it does</th></tr></thead>
         <tbody>
-            <tr><td><strong>Setup Wizard</strong> <span class="sub">Odoo 19</span></td><td>Asks, one step at a time: who is this profile for, which apps do they use, then for each app which menus they see, what they may do and which records. A good start for a first profile.</td></tr>
+            <tr><td><strong>Setup Wizard</strong> <span class="sub">Odoo 19</span></td><td>Asks, one step at a time: who is this profile for, which apps do they use, then for each app which menus they see, which records, reports, buttons and fields. The best start for a first profile: see 2.5.</td></tr>
             <tr><td><strong>New from Template</strong></td><td>Creates a ready-made profile: Salesperson, Sales Read Only, CRM Salesperson, Accountant without Configuration, Auditor, Warehouse Operator, Purchase User, Cashier, Manufacturing Operator, Project Team Member, Timesheet User, Expenses User, HR Officer without Salaries, and for any app a user without configuration or a read-only user. Only the templates of your installed apps are offered.</td></tr>
             <tr><td><strong>New</strong></td><td>An empty profile, set up by hand.</td></tr>
         </tbody>
@@ -417,6 +418,62 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
             <tr><td>Notes</td><td>Your own notes.</td></tr>
         </tbody>
     </table></div>
+
+    <div class="keep"><h2><span class="n">2.5</span> The Setup Wizard, step by step (Odoo 19)</h2>
+    <p>The Setup Wizard builds a profile by asking questions, one screen at a time. Open it with
+        <strong>Setup Wizard</strong> above the profiles list for a new profile, or on a profile's form
+        to go through an existing one. The steps are numbered at the top: click one to go back to it.</p></div>
+    <div class="note"><p class="label">Nothing applies until Finish</p>
+        <p>A new profile stays off while you set it up: it applies to its users only once you click
+            <strong>Finish</strong>. On a profile already in use, each answer applies at once, as on the
+            menu tree.</p></div>
+
+    <h3>Step 1 &ndash; Who</h3>
+    <p>Name the job, for example <em>Salesperson</em> or <em>Warehouse Team</em>, and add the users who do
+        it. Users can also be added later. The name is used to tick the apps of the job for you in the
+        next step.</p>
+    <figure><img src="img/wizard-who.jpg"/><figcaption>Step 1: the profile name and its users.</figcaption></figure>
+
+    <h3>Step 2 &ndash; Apps</h3>
+    <p>Tick the apps these users work in; every other app is hidden from them. From the name
+        <em>Salesperson</em>, Sales is already ticked. <strong>Tick all</strong> and
+        <strong>Untick all</strong> help with long lists. Each app ticked becomes a step of its own.</p>
+    <figure><img src="img/wizard-apps.jpg"/><figcaption>Step 2: the apps they use. The others are hidden from them.</figcaption></figure>
+
+    <h3>Step 3 &ndash; One step per app</h3>
+    <p>For each app ticked, up to five pages, numbered under the app's name. <strong>Next</strong> goes
+        through them in order.</p>
+    <table>
+        <thead><tr><th style="width:18%">Page</th><th>What you decide</th></tr></thead>
+        <tbody>
+            <tr><td><strong>1. Menus</strong></td><td>Which menus of the app they see, laid out as in the app's top bar. Untick a menu to hide it with the menus under it; untick <em>Configuration</em> for users who only do the daily work.</td></tr>
+            <tr><td><strong>2. Records</strong></td><td><em>Read only in this app</em>, or which records they see: all of them, or <strong>Limit records of&hellip;</strong> a data, with the one-click choices of 5.1 (their own, their team's, this month&hellip;).</td></tr>
+            <tr><td><strong>3. Reports</strong></td><td>The Print and Actions menus of each screen, as Odoo shows them: untick what they may not use. <em>Allow all</em> and <em>Hide all</em> per menu.</td></tr>
+            <tr><td><strong>4. Buttons</strong></td><td>The buttons of each screen, where Odoo shows them. Click a button to hide it; on a hidden button, the lock blocks it too, so the server refuses it.</td></tr>
+            <tr><td><strong>5. Fields</strong></td><td>The form of each screen: click a field or its label once for <em>Read only</em>, twice for <em>Hidden</em>, three times for <em>Normal again</em>. Click a tab name to hide the tab.</td></tr>
+        </tbody>
+    </table>
+    <figure><img src="img/wizard-app-menus.jpg"/><figcaption>Sales, page 1: the menus of the app, as in its top bar.</figcaption></figure>
+    <figure><img src="img/wizard-app-records.jpg"/><figcaption>Sales, page 2: read only in this app, or limit the records they see.</figcaption></figure>
+    <figure><img src="img/wizard-app-reports.jpg"/><figcaption>Sales, page 3: the Print and Actions menus of sales orders.</figcaption></figure>
+    <figure><img src="img/wizard-app-buttons.jpg"/><figcaption>Sales, page 4: click a button to hide it; the lock blocks it as well.</figcaption></figure>
+    <figure><img src="img/wizard-app-fields.jpg"/><figcaption>Sales, page 5: click a field for read only, again for hidden, a third time for normal.</figcaption></figure>
+
+    <h3>Step 4 &ndash; Everywhere</h3>
+    <p>What these users may not do in any app: Block Export, Block Import, Block Archiving, Block
+        Duplication, Hide Costs and Margins, Hide Sales Prices, Block Developer Mode, Read Only
+        Everywhere. All are off by default.</p>
+    <figure><img src="img/wizard-everywhere.jpg"/><figcaption>Step 4: switches that apply in every app.</figcaption></figure>
+
+    <h3>Step 5 &ndash; Review</h3>
+    <p>A summary: the users, each app with its access and its record limit, and the apps hidden.
+        Click <strong>Preview as User</strong> to see Odoo as one of them, then <strong>Finish</strong>.
+        Everything set here can be changed later, with the Setup Wizard again or on the menu tree
+        (part&nbsp;3).</p>
+    <figure><img src="img/wizard-review.jpg"/><figcaption>Step 5: the summary, Preview as User, and Finish.</figcaption></figure>
+    <div class="note"><p class="label">On Odoo 15 to 18 and 20</p>
+        <p>The Setup Wizard is not there yet. Start from <strong>New from Template</strong> or an empty
+            profile and use the menu tree: parts 3 to 8 set the same things.</p></div>
 </div>
 
 <!-- ============================================================ PART 3 -->
@@ -836,6 +893,9 @@ figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
     </ul>
     <figure><img src="img/pos-profile-employees.jpg"/><figcaption>The Shop Staff profile: Abigail and Anita get its rules at the till.</figcaption></figure>
     <p>Switching cashier switches the rules, on the screen and on the server.</p>
+    <div class="note"><p class="label">More on the Point of Sale</p>
+        <p>A separate guide for the POS modules, with every rule explained and what the cashier sees,
+            ships in <code>om_access_manager_pos</code>, at <code>static/description/user_guide.pdf</code>.</p></div>
 
     <div class="keep"><h2><span class="n">11.6</span> How the rules combine</h2>
     <ul class="plain">

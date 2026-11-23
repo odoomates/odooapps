@@ -10,7 +10,7 @@ User Access Manager
    tests; access rules touch every screen of Odoo, so build and check your
    profiles on a copy of your database first, with *Preview as User*.
 
-A 31-page user guide ships with the module, at
+A 37-page user guide ships with the module, at
 ``static/description/user_guide.pdf``. It walks through users and groups, Read,
 Create, Edit and Delete rights, records, fields, buttons and menus, sign-in
 rules, ready-made profiles for common roles, and the Point of Sale add-ons, for
