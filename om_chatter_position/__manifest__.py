@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Chatter Position',
-    'version': '16.0.1.0.0',
+    'version': '16.0.1.0.1',
     'category': 'Productivity',
     'summary': 'Chatter beside or below the form, Odoo 16 Chatter Position, Chatter Side, Chatter Bottom',
     'description': """
