@@ -1,0 +1,25 @@
+name: version label
+
+on:
+  pull_request_target:
+    types: [opened, reopened, edited]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  label:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Label the PR with its version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BASE: ${{ github.event.pull_request.base.ref }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          case "$BASE" in
+            15.0|16.0|17.0|18.0|19.0|20.0)
+              gh api "repos/$GITHUB_REPOSITORY/issues/$PR/labels" -f "labels[]=$BASE"
+              ;;
+          esac
