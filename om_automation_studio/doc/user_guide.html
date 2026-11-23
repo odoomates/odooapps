@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<!--
+  The user guide of Automation Studio.
+
+  This file is the source. Edit it, then rebuild the PDF that ships in the app:
+
+      python3 doc/build_user_guide.py
+
+  The build needs wkhtmltopdf and pypdf, and reads the Lato fonts from the Odoo
+  source tree. Paths are resolved by the build script, not hard-coded here.
+  The pictures in img/ were taken on Odoo 19 with demo data; store-*.jpg come from static/description.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Automation Studio - User Guide</title>
+<style>
+/* wkhtmltopdf 0.12.x runs an old WebKit: no CSS variables, no flexbox, no `gap`.
+   Everything below is written for it, on purpose. */
+@font-face { font-family: 'GuideSans'; font-weight: 400; src: url('LATO_REGULAR'); }
+@font-face { font-family: 'GuideSans'; font-weight: 700; src: url('LATO_BOLD'); }
+@font-face { font-family: 'GuideSans'; font-weight: 900; src: url('LATO_BLACK'); }
+
+html, body {
+    margin: 0; padding: 0;
+    font-family: 'GuideSans', 'Lato', sans-serif;
+    font-size: 11pt; line-height: 1.66; color: #333340;
+    background: #ffffff;
+}
+figure, figcaption { display: block; margin: 0; }
+
+/* ------------------------------------------------------------------ cover */
+.cover {
+    position: relative; overflow: hidden;
+    -webkit-box-sizing: border-box; box-sizing: border-box;
+    height: 297mm; width: 100%; margin: 0; padding: 26mm 20mm 0 20mm;
+    background: #3B1CA0;
+    background: -webkit-linear-gradient(300deg, #1B0A4E 0%, #3B1CA0 48%, #6B4BE8 100%);
+    color: #ffffff; page-break-after: always;
+}
+.cover .ring { position: absolute; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; }
+.cover .ring-1 { width: 520px; height: 520px; top: -110px; right: -120px; }
+.cover .ring-2 { width: 330px; height: 330px; top: 55px; right: 10px; }
+.cover .ring-3 { width: 300px; height: 300px; bottom: 90px; left: -160px; }
+.cover-badges { margin-bottom: 52mm; }
+.cover-badges img {
+    width: 54px; height: auto; background: #fff; border-radius: 7px; padding: 7px 9px;
+    vertical-align: middle; margin-right: 14px;
+}
+.cover-kicker {
+    display: inline-block; vertical-align: middle;
+    border: 1px solid rgba(255,255,255,.45); border-radius: 30px;
+    padding: 7px 18px; font-size: 9pt; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; white-space: nowrap;
+}
+.cover h1 { font-size: 46pt; font-weight: 900; margin: 0; letter-spacing: -1px; line-height: 1.05; }
+.cover h2 { font-size: 20pt; font-weight: 400; margin: 6px 0 0 0; color: #ece8fb; }
+.cover p.lead { margin: 22px 0 0 0; width: 120mm; font-size: 11pt; color: #ddd6f7; }
+.cover-foot {
+    position: absolute; left: 20mm; right: 20mm; bottom: 20mm;
+    border-top: 1px solid rgba(255,255,255,.3); padding-top: 17px; font-size: 9pt;
+}
+.cover-foot div { display: inline-block; vertical-align: top; width: 52mm; }
+.cover-foot strong { display: block; font-weight: 700; color: #ffffff; }
+.cover-foot span { color: #cec6ee; }
+
+/* --------------------------------------------------------------- contents */
+.contents { page-break-after: always; }
+.contents h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 24px 0 6px 0; }
+.contents .lead { color: #8A8A9E; margin: 0 0 28px 0; }
+.toc-part {
+    margin: 20px 0 8px 0; padding-bottom: 7px; border-bottom: 1px solid #E7E3F5;
+}
+.toc-part .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-weight: 700; font-size: 9pt; padding: 2px 7px; margin-right: 12px;
+}
+.toc-part .t { font-weight: 700; font-size: 12.5pt; color: #1E0B57; }
+.toc-part .rule { display: none; }
+.toc-line { padding: 3px 0 3px 40px; }
+.toc-line .n { display: inline-block; width: 34px; color: #5B34D6; font-weight: 700; }
+
+/* ------------------------------------------------------------------ parts */
+.part { page-break-before: always; }
+.part-mark { width: 62px; border-top: 4px solid #5B34D6; margin-bottom: 24px; }
+.part-kicker {
+    font-size: 9pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    color: #8A8A9E; margin: 0 0 2px 0;
+}
+.part h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 0 0 24px 0; letter-spacing: -.5px; }
+
+h2 { font-size: 13pt; font-weight: 700; color: #1E0B57; margin: 26px 0 11px 0; page-break-after: avoid; }
+h2 .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-size: 8.5pt; font-weight: 700; padding: 2px 7px; margin-right: 11px;
+    vertical-align: 2px;
+}
+h3 { font-size: 11pt; font-weight: 700; color: #1E0B57; margin: 18px 0 6px 0; page-break-after: avoid; }
+
+p { margin: 0 0 10px 0; }
+strong { font-weight: 700; color: #22222e; }
+code {
+    font-family: 'DejaVu Sans Mono', monospace; font-size: 8.5pt;
+    background: #F4F1FD; color: #4b3a86; padding: 1px 5px; border-radius: 4px;
+}
+.path { font-weight: 700; color: #1E0B57; }
+
+ul, ol { margin: 0 0 10px 0; padding-left: 20px; }
+li { margin: 0 0 6px 0; }
+ul.plain { list-style: none; padding-left: 4px; }
+ul.plain > li { position: relative; padding-left: 15px; }
+ul.plain > li:before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 5px; height: 5px; border-radius: 50%; background: #5B34D6;
+}
+ul.tick { list-style: none; padding-left: 2px; }
+ul.tick > li { position: relative; padding-left: 19px; margin-bottom: 4px; }
+ul.tick > li:before { content: '\2713'; position: absolute; left: 0; color: #5B34D6; font-weight: 700; }
+.two-col { -webkit-column-count: 2; -webkit-column-gap: 32px; column-count: 2; column-gap: 32px; }
+.two-col li { -webkit-column-break-inside: avoid; }
+
+/* ----------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; margin: 4px 0 15px 0; font-size: 10pt; }
+thead th {
+    background: #5B34D6; color: #ffffff; text-align: left; vertical-align: bottom;
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 8px 12px;
+}
+tbody td { padding: 8px 12px; border-bottom: 1px solid #E7E3F5; vertical-align: top; }
+tbody tr { page-break-inside: avoid; }
+td .sub, th .sub { display: block; color: #8A8A9E; font-size: 8.5pt; font-family: 'DejaVu Sans Mono', monospace; }
+
+/* --------------------------------------------------------------- callouts */
+.note {
+    border-left: 3px solid #5B34D6; background: #F7F5FE;
+    padding: 12px 16px; margin: 13px 0 15px 0; page-break-inside: avoid;
+}
+.note .label {
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: #5B34D6; margin: 0 0 4px 0;
+}
+.note p:last-child { margin-bottom: 0; }
+.note.warn { border-left-color: #D9534F; background: #FDF3F2; }
+.note.warn .label { color: #C9302C; }
+
+/* ---------------------------------------------------------------- figures */
+figure { margin: 15px 0 19px 0; page-break-inside: avoid; }
+figure img { width: 100%; border: 1px solid #E7E3F5; border-radius: 6px; }
+figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
+
+/* wkhtmltopdf ignores page-break-after: avoid; a heading travels with its first block instead */
+.keep { page-break-inside: avoid; }
+.contents .toc-part { margin: 13px 0 5px 0; padding-bottom: 4px; }
+.contents .toc-line { padding: 1px 0 1px 40px; }
+</style>
+</head>
+<body>
+
+<!-- ==================================================================== -->
+<div class="cover">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <div class="cover-badges">
+        <img src="img/logo.png" alt="Odoo Mates"/>
+        <span class="cover-kicker">User Guide</span>
+    </div>
+    <h1>Automation<br/>Studio</h1>
+    <h2>for Odoo 16, 17, 18, 19 and 20</h2>
+    <p class="lead">Draw how your records move, as a flowchart: conditions, waits, approvals,
+        emails, activities and record updates, without code &mdash; then follow every record on
+        the chart, step by step.</p>
+    <div class="cover-foot">
+        <div><strong>Odoo 16 &ndash; 20</strong><span>Community Edition</span></div>
+        <div><strong>LGPL-3</strong><span>Free and open source</span></div>
+        <div><strong>odoomates@gmail.com</strong><span>Odoo Mates</span></div>
+    </div>
+</div>
+
+<!-- ==================================================================== -->
+<div class="contents">
+    <h1>Contents</h1>
+    <p class="lead">Twelve parts, from the first workflow to approvals running across your apps.</p>
+
+    <div class="toc-part"><span class="n">1</span><span class="t">Before you start</span></div>
+    <div class="toc-line"><span class="n">1.1</span><span>What the app does</span></div>
+    <div class="toc-line"><span class="n">1.2</span><span>Supported versions</span></div>
+    <div class="toc-line"><span class="n">1.3</span><span>Installing</span></div>
+    <div class="toc-line"><span class="n">1.4</span><span>Who can do what</span></div>
+    <div class="toc-line"><span class="n">1.5</span><span>The words used in this guide</span></div>
+
+    <div class="toc-part"><span class="n">2</span><span class="t">Creating a workflow</span></div>
+    <div class="toc-line"><span class="n">2.1</span><span>The Workflows list</span></div>
+    <div class="toc-line"><span class="n">2.2</span><span>Starting from a template</span></div>
+    <div class="toc-line"><span class="n">2.3</span><span>Ready-made workflows for your apps</span></div>
+    <div class="toc-line"><span class="n">2.4</span><span>Starting from blank</span></div>
+
+    <div class="toc-part"><span class="n">3</span><span class="t">The designer</span></div>
+    <div class="toc-line"><span class="n">3.1</span><span>The four areas</span></div>
+    <div class="toc-line"><span class="n">3.2</span><span>Adding steps and arrows</span></div>
+    <div class="toc-line"><span class="n">3.3</span><span>What is left to fix</span></div>
+
+    <div class="toc-part"><span class="n">4</span><span class="t">The Start: when a workflow begins</span></div>
+    <div class="toc-line"><span class="n">4.1</span><span>The five ways to start</span></div>
+    <div class="toc-line"><span class="n">4.2</span><span>Which records, how many runs, when to stop</span></div>
+
+    <div class="toc-part"><span class="n">5</span><span class="t">Logic and waiting steps</span></div>
+    <div class="toc-line"><span class="n">5.1</span><span>Condition and End</span></div>
+    <div class="toc-line"><span class="n">5.2</span><span>Wait</span></div>
+    <div class="toc-line"><span class="n">5.3</span><span>Wait Until</span></div>
+    <div class="toc-line"><span class="n">5.4</span><span>Approval</span></div>
+
+    <div class="toc-part"><span class="n">6</span><span class="t">Action steps</span></div>
+    <div class="toc-line"><span class="n">6.1</span><span>Update Record and Create Record</span></div>
+    <div class="toc-line"><span class="n">6.2</span><span>Send Email, Schedule Activity, Post Message</span></div>
+    <div class="toc-line"><span class="n">6.3</span><span>Placeholders</span></div>
+
+    <div class="toc-part"><span class="n">7</span><span class="t">Publishing and versions</span></div>
+    <div class="toc-part"><span class="n">8</span><span class="t">Approvals in practice</span></div>
+    <div class="toc-line"><span class="n">8.1</span><span>What the approver sees</span></div>
+    <div class="toc-line"><span class="n">8.2</span><span>Approval on a button</span></div>
+    <div class="toc-line"><span class="n">8.3</span><span>The Approvals menu</span></div>
+
+    <div class="toc-part"><span class="n">9</span><span class="t">Following the runs</span></div>
+    <div class="toc-part"><span class="n">10</span><span class="t">Your own templates</span></div>
+    <div class="toc-part"><span class="n">11</span><span class="t">Workflows for common needs</span></div>
+    <div class="toc-part"><span class="n">12</span><span class="t">When something looks wrong</span></div>
+    <div class="toc-line"><span class="n">12.1</span><span>The usual questions</span></div>
+    <div class="toc-line"><span class="n">12.2</span><span>How it works underneath</span></div>
+    <div class="toc-line"><span class="n">12.3</span><span>Getting help</span></div>
+</div>
+
+<!-- ============================================================ PART 1 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 1</p>
+    <h1>Before you start</h1>
+
+    <div class="keep"><h2><span class="n">1.1</span> What the app does</h2>
+    <p><strong>Automation Studio</strong> adds workflows drawn as flowcharts. You draw what happens to
+        the records of a model &mdash; quotations, invoices, leads, purchase orders, contacts or any
+        other &mdash; step by step, without code. Each record then goes through the chart, and the
+        chart shows where it is and the path it took.</p></div>
+    <ul class="plain">
+        <li><strong>Approvals</strong>: a quotation above a discount, a purchase above an amount, a vendor
+            bill, or a click on Confirm waits for an approver.</li>
+        <li><strong>Follow-ups and reminders</strong>: a call three days after a quotation is sent, reminder
+            emails once an invoice is overdue, a warning before a contract ends.</li>
+        <li><strong>Record changes</strong>: set a field, create a linked record, post a message.</li>
+        <li><strong>Tracking</strong>: every record's run, the step it is on and when it continues.</li>
+    </ul>
+    <p>It is free and open source (LGPL-3), and builds on Odoo's own Automation Rules.</p>
+
+    <h2><span class="n">1.2</span> Supported versions</h2>
+    <table>
+        <thead><tr><th>Module</th><th>Technical name</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Automation Studio</strong></td><td><code>om_automation_studio</code></td><td></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        </tbody>
+    </table>
+    <p>The same features on every version, for Odoo Community. This guide's screenshots are from
+        Odoo 19.</p>
+
+    <div class="keep"><h2><span class="n">1.3</span> Installing</h2>
+    <ol>
+        <li>Put <code>om_automation_studio</code> in your addons folder.</li>
+        <li>In Odoo, turn on developer mode, open <span class="path">Apps</span> and click
+            <strong>Update Apps List</strong>.</li>
+        <li>Search <strong>Automation Studio</strong> and install it. Odoo's <em>Automation Rules</em>
+            (<code>base_automation</code>) installs with it.</li>
+    </ol></div>
+    <p>With demo data, the ready workflows of your apps (Sales, CRM, Purchase, Invoicing, Contacts) are
+        created as drafts, to try. Apps installed later get theirs too.</p>
+
+    <div class="keep"><h2><span class="n">1.4</span> Who can do what</h2>
+    <p>Set the level on each user, in <span class="path">Settings &rsaquo; Users &rsaquo; Automation
+        Studio</span>:</p>
+    <table>
+        <thead><tr><th style="width:22%">Level</th><th>May</th></tr></thead>
+        <tbody>
+            <tr><td><strong>User</strong></td><td>See the app and the Approvals menu, with their own approvals.</td></tr>
+            <tr><td><strong>Supervisor</strong></td><td>Also follow all workflows, runs and approvals; cancel and retry runs.</td></tr>
+            <tr><td><strong>Administrator</strong></td><td>Design, publish and pause workflows, manage templates, and answer any approval for its approver. The administrator user gets it at install.</td></tr>
+        </tbody>
+    </table></div>
+    <p>Users without a level do not see the app, but approvals asked of them still arrive as
+        activities, answered from the banner of the record.</p>
+    <div class="note warn"><p class="label">Full rights</p>
+        <p>As with Odoo's Automation Rules, a workflow changes records with full rights. Give the
+            Administrator level to trusted users only.</p></div>
+
+    <div class="keep"><h2><span class="n">1.5</span> The words used in this guide</h2>
+    <table>
+        <thead><tr><th style="width:22%">Word</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>Workflow</td><td>A chart for one model: a Start, steps, and arrows between them.</td></tr>
+            <tr><td>Step</td><td>A box on the chart: a condition, a wait, an approval, an action.</td></tr>
+            <tr><td>Exit</td><td>Where an arrow leaves a step: <em>Yes</em> / <em>No</em> for a condition, <em>Approved</em> / <em>Rejected</em> / <em>Time limit</em> for an approval.</td></tr>
+            <tr><td>Run</td><td>One record going through one workflow.</td></tr>
+            <tr><td>Version</td><td>The chart as it was when published. Runs keep the version they started on.</td></tr>
+        </tbody>
+    </table></div>
+</div>
+
+<!-- ============================================================ PART 2 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 2</p>
+    <h1>Creating a workflow</h1>
+
+    <div class="keep"><h2><span class="n">2.1</span> The Workflows list</h2>
+    <p>Open <span class="path">Automation Studio &rsaquo; Workflows</span>. Each line shows the model, how
+        it starts, its runs and its state: <em>Draft</em>, <em>Running</em> or <em>Paused</em>. The app's
+        other menus are <span class="path">Runs</span>, <span class="path">Approvals</span> and
+        <span class="path">Templates</span>.</p></div>
+    <figure><img src="img/workflows.jpg"/><figcaption>The Workflows list, with the demo workflows of Sales, CRM, Purchase, Invoicing and Contacts as drafts.</figcaption></figure>
+
+    <h2><span class="n">2.2</span> Starting from a template</h2>
+    <p>Click <strong>New</strong>. A gallery opens with generic workflows that run on any model:</p>
+    <figure><img src="img/gallery.jpg"/><figcaption>New Workflow: start from blank, from a generic template, or from one of your own.</figcaption></figure>
+    <table>
+        <thead><tr><th style="width:32%">Template</th><th>What it does</th></tr></thead>
+        <tbody>
+            <tr><td>Approval above a limit</td><td>A record above a limit (a discount, an amount, a quantity) waits for an approver, and cannot change status until the answer.</td></tr>
+            <tr><td>Approval on a button</td><td>Clicking Confirm, Post or Validate asks an approver first; once approved, the next click goes on.</td></tr>
+            <tr><td>Follow-up after a status</td><td>Once a record reaches a status, a follow-up call after some days, then a reminder email. A later status stops it.</td></tr>
+            <tr><td>Reminders once a date is passed</td><td>Some days after a date (a due date, an expiry): reminder emails, then a call.</td></tr>
+            <tr><td>Reminder before a date</td><td>Some days before a date (a deadline, a renewal): an activity for whoever handles the record.</td></tr>
+            <tr><td>Stuck in a status</td><td>A record stays in a status for some days: its owner is reminded, then a manager.</td></tr>
+            <tr><td>New record response</td><td>A new record gets a call from whoever handles it; with nobody yet, a manager is asked to assign it.</td></tr>
+            <tr><td>Big value alert</td><td>A record reaches a value (an amount, a revenue): a mark, a priority, somebody to review it.</td></tr>
+            <tr><td>Missing information</td><td>Some days after creation, fields still empty (an email, a phone): whoever handles it completes them.</td></tr>
+            <tr><td>After completion</td><td>A record is done (won, confirmed, paid): a note in the chatter, then a thank-you or a review request.</td></tr>
+        </tbody>
+    </table>
+    <p>Pick one, choose the model under <strong>Runs on</strong> (the models it is ready for are offered
+        as buttons), and fill in its settings: the fields are guessed for you. The chart on the right
+        follows every change. Click <strong>Create and Open the Designer</strong>: the workflow is
+        created as a draft.</p>
+    <figure><img src="img/template-follow-up.jpg"/><figcaption>Follow-up after a status, on quotations: starts when sent, stops when confirmed or cancelled.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">2.3</span> Ready-made workflows for your apps</h2>
+    <p>For known models the settings come ready. These are also the demo workflows:</p>
+    <table>
+        <thead><tr><th style="width:30%">App</th><th>Workflows</th></tr></thead>
+        <tbody>
+            <tr><td>Sales</td><td>Discount Approval, Quotation Follow-up, Order Thank-you, Expired Quotation</td></tr>
+            <tr><td>CRM</td><td>New Lead Response, Big Opportunity, Closing Date Passed, Won Opportunity</td></tr>
+            <tr><td>Purchase</td><td>Big Order Approval, RFQ Follow-up, Late Receipt</td></tr>
+            <tr><td>Invoicing</td><td>Invoices: Overdue Reminders, Vendor Bills: Approval, Invoices: Paid</td></tr>
+            <tr><td>Contacts</td><td>Missing Email or Phone</td></tr>
+        </tbody>
+    </table></div>
+
+    <div class="keep"><h2><span class="n">2.4</span> Starting from blank</h2>
+    <p>In the gallery, <strong>Start from blank</strong> opens the workflow form: give it a
+        <strong>Name</strong> and a <strong>Model</strong>, save, then click <strong>Open Designer</strong>.
+        The chart starts with a Start and an End: draw the rest.</p></div>
+    <figure><img src="img/workflow-new-form.jpg"/><figcaption>A blank workflow: name, model, then Open Designer.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 3 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 3</p>
+    <h1>The designer</h1>
+
+    <h2><span class="n">3.1</span> The four areas</h2>
+    <figure><img src="img/designer-demo.jpg"/><figcaption>Sales: Discount Approval in the designer: palette, chart and the workflow panel.</figcaption></figure>
+    <table>
+        <thead><tr><th style="width:20%">Area</th><th>What it holds</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Toolbar</strong></td><td>The name, the model, the state (<em>Draft</em>, <em>Running v3</em>, <em>Paused</em>, <em>Not published</em>, <em>Unsaved</em>), undo and redo, and <strong>Runs</strong>, <strong>Save as Template</strong>, <strong>Save</strong>, <strong>Pause</strong>, <strong>Publish</strong>.</td></tr>
+            <tr><td><strong>Palette</strong></td><td>The steps, in three groups: <em>Logic</em> (Condition, End), <em>Wait</em> (Wait, Wait Until, Approval) and <em>Actions</em> (Update Record, Create Record, Send Email, Schedule Activity, Post Message).</td></tr>
+            <tr><td><strong>Chart</strong></td><td>The steps and arrows. Drag to pan; zoom and fit with the buttons at the bottom left.</td></tr>
+            <tr><td><strong>Panel</strong></td><td>The settings of the selected step or arrow; with nothing selected, the workflow itself and what is left to fix.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="keep"><h2><span class="n">3.2</span> Adding steps and arrows</h2>
+    <ul class="plain">
+        <li><strong>Add a step</strong>: drag it from the palette onto the chart, or click it to add it
+            after the selected step. With an arrow selected, it is inserted in the arrow.</li>
+        <li><strong>Draw an arrow</strong>: drag from the dot of a step's exit to another step. Click an
+            arrow, then drag its end to move it.</li>
+        <li><strong>Edit a step</strong>: click it and use the panel. <em>Name on the chart</em> is the text
+            shown in the box.</li>
+        <li><strong>Shortcuts</strong>: Ctrl+S save, Ctrl+Z undo, Ctrl+D duplicate, Delete remove.</li>
+    </ul></div>
+    <figure><img src="img/designer-steps.jpg"/><figcaption>Steps added one after the other by clicking the palette: Start, Condition, Wait&hellip;</figcaption></figure>
+    <p>A step with no arrow on the exit it takes ends the run there, like an End.</p>
+
+    <div class="keep"><h2><span class="n">3.3</span> What is left to fix</h2>
+    <p>The chart is checked as you draw. Click an empty part of the chart: the panel lists, under
+        <strong>To fix before publishing</strong>, each step and what it misses. Steps with a problem
+        show a red mark. A workflow with errors cannot be published, and a loop with no wait in it is
+        refused.</p></div>
+    <figure><img src="img/designer-issues.jpg"/><figcaption>The workflow panel: each step and what it still needs.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 4 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 4</p>
+    <h1>The Start: when a workflow begins</h1>
+
+    <h2><span class="n">4.1</span> The five ways to start</h2>
+    <p>Click the Start and choose under <strong>Starts when</strong>:</p>
+    <table>
+        <thead><tr><th style="width:36%">Starts when</th><th>Set also</th></tr></thead>
+        <tbody>
+            <tr><td><strong>A record is created</strong></td><td>&mdash;</td></tr>
+            <tr><td><strong>A record is created or updated</strong></td><td><em>Watched fields</em>: only a change of these starts it (none: any change, of the lines too). <em>Only when this becomes true</em>: it starts when the record starts to match, not at every change while it matches.</td></tr>
+            <tr><td><strong>A date of the record comes</strong></td><td>The date field, and how long before or after it (e.g. 3 days after the due date).</td></tr>
+            <tr><td><strong>A button is clicked</strong></td><td>The button of the form (Confirm, Post, Validate&hellip;) and the watched fields. Used for approvals before a button goes on (8.2).</td></tr>
+            <tr><td><strong>Someone starts it from the Action menu</strong></td><td>&mdash; It appears in the Action menu of the records.</td></tr>
+        </tbody>
+    </table>
+    <figure><img src="img/start-change.jpg" style="width:46%;display:inline-block;vertical-align:top;margin-right:3%"/><img src="img/start-date.jpg" style="width:46%;display:inline-block;vertical-align:top"/><figcaption>The Start, on a change of the record (left) and on a date (right).</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">4.2</span> Which records, how many runs, when to stop</h2>
+    <table>
+        <thead><tr><th style="width:30%">Setting</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Only for records where</strong></td><td>A filter: only matching records start a run, e.g. <em>Total &gt; 10,000</em>.</td></tr>
+            <tr><td><strong>Runs per record</strong></td><td><em>One run at a time per record</em> (default), <em>Only once per record, ever</em>, or <em>A new run every time</em>.</td></tr>
+            <tr><td><strong>Stop the run when</strong></td><td>A condition checked at every step and while waiting: the run stops as soon as it holds, e.g. the invoice is paid, the quotation is confirmed.</td></tr>
+        </tbody>
+    </table></div>
+    <p>The chart shows the Start's condition in words under its name.</p>
+    <figure><img src="img/start-button.jpg" style="width:46%"/><figcaption>A Start on a button: the button, the watched fields, the filter.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 5 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 5</p>
+    <h1>Logic and waiting steps</h1>
+
+    <div class="keep"><h2><span class="n">5.1</span> Condition and End</h2>
+    <p><strong>Condition</strong> checks the record against a filter (<em>The record matches</em>):
+        matching records leave by <strong>Yes</strong>, the others by <strong>No</strong>.
+        <strong>End</strong> ends the run.</p></div>
+    <figure><img src="img/step-condition.jpg" style="width:46%"/><figcaption>Condition: matching records leave by Yes, the others by No.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">5.2</span> Wait</h2>
+    <p><strong>For a time</strong>: a number of minutes, hours, days, weeks or months.
+        <strong>Until a date</strong>: a date of the record, before or after it; a date already past
+        goes on at once.</p></div>
+    <figure><img src="img/step-wait.jpg" style="width:46%"/><figcaption>Wait: for a time, or until a date of the record.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">5.3</span> Wait Until</h2>
+    <p>Waits until the record matches a filter, checked every few minutes, then leaves by
+        <strong>Met</strong>. With a <strong>Time limit</strong>, a run still waiting when it runs out
+        leaves by the <strong>Time limit</strong> exit instead: send a reminder, escalate.</p></div>
+    <figure><img src="img/step-wait_until.jpg" style="width:46%"/><figcaption>Wait Until, with a time limit of 7 days.</figcaption></figure>
+
+    <h2><span class="n">5.4</span> Approval</h2>
+    <p>The run waits for a person's answer, and leaves by <strong>Approved</strong>,
+        <strong>Rejected</strong> or <strong>Time limit</strong>.</p>
+    <table>
+        <thead><tr><th style="width:34%">Setting</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>Approver</td><td><em>A user</em>, or <em>The user of a field</em> (the salesperson's manager, the responsible of the record).</td></tr>
+            <tr><td>Question, Details for the approver</td><td>What the approver reads, with placeholders: <code>Approve {{ object.display_name }}</code>.</td></tr>
+            <tr><td>Time limit</td><td>After it, the run leaves by the Time limit exit.</td></tr>
+            <tr><td>Only the approver can answer</td><td>Off: administrators can answer for the approver, who is told. On: only the approver.</td></tr>
+            <tr><td>Block the record until it is answered</td><td><em>These fields</em> (the status by default, so the record cannot be confirmed or sent) or <em>Any change</em>.</td></tr>
+        </tbody>
+    </table>
+    <p>The approver gets an activity, and answers on the record or in Automation Studio, Approvals (part&nbsp;8).</p>
+    <figure><img src="img/step-approval.jpg" style="width:46%"/><figcaption>Approval: approver, question, time limit, and what is blocked while it waits.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 6 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 6</p>
+    <h1>Action steps</h1>
+
+    <div class="keep"><h2><span class="n">6.1</span> Update Record and Create Record</h2>
+    <p><strong>Update Record</strong> sets fields of the record. Click <em>Add a field</em> and choose how
+        to fill it:</p>
+    <table>
+        <thead><tr><th style="width:22%">Mode</th><th>Example</th></tr></thead>
+        <tbody>
+            <tr><td>Set to</td><td>Priority = High; Tags = VIP.</td></tr>
+            <tr><td>Copy from</td><td>Responsible = the Salesperson of the record.</td></tr>
+            <tr><td>Today plus</td><td>Follow-up date = today + 7 days.</td></tr>
+            <tr><td>Clear</td><td>Empty a field.</td></tr>
+        </tbody>
+    </table></div>
+    <p><strong>Create Record</strong> creates a record of another model (a task, a lead, an activity),
+        sets its values the same way, and links it back to the record by a field you pick
+        (<em>Link it to the record by</em>).</p>
+    <figure><img src="img/step-update.jpg" style="width:46%;display:inline-block;vertical-align:top;margin-right:3%"/><img src="img/step-create.jpg" style="width:46%;display:inline-block;vertical-align:top"/><figcaption>Update Record and Create Record.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">6.2</span> Send Email, Schedule Activity, Post Message</h2>
+    <table>
+        <thead><tr><th style="width:26%">Step</th><th>Settings</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Send Email</strong></td><td>An email template of the model; sent to the template's recipients and logged in the chatter.</td></tr>
+            <tr><td><strong>Schedule Activity</strong></td><td>Activity type, summary, note, assigned to <em>a user</em> or <em>the user of a field</em>, due in a number of days.</td></tr>
+            <tr><td><strong>Post Message</strong></td><td>A message in the chatter; ticked, it is sent to the followers, otherwise it is an internal note.</td></tr>
+        </tbody>
+    </table></div>
+    <figure><img src="img/step-activity.jpg" style="width:46%;display:inline-block;vertical-align:top;margin-right:3%"/><img src="img/step-note.jpg" style="width:46%;display:inline-block;vertical-align:top"/><figcaption>Schedule Activity and Post Message.</figcaption></figure>
+    <p>A model without a chatter cannot take Post Message, and one without activities cannot take
+        Schedule Activity: the panel says so.</p>
+
+    <div class="keep"><h2><span class="n">6.3</span> Placeholders</h2>
+    <p>Texts (summaries, notes, messages, approval questions) can show fields of the record:</p>
+    <ul class="plain">
+        <li><code>{{ object.name }}</code> &ndash; the record's name or number</li>
+        <li><code>{{ object.display_name }}</code> &ndash; its full name</li>
+        <li><code>{{ object.partner_id.name }}</code> &ndash; a field of a linked record</li>
+    </ul></div>
+</div>
+
+<!-- ============================================================ PART 7 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 7</p>
+    <h1>Publishing and versions</h1>
+    <ul class="plain">
+        <li><strong>Save</strong> keeps the chart as a draft and checks it again.</li>
+        <li><strong>Publish</strong> freezes the chart in a new version and starts the workflow: new
+            records start runs from now on. The toolbar shows <em>Running v1</em>, <em>v2</em>&hellip;</li>
+        <li><strong>Pause</strong> stops new runs from starting; runs already started go on.</li>
+    </ul>
+    <figure><img src="img/workflow-form.jpg"/><figcaption>The workflow form: Open Designer, Publish, Save as Template, its runs and versions.</figcaption></figure>
+    <div class="note"><p class="label">Changing a running workflow is safe</p>
+        <p>Runs already started go on with the version they started on. Edit the chart, publish it as a
+            new version, and only new runs take it. <em>Not published</em> in the toolbar means the chart
+            has changes not yet published.</p></div>
+    <p>The records of a model with a running workflow get a <strong>Workflow Runs</strong> entry in their
+        Action menu.</p>
+</div>
+
+<!-- ============================================================ PART 8 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 8</p>
+    <h1>Approvals in practice</h1>
+
+    <div class="keep"><h2><span class="n">8.1</span> What the approver sees</h2>
+    <p>The approver gets an activity. On the record, a banner at the top says who it waits for, with
+        <strong>Approve</strong> and <strong>Reject</strong> for the approver and <strong>Details</strong>
+        for everyone. The chatter notes the question and the answer.</p></div>
+    <figure><img src="img/store-record-banner.jpg"/><figcaption>A quotation waiting for approval: the banner with Approve and Reject.</figcaption></figure>
+    <p>While it waits, the record can be blocked (5.4): trying to confirm it then says why.</p>
+    <figure><img src="img/store-blocked.jpg"/><figcaption>Confirming a quotation that waits for approval: refused until it is answered.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">8.2</span> Approval on a button</h2>
+    <p>With a Start on a button (4.1), the approval is asked when the button is clicked, never when the
+        record is saved. While it waits, the button does not go on; once approved, the next click goes
+        on. An approval covers the values of the fields of the condition and of the watched fields: if
+        they change, the next click asks again. Only a click is checked, never Odoo code calling the
+        same method.</p></div>
+
+    <div class="keep"><h2><span class="n">8.3</span> The Approvals menu</h2>
+    <p><span class="path">Automation Studio &rsaquo; Approvals</span> lists the approvals with their
+        record, workflow, approver and deadline, filtered on <em>Mine</em> and <em>To Approve</em>. Answer
+        with <strong>Approve</strong> or <strong>Reject</strong> on the line. Administrators can answer
+        for the approver unless the step keeps the answer to the approver alone; the chatter then says
+        on whose behalf.</p></div>
+    <figure><img src="img/store-approvals.jpg"/><figcaption>Approvals: mine, to approve, answered from the list.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 9 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 9</p>
+    <h1>Following the runs</h1>
+    <p><span class="path">Automation Studio &rsaquo; Runs</span> lists every record going through a
+        workflow: the workflow, the record, the current step, when it continues, and its state.</p>
+    <figure><img src="img/store-runs.jpg"/><figcaption>Runs: the record, its current step and when it continues.</figcaption></figure>
+    <table>
+        <thead><tr><th style="width:20%">State</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>Running</td><td>Going through its steps.</td></tr>
+            <tr><td>Waiting</td><td>On a Wait, Wait Until or Approval.</td></tr>
+            <tr><td>Done</td><td>Reached an End or a step with no arrow on its exit, or stopped by <em>Stop the run when</em>.</td></tr>
+            <tr><td>Failed</td><td>A step failed. It was rolled back and the run stopped; the change that started the run is never undone.</td></tr>
+            <tr><td>Cancelled</td><td>Cancelled by hand with <strong>Cancel Run</strong>.</td></tr>
+        </tbody>
+    </table>
+    <p>On a run: <strong>Show on Chart</strong> draws the path the record took, <strong>Retry</strong>
+        runs the failed step again, <strong>Cancel Run</strong> stops it, and the run's
+        <strong>Steps</strong> tab lists each step with its time.</p>
+    <figure><img src="img/store-run-path.jpg"/><figcaption>Show on Chart: the path of one quotation, step by step.</figcaption></figure>
+    <p>Waiting runs are continued by the scheduled action <em>Automation Studio: Continue Waiting
+        Runs</em>, every 5 minutes and at the exact time of a wait.</p>
+</div>
+
+<!-- ============================================================ PART 10 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 10</p>
+    <h1>Your own templates</h1>
+    <ul class="plain">
+        <li><strong>Save as Template</strong>, on a workflow or in the designer, keeps its chart, for your
+            company or for every company. It appears under <em>Your templates</em> when creating a new
+            workflow.</li>
+        <li><span class="path">Automation Studio &rsaquo; Templates</span> lists them. <strong>Export</strong>
+            saves one as a file; <strong>Import</strong> loads it into another database. Users, activity
+            types, email templates and the records the steps set are found again by external id or name;
+            those missing are listed on the template and pointed out in the designer.</li>
+    </ul>
+    <div class="note"><p class="label">Test, then move</p>
+        <p>Build and try a workflow on a test database, save it as a template, export it, and import it
+            on the live database.</p></div>
+</div>
+
+<!-- ============================================================ PART 11 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 11</p>
+    <h1>Workflows for common needs</h1>
+    <p>Each one starts from a template (part&nbsp;2) and takes a few minutes.</p>
+    <table>
+        <thead><tr><th style="width:26%">Need</th><th>How</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Discount above 20% needs approval</strong></td><td>Template <em>Approval above a limit</em> on Sales Order, number <em>Order Lines &gt; Discount</em>, limit 20, approver the sales manager. Publish.</td></tr>
+            <tr><td><strong>Purchase above 5,000 needs approval on Confirm</strong></td><td>Template <em>Approval on a button</em> on Purchase Order, button <em>Confirm Order</em>, condition <em>Total &gt; 5,000</em>.</td></tr>
+            <tr><td><strong>Follow up quotations</strong></td><td><em>Follow-up after a status</em> on Sales Order: starts when <em>Quotation Sent</em>, stops on <em>Sales Order</em> or <em>Cancelled</em>; a call after 3 days, a reminder email after 4 more.</td></tr>
+            <tr><td><strong>Chase overdue invoices</strong></td><td><em>Reminders once a date is passed</em> on Journal Entry (customer invoices), date <em>Due Date</em>; reminder emails every 7 days, then a call. <em>Stop the run when</em> the invoice is paid.</td></tr>
+            <tr><td><strong>Leads must get a call the same day</strong></td><td><em>New record response</em> on Lead: an activity for the salesperson, or a manager when none is set.</td></tr>
+            <tr><td><strong>Nothing stays stuck</strong></td><td><em>Stuck in a status</em>: remind the owner after 5 days, the manager after 3 more.</td></tr>
+            <tr><td><strong>Complete contacts</strong></td><td><em>Missing information</em> on Contact: email or phone empty after 2 days, an activity for the salesperson.</td></tr>
+            <tr><td><strong>Say thank you</strong></td><td><em>After completion</em> on Sales Order: a note when confirmed, then a thank-you email.</td></tr>
+        </tbody>
+    </table>
+    <p>After publishing, try it on one record and open <strong>Runs</strong> to see it go through the chart.</p>
+</div>
+
+<!-- ============================================================ PART 12 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 12</p>
+    <h1>When something looks wrong</h1>
+
+    <div class="keep"><h2><span class="n">12.1</span> The usual questions</h2>
+    <table>
+        <thead><tr><th style="width:38%">What you see</th><th>Why, and what to do</th></tr></thead>
+        <tbody>
+            <tr><td>Publish is refused</td><td>The chart has errors: click an empty part of the chart and fix the list under <em>To fix before publishing</em>.</td></tr>
+            <tr><td>No run starts</td><td>The workflow is a draft or paused, the record does not match <em>Only for records where</em>, or <em>Runs per record</em> allows no new run. For <em>created or updated</em>, check the watched fields and <em>Only when this becomes true</em>.</td></tr>
+            <tr><td>A wait does not continue on time</td><td>Waits are checked by the scheduled action every 5 minutes: check that scheduled actions run on your server.</td></tr>
+            <tr><td>A run is Failed</td><td>Open it: the failed step says why (a missing value, a deleted template). Fix it, then <strong>Retry</strong>.</td></tr>
+            <tr><td>A change made the old runs behave differently</td><td>They do not: runs keep their version. Only new runs take the new one.</td></tr>
+            <tr><td>The approver cannot see the app</td><td>They need no level: they answer from the activity and the banner of the record.</td></tr>
+            <tr><td>Confirm is refused on a record</td><td>It waits for approval and is blocked: see the banner, or the Approvals menu.</td></tr>
+        </tbody>
+    </table></div>
+
+    <div class="keep"><h2><span class="n">12.2</span> How it works underneath</h2>
+    <ul class="plain">
+        <li>The Start of the published version becomes an Odoo Automation Rule whose server action, of the
+            type <em>Start Workflow</em>, starts the runs; a manual Start is a server action in the Action
+            menu. Pausing removes them.</li>
+        <li>A Start on a button needs neither: clicking a button asks the published workflows of the model
+            before the button runs.</li>
+        <li>Template files are JSON; ids inside conditions are kept as they are.</li>
+        <li>Uninstalling removes the workflows with the Automation Rules and Action menu entries that publishing made.</li>
+    </ul></div>
+
+    <h2><span class="n">12.3</span> Getting help</h2>
+    <p>Write to <strong>odoomates@gmail.com</strong> with your Odoo version, a screenshot of the chart and,
+        for a failed run, the message of its failed step. Feedback is welcome: it makes the app better.</p>
+</div>
+
+</body>
+</html>
