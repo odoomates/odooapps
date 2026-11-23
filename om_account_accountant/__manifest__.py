@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 15 Accounting',
-    'version': '6.4.0',
+    'version': '6.4.1',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, Customer Credit Limit, '
