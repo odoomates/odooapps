@@ -23,14 +23,6 @@ class ResUsers(models.Model):
         required=True,
         help="A column of app icons down the left side of the screen.",
     )
-    om_chatter_position = fields.Selection(
-        [('auto', 'Automatic'), ('bottom', 'Below the form')],
-        string='Chatter position',
-        default='auto',
-        required=True,
-        help="Automatic puts the chatter beside the form on wide screens and below it "
-             "on narrow ones; Below the form always keeps it underneath.",
-    )
     om_dialog_size = fields.Selection(
         [('normal', 'Normal'), ('full', 'Full screen')],
         string='Dialog size',
@@ -47,8 +39,7 @@ class ResUsers(models.Model):
 
     # the theme choices are the user's own, so they may read and set them without
     # access rights on res.users
-    OM_THEME_FIELDS = ['om_color_scheme', 'om_sidebar_type', 'om_chatter_position',
-                       'om_dialog_size', 'om_app_order']
+    OM_THEME_FIELDS = ['om_color_scheme', 'om_sidebar_type', 'om_dialog_size', 'om_app_order']
 
     @property
     def SELF_READABLE_FIELDS(self):
