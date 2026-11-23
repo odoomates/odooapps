@@ -17,7 +17,7 @@ SOURCE = HERE / 'user_guide.html'
 TARGET = HERE.parent / 'static' / 'description' / 'user_guide.pdf'
 
 TITLE = 'Point of Sale Access - User Guide'
-SUBJECT = 'User guide for POS Access Control and the User Access Manager for POS, Odoo 18 and 19'
+SUBJECT = 'User guide for POS Access Control and the User Access Manager for POS, Odoo 18, 19 and 20'
 AUTHOR = 'Odoo Mates'
 
 # Lato is the font Odoo itself uses; it is not usually installed system-wide, so it
