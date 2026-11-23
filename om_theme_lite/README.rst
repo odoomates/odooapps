@@ -21,7 +21,7 @@ Odoo Mates Theme Lite
 
 Depends
 =======
-[web], [mail] and [base_setup] addons Odoo
+[web], [mail], [base_setup] and [om_chatter_position] addons Odoo
 
 Tech
 ====

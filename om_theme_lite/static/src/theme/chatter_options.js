@@ -1,8 +1,5 @@
 import { patch } from "@web/core/utils/patch";
 import { browser } from "@web/core/browser/browser";
-import { session } from "@web/session";
-import { FormController } from "@web/views/form/form_controller";
-import { FormRenderer } from "@web/views/form/form_renderer";
 import { Chatter } from "@mail/chatter/web_portal_project/chatter";
 
 import { signal } from "@odoo/owl";
@@ -36,45 +33,6 @@ function applyHideTracking(hide) {
 
 applyWidth(storedWidth());
 applyHideTracking(browser.localStorage.getItem(HIDE_TRACKING_KEY) === "1");
-
-/**
- * "Below the form": the chatter stays underneath even on a wide screen.
- *
- * Odoo lays a form out in a row on wide screens, with the chatter (or an
- * attachment preview) beside the sheet. Moving only the chatter would leave it
- * stretched beside the form in that row, so for this user a wide screen is laid out
- * the way Odoo lays out a normal one: the wide-screen class is dropped, and every
- * side-by-side layout becomes its below-the-form equivalent.
- */
-const chatterBelow = () => session.om_chatter_position === "bottom";
-
-// The form template picks its row layout from the screen size alone, so the
-// stacking itself is done in CSS, under this class (see theme.scss).
-document.documentElement.classList.toggle("o_om_chatter_below", chatterBelow());
-
-patch(FormRenderer.prototype, {
-    mailLayout() {
-        const layout = super.mailLayout(...arguments);
-        if (chatterBelow()) {
-            return {
-                SIDE_CHATTER: "BOTTOM_CHATTER",
-                COMBO: "BOTTOM_CHATTER",
-                EXTERNAL_COMBO_XXL: "EXTERNAL_COMBO",
-            }[layout] || layout;
-        }
-        return layout;
-    },
-});
-
-patch(FormController.prototype, {
-    get className() {
-        const result = super.className;
-        if (chatterBelow()) {
-            delete result["o_xxl_form_view h-100"];
-        }
-        return result;
-    },
-});
 
 patch(Chatter.prototype, {
     setup() {

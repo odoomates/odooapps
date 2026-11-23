@@ -25,15 +25,6 @@ class ResUsers(models.Model):
         user_writeable=True,
         help="A column of app icons down the left side of the screen.",
     )
-    om_chatter_position = fields.Selection(
-        [('auto', 'Automatic'), ('bottom', 'Below the form')],
-        string='Chatter position',
-        default='auto',
-        required=True,
-        user_writeable=True,
-        help="Automatic puts the chatter beside the form on wide screens and below it "
-             "on narrow ones; Below the form always keeps it underneath.",
-    )
     om_dialog_size = fields.Selection(
         [('normal', 'Normal'), ('full', 'Full screen')],
         string='Dialog size',
