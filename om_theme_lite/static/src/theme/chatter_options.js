@@ -2,11 +2,7 @@
 
 import { patch } from "@web/core/utils/patch";
 import { browser } from "@web/core/browser/browser";
-import { session } from "@web/session";
-import { FormController } from "@web/views/form/form_controller";
-import { FormRenderer } from "@web/views/form/form_renderer";
 import { Chatter } from "@mail/core/web/chatter";
-import { SIZES } from "@web/core/ui/ui_service";
 
 import { useState } from "@odoo/owl";
 
@@ -39,42 +35,6 @@ function applyHideTracking(hide) {
 
 applyWidth(storedWidth());
 applyHideTracking(browser.localStorage.getItem(HIDE_TRACKING_KEY) === "1");
-
-/**
- * "Below the form": the chatter stays underneath even on a wide screen.
- *
- * Odoo puts the chatter (or an attachment preview) beside the sheet once the
- * screen is extra wide, and the form template decides that from the screen size it
- * reads off the ui service. For this user the form is handed a screen size capped
- * just under that, so a wide screen is laid out the way Odoo lays out a normal one:
- * chatter below, no preview beside it, and the wide-screen class dropped.
- */
-const chatterBelow = () => session.om_chatter_position === "bottom";
-
-document.documentElement.classList.toggle("o_om_chatter_below", chatterBelow());
-
-patch(FormRenderer.prototype, {
-    setup() {
-        super.setup(...arguments);
-        if (chatterBelow() && this.uiService) {
-            const ui = this.uiService;
-            this.uiService = new Proxy(ui, {
-                // read through the service itself, so a resize still re-renders
-                get: (target, key) => (key === "size" ? Math.min(target.size, SIZES.XL) : target[key]),
-            });
-        }
-    },
-});
-
-patch(FormController.prototype, {
-    get className() {
-        const result = super.className;
-        if (chatterBelow()) {
-            delete result["o_xxl_form_view h-100"];
-        }
-        return result;
-    },
-});
 
 patch(Chatter.prototype, {
     setup() {

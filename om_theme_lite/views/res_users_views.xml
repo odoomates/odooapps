@@ -6,14 +6,22 @@
         <field name="name">res.users.preferences.form.inherit.om.theme.lite</field>
         <field name="model">res.users</field>
         <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <!-- after the view of om_chatter_position, whose field it moves -->
+        <field name="priority">20</field>
         <field name="arch" type="xml">
             <xpath expr="//group[@name='preferences']" position="after">
                 <group name="om_theme_preferences" string="Theme">
                     <field name="om_color_scheme" readonly="0"/>
                     <field name="om_sidebar_type" readonly="0"/>
-                    <field name="om_chatter_position" readonly="0"/>
                     <field name="om_dialog_size" readonly="0"/>
                 </group>
+            </xpath>
+            <!-- the choice of om_chatter_position, among the theme choices -->
+            <xpath expr="//field[@name='om_dialog_size']" position="before">
+                <xpath expr="//field[@name='om_chatter_position']" position="move"/>
+            </xpath>
+            <xpath expr="//group[@name='om_chatter_position_preferences']" position="attributes">
+                <attribute name="invisible">1</attribute>
             </xpath>
         </field>
     </record>
