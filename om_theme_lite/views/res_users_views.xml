@@ -11,9 +11,22 @@
                 <group name="om_theme_preferences" string="Theme">
                     <field name="om_color_scheme" readonly="0"/>
                     <field name="om_sidebar_type" readonly="0"/>
-                    <field name="om_chatter_position" readonly="0"/>
                     <field name="om_dialog_size" readonly="0"/>
                 </group>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- The chatter position (Odoo Chatter Position) with the other theme choices.
+         Applied last, once both the field and the Theme group are in the form. -->
+    <record id="view_users_form_simple_modif_chatter" model="ir.ui.view">
+        <field name="name">res.users.preferences.form.inherit.om.theme.lite.chatter</field>
+        <field name="model">res.users</field>
+        <field name="inherit_id" ref="base.view_users_form_simple_modif"/>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='om_theme_preferences']/field[@name='om_sidebar_type']" position="after">
+                <xpath expr="//field[@name='om_chatter_position']" position="move"/>
             </xpath>
         </field>
     </record>
