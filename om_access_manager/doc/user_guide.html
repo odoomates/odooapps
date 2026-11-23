@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<!--
+  The user guide of User Access Manager, with the Point of Sale add-ons.
+
+  This file is the source. Edit it, then rebuild the PDF that ships in the app:
+
+      python3 doc/build_user_guide.py
+
+  The build needs wkhtmltopdf and pypdf, and reads the Lato fonts from the Odoo
+  source tree. Paths are resolved by the build script, not hard-coded here.
+  The pictures in img/ come from static/description of the modules.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>User Access Manager - User Guide</title>
+<style>
+/* wkhtmltopdf 0.12.x runs an old WebKit: no CSS variables, no flexbox, no `gap`.
+   Everything below is written for it, on purpose. */
+@font-face { font-family: 'GuideSans'; font-weight: 400; src: url('LATO_REGULAR'); }
+@font-face { font-family: 'GuideSans'; font-weight: 700; src: url('LATO_BOLD'); }
+@font-face { font-family: 'GuideSans'; font-weight: 900; src: url('LATO_BLACK'); }
+
+html, body {
+    margin: 0; padding: 0;
+    font-family: 'GuideSans', 'Lato', sans-serif;
+    font-size: 11pt; line-height: 1.66; color: #333340;
+    background: #ffffff;
+}
+figure, figcaption { display: block; margin: 0; }
+
+/* ------------------------------------------------------------------ cover */
+.cover {
+    position: relative; overflow: hidden;
+    -webkit-box-sizing: border-box; box-sizing: border-box;
+    height: 297mm; width: 100%; margin: 0; padding: 26mm 20mm 0 20mm;
+    background: #3B1CA0;
+    background: -webkit-linear-gradient(300deg, #1B0A4E 0%, #3B1CA0 48%, #6B4BE8 100%);
+    color: #ffffff; page-break-after: always;
+}
+.cover .ring { position: absolute; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; }
+.cover .ring-1 { width: 520px; height: 520px; top: -110px; right: -120px; }
+.cover .ring-2 { width: 330px; height: 330px; top: 55px; right: 10px; }
+.cover .ring-3 { width: 300px; height: 300px; bottom: 90px; left: -160px; }
+.cover-badges { margin-bottom: 52mm; }
+.cover-badges img {
+    width: 54px; height: auto; background: #fff; border-radius: 7px; padding: 7px 9px;
+    vertical-align: middle; margin-right: 14px;
+}
+.cover-kicker {
+    display: inline-block; vertical-align: middle;
+    border: 1px solid rgba(255,255,255,.45); border-radius: 30px;
+    padding: 7px 18px; font-size: 9pt; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; white-space: nowrap;
+}
+.cover h1 { font-size: 46pt; font-weight: 900; margin: 0; letter-spacing: -1px; line-height: 1.05; }
+.cover h2 { font-size: 20pt; font-weight: 400; margin: 6px 0 0 0; color: #ece8fb; }
+.cover p.lead { margin: 22px 0 0 0; width: 120mm; font-size: 11pt; color: #ddd6f7; }
+.cover-foot {
+    position: absolute; left: 20mm; right: 20mm; bottom: 20mm;
+    border-top: 1px solid rgba(255,255,255,.3); padding-top: 17px; font-size: 9pt;
+}
+.cover-foot div { display: inline-block; vertical-align: top; width: 52mm; }
+.cover-foot strong { display: block; font-weight: 700; color: #ffffff; }
+.cover-foot span { color: #cec6ee; }
+
+/* --------------------------------------------------------------- contents */
+.contents { page-break-after: always; }
+.contents h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 24px 0 6px 0; }
+.contents .lead { color: #8A8A9E; margin: 0 0 28px 0; }
+.toc-part {
+    margin: 20px 0 8px 0; padding-bottom: 7px; border-bottom: 1px solid #E7E3F5;
+}
+.toc-part .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-weight: 700; font-size: 9pt; padding: 2px 7px; margin-right: 12px;
+}
+.toc-part .t { font-weight: 700; font-size: 12.5pt; color: #1E0B57; }
+.toc-part .rule { display: none; }
+.toc-line { padding: 3px 0 3px 40px; }
+.toc-line .n { display: inline-block; width: 34px; color: #5B34D6; font-weight: 700; }
+
+/* ------------------------------------------------------------------ parts */
+.part { page-break-before: always; }
+.part-mark { width: 62px; border-top: 4px solid #5B34D6; margin-bottom: 24px; }
+.part-kicker {
+    font-size: 9pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    color: #8A8A9E; margin: 0 0 2px 0;
+}
+.part h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 0 0 24px 0; letter-spacing: -.5px; }
+
+h2 { font-size: 13pt; font-weight: 700; color: #1E0B57; margin: 26px 0 11px 0; page-break-after: avoid; }
+h2 .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-size: 8.5pt; font-weight: 700; padding: 2px 7px; margin-right: 11px;
+    vertical-align: 2px;
+}
+h3 { font-size: 11pt; font-weight: 700; color: #1E0B57; margin: 18px 0 6px 0; page-break-after: avoid; }
+
+p { margin: 0 0 10px 0; }
+strong { font-weight: 700; color: #22222e; }
+code {
+    font-family: 'DejaVu Sans Mono', monospace; font-size: 8.5pt;
+    background: #F4F1FD; color: #4b3a86; padding: 1px 5px; border-radius: 4px;
+}
+.path { font-weight: 700; color: #1E0B57; }
+
+ul, ol { margin: 0 0 10px 0; padding-left: 20px; }
+li { margin: 0 0 6px 0; }
+ul.plain { list-style: none; padding-left: 4px; }
+ul.plain > li { position: relative; padding-left: 15px; }
+ul.plain > li:before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 5px; height: 5px; border-radius: 50%; background: #5B34D6;
+}
+ul.tick { list-style: none; padding-left: 2px; }
+ul.tick > li { position: relative; padding-left: 19px; margin-bottom: 4px; }
+ul.tick > li:before { content: '\2713'; position: absolute; left: 0; color: #5B34D6; font-weight: 700; }
+.two-col { -webkit-column-count: 2; -webkit-column-gap: 32px; column-count: 2; column-gap: 32px; }
+.two-col li { -webkit-column-break-inside: avoid; }
+
+/* ----------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; margin: 4px 0 15px 0; font-size: 10pt; }
+thead th {
+    background: #5B34D6; color: #ffffff; text-align: left; vertical-align: bottom;
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 8px 12px;
+}
+tbody td { padding: 8px 12px; border-bottom: 1px solid #E7E3F5; vertical-align: top; }
+tbody tr { page-break-inside: avoid; }
+td .sub, th .sub { display: block; color: #8A8A9E; font-size: 8.5pt; font-family: 'DejaVu Sans Mono', monospace; }
+
+/* --------------------------------------------------------------- callouts */
+.note {
+    border-left: 3px solid #5B34D6; background: #F7F5FE;
+    padding: 12px 16px; margin: 13px 0 15px 0; page-break-inside: avoid;
+}
+.note .label {
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: #5B34D6; margin: 0 0 4px 0;
+}
+.note p:last-child { margin-bottom: 0; }
+.note.warn { border-left-color: #D9534F; background: #FDF3F2; }
+.note.warn .label { color: #C9302C; }
+
+/* ---------------------------------------------------------------- figures */
+figure { margin: 15px 0 19px 0; page-break-inside: avoid; }
+figure img { width: 100%; border: 1px solid #E7E3F5; border-radius: 6px; }
+figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
+
+/* wkhtmltopdf ignores page-break-after: avoid; a heading travels with its first block instead */
+.keep { page-break-inside: avoid; }
+.contents .toc-part { margin: 13px 0 5px 0; padding-bottom: 4px; }
+.contents .toc-line { padding: 1px 0 1px 40px; }
+</style>
+</head>
+<body>
+
+<!-- ==================================================================== -->
+<div class="cover">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <div class="cover-badges">
+        <img src="img/logo.png" alt="Odoo Mates"/>
+        <span class="cover-kicker">User Guide</span>
+    </div>
+    <h1>User Access<br/>Manager</h1>
+    <div class="keep"><h2>for Odoo 15, 16, 17, 18, 19 and 20</h2>
+    <p class="lead">Decide what each group of users sees and does: apps and menus, records,
+        fields, buttons, reports, and when and from where they sign in &mdash; with the
+        Point of Sale add-ons for cashiers and shop employees.</p>
+    <div class="cover-foot">
+        <div><strong>Odoo 15 &ndash; 20</strong><span>Community &amp; Enterprise</span></div>
+        <div><strong>LGPL-3</strong><span>Free and open source</span></div>
+        <div><strong>odoomates@gmail.com</strong><span>Odoo Mates</span></div>
+    </div>
+</div>
+
+<!-- ==================================================================== -->
+<div class="contents">
+    <h1>Contents</h1>
+    <p class="lead">Fourteen parts, from installing the app to a profile for every role.</p>
+
+    <div class="toc-part"><span class="n">1</span><span class="t">Before you start</span></div>
+    <div class="toc-line"><span class="n">1.1</span><span>What the app does</span></div>
+    <div class="toc-line"><span class="n">1.2</span><span>Supported versions</span></div>
+    <div class="toc-line"><span class="n">1.3</span><span>Installing</span></div>
+    <div class="toc-line"><span class="n">1.4</span><span>Who manages the access</span></div>
+    <div class="toc-line"><span class="n">1.5</span><span>Five rules to keep in mind</span></div>
+
+    <div class="toc-part"><span class="n">2</span><span class="t">Your first profile</span></div>
+    <div class="toc-line"><span class="n">2.1</span><span>Three ways to start</span></div>
+    <div class="toc-line"><span class="n">2.2</span><span>Who carries a profile</span></div>
+    <div class="toc-line"><span class="n">2.3</span><span>Additive or Override</span></div>
+    <div class="toc-line"><span class="n">2.4</span><span>The Options tab</span></div>
+    <div class="toc-line"><span class="n">2.5</span><span>The Setup Wizard, step by step (Odoo 16 to 20)</span></div>
+
+    <div class="toc-part"><span class="n">3</span><span class="t">Menus and apps</span></div>
+    <div class="toc-line"><span class="n">3.1</span><span>The menu tree</span></div>
+    <div class="toc-line"><span class="n">3.2</span><span>Hiding a menu or an app</span></div>
+    <div class="toc-line"><span class="n">3.3</span><span>A whole app at once</span></div>
+    <div class="toc-line"><span class="n">3.4</span><span>Giving an app the user does not have</span></div>
+    <div class="toc-line"><span class="n">3.5</span><span>Restrict an App</span></div>
+
+    <div class="toc-part"><span class="n">4</span><span class="t">Read, Create, Edit and Delete</span></div>
+    <div class="toc-line"><span class="n">4.1</span><span>Rights per data</span></div>
+    <div class="toc-line"><span class="n">4.2</span><span>Read only, everywhere or in one app</span></div>
+    <div class="toc-line"><span class="n">4.3</span><span>Edit drafts only</span></div>
+
+    <div class="toc-part"><span class="n">5</span><span class="t">Which records they see</span></div>
+    <div class="toc-line"><span class="n">5.1</span><span>The one-click choices</span></div>
+    <div class="toc-line"><span class="n">5.2</span><span>A filter of your own</span></div>
+    <div class="toc-line"><span class="n">5.3</span><span>Allowed records: journals, warehouses, shops</span></div>
+
+    <div class="toc-part"><span class="n">6</span><span class="t">Fields</span></div>
+    <div class="toc-line"><span class="n">6.1</span><span>Hidden, read-only, required</span></div>
+    <div class="toc-line"><span class="n">6.2</span><span>Only when a condition holds</span></div>
+    <div class="toc-line"><span class="n">6.3</span><span>Links, dropdowns and exports</span></div>
+    <div class="toc-line"><span class="n">6.4</span><span>Hide costs, hide sales prices</span></div>
+
+    <div class="toc-part"><span class="n">7</span><span class="t">Buttons, reports and actions</span></div>
+    <div class="toc-line"><span class="n">7.1</span><span>Hide, block, or both</span></div>
+    <div class="toc-line"><span class="n">7.2</span><span>Reports and the Action menu</span></div>
+
+    <div class="toc-part"><span class="n">8</span><span class="t">The rest of the screen</span></div>
+    <div class="toc-line"><span class="n">8.1</span><span>The Restrictions tab</span></div>
+    <div class="toc-line"><span class="n">8.2</span><span>Tabs, filters and views</span></div>
+    <div class="toc-line"><span class="n">8.3</span><span>Chatter and activities</span></div>
+    <div class="toc-line"><span class="n">8.4</span><span>The Settings app</span></div>
+
+    <div class="toc-part"><span class="n">9</span><span class="t">Sign-in rules</span></div>
+    <div class="toc-line"><span class="n">9.1</span><span>Working hours and networks</span></div>
+    <div class="toc-line"><span class="n">9.2</span><span>Blocking a login</span></div>
+
+    <div class="toc-part"><span class="n">10</span><span class="t">Profiles for common roles</span></div>
+    <div class="toc-line"><span class="n">10.1</span><span>Salesperson: own quotations, no delete</span></div>
+    <div class="toc-line"><span class="n">10.2</span><span>Accountant without configuration</span></div>
+    <div class="toc-line"><span class="n">10.3</span><span>Read-only auditor</span></div>
+    <div class="toc-line"><span class="n">10.4</span><span>Warehouse operator on one warehouse</span></div>
+    <div class="toc-line"><span class="n">10.5</span><span>Purchase user without prices to edit</span></div>
+    <div class="toc-line"><span class="n">10.6</span><span>A replacement during a leave</span></div>
+
+    <div class="toc-part"><span class="n">11</span><span class="t">Point of Sale</span></div>
+    <div class="toc-line"><span class="n">11.1</span><span>The four POS modules</span></div>
+    <div class="toc-line"><span class="n">11.2</span><span>What a cashier may not do</span></div>
+    <div class="toc-line"><span class="n">11.3</span><span>Rules on a user</span></div>
+    <div class="toc-line"><span class="n">11.4</span><span>Rules on an access profile</span></div>
+    <div class="toc-line"><span class="n">11.5</span><span>Employees with a badge or a PIN</span></div>
+    <div class="toc-line"><span class="n">11.6</span><span>How the rules combine</span></div>
+
+    <div class="toc-part"><span class="n">12</span><span class="t">Checking your work</span></div>
+    <div class="toc-line"><span class="n">12.1</span><span>Preview as User</span></div>
+    <div class="toc-line"><span class="n">12.2</span><span>Why?</span></div>
+    <div class="toc-line"><span class="n">12.3</span><span>Effective Access on the user form</span></div>
+    <div class="toc-line"><span class="n">12.4</span><span>Health Check</span></div>
+    <div class="toc-line"><span class="n">12.5</span><span>History, versions, export and import</span></div>
+
+    <div class="toc-part"><span class="n">13</span><span class="t">Upgrading Odoo, uninstalling</span></div>
+    <div class="toc-line"><span class="n">13.1</span><span>Moving to a new Odoo version</span></div>
+    <div class="toc-line"><span class="n">13.2</span><span>Uninstalling</span></div>
+
+    <div class="toc-part"><span class="n">14</span><span class="t">When something looks wrong</span></div>
+    <div class="toc-line"><span class="n">14.1</span><span>What is enforced, and what is only hidden</span></div>
+    <div class="toc-line"><span class="n">14.2</span><span>The usual questions</span></div>
+    <div class="toc-line"><span class="n">14.3</span><span>Getting help</span></div>
+</div>
+
+<!-- ============================================================ PART 1 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 1</p>
+    <h1>Before you start</h1>
+
+    <h2><span class="n">1.1</span> What the app does</h2>
+    <p><strong>User Access Manager</strong> groups users into <strong>access profiles</strong>.
+        On a profile you decide, from the real menus of your database, what its users see
+        and do:</p></div>
+    <ul class="plain two-col">
+        <li>which apps and menus they see</li>
+        <li>Read, Create, Edit and Delete on each kind of data</li>
+        <li>which records: their own, their team's, their warehouse's&hellip;</li>
+        <li>fields hidden, read-only or required</li>
+        <li>buttons hidden or refused</li>
+        <li>reports and Action menu entries</li>
+        <li>tabs, filters, views, chatter, activities</li>
+        <li>export, import, archive, duplicate</li>
+        <li>working hours, networks, one session per user</li>
+        <li>Point of Sale rules, with the POS add-ons</li>
+    </ul>
+    <p>No code is needed, and the important rules are enforced on the server, not only
+        hidden on the screen. The app is completely free and open source (LGPL-3).</p>
+
+    <div class="keep"><h2><span class="n">1.2</span> Supported versions</h2>
+    <p>The same app, with the same features, is published for every version below, for both
+        Community and Enterprise. This guide is written on Odoo 19; the few differences are in
+        the second table.</p></div>
+    <table>
+        <thead><tr><th>Module</th><th>Technical name</th><th>15</th><th>16</th><th>17</th><th>18</th><th>19</th><th>20</th></tr></thead>
+        <tbody>
+            <tr><td><strong>User Access Manager</strong></td><td><code>om_access_manager</code></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>User Audit &amp; Sessions <span class="sub">installed with it</span></td><td><code>om_user_audit</code></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td><strong>POS Access Control</strong></td><td><code>om_pos_access</code></td><td></td><td></td><td></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>POS Access Control for Employees</td><td><code>om_pos_access_hr</code></td><td></td><td></td><td></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td><strong>User Access Manager for POS</strong></td><td><code>om_access_manager_pos</code></td><td></td><td></td><td></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>User Access Manager for POS Employees</td><td><code>om_access_manager_pos_hr</code></td><td></td><td></td><td></td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        </tbody>
+    </table>
+    <table>
+        <thead><tr><th style="width:42%">What differs</th><th>Where</th></tr></thead>
+        <tbody>
+            <tr><td>The <strong>Setup Wizard</strong> (a new profile step by step)</td><td>Odoo 16 to 20. On Odoo 16 it is on the profile form only. On Odoo 15 start from <em>New from Template</em> or an empty profile: the result is the same.</td></tr>
+            <tr><td>The tab of system-wide rules</td><td>Called <strong>Restrictions</strong> on Odoo 16 to 20, <strong>Switches</strong> on Odoo 15. Same content.</td></tr>
+            <tr><td>The JSON-2 external API</td><td>Exists from Odoo 19 on; where it exists, it is covered like XML-RPC and JSON-RPC.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="keep"><h2><span class="n">1.3</span> Installing</h2>
+    <ol>
+        <li>Download the module for your Odoo version and put it, with <code>om_user_audit</code>,
+            in your addons folder.</li>
+        <li>In Odoo, turn on developer mode, open <span class="path">Apps</span> and click
+            <strong>Update Apps List</strong>.</li>
+        <li>Search <strong>User Access Manager</strong> and click <strong>Activate</strong>
+            (Install). The audit app installs with it.</li>
+        <li>For the Point of Sale, install <strong>POS Access Control</strong> too; the bridge
+            modules install by themselves (part&nbsp;11).</li>
+    </ol></div>
+    <div class="note warn"><p class="label">Try it on a copy first</p>
+        <p>Access rules touch every screen of Odoo. Build and check your profiles on a copy of
+            your database, then export them and import them on the live one (12.5).</p></div>
+
+    <div class="keep"><h2><span class="n">1.4</span> Who manages the access</h2>
+    <p>The app adds an <strong>Access Manager</strong> app to the home screen, for the members
+        of the group <strong>Access Management / Manager</strong>. The Administrator is one of
+        them from the start. To let someone else manage profiles, tick that group on their user
+        form: they need no Settings rights.</p></div>
+    <p>The app has three menus: <span class="path">Access Profiles</span>,
+        <span class="path">Why?</span> and <span class="path">Health Check</span>.</p>
+
+    <div class="keep"><h2><span class="n">1.5</span> Five rules to keep in mind</h2>
+    <ol>
+        <li><strong>No profile, no restriction.</strong> A user who is in no profile works as
+            before. Nothing changes until you put someone in a profile.</li>
+        <li><strong>A profile only takes away</strong> (or gives an app, 3.4). The user's own
+            groups still decide what Odoo gives them in the first place.</li>
+        <li><strong>Administrators are safe.</strong> The superuser and the Administrator user are
+            never restricted. A Settings user is only restricted by a profile that ticks
+            <em>Apply to Settings Users</em>.</li>
+        <li><strong>The last access manager is kept.</strong> A change that would leave nobody
+            able to open the Access Manager is refused.</li>
+        <li><strong>Hidden is not forbidden.</strong> A hidden menu is cosmetic; denying
+            <em>Read</em> on the data is what forbids it (14.1).</li>
+    </ol></div>
+</div>
+
+<!-- ============================================================ PART 2 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 2</p>
+    <h1>Your first profile</h1>
+
+    <div class="keep"><h2><span class="n">2.1</span> Three ways to start</h2>
+    <p>Open <span class="path">Access Manager &rsaquo; Access Profiles</span>. The list has three
+        buttons above it:</p></div>
+    <table>
+        <thead><tr><th style="width:28%">Button</th><th>What it does</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Setup Wizard</strong> <span class="sub">Odoo 16 &ndash; 20</span></td><td>Asks, one step at a time: who is this profile for, which apps do they use, then for each app which menus they see, which records, reports, buttons and fields. The best start for a first profile: see 2.5.</td></tr>
+            <tr><td><strong>New from Template</strong></td><td>Creates a ready-made profile: Salesperson, Sales Read Only, CRM Salesperson, Accountant without Configuration, Auditor, Warehouse Operator, Purchase User, Cashier, Manufacturing Operator, Project Team Member, Timesheet User, Expenses User, HR Officer without Salaries, and for any app a user without configuration or a read-only user. Only the templates of your installed apps are offered.</td></tr>
+            <tr><td><strong>New</strong></td><td>An empty profile, set up by hand.</td></tr>
+        </tbody>
+    </table>
+    <figure><img src="img/templates.jpg"/><figcaption>New from Template: pick a role, then change anything in the profile it creates.</figcaption></figure>
+    <p>Whichever way you start, the result is an ordinary profile. Give it the name of the
+        people it is for, say <em>Warehouse Staff</em>: the name shows on their user form.</p>
+
+    <div class="keep"><h2><span class="n">2.2</span> Who carries a profile</h2>
+    <figure><img src="img/profile-new.jpg"/><figcaption>A profile: its name, its users, and the tabs below.</figcaption></figure></div>
+    <table>
+        <thead><tr><th style="width:30%">Where</th><th>Who gets the profile</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Users</strong> <span class="sub">top of the form</span></td><td>The users you add. A user can be in several profiles.</td></tr>
+            <tr><td><strong>Also Given To</strong> <span class="sub">Options tab</span></td><td>The members of Odoo groups: they get the profile while they are in the group.</td></tr>
+            <tr><td><strong>Give to New Users</strong> <span class="sub">Options tab</span></td><td>Every internal user created from now on.</td></tr>
+            <tr><td><strong>Temporary Users</strong> <span class="sub">tab</span></td><td>A user from one date to another (both included), for a replacement during a leave. It starts and ends on its own.</td></tr>
+        </tbody>
+    </table>
+    <p>From the users list you can also work on many users at once: select them, then
+        <span class="path">Action &rsaquo; Set Access Profiles</span> (add, remove or replace).
+        On a user form, <strong>Copy Access to&hellip;</strong> copies or moves that user's
+        profiles to another user.</p>
+
+    <div class="keep"><h2><span class="n">2.3</span> Additive or Override</h2>
+    <p>When a user is in several profiles, each profile says how it combines with the others
+        (<em>Options</em> tab):</p></div>
+    <ul class="plain">
+        <li><strong>Additive</strong> (the default): profiles add up, like Odoo groups. The user
+            may do something as soon as one of their additive profiles allows it, and something
+            is hidden only when all of them hide it.</li>
+        <li><strong>Override</strong>: always applies, on top of the others, and is never
+            overruled. Use it for a blanket limit such as <em>Read Only Everywhere</em>.</li>
+    </ul>
+    <div class="note"><p class="label">In practice</p>
+        <p>Adding an additive profile can only give access back, never take it away. If a
+            restriction must hold whatever else the user carries, put it on an Override profile.</p></div>
+
+    <div class="keep"><h2><span class="n">2.4</span> The Options tab</h2>
+    <table>
+        <thead><tr><th style="width:30%">Field</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>Additive / Override</td><td>See 2.3.</td></tr>
+            <tr><td>Apply to Settings Users</td><td>Restrict members of the Settings group too. Off by default, so a profile can never lock the administrators out.</td></tr>
+            <tr><td>Give to New Users</td><td>See 2.2.</td></tr>
+            <tr><td>Home Page</td><td>Where the users land after signing in.</td></tr>
+            <tr><td>Also Given To</td><td>See 2.2.</td></tr>
+            <tr><td>Restrict to Companies</td><td>Left empty, the profile applies to all its users. Set, only to users who have one of these companies. It follows the user's companies, not the company switcher.</td></tr>
+            <tr><td>Notes</td><td>Your own notes.</td></tr>
+        </tbody>
+    </table></div>
+
+    <div class="keep"><h2><span class="n">2.5</span> The Setup Wizard, step by step (Odoo 16 to 20)</h2>
+    <p>The Setup Wizard builds a profile by asking questions, one screen at a time. Open it with
+        <strong>Setup Wizard</strong> above the profiles list for a new profile, or on a profile's form
+        to go through an existing one (on Odoo 16, only on the form). The screenshots are from Odoo 19. The steps are numbered at the top: click one to go back to it.</p></div>
+    <div class="note"><p class="label">Nothing applies until Finish</p>
+        <p>A new profile stays off while you set it up: it applies to its users only once you click
+            <strong>Finish</strong>. On a profile already in use, each answer applies at once, as on the
+            menu tree.</p></div>
+
+    <h3>Step 1 &ndash; Who</h3>
+    <p>Name the job, for example <em>Salesperson</em> or <em>Warehouse Team</em>, and add the users who do
+        it. Users can also be added later. The name is used to tick the apps of the job for you in the
+        next step.</p>
+    <figure><img src="img/wizard-who.jpg"/><figcaption>Step 1: the profile name and its users.</figcaption></figure>
+
+    <h3>Step 2 &ndash; Apps</h3>
+    <p>Tick the apps these users work in; every other app is hidden from them. From the name
+        <em>Salesperson</em>, Sales is already ticked. <strong>Tick all</strong> and
+        <strong>Untick all</strong> help with long lists. Each app ticked becomes a step of its own.</p>
+    <figure><img src="img/wizard-apps.jpg"/><figcaption>Step 2: the apps they use. The others are hidden from them.</figcaption></figure>
+
+    <h3>Step 3 &ndash; One step per app</h3>
+    <p>For each app ticked, up to five pages, numbered under the app's name. <strong>Next</strong> goes
+        through them in order.</p>
+    <table>
+        <thead><tr><th style="width:18%">Page</th><th>What you decide</th></tr></thead>
+        <tbody>
+            <tr><td><strong>1. Menus</strong></td><td>Which menus of the app they see, laid out as in the app's top bar. Untick a menu to hide it with the menus under it; untick <em>Configuration</em> for users who only do the daily work.</td></tr>
+            <tr><td><strong>2. Records</strong></td><td><em>Read only in this app</em>, or which records they see: all of them, or <strong>Limit records of&hellip;</strong> a data, with the one-click choices of 5.1 (their own, their team's, this month&hellip;).</td></tr>
+            <tr><td><strong>3. Reports</strong></td><td>The Print and Actions menus of each screen, as Odoo shows them: untick what they may not use. <em>Allow all</em> and <em>Hide all</em> per menu.</td></tr>
+            <tr><td><strong>4. Buttons</strong></td><td>The buttons of each screen, where Odoo shows them. Click a button to hide it; on a hidden button, the lock blocks it too, so the server refuses it.</td></tr>
+            <tr><td><strong>5. Fields</strong></td><td>The form of each screen: click a field or its label once for <em>Read only</em>, twice for <em>Hidden</em>, three times for <em>Normal again</em>. Click a tab name to hide the tab.</td></tr>
+        </tbody>
+    </table>
+    <figure><img src="img/wizard-app-menus.jpg"/><figcaption>Sales, page 1: the menus of the app, as in its top bar.</figcaption></figure>
+    <figure><img src="img/wizard-app-records.jpg"/><figcaption>Sales, page 2: read only in this app, or limit the records they see.</figcaption></figure>
+    <figure><img src="img/wizard-app-reports.jpg"/><figcaption>Sales, page 3: the Print and Actions menus of sales orders.</figcaption></figure>
+    <figure><img src="img/wizard-app-buttons.jpg"/><figcaption>Sales, page 4: click a button to hide it; the lock blocks it as well.</figcaption></figure>
+    <figure><img src="img/wizard-app-fields.jpg"/><figcaption>Sales, page 5: click a field for read only, again for hidden, a third time for normal.</figcaption></figure>
+
+    <h3>Step 4 &ndash; Everywhere</h3>
+    <p>What these users may not do in any app: Block Export, Block Import, Block Archiving, Block
+        Duplication, Hide Costs and Margins, Hide Sales Prices, Block Developer Mode, Read Only
+        Everywhere. All are off by default.</p>
+    <figure><img src="img/wizard-everywhere.jpg"/><figcaption>Step 4: switches that apply in every app.</figcaption></figure>
+
+    <h3>Step 5 &ndash; Review</h3>
+    <p>A summary: the users, each app with its access and its record limit, and the apps hidden.
+        Click <strong>Preview as User</strong> to see Odoo as one of them, then <strong>Finish</strong>.
+        Everything set here can be changed later, with the Setup Wizard again or on the menu tree
+        (part&nbsp;3).</p>
+    <figure><img src="img/wizard-review.jpg"/><figcaption>Step 5: the summary, Preview as User, and Finish.</figcaption></figure>
+    <div class="note"><p class="label">On Odoo 15</p>
+        <p>The Setup Wizard is not there yet. Start from <strong>New from Template</strong> or an empty
+            profile and use the menu tree: parts 3 to 8 set the same things.</p></div>
+</div>
+
+<!-- ============================================================ PART 3 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 3</p>
+    <h1>Menus and apps</h1>
+
+    <div class="keep"><h2><span class="n">3.1</span> The menu tree</h2>
+    <p>The <strong>Menus &amp; Apps</strong> tab, the first one, shows the real menus of your
+        database. Almost everything is set from here:</p></div>
+    <ul class="plain">
+        <li><strong>Untick</strong> a menu to hide it, with everything below it.</li>
+        <li><strong>Click</strong> a menu to set, in the panel beside the tree, what its users may
+            do there: rights, records, fields, buttons, tabs, filters, views, Print and Action
+            menu.</li>
+    </ul>
+    <p>Changes are saved at once and written in the history of the profile. Small marks on a
+        menu show what is restricted there; tick <strong>Only what is restricted</strong> above
+        the tree to see the whole profile at a glance.</p>
+    <figure><img src="img/menu-tree-untick.jpg"/><figcaption>Untick the apps and menus they must not see. Struck-through menus are hidden.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">3.2</span> Hiding a menu or an app</h2>
+    <p>Untick the app (Point of Sale, Invoicing&hellip;) or one of its menus
+        (Sales &rsaquo; Configuration). The users no longer see it in their menus.</p></div>
+    <div class="note warn"><p class="label">Hidden is cosmetic</p>
+        <p>A hidden menu can still be reached by a link or through another menu. To really
+            forbid the data behind it, remove <em>Read</em> on that data (part 4).</p></div>
+
+    <div class="keep"><h2><span class="n">3.3</span> A whole app at once</h2>
+    <p>Click an app or a submenu. The panel offers one-click levels for everything below it:</p></div>
+    <table>
+        <thead><tr><th style="width:26%">Level</th><th>Result</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Full access</strong></td><td>Nothing restricted (back to normal).</td></tr>
+            <tr><td><strong>No configuration</strong></td><td>The app's Configuration menus are hidden; the rest works as usual.</td></tr>
+            <tr><td><strong>Read only</strong></td><td>They see everything in the app and change nothing.</td></tr>
+            <tr><td><strong>No access</strong></td><td>The app is hidden and its data cannot be read, created, edited or deleted.</td></tr>
+        </tbody>
+    </table>
+    <p>A submenu or a data below can still be set differently: the closest setting wins. Data
+        that other apps share (customers, products) is left alone unless you tick
+        <em>Also shared data</em>.</p>
+    <figure><img src="img/tree-allowed.jpg"/><figcaption>An app clicked: a level for everything below it, rights, records and allowed records.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">3.4</span> Giving an app the user does not have</h2>
+    <p>An app that some user of the profile cannot open is shown unticked and marked
+        <strong>Not given</strong>. Tick it to give them its user level (for example
+        Purchase&nbsp;/&nbsp;User); <em>Access to the app</em> picks another level. The profile
+        then restricts it as usual. The access goes away with the profile. Groups that would
+        make someone an administrator or an access manager are never given this way.</p></div>
+    <figure><img src="img/tree-not-given.jpg"/><figcaption>Apps marked Not given: tick one to give it to the users of the profile.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">3.5</span> Restrict an App</h2>
+    <p>The <strong>Restrict an App</strong> link above the tree opens one app on one screen: its
+        menus, data, reports and Action menu entries, each with a checkbox, ticked for you by the
+        level you choose. Useful when you want to see all of an app at once.</p></div>
+    <div class="note"><p class="label">Rights are per data, not per menu</p>
+        <p>Odoo checks rights on the data. Quotations and Orders both open sales orders, so what
+            you set on Quotations also applies to Orders. The panel tells you which other menus
+            open the same data.</p></div>
+</div>
+
+<!-- ============================================================ PART 4 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 4</p>
+    <h1>Read, Create, Edit and Delete</h1>
+
+    <div class="keep"><h2><span class="n">4.1</span> Rights per data</h2>
+    <p>Click a menu in the tree. Under <strong>Rights</strong>, untick what the users may not do:
+        <strong>Read</strong>, <strong>Create</strong>, <strong>Edit</strong>,
+        <strong>Delete</strong>. The server enforces it, so the Create and Delete buttons leave
+        the screen on their own.</p></div>
+    <figure><img src="img/menu-rights-records.jpg"/><figcaption>Quotations clicked: the four rights, which records, and the fields, buttons and tabs below.</figcaption></figure>
+    <p>Example: a salesperson may create and edit quotations but not delete them: click
+        <span class="path">Sales &rsaquo; Orders &rsaquo; Quotations</span> and untick
+        <strong>Delete</strong>.</p>
+
+    <div class="keep"><h2><span class="n">4.2</span> Read only, everywhere or in one app</h2>
+    <ul class="plain">
+        <li><strong>One app</strong>: click the app and choose the level <em>Read only</em> (3.3).</li>
+        <li><strong>Everything</strong>: tick <strong>Read Only Everywhere</strong> on the
+            Restrictions tab. Put it on an <em>Override</em> profile if the user carries other
+            profiles.</li>
+    </ul></div>
+
+    <div class="keep"><h2><span class="n">4.3</span> Edit drafts only</h2>
+    <p>Beside <strong>Records</strong>, tick <strong>Edit drafts only</strong>: the users see all
+        the records allowed, but may only change the ones still in draft. More generally, one
+        record filter applies to all four operations, and each operation can be narrowed on its
+        own: that is how you allow editing a few records without hiding the others.</p></div>
+</div>
+
+<!-- ============================================================ PART 5 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 5</p>
+    <h1>Which records they see</h1>
+
+    <div class="keep"><h2><span class="n">5.1</span> The one-click choices</h2>
+    <p>Click a menu, then open the <strong>Records</strong> list. Each choice is offered only when
+        the data has what it needs:</p></div>
+    <table>
+        <thead><tr><th style="width:34%">Choice</th><th>They see</th></tr></thead>
+        <tbody>
+            <tr><td>All records</td><td>Everything Odoo already lets them see.</td></tr>
+            <tr><td>Their Own Records</td><td>Records where they are the salesperson, the responsible&hellip;</td></tr>
+            <tr><td>Their Sales Team</td><td>Records of their sales team.</td></tr>
+            <tr><td>Their Companies</td><td>Records of the companies they belong to.</td></tr>
+            <tr><td>Their Warehouse</td><td>Records of their warehouse.</td></tr>
+            <tr><td>Theirs and their team's</td><td>Their own and their reports' in the org chart, three levels down (with Employees).</td></tr>
+            <tr><td>Created today / this week / this month / this year</td><td>Recent records only.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="keep"><h2><span class="n">5.2</span> A filter of your own</h2>
+    <p>For anything else, click <strong>Custom filter&hellip;</strong> and build it with Odoo's
+        filter editor, for example <em>Customer is in Kuwait</em> or <em>Salesperson is the
+        user</em>. It works like a standard Odoo record rule and can use <code>user</code>,
+        <code>company_id</code> and <code>company_ids</code>, e.g.
+        <code>[('user_id', '=', uid)]</code>.</p></div>
+    <p>A filter is enforced by the database: records outside it do not exist for the user, in
+        lists, reports, searches and exports alike.</p>
+
+    <div class="keep"><h2><span class="n">5.3</span> Allowed records: journals, warehouses, shops</h2>
+    <p>Some data is easier to pick by name: only <strong>these journals, points of sale,
+        warehouses, locations, sales teams or dashboards</strong>. Allowing a record also filters
+        what belongs to it: allowing two journals filters their entries, journal items and
+        payments too.</p></div>
+    <ul class="plain">
+        <li>Pick them on the profile, under <em>Allowed records</em> of the app;</li>
+        <li>or tick <strong>Each User's Own</strong>, and set them on each user's form (tab
+            <em>Allowed Records</em>). One <em>Cashiers</em> profile then serves every cashier,
+            each on their own point of sale.</li>
+    </ul>
+</div>
+
+<!-- ============================================================ PART 6 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 6</p>
+    <h1>Fields</h1>
+
+    <div class="keep"><h2><span class="n">6.1</span> Hidden, read-only, required</h2>
+    <p>Click a menu and open <strong>Fields</strong>. The form of that menu is shown: click a field
+        (or its label) and choose <strong>Hidden</strong>, <strong>Read-only</strong> or
+        <strong>Required</strong>. <em>Visible</em> brings it back.</p></div>
+    <figure><img src="img/menu-fields.jpg"/><figcaption>Customer Reference made hidden on quotations, in one click.</figcaption></figure>
+    <p>A hidden field is blanked in everything the user's browser or a script receives, and
+        searching, sorting, grouping or exporting on it is refused. What is written to a hidden
+        or read-only field is ignored.</p>
+
+    <div class="keep"><h2><span class="n">6.2</span> Only when a condition holds</h2>
+    <p>A field, button or tab rule can carry a condition, <strong>Only When</strong>, written like
+        Odoo's view conditions:</p></div>
+    <ul class="plain">
+        <li><code>state == 'sale'</code> &ndash; the customer reference hidden on confirmed orders</li>
+        <li><code>amount_total &gt; 1000</code> &ndash; the discount locked above an amount</li>
+        <li><code>amount_total &gt; 1000 and not partner_id</code></li>
+    </ul>
+    <p>Fields compared with fixed values, <code>uid</code>, <code>and</code>, <code>or</code> and
+        <code>not</code> are supported; anything else is refused when you save the rule.</p>
+
+    <div class="keep"><h2><span class="n">6.3</span> Links, dropdowns and exports</h2>
+    <p>Under <em>More settings</em> of a field you can also:</p></div>
+    <ul class="plain">
+        <li>remove the link of a relational field (no opening the customer from the order);</li>
+        <li>stop creating records from its dropdown;</li>
+        <li>filter the values it offers (only some payment terms), checked when the record is saved;</li>
+        <li>keep it out of the exports while it stays on the screen.</li>
+    </ul>
+
+    <div class="keep"><h2><span class="n">6.4</span> Hide costs, hide sales prices</h2>
+    <p>Two switches on the Restrictions tab, valid in every app installed now or later:</p></div>
+    <ul class="plain">
+        <li><strong>Hide Costs and Margins</strong>: product cost, margins of sales and of the point
+            of sale, stock valuation.</li>
+        <li><strong>Hide Sales Prices</strong>: sales prices, discounts and amounts.</li>
+    </ul>
+    <div class="note warn"><p class="label">Printed documents</p>
+        <p>Odoo's own code still uses these values (a delivery must be valued). A PDF or email
+            Odoo builds may still show them: hide that report too (7.2).</p></div>
+</div>
+
+<!-- ============================================================ PART 7 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 7</p>
+    <h1>Buttons, reports and actions</h1>
+
+    <div class="keep"><h2><span class="n">7.1</span> Hide, block, or both</h2>
+    <p>Click a menu and open <strong>Buttons</strong>: the buttons of its screens are listed, stat
+        buttons and kanban links included. For each one choose:</p></div>
+    <table>
+        <thead><tr><th style="width:24%">Mode</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td><strong>Visible</strong></td><td>They see it and can use it.</td></tr>
+            <tr><td><strong>Hidden</strong></td><td>Not on the screen, but it could still be run another way.</td></tr>
+            <tr><td><strong>Blocked</strong></td><td>Not on the screen, and refused by the server however they try it. This is the safe choice.</td></tr>
+        </tbody>
+    </table>
+    <figure><img src="img/menu-buttons.jpg"/><figcaption>The buttons of sales orders: Cancel blocked, hidden and refused by the server.</figcaption></figure>
+    <p>A button rule can carry an <em>Only When</em> condition too: <em>Cancel</em> refused once
+        the order is confirmed. In developer mode, <strong>Scan Buttons</strong> on the Buttons tab
+        reads the buttons out of the views of any data.</p>
+
+    <div class="keep"><h2><span class="n">7.2</span> Reports and the Action menu</h2>
+    <p>Under <strong>Print</strong> and <strong>Action Menu</strong> of a menu, untick the reports
+        and entries (Send by Email, server actions&hellip;) they must not use. They are also refused
+        when reached by their id or URL. To remove every one at once:</p></div>
+    <ul class="plain">
+        <li><strong>Hide the Print Menu</strong> &ndash; no report can be printed;</li>
+        <li><strong>Hide the Action Menu Entries</strong>,</li>
+    </ul>
+    <p>both on the Restrictions tab.</p>
+</div>
+
+<!-- ============================================================ PART 8 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 8</p>
+    <h1>The rest of the screen</h1>
+
+    <div class="keep"><h2><span class="n">8.1</span> The Restrictions tab</h2>
+    <p>System-wide switches for the users of the profile (the tab is called
+        <strong>Switches</strong> on Odoo 15):</p></div>
+    <figure><img src="img/restrictions.jpg"/><figcaption>The Restrictions tab: records, prices, menus and chatter, screen, search bar and forms.</figcaption></figure>
+    <table>
+        <thead><tr><th style="width:26%">Group</th><th>Switches</th></tr></thead>
+        <tbody>
+            <tr><td>Records</td><td>Read Only Everywhere, Block Archiving, Block Duplication, Block Export, Block Import</td></tr>
+            <tr><td>Prices</td><td>Hide Costs and Margins, Hide Sales Prices</td></tr>
+            <tr><td>Menus and Chatter</td><td>Hide the Print Menu, Hide the Action Menu Entries, Hide Send Message, Hide Log Note, Hide the Followers, Hide the Attachments</td></tr>
+            <tr><td>Screen</td><td>Hide the Chatter Everywhere, Hide Activities, Lock the Status Bars, Hide the Settings App</td></tr>
+            <tr><td>Search Bar and Forms</td><td>No Custom Filters, No Custom Group By, No Saved Searches, No New Properties, Block Installing Apps</td></tr>
+        </tbody>
+    </table>
+
+    <div class="keep"><h2><span class="n">8.2</span> Tabs, filters and views</h2>
+    <p>Click a menu, then:</p></div>
+    <ul class="plain">
+        <li><strong>Pages</strong>: hide notebook tabs of the form (with a condition if you like);</li>
+        <li><strong>Filters</strong>: hide search filters and group-bys, or the search panel;</li>
+        <li><strong>Views</strong>: hide whole view types, such as Kanban or Pivot.</li>
+    </ul>
+
+    <div class="keep"><h2><span class="n">8.3</span> Chatter and activities</h2>
+    <ul class="plain">
+        <li><strong>Hide Send Message</strong>: only Log note remains. With <strong>Hide Log
+            Note</strong> as well, the chatter can only be read. Posting is refused on the server.</li>
+        <li><strong>Hide Activities</strong>: the Activity button and the activities leave the chatter,
+            lists, kanban cards and systray.</li>
+        <li>Both can be set everywhere (Restrictions tab) or for one data (under the menu).</li>
+    </ul></div>
+
+    <div class="keep"><h2><span class="n">8.4</span> The Settings app</h2>
+    <p>Tick <strong>Hide the Settings App</strong>, or, on the <span class="path">Settings</span>
+        menu of the tree, untick only some of its apps (Sales, Inventory&hellip;). This matters for
+        Settings users only, so tick <em>Apply to Settings Users</em> on the profile.</p></div>
+    <figure><img src="img/settings-apps.jpg"/><figcaption>The Settings menu of the tree: the apps whose settings they may open.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 9 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 9</p>
+    <h1>Sign-in rules</h1>
+
+    <div class="keep"><h2><span class="n">9.1</span> Working hours and networks</h2>
+    <p>The <strong>Sign-in</strong> tab sets when and from where the users of the profile may work.
+        It is checked at sign-in and on every request: a session ends when the hours are over or
+        when it is used from a network that is not allowed.</p></div>
+    <figure><img src="img/sign-in.jpg"/><figcaption>Cashiers: Monday to Saturday 09:00 to 22:00, from the shop's network, one session each.</figcaption></figure>
+    <table>
+        <thead><tr><th style="width:30%">Field</th><th>Meaning</th></tr></thead>
+        <tbody>
+            <tr><td>Working Hours</td><td>A line per day, from and to, in the timezone you choose.</td></tr>
+            <tr><td>Allowed Networks</td><td>Addresses or ranges, e.g. <code>192.168.10.0/24</code>.</td></tr>
+            <tr><td>One Session per User</td><td>Signing in ends the user's other sessions.</td></tr>
+            <tr><td>Block the External API</td><td>XML-RPC and JSON-RPC sign-ins refused; the browser still works.</td></tr>
+            <tr><td>Block Developer Mode</td><td>They cannot turn developer mode on.</td></tr>
+        </tbody>
+    </table>
+    <div class="note"><p class="label">Behind a proxy</p>
+        <p>If Odoo runs behind nginx or a load balancer, start it with <code>--proxy-mode</code>,
+            or every request seems to come from the proxy's address.</p></div>
+
+    <div class="keep"><h2><span class="n">9.2</span> Blocking a login</h2>
+    <p><strong>Block Login</strong> refuses every sign-in of the users of the profile, in the
+        browser and through the API, and ends their open sessions at once. Their records are kept.
+        Take a user out of the profile to let them back in, for example after a leave.</p></div>
+</div>
+
+<!-- ============================================================ PART 10 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 10</p>
+    <h1>Profiles for common roles</h1>
+    <p>Each recipe starts from <em>New from Template</em> where one exists, then adjusts it. After
+        each one, check the result with <strong>Preview as User</strong> (12.1).</p>
+
+    <div class="keep"><h2><span class="n">10.1</span> Salesperson: own quotations, no delete</h2>
+    <ol>
+        <li><em>New from Template</em> &rsaquo; <strong>Salesperson</strong>, add the users.</li>
+        <li>In the tree, click <span class="path">Sales &rsaquo; Orders &rsaquo; Quotations</span>:
+            Records = <strong>Their Own Records</strong>, untick <strong>Delete</strong>.</li>
+        <li>Untick <span class="path">Sales &rsaquo; Configuration</span>.</li>
+        <li>Optional: under Buttons, set <strong>Cancel</strong> to <em>Blocked</em>; under
+            Fields, make <strong>Discount</strong> read-only.</li>
+    </ol></div>
+    <figure><img src="img/preview-list.jpg"/><figcaption>Previewing as the salesperson: only her own quotations.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">10.2</span> Accountant without configuration</h2>
+    <ol>
+        <li><em>New from Template</em> &rsaquo; <strong>Accountant without Configuration</strong>.</li>
+        <li>To limit them to some journals, click the Invoicing / Accounting app and pick them under
+            <strong>Allowed records</strong> (5.3).</li>
+        <li>Optional: tick <strong>Block Export</strong>.</li>
+    </ol></div>
+
+    <div class="keep"><h2><span class="n">10.3</span> Read-only auditor</h2>
+    <ol>
+        <li><em>New from Template</em> &rsaquo; <strong>Auditor</strong>, or a new profile with
+            <strong>Read Only Everywhere</strong> ticked.</li>
+        <li>Options: <strong>Override</strong>, so no other profile of the user can give write access back.</li>
+        <li>Optional: <strong>Hide Send Message</strong> and <strong>Hide Log Note</strong>.</li>
+        <li>For a limited period, add the auditor under <strong>Temporary Users</strong>.</li>
+    </ol></div>
+
+    <div class="keep"><h2><span class="n">10.4</span> Warehouse operator on one warehouse</h2>
+    <ol>
+        <li><em>New from Template</em> &rsaquo; <strong>Warehouse Operator</strong>.</li>
+        <li>Click Inventory, Allowed records: warehouses, tick <strong>Each User's Own</strong>.</li>
+        <li>On each user's form, tab <em>Allowed Records</em>, set their warehouse.</li>
+        <li>Optional: <strong>Hide Costs and Margins</strong>.</li>
+    </ol></div>
+
+    <div class="keep"><h2><span class="n">10.5</span> Purchase user without prices to edit</h2>
+    <ol>
+        <li><em>New from Template</em> &rsaquo; <strong>Purchase User</strong>.</li>
+        <li>Click <span class="path">Purchase &rsaquo; Orders &rsaquo; Purchase</span>: Fields,
+            make <strong>Unit Price</strong> read-only; Buttons, block <strong>Confirm Order</strong>
+            if a manager must confirm.</li>
+    </ol></div>
+
+    <div class="keep"><h2><span class="n">10.6</span> A replacement during a leave</h2>
+    <p>Open the profile of the person on leave, tab <strong>Temporary Users</strong>, add the
+        replacement with a start and end date. They get the profile on the first day and lose it
+        after the last, on their own. To stop the absent person from signing in meanwhile, put
+        them in a profile with <strong>Block Login</strong> and take them out when they are back.</p></div>
+</div>
+
+<!-- ============================================================ PART 11 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 11</p>
+    <h1>Point of Sale</h1>
+
+    <div class="keep"><h2><span class="n">11.1</span> The four POS modules</h2>
+    <p>The Point of Sale is a screen of its own, so its rules come in separate, free modules
+        (Odoo 18, 19 and 20, Community and Enterprise). Install only what you use:</p></div>
+    <table>
+        <thead><tr><th style="width:34%">Module</th><th>When you need it</th><th style="width:22%">Installs</th></tr></thead>
+        <tbody>
+            <tr><td><strong>POS Access Control</strong><span class="sub">om_pos_access</span></td><td>The rules themselves, set on each user. Works alone, without the User Access Manager.</td><td>By hand</td></tr>
+            <tr><td><strong>POS Access Control for Employees</strong><span class="sub">om_pos_access_hr</span></td><td>Cashiers log in at the till with a badge or a PIN (POS employee login).</td><td>By itself, with pos_hr</td></tr>
+            <tr><td><strong>User Access Manager for POS</strong><span class="sub">om_access_manager_pos</span></td><td>Set the rules once on an access profile, for every cashier of it.</td><td>By itself, when the Access Manager and the POS are installed</td></tr>
+            <tr><td><strong>User Access Manager for POS Employees</strong><span class="sub">om_access_manager_pos_hr</span></td><td>List POS employees on access profiles.</td><td>By itself, with pos_hr</td></tr>
+        </tbody>
+    </table>
+
+    <div class="keep"><h2><span class="n">11.2</span> What a cashier may not do</h2>
+    <table>
+        <thead><tr><th style="width:30%">Rule</th><th>In the shop</th></tr></thead>
+        <tbody>
+            <tr><td>No Refunds / Refunds Only From a Receipt</td><td>The Refund button goes, or refunds only from the receipt of the sale: the +/- key cannot give money back. Refunds sent anyway are refused.</td></tr>
+            <tr><td>Maximum Refund</td><td>Refunds up to an amount per order, taxes included.</td></tr>
+            <tr><td>No Discounts / Maximum Discount</td><td>No discount, or a maximum per line: a higher one is brought down to it.</td></tr>
+            <tr><td>No Price Changes / Maximum Price Cut</td><td>No price change, or a maximum cut below the pricelist.</td></tr>
+            <tr><td>Never Below Cost</td><td>A price or discount that sells below cost is refused.</td></tr>
+            <tr><td>No Cash In or Out</td><td>Cash In/Out leaves the menu and the closing popup.</td></tr>
+            <tr><td>No Closing the Register</td><td>Close Register leaves the menu.</td></tr>
+            <tr><td>No Creating or Editing Customers</td><td>Choosing a customer stays possible.</td></tr>
+            <tr><td>No Removing Lines or Lowering Quantities</td><td>Once on the order, a product cannot be removed or lowered: a manager has to.</td></tr>
+            <tr><td>Only These Payment Methods</td><td>Only these are shown; orders paid otherwise are refused.</td></tr>
+            <tr><td>Only These Pricelists</td><td>Only these can be chosen, so the price limits cannot be dodged.</td></tr>
+            <tr><td>No Cancelling Orders</td><td>Cancel Order goes; an order with products cannot be deleted.</td></tr>
+        </tbody>
+    </table></div>
+    <p>The buttons leave the screen, and the server checks every order, cash move and closing the
+        shop sends. A cashier with no rule keeps the shop as it is.</p>
+    <figure><img src="img/pos-keys.jpg"/><figcaption>A cashier without discounts or price changes: the % and Price keys are off.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">11.3</span> Rules on a user</h2>
+    <p>With <strong>POS Access Control</strong> only: open the user, tab <strong>Point of
+        Sale</strong>, and tick. It applies the next time they open the shop.</p></div>
+    <figure><img src="img/pos-user-tab.jpg"/><figcaption>The Point of Sale tab of a user: no refunds, discounts up to 10%, never below cost, no cash in or out, cash only.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">11.4</span> Rules on an access profile</h2>
+    <p>With <strong>User Access Manager for POS</strong>, every profile gets a <strong>Point of
+        Sale</strong> tab with the same rules: tick them once on a <em>Cashiers</em> profile and
+        all its users get them. Changes are in the history and versions of the profile.</p></div>
+    <figure><img src="img/pos-profile-tab.jpg"/><figcaption>The Cashiers profile: what its users may not do in the shop.</figcaption></figure>
+    <p>Combine it with the rest of the profile: <strong>Allowed records</strong> &rsaquo; points of
+        sale with <em>Each User's Own</em> keeps each cashier on their own shop (5.3), and the
+        <strong>Sign-in</strong> tab sets their hours (9.1).</p>
+
+    <div class="keep"><h2><span class="n">11.5</span> Employees with a badge or a PIN</h2>
+    <p>When cashiers log in at the till as POS employees:</p></div>
+    <ul class="plain">
+        <li><strong>POS Access Control for Employees</strong> adds a <em>Point of Sale</em> tab to the
+            employee: switch on <strong>Own Point of Sale Rules</strong> and tick. Without it, the
+            employee follows their Odoo user, or else the user who opened the shop.</li>
+        <li><strong>User Access Manager for POS Employees</strong> adds <strong>POS Employees</strong>
+            to the profile's Point of Sale tab: listed employees get the profile's rules at the till.</li>
+    </ul>
+    <figure><img src="img/pos-profile-employees.jpg"/><figcaption>The Shop Staff profile: Abigail and Anita get its rules at the till.</figcaption></figure>
+    <p>Switching cashier switches the rules, on the screen and on the server.</p>
+    <div class="note"><p class="label">More on the Point of Sale</p>
+        <p>A separate guide for the POS modules, with every rule explained and what the cashier sees,
+            ships in <code>om_access_manager_pos</code>, at <code>static/description/user_guide.pdf</code>.</p></div>
+
+    <div class="keep"><h2><span class="n">11.6</span> How the rules combine</h2>
+    <ul class="plain">
+        <li>Rules on the profile and rules on the user (or employee) both apply: the strictest wins.</li>
+        <li>Between profiles: a restriction applies when every additive profile carries it, or any
+            override profile does; a limit is the loosest of the additive profiles, tightened by
+            the override ones.</li>
+        <li>Employees on no profile and without rules follow their Odoo user.</li>
+    </ul></div>
+</div>
+
+<!-- ============================================================ PART 12 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 12</p>
+    <h1>Checking your work</h1>
+
+    <div class="keep"><h2><span class="n">12.1</span> Preview as User</h2>
+    <p>Click <strong>Preview as User</strong> on a profile or on a user form, and pick a user. The
+        window first lists their profiles and what they end up with; <strong>Open Preview</strong>
+        then opens Odoo exactly as they see it: apps, menus, records, fields and buttons.</p></div>
+    <figure><img src="img/preview-dialog.jpg"/><figcaption>Preview as User: the profiles applied, and the restrictions they add up to.</figcaption></figure>
+    <ul class="plain">
+        <li>No password needed, and nothing is saved: the preview is read-only.</li>
+        <li>A banner at the bottom names the user; <strong>Exit preview</strong> brings you back. It
+            covers every tab of your browser, for an hour at most.</li>
+        <li>Only access managers may preview, and only users with no more rights than their own.</li>
+        <li>Sign-in rules (hours, networks) are not simulated.</li>
+    </ul>
+    <figure><img src="img/preview-form.jpg"/><figcaption>Previewing as Sara: no Cancel button, no Customer Reference.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">12.2</span> Why?</h2>
+    <p><span class="path">Access Manager &rsaquo; Why?</span> answers <em>can this user do this, and
+        why not?</em> Pick a user, a data, an operation and, if you like, a record. It shows Odoo's
+        own access first, then each profile, its record filter, and the fields and buttons
+        restricted. It also opens from the user form and from every refusal in the audit log.</p></div>
+    <figure><img src="img/why.jpg"/><figcaption>Why? Sara Ahmed cannot delete sales orders: none of her groups gives that right.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">12.3</span> Effective Access on the user form</h2>
+    <p>The <strong>Access Profiles</strong> tab of a user lists their profiles;
+        <strong>Effective Access</strong> shows what they really end up with, all profiles combined,
+        and which profile produced each line.</p></div>
+
+    <div class="keep"><h2><span class="n">12.4</span> Health Check</h2>
+    <p>After a module is uninstalled or Odoo is upgraded, a rule can lose the menu, field or button
+        it named. <span class="path">Access Manager &rsaquo; Health Check</span> lists those rules,
+        per profile, and runs on its own every week. For each line: <strong>Remove</strong> the dead
+        rule, <strong>Open</strong> it, restore the last version, or accept the profile as it is. It
+        never changes a profile by itself.</p></div>
+    <figure><img src="img/health-check.jpg"/><figcaption>Health Check: a record filter that names a field no longer there.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">12.5</span> History, versions, export and import</h2>
+    <ul class="plain">
+        <li><strong>History</strong>: every change of a profile is in its chatter, with who and when.</li>
+        <li><strong>Versions</strong>: each save keeps a version. A version shows what changed, line by
+            line, and <strong>Restore this Version</strong> brings it back; the users stay. The last
+            200 versions are kept.</li>
+        <li><strong>Export / Import</strong>: select profiles and use <span class="path">Action &rsaquo; Export Profiles</span>, then
+            <strong>Import</strong> above the profiles list of the other database. Menus and reports are matched by external
+            id, else by name; anything missing is listed in the profile's chatter.</li>
+    </ul></div>
+    <figure><img src="img/history.jpg"/><figcaption>A version of a profile: what it changed, and what changed since.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 13 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 13</p>
+    <h1>Upgrading Odoo, uninstalling</h1>
+
+    <div class="keep"><h2><span class="n">13.1</span> Moving to a new Odoo version</h2>
+    <p>Keep the module installed: profiles, their users, versions and sign-in rules are ordinary
+        records and move with the database. Then:</p></div>
+    <ol>
+        <li>Upgrade a copy of the database first.</li>
+        <li>Run the <strong>Health Check</strong> on the copy, and set again what it lists.</li>
+        <li>Check the main profiles with <strong>Preview as User</strong>.</li>
+        <li>Go live.</li>
+    </ol>
+    <p>Exporting the profiles before the upgrade, and importing what is missing after it, is a
+        second safety net. The module exists for every version from 15 to 20, so you can stay on it
+        all the way.</p>
+
+    <div class="keep"><h2><span class="n">13.2</span> Uninstalling</h2>
+    <p>Uninstalling removes the access profiles and every group a profile granted: users keep only
+        the groups of their own form, and every restriction ends. The User Audit &amp; Sessions app
+        stays installed, with its log.</p></div>
+</div>
+
+<!-- ============================================================ PART 14 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 14</p>
+    <h1>When something looks wrong</h1>
+
+    <div class="keep"><h2><span class="n">14.1</span> What is enforced, and what is only hidden</h2>
+    <table>
+        <thead><tr><th style="width:50%">Refused by the server</th><th>Only hidden on the screen</th></tr></thead>
+        <tbody>
+            <tr><td>Read, Create, Edit, Delete rights and record filters</td><td>Hidden menus</td></tr>
+            <tr><td>Blocked buttons (from every client)</td><td>Hidden tabs, filters, view types</td></tr>
+            <tr><td>Hidden and read-only fields, at the boundary</td><td>Buttons set to <em>Hidden</em> only</td></tr>
+            <tr><td>Hidden reports and actions</td><td>Hidden followers and attachments</td></tr>
+            <tr><td>Chatter and activity restrictions</td><td></td></tr>
+            <tr><td>Export, import, archiving, duplication</td><td></td></tr>
+            <tr><td>Settings apps, installing apps, sign-in rules</td><td></td></tr>
+            <tr><td>The POS rules</td><td></td></tr>
+        </tbody>
+    </table></div>
+    <p>To protect data, use the left column: deny <em>Read</em>, filter the records, block the button.</p>
+
+    <div class="keep"><h2><span class="n">14.2</span> The usual questions</h2>
+    <table>
+        <thead><tr><th style="width:38%">What you see</th><th>Why, and what to do</th></tr></thead>
+        <tbody>
+            <tr><td>A restriction does nothing</td><td>The user has another <em>additive</em> profile that allows it. Copy the restriction into that profile too, or use an Override profile. <strong>Why?</strong> shows which profile allows it.</td></tr>
+            <tr><td>An administrator is not restricted</td><td>Deliberate: the Administrator is never restricted, and Settings users only with <em>Apply to Settings Users</em>.</td></tr>
+            <tr><td>A user's screens break with an error</td><td>Read was denied on data the interface needs. Remove the profile from the user, then give back Read on that data.</td></tr>
+            <tr><td>The hidden value still shows on a PDF or an email</td><td>Odoo builds documents with its own rights: hide that report too.</td></tr>
+            <tr><td>Allowed networks refuse everyone</td><td>Odoo is behind a proxy: start it with <code>--proxy-mode</code>.</td></tr>
+            <tr><td>The menus do not follow the company switcher</td><td>A profile follows the user's companies, not the company being worked in.</td></tr>
+            <tr><td>After an upgrade, rules are missing</td><td>Run the Health Check (12.4) and restore or set them again.</td></tr>
+            <tr><td>A change is refused: "last access manager"</td><td>Someone must keep the right to open the Access Manager. Give it to another user first.</td></tr>
+        </tbody>
+    </table></div>
+
+    <div class="keep"><h2><span class="n">14.3</span> Getting help</h2>
+    <p>Write to <strong>odoomates@gmail.com</strong> with your Odoo version, the module version
+        (Apps &rsaquo; the module &rsaquo; Module Info) and, when you can, a screenshot of
+        <strong>Why?</strong> for the user and the operation. Feedback and wishes are welcome:
+        they make the app better.</p></div>
+    <p>The app is translated into Arabic, German, Spanish, French, Italian, Dutch, Brazilian
+        Portuguese, Russian, Turkish and Simplified Chinese. Missing your language, or a better
+        word? Write to us.</p>
+</div>
+
+</body>
+</html>

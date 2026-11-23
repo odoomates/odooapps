@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<!--
+  The user guide of the Point of Sale access modules: POS Access Control, its employee
+  add-on, and the User Access Manager bridges.
+
+  This file is the source. Edit it, then rebuild the PDF that ships in the app:
+
+      python3 doc/build_user_guide.py
+
+  The build needs wkhtmltopdf and pypdf, and reads the Lato fonts from the Odoo
+  source tree. Paths are resolved by the build script, not hard-coded here.
+  The pictures in img/ come from static/description of the four POS modules.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Point of Sale Access - User Guide</title>
+<style>
+/* wkhtmltopdf 0.12.x runs an old WebKit: no CSS variables, no flexbox, no `gap`.
+   Everything below is written for it, on purpose. */
+@font-face { font-family: 'GuideSans'; font-weight: 400; src: url('LATO_REGULAR'); }
+@font-face { font-family: 'GuideSans'; font-weight: 700; src: url('LATO_BOLD'); }
+@font-face { font-family: 'GuideSans'; font-weight: 900; src: url('LATO_BLACK'); }
+
+html, body {
+    margin: 0; padding: 0;
+    font-family: 'GuideSans', 'Lato', sans-serif;
+    font-size: 11pt; line-height: 1.66; color: #333340;
+    background: #ffffff;
+}
+figure, figcaption { display: block; margin: 0; }
+
+/* ------------------------------------------------------------------ cover */
+.cover {
+    position: relative; overflow: hidden;
+    -webkit-box-sizing: border-box; box-sizing: border-box;
+    height: 297mm; width: 100%; margin: 0; padding: 26mm 20mm 0 20mm;
+    background: #3B1CA0;
+    background: -webkit-linear-gradient(300deg, #1B0A4E 0%, #3B1CA0 48%, #6B4BE8 100%);
+    color: #ffffff; page-break-after: always;
+}
+.cover .ring { position: absolute; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; }
+.cover .ring-1 { width: 520px; height: 520px; top: -110px; right: -120px; }
+.cover .ring-2 { width: 330px; height: 330px; top: 55px; right: 10px; }
+.cover .ring-3 { width: 300px; height: 300px; bottom: 90px; left: -160px; }
+.cover-badges { margin-bottom: 52mm; }
+.cover-badges img {
+    width: 54px; height: auto; background: #fff; border-radius: 7px; padding: 7px 9px;
+    vertical-align: middle; margin-right: 14px;
+}
+.cover-kicker {
+    display: inline-block; vertical-align: middle;
+    border: 1px solid rgba(255,255,255,.45); border-radius: 30px;
+    padding: 7px 18px; font-size: 9pt; font-weight: 700; letter-spacing: .18em;
+    text-transform: uppercase; white-space: nowrap;
+}
+.cover h1 { font-size: 46pt; font-weight: 900; margin: 0; letter-spacing: -1px; line-height: 1.05; }
+.cover h2 { font-size: 20pt; font-weight: 400; margin: 6px 0 0 0; color: #ece8fb; }
+.cover p.lead { margin: 22px 0 0 0; width: 120mm; font-size: 11pt; color: #ddd6f7; }
+.cover-foot {
+    position: absolute; left: 20mm; right: 20mm; bottom: 20mm;
+    border-top: 1px solid rgba(255,255,255,.3); padding-top: 17px; font-size: 9pt;
+}
+.cover-foot div { display: inline-block; vertical-align: top; width: 52mm; }
+.cover-foot strong { display: block; font-weight: 700; color: #ffffff; }
+.cover-foot span { color: #cec6ee; }
+
+/* --------------------------------------------------------------- contents */
+.contents { page-break-after: always; }
+.contents h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 24px 0 6px 0; }
+.contents .lead { color: #8A8A9E; margin: 0 0 28px 0; }
+.toc-part {
+    margin: 20px 0 8px 0; padding-bottom: 7px; border-bottom: 1px solid #E7E3F5;
+}
+.toc-part .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-weight: 700; font-size: 9pt; padding: 2px 7px; margin-right: 12px;
+}
+.toc-part .t { font-weight: 700; font-size: 12.5pt; color: #1E0B57; }
+.toc-part .rule { display: none; }
+.toc-line { padding: 3px 0 3px 40px; }
+.toc-line .n { display: inline-block; width: 34px; color: #5B34D6; font-weight: 700; }
+
+/* ------------------------------------------------------------------ parts */
+.part { page-break-before: always; }
+.part-mark { width: 62px; border-top: 4px solid #5B34D6; margin-bottom: 24px; }
+.part-kicker {
+    font-size: 9pt; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+    color: #8A8A9E; margin: 0 0 2px 0;
+}
+.part h1 { font-size: 27pt; font-weight: 900; color: #1E0B57; margin: 0 0 24px 0; letter-spacing: -.5px; }
+
+h2 { font-size: 13pt; font-weight: 700; color: #1E0B57; margin: 26px 0 11px 0; page-break-after: avoid; }
+h2 .n {
+    display: inline-block; border-radius: 5px; background: #5B34D6; color: #fff;
+    font-size: 8.5pt; font-weight: 700; padding: 2px 7px; margin-right: 11px;
+    vertical-align: 2px;
+}
+h3 { font-size: 11pt; font-weight: 700; color: #1E0B57; margin: 18px 0 6px 0; page-break-after: avoid; }
+
+p { margin: 0 0 10px 0; }
+strong { font-weight: 700; color: #22222e; }
+code {
+    font-family: 'DejaVu Sans Mono', monospace; font-size: 8.5pt;
+    background: #F4F1FD; color: #4b3a86; padding: 1px 5px; border-radius: 4px;
+}
+.path { font-weight: 700; color: #1E0B57; }
+
+ul, ol { margin: 0 0 10px 0; padding-left: 20px; }
+li { margin: 0 0 6px 0; }
+ul.plain { list-style: none; padding-left: 4px; }
+ul.plain > li { position: relative; padding-left: 15px; }
+ul.plain > li:before {
+    content: ''; position: absolute; left: 0; top: 8px;
+    width: 5px; height: 5px; border-radius: 50%; background: #5B34D6;
+}
+ul.tick { list-style: none; padding-left: 2px; }
+ul.tick > li { position: relative; padding-left: 19px; margin-bottom: 4px; }
+ul.tick > li:before { content: '\2713'; position: absolute; left: 0; color: #5B34D6; font-weight: 700; }
+.two-col { -webkit-column-count: 2; -webkit-column-gap: 32px; column-count: 2; column-gap: 32px; }
+.two-col li { -webkit-column-break-inside: avoid; }
+
+/* ----------------------------------------------------------------- tables */
+table { width: 100%; border-collapse: collapse; margin: 4px 0 15px 0; font-size: 10pt; }
+thead th {
+    background: #5B34D6; color: #ffffff; text-align: left; vertical-align: bottom;
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+    padding: 8px 12px;
+}
+tbody td { padding: 8px 12px; border-bottom: 1px solid #E7E3F5; vertical-align: top; }
+tbody tr { page-break-inside: avoid; }
+td .sub, th .sub { display: block; color: #8A8A9E; font-size: 8.5pt; font-family: 'DejaVu Sans Mono', monospace; }
+
+/* --------------------------------------------------------------- callouts */
+.note {
+    border-left: 3px solid #5B34D6; background: #F7F5FE;
+    padding: 12px 16px; margin: 13px 0 15px 0; page-break-inside: avoid;
+}
+.note .label {
+    font-size: 8.5pt; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    color: #5B34D6; margin: 0 0 4px 0;
+}
+.note p:last-child { margin-bottom: 0; }
+.note.warn { border-left-color: #D9534F; background: #FDF3F2; }
+.note.warn .label { color: #C9302C; }
+
+/* ---------------------------------------------------------------- figures */
+figure { margin: 15px 0 19px 0; page-break-inside: avoid; }
+figure img { width: 100%; border: 1px solid #E7E3F5; border-radius: 6px; }
+figcaption { color: #8A8A9E; font-size: 9pt; margin-top: 6px; }
+
+/* wkhtmltopdf ignores page-break-after: avoid; a heading travels with its first block instead */
+.keep { page-break-inside: avoid; }
+.contents .toc-part { margin: 13px 0 5px 0; padding-bottom: 4px; }
+.contents .toc-line { padding: 1px 0 1px 40px; }
+</style>
+</head>
+<body>
+
+<!-- ==================================================================== -->
+<div class="cover">
+    <div class="ring ring-1"></div>
+    <div class="ring ring-2"></div>
+    <div class="ring ring-3"></div>
+    <div class="cover-badges">
+        <img src="img/logo.png" alt="Odoo Mates"/>
+        <span class="cover-kicker">User Guide</span>
+    </div>
+    <h1>Point of Sale<br/>Access</h1>
+    <h2>for Odoo 18, 19 and 20</h2>
+    <p class="lead">Decide what each cashier may do in the Point of Sale: refunds, discounts,
+        prices, pricelists, cash, closing, customers and payment methods &mdash; on a user, an
+        employee or an access profile, enforced on the server.</p>
+    <div class="cover-foot">
+        <div><strong>Odoo 18 &ndash; 20</strong><span>Community &amp; Enterprise</span></div>
+        <div><strong>LGPL-3</strong><span>Free and open source</span></div>
+        <div><strong>odoomates@gmail.com</strong><span>Odoo Mates</span></div>
+    </div>
+</div>
+
+<!-- ==================================================================== -->
+<div class="contents">
+    <h1>Contents</h1>
+    <p class="lead">Seven parts, from picking the modules to a shop where every cashier has the right rules.</p>
+
+    <div class="toc-part"><span class="n">1</span><span class="t">Before you start</span></div>
+    <div class="toc-line"><span class="n">1.1</span><span>The four modules</span></div>
+    <div class="toc-line"><span class="n">1.2</span><span>Which ones you need</span></div>
+    <div class="toc-line"><span class="n">1.3</span><span>Supported versions</span></div>
+    <div class="toc-line"><span class="n">1.4</span><span>Installing</span></div>
+
+    <div class="toc-part"><span class="n">2</span><span class="t">The rules</span></div>
+    <div class="toc-line"><span class="n">2.1</span><span>Orders</span></div>
+    <div class="toc-line"><span class="n">2.2</span><span>Discounts and prices</span></div>
+    <div class="toc-line"><span class="n">2.3</span><span>Customers and lines</span></div>
+    <div class="toc-line"><span class="n">2.4</span><span>Register and payment</span></div>
+
+    <div class="toc-part"><span class="n">3</span><span class="t">Rules on a user</span></div>
+    <div class="toc-part"><span class="n">4</span><span class="t">Rules on an access profile</span></div>
+    <div class="toc-part"><span class="n">5</span><span class="t">Employees with a badge or a PIN</span></div>
+    <div class="toc-line"><span class="n">5.1</span><span>Rules on the employee</span></div>
+    <div class="toc-line"><span class="n">5.2</span><span>Employees on an access profile</span></div>
+
+    <div class="toc-part"><span class="n">6</span><span class="t">Who gets which rules</span></div>
+    <div class="toc-line"><span class="n">6.1</span><span>The cashier at the till decides</span></div>
+    <div class="toc-line"><span class="n">6.2</span><span>Several sources: the strictest wins</span></div>
+    <div class="toc-line"><span class="n">6.3</span><span>Several profiles</span></div>
+
+    <div class="toc-part"><span class="n">7</span><span class="t">In the shop, and when something looks wrong</span></div>
+    <div class="toc-line"><span class="n">7.1</span><span>What the cashier sees</span></div>
+    <div class="toc-line"><span class="n">7.2</span><span>What the server checks</span></div>
+    <div class="toc-line"><span class="n">7.3</span><span>Example setups</span></div>
+    <div class="toc-line"><span class="n">7.4</span><span>The usual questions</span></div>
+    <div class="toc-line"><span class="n">7.5</span><span>Getting help</span></div>
+</div>
+
+<!-- ============================================================ PART 1 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 1</p>
+    <h1>Before you start</h1>
+
+    <div class="keep"><h2><span class="n">1.1</span> The four modules</h2>
+    <p>The Point of Sale rules come in four small, free modules. Each works alone or with the
+        others: install only what your shop needs.</p></div>
+    <table>
+        <thead><tr><th style="width:36%">Module</th><th>What it adds</th></tr></thead>
+        <tbody>
+            <tr><td><strong>POS Access Control</strong><span class="sub">om_pos_access</span></td><td>The rules themselves, and a <em>Point of Sale</em> tab on the user form to set them. Needs only the Point of Sale.</td></tr>
+            <tr><td><strong>POS Access Control for Employees</strong><span class="sub">om_pos_access_hr</span></td><td>The same rules on each employee who logs in to the shop with a badge or a PIN.</td></tr>
+            <tr><td><strong>User Access Manager for POS</strong><span class="sub">om_access_manager_pos</span></td><td>The rules on the access profiles of the User Access Manager: set them once on a <em>Cashiers</em> profile for all its users.</td></tr>
+            <tr><td><strong>User Access Manager for POS Employees</strong><span class="sub">om_access_manager_pos_hr</span></td><td>POS employees listed on access profiles: at the till, the profile's rules apply to them.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="keep"><h2><span class="n">1.2</span> Which ones you need</h2>
+    <table>
+        <thead><tr><th style="width:50%">Your shop</th><th>Install</th></tr></thead>
+        <tbody>
+            <tr><td>Cashiers log in with their own Odoo user, a few cashiers</td><td>POS Access Control</td></tr>
+            <tr><td>Cashiers log in at the till with a badge or a PIN (<em>Log in with Employees</em>)</td><td>POS Access Control + POS Access Control for Employees</td></tr>
+            <tr><td>You already use the User Access Manager, or have many cashiers with the same rules</td><td>User Access Manager for POS (it brings POS Access Control)</td></tr>
+            <tr><td>Both: profiles and employee login</td><td>All four</td></tr>
+        </tbody>
+    </table></div>
+
+    <h2><span class="n">1.3</span> Supported versions</h2>
+    <table>
+        <thead><tr><th>Module</th><th>Odoo 18</th><th>Odoo 19</th><th>Odoo 20</th></tr></thead>
+        <tbody>
+            <tr><td>POS Access Control</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>POS Access Control for Employees</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>User Access Manager for POS</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+            <tr><td>User Access Manager for POS Employees</td><td>&#10003;</td><td>&#10003;</td><td>&#10003;</td></tr>
+        </tbody>
+    </table>
+    <p>Community and Enterprise. The User Access Manager itself exists for Odoo 15 to 20; its POS
+        add-ons for 18, 19 and 20. Its own guide ships in <code>om_access_manager</code>.</p>
+
+    <div class="keep"><h2><span class="n">1.4</span> Installing</h2>
+    <ol>
+        <li>Put the modules in your addons folder, then in Odoo turn on developer mode, open
+            <span class="path">Apps</span> and click <strong>Update Apps List</strong>.</li>
+        <li>Install <strong>POS Access Control</strong>.</li>
+        <li>The other three install by themselves when what they connect is there:
+            <ul class="plain">
+                <li><em>for Employees</em>, once the POS employee login (<code>pos_hr</code>) is installed;</li>
+                <li><em>User Access Manager for POS</em>, once the User Access Manager and the Point of Sale are installed;</li>
+                <li><em>User Access Manager for POS Employees</em>, once both of the above and <code>pos_hr</code> are.</li>
+            </ul></li>
+        <li>Open the shop again after a change: the rules load when the shop opens.</li>
+    </ol></div>
+    <div class="note"><p class="label">No rule, no change</p>
+        <p>A user or employee with no rule keeps the shop exactly as it is. Managers are not slowed down.</p></div>
+</div>
+
+<!-- ============================================================ PART 2 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 2</p>
+    <h1>The rules</h1>
+    <p>The same rules appear on a user, an employee and an access profile, in four groups. A limit
+        left at <strong>0</strong> means no limit. When a cashier tries something not allowed, a message
+        says why.</p>
+
+    <div class="keep"><h2><span class="n">2.1</span> Orders</h2>
+    <table>
+        <thead><tr><th style="width:32%">Rule</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td><strong>No Refunds</strong></td><td>The Refund button is hidden, and refunds sent anyway are refused.</td></tr>
+            <tr><td><strong>Refunds Only From a Receipt</strong></td><td>A refund goes through Orders, from the receipt of the sale: a line made negative with the +/- key is refused.</td></tr>
+            <tr><td><strong>Maximum Refund</strong></td><td>The highest amount, taxes included, an order may give back, in the shop's currency.</td></tr>
+            <tr><td><strong>Never Below Cost</strong></td><td>A price or a discount that sells a product for less than its cost is refused.</td></tr>
+            <tr><td><strong>No Cancelling Orders</strong></td><td>Cancel Order is hidden, an order with products cannot be deleted from the list of orders, and cancelling sent anyway is refused.</td></tr>
+        </tbody>
+    </table></div>
+
+    <div class="keep"><h2><span class="n">2.2</span> Discounts and prices</h2>
+    <table>
+        <thead><tr><th style="width:32%">Rule</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td><strong>No Discounts</strong></td><td>The % key is disabled; orders with a discounted line or the global discount are refused. Refunding a discounted sale stays possible.</td></tr>
+            <tr><td><strong>Maximum Discount (%)</strong></td><td>The highest discount on a line: a higher one is brought down to it.</td></tr>
+            <tr><td><strong>No Price Changes</strong></td><td>The Price key is disabled, and a price below the pricelist is refused.</td></tr>
+            <tr><td><strong>Maximum Price Cut (%)</strong></td><td>How far below the pricelist price a price may be set.</td></tr>
+            <tr><td><strong>Only These Pricelists</strong></td><td>Empty: every pricelist of the shop. Set: only these can be chosen, and orders with another are refused. The price and discount limits are measured against them, so they cannot be dodged by switching pricelist.</td></tr>
+        </tbody>
+    </table></div>
+    <figure><img src="img/pos-keys.jpg"/><figcaption>A cashier without discounts or price changes: the % and Price keys are off.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">2.3</span> Customers and lines</h2>
+    <table>
+        <thead><tr><th style="width:32%">Rule</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td><strong>No Creating or Editing Customers</strong></td><td>Create and Edit are hidden from the customers of the shop, and saving a customer from it is refused. Choosing a customer stays possible.</td></tr>
+            <tr><td><strong>No Removing Lines or Lowering Quantities</strong></td><td>Once a product is on the order, it cannot be removed nor its quantity lowered: a manager has to. Checked on the shop screen only (the server only sees the final order).</td></tr>
+        </tbody>
+    </table></div>
+    <figure><img src="img/pos-quantity.jpg"/><figcaption>Lowering a quantity: refused, a manager has to.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">2.4</span> Register and payment</h2>
+    <table>
+        <thead><tr><th style="width:32%">Rule</th><th>Effect</th></tr></thead>
+        <tbody>
+            <tr><td><strong>No Cash In or Out</strong></td><td>Cash In/Out leaves the menu and the closing popup, and cash moves sent anyway are refused.</td></tr>
+            <tr><td><strong>No Closing the Register</strong></td><td>Close Register leaves the menu, and closing sent anyway is refused.</td></tr>
+            <tr><td><strong>Only These Payment Methods</strong></td><td>Empty: every method of the shop. Set: only these are shown, and orders paid otherwise are refused.</td></tr>
+        </tbody>
+    </table></div>
+    <figure><img src="img/pos-menu.jpg"/><figcaption>The menu of a cashier with no cash in or out and no closing.</figcaption></figure>
+    <figure><img src="img/pos-payment.jpg"/><figcaption>Only the payment methods allowed: here, cash.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 3 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 3</p>
+    <h1>Rules on a user</h1>
+    <p>With <strong>POS Access Control</strong>:</p>
+    <ol>
+        <li>Open <span class="path">Settings &rsaquo; Users &amp; Companies &rsaquo; Users</span> and the cashier's user.</li>
+        <li>Open the <strong>Point of Sale</strong> tab.</li>
+        <li>Tick the rules and set the limits. Save.</li>
+        <li>The cashier gets them the next time they open the shop.</li>
+    </ol>
+    <figure><img src="img/pos-user-tab.jpg"/><figcaption>Monica: no refunds, discounts up to 10%, never below cost, no cash in or out, cash only.</figcaption></figure>
+    <p>Rules on a user suit a few cashiers. For many cashiers with the same rules, use an access
+        profile (part&nbsp;4): set them once, and a new cashier only has to be added to it.</p>
+</div>
+
+<!-- ============================================================ PART 4 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 4</p>
+    <h1>Rules on an access profile</h1>
+    <p>With <strong>User Access Manager for POS</strong>, every access profile gets a <strong>Point of
+        Sale</strong> tab with the same rules, grouped as Orders, Discounts and Prices, Customers and
+        Lines, Payment and Register.</p>
+    <ol>
+        <li>Open <span class="path">Access Manager &rsaquo; Access Profiles</span> and create a profile,
+            say <em>Cashiers</em> (the template <em>Cashier</em> is a good start), and add its users.</li>
+        <li>Open the <strong>Point of Sale</strong> tab and tick the rules.</li>
+        <li>Every user of the profile gets them the next time they open the shop.</li>
+    </ol>
+    <figure><img src="img/pos-profile-tab.jpg"/><figcaption>The Cashiers profile: what its users may not do in the shop.</figcaption></figure>
+    <p>The rest of the profile works as usual, and fits a shop well:</p>
+    <ul class="plain">
+        <li><strong>Allowed records &rsaquo; points of sale</strong> with <em>Each User's Own</em>: each
+            cashier sees only their own shop, set on their user form.</li>
+        <li><strong>Sign-in</strong>: working hours, the shop's network, one session per user.</li>
+        <li><strong>Hide Costs and Margins</strong>: no cost or margin on the products and orders.</li>
+        <li><strong>Preview as User</strong> checks the rest of a cashier's access.</li>
+    </ul>
+    <p>Every change of the Point of Sale tab is kept in the history and the versions of the profile.</p>
+</div>
+
+<!-- ============================================================ PART 5 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 5</p>
+    <h1>Employees with a badge or a PIN</h1>
+    <p>When the shop uses <em>Log in with Employees</em>, several employees share the till under one
+        Odoo user. The employee modules make the rules follow whoever is the cashier.</p>
+    <figure><img src="img/pos-cashier.jpg"/><figcaption>Select Cashier: the rules switch with the employee who logs in.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">5.1</span> Rules on the employee</h2>
+    <p>With <strong>POS Access Control for Employees</strong>, the employee form has a <strong>Point of
+        Sale</strong> tab (visible to HR officers):</p>
+    <ol>
+        <li>Open the employee, tab <strong>Point of Sale</strong>.</li>
+        <li>Switch on <strong>Own Point of Sale Rules</strong>, then tick the rules.</li>
+    </ol></div>
+    <p>Off, the employee follows the rules of their Odoo user, or else those of the user who opened
+        the shop.</p>
+    <figure><img src="img/pos-employee-tab.jpg"/><figcaption>Abigail: no cash in or out, no closing, discounts up to 15%.</figcaption></figure>
+
+    <div class="keep"><h2><span class="n">5.2</span> Employees on an access profile</h2>
+    <p>With <strong>User Access Manager for POS Employees</strong>, the profile's Point of Sale tab has
+        a <strong>POS Employees</strong> field. Add the employees: when one of them is the cashier, the
+        Point of Sale rules of the profile apply.</p></div>
+    <figure><img src="img/pos-profile-employees.jpg"/><figcaption>The Shop Staff profile: Abigail and Anita get its rules at the till.</figcaption></figure>
+</div>
+
+<!-- ============================================================ PART 6 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 6</p>
+    <h1>Who gets which rules</h1>
+
+    <h2><span class="n">6.1</span> The cashier at the till decides</h2>
+    <table>
+        <thead><tr><th style="width:44%">The cashier is&hellip;</th><th>Their rules come from</th></tr></thead>
+        <tbody>
+            <tr><td>An Odoo user</td><td>Their user form, and their access profiles.</td></tr>
+            <tr><td>An employee with <em>Own Point of Sale Rules</em></td><td>Their employee form, and the profiles listing them.</td></tr>
+            <tr><td>An employee listed on a profile</td><td>That profile.</td></tr>
+            <tr><td>An employee with no rules and on no profile</td><td>Their Odoo user, or else the user who opened the shop.</td></tr>
+        </tbody>
+    </table>
+    <p>The server knows who sent each order, cash move and closing, so the right rules are checked
+        there too.</p>
+
+    <h2><span class="n">6.2</span> Several sources: the strictest wins</h2>
+    <p>Rules on the profile and rules on the user or employee all apply together. A rule ticked
+        anywhere applies; for a limit, the lowest one counts; payment methods and pricelists are only
+        those every source allows.</p>
+
+    <h2><span class="n">6.3</span> Several profiles</h2>
+    <p>Profiles combine as the other rules of the User Access Manager:</p>
+    <ul class="plain">
+        <li>A restriction applies when <strong>every additive</strong> profile of the user carries it,
+            or <strong>any override</strong> profile does.</li>
+        <li>A limit is the <strong>loosest</strong> of the additive profiles, tightened by the override
+            ones.</li>
+        <li>A limit left at 0 on one additive profile means no limit from the additive profiles.</li>
+        <li>Payment methods and pricelists: an additive profile with an empty list allows them all;
+            otherwise those of the additive profiles together, narrowed by the override ones.</li>
+    </ul>
+    <div class="note"><p class="label">Example</p>
+        <p>Sara is in <em>Cashiers</em> (No Refunds, Maximum Discount 10%) and in <em>Senior
+            Cashiers</em> (refunds allowed, Maximum Discount 20%), both additive. She may refund,
+            and give discounts up to 20%. To cap every cashier at 10% whatever else they carry, put
+            the limit on an <em>Override</em> profile.</p></div>
+</div>
+
+<!-- ============================================================ PART 7 -->
+<div class="part">
+    <div class="part-mark"></div>
+    <p class="part-kicker">Part 7</p>
+    <h1>In the shop, and when something looks wrong</h1>
+
+    <h2><span class="n">7.1</span> What the cashier sees</h2>
+    <p>No new screen to learn: what they may not use is simply not there (keys off, buttons and menu
+        entries gone, only the payment methods allowed), and a message says why when they try.</p>
+
+    <h2><span class="n">7.2</span> What the server checks</h2>
+    <p>A button off the screen is not enough, so the server checks every order, cash move and
+        closing a cashier sends, and refuses what is not allowed. Refunding a discounted sale stays
+        possible, as do combo parts, rewards and tips. The one rule checked on the screen only is
+        <em>No Removing Lines or Lowering Quantities</em>.</p>
+
+    <div class="keep"><h2><span class="n">7.3</span> Example setups</h2>
+    <table>
+        <thead><tr><th style="width:26%">Role</th><th>Rules</th></tr></thead>
+        <tbody>
+            <tr><td>New cashier</td><td>No Refunds, No Discounts, No Price Changes, No Cash In or Out, No Closing the Register, No Creating or Editing Customers, No Removing Lines or Lowering Quantities.</td></tr>
+            <tr><td>Cashier</td><td>Refunds Only From a Receipt, Maximum Refund 20, Maximum Discount 10%, Never Below Cost, No Cash In or Out.</td></tr>
+            <tr><td>Shift lead</td><td>Maximum Discount 25%, Never Below Cost. May close the register.</td></tr>
+            <tr><td>Cash-only kiosk</td><td>Only These Payment Methods: Cash. Only These Pricelists: the kiosk's.</td></tr>
+            <tr><td>Manager</td><td>No rule: the shop as it is.</td></tr>
+        </tbody>
+    </table></div>
+
+    <div class="keep"><h2><span class="n">7.4</span> The usual questions</h2>
+    <table>
+        <thead><tr><th style="width:38%">What you see</th><th>Why, and what to do</th></tr></thead>
+        <tbody>
+            <tr><td>A new rule does nothing</td><td>The shop loads the rules when it opens: close the shop tab and open it again.</td></tr>
+            <tr><td>A profile rule does not apply</td><td>The user has another additive profile without it. Add it there too, or use an Override profile (6.3).</td></tr>
+            <tr><td>An employee gets the wrong rules</td><td>Check <em>Own Point of Sale Rules</em> on the employee, and the POS Employees of the profiles (6.1).</td></tr>
+            <tr><td>The discount is lowered by itself</td><td>The Maximum Discount brings a higher discount down to it.</td></tr>
+            <tr><td>"Not allowed to sell &hellip; below its cost"</td><td><em>Never Below Cost</em> is on: check the product cost.</td></tr>
+            <tr><td>A payment method is missing</td><td><em>Only These Payment Methods</em> is set on the user, the employee or a profile.</td></tr>
+        </tbody>
+    </table></div>
+
+    <h2><span class="n">7.5</span> Getting help</h2>
+    <p>Write to <strong>odoomates@gmail.com</strong> with your Odoo version, the modules installed and
+        a screenshot of the Point of Sale tab. All four modules are free, under LGPL-3; feedback
+        makes them better.</p>
+</div>
+
+</body>
+</html>
