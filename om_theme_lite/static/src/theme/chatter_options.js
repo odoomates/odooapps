@@ -2,12 +2,8 @@
 
 import { patch } from "@web/core/utils/patch";
 import { browser } from "@web/core/browser/browser";
-import { session } from "@web/session";
-import { FormController } from "@web/views/form/form_controller";
-import { FormRenderer } from "@web/views/form/form_renderer";
 import { Chatter } from "@mail/components/chatter/chatter";
 import { ChatterTopbar } from "@mail/components/chatter_topbar/chatter_topbar";
-import { SIZES } from "@web/core/ui/ui_service";
 
 import { useState } from "@odoo/owl";
 
@@ -40,48 +36,6 @@ function applyHideTracking(hide) {
 
 applyWidth(storedWidth());
 applyHideTracking(browser.localStorage.getItem(HIDE_TRACKING_KEY) === "1");
-
-/**
- * "Below the form": the chatter stays underneath even on a wide screen.
- *
- * Odoo puts the chatter (or an attachment preview) beside the sheet once the
- * screen is extra wide, and both the form controller and the form renderer decide
- * that from the screen size they read off the ui service. For this user they are
- * handed a screen size capped just under that, so a wide screen is laid out the way
- * Odoo lays out a normal one: chatter below, no preview beside it, and the
- * wide-screen class dropped.
- */
-const chatterBelow = () => session.om_chatter_position === "bottom";
-
-document.documentElement.classList.toggle("o_om_chatter_below", chatterBelow());
-
-function capSize(ui) {
-    return new Proxy(ui, {
-        // read through the service itself, so a resize still re-renders
-        get: (target, key) => (key === "size" ? Math.min(target.size, SIZES.XL) : target[key]),
-    });
-}
-
-patch(FormRenderer.prototype, "om_theme_lite.chatter_below", {
-    setup() {
-        this._super(...arguments);
-        if (chatterBelow() && this.uiService) {
-            this.uiService = capSize(this.uiService);
-        }
-    },
-});
-
-patch(FormController.prototype, "om_theme_lite.chatter_below", {
-    setup() {
-        this._super(...arguments);
-        if (chatterBelow()) {
-            if (this.uiService) {
-                this.uiService = capSize(this.uiService);
-            }
-            this.ui = capSize(this.ui);
-        }
-    },
-});
 
 patch(ChatterTopbar.prototype, "om_theme_lite.chatter_tracking", {
     setup() {
