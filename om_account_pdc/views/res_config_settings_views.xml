@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_pdc" model="ir.ui.view">
+        <field name="name">res.config.settings.form.pdc</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='analytic']" position="before">
+                <block title="Post-dated Cheques" id="om_pdc">
+                    <setting string="Post-dated Cheques"
+                             help="The accounts holding the cheques until they are cleared, and the journal of their registration.">
+                        <div class="content-group mt16">
+                            <div class="row">
+                                <label for="pdc_receivable_account_id" class="col-lg-5 o_light_label" string="PDC Receivable"/>
+                                <field name="pdc_receivable_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="pdc_payable_account_id" class="col-lg-5 o_light_label" string="PDC Payable"/>
+                                <field name="pdc_payable_account_id"/>
+                            </div>
+                            <div class="row">
+                                <label for="pdc_journal_id" class="col-lg-5 o_light_label" string="Journal"/>
+                                <field name="pdc_journal_id"/>
+                            </div>
+                        </div>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
