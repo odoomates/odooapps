@@ -15,6 +15,12 @@ export class AccessProfileListController extends ListController {
     openWizard(xmlid) {
         return this.actionService.doAction(xmlid, { onClose: () => this.model.load() });
     }
+
+    openGuidedSetup() {
+        return this.actionService.doAction({
+            type: "ir.actions.client", tag: "om_access_guided_setup", params: { profile_id: false },
+        });
+    }
 }
 
 registry.category("views").add("om_access_profile_list", {
