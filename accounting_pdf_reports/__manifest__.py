@@ -14,7 +14,7 @@
     'company': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
-    'depends': ['account', 'om_print_journal_entry'],
+    'depends': ['account'],
     'live_test_url': 'https://www.youtube.com/watch?v=Qu6R3yNKR60',
     'demo': [],
     'data': [
