@@ -29,7 +29,8 @@ Reports and analysis
 
 * ``accounting_pdf_reports`` — Balance Sheet, Profit and Loss, Cash Flow
   Statement, General Ledger, Partner Ledger, Trial Balance, Aged Partner
-  Balance, Journal Audit and Tax Report.
+  Balance, Journal Audit and Tax Report, and your own financial reports, each
+  in a menu of its own.
 * ``om_account_daily_reports`` — Day Book, Bank Book and Cash Book.
 * ``om_account_cash_forecast`` — a forecast of the cash position from the
   receivables, the payables and the recurring entries.
@@ -133,6 +134,29 @@ What this module adds on top
   bank, its account number are proposed.
 * Adds a Document column to the vendor bills list: the eye opens the scan of the
   bill over the list, to check the bills against their documents.
+
+
+Custom financial reports
+========================
+
+Beside the Balance Sheet and the Profit and Loss, build reports of your own (a
+management P&L, operating expenses, a gross margin) and open each one from a
+menu of its own:
+
+1. In Configuration > Accounting > Financial Reports, create a report and add
+   its sections: accounts, account types, the value of another report, or the
+   sum of the sections below. Each section has its sign and its level of
+   detail.
+2. On the form of the report, click **Add to Menu** and pick the menu name, the
+   parent menu and the position among its menus.
+3. Open the new menu: the report wizard opens with the report chosen. Set the
+   dates, a comparison if you need one, and print. With Dynamic Accounting
+   Reports (``om_dynamic_reports``) installed, the same menu opens the report on
+   screen.
+
+**Remove Menu** takes the menu away again, and deleting the report removes its
+menu too. The Advisors add the menus; the menu shows for the users
+who see the statement reports.
 
 
 Installation
