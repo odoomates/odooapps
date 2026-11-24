@@ -1,6 +1,6 @@
 {
     'name': 'Rental - Stock',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Sales/Sales',
     'summary': 'Rental with inventory: rental location per warehouse, stock moves at pickup and return, '
                'serial numbers, availability from the real stock',
