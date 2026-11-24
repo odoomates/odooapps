@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Mates Pen',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.0.2',
     'category': 'Productivity',
     'summary': 'Studio for Odoo Community, No Code App Builder, View Editor, Report Designer, Approvals, '
                'Automations, Access Rights, Add Fields, Drag and Drop, Odoo 20',
