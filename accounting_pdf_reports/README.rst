@@ -49,6 +49,8 @@ Features
   views on journal items from the Ledgers menu.
 * Maintain the account report structures used by the financial reports, with
   parent and child lines, a sign, a display style and a level of detail.
+* Build financial reports of your own and give each one a menu with Add to
+  Menu: the menu opens the report wizard with the report chosen.
 * Report wizards are available to the accounting readonly, billing, user and
   manager groups, depending on the report.
 
@@ -103,6 +105,28 @@ click the print button to get the PDF.
 The journal items of the General Ledger and of the Partner Ledger can also be
 browsed on screen from Accounting > Accounting > Ledgers > General Ledger Items
 and Partner Ledger Items.
+
+Custom financial reports
+========================
+
+Beside the Balance Sheet and the Profit and Loss, build reports of your own (a
+management P&L, operating expenses, a gross margin) and open each one from a
+menu of its own:
+
+1. In Configuration > Accounting > Financial Reports, create a report and add
+   its sections: accounts, account types, the value of another report, or the
+   sum of the sections below. Each section has its sign and its level of
+   detail.
+2. On the form of the report, click **Add to Menu** and pick the menu name, the
+   parent menu and the position among its menus.
+3. Open the new menu: the report wizard opens with the report chosen. Set the
+   dates, a comparison if you need one, and print. With Dynamic Accounting
+   Reports (``om_dynamic_reports``) installed, the same menu opens the report on
+   screen.
+
+**Remove Menu** takes the menu away again, and deleting the report removes its
+menu too. The accounting managers add the menus; the menu shows for the users
+who see the statement reports.
 
 
 Credits

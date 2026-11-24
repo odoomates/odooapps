@@ -13,3 +13,4 @@ from . import account_journal_audit
 from . import account_cash_flow
 from . import account_annual_report
 from . import account_tax_closing
+from . import account_financial_report_menu

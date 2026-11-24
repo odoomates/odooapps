@@ -44,6 +44,7 @@ const savedStates = new WeakMap();
  * action says which report with `om_report_model` in its context, and which
  * reports share the switcher with `om_report_app`; `om_report_model: "overview"`
  * opens the overview of the app, a card per report with its key figures.
+ * A model that draws several reports is told which one with `om_report_variant`.
  */
 export class OmReport extends Component {
     static template = "om_report_engine.Report";
@@ -107,6 +108,13 @@ export class OmReport extends Component {
         return this.props.action.context || {};
     }
 
+    /** Which report the model draws, for a model that draws several (om_report_variant of the action). */
+    get variant() {
+        return this.state.reportModel === this.context.om_report_model
+            ? this.context.om_report_variant || false
+            : false;
+    }
+
     async start() {
         const saved = savedStates.get(this.props.action);
         const app = this.context.om_report_app || false;
@@ -145,7 +153,7 @@ export class OmReport extends Component {
             this.foldsRemembered = true;
             return;
         }
-        const expanded = await this.orm.call(FOLD_MODEL, "om_get", [this.state.reportModel]);
+        const expanded = await this.orm.call(FOLD_MODEL, "om_get", [this.state.reportModel, this.variant]);
         this.foldsRemembered = Array.isArray(expanded);
         if (this.foldsRemembered) {
             this.state.expanded = expanded;
@@ -154,13 +162,13 @@ export class OmReport extends Component {
 
     rememberFolds() {
         this.foldsRemembered = true;
-        return this.orm.call(FOLD_MODEL, "om_set", [this.state.reportModel, this.state.expanded]);
+        return this.orm.call(FOLD_MODEL, "om_set", [this.state.reportModel, this.state.expanded, this.variant]);
     }
 
     async loadViews() {
         this.state.views = this.isOverview
             ? []
-            : await this.orm.call(VIEW_MODEL, "om_list", [this.state.reportModel]);
+            : await this.orm.call(VIEW_MODEL, "om_list", [this.state.reportModel, this.variant]);
     }
 
     async reload({ keepExpanded = false, autoUnfold = false } = {}) {
@@ -181,7 +189,8 @@ export class OmReport extends Component {
         this.state.error = null;
         const expanded = keepExpanded ? this.state.expanded : [];
         try {
-            const report = await this.orm.call(this.state.reportModel, "om_get_report", [this.state.options], {
+            const options = { ...this.state.options, variant: this.variant };
+            const report = await this.orm.call(this.state.reportModel, "om_get_report", [options], {
                 expanded,
                 auto_unfold: autoUnfold || !keepExpanded,
             });

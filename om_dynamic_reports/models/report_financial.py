@@ -34,6 +34,11 @@ class OmDynamicReportFinancial(models.AbstractModel):
         return self.env['account.financial.report']
 
     @api.model
+    def _odr_closes(self, root):
+        """Whether the amount of the root section closes the report as its last line."""
+        return self._odr_root_total
+
+    @api.model
     def _om_name_label(self, options):
         return ''
 
@@ -298,7 +303,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
 
         tree = [build(section, False, 0) for section in root.children_ids.sorted(lambda s: (s.sequence, s.id))]
         total = False
-        if self._odr_root_total:
+        if self._odr_closes(root):
             total = self._odr_values(amounts_of(root), float(root.sign), options)
         return tree, total
 
