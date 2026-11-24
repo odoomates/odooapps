@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Mates Pen - No Code Customizer',
-    'version': '18.0.1.0.1',
+    'version': '18.0.1.0.2',
     'category': 'Productivity',
     'summary': 'No Code Customizer, Codeless Studio for Odoo Community: App Builder, Form and View '
                'Editor, Custom Fields, Report Designer, Approvals, Automations, Access Rights, Drag and Drop',
