@@ -12,9 +12,12 @@ _logger = logging.getLogger(__name__)
 
 # the customization must land after every other extension of the same view
 CUSTOMIZATION_PRIORITY = 9999
+# key of the views the Studio makes. Not "om_pen.": Odoo deletes the views whose key starts
+# with the name of a module when that module is uninstalled, and these are the user's work
+KEY_PREFIX = '__om_pen__.'
 # key of the generated views: a change of theirs that no longer finds its place after
 # a module update is skipped rather than breaking the whole view
-GENERATED_KEY = 'om_pen.customization_'
+GENERATED_KEY = KEY_PREFIX + 'customization_'
 # how many steps back the Studio editor can undo
 UNDO_LIMIT = 50
 
@@ -404,6 +407,20 @@ class OmPenView(models.Model):
         self._clear_draft_views()
 
     def init(self):
+        # views the Studio made under the key prefix "om_pen.": move them to KEY_PREFIX, so
+        # that uninstalling the module leaves them (not the views of the module's own files)
+        self.env.cr.execute("""
+            UPDATE ir_ui_view v
+               SET key = %s || substr(v.key, 8)
+             WHERE v.key LIKE 'om\\_pen.%%'
+               AND NOT EXISTS (SELECT 1 FROM ir_model_data d
+                                WHERE d.model = 'ir.ui.view' AND d.res_id = v.id AND d.module = 'om_pen')
+        """, [KEY_PREFIX])
+        self.env.cr.execute("""
+            UPDATE ir_act_report_xml
+               SET report_name = %s || substr(report_name, 8)
+             WHERE report_name LIKE 'om\\_pen.report\\_%%'
+        """, [KEY_PREFIX])
         # generated views made before they carried a key: give them one, so a change
         # of theirs that no longer fits after an update is skipped, not fatal
         self.env.cr.execute("""

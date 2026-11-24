@@ -1,16 +1,17 @@
 {
-    'name': 'Odoo Mates Pen',
+    'name': 'Odoo Mates Pen - No Code Customizer',
     'version': '20.0.1.0.2',
     'category': 'Productivity',
-    'summary': 'Studio for Odoo Community, No Code App Builder, View Editor, Report Designer, Approvals, '
-               'Automations, Access Rights, Add Fields, Drag and Drop, Odoo 20',
+    'summary': 'No Code Customizer, Codeless Studio for Odoo Community: App Builder, Form and View '
+               'Editor, Custom Fields, Report Designer, Approvals, Automations, Access Rights, Drag and Drop',
     'description': """
-A visual, drag and drop Studio for Odoo, opened from the pen in the top bar.
+A no code customizer for Odoo: a visual, drag and drop Studio, opened from the pen in the top bar.
+Codeless customization for Odoo Community.
 
-Edit every view on the real screen: forms, lists, kanban, search, calendar, pivot, graph
-and activity views. Add fields of any kind, tabs, columns, smart buttons, header buttons,
-ribbons, a chatter and stages. Build new apps with their menus and icon. Design PDF
-reports from blocks on a live preview. Put approvals on buttons, create automations, and
+Form editor and view editor on the real screen: forms, lists, kanban, search, calendar, pivot, graph
+and activity views. Add custom fields of any kind, tabs, columns, smart buttons, header buttons,
+ribbons, a chatter and stages. No code app builder: new apps with their menus and icon.
+Report designer: PDF reports from blocks on a live preview. Put approvals on buttons, create automations, and
 manage access rights. Changes are drafts until published, can be undone, are kept as
 versions, and everything can be exported as an installable module and imported back.
 """,    'sequence': 10,

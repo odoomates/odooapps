@@ -13,6 +13,8 @@ from lxml.builder import E
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
+from .om_pen_view import KEY_PREFIX
+
 BLOCK_KINDS = ('title', 'text', 'field', 'fields', 'address', 'table', 'image', 'signature',
                'qrcode', 'barcode', 'spacer', 'page_break', 'columns_end')
 PLACEHOLDER_RE = re.compile(r'\{\{\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\}\}')
@@ -41,7 +43,7 @@ class OmPenReport(models.Model):
 
     def _template_key(self):
         self.ensure_one()
-        return 'om_pen.report_%s' % self.id
+        return '%sreport_%s' % (KEY_PREFIX, self.id)
 
     def _check_path(self, path, model=None):
         """ Raise unless `path` is a dotted path of fields of the model. """
@@ -257,7 +259,7 @@ class OmPenReport(models.Model):
             else:
                 self.view_id = View.create({
                     **vals,
-                    'name': 'om_pen.report_%s' % self.id,
+                    'name': self._template_key(),
                     'type': 'qweb',
                     'inherit_id': target.id,
                     'priority': 99,
