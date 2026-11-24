@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="website_menu_helpdesk" model="website.menu">
+            <field name="name">Help</field>
+            <field name="url">/helpdesk</field>
+            <field name="parent_id" ref="website.main_menu"/>
+            <field name="sequence">60</field>
+        </record>
+    </data>
+    <data>
+        <record id="om_helpdesk.model_om_helpdesk_ticket" model="ir.model">
+            <field name="website_form_key">create_om_helpdesk_ticket</field>
+            <field name="website_form_default_field_id" ref="om_helpdesk.field_om_helpdesk_ticket__description"/>
+            <field name="website_form_access">True</field>
+            <field name="website_form_label">Create a Helpdesk Ticket</field>
+        </record>
+        <function model="ir.model.fields" name="formbuilder_whitelist">
+            <value>om.helpdesk.ticket</value>
+            <value eval="[
+                'name',
+                'description',
+                'partner_name',
+                'email_from',
+                'partner_phone',
+                'team_id',
+                'ticket_type_id',
+            ]"/>
+        </function>
+    </data>
+</odoo>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="helpdesk_teams" name="Help">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Help</t>
+            <div id="wrap" class="o_om_website_helpdesk">
+                <div class="oe_structure" id="oe_structure_helpdesk_teams_top">
+                    <section class="pt-5 pb-4">
+                        <div class="container">
+                            <h1>How can we help?</h1>
+                            <p class="lead text-muted">Choose the team that matches your request and send us a ticket.</p>
+                        </div>
+                    </section>
+                </div>
+                <div class="container pb-5">
+                    <div t-if="not teams" class="alert alert-info">
+                        No team takes requests on the website yet.
+                    </div>
+                    <div class="row g-4">
+                        <div t-foreach="teams" t-as="team" class="col-12 col-md-6 col-lg-4">
+                            <div class="card h-100">
+                                <div class="card-body d-flex flex-column">
+                                    <h4 class="card-title" t-field="team.name"/>
+                                    <div t-if="not is_html_empty(team.description)" class="card-text text-muted mb-3" t-field="team.description"/>
+                                    <a t-attf-href="/helpdesk/#{slug(team)}" class="btn btn-primary mt-auto align-self-start">Submit a ticket</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <p t-if="not request.env.user._is_public()" class="mt-4">
+                        <a href="/my/tickets">See my tickets</a>
+                    </p>
+                </div>
+                <div class="oe_structure" id="oe_structure_helpdesk_teams_bottom"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="helpdesk_team_form" name="Help: Ticket Form">
+        <t t-call="website.layout">
+            <t t-set="additional_title" t-value="team.name"/>
+            <div id="wrap" class="o_om_website_helpdesk">
+                <div class="container pt-4 pb-5">
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb ps-0 mb-3">
+                            <li class="breadcrumb-item"><a href="/helpdesk">Help</a></li>
+                            <li class="breadcrumb-item active" aria-current="page"><span t-field="team.name"/></li>
+                        </ol>
+                    </nav>
+                    <div class="row">
+                        <div class="col-12 col-lg-8">
+                            <h1 class="mb-2" t-field="team.name"/>
+                            <div t-if="not is_html_empty(team.description)" class="text-muted mb-4" t-field="team.description"/>
+                            <span class="hidden" data-for="om_helpdesk_ticket_form"
+                                t-att-data-values="dict(default_values, team_id=team.id)"/>
+                            <section id="forms" class="s_website_form" data-vcss="001" data-snippet="s_website_form">
+                                <form id="om_helpdesk_ticket_form" action="/website/form/" method="post"
+                                    enctype="multipart/form-data" class="o_mark_required" data-mark="*"
+                                    data-model_name="om.helpdesk.ticket"
+                                    data-success-mode="redirect" data-success-page="/helpdesk/thanks"
+                                    hide-change-model="true">
+                                    <div class="s_website_form_rows row s_col_no_bgcolor">
+                                        <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required" data-type="char" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_name">
+                                                    <span class="s_website_form_label_content">Your Name</span>
+                                                    <span class="s_website_form_mark"> *</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="om_hd_name" type="text" class="form-control s_website_form_input"
+                                                        name="partner_name" required="" data-fill-with="name"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required" data-type="email" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_email">
+                                                    <span class="s_website_form_label_content">Your Email</span>
+                                                    <span class="s_website_form_mark"> *</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="om_hd_email" type="email" class="form-control s_website_form_input"
+                                                        name="email_from" required="" data-fill-with="email"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-0 py-2 s_website_form_field" data-type="char" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_phone">
+                                                    <span class="s_website_form_label_content">Your Phone</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="om_hd_phone" type="tel" class="form-control s_website_form_input"
+                                                        name="partner_phone" data-fill-with="phone"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required s_website_form_model_required" data-type="char" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_subject">
+                                                    <span class="s_website_form_label_content">Subject</span>
+                                                    <span class="s_website_form_mark"> *</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="om_hd_subject" type="text" class="form-control s_website_form_input"
+                                                        name="name" required=""/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_required" data-type="text" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_description">
+                                                    <span class="s_website_form_label_content">Description</span>
+                                                    <span class="s_website_form_mark"> *</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <textarea id="om_hd_description" class="form-control s_website_form_input"
+                                                        name="description" required="" rows="6"
+                                                        placeholder="Describe your request: what happened, what you expected, any error message..."/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_custom" data-type="binary" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_attachments">
+                                                    <span class="s_website_form_label_content">Attachments</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="om_hd_attachments" type="file" class="form-control s_website_form_input"
+                                                        name="attachments" multiple="multiple"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mb-0 py-2 s_website_form_field s_website_form_dnone" data-type="integer" data-name="Field">
+                                            <div class="row s_col_no_resize s_col_no_bgcolor">
+                                                <label class="col-4 col-sm-auto s_website_form_label" style="width: 200px" for="om_hd_team">
+                                                    <span class="s_website_form_label_content">Team</span>
+                                                </label>
+                                                <div class="col-sm">
+                                                    <input id="om_hd_team" type="hidden" class="form-control s_website_form_input"
+                                                        name="team_id" t-att-value="team.id"/>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 s_website_form_submit mt-3" data-name="Submit Button">
+                                            <div style="width: 200px" class="s_website_form_label"/>
+                                            <a href="#" role="button" class="btn btn-primary btn-lg s_website_form_send">Submit</a>
+                                            <span id="s_website_form_result"/>
+                                        </div>
+                                    </div>
+                                </form>
+                            </section>
+                        </div>
+                        <div class="col-12 col-lg-4 mt-5 mt-lg-0">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title">Follow your request</h5>
+                                    <p class="card-text small text-muted">
+                                        You receive an email with the ticket number. Reply to that email to add information,
+                                        or follow the ticket from your account.
+                                    </p>
+                                    <a t-if="not request.env.user._is_public()" href="/my/tickets" class="btn btn-link px-0">See my tickets</a>
+                                </div>
+                            </div>
+                            <div t-if="len(teams) &gt; 1" class="mt-4">
+                                <h6 class="text-muted">Other teams</h6>
+                                <ul class="list-unstyled">
+                                    <li t-foreach="teams - team" t-as="other"><a t-attf-href="/helpdesk/#{slug(other)}" t-out="other.name"/></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="helpdesk_thanks" name="Help: Ticket Sent">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Ticket sent</t>
+            <div id="wrap" class="o_om_website_helpdesk">
+                <div class="container py-5">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-8 text-center">
+                            <i class="oi oi-filled text-success" data-icon="check_circle" style="font-size: 4rem;"/>
+                            <h1 class="mt-3">Thank you!</h1>
+                            <t t-if="ticket">
+                                <p class="lead">
+                                    Your ticket <strong class="o_om_helpdesk_ticket_number" t-out="ticket.number"/> has been created.
+                                </p>
+                                <p class="text-muted">We will get back to you soon. You will receive our answers by email.</p>
+                                <a t-if="portal_url" t-att-href="portal_url" class="btn btn-primary">Follow my ticket</a>
+                            </t>
+                            <p t-else="" class="lead">Your request has been sent. We will get back to you soon.</p>
+                            <p class="mt-4"><a href="/helpdesk">Back to the Help page</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+</odoo>

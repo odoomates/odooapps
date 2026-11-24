@@ -1,0 +1,2502 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* om_helpdesk
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-24 13:35+0000\n"
+"PO-Revision-Date: 2026-11-24 13:35+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_helpdesk
+#: model:ir.module.module,description:base.module_om_helpdesk
+msgid ""
+"\n"
+"Helpdesk app for customer support: tickets created from the email alias of each team or by your\n"
+"agents, assigned by hand, to the agent with the fewest open tickets or in turn, tracked through\n"
+"stages, with SLA deadlines in working hours, emails to the customer on each stage, customer ratings\n"
+"when a ticket is closed, a customer portal to follow, answer and close tickets, merging of tickets,\n"
+"and ticket and SLA analysis.\n"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__closed_count
+msgid "# Closed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__open_count
+msgid "# Open"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__rating_count
+msgid "# Ratings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__ticket_count
+msgid "# Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_team.py:0
+msgid "%s: My Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_team.py:0
+msgid "%s: SLA Failed"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_team.py:0
+msgid "%s: Unassigned"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_team.py:0
+msgid "%s: Urgent"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla_status__success_rate
+msgid ""
+"100 when the SLA was reached in time, 0 when it failed. Ongoing lines count "
+"as 100 until their deadline passes."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,body_html:om_helpdesk.mail_template_ticket_rating
+msgid ""
+"<div>\n"
+"    <t t-set=\"access_token\" t-value=\"object._rating_get_access_token()\"/>\n"
+"    <t t-set=\"partner\" t-value=\"object._rating_get_partner()\"/>\n"
+"    <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"width:100%; margin:0px auto;\">\n"
+"    <tbody>\n"
+"        <tr><td valign=\"top\" style=\"font-size: 13px;\">\n"
+"            Hello <t t-out=\"partner.name or ''\">Brandon Freeman</t>,<br/><br/>\n"
+"            Your ticket <strong t-out=\"object.number or ''\">TK00001</strong>: <t t-out=\"object.name or ''\">Printer not working</t> is closed.\n"
+"            Please take a moment to tell us how we did<t t-if=\"object._rating_get_operator().name\">, handled by <strong t-out=\"object._rating_get_operator().name or ''\">Mitchell Admin</strong></t>.\n"
+"        </td></tr>\n"
+"        <tr><td style=\"text-align: center;\">\n"
+"            <table border=\"0\" cellpadding=\"0\" cellspacing=\"0\" width=\"590\" style=\"width:100%; margin: 32px 0px 32px 0px; display: inline-table;\">\n"
+"                <tr><td style=\"font-size: 13px; text-align: center;\">\n"
+"                    <strong>How do you feel about our support?</strong><br/>\n"
+"                    <span style=\"font-size: 12px; opacity: 0.5; color: #454748;\">(click on one of these smileys)</span>\n"
+"                </td></tr>\n"
+"                <tr><td style=\"font-size: 13px;\">\n"
+"                    <table style=\"width:100%; text-align:center; margin-top:2rem;\">\n"
+"                        <tr>\n"
+"                            <td><a t-attf-href=\"/rate/{{ access_token }}/5\"><img alt=\"Happy\" src=\"/rating/static/src/img/rating_5.png\" title=\"Happy\"/></a></td>\n"
+"                            <td><a t-attf-href=\"/rate/{{ access_token }}/3\"><img alt=\"Neutral\" src=\"/rating/static/src/img/rating_3.png\" title=\"Neutral\"/></a></td>\n"
+"                            <td><a t-attf-href=\"/rate/{{ access_token }}/1\"><img alt=\"Unhappy\" src=\"/rating/static/src/img/rating_1.png\" title=\"Unhappy\"/></a></td>\n"
+"                        </tr>\n"
+"                    </table>\n"
+"                </td></tr>\n"
+"            </table>\n"
+"        </td></tr>\n"
+"        <tr><td valign=\"top\" style=\"font-size: 13px;\">\n"
+"            Your feedback helps us improve our service.<br/><br/>\n"
+"            Best regards,<br/>\n"
+"            <t t-out=\"object.team_id.name or object.company_id.name or ''\">Customer Support</t>\n"
+"        </td></tr>\n"
+"    </tbody>\n"
+"    </table>\n"
+"</div>\n"
+"            "
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,body_html:om_helpdesk.mail_template_ticket_received
+msgid ""
+"<div>\n"
+"    Dear <t t-out=\"object.partner_id.name or object.partner_name or 'customer'\">Brandon Freeman</t>,<br/><br/>\n"
+"    Thank you for contacting us. Your request has been received and registered under the reference\n"
+"    <strong t-out=\"object.number or ''\">TK00001</strong>: <t t-out=\"object.name or ''\">Printer not working</t>.<br/>\n"
+"    Our team will get back to you as soon as possible.<br/><br/>\n"
+"    <t t-if=\"object.team_id.privacy_visibility == 'portal'\">\n"
+"        You can follow your ticket and reply to us from your account.<br/>\n"
+"        <div style=\"margin: 16px 0px 16px 0px;\">\n"
+"            <a t-att-href=\"object.get_portal_url()\" style=\"background-color: #714B67; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;\">\n"
+"                View the ticket\n"
+"            </a>\n"
+"        </div>\n"
+"    </t>\n"
+"    Simply reply to this email to add information to your request.<br/><br/>\n"
+"    Best regards,<br/>\n"
+"    <t t-out=\"object.team_id.name or object.company_id.name or ''\">Customer Support</t>\n"
+"</div>\n"
+"            "
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,body_html:om_helpdesk.mail_template_ticket_solved
+msgid ""
+"<div>\n"
+"    Dear <t t-out=\"object.partner_id.name or object.partner_name or 'customer'\">Brandon Freeman</t>,<br/><br/>\n"
+"    Your request <strong t-out=\"object.number or ''\">TK00001</strong>: <t t-out=\"object.name or ''\">Printer not working</t>\n"
+"    has been solved.<br/>\n"
+"    If the problem is still there, just reply to this email and we will look at it again.<br/><br/>\n"
+"    Best regards,<br/>\n"
+"    <t t-out=\"object.user_id.name or object.team_id.name or ''\">Mitchell Admin</t>\n"
+"</div>\n"
+"            "
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<i class=\"oi me-1\" data-icon=\"check_circle\"/>Close this ticket"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<i class=\"oi me-1\" data-icon=\"mail\" title=\"Email Alias\"/>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid ""
+"<i class=\"oi oi-fw o_button_icon\" data-icon=\"sentiment_satisfied\" invisible=\"rating_avg &lt; 3.66\" title=\"Happy\"/>\n"
+"                            <i class=\"oi oi-fw o_button_icon\" data-icon=\"sentiment_neutral\" invisible=\"rating_avg &lt; 2.33 or rating_avg &gt;= 3.66\" title=\"Neutral\"/>\n"
+"                            <i class=\"oi oi-fw o_button_icon\" data-icon=\"sentiment_dissatisfied\" invisible=\"rating_avg &gt;= 2.33\" title=\"Unhappy\"/>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_kanban
+msgid "<i class=\"oi\" data-icon=\"timer\" title=\"SLA deadline\"/>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<small class=\"text-muted\">Customer</small>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<small class=\"text-muted\">Handled By</small>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_kanban
+msgid "<span class=\"badge text-bg-danger\">SLA failed</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "<span class=\"o_stat_text\">Customer Tickets</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "<span class=\"o_stat_text\">Rating</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid ""
+"<span class=\"o_stat_value\" invisible=\"rating_percentage_satisfaction &gt;= 0\">-</span>\n"
+"                                <span class=\"o_stat_text\">Satisfaction</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "<span>@</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>Closed Today</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>Reporting</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>SLA Failed</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>Satisfaction</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>Unassigned</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>Urgent</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "<span>View</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+msgid "<span>hours</span>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<strong>Closed On:</strong>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<strong>Opened On:</strong>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<strong>Priority:</strong>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<strong>Team:</strong>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "<strong>Type:</strong>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_defaults
+msgid ""
+"A Python dictionary that will be evaluated to provide default values when "
+"creating new records for this alias."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.constraint,message:om_helpdesk.constraint_om_helpdesk_tag_name_uniq
+msgid "A tag with this name already exists."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.constraint,message:om_helpdesk.constraint_om_helpdesk_ticket_type_name_uniq
+msgid "A ticket type with this name already exists."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "Accept Emails From"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__access_warning
+msgid "Access warning"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.tag,name:om_helpdesk.tag_account
+msgid "Account"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_needaction
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__active
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__active
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__active
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__active
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__active
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__active
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__active
+msgid "Active"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_plans_ids
+msgid "Activity Plans"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups,name:om_helpdesk.group_helpdesk_manager
+msgid "Administrator"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__member_ids
+msgid "Agents of the team. Automatic assignment picks among them."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_id
+msgid "Alias"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_contact
+msgid "Alias Contact Security"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_domain_id
+msgid "Alias Domain"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_domain
+msgid "Alias Domain Name"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_full_name
+msgid "Alias Email"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_name
+msgid "Alias Name"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_status
+msgid "Alias Status"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_status
+msgid "Alias status assessed on the last message received."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_model_id
+msgid "Aliased Model"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "All"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__sla_success
+msgid "All SLAs of the ticket are reached in time."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_ticket_all
+msgid "All Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_sla
+msgid ""
+"An SLA policy sets the time in which a ticket must reach a stage, e.g. "
+"urgent tickets solved within 8 working hours."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.sla,name:om_helpdesk.sla_support_answer
+msgid "Answer within 4 working hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.sla,name:om_helpdesk.sla_tech_answer
+msgid "Answer within 8 working hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+msgid "Applies To"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_stage_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_kanban
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Archived"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__use_rating
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__use_rating
+msgid ""
+"Ask customers to rate the support when their ticket reaches a closing stage."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__user_id
+msgid "Assign To"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Assign to Me"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__date_assign
+msgid "Assigned On"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__user_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__user_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__user_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Assigned To"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__assign_method
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "Assignment"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_attachment_count
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Attachments"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__rating_avg
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_avg
+msgid "Average Rating"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__rating_avg_percentage
+msgid "Average Rating (%)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_team__assign_method__balanced
+msgid "Balanced: fewest open tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.team,name:om_helpdesk.team_billing
+msgid "Billing"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_stage.py:0
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__kanban_state__blocked
+#: model:om.helpdesk.stage,legend_blocked:om_helpdesk.stage_cancelled
+#: model:om.helpdesk.stage,legend_blocked:om_helpdesk.stage_in_progress
+#: model:om.helpdesk.stage,legend_blocked:om_helpdesk.stage_new
+#: model:om.helpdesk.stage,legend_blocked:om_helpdesk.stage_solved
+#: model:om.helpdesk.stage,legend_blocked:om_helpdesk.stage_waiting
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Blocked"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__legend_blocked
+msgid "Blocked Label"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla__time_mode__calendar
+msgid "Calendar hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_merge_form
+msgid "Cancel"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.stage,name:om_helpdesk.stage_cancelled
+msgid "Cancelled"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_canned
+msgid "Canned Responses"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Close"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__close_reason_id
+msgid "Close Reason"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_close_reason
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_close_reason
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_close_reason_list
+msgid "Close Reasons"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Close it when your problem is solved."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__is_closed
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__is_closed
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Closed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__date_closed
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__date_closed
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Closed On"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__closed_today_count
+msgid "Closed Today"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__is_close
+msgid "Closing Stage"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__color
+msgid "Color"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__color
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__color
+msgid "Color Index"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__company_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__company_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__company_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__company_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__company_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Company"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "Configuration"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups,comment:om_helpdesk.group_helpdesk_manager
+msgid "Configures teams, stages, SLA policies and sees the reports."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_res_partner
+msgid "Contact"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__time_mode
+msgid "Count In"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,website_form_label:om_helpdesk.model_om_helpdesk_ticket
+msgid "Create a Helpdesk Ticket"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_close_reason
+msgid "Create a close reason"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_team
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_team_dashboard
+msgid "Create a helpdesk team"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_stage
+msgid "Create a stage"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_tag
+msgid "Create a tag"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket_type
+msgid "Create a ticket type"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_sla
+msgid "Create an SLA policy"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__create_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__create_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_bounced_content
+msgid "Custom Bounced Message"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__partner_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__partner_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__partner_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_quick_create
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Customer"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__commercial_partner_id
+msgid "Customer Company"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__partner_name
+msgid "Customer Name"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__access_url
+msgid "Customer Portal URL"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_rating
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__use_rating
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_report_rating
+msgid "Customer Ratings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.team,name:om_helpdesk.team_support
+msgid "Customer Support"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__partner_ids
+msgid "Customers"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_team__privacy_visibility__portal
+msgid "Customers on the portal"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__privacy_visibility
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__privacy_visibility
+msgid ""
+"Customers on the portal: customers see and follow their tickets of this team"
+" in their portal."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Dates"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__deadline
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "Deadline"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_defaults
+msgid "Default Values"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__exceeded_hours
+msgid "Delay (Hours)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_kanban
+msgid "Delete"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+msgid "Describe the commitment made to the customers..."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Describe the issue..."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "Describe what this team handles. Customers see this text."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__description
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__description
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__description
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__description
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Description"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__display_name
+#: model:ir.model.fields,field_description:om_helpdesk.field_res_partner__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.close.reason,name:om_helpdesk.close_reason_duplicate
+msgid "Duplicate"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Durations (hours)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_sla_status_report
+msgid ""
+"Each ticket gets one line per matching SLA policy, with its deadline and "
+"whether it was reached in time."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_kanban
+msgid "Edit"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__email_from
+msgid "Email"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_email
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_list
+msgid "Email Alias"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__template_id
+msgid "Email Template"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_domain
+msgid "Email domain e.g. 'example.com' in 'odoo@example.com'"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_stage__template_id
+msgid "Email sent to the customer when the ticket reaches this stage."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_stage_form
+msgid "Explain what this stage means to your agents..."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+msgid "Extra Info"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla_status__status__failed
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__sla_state__failed
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__sla_state__failed
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "Failed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.ticket.type,name:om_helpdesk.type_feature
+msgid "Feature Request"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__date_first_response
+msgid "First Response On"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__fold
+msgid "Folded in Kanban"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_stage__fold
+msgid "Folded stages are collapsed in the kanban view."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:portal.entry,description:om_helpdesk.portal_tickets
+msgid "Follow your support requests and reply to our team"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Followed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_follower_ids
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_partner_ids
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Happy"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.tag,name:om_helpdesk.tag_hardware
+msgid "Hardware"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:om.helpdesk.team,description:om_helpdesk.team_tech
+msgid "Hardware, installation and software problems."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__has_message
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.module.module,shortdesc:base.module_om_helpdesk
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_root
+#: model:res.groups.privilege,name:om_helpdesk.res_groups_privilege_helpdesk
+msgid "Helpdesk"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_close_reason
+msgid "Helpdesk Close Reason"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_team_dashboard
+msgid "Helpdesk Overview"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_sla
+msgid "Helpdesk SLA Policy"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_stage
+msgid "Helpdesk Stage"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_tag
+msgid "Helpdesk Tag"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_team
+msgid "Helpdesk Team"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_ticket
+msgid "Helpdesk Ticket"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_ticket_report
+msgid "Helpdesk Ticket Analysis"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_ticket_type
+msgid "Helpdesk Ticket Type"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_res_partner__om_ticket_count
+#: model:ir.model.fields,field_description:om_helpdesk.field_res_users__om_ticket_count
+msgid "Helpdesk Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.module.module,summary:base.module_om_helpdesk
+msgid ""
+"Helpdesk and customer support tickets: teams, email alias, automatic "
+"assignment, SLA policies, customer portal, ratings, canned responses, merge "
+"tickets and reports"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,name:om_helpdesk.mail_template_ticket_rating
+msgid "Helpdesk: Rating Request"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,name:om_helpdesk.mail_template_ticket_received
+msgid "Helpdesk: Ticket Received"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,name:om_helpdesk.mail_template_ticket_solved
+msgid "Helpdesk: Ticket Solved"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.server,name:om_helpdesk.ir_cron_sla_deadlines_ir_actions_server
+msgid "Helpdesk: flag failed SLAs"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla__priority__2
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__priority__2
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__priority__2
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "High"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla_status__exceeded_hours
+msgid ""
+"Hours between the deadline and the moment the target stage was reached, or "
+"now when still not reached."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__hours_to_assign
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__hours_to_assign
+msgid "Hours to Assign"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__hours_to_close
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__hours_to_close
+msgid "Hours to Close"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__hours_to_first_response
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__hours_to_first_response
+msgid "Hours to First Response"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "How was our support?"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__id
+#: model:ir.model.fields,field_description:om_helpdesk.field_res_partner__id
+msgid "ID"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_parent_thread_id
+msgid ""
+"ID of the parent record holding the alias (example: project holding the task"
+" creation alias)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__message_needaction
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__message_has_error
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__message_has_sms_error
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__message_has_error
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_bounced_content
+msgid ""
+"If set, this content will automatically be sent out to unauthorized users "
+"instead of the default message."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_stage.py:0
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__kanban_state__normal
+#: model:om.helpdesk.stage,legend_normal:om_helpdesk.stage_cancelled
+#: model:om.helpdesk.stage,legend_normal:om_helpdesk.stage_in_progress
+#: model:om.helpdesk.stage,legend_normal:om_helpdesk.stage_new
+#: model:om.helpdesk.stage,legend_normal:om_helpdesk.stage_solved
+#: model:om.helpdesk.stage,legend_normal:om_helpdesk.stage_waiting
+#: model:om.helpdesk.stage,name:om_helpdesk.stage_in_progress
+msgid "In Progress"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__legend_normal
+msgid "In Progress Label"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.ticket.type,name:om_helpdesk.type_installation
+msgid "Installation"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_team__privacy_visibility__internal
+msgid "Internal only"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.sla,name:om_helpdesk.sla_billing_invoice
+msgid "Invoice issues solved within 2 days"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:om.helpdesk.team,description:om_helpdesk.team_billing
+msgid "Invoices, payments and refunds."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.tag,name:om_helpdesk.tag_invoice
+msgid "Invoicing"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_is_follower
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.ticket.type,name:om_helpdesk.type_issue
+msgid "Issue"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__legend_blocked
+msgid "Kanban Blocked"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__legend_normal
+msgid "Kanban Ongoing"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__legend_done
+msgid "Kanban Ready"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__last_assigned_user_id
+msgid "Last Assigned Agent"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__date_last_stage_update
+msgid "Last Stage Update"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+msgid "Last Update"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__write_uid
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__write_date
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Late Activities"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__ticket_type_ids
+msgid "Leave empty to apply the policy to every ticket type."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_incoming_local
+msgid "Local-part based incoming detection"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla__priority__0
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__priority__0
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__priority__0
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Low"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_team__assign_method__manual
+msgid "Manual"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__assign_method
+msgid ""
+"Manual: tickets stay unassigned until someone takes them.\n"
+"Balanced: each new ticket goes to the member with the fewest open tickets.\n"
+"Round robin: members get new tickets in turn."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__time
+msgid ""
+"Maximum time, in hours, between the creation of the ticket and the target "
+"stage."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla__priority__1
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__priority__1
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__priority__1
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Medium"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__member_ids
+msgid "Members"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_merge_form
+msgid "Merge"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_ticket_merge
+msgid "Merge Helpdesk Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__target_ticket_id
+msgid "Merge Into"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+#: model:ir.actions.server,name:om_helpdesk.action_server_merge_tickets
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_merge_form
+msgid "Merge Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__merged_into_id
+msgid "Merged Into"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "Merged tickets:"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_has_error
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_ids
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_merge_form
+msgid ""
+"Messages, attachments and followers of the selected tickets are moved to the ticket below.\n"
+"                    The other tickets are archived."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "Mine"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__priority
+msgid "Minimum Priority"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_search
+msgid "My Teams"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_ticket_my
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__my_ticket_count
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_ticket_my
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "My Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_tag__name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__name
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__name
+msgid "Name"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__sla_deadline
+msgid "Nearest deadline among the SLAs not reached yet."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Neutral"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.stage,name:om_helpdesk.stage_new
+msgid "New"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "Newest"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups.privilege,placeholder:om_helpdesk.res_groups_privilege_helpdesk
+msgid "No"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__sla_state__none
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__sla_state__none
+msgid "No SLA"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_sla_status_report
+msgid "No SLA data yet"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "No Subject"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket_report
+msgid "No data yet"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_rating
+msgid "No rating yet"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.close.reason,name:om_helpdesk.close_reason_no_reply
+msgid "No reply from the customer"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket_my
+msgid "No ticket assigned to you"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket
+msgid "No tickets found. Let's create one!"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.close.reason,name:om_helpdesk.close_reason_not_issue
+msgid "Not an issue"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+msgid "Number"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_needaction_counter
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_has_error_counter
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__message_needaction_counter
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__message_has_error_counter
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__sla_state__ongoing
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__sla_state__ongoing
+msgid "On Time"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla_status__status__ongoing
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "Ongoing"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Open"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__open_ticket_count
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "Open Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__open_hours
+msgid "Open Time (Hours)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket_report
+msgid ""
+"Open and closed tickets per team, time to first response and to close, SLA "
+"success and ratings."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__date_open
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__date_open
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Opened On"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_force_thread_id
+msgid ""
+"Optional ID of a thread (record) to which all incoming messages will be "
+"attached, even if they did not reply to it. If set, this will disable the "
+"creation of new records completely."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_overview
+msgid "Overview"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_parent_model_id
+msgid "Parent Model"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_parent_thread_id
+msgid "Parent Record Thread ID"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_parent_model_id
+msgid ""
+"Parent model holding the alias. The model holding the alias reference is not"
+" necessarily the model given by alias_model_id (example: project "
+"(parent_model) and task (model))"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__rating_percentage_satisfaction
+msgid "Percentage of happy ratings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__partner_phone
+msgid "Phone"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_contact
+msgid ""
+"Policy to post a message on the document using the mailgateway.\n"
+"- everyone: everyone can post\n"
+"- partners: only authenticated partners\n"
+"- followers: only followers of the related document or members of following channels\n"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__access_url
+msgid "Portal Access URL"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__priority
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__priority
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__priority
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Priority"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.ticket.type,name:om_helpdesk.type_question
+msgid "Question"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:om.helpdesk.team,description:om_helpdesk.team_support
+msgid "Questions about your account, orders and deliveries."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "Quick and friendly answer, thank you."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Rated"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Rating"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__rating
+msgid "Rating (1-5)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_avg_text
+msgid "Rating Avg Text"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_last_feedback
+msgid "Rating Last Feedback"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_last_image
+msgid "Rating Last Image"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_last_value
+msgid "Rating Last Value"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__rating_percentage_satisfaction
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_percentage_satisfaction
+msgid "Rating Satisfaction"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_last_text
+msgid "Rating Text"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_count
+msgid "Rating count"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__rating_ids
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__rating_ids
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+msgid "Ratings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla_status__status__reached
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__sla_state__reached
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__sla_state__reached
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "Reached"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__reached_datetime
+msgid "Reached On"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_stage.py:0
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__kanban_state__done
+#: model:om.helpdesk.stage,legend_done:om_helpdesk.stage_cancelled
+#: model:om.helpdesk.stage,legend_done:om_helpdesk.stage_in_progress
+#: model:om.helpdesk.stage,legend_done:om_helpdesk.stage_new
+#: model:om.helpdesk.stage,legend_done:om_helpdesk.stage_solved
+#: model:om.helpdesk.stage,legend_done:om_helpdesk.stage_waiting
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Ready"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__legend_done
+msgid "Ready Label"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__alias_force_thread_id
+msgid "Record Thread ID"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_reporting
+msgid "Reporting"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_team__assign_method__randomly
+msgid "Round robin"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__sla_state
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__sla_state
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "SLA"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_sla_status_report
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_report_sla
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_graph
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_pivot
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "SLA Analysis"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__sla_count
+msgid "SLA Count"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__sla_deadline
+msgid "SLA Deadline"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__sla_fail
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "SLA Failed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__sla_failed_ticket_count
+msgid "SLA Failed Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "SLA On Time"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_sla
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__use_sla
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_sla
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "SLA Policies"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__sla_ids
+msgid "SLA Policies List"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__sla_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "SLA Policy"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__sla_success
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "SLA Reached"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__sla_status_ids
+msgid "SLA Status"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__sla_success_rate
+msgid "SLA Success (%)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__message_has_sms_error
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "Search in All"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "Search in Messages"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "Search in Subject and Number"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__access_token
+msgid "Security Token"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups,comment:om_helpdesk.group_helpdesk_user_all
+msgid "Sees and handles the tickets of every team."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups,comment:om_helpdesk.group_helpdesk_user
+msgid ""
+"Sees the tickets of the teams they belong to, their own tickets and the "
+"tickets without team."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/wizard/helpdesk_ticket_merge.py:0
+msgid "Select at least two tickets to merge."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,description:om_helpdesk.mail_template_ticket_received
+msgid ""
+"Sent to the customer when a ticket reaches the stage that uses this "
+"template, e.g. New"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,description:om_helpdesk.mail_template_ticket_solved
+msgid ""
+"Sent to the customer when a ticket reaches the stage that uses this "
+"template, e.g. Solved"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,description:om_helpdesk.mail_template_ticket_rating
+msgid "Sent when a ticket is closed in a team that asks for customer ratings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_close_reason__sequence
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__sequence
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__sequence
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__sequence
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_type__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "Service Level"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "Settings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket_report__sla_success_rate
+msgid "Share of tickets with an SLA that did not fail any of them."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__description
+msgid "Shown to customers, e.g. on the portal."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.tag,name:om_helpdesk.tag_software
+msgid "Software"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.sla,name:om_helpdesk.sla_support_solve
+msgid "Solve within 3 days"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.close.reason,name:om_helpdesk.close_reason_solved
+#: model:om.helpdesk.stage,name:om_helpdesk.stage_solved
+msgid "Solved"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__stage_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__stage_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_stage_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Stage"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.message.subtype,name:om_helpdesk.mt_ticket_stage
+msgid "Stage Changed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.message.subtype,description:om_helpdesk.mt_ticket_stage
+msgid "Stage changed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_stage
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__stage_ids
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_stage
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_stage_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "Stages"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_stage
+msgid ""
+"Stages are the steps of your tickets. A closing stage ends the ticket and "
+"can ask the customer for a rating."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__status
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__kanban_state
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+msgid "Status"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_stage_form
+msgid "Status Labels"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__status_ids
+msgid "Status Lines"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__name
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+msgid "Subject"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__success_rate
+msgid "Success Rate (%)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_tag
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__tag_ids
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__tag_ids
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_tag
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_tag_list
+msgid "Tags"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+msgid "Target"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__stage_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__sla_stage_id
+msgid "Target Stage"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__team_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__team_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__team_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__team_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__team_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_status_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Team"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__user_id
+msgid "Team Leader"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__use_rating
+msgid "Team Uses Ratings"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__use_sla
+msgid "Team Uses SLA"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__privacy_visibility
+msgid "Team Visibility"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_team
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__team_ids
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_team
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_search
+msgid "Teams"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_team_dashboard
+msgid ""
+"Teams group your agents, their email alias, their stages and their SLA "
+"policies."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_stage__team_ids
+msgid ""
+"Teams using this stage. A stage without team is not proposed to new teams."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.team,name:om_helpdesk.team_tech
+msgid "Technical Support"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Thank you for your feedback."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__stage_id
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla_status__sla_stage_id
+msgid "The SLA is reached when the ticket reaches this stage or a later one."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "The customer closed the ticket."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_model_id
+msgid ""
+"The model (Odoo Document Kind) to which this alias corresponds. Any incoming"
+" email that does not reply to an existing record will cause the creation of "
+"a new record of this model (e.g. a Project Task)"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__alias_name
+msgid ""
+"The name of the email alias, e.g. 'jobs' if you want to catch emails for "
+"<jobs@example.odoo.com>"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__partner_ids
+msgid ""
+"The policy applies to tickets of these customers (and their contacts). Leave"
+" empty for all customers."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__tag_ids
+msgid ""
+"The policy applies to tickets that have at least one of these tags. Leave "
+"empty for all tickets."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__priority
+msgid "The policy applies to tickets with this priority or higher."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "The team of ticket %s has no closing stage."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/wizard/helpdesk_ticket_merge.py:0
+msgid "The ticket to merge into must be one of the selected tickets."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_sla.py:0
+msgid "The time to reach an SLA must be positive."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+msgid "There are no tickets to show."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "This ticket was merged into %s."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__ticket_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__ticket_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Ticket"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "Ticket %s"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_ticket_report
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_report_ticket
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_graph
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_pivot
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+msgid "Ticket Analysis"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.message.subtype,name:om_helpdesk.mt_team_ticket_new
+#: model:mail.message.subtype,name:om_helpdesk.mt_ticket_new
+msgid "Ticket Created"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__number
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__number
+msgid "Ticket Number"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.message.subtype,name:om_helpdesk.mt_team_ticket_rated
+#: model:mail.message.subtype,name:om_helpdesk.mt_ticket_rated
+msgid "Ticket Rated"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model,name:om_helpdesk.model_om_helpdesk_sla_status
+msgid "Ticket SLA Status"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.message.subtype,name:om_helpdesk.mt_team_ticket_stage
+msgid "Ticket Stage Changed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_ticket_type
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__ticket_type_ids
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_config_type
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_type_list
+msgid "Ticket Types"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "Ticket created in the %(team)s team."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+msgid "Ticket created."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.message.subtype,description:om_helpdesk.mt_ticket_rated
+msgid "Ticket rated by the customer"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.actions.act_window,name:om_helpdesk.action_helpdesk_ticket
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__ticket_count
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_stage__ticket_count
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__ticket_ids
+#: model:ir.ui.menu,name:om_helpdesk.menu_helpdesk_tickets
+#: model:portal.entry,name:om_helpdesk.portal_tickets
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_breadcrumbs
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_tickets
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_activity
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_calendar
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_list
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_partner_form_om_helpdesk
+msgid "Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket
+msgid ""
+"Tickets come from the email alias of each team, from the website form and from\n"
+"                your agents. Track them through their stages and keep an eye on the SLA deadlines."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_stage__is_close
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__is_closed
+msgid ""
+"Tickets in this stage are considered closed: the close date is set, and a "
+"rating is requested when the team asks for ratings."
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/models/helpdesk_ticket.py:0
+#: code:addons/om_helpdesk/models/res_partner.py:0
+msgid "Tickets of %s"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_merge__ticket_ids
+msgid "Tickets to Merge"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla__time
+msgid "Time to Reach"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_rating
+msgid ""
+"Turn on customer ratings on a team: customers rate the support when their "
+"ticket is closed."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_sla_status__ticket_type_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket__ticket_type_id
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_ticket_report__ticket_type_id
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_report_search
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Type"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_ticket__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_kanban
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Unassigned"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__unassigned_ticket_count
+msgid "Unassigned Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.portal_my_ticket
+msgid "Unhappy"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla__priority__3
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket__priority__3
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_ticket_report__priority__3
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_search
+msgid "Urgent"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__urgent_ticket_count
+msgid "Urgent Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.sla,name:om_helpdesk.sla_tech_urgent
+msgid "Urgent issues solved within 8 working hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups,name:om_helpdesk.group_helpdesk_user_all
+msgid "User: All Tickets"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:res.groups,name:om_helpdesk.group_helpdesk_user
+msgid "User: Own Teams"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__privacy_visibility
+msgid "Visibility"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:om.helpdesk.stage,name:om_helpdesk.stage_waiting
+msgid "Waiting for Customer"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,field_description:om_helpdesk.field_om_helpdesk_team__resource_calendar_id
+msgid "Working Hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields.selection,name:om_helpdesk.selection__om_helpdesk_sla__time_mode__working
+msgid "Working hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_team__resource_calendar_id
+msgid "Working hours used to compute SLA deadlines in working time."
+msgstr ""
+
+#. module: om_helpdesk
+#: model:ir.model.fields,help:om_helpdesk.field_om_helpdesk_sla__time_mode
+msgid ""
+"Working hours: only the working time of the team calendar counts.\n"
+"Calendar hours: every hour counts, nights and weekends included."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "e.g. Customer Support"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_stage_form
+msgid "e.g. In Progress"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_form
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_ticket_quick_create
+msgid "e.g. Printer does not print"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.actions.act_window,help:om_helpdesk.action_helpdesk_ticket_type
+msgid "e.g. Question, Issue, Feature request."
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_sla_form
+msgid "e.g. Urgent tickets solved within 8 hours"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "e.g. mycompany.com"
+msgstr ""
+
+#. module: om_helpdesk
+#: model_terms:ir.ui.view,arch_db:om_helpdesk.view_helpdesk_team_form
+msgid "e.g. support"
+msgstr ""
+
+#. module: om_helpdesk
+#. odoo-python
+#: code:addons/om_helpdesk/controllers/portal.py:0
+msgid "is_closed"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,subject:om_helpdesk.mail_template_ticket_rating
+msgid ""
+"{{ object.company_id.name or user.env.company.name }}: how was our support?"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,subject:om_helpdesk.mail_template_ticket_received
+msgid ""
+"{{ object.team_id.name or 'Support' }}: we received your request {{ "
+"object.number }}"
+msgstr ""
+
+#. module: om_helpdesk
+#: model:mail.template,subject:om_helpdesk.mail_template_ticket_solved
+msgid ""
+"{{ object.team_id.name or 'Support' }}: your request {{ object.number }} is "
+"solved"
+msgstr ""

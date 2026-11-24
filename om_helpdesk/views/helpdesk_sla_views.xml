@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_helpdesk_sla_search" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.search</field>
+        <field name="model">om.helpdesk.sla</field>
+        <field name="arch" type="xml">
+            <search string="SLA Policies">
+                <field name="name"/>
+                <field name="team_id"/>
+                <field name="stage_id"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Team" name="group_team" context="{'group_by': 'team_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_sla_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.list</field>
+        <field name="model">om.helpdesk.sla</field>
+        <field name="arch" type="xml">
+            <list string="SLA Policies">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="team_id"/>
+                <field name="priority" widget="priority"/>
+                <field name="ticket_type_ids" widget="many2many_tags" optional="show"/>
+                <field name="tag_ids" widget="many2many_tags" optional="show"/>
+                <field name="partner_ids" widget="many2many_tags" optional="hide"/>
+                <field name="stage_id"/>
+                <field name="time" widget="float_time"/>
+                <field name="time_mode"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_sla_form" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.form</field>
+        <field name="model">om.helpdesk.sla</field>
+        <field name="arch" type="xml">
+            <form string="SLA Policy">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_tickets" type="object" class="oe_stat_button" icon="confirmation_number">
+                            <field name="ticket_count" widget="statinfo" string="Tickets"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Urgent tickets solved within 8 hours"/></h1>
+                    </div>
+                    <group>
+                        <group string="Applies To">
+                            <field name="team_id"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="ticket_type_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create': True}"/>
+                            <field name="partner_ids" widget="many2many_tags"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="Target">
+                            <field name="stage_id" options="{'no_create': True}"/>
+                            <label for="time"/>
+                            <div class="d-flex align-items-baseline gap-2">
+                                <field name="time" widget="float_time" class="oe_inline"/>
+                                <span>hours</span>
+                            </div>
+                            <field name="time_mode" widget="radio"/>
+                        </group>
+                    </group>
+                    <field name="description" placeholder="Describe the commitment made to the customers..."/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_helpdesk_sla" model="ir.actions.act_window">
+        <field name="name">SLA Policies</field>
+        <field name="res_model">om.helpdesk.sla</field>
+        <field name="view_mode">list,form</field>
+        <field name="search_view_id" ref="view_helpdesk_sla_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an SLA policy</p>
+            <p>An SLA policy sets the time in which a ticket must reach a stage, e.g. urgent tickets solved within 8 working hours.</p>
+        </field>
+    </record>
+
+    <!-- SLA analysis -->
+    <record id="view_helpdesk_sla_status_search" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.status.search</field>
+        <field name="model">om.helpdesk.sla.status</field>
+        <field name="arch" type="xml">
+            <search string="SLA Analysis">
+                <field name="ticket_id"/>
+                <field name="sla_id"/>
+                <field name="team_id"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <filter string="Ongoing" name="ongoing" domain="[('status', '=', 'ongoing')]"/>
+                <filter string="Reached" name="reached" domain="[('status', '=', 'reached')]"/>
+                <filter string="Failed" name="failed" domain="[('status', '=', 'failed')]"/>
+                <separator/>
+                <filter string="Deadline" name="filter_deadline" date="deadline"/>
+                <group>
+                    <filter string="Team" name="group_team" context="{'group_by': 'team_id'}"/>
+                    <filter string="SLA Policy" name="group_sla" context="{'group_by': 'sla_id'}"/>
+                    <filter string="Assigned To" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Status" name="group_status" context="{'group_by': 'status'}"/>
+                    <filter string="Priority" name="group_priority" context="{'group_by': 'priority'}"/>
+                    <filter string="Deadline" name="group_deadline" context="{'group_by': 'deadline'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_sla_status_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.status.list</field>
+        <field name="model">om.helpdesk.sla.status</field>
+        <field name="arch" type="xml">
+            <list string="SLA Analysis" create="0" edit="0" decoration-danger="status == 'failed'" decoration-success="status == 'reached'">
+                <field name="ticket_id"/>
+                <field name="sla_id"/>
+                <field name="team_id"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="deadline"/>
+                <field name="reached_datetime"/>
+                <field name="exceeded_hours" widget="float_time" optional="hide"/>
+                <field name="status" widget="badge" decoration-danger="status == 'failed'" decoration-success="status == 'reached'" decoration-info="status == 'ongoing'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_sla_status_pivot" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.status.pivot</field>
+        <field name="model">om.helpdesk.sla.status</field>
+        <field name="arch" type="xml">
+            <pivot string="SLA Analysis" sample="1">
+                <field name="team_id" type="row"/>
+                <field name="status" type="col"/>
+                <field name="success_rate" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_sla_status_graph" model="ir.ui.view">
+        <field name="name">om.helpdesk.sla.status.graph</field>
+        <field name="model">om.helpdesk.sla.status</field>
+        <field name="arch" type="xml">
+            <graph string="SLA Analysis" type="bar" sample="1">
+                <field name="team_id"/>
+                <field name="success_rate" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_helpdesk_sla_status_report" model="ir.actions.act_window">
+        <field name="name">SLA Analysis</field>
+        <field name="res_model">om.helpdesk.sla.status</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="view_helpdesk_sla_status_search"/>
+        <field name="context">{'pivot_measures': ['__count', 'success_rate', 'exceeded_hours']}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No SLA data yet</p>
+            <p>Each ticket gets one line per matching SLA policy, with its deadline and whether it was reached in time.</p>
+        </field>
+    </record>
+</odoo>

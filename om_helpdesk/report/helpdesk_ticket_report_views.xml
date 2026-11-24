@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_helpdesk_ticket_report_search" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.report.search</field>
+        <field name="model">om.helpdesk.ticket.report</field>
+        <field name="arch" type="xml">
+            <search string="Ticket Analysis">
+                <field name="ticket_id"/>
+                <field name="team_id"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="ticket_type_id"/>
+                <filter string="Open" name="open" domain="[('is_closed', '=', False)]"/>
+                <filter string="Closed" name="closed" domain="[('is_closed', '=', True)]"/>
+                <separator/>
+                <filter string="SLA Failed" name="sla_failed" domain="[('sla_state', '=', 'failed')]"/>
+                <separator/>
+                <filter string="Opened On" name="filter_date_open" date="date_open"/>
+                <filter string="Closed On" name="filter_date_closed" date="date_closed"/>
+                <group>
+                    <filter string="Team" name="group_team" context="{'group_by': 'team_id'}"/>
+                    <filter string="Assigned To" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Stage" name="group_stage" context="{'group_by': 'stage_id'}"/>
+                    <filter string="Type" name="group_type" context="{'group_by': 'ticket_type_id'}"/>
+                    <filter string="Priority" name="group_priority" context="{'group_by': 'priority'}"/>
+                    <filter string="SLA" name="group_sla" context="{'group_by': 'sla_state'}"/>
+                    <filter string="Opened On" name="group_date_open" context="{'group_by': 'date_open:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_ticket_report_pivot" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.report.pivot</field>
+        <field name="model">om.helpdesk.ticket.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Ticket Analysis" sample="1" disable_linking="1">
+                <field name="team_id" type="row"/>
+                <field name="open_count" type="measure"/>
+                <field name="closed_count" type="measure"/>
+                <field name="hours_to_first_response" type="measure" widget="float_time"/>
+                <field name="hours_to_close" type="measure" widget="float_time"/>
+                <field name="sla_success_rate" type="measure"/>
+                <field name="rating" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_ticket_report_graph" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.report.graph</field>
+        <field name="model">om.helpdesk.ticket.report</field>
+        <field name="arch" type="xml">
+            <graph string="Ticket Analysis" type="bar" stacked="1" sample="1">
+                <field name="team_id"/>
+                <field name="open_count" type="measure"/>
+                <field name="closed_count" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_ticket_report_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.report.list</field>
+        <field name="model">om.helpdesk.ticket.report</field>
+        <field name="arch" type="xml">
+            <list string="Ticket Analysis" create="0" edit="0" delete="0">
+                <field name="number"/>
+                <field name="ticket_id"/>
+                <field name="team_id"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="partner_id"/>
+                <field name="stage_id"/>
+                <field name="date_open"/>
+                <field name="date_closed"/>
+                <field name="hours_to_first_response" widget="float_time"/>
+                <field name="hours_to_close" widget="float_time"/>
+                <field name="sla_state"/>
+                <field name="rating"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_helpdesk_ticket_report" model="ir.actions.act_window">
+        <field name="name">Ticket Analysis</field>
+        <field name="res_model">om.helpdesk.ticket.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="view_helpdesk_ticket_report_search"/>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No data yet</p>
+            <p>Open and closed tickets per team, time to first response and to close, SLA success and ratings.</p>
+        </field>
+    </record>
+</odoo>

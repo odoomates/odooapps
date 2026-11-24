@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_breadcrumbs" name="Portal layout: helpdesk tickets" inherit_id="portal.portal_breadcrumbs" priority="45">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'ticket'" t-attf-class="breadcrumb-item #{'active ' if not ticket else ''}">
+                <a t-if="ticket" t-attf-href="/my/tickets?{{ keep_query() }}">Tickets</a>
+                <t t-else="">Tickets</t>
+            </li>
+            <li t-if="page_name == 'ticket' and ticket" class="breadcrumb-item active text-truncate">
+                <t t-out="ticket.number"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="portal_ticket_stage_badge" name="Ticket Stage Badge">
+        <span t-attf-class="badge rounded-pill #{'text-bg-success' if ticket.is_closed else 'text-bg-info'}" t-out="ticket.stage_id.name"/>
+    </template>
+
+    <template id="portal_my_tickets" name="My Tickets">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar">
+                <t t-set="title">Tickets</t>
+            </t>
+            <div t-if="not tickets" class="alert alert-info">
+                There are no tickets to show.
+            </div>
+            <t t-if="tickets" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th>Number</th>
+                        <th>Subject</th>
+                        <th class="d-none d-md-table-cell">Team</th>
+                        <th class="d-none d-md-table-cell">Opened On</th>
+                        <th class="d-none d-md-table-cell">Last Update</th>
+                        <th class="text-end">Stage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="tickets" t-as="ticket">
+                        <td><a t-att-href="ticket.get_portal_url()" t-out="ticket.number"/></td>
+                        <td><a t-att-href="ticket.get_portal_url()" t-out="ticket.name"/></td>
+                        <td class="d-none d-md-table-cell"><span t-out="ticket.sudo().team_id.name"/></td>
+                        <td class="d-none d-md-table-cell"><span t-field="ticket.date_open" t-options="{'widget': 'date'}"/></td>
+                        <td class="d-none d-md-table-cell"><span t-field="ticket.write_date" t-options="{'widget': 'relative'}"/></td>
+                        <td class="text-end"><t t-call="om_helpdesk.portal_ticket_stage_badge"/></td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_my_ticket" name="My Ticket" inherit_id="portal.portal_sidebar" primary="True">
+        <xpath expr="//div[hasclass('o_portal_sidebar')]" position="inside">
+            <t t-set="o_portal_fullwidth_alert" groups="om_helpdesk.group_helpdesk_user">
+                <t t-call="portal.portal_back_in_edit_mode">
+                    <t t-set="backend_url" t-value="'/odoo/action-om_helpdesk.action_helpdesk_ticket/%s' % ticket.id"/>
+                </t>
+            </t>
+            <div class="row o_om_helpdesk_portal_ticket">
+                <t t-set="entries">
+                    <div class="d-flex flex-column gap-4">
+                        <div t-if="can_close">
+                            <form t-attf-action="/my/tickets/#{ticket.id}/close" method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input t-if="access_token" type="hidden" name="access_token" t-att-value="access_token"/>
+                                <button type="submit" class="btn btn-secondary w-100 o_om_helpdesk_close_ticket">
+                                    <i class="oi me-1" data-icon="check_circle"/>Close this ticket
+                                </button>
+                            </form>
+                            <div class="small text-muted mt-1">Close it when your problem is solved.</div>
+                        </div>
+                        <div t-if="ticket.user_id">
+                            <h6><small class="text-muted">Handled By</small></h6>
+                            <t t-call="portal.portal_my_contact"
+                                _contact_no_card="True"
+                                _contact_avatar="image_data_uri(ticket.user_id.sudo().avatar_128)"
+                                _contact_name="ticket.user_id.sudo().name">
+                                <div t-out="ticket.user_id.sudo()" t-options='{"widget": "contact", "fields": ["email"]}'/>
+                            </t>
+                        </div>
+                        <div t-if="ticket.partner_id">
+                            <h6><small class="text-muted">Customer</small></h6>
+                            <t t-call="portal.portal_my_contact"
+                                _contact_no_card="True"
+                                _contact_avatar="image_data_uri(ticket.partner_id.sudo().avatar_128)"
+                                _contact_name="ticket.partner_id.sudo().display_name">
+                                <div t-field="ticket.partner_id" t-options='{"widget": "contact", "fields": ["email", "phone"]}'/>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+                <t t-call="portal.portal_record_sidebar"
+                    classes.f="col-lg-4 col-xxl-3 d-print-none"
+                    entries="entries"/>
+                <div id="ticket_content" class="o_portal_content col-12 col-lg-8 col-xxl-9">
+                    <div id="card_header" class="d-flex justify-content-between align-items-start gap-2 mb-3">
+                        <h3 class="my-0">
+                            <span t-field="ticket.name"/>
+                            <small class="text-muted">(<span t-field="ticket.number"/>)</small>
+                        </h3>
+                        <t t-call="om_helpdesk.portal_ticket_stage_badge"/>
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-12 col-md-6">
+                            <div t-if="ticket.team_id"><strong>Team:</strong> <span t-out="ticket.team_id.sudo().name"/></div>
+                            <div t-if="ticket.ticket_type_id"><strong>Type:</strong> <span t-out="ticket.ticket_type_id.sudo().name"/></div>
+                            <div>
+                                <strong>Priority:</strong>
+                                <span t-out="priority_labels.get(ticket.priority)"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <div><strong>Opened On:</strong> <span t-field="ticket.date_open"/></div>
+                            <div t-if="ticket.date_closed"><strong>Closed On:</strong> <span t-field="ticket.date_closed"/></div>
+                        </div>
+                    </div>
+
+                    <div t-if="rating_token" class="alert alert-info o_om_helpdesk_rating mb-4">
+                        <h5 class="mb-2">How was our support?</h5>
+                        <div class="d-flex gap-4">
+                            <a t-attf-href="/rate/#{rating_token}/5" title="Happy"><img src="/rating/static/src/img/rating_5.png" alt="Happy"/></a>
+                            <a t-attf-href="/rate/#{rating_token}/3" title="Neutral"><img src="/rating/static/src/img/rating_3.png" alt="Neutral"/></a>
+                            <a t-attf-href="/rate/#{rating_token}/1" title="Unhappy"><img src="/rating/static/src/img/rating_1.png" alt="Unhappy"/></a>
+                        </div>
+                    </div>
+                    <div t-elif="rating_done" class="alert alert-success mb-4">
+                        <img t-attf-src="/rating/static/src/img/rating_#{int(rating_done.rating)}.png" alt="Rating" class="me-2" style="height: 24px;"/>
+                        Thank you for your feedback.
+                    </div>
+
+                    <div t-if="not is_html_empty(ticket.description)" class="mb-4">
+                        <h5 class="mb-1">Description</h5>
+                        <hr class="mt-1 mb-2"/>
+                        <div class="py-1 px-2 bg-100 small overflow-auto" t-field="ticket.description"/>
+                    </div>
+
+                    <t t-set="attachments" t-value="ticket.message_ids.attachment_ids"/>
+                    <div t-if="attachments" class="mb-4">
+                        <h5 class="mb-1">Attachments</h5>
+                        <hr class="mt-1 mb-2"/>
+                        <div class="row">
+                            <div t-foreach="attachments" t-as="attachment" class="col-md-6 mb-2">
+                                <a t-attf-href="/web/content/#{attachment.id}?download=true&amp;access_token=#{attachment.access_token}"
+                                    target="_blank" class="d-flex align-items-center rounded bg-light p-2">
+                                    <i class="oi me-2" data-icon="attach_file"/>
+                                    <span class="text-truncate" t-out="attachment.name"/>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr/>
+                    <div id="ticket_chat" data-anchor="true">
+                        <t t-call="portal.message_thread" token="ticket.access_token"/>
+                    </div>
+                </div>
+            </div>
+        </xpath>
+    </template>
+</odoo>

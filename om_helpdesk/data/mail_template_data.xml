@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_ticket_received" model="mail.template">
+            <field name="name">Helpdesk: Ticket Received</field>
+            <field name="model_id" ref="om_helpdesk.model_om_helpdesk_ticket"/>
+            <field name="subject">{{ object.team_id.name or 'Support' }}: we received your request {{ object.number }}</field>
+            <field name="use_default_to" eval="True"/>
+            <field name="description">Sent to the customer when a ticket reaches the stage that uses this template, e.g. New</field>
+            <field name="email_layout_xmlid">mail.mail_notification_light</field>
+            <field name="body_html" type="html">
+<div>
+    Dear <t t-out="object.partner_id.name or object.partner_name or 'customer'">Brandon Freeman</t>,<br/><br/>
+    Thank you for contacting us. Your request has been received and registered under the reference
+    <strong t-out="object.number or ''">TK00001</strong>: <t t-out="object.name or ''">Printer not working</t>.<br/>
+    Our team will get back to you as soon as possible.<br/><br/>
+    <t t-if="object.team_id.privacy_visibility == 'portal'">
+        You can follow your ticket and reply to us from your account.<br/>
+        <div style="margin: 16px 0px 16px 0px;">
+            <a t-att-href="object.get_portal_url()"
+                style="background-color: #714B67; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+                View the ticket
+            </a>
+        </div>
+    </t>
+    Simply reply to this email to add information to your request.<br/><br/>
+    Best regards,<br/>
+    <t t-out="object.team_id.name or object.company_id.name or ''">Customer Support</t>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_ticket_solved" model="mail.template">
+            <field name="name">Helpdesk: Ticket Solved</field>
+            <field name="model_id" ref="om_helpdesk.model_om_helpdesk_ticket"/>
+            <field name="subject">{{ object.team_id.name or 'Support' }}: your request {{ object.number }} is solved</field>
+            <field name="use_default_to" eval="True"/>
+            <field name="description">Sent to the customer when a ticket reaches the stage that uses this template, e.g. Solved</field>
+            <field name="email_layout_xmlid">mail.mail_notification_light</field>
+            <field name="body_html" type="html">
+<div>
+    Dear <t t-out="object.partner_id.name or object.partner_name or 'customer'">Brandon Freeman</t>,<br/><br/>
+    Your request <strong t-out="object.number or ''">TK00001</strong>: <t t-out="object.name or ''">Printer not working</t>
+    has been solved.<br/>
+    If the problem is still there, just reply to this email and we will look at it again.<br/><br/>
+    Best regards,<br/>
+    <t t-out="object.user_id.name or object.team_id.name or ''">Mitchell Admin</t>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_ticket_rating" model="mail.template">
+            <field name="name">Helpdesk: Rating Request</field>
+            <field name="model_id" ref="om_helpdesk.model_om_helpdesk_ticket"/>
+            <field name="subject">{{ object.company_id.name or user.env.company.name }}: how was our support?</field>
+            <field name="email_from">{{ (object._rating_get_operator().email_formatted if object._rating_get_operator() else user.email_formatted) }}</field>
+            <field name="partner_to">{{ object._rating_get_partner().id }}</field>
+            <field name="use_default_to" eval="False"/>
+            <field name="description">Sent when a ticket is closed in a team that asks for customer ratings</field>
+            <field name="email_layout_xmlid">mail.mail_notification_light</field>
+            <field name="body_html" type="html">
+<div>
+    <t t-set="access_token" t-value="object._rating_get_access_token()"/>
+    <t t-set="partner" t-value="object._rating_get_partner()"/>
+    <table border="0" cellpadding="0" cellspacing="0" width="590" style="width:100%; margin:0px auto;">
+    <tbody>
+        <tr><td valign="top" style="font-size: 13px;">
+            Hello <t t-out="partner.name or ''">Brandon Freeman</t>,<br/><br/>
+            Your ticket <strong t-out="object.number or ''">TK00001</strong>: <t t-out="object.name or ''">Printer not working</t> is closed.
+            Please take a moment to tell us how we did<t t-if="object._rating_get_operator().name">, handled by <strong t-out="object._rating_get_operator().name or ''">Mitchell Admin</strong></t>.
+        </td></tr>
+        <tr><td style="text-align: center;">
+            <table border="0" cellpadding="0" cellspacing="0" width="590" style="width:100%; margin: 32px 0px 32px 0px; display: inline-table;">
+                <tr><td style="font-size: 13px; text-align: center;">
+                    <strong>How do you feel about our support?</strong><br/>
+                    <span style="font-size: 12px; opacity: 0.5; color: #454748;">(click on one of these smileys)</span>
+                </td></tr>
+                <tr><td style="font-size: 13px;">
+                    <table style="width:100%; text-align:center; margin-top:2rem;">
+                        <tr>
+                            <td><a t-attf-href="/rate/{{ access_token }}/5"><img alt="Happy" src="/rating/static/src/img/rating_5.png" title="Happy"/></a></td>
+                            <td><a t-attf-href="/rate/{{ access_token }}/3"><img alt="Neutral" src="/rating/static/src/img/rating_3.png" title="Neutral"/></a></td>
+                            <td><a t-attf-href="/rate/{{ access_token }}/1"><img alt="Unhappy" src="/rating/static/src/img/rating_1.png" title="Unhappy"/></a></td>
+                        </tr>
+                    </table>
+                </td></tr>
+            </table>
+        </td></tr>
+        <tr><td valign="top" style="font-size: 13px;">
+            Your feedback helps us improve our service.<br/><br/>
+            Best regards,<br/>
+            <t t-out="object.team_id.name or object.company_id.name or ''">Customer Support</t>
+        </td></tr>
+    </tbody>
+    </table>
+</div>
+            </field>
+            <field name="lang">{{ object._rating_get_partner().lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

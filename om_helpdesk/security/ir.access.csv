@@ -1,0 +1,30 @@
+id,name,model_id,group_id/id,operation,domain
+access_helpdesk_ticket_manager,Helpdesk tickets: administrator,om.helpdesk.ticket,om_helpdesk.group_helpdesk_manager,crud,
+access_helpdesk_ticket_user_all,Helpdesk tickets: all tickets,om.helpdesk.ticket,om_helpdesk.group_helpdesk_user_all,cru,
+access_helpdesk_ticket_user,Helpdesk tickets: own teams,om.helpdesk.ticket,om_helpdesk.group_helpdesk_user,cru,"['|', '|', '|', ('user_id', '=', user.id), ('team_id', '=', False), ('team_id.member_ids', 'in', [user.id]), ('team_id.user_id', '=', user.id)]"
+access_helpdesk_ticket_portal,Helpdesk tickets: portal customers,om.helpdesk.ticket,base.group_portal,r,"[('team_id.privacy_visibility', '=', 'portal'), ('commercial_partner_id', '=', user.partner_id.commercial_partner_id.id)]"
+helpdesk_ticket_company_rule,Helpdesk tickets: multi-company,om.helpdesk.ticket,,crud,"[('company_id', 'in', company_ids)]"
+access_helpdesk_team_user,Helpdesk teams: users,om.helpdesk.team,om_helpdesk.group_helpdesk_user,r,
+access_helpdesk_team_manager,Helpdesk teams: administrator,om.helpdesk.team,om_helpdesk.group_helpdesk_manager,crud,
+access_helpdesk_team_portal,Helpdesk teams: portal customers,om.helpdesk.team,base.group_portal,r,"[('privacy_visibility', '=', 'portal')]"
+helpdesk_team_company_rule,Helpdesk teams: multi-company,om.helpdesk.team,,crud,"[('company_id', 'in', company_ids)]"
+access_helpdesk_stage_user,Helpdesk stages: users,om.helpdesk.stage,om_helpdesk.group_helpdesk_user,r,
+access_helpdesk_stage_manager,Helpdesk stages: administrator,om.helpdesk.stage,om_helpdesk.group_helpdesk_manager,crud,
+access_helpdesk_stage_portal,Helpdesk stages: portal customers,om.helpdesk.stage,base.group_portal,r,
+access_helpdesk_ticket_type_user,Helpdesk ticket types: users,om.helpdesk.ticket.type,om_helpdesk.group_helpdesk_user,r,
+access_helpdesk_ticket_type_manager,Helpdesk ticket types: administrator,om.helpdesk.ticket.type,om_helpdesk.group_helpdesk_manager,crud,
+access_helpdesk_ticket_type_portal,Helpdesk ticket types: portal customers,om.helpdesk.ticket.type,base.group_portal,r,
+access_helpdesk_tag_user,Helpdesk tags: users,om.helpdesk.tag,om_helpdesk.group_helpdesk_user,cru,
+access_helpdesk_tag_manager,Helpdesk tags: administrator,om.helpdesk.tag,om_helpdesk.group_helpdesk_manager,crud,
+access_helpdesk_close_reason_user,Helpdesk close reasons: users,om.helpdesk.close.reason,om_helpdesk.group_helpdesk_user,r,
+access_helpdesk_close_reason_manager,Helpdesk close reasons: administrator,om.helpdesk.close.reason,om_helpdesk.group_helpdesk_manager,crud,
+access_helpdesk_sla_user,Helpdesk SLA policies: users,om.helpdesk.sla,om_helpdesk.group_helpdesk_user,r,
+access_helpdesk_sla_manager,Helpdesk SLA policies: administrator,om.helpdesk.sla,om_helpdesk.group_helpdesk_manager,crud,
+helpdesk_sla_company_rule,Helpdesk SLA policies: multi-company,om.helpdesk.sla,,crud,"[('company_id', 'in', company_ids)]"
+access_helpdesk_sla_status_user,Helpdesk SLA status: users,om.helpdesk.sla.status,om_helpdesk.group_helpdesk_user,r,"['|', '|', '|', ('ticket_id.user_id', '=', user.id), ('ticket_id.team_id', '=', False), ('ticket_id.team_id.member_ids', 'in', [user.id]), ('ticket_id.team_id.user_id', '=', user.id)]"
+access_helpdesk_sla_status_user_all,Helpdesk SLA status: all tickets,om.helpdesk.sla.status,om_helpdesk.group_helpdesk_user_all,r,
+access_helpdesk_sla_status_manager,Helpdesk SLA status: administrator,om.helpdesk.sla.status,om_helpdesk.group_helpdesk_manager,crud,
+helpdesk_sla_status_company_rule,Helpdesk SLA status: multi-company,om.helpdesk.sla.status,,crud,"[('company_id', 'in', company_ids)]"
+access_helpdesk_ticket_merge_user,Merge tickets wizard: users,om.helpdesk.ticket.merge,om_helpdesk.group_helpdesk_user,crud,
+access_helpdesk_ticket_report_manager,Helpdesk ticket analysis: administrator,om.helpdesk.ticket.report,om_helpdesk.group_helpdesk_manager,r,
+helpdesk_ticket_report_company_rule,Helpdesk ticket analysis: multi-company,om.helpdesk.ticket.report,,crud,"[('company_id', 'in', company_ids)]"

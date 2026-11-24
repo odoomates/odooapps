@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_helpdesk_team_form_website" model="ir.ui.view">
+        <field name="name">om.helpdesk.team.form.website</field>
+        <field name="model">om.helpdesk.team</field>
+        <field name="inherit_id" ref="om_helpdesk.view_helpdesk_team_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_website_form" type="object" class="oe_stat_button" icon="public"
+                    invisible="not website_form or not id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Website Form</span>
+                    </div>
+                </button>
+            </div>
+            <xpath expr="//group[@name='settings_main']" position="after">
+                <group name="website_main">
+                    <group string="Website" name="website">
+                        <field name="website_form"/>
+                        <field name="website_id" invisible="not website_form" options="{'no_create': True}"
+                            groups="website.group_multi_website"/>
+                        <field name="website_url" widget="url" invisible="not website_url"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
