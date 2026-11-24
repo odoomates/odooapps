@@ -16,3 +16,5 @@ from . import report_day_book
 from . import horizontal_group
 from . import report_tax_grid
 from . import report_ec_sales
+from . import report_custom
+from . import account_financial_report
