@@ -1,40 +1,27 @@
 {
-    'name': 'Odoo Mates Pen',
+    'name': 'Odoo Mates Pen - No Code Customizer',
     'version': '19.0.1.0.1',
     'category': 'Productivity',
-    'summary': 'Add Fields, Change Fields, View Customizer Odoo 19, Hide Fields, Rename Fields, Readonly Fields, No Code',
+    'summary': 'No Code Customizer, Codeless Studio for Odoo Community: App Builder, Form and View '
+               'Editor, Custom Fields, Report Designer, Approvals, Automations, Access Rights, Drag and Drop',
     'description': """
-Customize your views without writing XML.
+A no code customizer for Odoo: a visual, drag and drop Studio, opened from the pen in the top bar.
+Codeless customization for Odoo Community.
 
-A button in the navbar turns on customize mode. Every field on the screen gets a pencil:
-click it to rename the field, hide it, make it readonly or required, restrict it to
-chosen user groups, change its widget, or stop a many2one from being opened or created
-inline, or hide it behind a condition built from rows instead of typed as code. Mirror
-a value from a linked record with a related field. Drag fields to reorder them. Add fields that are not on the view yet, or create
-brand new ones, and drag them where they should go, including onto a notebook tab to
-drop them inside that page. Add fields to the list and the form embedded in a one2many.
-Add pages to a notebook. Turn off New, Edit, Delete, Duplicate, Export and Import per
-view.
-
-Changes are drafts until you publish them. Edit as much as you like: nobody else sees
-anything until you press Publish, and what is already published keeps running in the
-meantime. Discard throws the unpublished work away and leaves the live view alone.
-
-Every change is stored as a rule and the inherited view is generated from those rules,
-so a customization can always be switched off without touching XML, and a customization
-that no longer matches its standard view is flagged before it breaks an upgrade.
-
-Everything can be exported as a real installable module, so the same setup can be
-replayed on another database.
-""",
-    'sequence': 10,
+Form editor and view editor on the real screen: forms, lists, kanban, search, calendar, pivot, graph
+and activity views. Add custom fields of any kind, tabs, columns, smart buttons, header buttons,
+ribbons, a chatter and stages. No code app builder: new apps with their menus and icon.
+Report designer: PDF reports from blocks on a live preview. Put approvals on buttons, create automations, and
+manage access rights. Changes are drafts until published, can be undone, are kept as
+versions, and everything can be exported as an installable module and imported back.
+""",    'sequence': 10,
     'author': 'Odoo Mates',
     'support': 'odoomates@gmail.com',
     'depends': ['web'],
     'data': [
         'security/security.xml',
-        'security/ir.model.access.csv',
         'views/om_pen_views.xml',
+        'security/ir.model.access.csv',
     ],
     'uninstall_hook': 'uninstall_hook',
     'assets': {

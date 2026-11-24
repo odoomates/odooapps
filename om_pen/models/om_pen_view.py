@@ -1,3 +1,5 @@
+import hashlib
+import json
 import logging
 import re
 
@@ -10,6 +12,14 @@ _logger = logging.getLogger(__name__)
 
 # the customization must land after every other extension of the same view
 CUSTOMIZATION_PRIORITY = 9999
+# key of the views the Studio makes. Not "om_pen.": Odoo deletes the views whose key starts
+# with the name of a module when that module is uninstalled, and these are the user's work
+KEY_PREFIX = '__om_pen__.'
+# key of the generated views: a change of theirs that no longer finds its place after
+# a module update is skipped rather than breaking the whole view
+GENERATED_KEY = KEY_PREFIX + 'customization_'
+# how many steps back the Studio editor can undo
+UNDO_LIMIT = 50
 
 # xml ids are filed under a module that will never be installed, so a module upgrade
 # cannot decide the record is stale and delete it (_process_end, ir_model.py)
@@ -61,6 +71,13 @@ class OmPenView(models.Model):
                                  " view without losing the rules.")
     rule_ids = fields.One2many('om.pen.rule', 'customize_id', string="Field Rules")
     page_ids = fields.One2many('om.pen.page', 'customize_id', string="Added Pages")
+    # changes made in the Studio editor: an ordered list of inheritance specs, each
+    # {'spec': xml, 'label': text}. They apply after the field rules above.
+    draft_ops = fields.Json(string="Unpublished Changes", default=list, copy=False)
+    published_ops = fields.Json(string="Published Changes", default=list, copy=False)
+    undo_ops = fields.Json(string="Undo History", default=list, copy=False)
+    redo_ops = fields.Json(string="Redo History", default=list, copy=False)
+    version_ids = fields.One2many('om.pen.version', 'customize_id', string="Versions")
     has_draft = fields.Boolean(
         string="Has Unpublished Changes", compute='_compute_draft_state')
     draft_count = fields.Integer(string="Unpublished", compute='_compute_draft_state')
@@ -94,7 +111,7 @@ class OmPenView(models.Model):
     # arch generation
     # ------------------------------------------------------------------
 
-    def _render_arch(self, draft=False):
+    def _render_arch(self, draft=False, with_ops=True):
         """ Build the inheritance spec for this customization.
 
         By default this renders the **published** state, which is what the live view is
@@ -122,6 +139,8 @@ class OmPenView(models.Model):
                 # a rule that has never been published contributes nothing to the live
                 # view, and an empty recordset has no rule to render
                 root.extend(published._render_nodes(arch))
+        for operation in ((self.draft_ops if draft else self.published_ops) or []) if with_ops else []:
+            root.append(etree.fromstring(operation['spec']))
         if (node := self._render_action_node()) is not None:
             root.append(node)
         # indented, so the generated view reads properly in Settings > Views and in an
@@ -148,7 +167,7 @@ class OmPenView(models.Model):
     def _has_customizations(self):
         """ Whether the *published* state changes anything. """
         self.ensure_one()
-        if any(page.published for page in self.page_ids):
+        if any(page.published for page in self.page_ids) or self.published_ops:
             return True
         for rule in self.rule_ids:
             published = rule._published()
@@ -158,12 +177,17 @@ class OmPenView(models.Model):
         return self._render_action_node() is not None
 
     @api.depends('rule_ids', 'page_ids', 'rule_ids.published_values',
-                 'rule_ids.to_remove', 'page_ids.published', 'page_ids.to_remove')
+                 'rule_ids.to_remove', 'page_ids.published', 'page_ids.to_remove',
+                 'draft_ops', 'published_ops')
     def _compute_draft_state(self):
         for record in self:
             drafts = [rule for rule in record.rule_ids if rule._is_draft()]
             drafts += [page for page in record.page_ids
                        if not page.published or page.to_remove]
+            draft_ops = record.draft_ops or []
+            published_ops = record.published_ops or []
+            drafts += [op for op in draft_ops if op not in published_ops]
+            drafts += [op for op in published_ops if op not in draft_ops]
             record.draft_count = len(drafts)
             record.has_draft = bool(drafts)
             record.draft_invalid = bool(drafts) and not record._draft_renders()
@@ -229,6 +253,7 @@ class OmPenView(models.Model):
                         'mode': 'extension',
                         'priority': CUSTOMIZATION_PRIORITY,
                         'active': True,
+                        'key': '%s%s' % (GENERATED_KEY, record.id),
                     })
                     record._ensure_xmlid()
             except (ValidationError, UserError) as error:
@@ -286,8 +311,19 @@ class OmPenView(models.Model):
             for rule in record.rule_ids:
                 rule.published_values = rule._snapshot()
             record.page_ids.published = True
+            record.with_context(om_pen_skip_apply=True).published_ops = list(record.draft_ops or [])
             record._apply()
+            record._record_version()
         return True
+
+    def _record_version(self):
+        """ Keep what was just published, to compare it or go back to it later. """
+        self.ensure_one()
+        self.env['om.pen.version'].create({
+            'customize_id': self.id,
+            'ops': list(self.published_ops or []),
+            'arch': self.custom_view_id.arch or '',
+        })
 
     def action_discard_draft(self):
         """ Throw the unpublished changes away and go back to what is live. """
@@ -299,17 +335,103 @@ class OmPenView(models.Model):
                 values['group_ids'] = [Command.set(values.get('group_ids') or [])]
                 rule.write({**values, 'to_remove': False})
             record.page_ids.to_remove = False
+            record.write({
+                'draft_ops': list(record.published_ops or []),
+                'undo_ops': [],
+                'redo_ops': [],
+            })
         self._clear_draft_views()
         return True
 
     def action_reset(self):
         """ Drop every rule and the generated view. """
         self.rule_ids.unlink()
+        self.page_ids.unlink()
+        self.with_context(om_pen_skip_apply=True).write({
+            'draft_ops': [], 'published_ops': [], 'undo_ops': [], 'redo_ops': []})
         self.custom_view_id.unlink()
         return True
 
+    # ------------------------------------------------------------------
+    # Studio operations
+    # ------------------------------------------------------------------
+
+    def _revision(self):
+        """ A token of the draft, so an editor working on an older one is told. """
+        self.ensure_one()
+        digest = hashlib.sha1(json.dumps(self.draft_ops or [], sort_keys=True).encode()).hexdigest()
+        return digest[:12]
+
+    def _push_ops(self, specs, label):
+        """ Append specs to the draft, as one step that can be undone. """
+        self.ensure_one()
+        current = list(self.draft_ops or [])
+        added = [{'spec': etree.tostring(spec, encoding='unicode'), 'label': label} for spec in specs]
+        self._set_draft(current + added)
+
+    def _set_draft(self, ops):
+        """ Replace the draft, keeping the previous one to undo to. """
+        self.ensure_one()
+        undo = list(self.undo_ops or []) + [list(self.draft_ops or [])]
+        self.write({
+            'draft_ops': ops,
+            'undo_ops': undo[-UNDO_LIMIT:],
+            'redo_ops': [],
+        })
+        self._clear_draft_views()
+
+    def _undo(self):
+        self.ensure_one()
+        undo = list(self.undo_ops or [])
+        if not undo:
+            raise UserError(_("There is nothing to undo."))
+        previous = undo.pop()
+        self.write({
+            'draft_ops': previous,
+            'undo_ops': undo,
+            'redo_ops': (list(self.redo_ops or []) + [list(self.draft_ops or [])])[-UNDO_LIMIT:],
+        })
+        self._clear_draft_views()
+
+    def _redo(self):
+        self.ensure_one()
+        redo = list(self.redo_ops or [])
+        if not redo:
+            raise UserError(_("There is nothing to redo."))
+        following = redo.pop()
+        self.write({
+            'draft_ops': following,
+            'undo_ops': (list(self.undo_ops or []) + [list(self.draft_ops or [])])[-UNDO_LIMIT:],
+            'redo_ops': redo,
+        })
+        self._clear_draft_views()
+
+    def init(self):
+        # views the Studio made under the key prefix "om_pen.": move them to KEY_PREFIX, so
+        # that uninstalling the module leaves them (not the views of the module's own files)
+        self.env.cr.execute("""
+            UPDATE ir_ui_view v
+               SET key = %s || substr(v.key, 8)
+             WHERE v.key LIKE 'om\\_pen.%%'
+               AND NOT EXISTS (SELECT 1 FROM ir_model_data d
+                                WHERE d.model = 'ir.ui.view' AND d.res_id = v.id AND d.module = 'om_pen')
+        """, [KEY_PREFIX])
+        self.env.cr.execute("""
+            UPDATE ir_act_report_xml
+               SET report_name = %s || substr(report_name, 8)
+             WHERE report_name LIKE 'om\\_pen.report\\_%%'
+        """, [KEY_PREFIX])
+        # generated views made before they carried a key: give them one, so a change
+        # of theirs that no longer fits after an update is skipped, not fatal
+        self.env.cr.execute("""
+            UPDATE ir_ui_view v
+               SET key = %s || c.id
+              FROM om_pen_view c
+             WHERE c.custom_view_id = v.id AND v.key IS NULL
+        """, [GENERATED_KEY])
+
     # the fields the generated arch is built from; writing anything else leaves it alone
-    ARCH_FIELDS = {'active', 'view_id', 'rule_ids', 'page_ids', *ACTION_FIELDS}
+    ARCH_FIELDS = {'active', 'view_id', 'rule_ids', 'page_ids', 'published_ops', *ACTION_FIELDS}
 
     def write(self, vals):
         result = super().write(vals)
@@ -411,6 +533,12 @@ class OmPenView(models.Model):
         if 'group_ids' in values:
             # a bare list of ids is ambiguous on a many2many; be explicit
             values['group_ids'] = [Command.set(values['group_ids'] or [])]
+        # the panel sends '' for a selection left on its default; a selection field
+        # only takes one of its values or False
+        rule_fields = self.env['om.pen.rule']._fields
+        for name, value in values.items():
+            if value == '' and rule_fields.get(name) and rule_fields[name].type == 'selection':
+                values[name] = False
         rule = customization.rule_ids.filtered(
             lambda r: r.field_name == field_name and (r.sub_field or '') == sub_field
             and (r.sub_view_type or False) == sub_view_type)
@@ -722,7 +850,7 @@ class OmPenView(models.Model):
             raise UserError(_("A %s field cannot be mirrored.") % field.type)
         return {
             'ttype': field.type,
-            'relation': field.comodel_name or False,
+            'relation': field.comodel_name if field.relational else False,
             'string': field.string,
         }
 

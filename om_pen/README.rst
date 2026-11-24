@@ -1,13 +1,18 @@
-Odoo Mates Pen
-==============
+Odoo Mates Pen - No Code Customizer
+===================================
 
-* Customize any form or list view without writing XML
-* Rename, hide, make readonly or required, set a widget, tooltip or placeholder
-* Restrict a field to chosen user groups
-* Add existing or brand new fields, and drag them where they belong
-* Add pages to a notebook, and fields to an embedded one2many list or form
-* Turn New, Edit, Delete, Duplicate, Export and Import on or off per view
-* Undo any single change, and export the lot as an installable module
+A no code customizer and Studio for Odoo Community: app builder, form and
+view editor, custom fields and report designer: codeless customization, all by drag and drop.
+
+* Edit forms, lists, kanban, search, calendar, pivot, graph and activity views by
+  clicking and dragging on the real screen
+* Add custom fields of any kind, tabs, columns, smart buttons, header buttons, ribbons,
+  a chatter and stages
+* No code app builder: new apps with their menus and icon, and edit the menus of any app
+* Report designer: PDF reports from blocks, or add blocks to the reports of modules
+* Approvals on buttons, automations and access rights
+* Drafts, undo and redo, published versions, translations and a health check
+* Export everything as an installable module, and import it back
 
 Depends
 =======

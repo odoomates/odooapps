@@ -109,7 +109,7 @@ class TestArchGeneration(PublishMixin, TransactionCase):
         self.customization.with_context(om_pen_skip_apply=True).view_type = 'list'
         arch = etree.fromstring(self.customization._render_arch(draft=True))
         self.assertEqual(arch[0].get('expr'), '//list',
-                         "19.0 has no <tree> tag: an xpath on //tree would never locate")
+                         "lists have no <tree> tag: an xpath on //tree would never locate")
 
     def test_applying_creates_an_extension_view_that_odoo_accepts(self):
         self._rule(label="Direct Line")
