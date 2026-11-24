@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="rental_report_view_pivot" model="ir.ui.view">
+        <field name="name">om.rental.report.pivot</field>
+        <field name="model">om.rental.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Rental Analysis" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="date" type="col" interval="month"/>
+                <field name="revenue" type="measure"/>
+                <field name="quantity" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="rental_report_view_graph" model="ir.ui.view">
+        <field name="name">om.rental.report.graph</field>
+        <field name="model">om.rental.report</field>
+        <field name="arch" type="xml">
+            <graph string="Rental Analysis" type="bar" sample="1">
+                <field name="date" interval="month"/>
+                <field name="product_id"/>
+                <field name="revenue" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="rental_report_view_list" model="ir.ui.view">
+        <field name="name">om.rental.report.list</field>
+        <field name="model">om.rental.report</field>
+        <field name="arch" type="xml">
+            <list string="Rental Analysis" create="0" edit="0" delete="0">
+                <field name="date"/>
+                <field name="order_id"/>
+                <field name="partner_id"/>
+                <field name="product_id"/>
+                <field name="quantity" sum="Total"/>
+                <field name="utilisation" avg="Average"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="revenue" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="rental_report_view_search" model="ir.ui.view">
+        <field name="name">om.rental.report.search</field>
+        <field name="model">om.rental.report</field>
+        <field name="arch" type="xml">
+            <search string="Rental Analysis">
+                <field name="product_id"/>
+                <field name="partner_id"/>
+                <field name="order_id"/>
+                <field name="user_id"/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <separator/>
+                <filter name="filter_open" string="Not Returned" domain="[('rental_line_status', 'in', ('reserved', 'pickup'))]"/>
+                <filter name="filter_returned" string="Returned" domain="[('rental_line_status', '=', 'returned')]"/>
+                <group>
+                    <filter name="groupby_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="groupby_category" string="Product Category" context="{'group_by': 'categ_id'}"/>
+                    <filter name="groupby_partner" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="groupby_user" string="Salesperson" context="{'group_by': 'user_id'}"/>
+                    <filter name="groupby_date" string="Day" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rental_report" model="ir.actions.act_window">
+        <field name="name">Rental Analysis</field>
+        <field name="res_model">om.rental.report</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No rental yet</p>
+            <p>Revenue and units rented per day of the confirmed rental orders.</p>
+        </field>
+    </record>
+
+    <record id="action_rental_report_utilisation" model="ir.actions.act_window">
+        <field name="name">Utilisation</field>
+        <field name="res_model">om.rental.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="context">{'pivot_measures': ['quantity', 'utilisation'], 'graph_measure': 'utilisation', 'graph_mode': 'line'}</field>
+    </record>
+
+</odoo>

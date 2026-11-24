@@ -1,0 +1,343 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_view_form_rental" model="ir.ui.view">
+        <field name="name">sale.order.form.om.rental</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[1]" position="before">
+                <field name="is_rental_order" invisible="1"/>
+                <field name="rental_has_pickable" invisible="1"/>
+                <field name="rental_has_returnable" invisible="1"/>
+                <button string="Pickup" name="action_rental_pickup" type="object" class="btn-primary"
+                        data-hotkey="k" invisible="not is_rental_order or not rental_has_pickable"/>
+                <button string="Return" name="action_rental_return" type="object" class="btn-primary"
+                        data-hotkey="j" invisible="not is_rental_order or not rental_has_returnable"/>
+            </xpath>
+            <xpath expr="//header/field[@name='state']" position="attributes">
+                <attribute name="invisible">is_rental_order</attribute>
+            </xpath>
+            <xpath expr="//header/field[@name='state']" position="after">
+                <field name="rental_status" widget="statusbar" invisible="not is_rental_order"
+                       statusbar_visible="draft,sent,reserved,pickup,returned"/>
+            </xpath>
+            <xpath expr="//sheet/div[@name='button_box']" position="after">
+                <widget name="web_ribbon" title="Late" bg_color="text-bg-danger" invisible="not is_late"/>
+                <field name="is_late" invisible="1"/>
+            </xpath>
+            <xpath expr="(//group[@name='order_details']/label[@for='commitment_date'])[1]" position="attributes">
+                <attribute name="invisible">state == 'draft' or is_rental_order</attribute>
+            </xpath>
+            <xpath expr="(//group[@name='order_details']/label[@for='commitment_date'])[2]" position="attributes">
+                <attribute name="invisible">state != 'draft' or is_rental_order</attribute>
+            </xpath>
+            <xpath expr="//group[@name='order_details']/div[@name='commitment_date_div']" position="attributes">
+                <attribute name="invisible">is_rental_order</attribute>
+            </xpath>
+            <xpath expr="//group[@name='order_details']/field[@name='validity_date']" position="before">
+                <label for="rental_start_date" string="Rental Period" invisible="not is_rental_order"/>
+                <div class="o_row" invisible="not is_rental_order">
+                    <field name="rental_start_date" widget="daterange" required="is_rental_order"
+                           options="{'end_date_field': 'rental_return_date', 'always_range': True}"
+                           readonly="rental_status in ('returned', 'cancel')"/>
+                </div>
+                <field name="rental_return_date" invisible="1" required="is_rental_order"/>
+                <field name="rental_duration_display" invisible="not is_rental_order"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='display_type']" position="after">
+                <field name="is_rental" column_invisible="True"/>
+                <field name="rental_unavailable" column_invisible="True"/>
+                <field name="rental_line_status" column_invisible="True"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list" position="attributes">
+                <attribute name="decoration-danger">rental_unavailable</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/column[@name='sol_qty']" position="before">
+                <field name="rental_start_date" optional="hide" invisible="not is_rental"
+                       column_invisible="not parent.is_rental_order"/>
+                <field name="rental_return_date" optional="hide" invisible="not is_rental"
+                       column_invisible="not parent.is_rental_order"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/column[@name='sol_qty']" position="after">
+                <field name="rental_available_qty" string="Free" optional="show"
+                       invisible="not is_rental or parent.state not in ('draft', 'sent')"
+                       column_invisible="not parent.is_rental_order"
+                       decoration-danger="rental_unavailable" decoration-success="not rental_unavailable"/>
+                <field name="qty_picked_up" optional="show" readonly="1" invisible="not is_rental"
+                       column_invisible="not parent.is_rental_order or parent.state != 'sale'"/>
+                <field name="qty_returned" optional="show" readonly="1" invisible="not is_rental"
+                       column_invisible="not parent.is_rental_order or parent.state != 'sale'"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='product_id']" position="after">
+                <field name="is_rental" invisible="1"/>
+                <field name="rental_start_date" invisible="not is_rental"/>
+                <field name="rental_return_date" invisible="not is_rental"/>
+            </xpath>
+            <xpath expr="//page[@name='other_information']" position="inside">
+                <group string="Rental" name="rental_info" invisible="not is_rental_order">
+                    <field name="rental_pickup_reminder_sent"/>
+                    <field name="rental_return_reminder_sent"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_view_list_rental" model="ir.ui.view">
+        <field name="name">sale.order.list.om.rental</field>
+        <field name="model">sale.order</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Rental Orders" sample="1" decoration-danger="is_late" decoration-muted="rental_status == 'cancel'">
+                <field name="name" string="Number" readonly="1" decoration-bf="1"/>
+                <field name="partner_id" readonly="1"/>
+                <field name="rental_start_date"/>
+                <field name="rental_return_date"/>
+                <field name="rental_duration_display" optional="show"/>
+                <field name="user_id" optional="show" widget="many2one_avatar_user"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show" readonly="1"/>
+                <field name="amount_untaxed" sum="Total Tax Excluded" widget="monetary" optional="hide"/>
+                <field name="amount_total" sum="Total Tax Included" widget="monetary" decoration-bf="1" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="is_late" column_invisible="True"/>
+                <field name="invoice_status" optional="hide"/>
+                <field name="rental_status" widget="badge"
+                       decoration-info="rental_status in ('draft', 'sent')"
+                       decoration-warning="rental_status == 'reserved'"
+                       decoration-primary="rental_status == 'pickup'"
+                       decoration-success="rental_status == 'returned'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sale_order_view_kanban_rental" model="ir.ui.view">
+        <field name="name">sale.order.kanban.om.rental</field>
+        <field name="model">sale.order</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1" quick_create="false" default_group_by="rental_status">
+                <field name="currency_id"/>
+                <field name="is_late"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-center mb-1">
+                            <field name="partner_id" class="fw-bolder fs-5 me-2"/>
+                            <field name="amount_total" widget="monetary" class="fw-bolder ms-auto flex-shrink-0"/>
+                        </div>
+                        <div class="text-muted small">
+                            <field name="rental_start_date"/> - <field name="rental_return_date"/>
+                        </div>
+                        <footer class="align-items-end">
+                            <div class="d-flex flex-wrap gap-1 text-muted text-nowrap">
+                                <field name="name"/>
+                                <span t-if="record.is_late.raw_value" class="badge text-bg-danger">Late</span>
+                            </div>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="sale_order_view_search_rental" model="ir.ui.view">
+        <field name="name">sale.order.search.om.rental</field>
+        <field name="model">sale.order</field>
+        <field name="mode">primary</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='my_sale_orders_filter']" position="after">
+                <separator/>
+                <filter name="filter_quotation" string="Quotations" domain="[('rental_status', 'in', ('draft', 'sent'))]"/>
+                <filter name="filter_reserved" string="Reserved" domain="[('rental_status', '=', 'reserved')]"/>
+                <filter name="filter_pickup" string="Picked Up" domain="[('rental_status', '=', 'pickup')]"/>
+                <filter name="filter_returned" string="Returned" domain="[('rental_status', '=', 'returned')]"/>
+                <separator/>
+                <filter name="filter_late" string="Late" domain="[('is_late', '=', True)]"/>
+                <filter name="filter_pickup_today" string="To Pick Up Today"
+                        domain="[('rental_status', '=', 'reserved'), ('rental_start_date', '&lt;', 'today +1d'), ('rental_start_date', '&gt;=', 'today')]"/>
+                <filter name="filter_return_today" string="To Return Today"
+                        domain="[('rental_status', '=', 'pickup'), ('rental_return_date', '&lt;', 'today +1d'), ('rental_return_date', '&gt;=', 'today')]"/>
+            </xpath>
+            <xpath expr="//group/filter[@name='customer']" position="after">
+                <filter name="groupby_rental_status" string="Rental Status" context="{'group_by': 'rental_status'}"/>
+                <filter name="groupby_start" string="Pickup Date" context="{'group_by': 'rental_start_date'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_view_calendar_rental" model="ir.ui.view">
+        <field name="name">sale.order.calendar.om.rental</field>
+        <field name="model">sale.order</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <calendar string="Rental Orders" date_start="rental_start_date" date_stop="rental_return_date"
+                      color="partner_id" mode="month" quick_create="0" event_open_popup="0">
+                <field name="partner_id" filters="1"/>
+                <field name="rental_status"/>
+                <field name="amount_total" widget="monetary"/>
+                <field name="currency_id" invisible="1"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="sale_order_view_pivot_rental" model="ir.ui.view">
+        <field name="name">sale.order.pivot.om.rental</field>
+        <field name="model">sale.order</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <pivot string="Rental Orders" sample="1">
+                <field name="rental_start_date" type="row" interval="month"/>
+                <field name="rental_status" type="col"/>
+                <field name="amount_untaxed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_rental_orders" model="ir.actions.act_window">
+        <field name="name">Rental Orders</field>
+        <field name="res_model">sale.order</field>
+        <field name="path">rental</field>
+        <field name="view_mode">list,kanban,form,calendar,pivot,activity</field>
+        <field name="search_view_id" ref="sale_order_view_search_rental"/>
+        <field name="domain">[('is_rental_order', '=', True)]</field>
+        <field name="context">{'default_is_rental_order': True}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'list', 'view_id': ref('sale_order_view_list_rental')}),
+            Command.create({'view_mode': 'kanban', 'view_id': ref('sale_order_view_kanban_rental')}),
+            Command.create({'view_mode': 'form', 'view_id': ref('sale.view_order_form')}),
+            Command.create({'view_mode': 'calendar', 'view_id': ref('sale_order_view_calendar_rental')}),
+            Command.create({'view_mode': 'pivot', 'view_id': ref('sale_order_view_pivot_rental')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a new rental order
+            </p>
+            <p>
+                Set the pickup and return dates, add the products to rent: the price comes from
+                the rental prices of the products for the period.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_rental_orders_late" model="ir.actions.act_window">
+        <field name="name">Late Returns</field>
+        <field name="res_model">sale.order</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="search_view_id" ref="sale_order_view_search_rental"/>
+        <field name="domain">[('is_rental_order', '=', True)]</field>
+        <field name="context">{'default_is_rental_order': True, 'search_default_filter_late': 1}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'list', 'view_id': ref('sale_order_view_list_rental')}),
+            Command.create({'view_mode': 'kanban', 'view_id': ref('sale_order_view_kanban_rental')}),
+            Command.create({'view_mode': 'form', 'view_id': ref('sale.view_order_form')})]"/>
+    </record>
+
+    <!-- Rental schedule: rental lines by product -->
+    <record id="sale_order_line_view_calendar_rental" model="ir.ui.view">
+        <field name="name">sale.order.line.calendar.om.rental</field>
+        <field name="model">sale.order.line</field>
+        <field name="arch" type="xml">
+            <calendar string="Rental Schedule" date_start="rental_start_date" date_stop="rental_return_date"
+                      color="product_id" mode="week" quick_create="0" create="0" event_open_popup="1">
+                <field name="product_id" filters="1"/>
+                <field name="order_partner_id"/>
+                <field name="order_id"/>
+                <field name="product_uom_qty"/>
+                <field name="rental_line_status"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="sale_order_line_view_list_rental" model="ir.ui.view">
+        <field name="name">sale.order.line.list.om.rental</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Rental Lines" create="0" edit="0" decoration-danger="rental_is_late">
+                <field name="order_id"/>
+                <field name="order_partner_id"/>
+                <field name="product_id"/>
+                <field name="rental_start_date"/>
+                <field name="rental_return_date"/>
+                <field name="rental_busy_stop" optional="hide"/>
+                <field name="product_uom_qty" string="Quantity"/>
+                <field name="qty_picked_up" optional="show"/>
+                <field name="qty_returned" optional="show"/>
+                <field name="price_subtotal" sum="Total" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="rental_is_late" column_invisible="True"/>
+                <field name="rental_line_status" widget="badge"
+                       decoration-warning="rental_line_status == 'reserved'"
+                       decoration-primary="rental_line_status == 'pickup'"
+                       decoration-success="rental_line_status == 'returned'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="sale_order_line_view_form_rental" model="ir.ui.view">
+        <field name="name">sale.order.line.form.om.rental</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <form string="Rental Line" create="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="order_id" readonly="1"/>
+                            <field name="order_partner_id" readonly="1"/>
+                            <field name="product_id" readonly="1"/>
+                            <field name="product_uom_qty" readonly="1"/>
+                            <field name="rental_line_status"/>
+                        </group>
+                        <group>
+                            <field name="rental_start_date" readonly="rental_line_status in ('returned', 'cancel')"/>
+                            <field name="rental_return_date" readonly="rental_line_status in ('returned', 'cancel')"/>
+                            <field name="rental_busy_stop"/>
+                            <field name="qty_picked_up" readonly="1"/>
+                            <field name="qty_returned" readonly="1"/>
+                        </group>
+                    </group>
+                    <field name="name" readonly="1"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="sale_order_line_view_search_rental" model="ir.ui.view">
+        <field name="name">sale.order.line.search.om.rental</field>
+        <field name="model">sale.order.line</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <search string="Rental Lines">
+                <field name="product_id"/>
+                <field name="order_id"/>
+                <field name="order_partner_id"/>
+                <filter name="filter_reserved" string="Reserved" domain="[('rental_line_status', '=', 'reserved')]"/>
+                <filter name="filter_pickup" string="Picked Up" domain="[('rental_line_status', '=', 'pickup')]"/>
+                <filter name="filter_returned" string="Returned" domain="[('rental_line_status', '=', 'returned')]"/>
+                <separator/>
+                <filter name="filter_open" string="Not Returned" domain="[('rental_line_status', 'in', ('reserved', 'pickup'))]"/>
+                <group>
+                    <filter name="groupby_product" string="Product" context="{'group_by': 'product_id'}"/>
+                    <filter name="groupby_partner" string="Customer" context="{'group_by': 'order_partner_id'}"/>
+                    <filter name="groupby_status" string="Status" context="{'group_by': 'rental_line_status'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rental_schedule" model="ir.actions.act_window">
+        <field name="name">Rental Schedule</field>
+        <field name="res_model">sale.order.line</field>
+        <field name="path">rental-schedule</field>
+        <field name="view_mode">calendar,list,form</field>
+        <field name="search_view_id" ref="sale_order_line_view_search_rental"/>
+        <field name="domain">[('is_rental', '=', True), ('state', '=', 'sale')]</field>
+        <field name="context">{'create': False, 'om_rental_schedule': True}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'calendar', 'view_id': ref('sale_order_line_view_calendar_rental')}),
+            Command.create({'view_mode': 'list', 'view_id': ref('sale_order_line_view_list_rental')}),
+            Command.create({'view_mode': 'form', 'view_id': ref('sale_order_line_view_form_rental')})]"/>
+    </record>
+
+</odoo>
