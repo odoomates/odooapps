@@ -20,6 +20,7 @@
         'security/ir.access.csv',
         'views/menu.xml',
         'views/horizontal_group_views.xml',
+        'views/account_financial_report_views.xml',
     ],
     'assets': {
         'web.assets_tests': [
