@@ -6,12 +6,22 @@
         <field name="model">account.financial.report</field>
         <field name="arch" type="xml">
             <form string="Account Report">
+                <header>
+                    <button name="action_create_menu" string="Add to Menu" type="object" class="btn-primary"
+                            groups="account.group_account_manager" invisible="parent_id or menu_id"
+                            help="Add a menu that opens this report."/>
+                    <button name="action_remove_menu" string="Remove Menu" type="object"
+                            groups="account.group_account_manager" invisible="not menu_id"
+                            confirm="Remove the menu of this report?"/>
+                </header>
                 <sheet>
                     <group>
                         <group>
                             <field name="name"/>
                             <field name="parent_id"/>
                             <field name="sequence"/>
+                            <field name="menu_id" invisible="not menu_id"/>
+                            <field name="menu_action_id" invisible="1"/>
                         </group>
                         <group>
                             <field name="type"/>

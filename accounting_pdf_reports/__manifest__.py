@@ -28,6 +28,7 @@
         'views/settings.xml',
         'views/account_account_views.xml',
         'wizard/account_report_common_view.xml',
+        'wizard/account_financial_report_menu.xml',
         'wizard/partner_ledger.xml',
         'wizard/general_ledger.xml',
         'wizard/trial_balance.xml',
