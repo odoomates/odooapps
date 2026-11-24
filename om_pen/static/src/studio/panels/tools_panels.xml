@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.TranslationsPanel">
+        <div class="o_pen_panel o_pen_translations_panel" t-if="this.state.data">
+            <h2>Translations</h2>
+            <p class="o_pen_panel_lead">The texts this view shows, and the labels of the custom fields of
+                <t t-out="this.props.store.info.model_name"/>, in every installed language.
+                Languages are added from Settings.</p>
+            <p t-if="!this.state.data.published" class="alert alert-info small">Publish the view first: the texts of a draft are translated once it is live.</p>
+            <table class="table table-sm align-middle" t-if="this.state.data.rows.length">
+                <thead>
+                    <tr>
+                        <th>Text</th>
+                        <t t-foreach="this.state.data.langs" t-as="lang" t-key="lang[0]"><th t-out="lang[1]"/></t>
+                    </tr>
+                </thead>
+                <tbody>
+                    <t t-foreach="this.state.data.rows" t-as="row" t-key="row.kind + row.id + row.source">
+                        <tr t-att-data-source="row.source">
+                            <td>
+                                <span t-out="row.source"/>
+                                <small class="text-muted ms-1" t-out="row.kind === 'field' ? 'field' : ''"/>
+                            </td>
+                            <t t-foreach="this.state.data.langs" t-as="lang" t-key="lang[0]">
+                                <td>
+                                    <input class="form-control form-control-sm o_pen_translation" t-att-data-lang="lang[0]"
+                                           t-att-value="row.values[lang[0]] or ''" t-att-placeholder="row.source"
+                                           t-on-change="(ev) => this.save(row, lang[0], ev)"/>
+                                </td>
+                            </t>
+                        </tr>
+                    </t>
+                </tbody>
+            </table>
+            <p t-else="" class="text-muted">Nothing to translate yet.</p>
+        </div>
+    </t>
+
+    <t t-name="om_pen.ToolsPanel">
+        <div class="o_pen_panel o_pen_tools_panel">
+            <h2>Health check</h2>
+            <p class="o_pen_panel_lead">After a module update, the changes, reports and approvals that no longer fit, in one place.</p>
+            <button class="btn btn-primary o_pen_health" t-att-disabled="this.state.checking" t-on-click="() => this.check()">
+                <t t-if="this.state.checking">Checking…</t><t t-else="">Check everything</t>
+            </button>
+            <t t-if="this.state.issues">
+                <div t-if="!this.state.issues.length" class="alert alert-success mt-3 o_pen_health_ok">Everything fits.</div>
+                <table t-else="" class="table table-sm align-middle mt-3">
+                    <tbody>
+                        <t t-foreach="this.state.issues" t-as="issue" t-key="issue.kind + issue.id">
+                            <tr>
+                                <td><span class="badge text-bg-light" t-out="issue.kind"/></td>
+                                <td t-out="issue.label"/>
+                                <td class="small" t-out="issue.problem"/>
+                                <td class="text-end text-nowrap">
+                                    <button t-if="issue.fixable" class="btn btn-sm btn-light" t-on-click="() => this.fix(issue)">Drop what no longer fits</button>
+                                    <button t-if="issue.kind === 'view'" class="btn btn-sm btn-link" t-on-click="() => this.open(issue)">Open</button>
+                                </td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+            </t>
+
+            <h2 class="mt-5">Export and import</h2>
+            <p class="o_pen_panel_lead">Everything made in the Studio, as an Odoo module: new apps and fields, views, menus,
+                reports, access rights, automations and approvals. Install it on another database like any module,
+                or import it back here to keep editing it in the Studio.</p>
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-primary o_pen_export" t-att-disabled="this.state.exporting" t-on-click="() => this.exportAll()">
+                    <i class="oi me-1" data-icon="download"/>
+                    <t t-if="this.state.exporting">Preparing…</t><t t-else="">Export as a module</t>
+                </button>
+                <label class="btn btn-light mb-0 o_pen_import">
+                    <i class="oi me-1" data-icon="upload"/>
+                    <t t-if="this.state.importing">Importing…</t><t t-else="">Import a module</t>
+                    <input type="file" accept=".zip" class="d-none" t-on-change="(ev) => this.importFile(ev)"/>
+                </label>
+            </div>
+            <div t-if="this.state.imported" class="alert alert-success mt-3">
+                Imported <t t-out="this.state.imported.records"/> records; <t t-out="this.state.imported.views"/> view(s) can be edited in the Studio.
+            </div>
+        </div>
+    </t>
+
+</templates>

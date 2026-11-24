@@ -3,3 +3,14 @@ from . import om_pen_page
 from . import om_pen_rule
 from . import om_pen_export
 from . import om_pen_preview
+from . import om_pen_version
+from . import om_pen_arch
+from . import om_pen_studio
+from . import om_pen_studio_fields
+from . import om_pen_studio_model
+from . import om_pen_studio_app
+from . import om_pen_report
+from . import om_pen_approval
+from . import om_pen_automation
+from . import om_pen_studio_tools
+from . import om_pen_mark

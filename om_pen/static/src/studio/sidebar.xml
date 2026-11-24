@@ -1,0 +1,349 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.StudioSidebar">
+        <aside class="o_pen_sidebar">
+            <nav class="o_pen_tabs">
+                <button t-att-class="this.store.state.tab === 'add' ? 'active' : ''"
+                        t-on-click="() => this.store.state.tab = 'add'">Add</button>
+                <button t-att-class="this.store.state.tab === 'properties' ? 'active' : ''"
+                        t-on-click="() => this.store.state.tab = 'properties'">Properties</button>
+                <button t-att-class="this.store.state.tab === 'view' ? 'active' : ''"
+                        t-on-click="() => this.store.state.tab = 'view'">View</button>
+            </nav>
+            <div class="o_pen_sidebar_body">
+                <t t-if="this.store.state.tab === 'add'" t-call="om_pen.SidebarAdd"/>
+                <t t-elif="this.store.state.tab === 'properties'" t-call="om_pen.SidebarProperties"/>
+                <t t-else="" t-call="om_pen.SidebarView"/>
+            </div>
+        </aside>
+    </t>
+
+    <!-- ============================== Add ============================== -->
+
+    <t t-name="om_pen.SidebarAdd">
+        <t t-if="!this.canDrop">
+            <p class="o_pen_hint">
+                This view is set up from the <a href="#" t-on-click.prevent="() => this.store.state.tab = 'view'">View</a> tab.
+            </p>
+        </t>
+        <t t-else="">
+            <t t-if="this.viewType === 'form'">
+                <h4 class="o_pen_title">Components</h4>
+                <div class="o_pen_items">
+                    <t t-foreach="this.FORM_COMPONENTS" t-as="item" t-key="item.kind">
+                        <div class="o_pen_item o_pen_draggable" t-att-data-kind="item.kind"
+                             t-on-mousedown="(ev) => this.startDrag(ev, {kind: 'component', element: {kind: item.kind}, tag: item.tag, label: item.label, model: false})">
+                            <i class="oi" t-att-data-icon="item.icon"/>
+                            <span t-out="item.label"/>
+                        </div>
+                    </t>
+                </div>
+                <div class="o_pen_items o_pen_actions">
+                    <t t-foreach="this.SPECIAL_ACTIONS" t-as="item" t-key="item.key">
+                        <button class="o_pen_item" t-att-data-key="item.key"
+                                t-on-click="() => this.props.onSpecial(item.key)">
+                            <i class="oi" t-att-data-icon="item.icon"/>
+                            <span t-out="item.label"/>
+                        </button>
+                    </t>
+                </div>
+            </t>
+            <h4 class="o_pen_title">New Fields</h4>
+            <div class="o_pen_items">
+                <t t-foreach="this.NEW_FIELD_KINDS" t-as="item" t-key="item.kind">
+                    <div class="o_pen_item o_pen_draggable" t-att-data-kind="item.kind"
+                         t-on-mousedown="(ev) => this.startDrag(ev, {kind: 'new', fieldKind: item.kind, label: item.label, tag: 'field'})">
+                        <i class="oi" t-att-data-icon="item.icon"/>
+                        <span t-out="item.label"/>
+                    </div>
+                </t>
+            </div>
+            <h4 class="o_pen_title">
+                Existing Fields
+                <small t-if="this.focusLabel" class="text-muted ms-1">of <t t-out="this.focusLabel"/></small>
+            </h4>
+            <input class="form-control form-control-sm mb-2 o_pen_field_search" placeholder="Search a field"
+                   t-model.proxy="this.ui.search"/>
+            <div class="o_pen_field_list">
+                <t t-foreach="this.existingFields" t-as="field" t-key="field.name">
+                    <div class="o_pen_field_row o_pen_draggable" t-att-data-field="field.name"
+                         t-att-class="field.inView ? 'o_pen_in_view' : ''"
+                         t-att-title="field.name"
+                         t-on-mousedown="(ev) => this.startDrag(ev, {kind: 'existing', element: {kind: 'field', name: field.name}, label: field.string, tag: 'field'})">
+                        <span class="o_pen_field_name" t-out="field.string"/>
+                        <span class="o_pen_field_type" t-out="field.type"/>
+                    </div>
+                </t>
+            </div>
+        </t>
+    </t>
+
+    <!-- ============================== Properties ============================== -->
+
+    <t t-name="om_pen.SidebarProperties">
+        <t t-set="node" t-value="this.node"/>
+        <t t-if="!node">
+            <p class="o_pen_hint">Click an element of the view to change it.</p>
+        </t>
+        <t t-else="">
+            <div class="o_pen_prop_head">
+                <span class="o_pen_prop_tag" t-out="node.tag"/>
+                <strong t-out="this.nodeLabel"/>
+                <span t-if="node.hidden" class="badge text-bg-secondary ms-1">hidden</span>
+            </div>
+            <div t-if="node.tag === 'field'" class="o_pen_prop_meta text-muted">
+                <span t-out="node.attrs.name"/> · <span t-out="node.field_type"/>
+                <t t-if="node.relation"> → <span t-out="node.relation"/></t>
+            </div>
+
+            <t t-if="['field', 'page', 'group', 'separator', 'button', 'filter'].includes(node.tag)">
+                <label class="o_pen_label">Label</label>
+                <input class="form-control form-control-sm o_pen_input_string" t-att-value="this.attr('string')"
+                       t-att-placeholder="node.field_string or ''"
+                       t-on-change="(ev) => this.onTextChange('string', ev)"/>
+            </t>
+            <t t-if="node.tag === 'widget' and node.attrs.name === 'web_ribbon'">
+                <label class="o_pen_label">Text</label>
+                <input class="form-control form-control-sm" t-att-value="this.attr('title')"
+                       t-on-change="(ev) => this.onTextChange('title', ev)"/>
+                <label class="o_pen_label">Colour</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setAttr('bg_color', ev.target.value)">
+                    <t t-foreach="this.RIBBON_COLORS" t-as="color" t-key="color[0]">
+                        <option t-att-value="color[0]" t-att-selected="this.attr('bg_color') === color[0]" t-out="color[1]"/>
+                    </t>
+                </select>
+            </t>
+            <t t-if="node.tag === 'field'">
+                <label class="o_pen_label">Tooltip</label>
+                <input class="form-control form-control-sm o_pen_input_help" t-att-value="this.attr('help')"
+                       t-on-change="(ev) => this.onTextChange('help', ev)"/>
+                <t t-if="['char', 'text', 'many2one', 'integer', 'float', 'monetary', 'html'].includes(node.field_type)">
+                    <label class="o_pen_label">Placeholder</label>
+                    <input class="form-control form-control-sm" t-att-value="this.attr('placeholder')"
+                           t-on-change="(ev) => this.onTextChange('placeholder', ev)"/>
+                </t>
+                <label class="o_pen_label">Widget</label>
+                <select class="form-select form-select-sm o_pen_widget" t-on-change="(ev) => this.setAttr('widget', ev.target.value)">
+                    <option value="">Default</option>
+                    <t t-foreach="this.widgets" t-as="widget" t-key="widget.key">
+                        <option t-att-value="widget.key" t-att-selected="this.attr('widget') === widget.key" t-out="widget.label"/>
+                    </t>
+                </select>
+            </t>
+            <t t-if="node.tag === 'button'">
+                <label class="o_pen_label">Confirmation message</label>
+                <input class="form-control form-control-sm" t-att-value="this.attr('confirm')"
+                       t-on-change="(ev) => this.onTextChange('confirm', ev)"/>
+                <div class="form-check form-switch mt-2">
+                    <input class="form-check-input" type="checkbox" id="pen_btn_primary"
+                           t-att-checked="(this.attr('class') || '').includes('btn-primary')"
+                           t-on-change="(ev) => this.setAttr('class', ev.target.checked ? 'btn-primary' : 'btn-secondary')"/>
+                    <label class="form-check-label" for="pen_btn_primary">Highlighted</label>
+                </div>
+            </t>
+
+            <h4 class="o_pen_title">Visibility</h4>
+            <t t-foreach="this.modifiers()" t-as="modifier" t-key="modifier.attr">
+                <div class="o_pen_modifier" t-att-data-attr="modifier.attr">
+                    <span class="o_pen_modifier_label" t-out="modifier.label"/>
+                    <div class="btn-group btn-group-sm">
+                        <button class="btn" t-att-class="modifier.mode === 'off' ? 'btn-primary' : 'btn-light'"
+                                t-on-click="() => this.setModifier(modifier, 'off')">No</button>
+                        <button class="btn o_pen_mod_always" t-att-class="modifier.mode === 'always' ? 'btn-primary' : 'btn-light'"
+                                t-on-click="() => this.setModifier(modifier, 'always')">Always</button>
+                        <button class="btn o_pen_mod_condition" t-att-class="modifier.mode === 'condition' ? 'btn-primary' : 'btn-light'"
+                                t-on-click="() => this.setModifier(modifier, 'condition')">If…</button>
+                    </div>
+                    <code t-if="modifier.mode === 'condition'" class="o_pen_condition" t-out="modifier.value"
+                          t-on-click="() => this.editCondition(modifier)"/>
+                </div>
+            </t>
+            <label class="o_pen_label">Only for these groups</label>
+            <div class="o_pen_chips">
+                <t t-foreach="this.selectedGroups" t-as="xmlid" t-key="xmlid">
+                    <span class="badge text-bg-light o_pen_chip">
+                        <t t-out="this.groupName(xmlid)"/>
+                        <i class="oi ms-1" data-icon="close" t-on-click="() => this.removeGroup(xmlid)"/>
+                    </span>
+                </t>
+            </div>
+            <select class="form-select form-select-sm o_pen_group_add" t-on-change="(ev) => this.addGroup(ev)">
+                <option value="">Add a group…</option>
+                <t t-foreach="this.availableGroups" t-as="group" t-key="group.id">
+                    <option t-att-value="group.xmlid" t-out="group.name"/>
+                </t>
+            </select>
+
+            <t t-if="this.inList">
+                <h4 class="o_pen_title">Column</h4>
+                <label class="o_pen_label">Optional</label>
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setAttr('optional', ev.target.value)">
+                    <option value="" t-att-selected="!this.attr('optional')">Always shown</option>
+                    <option value="show" t-att-selected="this.attr('optional') === 'show'">Optional, shown</option>
+                    <option value="hide" t-att-selected="this.attr('optional') === 'hide'">Optional, hidden</option>
+                </select>
+                <t t-if="this.isNumeric">
+                    <label class="o_pen_label">Total at the bottom</label>
+                    <select class="form-select form-select-sm o_pen_sum" t-on-change="(ev) => this.store.setAttrs(node.id, {sum: ev.target.value === 'sum' ? 'Total' : null, avg: ev.target.value === 'avg' ? 'Average' : null})">
+                        <option value="">None</option>
+                        <option value="sum" t-att-selected="this.attr('sum')">Sum</option>
+                        <option value="avg" t-att-selected="this.attr('avg')">Average</option>
+                    </select>
+                </t>
+            </t>
+
+            <t t-if="this.isRelational">
+                <h4 class="o_pen_title">Linked records</h4>
+                <button class="btn btn-sm btn-light w-100 text-start o_pen_domain" t-on-click="() => this.editDomain()">
+                    <i class="oi me-1" data-icon="filter_alt"/>
+                    <t t-if="this.attr('domain')">Only some records: <code t-out="this.attr('domain')"/></t>
+                    <t t-else="">Offer every record</t>
+                </button>
+                <t t-foreach="this.RELATIONAL_OPTIONS" t-as="option" t-key="option.key">
+                    <div class="form-check mt-1">
+                        <input class="form-check-input" type="checkbox" t-att-id="'pen_opt_' + option.key"
+                               t-att-checked="this.options[option.key]"
+                               t-on-change="(ev) => this.setOption(option.key, ev.target.checked)"/>
+                        <label class="form-check-label" t-att-for="'pen_opt_' + option.key" t-out="option.label"/>
+                    </div>
+                </t>
+            </t>
+
+            <t t-if="node.tag === 'field'">
+                <h4 class="o_pen_title">Field</h4>
+                <button class="btn btn-sm btn-light w-100 text-start mb-1 o_pen_field_settings" t-on-click="() => this.openFieldSettings()">
+                    <i class="oi me-1" data-icon="settings"/> Default value and field settings
+                </button>
+                <button t-if="node.custom and this.store.info.is_admin" class="btn btn-sm btn-light w-100 text-start text-danger mb-1 o_pen_field_delete"
+                        t-on-click="() => this.deleteField()">
+                    <i class="oi me-1" data-icon="delete"/> Delete this field
+                </button>
+            </t>
+            <button t-if="node.id !== this.store.rootId" class="btn btn-sm btn-outline-danger w-100 mt-3 o_pen_remove"
+                    t-on-click="() => this.removeNode()">
+                <i class="oi me-1" data-icon="visibility_off"/> Remove from the view
+            </button>
+        </t>
+    </t>
+
+    <!-- ============================== View ============================== -->
+
+    <t t-name="om_pen.SidebarView">
+        <div class="form-check form-switch mb-2">
+            <input class="form-check-input o_pen_show_hidden" type="checkbox" id="pen_show_hidden"
+                   t-att-checked="this.store.state.showHidden" t-on-change="() => this.store.toggleHidden()"/>
+            <label class="form-check-label" for="pen_show_hidden">Show hidden elements</label>
+        </div>
+        <t t-foreach="this.viewSettings" t-as="setting" t-key="setting.attr">
+            <div class="o_pen_setting" t-att-data-attr="setting.attr">
+                <t t-if="setting.type === 'bool'">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" t-att-id="'pen_set_' + setting.attr"
+                               t-att-checked="this.isOn(setting)"
+                               t-on-change="(ev) => this.setRoot(setting, ev.target.checked)"/>
+                        <label class="form-check-label" t-att-for="'pen_set_' + setting.attr" t-out="setting.label"/>
+                    </div>
+                </t>
+                <t t-elif="setting.type === 'select'">
+                    <label class="o_pen_label" t-out="setting.label"/>
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.setRoot(setting, ev.target.value)">
+                        <t t-foreach="setting.choices" t-as="choice" t-key="choice[0]">
+                            <option t-att-value="choice[0]" t-att-selected="this.rootAttr(setting.attr) === choice[0]" t-out="choice[1]"/>
+                        </t>
+                    </select>
+                </t>
+                <t t-elif="setting.type === 'field'">
+                    <label class="o_pen_label" t-out="setting.label"/>
+                    <select class="form-select form-select-sm" t-on-change="(ev) => this.setRoot(setting, ev.target.value)">
+                        <option value="">None</option>
+                        <t t-foreach="this.settingFields(setting)" t-as="field" t-key="field.name">
+                            <option t-att-value="field.name" t-att-selected="this.rootAttr(setting.attr) === field.name" t-out="field.string"/>
+                        </t>
+                    </select>
+                </t>
+                <t t-elif="setting.type === 'order'">
+                    <label class="o_pen_label" t-out="setting.label"/>
+                    <t t-set="order" t-value="this.rootAttr(setting.attr).split(' ')"/>
+                    <div class="d-flex gap-1">
+                        <select class="form-select form-select-sm" t-on-change="(ev) => this.setRoot(setting, ev.target.value ? ev.target.value + ' ' + (order[1] || 'asc') : '')">
+                            <option value="">Default</option>
+                            <t t-foreach="this.groupableFields" t-as="field" t-key="field.name">
+                                <option t-att-value="field.name" t-att-selected="order[0] === field.name" t-out="field.string"/>
+                            </t>
+                        </select>
+                        <select class="form-select form-select-sm w-auto" t-att-disabled="!order[0]"
+                                t-on-change="(ev) => this.setRoot(setting, order[0] + ' ' + ev.target.value)">
+                            <option value="asc" t-att-selected="order[1] !== 'desc'">A→Z</option>
+                            <option value="desc" t-att-selected="order[1] === 'desc'">Z→A</option>
+                        </select>
+                    </div>
+                </t>
+                <t t-else="">
+                    <label class="o_pen_label" t-out="setting.label"/>
+                    <input class="form-control form-control-sm" t-att-type="setting.type === 'number' ? 'number' : 'text'"
+                           t-att-value="this.rootAttr(setting.attr)"
+                           t-on-change="(ev) => this.setRoot(setting, ev.target.value.trim())"/>
+                </t>
+            </div>
+        </t>
+
+        <t t-if="['pivot', 'graph'].includes(this.viewType)">
+            <h4 class="o_pen_title">Fields</h4>
+            <t t-foreach="this.chartFields" t-as="field" t-key="field.id">
+                <div class="o_pen_chart_field">
+                    <span class="badge text-bg-light me-1" t-out="field.attrs.type || 'row'"/>
+                    <span t-out="this.store.labelOf(field)"/>
+                    <i class="oi ms-auto o_pen_chart_remove" data-icon="close" t-on-click="() => this.store.remove(field.id)"/>
+                </div>
+            </t>
+            <label class="o_pen_label">Group by</label>
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.addChartField(ev, 'row')">
+                <option value="">Add a row…</option>
+                <t t-foreach="this.groupableFields" t-as="field" t-key="field.name">
+                    <option t-att-value="field.name" t-out="field.string"/>
+                </t>
+            </select>
+            <t t-if="this.viewType === 'pivot'">
+                <select class="form-select form-select-sm mt-1" t-on-change="(ev) => this.addChartField(ev, 'col')">
+                    <option value="">Add a column…</option>
+                    <t t-foreach="this.groupableFields" t-as="field" t-key="field.name">
+                        <option t-att-value="field.name" t-out="field.string"/>
+                    </t>
+                </select>
+            </t>
+            <label class="o_pen_label">Measure</label>
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.addChartField(ev, 'measure')">
+                <option value="">Add a measure…</option>
+                <t t-foreach="this.numericFields" t-as="field" t-key="field.name">
+                    <option t-att-value="field.name" t-out="field.string"/>
+                </t>
+            </select>
+        </t>
+        <t t-if="this.viewType === 'calendar'">
+            <h4 class="o_pen_title">Shown on events</h4>
+            <t t-foreach="this.chartFields" t-as="field" t-key="field.id">
+                <div class="o_pen_chart_field">
+                    <span t-out="this.store.labelOf(field)"/>
+                    <i class="oi ms-auto" data-icon="close" t-on-click="() => this.store.remove(field.id)"/>
+                </div>
+            </t>
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.addChartField(ev, '')">
+                <option value="">Add a field…</option>
+                <t t-foreach="this.groupableFields" t-as="field" t-key="field.name">
+                    <option t-att-value="field.name" t-out="field.string"/>
+                </t>
+            </select>
+        </t>
+
+        <h4 class="o_pen_title">This view</h4>
+        <p class="text-muted small mb-1">
+            <t t-out="this.store.view.draft_count"/> unpublished change(s).
+            <t t-if="this.store.view.legacy_rules"> <t t-out="this.store.view.legacy_rules"/> earlier rule(s) still apply.</t>
+        </p>
+        <button class="btn btn-sm btn-outline-danger w-100 o_pen_reset" t-on-click="() => this.confirmReset()">
+            <i class="oi me-1" data-icon="restart_alt"/> Back to the original view
+        </button>
+    </t>
+
+</templates>

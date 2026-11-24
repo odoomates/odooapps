@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_pen.ApprovalAction">
+        <div class="o_pen_approval p-3" t-if="this.state.status">
+            <p class="mb-3">
+                <strong t-out="this.state.status.record"/> needs an approval before this button can run.
+            </p>
+            <t t-foreach="this.state.status.rules" t-as="rule" t-key="rule.id">
+                <div class="o_pen_approval_rule d-flex align-items-center gap-2 py-2 border-bottom" t-att-data-state="rule.state">
+                    <i class="oi" t-att-data-icon="rule.state === 'approved' ? 'check_circle' : rule.state === 'rejected' ? 'cancel' : 'hourglass_empty'"
+                       t-att-class="rule.state === 'approved' ? 'text-success' : rule.state === 'rejected' ? 'text-danger' : 'text-warning'"/>
+                    <div class="flex-grow-1">
+                        <div t-out="rule.name"/>
+                        <small class="text-muted">
+                            <t t-if="rule.state === 'waiting'">Waiting for <t t-out="rule.approver"/></t>
+                            <t t-else=""><t t-out="rule.state === 'approved' ? 'Approved' : 'Rejected'"/> by <t t-out="rule.user"/></t>
+                        </small>
+                    </div>
+                    <t t-if="rule.can_approve and rule.state !== 'approved'">
+                        <button class="btn btn-sm btn-success o_pen_approve" t-on-click="() => this.decide(rule, true)">Approve</button>
+                        <button t-if="rule.state !== 'rejected'" class="btn btn-sm btn-outline-danger o_pen_reject" t-on-click="() => this.decide(rule, false)">Reject</button>
+                    </t>
+                    <button t-elif="rule.state !== 'approved'" class="btn btn-sm btn-light o_pen_ask" t-on-click="() => this.ask(rule)">Ask for approval</button>
+                </div>
+            </t>
+            <div class="alert alert-success mt-3 mb-0" t-if="this.allApproved">
+                Everything is approved: click the button again to run it.
+            </div>
+            <div class="mt-3 text-end">
+                <button class="btn btn-secondary" t-on-click="() => this.close()">Close</button>
+            </div>
+        </div>
+    </t>
+
+</templates>
