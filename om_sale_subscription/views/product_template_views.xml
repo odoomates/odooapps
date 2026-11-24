@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_form_view_subscription" model="ir.ui.view">
+        <field name="name">product.template.form.subscription</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//span[@name='sale_option']" position="after">
+                <span name="subscription_option" class="d-inline-flex" invisible="not sale_ok or type == 'combo'">
+                    <field name="is_subscription_product" widget="boolean_checkbox" class="w-auto"/>
+                    <label for="is_subscription_product"/>
+                </span>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="Recurring Prices" name="subscription_pricing" invisible="not is_subscription_product">
+                    <field name="subscription_pricing_ids">
+                        <list editable="bottom">
+                            <field name="plan_id"/>
+                            <field name="product_id" optional="hide" groups="product.group_product_variant"
+                                domain="[('product_tmpl_id', '=', parent.id)]"/>
+                            <field name="pricelist_id" optional="show" groups="product.group_product_pricelist"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="price"/>
+                        </list>
+                    </field>
+                    <div class="text-muted">
+                        Price invoiced each period of the plan. Without a price for a plan, the sales price is used.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_subscription" model="ir.ui.view">
+        <field name="name">product.template.search.subscription</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter string="Subscription" name="filter_subscription" domain="[('is_subscription_product', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_subscription_products" model="ir.actions.act_window">
+        <field name="name">Products</field>
+        <field name="res_model">product.template</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="context">{'search_default_filter_subscription': 1, 'default_is_subscription_product': True, 'default_type': 'service'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a subscription product</p>
+            <p>Subscription products are invoiced every period of the recurring plan of the subscription.</p>
+        </field>
+    </record>
+
+</odoo>

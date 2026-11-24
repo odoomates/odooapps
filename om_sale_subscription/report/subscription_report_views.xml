@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="subscription_report_view_pivot" model="ir.ui.view">
+        <field name="name">om.subscription.report.pivot</field>
+        <field name="model">om.subscription.report</field>
+        <field name="arch" type="xml">
+            <pivot string="Subscription Analysis" sample="1">
+                <field name="plan_id" type="row"/>
+                <field name="subscription_state" type="col"/>
+                <field name="mrr" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="subscription_report_view_pivot_retention" model="ir.ui.view">
+        <field name="name">om.subscription.report.pivot.retention</field>
+        <field name="model">om.subscription.report</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <pivot string="Retention" sample="1">
+                <field name="start_date" interval="month" type="row"/>
+                <field name="retention_rate" type="measure"/>
+                <field name="churn_rate" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="subscription_report_view_graph" model="ir.ui.view">
+        <field name="name">om.subscription.report.graph</field>
+        <field name="model">om.subscription.report</field>
+        <field name="arch" type="xml">
+            <graph string="Subscription Analysis" sample="1">
+                <field name="plan_id"/>
+                <field name="mrr" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="subscription_report_view_list" model="ir.ui.view">
+        <field name="name">om.subscription.report.list</field>
+        <field name="model">om.subscription.report</field>
+        <field name="arch" type="xml">
+            <list string="Subscription Analysis" create="false" edit="false">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="plan_id"/>
+                <field name="start_date"/>
+                <field name="close_date" optional="show"/>
+                <field name="subscription_state"/>
+                <field name="close_reason_id" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="mrr" sum="Total"/>
+                <field name="arr" sum="Total" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="subscription_report_view_search" model="ir.ui.view">
+        <field name="name">om.subscription.report.search</field>
+        <field name="model">om.subscription.report</field>
+        <field name="arch" type="xml">
+            <search string="Subscription Analysis">
+                <field name="partner_id" operator="child_of"/>
+                <field name="plan_id"/>
+                <field name="user_id"/>
+                <field name="team_id"/>
+                <filter string="Running" name="running" domain="[('subscription_state', 'in', ('progress', 'paused'))]"/>
+                <filter string="Closed" name="churned" domain="[('subscription_state', '=', 'churn')]"/>
+                <separator/>
+                <filter string="Start Date" name="filter_start_date" date="start_date"/>
+                <filter string="Closed On" name="filter_close_date" date="close_date"/>
+                <group>
+                    <filter string="Recurring Plan" name="group_plan" context="{'group_by': 'plan_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'subscription_state'}"/>
+                    <filter string="Customer" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Country" name="group_country" context="{'group_by': 'country_id'}"/>
+                    <filter string="Salesperson" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Close Reason" name="group_reason" context="{'group_by': 'close_reason_id'}"/>
+                    <filter string="Start Month" name="group_start" context="{'group_by': 'start_date:month'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_subscription_report" model="ir.actions.act_window">
+        <field name="name">Subscription Analysis</field>
+        <field name="res_model">om.subscription.report</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="search_view_id" ref="subscription_report_view_search"/>
+    </record>
+
+    <record id="action_subscription_report_retention" model="ir.actions.act_window">
+        <field name="name">Retention</field>
+        <field name="res_model">om.subscription.report</field>
+        <field name="view_mode">pivot,list</field>
+        <field name="search_view_id" ref="subscription_report_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('subscription_report_view_pivot_retention')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('subscription_report_view_list')})]"/>
+        <field name="help" type="html">
+            <p>Subscriptions grouped by the month they started: the share still running and the share closed.</p>
+        </field>
+    </record>
+
+</odoo>

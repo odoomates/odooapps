@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="plan_quarterly" model="om.subscription.plan">
+        <field name="name">Quarterly</field>
+        <field name="sequence">20</field>
+        <field name="billing_period_value">3</field>
+        <field name="billing_period_unit">month</field>
+        <field name="user_closable" eval="True"/>
+        <field name="user_pausable" eval="True"/>
+    </record>
+
+    <!-- Products -->
+    <record id="product_hosting" model="product.product">
+        <field name="name">Cloud Hosting</field>
+        <field name="type">service</field>
+        <field name="list_price">50.0</field>
+        <field name="is_subscription_product" eval="True"/>
+        <field name="description_sale">Managed hosting with daily backups</field>
+    </record>
+    <record id="product_license" model="product.product">
+        <field name="name">Software License (per user)</field>
+        <field name="type">service</field>
+        <field name="list_price">15.0</field>
+        <field name="is_subscription_product" eval="True"/>
+    </record>
+    <record id="product_support" model="product.product">
+        <field name="name">Premium Support</field>
+        <field name="type">service</field>
+        <field name="list_price">120.0</field>
+        <field name="is_subscription_product" eval="True"/>
+    </record>
+    <record id="product_onboarding" model="product.product">
+        <field name="name">Onboarding Session</field>
+        <field name="type">service</field>
+        <field name="list_price">200.0</field>
+    </record>
+
+    <!-- Recurring prices -->
+    <record id="pricing_hosting_monthly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_hosting').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_monthly"/>
+        <field name="price">50.0</field>
+    </record>
+    <record id="pricing_hosting_quarterly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_hosting').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_quarterly"/>
+        <field name="price">140.0</field>
+    </record>
+    <record id="pricing_hosting_yearly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_hosting').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_yearly"/>
+        <field name="price">500.0</field>
+    </record>
+    <record id="pricing_license_monthly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_license').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_monthly"/>
+        <field name="price">15.0</field>
+    </record>
+    <record id="pricing_license_quarterly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_license').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_quarterly"/>
+        <field name="price">42.0</field>
+    </record>
+    <record id="pricing_license_yearly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_license').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_yearly"/>
+        <field name="price">150.0</field>
+    </record>
+    <record id="pricing_support_monthly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_support').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_monthly"/>
+        <field name="price">120.0</field>
+    </record>
+    <record id="pricing_support_yearly" model="om.subscription.pricing">
+        <field name="product_tmpl_id" model="product.product" eval="obj().env.ref('om_sale_subscription.product_support').product_tmpl_id.id"/>
+        <field name="plan_id" ref="plan_yearly"/>
+        <field name="price">1200.0</field>
+    </record>
+
+    <!-- Quotation template -->
+    <record id="sale_order_template_starter" model="sale.order.template">
+        <field name="name">Starter Pack (Monthly)</field>
+        <field name="subscription_plan_id" ref="plan_monthly"/>
+    </record>
+    <record id="sale_order_template_starter_line_1" model="sale.order.template.line">
+        <field name="sale_order_template_id" ref="sale_order_template_starter"/>
+        <field name="product_id" ref="product_hosting"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+    <record id="sale_order_template_starter_line_2" model="sale.order.template.line">
+        <field name="sale_order_template_id" ref="sale_order_template_starter"/>
+        <field name="product_id" ref="product_license"/>
+        <field name="product_uom_qty">5</field>
+    </record>
+    <record id="sale_order_template_starter_line_3" model="sale.order.template.line">
+        <field name="sale_order_template_id" ref="sale_order_template_starter"/>
+        <field name="product_id" ref="product_onboarding"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+
+    <!-- A quotation -->
+    <record id="subscription_quotation" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_3"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="subscription_plan_id" ref="plan_monthly"/>
+    </record>
+    <record id="subscription_quotation_line_1" model="sale.order.line">
+        <field name="order_id" ref="subscription_quotation"/>
+        <field name="product_id" ref="product_hosting"/>
+        <field name="product_uom_qty">2</field>
+    </record>
+    <record id="subscription_quotation_line_2" model="sale.order.line">
+        <field name="order_id" ref="subscription_quotation"/>
+        <field name="product_id" ref="product_onboarding"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+
+    <!-- Monthly, in progress -->
+    <record id="subscription_monthly" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_2"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="subscription_plan_id" ref="plan_monthly"/>
+        <field name="subscription_start_date" eval="(DateTime.today() - relativedelta(months=4)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="subscription_monthly_line_1" model="sale.order.line">
+        <field name="order_id" ref="subscription_monthly"/>
+        <field name="product_id" ref="product_hosting"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+    <record id="subscription_monthly_line_2" model="sale.order.line">
+        <field name="order_id" ref="subscription_monthly"/>
+        <field name="product_id" ref="product_license"/>
+        <field name="product_uom_qty">10</field>
+    </record>
+
+    <!-- Yearly, in progress -->
+    <record id="subscription_yearly" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_12"/>
+        <field name="user_id" ref="base.user_demo"/>
+        <field name="subscription_plan_id" ref="plan_yearly"/>
+        <field name="subscription_start_date" eval="(DateTime.today() - relativedelta(months=2)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="subscription_yearly_line_1" model="sale.order.line">
+        <field name="order_id" ref="subscription_yearly"/>
+        <field name="product_id" ref="product_support"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+    <record id="subscription_yearly_line_2" model="sale.order.line">
+        <field name="order_id" ref="subscription_yearly"/>
+        <field name="product_id" ref="product_license"/>
+        <field name="product_uom_qty">20</field>
+    </record>
+
+    <!-- Quarterly, to be paused -->
+    <record id="subscription_paused" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_4"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="subscription_plan_id" ref="plan_quarterly"/>
+        <field name="subscription_start_date" eval="(DateTime.today() - relativedelta(months=5)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="subscription_paused_line_1" model="sale.order.line">
+        <field name="order_id" ref="subscription_paused"/>
+        <field name="product_id" ref="product_hosting"/>
+        <field name="product_uom_qty">3</field>
+    </record>
+
+    <!-- Monthly, to be closed -->
+    <record id="subscription_churned" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_1"/>
+        <field name="user_id" ref="base.user_demo"/>
+        <field name="subscription_plan_id" ref="plan_monthly"/>
+        <field name="subscription_start_date" eval="(DateTime.today() - relativedelta(months=6)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="subscription_churned_line_1" model="sale.order.line">
+        <field name="order_id" ref="subscription_churned"/>
+        <field name="product_id" ref="product_license"/>
+        <field name="product_uom_qty">4</field>
+    </record>
+
+    <function model="sale.order" name="action_confirm"
+        eval="[[ref('subscription_monthly'), ref('subscription_yearly'), ref('subscription_paused'), ref('subscription_churned')]]"/>
+
+    <function model="sale.order" name="write">
+        <value eval="[ref('subscription_monthly')]"/>
+        <value eval="{'subscription_next_invoice_date': (DateTime.today() - relativedelta(months=4) + relativedelta(months=4)).strftime('%Y-%m-%d')}"/>
+    </function>
+    <function model="sale.order" name="write">
+        <value eval="[ref('subscription_yearly')]"/>
+        <value eval="{'subscription_next_invoice_date': (DateTime.today() + relativedelta(months=10)).strftime('%Y-%m-%d')}"/>
+    </function>
+    <function model="sale.order" name="write">
+        <value eval="[ref('subscription_paused')]"/>
+        <value eval="{'subscription_next_invoice_date': (DateTime.today() + relativedelta(months=1)).strftime('%Y-%m-%d')}"/>
+    </function>
+    <function model="sale.order" name="write">
+        <value eval="[ref('subscription_churned')]"/>
+        <value eval="{'subscription_next_invoice_date': (DateTime.today() + relativedelta(days=10)).strftime('%Y-%m-%d')}"/>
+    </function>
+
+    <function model="sale.order" name="action_subscription_pause" eval="[[ref('subscription_paused')]]"/>
+
+    <record id="subscription_churned_close" model="om.subscription.close.wizard">
+        <field name="order_ids" eval="[(6, 0, [ref('subscription_churned')])]"/>
+        <field name="close_reason_id" ref="close_reason_price"/>
+        <field name="send_mail" eval="False"/>
+    </record>
+    <function model="om.subscription.close.wizard" name="action_close" eval="[[ref('subscription_churned_close')]]"/>
+
+</odoo>
