@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="subscription_plan_view_list" model="ir.ui.view">
+        <field name="name">om.subscription.plan.list</field>
+        <field name="model">om.subscription.plan</field>
+        <field name="arch" type="xml">
+            <list string="Recurring Plans">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="billing_period_display"/>
+                <field name="invoice_in_advance" optional="show"/>
+                <field name="invoice_mode" optional="show"/>
+                <field name="end_behaviour" optional="show"/>
+                <field name="auto_close_days" optional="hide"/>
+                <field name="user_closable" optional="show"/>
+                <field name="user_pausable" optional="hide"/>
+                <field name="subscription_count" string="Running"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="subscription_plan_view_form" model="ir.ui.view">
+        <field name="name">om.subscription.plan.form</field>
+        <field name="model">om.subscription.plan</field>
+        <field name="arch" type="xml">
+            <form string="Recurring Plan">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_subscriptions" type="object" class="oe_stat_button" icon="autorenew">
+                            <field name="subscription_count" widget="statinfo" string="Subscriptions"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Monthly"/></h1>
+                    </div>
+                    <group>
+                        <group string="Billing">
+                            <label for="billing_period_value"/>
+                            <div class="o_row">
+                                <field name="billing_period_value" class="oe_inline"/>
+                                <field name="billing_period_unit" class="oe_inline"/>
+                            </div>
+                            <field name="invoice_in_advance"/>
+                            <field name="invoice_mode"/>
+                            <field name="company_id" groups="base.group_multi_company" placeholder="All companies"/>
+                        </group>
+                        <group string="Term">
+                            <label for="duration_value"/>
+                            <div class="o_row">
+                                <field name="duration_value" class="oe_inline"/>
+                                <field name="duration_unit" class="oe_inline" invisible="not duration_value"/>
+                            </div>
+                            <field name="end_behaviour" invisible="not duration_value"/>
+                            <field name="renewal_notice_days"
+                                invisible="not duration_value or end_behaviour != 'quotation'"/>
+                        </group>
+                        <group string="Unpaid Invoices">
+                            <field name="payment_retry_count"/>
+                            <field name="payment_retry_interval" invisible="not payment_retry_count"/>
+                            <field name="auto_close_days"/>
+                        </group>
+                        <group string="Customer Portal">
+                            <field name="user_closable"/>
+                            <field name="user_pausable"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Prices" name="prices">
+                            <field name="pricing_ids">
+                                <list editable="bottom">
+                                    <field name="product_tmpl_id"
+                                        domain="[('is_subscription_product', '=', True)]"/>
+                                    <field name="product_id" optional="hide" groups="product.group_product_variant"/>
+                                    <field name="pricelist_id" optional="show" groups="product.group_product_pricelist"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="price"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Terms" name="terms">
+                            <field name="note" placeholder="Terms of the plan, shown on the customer portal"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="subscription_plan_view_search" model="ir.ui.view">
+        <field name="name">om.subscription.plan.search</field>
+        <field name="model">om.subscription.plan</field>
+        <field name="arch" type="xml">
+            <search string="Recurring Plans">
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_subscription_plan" model="ir.actions.act_window">
+        <field name="name">Recurring Plans</field>
+        <field name="res_model">om.subscription.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a recurring plan</p>
+            <p>A plan sets how often subscriptions are invoiced, how long they run and what happens at their end.</p>
+        </field>
+    </record>
+
+</odoo>

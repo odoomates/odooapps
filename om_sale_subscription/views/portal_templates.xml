@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_breadcrumbs_subscription" name="Portal layout: subscription entries" inherit_id="portal.portal_breadcrumbs" priority="25">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'subscription'" t-attf-class="breadcrumb-item #{'active ' if not subscription else ''}">
+                <a t-if="subscription" t-attf-href="/my/subscriptions?{{ keep_query() }}">Subscriptions</a>
+                <t t-else="">Subscriptions</t>
+            </li>
+            <li t-if="page_name == 'subscription' and subscription" class="breadcrumb-item active">
+                <t t-out="subscription.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="subscription_state_badge" name="Subscription Status Badge">
+        <span t-if="state == 'progress'" class="badge rounded-pill text-bg-success">In Progress</span>
+        <span t-elif="state == 'paused'" class="badge rounded-pill text-bg-warning">Paused</span>
+        <span t-elif="state == 'renewed'" class="badge rounded-pill text-bg-secondary">Renewed</span>
+        <span t-elif="state == 'churn'" class="badge rounded-pill text-bg-danger">Closed</span>
+        <span t-else="" class="badge rounded-pill text-bg-info">Quotation</span>
+    </template>
+
+    <template id="portal_my_subscriptions" name="My Subscriptions">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True" title.translate="Subscriptions"/>
+            <div t-if="not subscriptions" class="alert alert-warning" role="alert">
+                There are currently no subscriptions for your account.
+            </div>
+            <t t-if="subscriptions" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Subscription #</th>
+                        <th>Plan</th>
+                        <th class="text-end">Next Invoice</th>
+                        <th class="text-end">Recurring Total</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <t t-foreach="subscriptions" t-as="sub">
+                    <tr>
+                        <td><a t-att-href="sub.get_portal_url()"><t t-out="sub.name"/></a></td>
+                        <td><span t-field="sub.subscription_plan_id"/></td>
+                        <td class="text-end">
+                            <span t-if="sub.subscription_state in ('progress', 'paused')" t-field="sub.subscription_next_invoice_date"/>
+                        </td>
+                        <td class="text-end"><span t-field="sub.subscription_recurring_total"/></td>
+                        <td class="text-center">
+                            <t t-call="om_sale_subscription.subscription_state_badge" state="sub.subscription_state"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_subscription_page" name="My Subscription">
+        <t t-call="portal.portal_layout">
+            <div class="row o_portal_subscription mt-4">
+                <div class="col-12 col-lg-8">
+                    <div t-if="message == 'closed'" class="alert alert-info" role="status">
+                        Your subscription is closed. Thank you for your trust.
+                    </div>
+                    <div t-if="message == 'payment_method'" class="alert alert-success" role="status">
+                        The payment method of your subscription is updated.
+                    </div>
+                    <div t-if="open_invoices and subscription.subscription_state in ('progress', 'paused')"
+                        class="alert alert-warning d-flex align-items-center" role="alert">
+                        <span class="me-auto">You have unpaid invoices for this subscription.</span>
+                        <a class="btn btn-primary btn-sm" t-att-href="open_invoices[:1].get_portal_url()">Pay Now</a>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center">
+                            <h4 class="mb-0 me-auto">
+                                Subscription <span t-field="subscription.name"/>
+                            </h4>
+                            <t t-call="om_sale_subscription.subscription_state_badge" state="subscription.subscription_state"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                    <div><strong>Plan:</strong> <span t-field="subscription.subscription_plan_id"/>
+                                        (<span t-field="subscription.subscription_plan_id.billing_period_display"/>)</div>
+                                    <div><strong>Start Date:</strong> <span t-field="subscription.subscription_start_date"/></div>
+                                    <div t-if="subscription.subscription_end_date">
+                                        <strong>End Date:</strong> <span t-field="subscription.subscription_end_date"/>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div t-if="subscription.subscription_state in ('progress', 'paused')">
+                                        <strong>Next Invoice:</strong> <span t-field="subscription.subscription_next_invoice_date"/>
+                                    </div>
+                                    <div><strong>Recurring Total:</strong> <span t-field="subscription.subscription_recurring_total"/></div>
+                                    <div t-if="subscription.subscription_close_reason_id">
+                                        <strong>Close Reason:</strong> <span t-field="subscription.subscription_close_reason_id"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Product</th>
+                                        <th class="text-end">Quantity</th>
+                                        <th class="text-end">Unit Price</th>
+                                        <th class="text-end">Amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="subscription.order_line.filtered('subscription_recurring')" t-as="line">
+                                        <tr>
+                                            <td>
+                                                <strong t-field="line.product_id"/>
+                                                <div t-if="line.name and line.name != line.product_id.display_name"
+                                                    class="text-muted small" t-field="line.name"/>
+                                            </td>
+                                            <td class="text-end"><span t-field="line.product_uom_qty"/> <span t-field="line.product_uom_id" groups="uom.group_uom"/></td>
+                                            <td class="text-end"><span t-field="line.price_unit"/></td>
+                                            <td class="text-end"><span t-field="line.price_subtotal"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                            <div t-if="subscription.subscription_plan_id.note" class="text-muted small"
+                                t-field="subscription.subscription_plan_id.note"/>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="mb-0">Invoices</h5></div>
+                        <div class="card-body p-0">
+                            <div t-if="not invoices" class="p-3 text-muted">No invoice yet.</div>
+                            <table t-if="invoices" class="table table-sm mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="ps-3">Invoice #</th>
+                                        <th>Date</th>
+                                        <th>Period</th>
+                                        <th class="text-end">Amount</th>
+                                        <th class="text-center pe-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="invoices" t-as="inv">
+                                        <tr>
+                                            <td class="ps-3"><a t-att-href="inv.get_portal_url()" t-out="inv.name"/></td>
+                                            <td><span t-field="inv.invoice_date"/></td>
+                                            <td>
+                                                <t t-if="inv.subscription_period_start">
+                                                    <span t-field="inv.subscription_period_start"/> - <span t-field="inv.subscription_period_end"/>
+                                                </t>
+                                            </td>
+                                            <td class="text-end"><span t-field="inv.amount_total"/></td>
+                                            <td class="text-center pe-3">
+                                                <span t-if="inv.payment_state in ('paid', 'in_payment')" class="badge rounded-pill text-bg-success">Paid</span>
+                                                <span t-elif="inv.payment_state == 'reversed'" class="badge rounded-pill text-bg-secondary">Reversed</span>
+                                                <a t-elif="inv.move_type == 'out_invoice'" t-att-href="inv.get_portal_url()" class="btn btn-sm btn-primary">Pay</a>
+                                            </td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="subscription_communication" class="mb-4 p-3 rounded-3 border">
+                        <h4 class="pb-1">Communication history</h4>
+                        <t t-call="portal.message_thread" hide_header="True"/>
+                    </div>
+                </div>
+
+                <div class="col-12 col-lg-4">
+                    <div class="card mb-4">
+                        <div class="card-header"><h5 class="mb-0">Payment Method</h5></div>
+                        <div class="card-body">
+                            <p t-if="subscription.subscription_token_id" class="mb-2">
+                                Charged automatically to
+                                <strong t-out="subscription.subscription_token_id.sudo()._build_display_name()"/>.
+                            </p>
+                            <p t-else="" class="mb-2 text-muted">
+                                No saved payment method: each invoice is paid online or by transfer.
+                            </p>
+                            <form t-if="is_owner and tokens" method="post"
+                                t-attf-action="/my/subscriptions/#{subscription.id}/payment_method">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="access_token" t-att-value="access_token"/>
+                                <select name="token_id" class="form-select mb-2">
+                                    <option value="">Pay each invoice myself</option>
+                                    <t t-foreach="tokens" t-as="token">
+                                        <option t-att-value="token.id" t-att-selected="token == subscription.subscription_token_id"
+                                            t-out="token._build_display_name()"/>
+                                    </t>
+                                </select>
+                                <button type="submit" class="btn btn-secondary btn-sm">Use this payment method</button>
+                            </form>
+                            <a t-if="is_owner" href="/my/payment_method" class="d-block mt-2">Add a payment method</a>
+                            <p t-if="not is_owner" class="small text-muted mb-0">
+                                Sign in to manage the payment method of this subscription.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div t-if="can_pause or can_resume or can_close" class="card mb-4">
+                        <div class="card-header"><h5 class="mb-0">Manage</h5></div>
+                        <div class="card-body">
+                            <form t-if="can_pause" method="post" t-attf-action="/my/subscriptions/#{subscription.id}/pause" class="mb-2">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="access_token" t-att-value="access_token"/>
+                                <button type="submit" class="btn btn-secondary w-100">Pause my subscription</button>
+                            </form>
+                            <form t-if="can_resume" method="post" t-attf-action="/my/subscriptions/#{subscription.id}/resume" class="mb-2">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="access_token" t-att-value="access_token"/>
+                                <button type="submit" class="btn btn-primary w-100">Resume my subscription</button>
+                            </form>
+                            <t t-if="can_close">
+                                <button type="button" class="btn btn-outline-danger w-100" data-bs-toggle="collapse"
+                                    data-bs-target="#o_subscription_close_form">Close my subscription</button>
+                                <form id="o_subscription_close_form" class="collapse mt-3" method="post"
+                                    t-attf-action="/my/subscriptions/#{subscription.id}/close">
+                                    <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                    <input type="hidden" name="access_token" t-att-value="access_token"/>
+                                    <label for="o_close_reason" class="form-label">Why do you close it?</label>
+                                    <select id="o_close_reason" name="close_reason_id" class="form-select mb-2" required="required">
+                                        <t t-foreach="close_reasons" t-as="reason">
+                                            <option t-att-value="reason.id" t-out="reason.name"/>
+                                        </t>
+                                    </select>
+                                    <textarea name="note" class="form-control mb-2" rows="3" placeholder="Anything to add?"/>
+                                    <button type="submit" class="btn btn-danger w-100">Confirm closing</button>
+                                </form>
+                            </t>
+                        </div>
+                    </div>
+
+                    <div t-if="subscription.user_id">
+                        <t t-call="portal.portal_my_contact"
+                            _contact_avatar="image_data_uri(subscription.user_id.avatar_128)"
+                            _contact_name="subscription.user_id.name"
+                            _contact_link="True"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

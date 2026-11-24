@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="mail_template_subscription_invoice" model="mail.template">
+            <field name="name">Subscription: Invoice</field>
+            <field name="model_id" ref="account.model_account_move"/>
+            <field name="email_from">{{ (object.invoice_user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to" eval="False"/>
+            <field name="use_default_to" eval="True"/>
+            <field name="subject">{{ object.company_id.name }} Invoice {{ object.name or 'n/a' }} for your subscription {{ object.subscription_id.name or '' }}</field>
+            <field name="description">Sent with each new invoice of a subscription</field>
+            <field name="email_layout_xmlid">mail.mail_notification_layout_with_responsible_signature</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object.partner_id.name or ''">Brandon Freeman</t>,
+        <br/><br/>
+        Here is the invoice <span style="font-weight: bold;" t-out="object.name or ''">INV/2026/00010</span>
+        of your subscription <span style="font-weight: bold;" t-out="object.subscription_id.name or ''">S00042</span>
+        <t t-if="object.subscription_period_start">
+            for the period from <t t-out="format_date(object.subscription_period_start) or ''">01/01/2026</t>
+            to <t t-out="format_date(object.subscription_period_end) or ''">01/31/2026</t>
+        </t>,
+        amounting to <span style="font-weight: bold;" t-out="format_amount(object.amount_total, object.currency_id) or ''">$ 143,750.00</span>.
+        <br/><br/>
+        <t t-if="object.subscription_id.subscription_token_id">
+            The amount will be charged to your saved payment method
+            <t t-out="object.subscription_id.subscription_token_id.payment_details or ''">1234</t>.
+        </t>
+        <t t-elif="object.payment_state in ('not_paid', 'partial')">
+            You can pay it online from your customer portal.
+        </t>
+        <br/><br/>
+        Do not hesitate to contact us if you have any questions.
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_subscription_payment_failure" model="mail.template">
+            <field name="name">Subscription: Payment Failure</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to" eval="False"/>
+            <field name="use_default_to" eval="True"/>
+            <field name="subject">{{ object.company_id.name }}: payment of your subscription {{ object.name }} failed</field>
+            <field name="description">Sent when the saved payment method of a subscription could not be charged</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object.partner_id.name or ''">Brandon Freeman</t>,
+        <br/><br/>
+        We could not charge your payment method for your subscription
+        <span style="font-weight: bold;" t-out="object.name or ''">S00042</span>.
+        <t t-if="object.subscription_payment_retry_date">
+            We will try again on <t t-out="format_date(object.subscription_payment_retry_date) or ''">01/05/2026</t>.
+        </t>
+        <br/><br/>
+        Please check your payment method or pay the open invoice from your customer portal
+        to keep your subscription running.
+        <br/><br/>
+        <a t-att-href="object.get_portal_url()"
+           style="background-color: #714B67; padding: 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Open my subscription
+        </a>
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_subscription_close" model="mail.template">
+            <field name="name">Subscription: Closed</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to" eval="False"/>
+            <field name="use_default_to" eval="True"/>
+            <field name="subject">{{ object.company_id.name }}: your subscription {{ object.name }} is closed</field>
+            <field name="description">Sent when a subscription is closed</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object.partner_id.name or ''">Brandon Freeman</t>,
+        <br/><br/>
+        Your subscription <span style="font-weight: bold;" t-out="object.name or ''">S00042</span>
+        is closed<t t-if="object.subscription_close_date"> since <t t-out="format_date(object.subscription_close_date) or ''">01/31/2026</t></t>.
+        <t t-if="object.subscription_close_reason_id">
+            <br/>Reason: <t t-out="object.subscription_close_reason_id.name or ''">No longer needed</t>
+        </t>
+        <br/><br/>
+        Thank you for your trust. Do not hesitate to contact us if you want to start again.
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_subscription_renewal" model="mail.template">
+            <field name="name">Subscription: Renewal Quotation</field>
+            <field name="model_id" ref="sale.model_sale_order"/>
+            <field name="email_from">{{ (object.user_id.email_formatted or object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to" eval="False"/>
+            <field name="use_default_to" eval="True"/>
+            <field name="subject">{{ object.company_id.name }}: renew your subscription {{ object.subscription_parent_id.name or object.name }}</field>
+            <field name="description">Sent with the renewal quotation before the end of the term</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object.partner_id.name or ''">Brandon Freeman</t>,
+        <br/><br/>
+        Your subscription <span style="font-weight: bold;" t-out="object.subscription_parent_id.name or ''">S00042</span>
+        <t t-if="object.subscription_parent_id.subscription_end_date">
+            ends on <t t-out="format_date(object.subscription_parent_id.subscription_end_date) or ''">12/31/2026</t>
+        </t>.
+        Here is the quotation <span style="font-weight: bold;" t-out="object.name or ''">S00051</span> to renew it,
+        amounting to <span style="font-weight: bold;" t-out="format_amount(object.amount_total, object.currency_id) or ''">$ 1,200.00</span>
+        <t t-out="object.subscription_plan_id.billing_period_display or ''">every month</t>.
+        <br/><br/>
+        <a t-att-href="object.get_portal_url()"
+           style="background-color: #714B67; padding: 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;">
+            Review and renew
+        </a>
+    </p>
+</div>
+            </field>
+            <field name="report_template_ids" eval="[(4, ref('sale.action_report_saleorder'))]"/>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+    </data>
+</odoo>

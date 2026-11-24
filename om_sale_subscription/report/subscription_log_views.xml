@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="subscription_log_view_list" model="ir.ui.view">
+        <field name="name">om.subscription.log.list</field>
+        <field name="model">om.subscription.log</field>
+        <field name="arch" type="xml">
+            <list string="MRR Changes" create="false" edit="false"
+                decoration-success="amount_signed &gt; 0" decoration-danger="amount_signed &lt; 0">
+                <field name="event_date"/>
+                <field name="order_id"/>
+                <field name="partner_id"/>
+                <field name="plan_id" optional="show"/>
+                <field name="event_type" widget="badge"
+                    decoration-success="event_type in ('new', 'expansion')"
+                    decoration-warning="event_type == 'contraction'"
+                    decoration-danger="event_type == 'churn'"
+                    decoration-info="event_type == 'transfer'"/>
+                <field name="close_reason_id" optional="hide"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount_signed" sum="Total"/>
+                <field name="recurring_monthly" optional="show"/>
+                <field name="arr_change" sum="Total" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="subscription_log_view_pivot" model="ir.ui.view">
+        <field name="name">om.subscription.log.pivot</field>
+        <field name="model">om.subscription.log</field>
+        <field name="arch" type="xml">
+            <pivot string="MRR Analysis" sample="1">
+                <field name="event_date" interval="month" type="row"/>
+                <field name="event_type" type="col"/>
+                <field name="amount_signed" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="subscription_log_view_graph" model="ir.ui.view">
+        <field name="name">om.subscription.log.graph</field>
+        <field name="model">om.subscription.log</field>
+        <field name="arch" type="xml">
+            <graph string="MRR Analysis" type="line" cumulated="1" sample="1">
+                <field name="event_date" interval="month"/>
+                <field name="amount_signed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="subscription_log_view_graph_movements" model="ir.ui.view">
+        <field name="name">om.subscription.log.graph.movements</field>
+        <field name="model">om.subscription.log</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <graph string="MRR Movements" type="bar" stacked="1" sample="1">
+                <field name="event_date" interval="month"/>
+                <field name="event_type"/>
+                <field name="amount_signed" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="subscription_log_view_search" model="ir.ui.view">
+        <field name="name">om.subscription.log.search</field>
+        <field name="model">om.subscription.log</field>
+        <field name="arch" type="xml">
+            <search string="MRR Changes">
+                <field name="order_id"/>
+                <field name="partner_id" operator="child_of"/>
+                <field name="plan_id"/>
+                <field name="user_id"/>
+                <filter string="New" name="new" domain="[('event_type', '=', 'new')]"/>
+                <filter string="Expansion" name="expansion" domain="[('event_type', '=', 'expansion')]"/>
+                <filter string="Contraction" name="contraction" domain="[('event_type', '=', 'contraction')]"/>
+                <filter string="Churn" name="churn" domain="[('event_type', '=', 'churn')]"/>
+                <filter string="Transfer" name="transfer" domain="[('event_type', '=', 'transfer')]"/>
+                <separator/>
+                <filter string="Date" name="filter_event_date" date="event_date"/>
+                <group>
+                    <filter string="Month" name="group_by_date" context="{'group_by': 'event_date:month'}"/>
+                    <filter string="Type of Change" name="group_by_type" context="{'group_by': 'event_type'}"/>
+                    <filter string="Recurring Plan" name="group_by_plan" context="{'group_by': 'plan_id'}"/>
+                    <filter string="Salesperson" name="group_by_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Close Reason" name="group_by_reason" context="{'group_by': 'close_reason_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_subscription_log" model="ir.actions.act_window">
+        <field name="name">MRR Analysis</field>
+        <field name="res_model">om.subscription.log</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="subscription_log_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No change of recurring revenue yet</p>
+            <p>Every new subscription, upsell, downgrade and closing is logged here: the cumulated line is the MRR over time.</p>
+        </field>
+    </record>
+
+    <record id="action_subscription_log_movements" model="ir.actions.act_window">
+        <field name="name">MRR Movements</field>
+        <field name="res_model">om.subscription.log</field>
+        <field name="view_mode">graph,pivot,list</field>
+        <field name="search_view_id" ref="subscription_log_view_search"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('subscription_log_view_graph_movements')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('subscription_log_view_pivot')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('subscription_log_view_list')})]"/>
+    </record>
+
+</odoo>
