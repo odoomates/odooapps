@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_web_gantt.GanttController.Buttons">
+        <button t-if="this.model.canCreate" type="button"
+            class="btn btn-primary o_gantt_button_add"
+            t-on-click="() => this.onClickNew()">
+            New
+        </button>
+    </t>
+
+    <t t-name="om_web_gantt.GanttDatePicker">
+        <div class="o_gantt_date_picker p-2">
+            <DateTimePicker t-props="this.pickerProps"/>
+        </div>
+    </t>
+
+    <t t-name="om_web_gantt.GanttController">
+        <div t-att-class="'o_gantt_view ' + (this.props.className or '')" t-ref="this.rootRef">
+            <Layout className="'o_gantt_layout'" display="this.props.display">
+                <t t-set-slot="control-panel-additional-actions">
+                    <CogMenu/>
+                </t>
+                <t t-set-slot="control-panel-buttons">
+                    <t t-call="{{ this.props.buttonTemplate }}"/>
+                </t>
+                <t t-set-slot="control-panel-actions">
+                    <SearchBar toggler="this.searchBarToggler"/>
+                </t>
+                <t t-set-slot="control-panel-navigation-additional">
+                    <t t-component="this.searchBarToggler.component" t-props="this.searchBarToggler.props"/>
+                </t>
+                <div class="o_gantt_container d-flex flex-column h-100 bg-view">
+                    <div class="o_gantt_header d-flex flex-wrap align-items-center gap-1 px-3 py-2 border-bottom d-print-none">
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-secondary o_gantt_button_prev"
+                                title="Previous" aria-label="Previous"
+                                t-on-click="() => this.navigate('previous')">
+                                <i class="oi" data-icon="arrow_back"/>
+                            </button>
+                            <button type="button" class="btn btn-secondary o_gantt_button_next"
+                                title="Next" aria-label="Next"
+                                t-on-click="() => this.navigate('next')">
+                                <i class="oi" data-icon="arrow_forward"/>
+                            </button>
+                        </div>
+                        <button type="button" class="btn btn-secondary o_gantt_button_today"
+                            t-on-click="() => this.navigate('today')">
+                            Today
+                        </button>
+                        <button type="button" class="btn btn-secondary o_gantt_button_date"
+                            title="Pick a date" aria-label="Pick a date"
+                            t-on-click="(ev) => this.openDatePicker(ev)">
+                            <i class="oi" data-icon="calendar_today"/>
+                        </button>
+                        <ViewScaleSelector t-if="this.props.archInfo.scales.length > 1"
+                            scales="this.scales"
+                            currentScale="this.model.scale"
+                            setScale.bind="this.setScale"/>
+                        <h5 class="o_gantt_title mb-0 ms-2 text-truncate" t-out="this.rangeTitle"/>
+                    </div>
+                    <t t-component="this.props.Renderer" t-props="this.rendererProps"/>
+                </div>
+            </Layout>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,345 @@
+.o_gantt_view {
+    .o_content {
+        overflow: hidden;
+    }
+}
+
+.o_gantt_container {
+    min-height: 0;
+}
+
+.o_gantt_renderer {
+    --o-gantt-header-width: 220px;
+    --o-gantt-line: var(--border-color);
+    --o-gantt-weekend-bg: RGBA(var(--emphasis-color-rgb), 0.035);
+    --o-gantt-today-bg: RGBA(var(--primary-rgb), 0.08);
+    --o-gantt-header-bg: var(--tertiary-bg);
+    --o-gantt-row-bg: var(--background-color, var(--body-bg));
+    --o-gantt-pill-color: #{nth($o-colors, 5)};
+
+    @include media-breakpoint-down(md) {
+        --o-gantt-header-width: 130px;
+    }
+
+    user-select: none;
+
+    .o_gantt_grid {
+        min-width: calc(var(--o-gantt-header-width) + var(--o-gantt-columns) * var(--o-gantt-cell-min));
+    }
+
+    .o_gantt_cells {
+        display: grid;
+        grid-template-columns: repeat(var(--o-gantt-columns), minmax(0, 1fr));
+        flex: 1 1 auto;
+    }
+
+    .o_gantt_row_header {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        flex: 0 0 var(--o-gantt-header-width);
+        width: var(--o-gantt-header-width);
+        background-color: var(--o-gantt-row-bg);
+        border-right: 1px solid var(--o-gantt-line);
+        border-bottom: 1px solid var(--o-gantt-line);
+        min-width: 0;
+    }
+
+    .o_gantt_header_row {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        height: 48px;
+        background-color: var(--o-gantt-header-bg);
+
+        .o_gantt_row_header {
+            background-color: var(--o-gantt-header-bg);
+            z-index: 6;
+        }
+    }
+
+    .o_gantt_header_cell {
+        border-right: 1px solid var(--o-gantt-line);
+        border-bottom: 1px solid var(--o-gantt-line);
+        font-size: 0.85rem;
+        line-height: 1.1;
+        overflow: hidden;
+
+        &.o_gantt_weekend {
+            background-color: var(--o-gantt-weekend-bg);
+        }
+        &.o_gantt_today {
+            color: var(--primary);
+            font-weight: bold;
+            background-color: var(--o-gantt-today-bg);
+        }
+    }
+
+    .o_gantt_row {
+        min-height: 30px;
+    }
+
+    .o_gantt_row_group {
+        .o_gantt_row_header,
+        .o_gantt_row_content {
+            background-color: var(--secondary-bg);
+            font-weight: 500;
+        }
+    }
+
+    .o_gantt_row_content {
+        border-bottom: 1px solid var(--o-gantt-line);
+    }
+
+    .o_gantt_cell {
+        border-right: 1px solid var(--o-gantt-line);
+
+        &.o_gantt_weekend {
+            background-color: var(--o-gantt-weekend-bg);
+        }
+        &.o_gantt_today {
+            background-color: var(--o-gantt-today-bg);
+        }
+        &.o_gantt_cell_selected {
+            background-color: RGBA(var(--primary-rgb), 0.2);
+        }
+
+        .o_gantt_cell_buttons {
+            visibility: hidden;
+            z-index: 1;
+
+            .btn {
+                width: 22px;
+                height: 22px;
+                line-height: 1;
+            }
+        }
+    }
+
+    .o_gantt_row_leaf .o_gantt_cell:hover .o_gantt_cell_buttons {
+        visibility: visible;
+    }
+
+    .o_gantt_row_leaf .o_gantt_cell {
+        cursor: cell;
+    }
+
+    .o_gantt_thumbnail {
+        width: 24px;
+        height: 24px;
+        object-fit: cover;
+    }
+
+    .o_gantt_row_progress {
+        height: 6px;
+
+        .progress-bar {
+            background-color: var(--success);
+        }
+        &.o_gantt_row_progress_over .progress-bar {
+            background-color: var(--danger);
+        }
+    }
+
+    .o_gantt_fold_icon {
+        width: 1rem;
+    }
+
+    .o_gantt_unavailable {
+        pointer-events: none;
+        background-image: repeating-linear-gradient(
+            -45deg,
+            RGBA(var(--emphasis-color-rgb), 0.07),
+            RGBA(var(--emphasis-color-rgb), 0.07) 4px,
+            RGBA(var(--emphasis-color-rgb), 0.12) 4px,
+            RGBA(var(--emphasis-color-rgb), 0.12) 8px
+        );
+    }
+
+    .o_gantt_aggregate {
+        pointer-events: none;
+        bottom: 2px;
+        height: 16px;
+        margin: 0 1px;
+        border-radius: 3px;
+        color: var(--success-text-emphasis);
+        background-color: var(--success-bg-subtle);
+
+        &.o_gantt_aggregate_group {
+            top: 5px;
+            bottom: 5px;
+            height: auto;
+            color: var(--body-color);
+            background-color: RGBA(var(--emphasis-color-rgb), 0.12);
+        }
+        &.o_gantt_aggregate_over {
+            color: var(--danger-text-emphasis);
+            background-color: var(--danger-bg-subtle);
+        }
+        &.o_gantt_aggregate_total {
+            top: 5px;
+            bottom: 5px;
+            height: auto;
+            color: var(--body-color);
+            background-color: RGBA(var(--primary-rgb), 0.15);
+        }
+    }
+
+    .o_gantt_total_row {
+        position: sticky;
+        bottom: 0;
+        z-index: 4;
+        height: 32px;
+
+        .o_gantt_row_header,
+        .o_gantt_row_content {
+            background-color: var(--o-gantt-header-bg);
+            border-top: 1px solid var(--o-gantt-line);
+        }
+    }
+
+    .o_gantt_pill {
+        z-index: 2;
+        height: 28px;
+        margin-left: 1px;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: pointer;
+        color: var(--body-color);
+        background-color: color-mix(in srgb, var(--o-gantt-pill-color) 35%, var(--o-gantt-row-bg));
+        border: 1px solid color-mix(in srgb, var(--o-gantt-pill-color) 70%, var(--o-gantt-row-bg));
+        border-left-width: 4px;
+        font-size: 0.85rem;
+
+        &:hover,
+        &:focus-visible,
+        &.o_gantt_pill_active {
+            outline: 2px solid var(--o-gantt-pill-color);
+            outline-offset: -1px;
+            z-index: 3;
+        }
+
+        &.o_gantt_pill_draggable {
+            cursor: grab;
+        }
+
+        &.o_gantt_pill_starts_before {
+            border-left-style: dashed;
+            border-top-left-radius: 0;
+            border-bottom-left-radius: 0;
+        }
+        &.o_gantt_pill_stops_after {
+            border-right-style: dashed;
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
+        &.o_gantt_pill_dragged {
+            opacity: 0.35;
+        }
+
+        &.o_gantt_pill_ghost {
+            pointer-events: none;
+            opacity: 0.9;
+            z-index: 10;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+            cursor: grabbing;
+        }
+
+        &.o_gantt_decoration_striped {
+            background-image: repeating-linear-gradient(
+                -45deg,
+                transparent,
+                transparent 5px,
+                color-mix(in srgb, var(--o-gantt-pill-color) 30%, transparent) 5px,
+                color-mix(in srgb, var(--o-gantt-pill-color) 30%, transparent) 10px
+            );
+            background-color: color-mix(in srgb, var(--o-gantt-pill-color) 12%, var(--o-gantt-row-bg));
+            border-style: dashed;
+        }
+        &.o_gantt_decoration_muted {
+            opacity: 0.6;
+        }
+        &.o_gantt_decoration_bf {
+            font-weight: bold;
+        }
+        &.o_gantt_decoration_it {
+            font-style: italic;
+        }
+        @each $decoration in (info, success, warning, danger) {
+            &.o_gantt_decoration_#{$decoration} {
+                --o-gantt-pill-color: var(--#{$decoration});
+            }
+        }
+
+        .o_gantt_progress {
+            background-color: color-mix(in srgb, var(--o-gantt-pill-color) 45%, transparent);
+        }
+
+        .o_gantt_resize_handle {
+            width: 7px;
+            cursor: ew-resize;
+            z-index: 1;
+        }
+    }
+
+    &.o_gantt_dragging,
+    &.o_gantt_dragging * {
+        cursor: grabbing !important;
+    }
+
+    .o_gantt_row_drop_target .o_gantt_row_content {
+        background-color: RGBA(var(--primary-rgb), 0.08);
+    }
+
+    .o_gantt_today_line {
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        margin-left: -1px;
+        z-index: 4;
+        pointer-events: none;
+        background-color: var(--danger);
+        opacity: 0.7;
+    }
+
+    .o_gantt_dependencies {
+        pointer-events: none;
+        overflow: visible;
+        z-index: 4;
+
+        path.o_gantt_dependency {
+            fill: none;
+            stroke: var(--secondary-color);
+            stroke-width: 1.5;
+        }
+        path.o_gantt_dependency_late {
+            fill: none;
+            stroke: var(--danger);
+            stroke-width: 1.5;
+        }
+        .o_gantt_dependency_head {
+            fill: var(--secondary-color);
+        }
+        .o_gantt_dependency_head_late {
+            fill: var(--danger);
+        }
+    }
+}
+
+// pill and popover colours: the colour index of the record, as in kanban
+@for $i from 1 through length($o-colors) {
+    .o_gantt_color_#{$i - 1} {
+        --o-gantt-pill-color: #{nth($o-colors, $i)};
+    }
+}
+
+.o_gantt_color_0 {
+    --o-gantt-pill-color: #{nth($o-colors, 5)};
+}
+
+.o_gantt_popover {
+    min-width: 260px;
+    max-width: 380px;
+    border-top: 4px solid var(--o-gantt-pill-color);
+}
