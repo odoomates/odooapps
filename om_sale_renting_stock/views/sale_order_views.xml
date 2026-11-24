@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_view_form_rental_stock" model="ir.ui.view">
+        <field name="name">sale.order.form.om.rental.stock</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="om_sale_renting.sale_order_view_form_rental"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_rental_moves" type="object" class="oe_stat_button" icon="swap_horiz"
+                        invisible="not rental_move_count">
+                    <field name="rental_move_count" widget="statinfo" string="Rental Moves"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='qty_returned']" position="after">
+                <field name="rental_tracking" column_invisible="True"/>
+                <field name="rental_lot_ids" string="Serials" widget="many2many_tags" optional="show"
+                       invisible="not is_rental or rental_tracking in (False, 'none') or qty_picked_up"
+                       column_invisible="not parent.is_rental_order"
+                       options="{'no_create': True}"/>
+                <field name="rental_pickedup_lot_ids" widget="many2many_tags" optional="show"
+                       invisible="not is_rental or not rental_pickedup_lot_ids"
+                       column_invisible="not parent.is_rental_order or parent.state != 'sale'"/>
+                <field name="rental_returned_lot_ids" widget="many2many_tags" optional="hide"
+                       column_invisible="not parent.is_rental_order or parent.state != 'sale'"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form_rental" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.rental</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="60"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Rental" data-string="Rental" name="om_sale_renting" groups="sales_team.group_sale_manager">
+                    <block title="Charges" name="rental_charges_container">
+                        <setting id="rental_late_product" company_dependent="1"
+                                 help="Product used for the late return fees added at return">
+                            <field name="rental_late_product_id" options="{'no_create': True}"/>
+                        </setting>
+                        <setting id="rental_damage_product" company_dependent="1"
+                                 help="Product used for the damages and extra charges added at return">
+                            <field name="rental_damage_product_id" options="{'no_create': True}"/>
+                        </setting>
+                    </block>
+                    <block title="Reminders" name="rental_reminder_container">
+                        <setting id="rental_reminder" string="Reminder Delay" company_dependent="1"
+                                 help="Pickup and return reminders are emailed to the customer before the date">
+                            <div class="o_row">
+                                <field name="rental_reminder_hours" class="oe_inline"/>
+                                <span>hours before</span>
+                            </div>
+                        </setting>
+                    </block>
+                    <block title="Rental Agreement" name="rental_terms_container">
+                        <setting id="rental_terms" company_dependent="1"
+                                 help="Terms and conditions printed on the rental agreement">
+                            <field name="rental_terms" placeholder="Insert your rental terms and conditions here..."/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_rental_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_id" ref="res_config_settings_view_form_rental"/>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'om_sale_renting', 'bin_size': False}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_sale_renting.product_rental_projector_product_template" model="product.template">
+        <field name="is_storable" eval="True"/>
+    </record>
+    <record id="om_sale_renting.product_rental_tent_product_template" model="product.template">
+        <field name="is_storable" eval="True"/>
+    </record>
+    <record id="om_sale_renting.product_rental_car_product_template" model="product.template">
+        <field name="is_storable" eval="True"/>
+        <field name="tracking">serial</field>
+    </record>
+
+    <record id="lot_rental_car_1" model="stock.lot">
+        <field name="name">CAR-0001</field>
+        <field name="product_id" ref="om_sale_renting.product_rental_car"/>
+    </record>
+    <record id="lot_rental_car_2" model="stock.lot">
+        <field name="name">CAR-0002</field>
+        <field name="product_id" ref="om_sale_renting.product_rental_car"/>
+    </record>
+    <record id="lot_rental_car_3" model="stock.lot">
+        <field name="name">CAR-0003</field>
+        <field name="product_id" ref="om_sale_renting.product_rental_car"/>
+    </record>
+
+    <record id="quant_rental_projector" model="stock.quant">
+        <field name="product_id" ref="om_sale_renting.product_rental_projector"/>
+        <field name="inventory_quantity">3.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+    <record id="quant_rental_tent" model="stock.quant">
+        <field name="product_id" ref="om_sale_renting.product_rental_tent"/>
+        <field name="inventory_quantity">5.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+    <record id="quant_rental_car_1" model="stock.quant">
+        <field name="product_id" ref="om_sale_renting.product_rental_car"/>
+        <field name="lot_id" ref="lot_rental_car_1"/>
+        <field name="inventory_quantity">1.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+    <record id="quant_rental_car_2" model="stock.quant">
+        <field name="product_id" ref="om_sale_renting.product_rental_car"/>
+        <field name="lot_id" ref="lot_rental_car_2"/>
+        <field name="inventory_quantity">1.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+    <record id="quant_rental_car_3" model="stock.quant">
+        <field name="product_id" ref="om_sale_renting.product_rental_car"/>
+        <field name="lot_id" ref="lot_rental_car_3"/>
+        <field name="inventory_quantity">1.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+
+    <function model="stock.quant" name="action_apply_inventory">
+        <function eval="[[('id', 'in', (ref('quant_rental_projector'), ref('quant_rental_tent'),
+                                        ref('quant_rental_car_1'), ref('quant_rental_car_2'),
+                                        ref('quant_rental_car_3')))]]"
+                  model="stock.quant" name="search"/>
+    </function>
+
+</odoo>

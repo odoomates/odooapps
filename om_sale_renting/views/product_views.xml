@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_form_view_rental" model="ir.ui.view">
+        <field name="name">product.template.form.om.rental</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//span[@name='sale_option']" position="after">
+                <span name="rent_option" class="d-inline-flex" invisible="type == 'combo'">
+                    <field name="rent_ok" widget="boolean_checkbox" class="w-auto"/>
+                    <label for="rent_ok"/>
+                </span>
+            </xpath>
+            <xpath expr="//page[@name='sales']" position="after">
+                <page string="Rental" name="rental" invisible="not rent_ok">
+                    <group name="rental_pricing" string="Rental Prices">
+                        <field name="rental_pricing_ids" nolabel="1" colspan="2"
+                               context="{'default_product_template_id': id}">
+                            <list editable="bottom">
+                                <field name="duration"/>
+                                <field name="unit"/>
+                                <field name="price"/>
+                                <field name="currency_id" groups="base.group_multi_currency" optional="hide"/>
+                                <field name="product_ids" widget="many2many_tags" optional="show"
+                                       groups="product.group_product_variant"
+                                       options="{'no_create': True}"/>
+                                <field name="pricelist_id" optional="show" groups="product.group_product_pricelist"
+                                       options="{'no_create': True}"/>
+                            </list>
+                        </field>
+                    </group>
+                    <group name="rental_rules">
+                        <group string="Late Returns" name="rental_late">
+                            <field name="rental_extra_hour_price"/>
+                            <field name="rental_extra_day_price"/>
+                        </group>
+                        <group string="Rules" name="rental_rules_group">
+                            <label for="rental_min_duration"/>
+                            <div class="o_row">
+                                <field name="rental_min_duration" class="oe_inline"/>
+                                <field name="rental_min_duration_unit" class="oe_inline" nolabel="1"/>
+                            </div>
+                            <label for="rental_padding_hours"/>
+                            <div class="o_row">
+                                <field name="rental_padding_hours" class="oe_inline" widget="float_time"/>
+                            </div>
+                            <field name="rental_qty"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_search_view_rental" model="ir.ui.view">
+        <field name="name">product.template.search.om.rental</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_search_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_purchase']" position="after">
+                <filter string="Can be Rented" name="filter_to_rent" domain="[('rent_ok', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_view_list_rental" model="ir.ui.view">
+        <field name="name">product.template.list.om.rental</field>
+        <field name="model">product.template</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list string="Rental Products">
+                <field name="is_favorite" widget="boolean_favorite" nolabel="1" width="20px"/>
+                <field name="default_code" optional="show"/>
+                <field name="name"/>
+                <field name="rental_price_display" optional="show"/>
+                <field name="rental_qty" optional="show"/>
+                <field name="rental_padding_hours" widget="float_time" optional="hide"/>
+                <field name="categ_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_rental_products" model="ir.actions.act_window">
+        <field name="name">Rental Products</field>
+        <field name="res_model">product.template</field>
+        <field name="path">rental-products</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="search_view_id" ref="product.product_template_search_view"/>
+        <field name="context">{'default_rent_ok': True, 'default_sale_ok': True, 'search_default_filter_to_rent': 1}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'kanban', 'view_id': ref('product.product_template_kanban_view')}),
+            Command.create({'view_mode': 'list', 'view_id': ref('product_template_view_list_rental')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a rental product
+            </p>
+            <p>
+                Tick "Can be Rented" and set its rental prices per hour, day, week, month or year.
+            </p>
+        </field>
+    </record>
+
+    <record id="rental_pricing_view_list" model="ir.ui.view">
+        <field name="name">om.rental.pricing.list</field>
+        <field name="model">om.rental.pricing</field>
+        <field name="arch" type="xml">
+            <list string="Rental Prices" editable="bottom">
+                <field name="product_template_id"/>
+                <field name="product_ids" widget="many2many_tags" optional="show" groups="product.group_product_variant"/>
+                <field name="duration"/>
+                <field name="unit"/>
+                <field name="price"/>
+                <field name="currency_id" groups="base.group_multi_currency" optional="hide"/>
+                <field name="pricelist_id" optional="show" groups="product.group_product_pricelist"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="rental_pricing_view_search" model="ir.ui.view">
+        <field name="name">om.rental.pricing.search</field>
+        <field name="model">om.rental.pricing</field>
+        <field name="arch" type="xml">
+            <search string="Rental Prices">
+                <field name="product_template_id"/>
+                <field name="pricelist_id"/>
+                <group>
+                    <filter name="groupby_product" string="Product" context="{'group_by': 'product_template_id'}"/>
+                    <filter name="groupby_unit" string="Unit" context="{'group_by': 'unit'}"/>
+                    <filter name="groupby_pricelist" string="Pricelist" context="{'group_by': 'pricelist_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_rental_pricing" model="ir.actions.act_window">
+        <field name="name">Rental Prices</field>
+        <field name="res_model">om.rental.pricing</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_groupby_product': 1}</field>
+    </record>
+
+</odoo>

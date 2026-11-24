@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="rental_order_wizard_view_form_stock" model="ir.ui.view">
+        <field name="name">om.rental.order.wizard.form.stock</field>
+        <field name="model">om.rental.order.wizard</field>
+        <field name="inherit_id" ref="om_sale_renting.rental_order_wizard_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//list[@name='wizard_lines']/field[@name='qty']" position="after">
+                <field name="tracking" column_invisible="True"/>
+                <field name="available_lot_ids" column_invisible="True"/>
+                <field name="lot_ids" widget="many2many_tags" options="{'no_create': True}"
+                       invisible="tracking in (False, 'none')"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_rental_agreement" model="ir.actions.report">
+        <field name="name">Rental Agreement</field>
+        <field name="model">sale.order</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_sale_renting.report_rental_agreement</field>
+        <field name="print_report_name">'Rental Agreement - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <!-- Rental period on the quotation / order printout -->
+    <template id="report_saleorder_document_rental" inherit_id="sale.report_saleorder_document">
+        <xpath expr="//div[@name='informations_date']" position="after">
+            <div t-if="doc.is_rental_order and doc.rental_start_date" class="col" name="informations_rental_period">
+                <strong>Rental Period</strong>
+                <div>
+                    <span t-field="doc.rental_start_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
+                    -
+                    <span t-field="doc.rental_return_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
+                </div>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="report_rental_agreement_document">
+        <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+        <t t-set="address">
+            <div t-field="doc.partner_id" class="mb-0"
+                 t-options='{"widget": "contact", "fields": ["address", "name", "phone", "email"], "no_marker": True}'/>
+            <p t-if="doc.partner_id.vat" class="mb-0">Tax ID: <span t-field="doc.partner_id.vat"/></p>
+        </t>
+        <t t-set="layout_document_title">
+            <span>Rental Agreement # </span>
+            <span t-field="doc.name">S00001</span>
+        </t>
+        <t t-call="web.external_layout" address="address" layout_document_title="layout_document_title">
+            <div class="page">
+                <div class="oe_structure"/>
+                <div class="row mb-4" id="rental_informations">
+                    <div class="col" name="rental_pickup">
+                        <strong>Pickup</strong>
+                        <div t-field="doc.rental_start_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
+                    </div>
+                    <div class="col" name="rental_return">
+                        <strong>Return</strong>
+                        <div t-field="doc.rental_return_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
+                    </div>
+                    <div class="col" name="rental_duration">
+                        <strong>Duration</strong>
+                        <div t-field="doc.rental_duration_display"/>
+                    </div>
+                    <div class="col" name="rental_status">
+                        <strong>Status</strong>
+                        <div t-field="doc.rental_status"/>
+                    </div>
+                    <div t-if="doc.user_id" class="col" name="rental_user">
+                        <strong>Contact</strong>
+                        <div t-field="doc.user_id"/>
+                    </div>
+                </div>
+
+                <table class="table table-sm o_main_table table-borderless mt-2">
+                    <thead>
+                        <tr>
+                            <th class="text-start">Description</th>
+                            <th class="text-end">Quantity</th>
+                            <th class="text-end">Picked Up</th>
+                            <th class="text-end">Returned</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <t t-foreach="doc.order_line.filtered(lambda l: not l.display_type)" t-as="line">
+                            <tr>
+                                <td>
+                                    <strong t-if="line.product_id" t-field="line.product_id.display_name"/>
+                                    <div t-if="line.name" t-field="line.name" class="text-muted"/>
+                                </td>
+                                <td class="text-end">
+                                    <span t-field="line.product_uom_qty"/>
+                                    <span t-field="line.product_uom_id" groups="uom.group_uom"/>
+                                </td>
+                                <td class="text-end"><span t-if="line.is_rental" t-field="line.qty_picked_up"/></td>
+                                <td class="text-end"><span t-if="line.is_rental" t-field="line.qty_returned"/></td>
+                                <td class="text-end"><span t-field="line.price_subtotal"/></td>
+                            </tr>
+                        </t>
+                    </tbody>
+                </table>
+                <div class="row justify-content-end">
+                    <div class="col-5">
+                        <table class="table table-sm table-borderless">
+                            <tr>
+                                <td><strong>Untaxed Amount</strong></td>
+                                <td class="text-end"><span t-field="doc.amount_untaxed"/></td>
+                            </tr>
+                            <tr>
+                                <td>Taxes</td>
+                                <td class="text-end"><span t-field="doc.amount_tax"/></td>
+                            </tr>
+                            <tr class="border-top">
+                                <td><strong>Total</strong></td>
+                                <td class="text-end"><strong t-field="doc.amount_total"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+
+                <div t-if="not is_html_empty(doc.company_id.rental_terms)" class="mt-4" name="rental_terms">
+                    <h5>Terms and Conditions</h5>
+                    <div t-field="doc.company_id.rental_terms"/>
+                </div>
+                <div t-elif="not is_html_empty(doc.note)" class="mt-4" name="rental_note">
+                    <div t-field="doc.note"/>
+                </div>
+
+                <div class="row mt-5" name="rental_signatures" style="page-break-inside: avoid;">
+                    <div class="col-6">
+                        <strong>For the company</strong>
+                        <div class="mt-5 border-top pt-1"><span t-field="doc.company_id.name"/></div>
+                    </div>
+                    <div class="col-6">
+                        <strong>Customer</strong>
+                        <t t-if="doc.signature">
+                            <div><img t-att-src="image_data_uri(doc.signature)" style="max-height: 3cm; max-width: 7cm;"/></div>
+                            <div class="border-top pt-1"><span t-field="doc.signed_by"/></div>
+                        </t>
+                        <div t-else="" class="mt-5 border-top pt-1"><span t-field="doc.partner_id.name"/></div>
+                    </div>
+                </div>
+                <div class="oe_structure"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_rental_agreement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="om_sale_renting.report_rental_agreement_document" t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

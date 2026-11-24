@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_my_orders_rental" inherit_id="sale.portal_my_orders" name="Rental Period in My Orders">
+        <xpath expr="//thead//th[@name='order_delivery']" position="before">
+            <th class="text-end" name="order_rental_period">Rental Period</th>
+        </xpath>
+        <xpath expr="//td[@name='order_delivery_status']" position="before">
+            <td class="text-end" name="order_rental_period">
+                <t t-if="order.is_rental_order and order.rental_start_date">
+                    <span t-field="order.rental_start_date" t-options="{'widget': 'date'}"/>
+                    -
+                    <span t-field="order.rental_return_date" t-options="{'widget': 'date'}"/>
+                    <span t-if="order.is_late" class="badge rounded-pill text-bg-danger ms-1">Late</span>
+                </t>
+            </td>
+        </xpath>
+    </template>
+
+    <template id="sale_order_portal_content_rental" inherit_id="sale.sale_order_portal_content" name="Rental Period on the Order">
+        <xpath expr="//div[@id='introduction']//span[@t-field='sale_order.date_order']" position="after">
+            <t t-if="sale_order.is_rental_order and sale_order.rental_start_date">
+                <span>&#183;</span>
+                <span class="fw-bold">Rental:
+                    <span t-field="sale_order.rental_start_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
+                    -
+                    <span t-field="sale_order.rental_return_date" t-options='{"widget": "datetime", "hide_seconds": True}'/>
+                </span>
+                <span t-if="sale_order.rental_status" class="badge rounded-pill text-bg-info" t-field="sale_order.rental_status"/>
+            </t>
+        </xpath>
+    </template>
+
+</odoo>
