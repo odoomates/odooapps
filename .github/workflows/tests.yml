@@ -13,6 +13,7 @@ concurrency:
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   tests:
@@ -38,8 +39,17 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: odooapps
+      - name: Changed files
+        id: changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BEFORE: ${{ github.event.before }}
+        run: odooapps/.github/scripts/static_only.sh
       - uses: ./odooapps/.github/actions/setup-odoo
+        if: steps.changes.outputs.skip != 'true'
       - name: Install and test
+        if: steps.changes.outputs.skip != 'true'
         run: odooapps/.github/scripts/run_odoo_tests.sh test_suite "$(cd odooapps && ls -d */__manifest__.py | cut -d/ -f1 | paste -sd, -)"
       - name: Log
         if: failure()
