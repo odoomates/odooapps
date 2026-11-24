@@ -1,6 +1,6 @@
 {
     'name': 'Dynamic Report Engine',
-    'version': '20.0.1.2.0',
+    'version': '20.0.1.2.1',
     'category': 'Productivity',
     'summary': 'Engine of the Odoo Mates dynamic reports: build on-screen reports with filters, folding, '
                'drill-down, key figures, charts, saved views sent by email and PDF, Excel and CSV export, '
