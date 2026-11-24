@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_web_gantt.GanttRenderer">
+        <div class="o_gantt_renderer o_renderer flex-grow-1 overflow-auto position-relative"
+            t-att-class="'o_gantt_scale_' + this.model.scale"
+            t-att-style="this.rootStyle" t-ref="this.rootRef">
+            <div class="o_gantt_grid position-relative" t-ref="this.gridRef">
+                <!-- header -->
+                <div class="o_gantt_header_row d-flex">
+                    <div class="o_gantt_row_header o_gantt_corner d-flex align-items-end px-3 pb-1 fw-bold text-truncate">
+                        <span class="text-truncate" t-out="this.cornerLabel"/>
+                    </div>
+                    <div class="o_gantt_header_cells o_gantt_cells">
+                        <t t-foreach="this.columns" t-as="column" t-key="column.index">
+                            <div class="o_gantt_header_cell d-flex flex-column align-items-center justify-content-center text-nowrap"
+                                t-att-class="{ o_gantt_today: column.isToday, o_gantt_weekend: column.isWeekend }">
+                                <span t-if="column.subLabel" class="o_gantt_header_sublabel small text-muted" t-out="column.subLabel"/>
+                                <span class="o_gantt_header_label" t-out="column.label"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <!-- rows -->
+                <t t-foreach="this.visibleRows" t-as="row" t-key="row.key">
+                    <div class="o_gantt_row d-flex"
+                        t-att-class="{ o_gantt_row_group: row.isGroup, o_gantt_row_leaf: !row.isGroup }"
+                        t-att-data-row-key="row.key"
+                        t-att-style="this.rowStyle(row)">
+                        <div class="o_gantt_row_header d-flex align-items-center gap-2 pe-2"
+                            t-att-class="{ 'cursor-pointer': row.isGroup }"
+                            t-att-style="this.rowHeaderStyle(row)"
+                            t-att-title="row.label"
+                            t-on-click="() => this.toggleRow(row)">
+                            <i t-if="row.isGroup" class="oi o_gantt_fold_icon"
+                                t-att-data-icon="this.state.folded[row.key] ? 'chevron_right' : 'expand_more'"/>
+                            <img t-if="row.thumbnail" class="o_gantt_thumbnail o_avatar rounded flex-shrink-0"
+                                t-att-src="row.thumbnail" alt=""
+                                t-on-error="(ev) => ev.target.classList.add('d-none')"/>
+                            <div class="d-flex flex-column flex-grow-1" style="min-width: 0;">
+                                <span class="o_gantt_row_title text-truncate" t-out="row.label"/>
+                                <div t-if="row.progressBar" class="o_gantt_row_progress progress mt-1"
+                                    t-att-class="{ o_gantt_row_progress_over: row.progressBar.overCapacity }"
+                                    role="progressbar" t-att-aria-valuenow="row.progressBar.value"
+                                    aria-valuemin="0" t-att-aria-valuemax="row.progressBar.max"
+                                    t-att-title="this.progressBarTitle(row)">
+                                    <div class="progress-bar" t-att-style="'width: ' + row.progressBar.ratio + '%;'"/>
+                                </div>
+                            </div>
+                            <span t-if="this.hasConsolidation and row.recordCount"
+                                class="o_gantt_row_total badge rounded-pill text-bg-light d-none d-md-inline-block"
+                                t-out="this.formatValue(row.total)"/>
+                        </div>
+                        <div class="o_gantt_row_content position-relative flex-grow-1">
+                            <div class="o_gantt_cells h-100">
+                                <t t-foreach="this.columns" t-as="column" t-key="column.index">
+                                    <div class="o_gantt_cell position-relative"
+                                        t-att-class="{ o_gantt_today: column.isToday, o_gantt_weekend: column.isWeekend, o_gantt_cell_selected: this.isCellSelected(row, column) }"
+                                        t-on-pointerdown="(ev) => this.onCellPointerDown(ev, row, column)">
+                                        <div t-if="!row.isGroup and (this.canCreateInCells or this.canPlanInCells)"
+                                            class="o_gantt_cell_buttons position-absolute top-0 start-0 d-flex gap-1 p-1">
+                                            <button t-if="this.canCreateInCells" type="button"
+                                                class="btn btn-sm btn-light o_gantt_cell_add p-0"
+                                                title="Create" aria-label="Create"
+                                                t-on-click="(ev) => this.onClickCreate(ev, row, column)">
+                                                <i class="oi" data-icon="add"/>
+                                            </button>
+                                            <button t-if="this.canPlanInCells" type="button"
+                                                class="btn btn-sm btn-light o_gantt_cell_plan p-0"
+                                                title="Plan existing" aria-label="Plan existing"
+                                                t-on-click="(ev) => this.onClickPlan(ev, row, column)">
+                                                <i class="oi" data-icon="search"/>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                            <t t-foreach="row.unavailabilities" t-as="period" t-key="period_index">
+                                <div class="o_gantt_unavailable position-absolute top-0 bottom-0"
+                                    t-att-style="this.spanStyle(period.left, period.width)"/>
+                            </t>
+                            <!-- group rows and capacity strip: sum per column -->
+                            <t t-foreach="row.aggregates" t-as="aggregate" t-key="aggregate_index">
+                                <div class="o_gantt_aggregate position-absolute d-flex align-items-center justify-content-center small text-truncate"
+                                    t-att-class="{ o_gantt_aggregate_over: aggregate.overCapacity, o_gantt_aggregate_group: row.isGroup }"
+                                    t-att-style="this.spanStyle(aggregate.left, aggregate.width)"
+                                    t-att-title="this.aggregateTitle(aggregate, row)">
+                                    <t t-out="this.formatValue(aggregate.value)"/>
+                                </div>
+                            </t>
+                            <t t-foreach="row.pills" t-as="pill" t-key="pill.record.id">
+                                <div class="o_gantt_pill position-absolute d-flex align-items-center"
+                                    t-att-class="this.pillClass(pill, row)"
+                                    t-att-style="this.pillStyle(pill)"
+                                    t-att-data-record-id="pill.record.id"
+                                    t-att-title="this.pillTitle(pill)"
+                                    tabindex="0" role="button"
+                                    t-on-pointerdown="(ev) => this.onPillPointerDown(ev, pill, row, 'move')"
+                                    t-on-keydown="(ev) => this.onPillKeydown(ev, pill)">
+                                    <div t-if="pill.record.progress !== null" class="o_gantt_progress position-absolute top-0 bottom-0 start-0"
+                                        t-att-style="'width: ' + pill.record.progress + '%;'"/>
+                                    <span class="o_gantt_pill_title text-truncate px-2 position-relative" t-out="this.pillLabel(pill)"/>
+                                    <span t-if="pill.record.progress !== null" class="o_gantt_pill_progress small ms-auto pe-2 position-relative"
+                                        t-out="Math.round(pill.record.progress) + '%'"/>
+                                    <t t-if="this.model.canDrag">
+                                        <span t-if="!pill.record.startsBefore" class="o_gantt_resize_handle o_gantt_resize_start position-absolute top-0 bottom-0 start-0"
+                                            t-on-pointerdown="(ev) => this.onPillPointerDown(ev, pill, row, 'start')"/>
+                                        <span t-if="!pill.record.stopsAfter" class="o_gantt_resize_handle o_gantt_resize_stop position-absolute top-0 bottom-0 end-0"
+                                            t-on-pointerdown="(ev) => this.onPillPointerDown(ev, pill, row, 'stop')"/>
+                                    </t>
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+                </t>
+
+                <div t-if="!this.model.data.rows.length or !this.model.hasData()" class="o_gantt_no_content text-center text-muted py-4">
+                    Nothing planned in this period.
+                    <t t-if="this.model.canCreate"> Click a cell to plan something.</t>
+                </div>
+
+                <!-- total row -->
+                <div t-if="this.showTotalRow" class="o_gantt_row o_gantt_total_row d-flex">
+                    <div class="o_gantt_row_header d-flex align-items-center gap-2 px-3 fw-bold">
+                        <span class="text-truncate flex-grow-1">Total</span>
+                        <span class="badge rounded-pill text-bg-light" t-out="this.formatValue(this.model.totalValue)"/>
+                    </div>
+                    <div class="o_gantt_row_content position-relative flex-grow-1">
+                        <div class="o_gantt_cells h-100">
+                            <t t-foreach="this.columns" t-as="column" t-key="column.index">
+                                <div class="o_gantt_cell" t-att-class="{ o_gantt_today: column.isToday, o_gantt_weekend: column.isWeekend }"/>
+                            </t>
+                        </div>
+                        <t t-foreach="this.model.totalAggregates" t-as="aggregate" t-key="aggregate_index">
+                            <div class="o_gantt_aggregate o_gantt_aggregate_total position-absolute d-flex align-items-center justify-content-center small fw-bold"
+                                t-att-style="this.spanStyle(aggregate.left, aggregate.width)"
+                                t-att-title="this.aggregateTitle(aggregate, null)">
+                                <t t-out="this.formatValue(aggregate.value)"/>
+                            </div>
+                        </t>
+                    </div>
+                </div>
+
+                <div t-if="this.todayStyle" class="o_gantt_today_line position-absolute" t-att-style="this.todayStyle"/>
+                <svg class="o_gantt_dependencies position-absolute top-0 start-0" t-ref="this.svgRef"/>
+            </div>
+        </div>
+    </t>
+
+</templates>
