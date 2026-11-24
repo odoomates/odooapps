@@ -21,6 +21,7 @@
     'demo': [
         'demo/rental_stock_demo.xml',
     ],
+    'images': ['static/description/banner.png'],
     'post_init_hook': 'post_init_hook',
     'installable': True,
     'auto_install': True,
