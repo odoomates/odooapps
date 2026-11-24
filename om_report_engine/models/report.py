@@ -63,7 +63,10 @@ class OmReport(models.AbstractModel):
                 return [{'partner_id': ..., 'product_id': ..., 'amount': ...}, ...]
 
     and an ``ir.actions.client`` with the tag ``om_report`` and the context
-    ``{'om_report_model': 'om.report.sales.customer'}`` opens it.
+    ``{'om_report_model': 'om.report.sales.customer'}`` opens it. A model that
+    draws several reports (one per record of a configuration) is told which one
+    with ``om_report_variant`` in the context, given to it as the ``variant``
+    option.
 
     A report whose lines are not a grouping of rows (a ledger, a balance
     sheet) overrides ``_om_compute`` and ``_om_lines`` instead and builds its
@@ -253,6 +256,9 @@ class OmReport(models.AbstractModel):
             'compare_periods': 1,
             'compare_date_from': False,
             'compare_date_to': False,
+            # which one of the reports a report model draws, for a model that draws several (the
+            # action says it with om_report_variant); the saved views and folds are kept apart by it
+            'variant': False,
         }
         for spec in self._om_filters():
             options[spec['key']] = []
@@ -308,6 +314,8 @@ class OmReport(models.AbstractModel):
             options['sort'] = False
         if not self._report_compare or options['compare'] not in [c['key'] for c in self._om_all_compare_choices()]:
             options['compare'] = False
+        if isinstance(options['variant'], bool) or not isinstance(options['variant'], (int, str)):
+            options['variant'] = False
         for key in ('compare_date_from', 'compare_date_to'):
             try:
                 options[key] = options[key] and fields.Date.to_string(fields.Date.to_date(options[key]))
