@@ -1,6 +1,6 @@
 {
     'name': 'Gantt View',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Productivity',
     'summary': 'Gantt view for any model: timeline with drag and drop, resize, group rows, progress, '
                'dependencies, capacity totals and non-working days, a base for planning, rental and '
