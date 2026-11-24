@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 19 Accounting Community',
-    'version': '1.4.1',
+    'version': '1.4.2',
     'category': 'Accounting',
     'summary': 'Annual Report, Bank Reconciliation Statement, Accounting Reports, '
                'Asset Management and Budget, Recurring Payments, '
