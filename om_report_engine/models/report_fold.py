@@ -19,19 +19,26 @@ class OmReportFold(models.Model):
                                           'The folds of a report are kept once per user.')
 
     @api.model
-    def om_get(self, report_model):
+    def _om_key(self, report_model, variant=False):
+        # the folds of each report of a model that draws several are kept apart
+        return '%s:%s' % (report_model, variant) if variant else report_model
+
+    @api.model
+    def om_get(self, report_model, variant=False):
         """The lines the user left unfolded, or False when the user never folded or unfolded any."""
-        fold = self.search([('report_model', '=', report_model), ('user_id', '=', self.env.uid)], limit=1)
+        key = self._om_key(report_model, variant)
+        fold = self.search([('report_model', '=', key), ('user_id', '=', self.env.uid)], limit=1)
         # an empty list is stored as nothing: a record without lines is "everything folded"
         return (fold.expanded or []) if fold else False
 
     @api.model
-    def om_set(self, report_model, expanded):
+    def om_set(self, report_model, expanded, variant=False):
         self.env['om.report']._om_get_report_model(report_model)
+        key = self._om_key(report_model, variant)
         expanded = [str(line_id) for line_id in (expanded or [])][:MAX_LINES]
-        fold = self.search([('report_model', '=', report_model), ('user_id', '=', self.env.uid)], limit=1)
+        fold = self.search([('report_model', '=', key), ('user_id', '=', self.env.uid)], limit=1)
         if fold:
             fold.expanded = expanded
         else:
-            self.create({'report_model': report_model, 'expanded': expanded})
+            self.create({'report_model': key, 'expanded': expanded})
         return True

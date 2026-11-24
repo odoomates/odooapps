@@ -33,9 +33,16 @@ class OmReportView(models.Model):
         return options
 
     @api.model
-    def om_list(self, report_model):
-        self.env['om.report']._om_get_report_model(report_model)
+    @api.model
+    def _om_variant_views(self, report_model, variant=False):
+        """ The views of the report, of its variant only for a model that draws several reports. """
         views = self.search([('report_model', '=', report_model)])
+        return views.filtered(lambda v: ((v.options or {}).get('variant') or False) == (variant or False))
+
+    @api.model
+    def om_list(self, report_model, variant=False):
+        self.env['om.report']._om_get_report_model(report_model)
+        views = self._om_variant_views(report_model, variant)
         mine_default = views.filtered(lambda v: v.is_default and v.user_id == self.env.user)[:1]
         return [{
             'id': view.id,
@@ -63,8 +70,8 @@ class OmReportView(models.Model):
         else:
             view = self.create(values)
         if view.is_default:
-            (self.search([('report_model', '=', report_model), ('user_id', '=', self.env.user.id),
-                          ('is_default', '=', True)]) - view).is_default = False
+            others = self._om_variant_views(report_model, values['options'].get('variant'))
+            (others.filtered(lambda v: v.user_id == self.env.user and v.is_default) - view).is_default = False
         return view.id
 
     def om_delete(self):
