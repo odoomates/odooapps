@@ -41,7 +41,7 @@ export const FORM_COMPONENTS = [
 
 export const SPECIAL_ACTIONS = [
     { key: "ribbon", label: _t("Ribbon"), icon: "bookmark" },
-    { key: "widgets", label: _t("Smart Button"), icon: "widgets" },
+    { key: "smart_button", label: _t("Smart Button"), icon: "widgets" },
     { key: "header_button", label: _t("Header Button"), icon: "toggle_on" },
     { key: "stages", label: _t("Stages"), icon: "flag" },
     { key: "chatter", label: _t("Chatter"), icon: "forum" },

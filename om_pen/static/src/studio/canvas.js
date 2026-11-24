@@ -108,6 +108,8 @@ export class StudioCanvas extends Component {
             useSampleModel: !["form"].includes(view.view_type),
         };
         if (view.view_type === "form") {
+            // the smart buttons of a form are drawn in its control panel
+            props.display = { controlPanel: {}, searchPanel: false };
             props.resId = this.store.state.resId || this.props.firstResId || false;
             props.preventEdit = false;
         }
