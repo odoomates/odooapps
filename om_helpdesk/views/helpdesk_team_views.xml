@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_helpdesk_team_search" model="ir.ui.view">
+        <field name="name">om.helpdesk.team.search</field>
+        <field name="model">om.helpdesk.team</field>
+        <field name="arch" type="xml">
+            <search string="Teams">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="member_ids"/>
+                <filter string="My Teams" name="my_teams" domain="['|', ('member_ids', 'in', uid), ('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_team_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.team.list</field>
+        <field name="model">om.helpdesk.team</field>
+        <field name="arch" type="xml">
+            <list string="Teams">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="member_ids" widget="many2many_avatar_user"/>
+                <field name="alias_email" string="Email Alias" optional="show"/>
+                <field name="assign_method" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_team_form" model="ir.ui.view">
+        <field name="name">om.helpdesk.team.form</field>
+        <field name="model">om.helpdesk.team</field>
+        <field name="arch" type="xml">
+            <form string="Team">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_open_tickets" type="object" class="oe_stat_button" icon="confirmation_number">
+                            <field name="open_ticket_count" widget="statinfo" string="Open Tickets"/>
+                        </button>
+                        <button name="action_view_sla" type="object" class="oe_stat_button" icon="timer" invisible="not use_sla"
+                            groups="om_helpdesk.group_helpdesk_manager">
+                            <field name="sla_count" widget="statinfo" string="SLA Policies"/>
+                        </button>
+                        <button name="action_view_ratings" type="object" class="oe_stat_button" icon="sentiment_satisfied"
+                            invisible="not use_rating">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value" invisible="rating_percentage_satisfaction &lt; 0"><field name="rating_percentage_satisfaction" nolabel="1"/>%</span>
+                                <span class="o_stat_value" invisible="rating_percentage_satisfaction &gt;= 0">-</span>
+                                <span class="o_stat_text">Satisfaction</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Customer Support"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="member_ids" widget="many2many_avatar_user"/>
+                            <field name="company_id" groups="base.group_multi_company" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <label for="alias_name" string="Email Alias"/>
+                            <div name="alias_def" class="d-flex align-items-baseline gap-2">
+                                <field name="alias_id" invisible="1"/>
+                                <field name="alias_name" placeholder="e.g. support"/>
+                                <span>@</span>
+                                <field name="alias_domain_id" placeholder="e.g. mycompany.com" options="{'no_create': True, 'no_open': True}"/>
+                            </div>
+                            <field name="alias_contact" string="Accept Emails From" invisible="not alias_name"/>
+                            <field name="privacy_visibility" widget="radio"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Settings" name="settings">
+                            <group name="settings_main">
+                                <group string="Assignment" name="assignment">
+                                    <field name="assign_method" widget="radio"/>
+                                    <field name="last_assigned_user_id" invisible="assign_method != 'randomly'"/>
+                                </group>
+                                <group string="Service Level" name="service_level">
+                                    <field name="use_sla"/>
+                                    <field name="resource_calendar_id" invisible="not use_sla"/>
+                                    <field name="use_rating"/>
+                                </group>
+                            </group>
+                            <group string="Stages">
+                                <field name="stage_ids" widget="many2many_tags" nolabel="1" colspan="2"
+                                    options="{'no_create_edit': True}"/>
+                            </group>
+                        </page>
+                        <page string="SLA Policies" name="sla" invisible="not use_sla" groups="om_helpdesk.group_helpdesk_manager">
+                            <field name="sla_ids" context="{'default_team_id': id}">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="priority" widget="priority"/>
+                                    <field name="ticket_type_ids" widget="many2many_tags"/>
+                                    <field name="tag_ids" widget="many2many_tags"/>
+                                    <field name="stage_id"/>
+                                    <field name="time" widget="float_time"/>
+                                    <field name="time_mode"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="Describe what this team handles. Customers see this text."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_team_kanban" model="ir.ui.view">
+        <field name="name">om.helpdesk.team.kanban</field>
+        <field name="model">om.helpdesk.team</field>
+        <field name="arch" type="xml">
+            <kanban class="o_om_helpdesk_team_kanban" highlight_color="color" create="0" can_open="0"
+                action="action_view_open_tickets" type="object" sample="1">
+                <field name="use_sla"/>
+                <field name="use_rating"/>
+                <templates>
+                    <t t-name="menu">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col-6">
+                                    <h5 role="menuitem" class="o_kanban_card_manage_title"><span>View</span></h5>
+                                    <a role="menuitem" class="dropdown-item" name="action_view_open_tickets" type="object">Open Tickets</a>
+                                    <a role="menuitem" class="dropdown-item" name="action_view_my_tickets" type="object">My Tickets</a>
+                                    <a role="menuitem" class="dropdown-item" name="action_view_unassigned_tickets" type="object">Unassigned</a>
+                                </div>
+                                <div class="col-6">
+                                    <h5 role="menuitem" class="o_kanban_card_manage_title"><span>Reporting</span></h5>
+                                    <a role="menuitem" class="dropdown-item" name="action_view_report" type="object">Ticket Analysis</a>
+                                    <a role="menuitem" class="dropdown-item" name="action_view_ratings" type="object" t-if="record.use_rating.raw_value">Ratings</a>
+                                </div>
+                            </div>
+                            <div t-if="widget.editable" class="o_kanban_card_manage_settings row" groups="om_helpdesk.group_helpdesk_manager">
+                                <div role="menuitem" aria-haspopup="true" class="col-8">
+                                    <field name="color" widget="kanban_color_picker"/>
+                                </div>
+                                <div role="menuitem" class="col-4">
+                                    <a class="dropdown-item" type="open">Configuration</a>
+                                </div>
+                            </div>
+                        </div>
+                    </t>
+                    <t t-name="card" class="flex-column justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <field name="name" class="fw-bold fs-4"/>
+                        </div>
+                        <div class="text-muted small text-truncate" t-if="record.alias_email.raw_value">
+                            <i class="oi me-1" data-icon="mail" title="Email Alias"/><field name="alias_email"/>
+                        </div>
+                        <div class="row g-2 mt-2">
+                            <div class="col-6">
+                                <button class="btn btn-primary w-100" name="action_view_open_tickets" type="object">
+                                    <field name="open_ticket_count"/> Open
+                                </button>
+                            </div>
+                            <div class="col-6">
+                                <button class="btn btn-secondary w-100" name="action_view_my_tickets" type="object">
+                                    <field name="my_ticket_count"/> Mine
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-column gap-1 mt-3 small">
+                            <a name="action_view_unassigned_tickets" type="object" class="d-flex justify-content-between">
+                                <span>Unassigned</span><field name="unassigned_ticket_count"/>
+                            </a>
+                            <a name="action_view_urgent_tickets" type="object" class="d-flex justify-content-between">
+                                <span>Urgent</span><field name="urgent_ticket_count"/>
+                            </a>
+                            <a name="action_view_sla_failed_tickets" type="object"
+                                t-if="record.use_sla.raw_value"
+                                t-attf-class="d-flex justify-content-between #{record.sla_failed_ticket_count.raw_value ? 'text-danger' : ''}">
+                                <span>SLA Failed</span><field name="sla_failed_ticket_count"/>
+                            </a>
+                            <div class="d-flex justify-content-between text-muted">
+                                <span>Closed Today</span><field name="closed_today_count"/>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted" t-if="record.use_rating.raw_value">
+                                <span>Satisfaction</span>
+                                <span t-if="record.rating_percentage_satisfaction.raw_value &gt;= 0"><field name="rating_percentage_satisfaction"/>%</span>
+                                <span t-else="">-</span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center mt-3">
+                            <field name="member_ids" widget="many2many_avatar_user"/>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="action_helpdesk_team_dashboard" model="ir.actions.act_window">
+        <field name="name">Helpdesk Overview</field>
+        <field name="res_model">om.helpdesk.team</field>
+        <field name="path">helpdesk</field>
+        <field name="view_mode">kanban,form</field>
+        <field name="view_id" ref="view_helpdesk_team_kanban"/>
+        <field name="search_view_id" ref="view_helpdesk_team_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a helpdesk team
+            </p>
+            <p>
+                Teams group your agents, their email alias, their stages and their SLA policies.
+            </p>
+        </field>
+    </record>
+
+    <record id="action_helpdesk_team" model="ir.actions.act_window">
+        <field name="name">Teams</field>
+        <field name="res_model">om.helpdesk.team</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_helpdesk_team_list"/>
+        <field name="search_view_id" ref="view_helpdesk_team_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create a helpdesk team
+            </p>
+        </field>
+    </record>
+</odoo>

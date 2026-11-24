@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_helpdesk_ticket_type_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.type.list</field>
+        <field name="model">om.helpdesk.ticket.type</field>
+        <field name="arch" type="xml">
+            <list string="Ticket Types" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_helpdesk_ticket_type" model="ir.actions.act_window">
+        <field name="name">Ticket Types</field>
+        <field name="res_model">om.helpdesk.ticket.type</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a ticket type</p>
+            <p>e.g. Question, Issue, Feature request.</p>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_tag_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.tag.list</field>
+        <field name="model">om.helpdesk.tag</field>
+        <field name="arch" type="xml">
+            <list string="Tags" editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_helpdesk_tag" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">om.helpdesk.tag</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a tag</p>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_close_reason_list" model="ir.ui.view">
+        <field name="name">om.helpdesk.close.reason.list</field>
+        <field name="model">om.helpdesk.close.reason</field>
+        <field name="arch" type="xml">
+            <list string="Close Reasons" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_helpdesk_close_reason" model="ir.actions.act_window">
+        <field name="name">Close Reasons</field>
+        <field name="res_model">om.helpdesk.close.reason</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a close reason</p>
+        </field>
+    </record>
+
+    <record id="action_helpdesk_rating" model="ir.actions.act_window">
+        <field name="name">Customer Ratings</field>
+        <field name="res_model">rating.rating</field>
+        <field name="view_mode">kanban,list,graph,pivot,form</field>
+        <field name="domain">[('res_model', '=', 'om.helpdesk.ticket'), ('consumed', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No rating yet</p>
+            <p>Turn on customer ratings on a team: customers rate the support when their ticket is closed.</p>
+        </field>
+    </record>
+</odoo>
