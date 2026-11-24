@@ -1,4 +1,4 @@
-from odoo import api, models, fields
+from odoo import _, api, models, fields
 
 
 class AccountFinancialReport(models.Model):
@@ -73,3 +73,46 @@ class AccountFinancialReport(models.Model):
              "financial reports hierarchy (auto-computed field 'level').")
     children_ids = fields.One2many('account.financial.report', 'parent_id', string='Children')
 
+    menu_id = fields.Many2one('ir.ui.menu', string="Menu", readonly=True, copy=False, ondelete='set null',
+                              help="The menu that opens this report.")
+    menu_action_id = fields.Many2one('ir.actions.server', string="Menu Action", readonly=True, copy=False,
+                                     ondelete='set null')
+
+    def action_open_report(self):
+        """ What the menu of the report opens: the report wizard with this report chosen. """
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.name,
+            'res_model': 'accounting.report',
+            'view_mode': 'form',
+            'views': [(self.env.ref('accounting_pdf_reports.accounting_report_view').id, 'form')],
+            'target': 'new',
+            'context': {'default_account_report_id': self.id},
+        }
+
+    def action_create_menu(self):
+        self.ensure_one()
+        return {
+            'type': 'ir.actions.act_window',
+            'name': _("Add to Menu"),
+            'res_model': 'account.financial.report.menu',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'default_report_id': self.id},
+        }
+
+    def action_remove_menu(self):
+        self._remove_menu()
+        return {'type': 'ir.actions.client', 'tag': 'reload'}
+
+    def _remove_menu(self):
+        menus = self.sudo().menu_id
+        actions = self.sudo().menu_action_id
+        self.sudo().write({'menu_id': False, 'menu_action_id': False})
+        menus.unlink()
+        actions.unlink()
+
+    def unlink(self):
+        self._remove_menu()
+        return super().unlink()
