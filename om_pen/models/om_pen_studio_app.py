@@ -7,6 +7,8 @@ from odoo import _, api, models
 from odoo.exceptions import UserError
 from odoo.tools.binary import BinaryBytes
 
+from .om_pen_view import KEY_PREFIX
+
 # features a new model can be made with, and what each one adds
 FEATURES = (
     'stages', 'responsible', 'company', 'tags', 'priority', 'picture', 'lines', 'amount',
@@ -153,7 +155,8 @@ class OmPenStudio(models.AbstractModel):
         views = {}
         for view_type, arch in archs.items():
             views[view_type] = View.create({
-                'name': 'om_pen.%s.%s' % (model, view_type),
+                'name': '%s%s.%s' % (KEY_PREFIX, model, view_type),
+                'key': '%s%s.%s' % (KEY_PREFIX, model, view_type),
                 'model': model,
                 'type': view_type,
                 'arch': etree.tostring(arch, encoding='unicode', pretty_print=True),

@@ -18,6 +18,8 @@ from odoo.exceptions import UserError
 from odoo.tools.binary import BinaryBytes
 from odoo.tools.convert import convert_xml_import
 
+from .om_pen_view import KEY_PREFIX
+
 EXPORT_MODULE = 'om_pen_studio_export'
 IMPORT_MODULE = '__om_pen__'
 MANIFEST = '''{
@@ -88,7 +90,7 @@ class OmPenStudio(models.AbstractModel):
         self._check()
         if kind == 'view':
             view = self.env['ir.ui.view'].sudo().browse(int(record_id))
-            if not (view.key or '').startswith('om_pen.'):
+            if not (view.key or '').startswith(KEY_PREFIX):
                 raise UserError(_("Only the views made in the Studio are translated here."))
             view.update_field_translations('arch_db', {lang: {source: value}})
         else:

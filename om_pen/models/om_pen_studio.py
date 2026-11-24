@@ -8,6 +8,7 @@ from odoo.exceptions import AccessError, UserError, ValidationError
 
 from . import om_pen_arch as archlib
 from .om_pen_preview import DRAFT_OPTION
+from .om_pen_view import KEY_PREFIX
 
 _logger = logging.getLogger(__name__)
 
@@ -141,7 +142,7 @@ class OmPenStudio(models.AbstractModel):
             except AttributeError as error:
                 raise UserError(_("%(model)s cannot have a %(type)s view.",
                                   model=model, type=view_type)) from error
-        name = 'om_pen.%s.%s' % (model, view_type)
+        name = '%s%s.%s' % (KEY_PREFIX, model, view_type)
         return self.env['ir.ui.view'].sudo().create({
             'name': name,
             'key': name,
