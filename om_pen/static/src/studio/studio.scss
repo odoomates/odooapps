@@ -1,0 +1,615 @@
+$pen-plum: #5b2b5e;
+$pen-plum-dark: #3f1d42;
+$pen-teal: #1f9d93;
+$pen-teal-soft: rgba(31, 157, 147, 0.12);
+$pen-line: #e3e0e6;
+
+.o_om_pen_toggle {
+    color: inherit;
+    padding: 0 0.6rem;
+}
+
+.o_pen_studio {
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    display: flex;
+    flex-direction: column;
+    background: #f4f2f6;
+    font-size: 0.875rem;
+
+    &.o_pen_busy .o_pen_canvas {
+        opacity: 0.6;
+        pointer-events: none;
+    }
+}
+
+.o_pen_topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: 46px;
+    padding: 0 0.75rem;
+    background: $pen-plum;
+    color: #fff;
+    flex: 0 0 auto;
+
+    .btn {
+        color: #fff;
+        border: 0;
+        &:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+        &.btn-light {
+            color: $pen-plum-dark;
+            background: #fff;
+        }
+        &.btn-warning {
+            color: #2b1b00;
+        }
+        &:disabled {
+            opacity: 0.4;
+        }
+    }
+}
+
+.o_pen_brand {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+    padding-right: 0.75rem;
+    border-right: 1px solid rgba(255, 255, 255, 0.2);
+    .fa {
+        color: $pen-teal;
+        background: #fff;
+        border-radius: 50%;
+        padding: 3px;
+        font-size: 0.85rem;
+    }
+}
+
+.o_pen_model {
+    padding-right: 0.75rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 260px;
+}
+
+.o_pen_sections {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+}
+
+.o_pen_section {
+    border: 0;
+    background: transparent;
+    color: rgba(255, 255, 255, 0.75);
+    padding: 0.35rem 0.7rem;
+    border-radius: 4px;
+    white-space: nowrap;
+    &:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.1);
+    }
+    &.active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.2);
+    }
+}
+
+.o_pen_draft_badge {
+    background: rgba(255, 196, 0, 0.2);
+    color: #ffd666;
+    border-radius: 10px;
+    padding: 0.1rem 0.55rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+}
+
+.o_pen_live_badge {
+    color: #8ee6dd;
+    font-size: 0.78rem;
+    padding: 0 0.4rem;
+}
+
+.o_pen_viewbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 0.3rem 0.75rem;
+    background: #fff;
+    border-bottom: 1px solid $pen-line;
+    flex: 0 0 auto;
+}
+
+.o_pen_viewtype {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border: 0;
+    background: transparent;
+    padding: 0.3rem 0.65rem;
+    border-radius: 4px;
+    color: #555;
+    &:hover {
+        background: #f1edf3;
+    }
+    &.active {
+        background: $pen-teal-soft;
+        color: $pen-teal;
+        font-weight: 600;
+    }
+}
+
+.o_pen_body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.o_pen_section_body {
+    overflow: auto;
+    padding: 1.25rem;
+    display: block;
+    position: relative;
+}
+
+/* ------------------------------ side panel ------------------------------ */
+
+.o_pen_sidebar {
+    width: 300px;
+    flex: 0 0 300px;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-right: 1px solid $pen-line;
+    min-height: 0;
+}
+
+.o_pen_tabs {
+    display: flex;
+    border-bottom: 1px solid $pen-line;
+    button {
+        flex: 1;
+        border: 0;
+        background: transparent;
+        padding: 0.6rem 0;
+        color: #666;
+        border-bottom: 2px solid transparent;
+        &.active {
+            color: $pen-plum;
+            border-bottom-color: $pen-plum;
+            font-weight: 600;
+        }
+    }
+}
+
+.o_pen_sidebar_body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 0.75rem;
+}
+
+.o_pen_title {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #8a8290;
+    margin: 1rem 0 0.4rem;
+    &:first-child {
+        margin-top: 0.2rem;
+    }
+}
+
+.o_pen_label {
+    display: block;
+    font-size: 0.78rem;
+    color: #6c6472;
+    margin: 0.6rem 0 0.2rem;
+}
+
+.o_pen_hint {
+    color: #888;
+    padding: 1rem 0.25rem;
+}
+
+.o_pen_items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    &.o_pen_actions {
+        margin-top: 6px;
+    }
+}
+
+.o_pen_item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid $pen-line;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    font-size: 0.8rem;
+    text-align: left;
+    user-select: none;
+    .fa {
+        color: $pen-teal;
+    }
+    &:hover {
+        border-color: $pen-teal;
+        background: $pen-teal-soft;
+    }
+}
+
+.o_pen_draggable {
+    cursor: grab;
+}
+
+.o_pen_field_list {
+    max-height: 420px;
+    overflow-y: auto;
+}
+
+.o_pen_field_row {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.3rem 0.45rem;
+    border-radius: 3px;
+    user-select: none;
+    &:hover {
+        background: $pen-teal-soft;
+    }
+    &.o_pen_in_view .o_pen_field_name {
+        color: #999;
+    }
+}
+
+.o_pen_field_type {
+    color: #aaa;
+    font-size: 0.72rem;
+}
+
+.o_pen_prop_head {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.95rem;
+}
+
+.o_pen_prop_tag {
+    background: $pen-plum;
+    color: #fff;
+    font-size: 0.68rem;
+    border-radius: 3px;
+    padding: 0 0.35rem;
+    text-transform: uppercase;
+}
+
+.o_pen_prop_meta {
+    font-size: 0.75rem;
+    margin-top: 0.2rem;
+}
+
+.o_pen_modifier {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.4rem;
+    .o_pen_condition {
+        flex: 1 1 100%;
+        margin-top: 0.25rem;
+        padding: 0.2rem 0.4rem;
+        background: #f6f3f8;
+        border-radius: 3px;
+        cursor: pointer;
+        word-break: break-all;
+    }
+}
+
+.o_pen_chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-bottom: 4px;
+    .fa {
+        cursor: pointer;
+    }
+}
+
+.o_pen_chart_field {
+    display: flex;
+    align-items: center;
+    padding: 0.25rem 0;
+    .fa {
+        cursor: pointer;
+        color: #b33;
+    }
+}
+
+/* ------------------------------ canvas ------------------------------ */
+
+.o_pen_canvas {
+    position: relative;
+    flex: 1 1 auto;
+    overflow: auto;
+    padding: 1rem;
+    min-width: 0;
+
+    .o_pen_canvas_frame {
+        background: #fff;
+        border-radius: 6px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        min-height: 100%;
+        overflow: hidden;
+    }
+
+    .o_pen_canvas_view {
+        min-height: 400px;
+    }
+
+    // a form shows its smart buttons in the control panel: keep only them
+    .o_pen_canvas_form .o_control_panel {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0 !important;
+
+        .o_embedded_actions,
+        .o_control_panel_breadcrumbs,
+        .o_control_panel_navigation {
+            display: none !important;
+        }
+    }
+
+    [class*="o_pen_n"] {
+        cursor: pointer;
+    }
+
+    .o_pen_hover {
+        outline: 1px dashed $pen-teal !important;
+        outline-offset: 1px;
+    }
+
+    .o_pen_selected {
+        outline: 2px solid $pen-plum !important;
+        outline-offset: 1px;
+        background-color: rgba(91, 43, 94, 0.04);
+    }
+
+    .o_pen_hidden {
+        opacity: 0.45;
+        background-image: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(0, 0, 0, 0.04) 6px, rgba(0, 0, 0, 0.04) 12px);
+    }
+
+    &.o_pen_dragging {
+        cursor: grabbing;
+        * {
+            cursor: grabbing !important;
+        }
+    }
+}
+
+.o_pen_drop_line {
+    position: absolute;
+    background: $pen-teal;
+    border-radius: 2px;
+    pointer-events: none;
+    z-index: 10;
+    box-shadow: 0 0 0 2px rgba(31, 157, 147, 0.25);
+}
+
+.o_pen_drop_box {
+    position: absolute;
+    border: 2px dashed $pen-teal;
+    background: $pen-teal-soft;
+    pointer-events: none;
+    z-index: 10;
+    border-radius: 4px;
+}
+
+.o_pen_drag_chip {
+    position: fixed;
+    z-index: 2000;
+    pointer-events: none;
+    background: $pen-plum;
+    color: #fff;
+    padding: 0.25rem 0.6rem;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ------------------------------ search editor ------------------------------ */
+
+.o_pen_search_editor {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 1rem;
+    background: #fff;
+    border-radius: 6px;
+    padding: 1rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.o_pen_search_item {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid $pen-line;
+    border-radius: 4px;
+    margin-bottom: 4px;
+    background: #fff;
+    &.o_pen_selected {
+        border-color: $pen-plum;
+    }
+}
+
+/* ------------------------------ dialogs ------------------------------ */
+
+.o_pen_icons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    .active {
+        background: $pen-teal-soft;
+        color: $pen-teal;
+    }
+}
+
+.o_pen_version {
+    border-bottom: 1px solid $pen-line;
+    padding: 0.5rem 0;
+}
+
+.o_pen_diff {
+    margin-top: 0.5rem;
+    background: #fafafa;
+    padding: 0.5rem;
+    max-height: 360px;
+    overflow: auto;
+    font-size: 0.75rem;
+    .o_pen_diff_add {
+        color: #17803d;
+        background: #eaf7ee;
+    }
+    .o_pen_diff_del {
+        color: #b42318;
+        background: #fdecea;
+    }
+}
+
+/* ------------------------------ panels ------------------------------ */
+
+.o_pen_panel {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    padding: 1.25rem;
+
+    h2 {
+        font-size: 1.15rem;
+        margin-bottom: 0.25rem;
+    }
+    .o_pen_panel_lead {
+        color: #777;
+        margin-bottom: 1rem;
+    }
+    table {
+        width: 100%;
+    }
+}
+
+/* ------------------------------ apps and menus ------------------------------ */
+
+.o_pen_swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    &.active {
+        border-color: #222;
+        box-shadow: 0 0 0 2px #fff inset;
+    }
+}
+
+.o_pen_app_icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    color: #fff;
+    font-size: 1.6rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.o_pen_features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    &.o_pen_features_small {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+}
+
+.o_pen_feature {
+    display: flex;
+    align-items: flex-start;
+    border: 1px solid $pen-line;
+    border-radius: 6px;
+    padding: 0.5rem 0.6rem;
+    cursor: pointer;
+    &.active {
+        border-color: $pen-teal;
+        background: $pen-teal-soft;
+    }
+}
+
+.o_pen_menu_name {
+    cursor: text;
+}
+
+/* ------------------------------ reports ------------------------------ */
+
+.o_pen_report_row {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0.25rem;
+    border-bottom: 1px solid $pen-line;
+}
+
+.o_pen_report_designer {
+    display: flex;
+    position: absolute;
+    inset: 0;
+}
+
+.o_pen_report_head {
+    display: flex;
+    align-items: center;
+    padding: 0.4rem 0.75rem 0;
+}
+
+.o_pen_report_preview {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.o_pen_report_frame {
+    flex: 1 1 auto;
+    border: 0;
+    margin: 1rem auto;
+    width: calc(100% - 2rem);
+    max-width: 900px;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+
+.o_pen_rule_form {
+    border: 1px solid $pen-line;
+    border-radius: 6px;
+    padding: 0.75rem 1rem 1rem;
+    background: #faf9fb;
+    margin-top: 0.75rem;
+}
+
+/* the chatter goes under the form on the canvas, so the form keeps its width */
+.o_pen_canvas .o_form_renderer {
+    flex-direction: column !important;
+}
+.o_pen_canvas .o-mail-Form-chatter.o-aside {
+    width: 100% !important;
+    max-width: none !important;
+    border-left: 0 !important;
+}

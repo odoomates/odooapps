@@ -1,9 +1,17 @@
+import logging
+
 from lxml import etree
 
 from odoo import api, models
+from odoo.exceptions import ValidationError
 from odoo.fields import Domain
 
+_logger = logging.getLogger(__name__)
+
 DRAFT_OPTION = 'om_pen_draft'
+# context key: apply every change or fail, instead of skipping the ones that no
+# longer fit (used when publishing, so a broken change is refused up front)
+STRICT_KEY = 'om_pen_strict'
 
 
 class IrUiView(models.Model):
@@ -23,6 +31,35 @@ class IrUiView(models.Model):
             if generated:
                 domain &= Domain('id', 'not in', generated.ids)
         return domain
+
+    @api.model
+    def apply_inheritance_specs(self, source, specs_tree, pre_locate=None):
+        """ Skip, rather than fail on, a generated change that no longer fits.
+
+        A module update can move or remove what a customization points at. Failing
+        would break the whole view and the update with it; skipping leaves the rest of
+        the customization working, and the health check lists what was skipped.
+        """
+        from .om_pen_view import GENERATED_KEY
+        if len(self) != 1 or not (self.key or '').startswith(GENERATED_KEY) \
+                or self.env.context.get(STRICT_KEY):
+            return super().apply_inheritance_specs(source, specs_tree, pre_locate=pre_locate)
+        return self._om_pen_apply_leniently(source, specs_tree, pre_locate=pre_locate)
+
+    def _om_pen_apply_leniently(self, source, specs_tree, pre_locate=None, failures=None):
+        """ Apply the specs one by one, keeping track of the ones that fail. """
+        specs = list(specs_tree) if specs_tree.tag == 'data' else [specs_tree]
+        for index, spec in enumerate(specs):
+            if not isinstance(spec.tag, str):
+                continue
+            try:
+                source = self.with_context(**{STRICT_KEY: True}).apply_inheritance_specs(
+                    source, spec, pre_locate=pre_locate)
+            except (ValidationError, ValueError) as error:
+                _logger.info("om_pen: change skipped on %s: %s", self.display_name or self.id, error)
+                if failures is not None:
+                    failures.append(index)
+        return source
 
 
 class Base(models.AbstractModel):
@@ -61,5 +98,5 @@ class Base(models.AbstractModel):
         if customization and customization.active:
             specs = etree.fromstring(customization._render_arch(draft=True))
             if len(specs):
-                arch = view.with_context(**{DRAFT_OPTION: True}).apply_inheritance_specs(arch, specs)
+                arch = view.with_context(**{DRAFT_OPTION: True})._om_pen_apply_leniently(arch, specs)
         return arch, view
