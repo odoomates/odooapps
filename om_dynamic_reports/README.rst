@@ -114,6 +114,30 @@ With **Assets Management** (om_account_asset) installed, the module
 installs by itself and adds the **Depreciation Schedule**, the **Deferred
 Revenue** and the **Deferred Expense**.
 
+Custom financial reports
+========================
+
+Beside the Balance Sheet and the Profit and Loss, build reports of your own (a
+management P&L, operating expenses, a gross margin) and open each one from a
+menu of its own:
+
+1. In Configuration > Accounting > Financial Reports, create a report and add
+   its sections: accounts, account types, the value of another report, or the
+   sum of the sections below. Each section has its sign and its level of
+   detail.
+2. On the form of the report, click **Add to Menu** and pick the menu name, the
+   parent menu and the position among its menus.
+3. Open the new menu: the report opens on screen, with the filters, the
+   comparison, the unfolding, the saved views and the exports of the other
+   reports. On the form of the report, **Dates** says whether it covers a period
+   (as a profit and loss) or stands at a date (as a balance sheet), and **Total
+   Line** whether it ends with the amount of the report itself. Each report
+   keeps its own saved views and folds.
+
+**Remove Menu** takes the menu away again, and deleting the report removes its
+menu too. The accounting managers add the menus; the menu shows for the users
+who see the statement reports.
+
 On screen
 =========
 
@@ -172,7 +196,8 @@ The exports say which companies, which currency and which rates.
 Menus
 =====
 
-Accounting > Reporting > Dynamic Reports. The PDF reports keep their menus. To
+Accounting > Reporting > Dynamic Reports, and the menus you add to your own
+financial reports (see Custom financial reports). The PDF reports keep their menus. To
 hide the menus you do not use, install the free **Restrict Menu** app
 (``om_restrict_menu``) and hide them per user.
 
