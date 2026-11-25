@@ -1,0 +1,575 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_report_designer.Designer">
+        <div class="o_om_rd_designer o_action d-flex flex-column h-100">
+            <t t-if="this.state.loaded">
+                <t t-call="om_report_designer.Designer.Toolbar"/>
+                <div class="o_om_rd_main d-flex flex-grow-1 overflow-hidden">
+                    <t t-call="om_report_designer.Designer.Sidebar"/>
+                    <div class="o_om_rd_canvas flex-grow-1 overflow-auto" t-on-pointerdown="(ev) => ev.target === ev.currentTarget and this.clearSelection()">
+                        <t t-if="this.state.mode === 'design'" t-call="om_report_designer.Designer.Page"/>
+                        <t t-else="" t-call="om_report_designer.Designer.Preview"/>
+                    </div>
+                    <t t-call="om_report_designer.Designer.Properties"/>
+                </div>
+            </t>
+        </div>
+    </t>
+
+    <!-- toolbar ========================================================= -->
+    <t t-name="om_report_designer.Designer.Toolbar">
+        <div class="o_om_rd_toolbar d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+            <button class="btn btn-light btn-sm" title="Back" t-on-click="() => this.close()">
+                <i class="oi" data-icon="arrow_back"/>
+            </button>
+            <input class="form-control form-control-sm o_om_rd_name fw-bold" t-att-value="this.state.settings.name"
+                   t-on-change="(ev) => this.setSetting('name', ev.target.value)" aria-label="Report name"/>
+            <span class="text-muted small text-nowrap" t-out="this.state.settings.model_name"/>
+            <span t-if="this.state.settings.state === 'published'" class="badge text-bg-success">Published</span>
+            <span t-if="this.state.dirty" class="badge text-bg-warning">Unsaved</span>
+            <span t-elif="this.state.saved" class="small text-muted">Saved</span>
+
+            <div class="vr mx-1"/>
+            <div class="btn-group btn-group-sm">
+                <button class="btn btn-light" title="Undo (Ctrl+Z)" t-att-disabled="!this.state.undoCount" t-on-click="() => this.undo()">↶</button>
+                <button class="btn btn-light" title="Redo (Ctrl+Y)" t-att-disabled="!this.state.redoCount" t-on-click="() => this.redo()">↷</button>
+            </div>
+            <div class="btn-group btn-group-sm align-items-center">
+                <button class="btn btn-light" title="Zoom out" t-on-click="() => this.setZoom(this.state.zoom - 0.25)">−</button>
+                <span class="px-2 small text-nowrap" t-out="Math.round(this.state.zoom * 100) + '%'"/>
+                <button class="btn btn-light" title="Zoom in" t-on-click="() => this.setZoom(this.state.zoom + 0.25)">+</button>
+            </div>
+            <select class="form-select form-select-sm w-auto" title="Add a band" t-if="this.state.mode === 'design'"
+                    t-on-change="(ev) => { this.addBand(ev.target.value); ev.target.value = ''; }">
+                <option value="">+ Band…</option>
+                <option t-foreach="this.addableBands" t-as="item" t-key="item.kind" t-att-value="item.kind" t-out="item.label"/>
+            </select>
+
+            <div class="ms-auto d-flex align-items-center gap-2">
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn" t-att-class="this.state.mode === 'design' ? 'btn-secondary' : 'btn-light'"
+                            t-on-click="() => this.setMode('design')">Design</button>
+                    <button class="btn" t-att-class="this.state.mode === 'preview' ? 'btn-secondary' : 'btn-light'"
+                            t-on-click="() => this.setMode('preview')">Preview</button>
+                </div>
+                <button class="btn btn-secondary btn-sm" t-att-disabled="this.state.saving" t-on-click="() => this.save()">Save</button>
+                <button class="btn btn-primary btn-sm" t-att-disabled="this.state.saving" t-on-click="() => this.publish()">
+                    <t t-if="this.state.settings.state === 'published'">Save &amp; Update</t>
+                    <t t-else="">Publish</t>
+                </button>
+            </div>
+        </div>
+    </t>
+
+    <!-- fields and tools ================================================= -->
+    <t t-name="om_report_designer.Designer.Sidebar">
+        <div class="o_om_rd_sidebar d-flex flex-column border-end">
+            <div class="p-2 border-bottom">
+                <div class="o_om_rd_section_title">Elements</div>
+                <div class="o_om_rd_tools">
+                    <div t-foreach="this.TOOLS" t-as="tool" t-key="tool.type" class="o_om_rd_tool" draggable="true"
+                         t-att-title="tool.label" t-on-dragstart="(ev) => this.onToolDragStart(ev, tool)"
+                         t-on-dragend="() => this.onDragEnd()" t-on-click="() => this.addToolToBand(tool)">
+                        <span class="o_om_rd_tool_symbol" t-out="tool.symbol"/>
+                        <span class="o_om_rd_tool_label" t-out="tool.label"/>
+                    </div>
+                </div>
+            </div>
+            <div class="p-2 pb-1">
+                <div class="o_om_rd_section_title d-flex align-items-center">
+                    <span>Fields of <t t-out="this.state.settings.model_name"/></span>
+                </div>
+                <input class="form-control form-control-sm" placeholder="Search a field…" t-att-value="this.state.search"
+                       t-on-input="(ev) => this.state.search = ev.target.value"/>
+                <div class="form-check form-switch small mt-1">
+                    <input class="form-check-input" type="checkbox" id="om_rd_with_label" t-att-checked="this.state.withLabel"
+                           t-on-change="(ev) => this.state.withLabel = ev.target.checked"/>
+                    <label class="form-check-label" for="om_rd_with_label">Add a label with the field</label>
+                </div>
+            </div>
+            <div class="o_om_rd_fields flex-grow-1 overflow-auto px-2 pb-2">
+                <div t-foreach="this.fieldRows" t-as="row" t-key="row.path" class="o_om_rd_field" draggable="true"
+                     t-att-class="{ 'o_om_rd_field_lines': row.x2many }"
+                     t-att-style="'padding-left:' + (4 + row.depth * 14) + 'px'"
+                     t-att-title="row.path + (row.x2many ? ' — drop on a Record band to add a table of these lines' : '')"
+                     t-on-dragstart="(ev) => this.onFieldDragStart(ev, row)" t-on-dragend="() => this.onDragEnd()"
+                     t-on-dblclick="() => this.addFieldToBand(row)">
+                    <span class="o_om_rd_field_toggle" t-on-click.stop="() => this.toggleField(row)">
+                        <t t-if="row.relational" t-out="row.expanded ? '▾' : '▸'"/>
+                    </span>
+                    <span class="o_om_rd_field_icon" t-out="this.fieldIcon(row)"/>
+                    <span class="o_om_rd_field_label text-truncate" t-out="row.label"/>
+                </div>
+            </div>
+            <div class="o_om_rd_help small text-muted p-2 border-top">
+                Drag fields onto the page. Drop a list of lines (☰) on a Record band to add a table, then drag its
+                fields into the table. Double click a text to change it.
+            </div>
+        </div>
+    </t>
+
+    <!-- the page ========================================================== -->
+    <t t-name="om_report_designer.Designer.Page">
+        <div class="o_om_rd_sheet" t-att-style="this.sheetStyle">
+            <t t-foreach="this.state.layout.bands" t-as="band" t-key="band.id">
+                <div class="o_om_rd_dband" t-att-class="{ 'o_om_rd_band_selected': band.id === this.state.bandId }">
+                    <div class="o_om_rd_dband_tab d-flex align-items-center" t-on-pointerdown="(ev) => this.onBandPointerDown(ev, band)">
+                        <span class="fw-bold" t-out="this.bandTitle(band)"/>
+                        <span class="ms-2 text-muted" t-out="this.bandHint(band)"/>
+                        <span class="ms-auto o_om_rd_dband_actions">
+                            <button t-if="this.canMoveBand(band, -1)" title="Move up" t-on-click.stop="() => this.moveBand(band, -1)">↑</button>
+                            <button t-if="this.canMoveBand(band, 1)" title="Move down" t-on-click.stop="() => this.moveBand(band, 1)">↓</button>
+                            <button title="Delete band" t-on-click.stop="() => this.deleteBand(band)">✕</button>
+                        </span>
+                    </div>
+
+                    <t t-if="band.kind === 'table'" t-call="om_report_designer.Designer.Table"/>
+                    <t t-else="">
+                        <div class="o_om_rd_dband_body o_om_rd_doc" t-att-data-band-id="band.id"
+                             t-att-class="{ 'o_om_rd_drop_target': this.state.dropBandId === band.id, 'o_om_rd_show_grid': this.state.snap }"
+                             t-att-style="this.bandBodyStyle(band)"
+                             t-on-pointerdown="(ev) => this.onBandPointerDown(ev, band)"
+                             t-on-dragover="(ev) => this.onBandDragOver(ev, band)"
+                             t-on-dragleave="(ev) => this.onBandDragLeave(ev, band)"
+                             t-on-drop="(ev) => this.onBandDrop(ev, band)">
+                            <t t-foreach="band.elements" t-as="element" t-key="element.id">
+                                <t t-call="om_report_designer.Designer.Element"/>
+                            </t>
+                            <div t-foreach="this.state.guides" t-as="guide" t-key="guide_index"
+                                 t-if="guide.bandId === band.id" class="o_om_rd_guide"
+                                 t-att-class="'o_om_rd_guide_' + guide.axis" t-att-style="this.guideStyle(guide)"/>
+                            <div t-if="!band.elements.length" class="o_om_rd_band_empty">Drop fields or elements here</div>
+                        </div>
+                        <div class="o_om_rd_band_resize" title="Drag to change the height of the band"
+                             t-on-pointerdown.stop="(ev) => this.onBandResizeStart(ev, band)"/>
+                    </t>
+                </div>
+            </t>
+            <div t-if="!this.state.layout.bands.length" class="text-muted p-4 text-center">
+                Add a band from the toolbar to start.
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Element">
+        <div class="o_om_rd_del" t-att-style="this.elementStyle(element)"
+             t-att-class="{
+                'o_om_rd_selected': this.isSelected(element),
+                'o_om_rd_del_line': element.type === 'line',
+                'o_om_rd_del_field': element.type === 'field',
+             }"
+             t-on-pointerdown.stop="(ev) => this.onElementPointerDown(ev, band, element)"
+             t-on-dblclick.stop="() => this.startEdit(element)">
+            <t t-if="element.type === 'image' or element.format === 'image'">
+                <div class="o_om_rd_dcell" t-att-style="this.cellStyle(element)">
+                    <img t-if="element.source === 'company' and element.field === 'logo'" t-att-src="this.logoUrl" alt="" draggable="false"
+                         t-att-style="'max-width:' + this.px(element.w) + 'px;max-height:' + this.px(element.h) + 'px'"/>
+                    <span t-else="" class="o_om_rd_image_placeholder" t-out="this.elementText(element) or 'Image'"/>
+                </div>
+            </t>
+            <t t-elif="element.type !== 'line' and element.type !== 'box'">
+                <textarea t-if="this.state.editing and this.state.editing.id === element.id" class="o_om_rd_inline_edit"
+                          t-ref="this.editRef" t-att-value="this.state.editing.value" t-att-style="this.cellStyle(element)"
+                          t-on-input="(ev) => this.state.editing.value = ev.target.value"
+                          t-on-keydown="(ev) => this.onEditKeyDown(ev)" t-on-blur="() => this.finishEdit()"
+                          t-on-pointerdown.stop="() => {}"/>
+                <div t-else="" class="o_om_rd_dcell" t-att-style="this.cellStyle(element)">
+                    <span t-out="this.elementText(element)"/>
+                </div>
+            </t>
+            <t t-if="this.isSelected(element) and this.state.selection.length === 1">
+                <div t-foreach="['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw']" t-as="dir" t-key="dir"
+                     class="o_om_rd_handle" t-att-class="'o_om_rd_handle_' + dir"
+                     t-on-pointerdown.stop="(ev) => this.onHandlePointerDown(ev, band, element, dir)"/>
+            </t>
+        </div>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Table">
+        <div class="o_om_rd_dtable o_om_rd_doc" t-att-class="{ 'o_om_rd_drop_target': this.state.dropBandId === band.id }"
+             t-att-style="'width:' + this.px(this.printableWidth) + 'px'"
+             t-on-pointerdown="(ev) => this.onBandPointerDown(ev, band)"
+             t-on-dragover="(ev) => this.onTableDragOver(ev, band)"
+             t-on-dragleave="(ev) => this.onBandDragLeave(ev, band)"
+             t-on-drop="(ev) => this.onTableDrop(ev, band)">
+            <div class="o_om_rd_dtable_inner" t-att-style="'margin-left:' + this.px(band.x) + 'px'">
+                <div class="o_om_rd_dtable_head d-flex" t-att-class="{ 'o_om_rd_bordered': band.border }"
+                     t-att-style="this.tableRowStyle(band) + (band.header_bg ? ';background-color:' + band.header_bg : '') + (band.header_color ? ';color:' + band.header_color : '')">
+                    <t t-foreach="band.columns" t-as="column" t-key="column.id">
+                        <div t-if="this.state.columnDrop and this.state.columnDrop.bandId === band.id and this.state.columnDrop.index === column_index"
+                             class="o_om_rd_column_marker"/>
+                        <div class="o_om_rd_dcol" t-att-class="{ 'o_om_rd_selected': column.id === this.state.columnId }"
+                             t-att-style="'width:' + this.px(column.width) + 'px;text-align:' + column.align"
+                             t-on-pointerdown.stop="(ev) => this.onColumnPointerDown(ev, band, column)"
+                             t-on-dblclick.stop="() => this.startEditColumn(band, column)">
+                            <input t-if="this.state.editing and this.state.editing.id === column.id" class="o_om_rd_inline_edit"
+                                   t-ref="this.editRef" t-att-value="this.state.editing.value"
+                                   t-on-input="(ev) => this.state.editing.value = ev.target.value"
+                                   t-on-keydown="(ev) => this.onEditKeyDown(ev)" t-on-blur="() => this.finishEdit()"
+                                   t-on-pointerdown.stop="() => {}"/>
+                            <span t-else="" class="text-truncate" t-out="column.label or ' '"/>
+                            <div class="o_om_rd_col_resize" title="Drag to change the width"
+                                 t-on-pointerdown.stop="(ev) => this.onColumnResizeStart(ev, band, column)"/>
+                        </div>
+                    </t>
+                    <div t-if="this.state.columnDrop and this.state.columnDrop.bandId === band.id and this.state.columnDrop.index === band.columns.length"
+                         class="o_om_rd_column_marker"/>
+                    <div t-if="!band.columns.length" class="o_om_rd_band_empty position-static">
+                        Drag the fields under “<t t-out="this.pathLabel(this.state.settings.model, band.relation)"/>” here
+                    </div>
+                </div>
+                <div class="o_om_rd_dtable_row d-flex" t-att-class="{ 'o_om_rd_bordered': band.border }" t-att-style="this.tableRowStyle(band)">
+                    <div t-foreach="band.columns" t-as="column" t-key="column.id" class="o_om_rd_dcol o_om_rd_dcol_value"
+                         t-att-class="{ 'o_om_rd_selected': column.id === this.state.columnId }"
+                         t-att-style="'width:' + this.px(column.width) + 'px;text-align:' + column.align"
+                         t-on-pointerdown.stop="(ev) => this.onColumnPointerDown(ev, band, column)">
+                        <span class="text-truncate" t-out="'[' + this.columnLabel(band, column) + ']'"/>
+                    </div>
+                </div>
+                <div t-if="band.columns.some((c) => c.sum)" class="o_om_rd_dtable_row o_om_rd_dtable_total d-flex"
+                     t-att-class="{ 'o_om_rd_bordered': band.border }" t-att-style="this.tableRowStyle(band)">
+                    <div t-foreach="band.columns" t-as="column" t-key="column.id" class="o_om_rd_dcol"
+                         t-att-style="'width:' + this.px(column.width) + 'px;text-align:' + column.align">
+                        <span t-if="column.sum">Σ</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+
+    <!-- preview =========================================================== -->
+    <t t-name="om_report_designer.Designer.Preview">
+        <div class="o_om_rd_preview_bar d-flex align-items-center gap-2 mb-3">
+            <span class="text-muted small">Preview with</span>
+            <select class="form-select form-select-sm w-auto" t-on-change="(ev) => this.setPreviewRecord(ev.target.value)">
+                <option t-foreach="this.state.records" t-as="record" t-key="record.id" t-att-value="record.id"
+                        t-att-selected="record.id === this.state.previewRecordId" t-out="record.name"/>
+            </select>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.refreshPreview()">Refresh</button>
+            <span t-if="this.state.previewLoading" class="text-muted small">Loading…</span>
+            <span t-if="!this.state.records.length" class="text-muted small">No record to show.</span>
+        </div>
+        <div class="o_om_rd_preview_sheet" t-att-style="this.previewSheetStyle">
+            <t t-out="this.previewMarkup"/>
+        </div>
+    </t>
+
+    <!-- properties ======================================================== -->
+    <t t-name="om_report_designer.Designer.Properties">
+        <div class="o_om_rd_props border-start overflow-auto p-3">
+            <t t-set="elements" t-value="this.selectedElements"/>
+            <t t-if="this.state.mode === 'design' and elements.length > 1" t-call="om_report_designer.Designer.Props.Multi"/>
+            <t t-elif="this.state.mode === 'design' and elements.length === 1">
+                <t t-set="element" t-value="elements[0]"/>
+                <t t-call="om_report_designer.Designer.Props.Element"/>
+            </t>
+            <t t-elif="this.state.mode === 'design' and this.selectedColumn" t-call="om_report_designer.Designer.Props.Column"/>
+            <t t-elif="this.state.mode === 'design' and this.selectedBand" t-call="om_report_designer.Designer.Props.Band"/>
+            <t t-else="" t-call="om_report_designer.Designer.Props.Report"/>
+        </div>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Props.Report">
+        <h6>Report</h6>
+        <label class="o_om_rd_label">Paper</label>
+        <div class="d-flex gap-2 mb-2">
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.setSetting('paper', ev.target.value)">
+                <option t-foreach="this.PAPERS" t-as="paper" t-key="paper" t-att-value="paper"
+                        t-att-selected="paper === this.state.settings.paper" t-out="paper"/>
+            </select>
+            <select class="form-select form-select-sm" t-on-change="(ev) => this.setSetting('orientation', ev.target.value)">
+                <option value="portrait" t-att-selected="this.state.settings.orientation === 'portrait'">Portrait</option>
+                <option value="landscape" t-att-selected="this.state.settings.orientation === 'landscape'">Landscape</option>
+            </select>
+        </div>
+        <label class="o_om_rd_label">Margins (mm)</label>
+        <div class="o_om_rd_grid4 mb-2">
+            <t t-foreach="this.MARGINS" t-as="margin" t-key="margin[0]">
+                <div>
+                    <div class="small text-muted" t-out="margin[1]"/>
+                    <input type="number" step="1" min="0" class="form-control form-control-sm" t-att-value="this.state.settings[margin[0]]"
+                           t-on-change="(ev) => this.setSetting(margin[0], this.num(ev.target.value))"/>
+                </div>
+            </t>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="om_rd_page_break" t-att-checked="this.state.settings.page_break"
+                   t-on-change="(ev) => this.setSetting('page_break', ev.target.checked)"/>
+            <label class="form-check-label" for="om_rd_page_break">New page for each record</label>
+        </div>
+        <h6>Designer</h6>
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="om_rd_snap" t-att-checked="this.state.snap"
+                   t-on-change="(ev) => this.state.snap = ev.target.checked"/>
+            <label class="form-check-label" for="om_rd_snap">Snap to grid</label>
+        </div>
+        <label class="o_om_rd_label">Grid (mm)</label>
+        <select class="form-select form-select-sm mb-3" t-on-change="(ev) => this.state.grid = parseFloat(ev.target.value)">
+            <option t-foreach="[0.5, 1, 2, 5]" t-as="grid" t-key="grid" t-att-value="grid" t-att-selected="grid === this.state.grid" t-out="grid"/>
+        </select>
+        <div class="small text-muted">
+            Printable width: <t t-out="this.printableWidth"/> mm.<br/>
+            Click a band or an element to change it. Shift+click selects several elements.
+            Arrows move the selection, Shift+arrows by 5 mm. Ctrl+Z undo, Ctrl+D duplicate, Delete removes.
+        </div>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Props.Element">
+        <h6 class="d-flex align-items-center">
+            <span t-out="this.elementTypeLabel(element.type)"/>
+            <button class="btn btn-link btn-sm text-danger ms-auto p-0" t-on-click="() => this.deleteSelection()">Delete</button>
+        </h6>
+
+        <t t-if="element.type === 'text' or element.type === 'page'">
+            <label class="o_om_rd_label">Text</label>
+            <textarea class="form-control form-control-sm mb-1" rows="2" t-att-value="element.text"
+                      t-on-change="(ev) => this.setElementProp('text', ev.target.value)"/>
+            <div t-if="element.type === 'page'" class="small text-muted mb-2">{page} is the page number, {pages} the number of pages.</div>
+        </t>
+        <t t-if="element.type === 'field'">
+            <label class="o_om_rd_label">Field</label>
+            <div class="small mb-1 fw-bold" t-out="this.pathLabel(element.source === 'company' ? 'res.company' : this.state.settings.model, element.field)"/>
+            <input class="form-control form-control-sm mb-2 font-monospace" t-att-value="element.field"
+                   t-on-change="(ev) => this.setElementProp('field', ev.target.value.trim())"/>
+        </t>
+        <t t-if="element.type === 'field' or element.type === 'date'">
+            <label class="o_om_rd_label">Format</label>
+            <div class="d-flex gap-2 mb-2">
+                <select class="form-select form-select-sm" t-on-change="(ev) => this.setElementProp('format', ev.target.value)">
+                    <option t-foreach="this.FORMATS" t-as="format" t-key="format[0]" t-att-value="format[0]"
+                            t-att-selected="format[0] === (element.format or 'auto')" t-out="format[1]"/>
+                </select>
+                <input t-if="element.type === 'field'" type="number" min="0" max="10" class="form-control form-control-sm o_om_rd_digits"
+                       placeholder="Digits" title="Decimals" t-att-value="this.digitsValue(element.digits)"
+                       t-on-change="(ev) => this.setElementProp('digits', ev.target.value === '' ? null : parseInt(ev.target.value))"/>
+            </div>
+        </t>
+        <t t-if="element.type === 'image'">
+            <label class="o_om_rd_label">Image</label>
+            <select class="form-select form-select-sm mb-2" t-on-change="(ev) => this.setElementProp('source', ev.target.value)">
+                <option value="company" t-att-selected="element.source === 'company'">Company logo</option>
+                <option value="record" t-att-selected="element.source === 'record'">Image field of the record</option>
+            </select>
+            <input t-if="element.source === 'record'" class="form-control form-control-sm mb-2 font-monospace" placeholder="e.g. image_128"
+                   t-att-value="element.field" t-on-change="(ev) => this.setElementProp('field', ev.target.value.trim())"/>
+        </t>
+
+        <label class="o_om_rd_label">Position and size (mm)</label>
+        <div class="o_om_rd_grid4 mb-2">
+            <t t-foreach="this.GEOMETRY" t-as="geometry" t-key="geometry[0]">
+                <t t-set="key" t-value="geometry[0]"/>
+                <div>
+                    <div class="small text-muted" t-out="geometry[1]"/>
+                    <input type="number" step="0.5" class="form-control form-control-sm" t-att-value="element[key]"
+                           t-on-change="(ev) => this.setElementProp(key, this.num(ev.target.value, element[key]))"/>
+                </div>
+            </t>
+        </div>
+        <t t-call="om_report_designer.Designer.Props.Style"/>
+        <div class="d-flex gap-2 mt-3">
+            <button class="btn btn-light btn-sm" t-on-click="() => this.orderSelection(true)">Bring to front</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.orderSelection(false)">Send to back</button>
+        </div>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Props.Style">
+        <t t-set="type" t-value="this.selectedElements[0].type"/>
+        <t t-if="type !== 'line' and type !== 'box' and type !== 'image'">
+            <label class="o_om_rd_label">Text</label>
+            <div class="d-flex gap-1 mb-2 align-items-center">
+                <input type="number" min="4" max="120" step="0.5" class="form-control form-control-sm o_om_rd_digits" title="Font size (pt)"
+                       t-att-value="this.styleOf('font_size')" t-on-change="(ev) => this.setStyle('font_size', this.num(ev.target.value, 10))"/>
+                <span class="small text-muted me-1">pt</span>
+                <button class="btn btn-sm fw-bold" t-att-class="this.styleOf('bold') ? 'btn-secondary' : 'btn-light'" title="Bold"
+                        t-on-click="() => this.setStyle('bold', !this.styleOf('bold'))">B</button>
+                <button class="btn btn-sm fst-italic" t-att-class="this.styleOf('italic') ? 'btn-secondary' : 'btn-light'" title="Italic"
+                        t-on-click="() => this.setStyle('italic', !this.styleOf('italic'))">I</button>
+                <button class="btn btn-sm text-decoration-underline" t-att-class="this.styleOf('underline') ? 'btn-secondary' : 'btn-light'" title="Underline"
+                        t-on-click="() => this.setStyle('underline', !this.styleOf('underline'))">U</button>
+                <input type="color" class="form-control form-control-sm form-control-color" title="Text color"
+                       t-att-value="this.styleOf('color') or '#000000'" t-on-change="(ev) => this.setStyle('color', ev.target.value)"/>
+            </div>
+        </t>
+        <t t-if="type !== 'line' and type !== 'box'">
+            <label class="o_om_rd_label">Alignment</label>
+            <div class="d-flex gap-2 mb-2">
+                <div class="btn-group btn-group-sm">
+                    <button t-foreach="[['left', '⇤'], ['center', '↔'], ['right', '⇥']]" t-as="align" t-key="align[0]" class="btn"
+                            t-att-class="this.styleOf('align') === align[0] ? 'btn-secondary' : 'btn-light'" t-att-title="align[0]"
+                            t-on-click="() => this.setStyle('align', align[0])" t-out="align[1]"/>
+                </div>
+                <div class="btn-group btn-group-sm">
+                    <button t-foreach="[['top', '⤒'], ['middle', '↕'], ['bottom', '⤓']]" t-as="valign" t-key="valign[0]" class="btn"
+                            t-att-class="this.styleOf('valign') === valign[0] ? 'btn-secondary' : 'btn-light'" t-att-title="valign[0]"
+                            t-on-click="() => this.setStyle('valign', valign[0])" t-out="valign[1]"/>
+                </div>
+            </div>
+            <div class="form-check small" t-if="type !== 'image'">
+                <input class="form-check-input" type="checkbox" id="om_rd_wrap" t-att-checked="this.styleOf('wrap')"
+                       t-on-change="(ev) => this.setStyle('wrap', ev.target.checked)"/>
+                <label class="form-check-label" for="om_rd_wrap">Wrap long text</label>
+            </div>
+        </t>
+        <t t-if="type === 'line'">
+            <label class="o_om_rd_label">Color</label>
+            <input type="color" class="form-control form-control-sm form-control-color mb-2"
+                   t-att-value="this.styleOf('color') or '#000000'" t-on-change="(ev) => this.setStyle('color', ev.target.value)"/>
+        </t>
+        <t t-if="type !== 'line'">
+            <label class="o_om_rd_label">Border and background</label>
+            <div class="d-flex gap-2 align-items-center mb-2">
+                <div class="form-check mb-0" t-if="type !== 'box'">
+                    <input class="form-check-input" type="checkbox" id="om_rd_border" t-att-checked="this.styleOf('border')"
+                           t-on-change="(ev) => this.setStyle('border', ev.target.checked)"/>
+                    <label class="form-check-label small" for="om_rd_border">Border</label>
+                </div>
+                <input type="number" min="0.1" max="10" step="0.1" class="form-control form-control-sm o_om_rd_digits" title="Border width (mm)"
+                       t-att-value="this.styleOf('border_width')" t-on-change="(ev) => this.setStyle('border_width', this.num(ev.target.value, 0.3))"/>
+                <input type="color" class="form-control form-control-sm form-control-color" title="Border color"
+                       t-att-value="this.styleOf('border_color') or '#000000'" t-on-change="(ev) => this.setStyle('border_color', ev.target.value)"/>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <input type="color" class="form-control form-control-sm form-control-color" title="Background"
+                       t-att-value="this.styleOf('background') or '#ffffff'" t-on-change="(ev) => this.setStyle('background', ev.target.value)"/>
+                <span class="small text-muted">Background</span>
+                <button t-if="this.styleOf('background')" class="btn btn-link btn-sm p-0" t-on-click="() => this.setStyle('background', '')">None</button>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Props.Multi">
+        <h6 class="d-flex align-items-center">
+            <span><t t-out="elements.length"/> elements</span>
+            <button class="btn btn-link btn-sm text-danger ms-auto p-0" t-on-click="() => this.deleteSelection()">Delete</button>
+        </h6>
+        <label class="o_om_rd_label">Align</label>
+        <div class="o_om_rd_grid3 mb-2">
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('left')">Left</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('center')">Center</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('right')">Right</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('top')">Top</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('middle')">Middle</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('bottom')">Bottom</button>
+        </div>
+        <label class="o_om_rd_label">Size and spacing</label>
+        <div class="o_om_rd_grid2 mb-3">
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('width')">Same width</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.alignSelection('height')">Same height</button>
+            <button class="btn btn-light btn-sm" t-att-disabled="elements.length lt 3" t-on-click="() => this.alignSelection('hspace')">Space across</button>
+            <button class="btn btn-light btn-sm" t-att-disabled="elements.length lt 3" t-on-click="() => this.alignSelection('vspace')">Space down</button>
+        </div>
+        <div class="small text-muted mb-2">Same size takes the size of the first selected element.</div>
+        <t t-call="om_report_designer.Designer.Props.Style"/>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Props.Band">
+        <t t-set="band" t-value="this.selectedBand"/>
+        <h6 class="d-flex align-items-center">
+            <span t-out="this.bandTitle(band)"/>
+            <button class="btn btn-link btn-sm text-danger ms-auto p-0" t-on-click="() => this.deleteBand(band)">Delete</button>
+        </h6>
+        <div class="small text-muted mb-2" t-out="this.bandHint(band)"/>
+        <t t-if="band.kind !== 'table'">
+            <label class="o_om_rd_label">Height (mm)</label>
+            <input type="number" min="1" step="1" class="form-control form-control-sm mb-2" t-att-value="band.height"
+                   t-on-change="(ev) => this.setBandProp('height', Math.max(1, this.num(ev.target.value, band.height)))"/>
+        </t>
+        <t t-else="">
+            <label class="o_om_rd_label">Line filter</label>
+            <input class="form-control form-control-sm mb-1 font-monospace" placeholder="[('display_type', '=', False)]"
+                   t-att-value="band.domain" t-on-change="(ev) => this.setBandProp('domain', ev.target.value.trim())"/>
+            <div class="small text-muted mb-2">A domain on the lines; empty prints them all.</div>
+            <label class="o_om_rd_label">Sort lines by</label>
+            <input class="form-control form-control-sm mb-2 font-monospace" placeholder="sequence, id"
+                   t-att-value="band.order" t-on-change="(ev) => this.setBandProp('order', ev.target.value.trim())"/>
+            <div class="o_om_rd_grid3 mb-2">
+                <div>
+                    <div class="small text-muted">Font (pt)</div>
+                    <input type="number" min="4" step="0.5" class="form-control form-control-sm" t-att-value="band.font_size"
+                           t-on-change="(ev) => this.setBandProp('font_size', this.num(ev.target.value, 9))"/>
+                </div>
+                <div>
+                    <div class="small text-muted">Row (mm)</div>
+                    <input type="number" min="2" step="0.5" class="form-control form-control-sm" t-att-value="band.row_height"
+                           t-on-change="(ev) => this.setBandProp('row_height', this.num(ev.target.value, 6))"/>
+                </div>
+                <div>
+                    <div class="small text-muted">Left (mm)</div>
+                    <input type="number" min="0" step="0.5" class="form-control form-control-sm" t-att-value="band.x"
+                           t-on-change="(ev) => this.setBandProp('x', this.num(ev.target.value, 0))"/>
+                </div>
+            </div>
+            <label class="o_om_rd_label">Header row</label>
+            <div class="d-flex gap-2 align-items-center mb-2">
+                <input type="color" class="form-control form-control-sm form-control-color" title="Background"
+                       t-att-value="band.header_bg or '#ffffff'" t-on-change="(ev) => this.setBandProp('header_bg', ev.target.value)"/>
+                <input type="color" class="form-control form-control-sm form-control-color" title="Text color"
+                       t-att-value="band.header_color or '#000000'" t-on-change="(ev) => this.setBandProp('header_color', ev.target.value)"/>
+                <button t-if="band.header_bg" class="btn btn-link btn-sm p-0" t-on-click="() => this.setBandProp('header_bg', '')">No background</button>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="om_rd_table_border" t-att-checked="band.border"
+                       t-on-change="(ev) => this.setBandProp('border', ev.target.checked)"/>
+                <label class="form-check-label" for="om_rd_table_border">Grid lines</label>
+            </div>
+            <div class="form-check mb-2">
+                <input class="form-check-input" type="checkbox" id="om_rd_table_stripe" t-att-checked="band.stripe"
+                       t-on-change="(ev) => this.setBandProp('stripe', ev.target.checked)"/>
+                <label class="form-check-label" for="om_rd_table_stripe">Striped rows</label>
+            </div>
+            <div class="small text-muted">
+                Width: <t t-out="Math.round(this.tableWidth(band) * 10) / 10"/> of <t t-out="this.printableWidth - band.x"/> mm.
+                Drag a column to move it, its right edge to resize it; double click to rename it.
+            </div>
+        </t>
+    </t>
+
+    <t t-name="om_report_designer.Designer.Props.Column">
+        <t t-set="band" t-value="this.selectedBand"/>
+        <t t-set="column" t-value="this.selectedColumn"/>
+        <h6 class="d-flex align-items-center">
+            <span>Column</span>
+            <button class="btn btn-link btn-sm text-danger ms-auto p-0" t-on-click="() => this.deleteColumn()">Delete</button>
+        </h6>
+        <label class="o_om_rd_label">Title</label>
+        <input class="form-control form-control-sm mb-2" t-att-value="column.label"
+               t-on-change="(ev) => this.setColumnProp('label', ev.target.value)"/>
+        <label class="o_om_rd_label">Field</label>
+        <div class="small mb-1 fw-bold" t-out="this.columnLabel(band, column)"/>
+        <input class="form-control form-control-sm mb-2 font-monospace" t-att-value="column.field"
+               t-on-change="(ev) => this.setColumnProp('field', ev.target.value.trim())"/>
+        <div class="o_om_rd_grid2 mb-2">
+            <div>
+                <div class="small text-muted">Width (mm)</div>
+                <input type="number" min="3" step="0.5" class="form-control form-control-sm" t-att-value="column.width"
+                       t-on-change="(ev) => this.setColumnProp('width', Math.max(3, this.num(ev.target.value, column.width)))"/>
+            </div>
+            <div>
+                <div class="small text-muted">Decimals</div>
+                <input type="number" min="0" max="10" class="form-control form-control-sm" t-att-value="this.digitsValue(column.digits)"
+                       t-on-change="(ev) => this.setColumnProp('digits', ev.target.value === '' ? null : parseInt(ev.target.value))"/>
+            </div>
+        </div>
+        <label class="o_om_rd_label">Format</label>
+        <select class="form-select form-select-sm mb-2" t-on-change="(ev) => this.setColumnProp('format', ev.target.value)">
+            <option t-foreach="this.FORMATS" t-as="format" t-key="format[0]" t-att-value="format[0]"
+                    t-att-selected="format[0] === column.format" t-out="format[1]"/>
+        </select>
+        <label class="o_om_rd_label">Alignment</label>
+        <div class="btn-group btn-group-sm mb-2 d-flex">
+            <button t-foreach="[['left', 'Left'], ['center', 'Center'], ['right', 'Right']]" t-as="align" t-key="align[0]" class="btn"
+                    t-att-class="column.align === align[0] ? 'btn-secondary' : 'btn-light'"
+                    t-on-click="() => this.setColumnProp('align', align[0])" t-out="align[1]"/>
+        </div>
+        <div class="form-check mb-3">
+            <input class="form-check-input" type="checkbox" id="om_rd_column_sum" t-att-checked="column.sum"
+                   t-on-change="(ev) => this.setColumnProp('sum', ev.target.checked)"/>
+            <label class="form-check-label" for="om_rd_column_sum">Total under the lines</label>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-light btn-sm" t-on-click="() => this.moveColumn(-1)">← Move left</button>
+            <button class="btn btn-light btn-sm" t-on-click="() => this.moveColumn(1)">Move right →</button>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_report_designer.Viewer">
+        <div class="o_om_rd_viewer o_action d-flex flex-column h-100">
+            <t t-if="this.state.data">
+                <div class="o_om_rd_toolbar d-flex align-items-center gap-2 px-3 py-2 border-bottom">
+                    <h5 class="mb-0 me-2" t-out="this.state.data.name"/>
+                    <span class="text-muted small" t-out="this.countLabel"/>
+                    <div class="ms-auto d-flex align-items-center gap-2">
+                        <div class="btn-group btn-group-sm align-items-center">
+                            <button class="btn btn-light" title="Zoom out" t-on-click="() => this.setZoom(this.state.zoom - 0.25)">−</button>
+                            <span class="px-2 small" t-out="Math.round(this.state.zoom * 100) + '%'"/>
+                            <button class="btn btn-light" title="Zoom in" t-on-click="() => this.setZoom(this.state.zoom + 0.25)">+</button>
+                        </div>
+                        <button class="btn btn-light btn-sm" t-att-disabled="this.state.loading" t-on-click="() => this.load()">Refresh</button>
+                        <button t-if="this.state.data.can_design" class="btn btn-light btn-sm" t-on-click="() => this.openDesigner()">Design</button>
+                        <button class="btn btn-primary btn-sm" t-att-disabled="!this.state.data.can_print or !this.state.data.count"
+                                t-on-click="() => this.printPdf()">
+                            <i class="oi me-1" data-icon="download"/>PDF
+                        </button>
+                    </div>
+                </div>
+                <div class="o_om_rd_canvas flex-grow-1 overflow-auto">
+                    <div t-if="!this.state.data.count" class="text-center text-muted p-5">No record to show.</div>
+                    <div t-else="" class="o_om_rd_preview_sheet o_om_rd_screen" t-att-style="this.sheetStyle">
+                        <t t-out="this.html"/>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </t>
+</templates>
