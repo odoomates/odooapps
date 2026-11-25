@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_easypost" model="ir.ui.view">
+        <field name="name">stock.picking.form.easypost</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock_delivery.view_picking_withcarrier_out_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='tracking']" position="inside">
+                <button name="action_easypost_tracking_status" type="object" class="oe_link" icon="refresh"
+                        string="Status" invisible="delivery_type != 'easypost' or not carrier_tracking_ref"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

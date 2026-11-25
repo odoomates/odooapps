@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_delivery_carrier_form_aramex" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.aramex</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='destination']" position="before">
+                <page string="Aramex Configuration" name="aramex_configuration"
+                      invisible="delivery_type != 'aramex'">
+                    <group>
+                        <group string="Account" name="aramex_credentials"
+                               groups="base.group_system,stock.group_stock_manager">
+                            <field name="aramex_username" string="Username" required="delivery_type == 'aramex'"/>
+                            <field name="aramex_password" string="Password" password="True"
+                                   required="delivery_type == 'aramex'"/>
+                            <field name="aramex_account_number" string="Account Number"
+                                   required="delivery_type == 'aramex'"/>
+                            <field name="aramex_account_pin" string="Account PIN" password="True"
+                                   required="delivery_type == 'aramex'"/>
+                            <field name="aramex_account_entity" string="Account Entity" placeholder="e.g. DXB"
+                                   required="delivery_type == 'aramex'"/>
+                            <field name="aramex_account_country_code" string="Account Country" placeholder="e.g. AE"
+                                   required="delivery_type == 'aramex'"/>
+                            <div colspan="2">
+                                <button name="action_aramex_check_connection" type="object"
+                                        string="Check Connection" icon="check_circle" class="btn-secondary"/>
+                            </div>
+                            <div colspan="2" class="text-muted small">
+                                Test environment: the Aramex test services with test credentials.
+                                Production environment: your live Aramex account.
+                            </div>
+                        </group>
+                        <group string="Product" name="aramex_product">
+                            <field name="aramex_product_group" string="Product Group" widget="radio"/>
+                            <field name="aramex_product_type_exp" string="Express Product"
+                                   invisible="aramex_product_group == 'DOM'"/>
+                            <field name="aramex_product_type_dom" string="Domestic Product"
+                                   invisible="aramex_product_group == 'EXP'"/>
+                            <field name="aramex_package_type_id" string="Package Type"/>
+                            <field name="aramex_description_of_goods" string="Goods Description"
+                                   placeholder="Names of the products"/>
+                        </group>
+                        <group string="Payment" name="aramex_payment">
+                            <field name="aramex_payment_type" string="Payment Type" widget="radio"/>
+                            <field name="aramex_payment_options" string="Payment Options"
+                                   invisible="aramex_payment_type != 'C'"/>
+                            <field name="aramex_cod_policy" string="Cash on Delivery" widget="radio"/>
+                        </group>
+                        <group string="Label" name="aramex_label">
+                            <field name="aramex_label_report_id" string="Label Report"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

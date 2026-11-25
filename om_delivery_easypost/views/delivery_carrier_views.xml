@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_delivery_carrier_form_easypost" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.easypost</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='destination']" position="before">
+                <page string="EasyPost Configuration" name="easypost_configuration"
+                      invisible="delivery_type != 'easypost'">
+                    <group>
+                        <group string="API Keys" name="easypost_credentials"
+                               groups="base.group_system,stock.group_stock_manager">
+                            <field name="easypost_test_api_key" string="Test API Key" password="True"
+                                   required="delivery_type == 'easypost' and not prod_environment"/>
+                            <field name="easypost_production_api_key" string="Production API Key" password="True"
+                                   required="delivery_type == 'easypost' and prod_environment"/>
+                            <div colspan="2">
+                                <button name="action_easypost_check_connection" type="object"
+                                        string="Check Connection" icon="check_circle" class="btn-secondary"/>
+                            </div>
+                            <div colspan="2" class="text-muted small">
+                                The key of the environment shown at the top is used: Test or Production.
+                                Carrier accounts are listed with the production key only.
+                            </div>
+                        </group>
+                        <group string="Rates" name="easypost_rates">
+                            <field name="easypost_carrier_accounts" string="Carrier Accounts" placeholder="All accounts"/>
+                            <field name="easypost_carrier_filter" string="Carriers" placeholder="e.g. USPS, UPS"/>
+                            <field name="easypost_service_filter" string="Services" placeholder="e.g. Priority, Ground"/>
+                            <field name="easypost_rate_choice" string="Rate Choice" widget="radio"/>
+                            <field name="easypost_package_type_id" string="Package Type"/>
+                        </group>
+                        <group string="Label" name="easypost_label">
+                            <field name="easypost_label_format" string="Format" widget="radio"/>
+                            <field name="easypost_label_size" string="Size"/>
+                        </group>
+                        <group string="Customs" name="easypost_customs">
+                            <field name="easypost_contents_type" string="Contents Type"/>
+                            <field name="easypost_non_delivery_option" string="Non Delivery"/>
+                            <field name="easypost_eel_pfc" string="EEL or PFC"/>
+                            <field name="easypost_customs_signer" string="Signer" placeholder="Name of the current user"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>

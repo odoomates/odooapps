@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_delivery_carrier_form_shiprocket" model="ir.ui.view">
+        <field name="name">delivery.carrier.form.shiprocket</field>
+        <field name="model">delivery.carrier</field>
+        <field name="inherit_id" ref="delivery.view_delivery_carrier_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//notebook/page[@name='destination']" position="before">
+                <page string="Shiprocket Configuration" name="shiprocket_configuration"
+                      invisible="delivery_type != 'shiprocket'">
+                    <group>
+                        <group string="API User" name="shiprocket_credentials"
+                               groups="base.group_system,stock.group_stock_manager">
+                            <field name="shiprocket_email" string="Email" required="delivery_type == 'shiprocket'"
+                                   placeholder="api-user@example.com"/>
+                            <field name="shiprocket_password" string="Password" password="True"
+                                   required="delivery_type == 'shiprocket'"/>
+                            <div colspan="2">
+                                <button name="action_shiprocket_check_connection" type="object"
+                                        string="Check Connection" icon="check_circle" class="btn-secondary"/>
+                            </div>
+                            <div colspan="2" class="text-muted small">
+                                Create an API user in Shiprocket under Settings, API, with an email other than your
+                                login email. Shiprocket has no test environment: shipments are created on your account.
+                            </div>
+                        </group>
+                        <group string="Pickup" name="shiprocket_pickup">
+                            <field name="shiprocket_pickup_location" string="Pickup Location"
+                                   placeholder="e.g. Primary" required="delivery_type == 'shiprocket'"/>
+                            <field name="shiprocket_pickup_postcode" string="Pickup Pincode"/>
+                            <field name="shiprocket_request_pickup" string="Request Pickup"/>
+                            <field name="shiprocket_manifest" string="Generate Manifest"/>
+                        </group>
+                        <group string="Courier" name="shiprocket_courier">
+                            <field name="shiprocket_courier_choice" string="Courier Choice" widget="radio"/>
+                            <field name="shiprocket_courier_id" string="Courier ID"
+                                   invisible="shiprocket_courier_choice != 'fixed'"
+                                   required="delivery_type == 'shiprocket' and shiprocket_courier_choice == 'fixed'"/>
+                            <field name="shiprocket_mode" string="Mode" placeholder="All modes"/>
+                        </group>
+                        <group string="Shipment" name="shiprocket_shipment">
+                            <field name="shiprocket_cod_policy" string="Cash on Delivery" widget="radio"/>
+                            <field name="shiprocket_package_type_id" string="Package Type"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+</odoo>
