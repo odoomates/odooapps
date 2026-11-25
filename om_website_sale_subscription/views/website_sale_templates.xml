@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- Product page: period next to the price and choice of the plan -->
+    <template id="product_price" inherit_id="website_sale.product_price">
+        <xpath expr="//span[hasclass('oe_price')]" position="after">
+            <span t-attf-class="o_wsub_period text-muted h6 mb-0 #{'' if combination_info.get('subscription_period') else 'd-none'}">
+                / <span class="o_wsub_period_label" t-out="combination_info.get('subscription_period', '')"/>
+            </span>
+        </xpath>
+    </template>
+
+    <template id="product_plans" inherit_id="website_sale.product">
+        <xpath expr="//div[@id='o_wsale_product_cta_section']" position="before">
+            <t t-set="subscription_plans" t-value="product._get_website_subscription_prices(website, pricelist=request.pricelist)"/>
+            <div t-if="subscription_plans"
+                class="o_wsub_plans o_wsale_product_details_content_section mb-4"
+                t-att-data-selected-plan-id="combination_info.get('subscription_plan_id')">
+                <t t-if="len(subscription_plans) == 1">
+                    <input type="hidden" name="subscription_plan_id" t-att-value="subscription_plans[0]['id']"/>
+                    <div class="d-flex align-items-center gap-2 text-muted small">
+                        <i class="oi" data-icon="autorenew" role="img" aria-hidden="true"/>
+                        <span>Subscription, billed every <t t-out="subscription_plans[0]['period']"/>.</span>
+                    </div>
+                </t>
+                <t t-else="">
+                    <h6 class="mb-2">Billing plan</h6>
+                    <div class="d-flex flex-wrap gap-2" role="radiogroup" aria-label="Billing plan">
+                        <t t-foreach="subscription_plans" t-as="plan">
+                            <t t-set="is_selected" t-value="plan['id'] == combination_info.get('subscription_plan_id')"/>
+                            <label t-attf-class="o_wsub_plan border btn m-0 text-start d-flex flex-column px-3 py-2 #{'active border-primary bg-primary-subtle text-primary-emphasis' if is_selected else ''}"
+                                t-att-data-plan-id="plan['id']">
+                                <input type="radio" class="d-none" name="subscription_plan_id"
+                                    t-att-value="plan['id']" t-att-checked="is_selected"/>
+                                <span class="fw-bold" t-out="plan['name']"/>
+                                <span class="small text-nowrap">
+                                    <span class="o_wsub_plan_price" t-out="plan['price']"
+                                        t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                                    / <t t-out="plan['period']"/>
+                                </span>
+                            </label>
+                        </t>
+                    </div>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <!-- Shop: recurring price and badge on the product tiles -->
+    <template id="products_item" inherit_id="website_sale.products_item">
+        <xpath expr="//div[hasclass('product_price')]//span[hasclass('fw-bold')]" position="after">
+            <t t-if="template_price_vals.get('subscription_period')">
+                <span t-if="website.subscription_show_recurring_price" class="o_wsub_period text-muted small">
+                    / <t t-out="template_price_vals['subscription_period']"/>
+                </span>
+                <div t-else="" class="o_wsub_tile_price text-muted small">
+                    <t t-if="template_price_vals['subscription_plan_count'] &gt; 1">From</t>
+                    <span t-out="template_price_vals['subscription_price']"
+                        t-options="{'widget': 'monetary', 'display_currency': website.currency_id}"/>
+                    / <t t-out="template_price_vals['subscription_period']"/>
+                </div>
+            </t>
+        </xpath>
+        <xpath expr="//div[hasclass('product_price')]//span[hasclass('fw-bold')]" position="before">
+            <span t-if="website.subscription_show_recurring_price and template_price_vals.get('subscription_plan_count', 0) &gt; 1"
+                class="text-muted small">From</span>
+        </xpath>
+    </template>
+
+    <template id="product_title_and_details" inherit_id="website_sale.product_title_and_details">
+        <xpath expr="//h6[hasclass('o_wsale_products_item_title')]" position="after">
+            <span t-if="product._website_is_subscription()"
+                class="o_wsub_badge badge rounded-pill bg-primary-subtle text-primary-emphasis mb-1">
+                <i class="oi me-1" data-icon="autorenew" role="img" aria-hidden="true"/>Subscription
+            </span>
+        </xpath>
+    </template>
+
+    <!-- Cart: period of the recurring lines and amount of each period -->
+    <template id="cart_lines_price" inherit_id="website_sale.cart_lines_price">
+        <xpath expr="//h6[@name='website_sale_cart_line_price']" position="after">
+            <div t-if="line.subscription_recurring" class="o_wsub_period small text-muted text-end">
+                per <t t-out="line._get_website_subscription_period()"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="cart_summary_content" inherit_id="website_sale.cart_summary_content">
+        <xpath expr="//td[@name='website_sale_cart_summary_line_price']" position="inside">
+            <div t-if="line.subscription_recurring" class="o_wsub_period small text-muted">
+                per <t t-out="line._get_website_subscription_period()"/>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="total" inherit_id="website_sale.total">
+        <xpath expr="//tr[@name='o_order_total']" position="after">
+            <tr t-if="website_sale_order.is_subscription and website_sale_order.order_line.filtered('subscription_recurring')"
+                name="o_wsub_recurring_total">
+                <td colspan="2" class="border-0 ps-0 pt-0 pb-2 text-muted">
+                    Then every <t t-out="website_sale_order.subscription_plan_id.sudo()._get_website_period_label()"/>
+                </td>
+                <td class="text-end border-0 px-0 pt-0 pb-2 text-muted">
+                    <span t-out="website_sale_order._website_subscription_recurring_amount()"
+                        class="monetary_field" style="white-space: nowrap;"
+                        t-options="{'widget': 'monetary', 'display_currency': website_sale_order.currency_id}"/>
+                </td>
+            </tr>
+        </xpath>
+    </template>
+
+    <!-- Payment step: the payment method is saved for the next invoices -->
+    <template id="payment" inherit_id="website_sale.payment">
+        <xpath expr="//div[@id='payment_method']" position="before">
+            <div t-if="website_sale_order.is_subscription" class="o_wsub_payment_note alert alert-info small mb-3"
+                role="status">
+                <i class="oi me-1" data-icon="autorenew" role="img" aria-hidden="true"/>
+                <t t-if="website_sale_order.website_id.subscription_payment_mode == 'any'">
+                    This order starts a subscription billed every
+                    <t t-out="website_sale_order.subscription_plan_id.sudo()._get_website_period_label()"/>.
+                    Payment methods that can be saved pay the next invoices automatically; otherwise the
+                    invoices are sent to you by email.
+                </t>
+                <t t-else="">
+                    This order starts a subscription billed every
+                    <t t-out="website_sale_order.subscription_plan_id.sudo()._get_website_period_label()"/>.
+                    Your payment method is saved to pay the next invoices automatically.
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

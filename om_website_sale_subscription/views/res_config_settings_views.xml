@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.website.subscription</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="website_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="website_payment_block" position="inside">
+                <setting string="Subscriptions without saved payment method" id="website_subscription_payment_setting"
+                    help="Subscriptions bought online save the payment method at checkout to pay the next invoices.">
+                    <field name="website_subscription_payment_mode" widget="radio" class="o_light_label"/>
+                </setting>
+                <setting id="website_subscription_invoice_setting"
+                    help="Create, pay and email the first invoice of a subscription as soon as it is paid online. Otherwise the daily subscription job creates it.">
+                    <field name="website_subscription_invoice_at_payment"/>
+                </setting>
+                <setting id="website_subscription_price_setting"
+                    help="For subscription-only shops: show the recurring price on the shop instead of the sales price.">
+                    <field name="website_subscription_show_recurring_price"/>
+                </setting>
+            </block>
+        </field>
+    </record>
+
+</odoo>
