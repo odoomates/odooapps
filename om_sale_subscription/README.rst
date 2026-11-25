@@ -60,7 +60,7 @@ Invoicing and payments
   plan.
 * A subscription paid online when the quotation is accepted saves the payment
   method used, and the first invoice is reconciled with that payment.
-* **Generate Invoice** on the subscription creates the invoice of the next
+* **Create Invoice** on the subscription creates the invoice of the next
   period at once.
 
 Customer portal
