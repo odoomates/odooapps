@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="subscription_plan_view_list" model="ir.ui.view">
+        <field name="name">om.subscription.plan.list.website</field>
+        <field name="model">om.subscription.plan</field>
+        <field name="inherit_id" ref="om_sale_subscription.subscription_plan_view_list"/>
+        <field name="arch" type="xml">
+            <field name="billing_period_display" position="after">
+                <field name="website_published" widget="boolean_toggle" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="subscription_plan_view_form" model="ir.ui.view">
+        <field name="name">om.subscription.plan.form.website</field>
+        <field name="model">om.subscription.plan</field>
+        <field name="inherit_id" ref="om_sale_subscription.subscription_plan_view_form"/>
+        <field name="arch" type="xml">
+            <widget name="web_ribbon" position="after">
+                <widget name="web_ribbon" title="Published" bg_color="text-bg-success"
+                    invisible="not active or not website_published"/>
+            </widget>
+            <xpath expr="//group[field[@name='user_closable']]" position="after">
+                <group string="Website" name="website">
+                    <field name="website_published" widget="boolean_toggle"/>
+                    <div colspan="2" class="text-muted">
+                        Offered on the shop for the subscription products with a recurring price for this plan.
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="subscription_plan_view_search" model="ir.ui.view">
+        <field name="name">om.subscription.plan.search.website</field>
+        <field name="model">om.subscription.plan</field>
+        <field name="inherit_id" ref="om_sale_subscription.subscription_plan_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="inactive" position="before">
+                <filter string="Published on Website" name="website_published"
+                    domain="[('website_published', '=', True)]"/>
+                <separator/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>
