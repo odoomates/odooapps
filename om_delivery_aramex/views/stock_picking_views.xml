@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_aramex" model="ir.ui.view">
+        <field name="name">stock.picking.form.aramex</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock_delivery.view_picking_withcarrier_out_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='tracking']" position="inside">
+                <button name="action_aramex_tracking_status" type="object" class="oe_link" icon="refresh"
+                        string="Status" invisible="delivery_type != 'aramex' or not carrier_tracking_ref"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
