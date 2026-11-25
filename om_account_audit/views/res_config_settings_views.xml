@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_om_account_audit" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.account.audit</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@id='account_reports_settings']" position="after">
+                <block title="Inalterability" id="om_account_audit_settings" groups="account.group_account_manager">
+                    <setting id="om_audit_weekly_check" company_dependent="1"
+                             help="Check the data inalterability every week and keep the result">
+                        <field name="om_audit_weekly_check"/>
+                    </setting>
+                    <setting id="om_audit_secure_on_close" company_dependent="1"
+                             help="Secure the posted entries of a period when it is closed: they can never be changed again">
+                        <field name="om_audit_secure_on_close"/>
+                    </setting>
+                    <setting id="om_audit_secure_journals" string="Secure the Journals" company_dependent="1"
+                             help="The sales, purchase and miscellaneous journals secure their entries as soon as they are posted">
+                        <button name="action_om_secure_all_journals" type="object" string="Secure the Journals"
+                                class="btn-link" icon="oi-arrow-right"
+                                confirm="The entries of these journals will be secured as soon as they are posted: they can never be changed, reset to draft or deleted, and the journals cannot be unsecured. Continue?"/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>
