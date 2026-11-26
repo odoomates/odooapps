@@ -1,0 +1,386 @@
+// Touch-first screen for the warehouse floor: big targets, high contrast.
+$om-barcode-purple: #714B67;
+$om-barcode-purple-light: #F6F1F7;
+$om-barcode-border: #E8DFEC;
+$om-barcode-green: #059669;
+$om-barcode-red: #DC2626;
+$om-barcode-amber: #D97706;
+
+.o_om_barcode {
+    position: relative;
+    background-color: #F4F2F6;
+    font-size: 1rem;
+    border: 4px solid transparent;
+    transition: border-color 0.15s;
+
+    &.o_om_barcode_flash_success {
+        border-color: $om-barcode-green;
+    }
+    &.o_om_barcode_flash_error {
+        border-color: $om-barcode-red;
+    }
+    &.o_om_barcode_flash_warning {
+        border-color: $om-barcode-amber;
+    }
+
+    .btn {
+        min-height: 44px;
+    }
+
+    .o_om_barcode_header {
+        min-height: 56px;
+        background-color: $om-barcode-purple;
+        color: #FFFFFF;
+        .o_om_barcode_title {
+            font-size: 1.15rem;
+            font-weight: 700;
+        }
+        .o_om_barcode_subtitle {
+            font-size: 0.85rem;
+            opacity: 0.85;
+        }
+        .o_om_barcode_icon_btn {
+            color: #FFFFFF;
+            min-width: 44px;
+            font-size: 1.3rem;
+        }
+        .o_om_barcode_progress {
+            flex-shrink: 0;
+            white-space: nowrap;
+            background-color: rgba(255, 255, 255, 0.2);
+            font-size: 0.95rem;
+            padding: 6px 10px;
+        }
+    }
+
+    .o_om_barcode_prompt {
+        background-color: #FFFFFF;
+        border-bottom: 1px solid $om-barcode-border;
+        font-weight: 600;
+        font-size: 1.05rem;
+        min-height: 52px;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        .o_om_barcode_prompt_text {
+            flex: 1 1 0;
+        }
+        .o_om_barcode_prompt_next {
+            flex-basis: 100%;
+            font-size: 0.85rem;
+            font-weight: 400;
+            opacity: 0.8;
+            padding-left: 1.6rem;
+        }
+        &.o_om_barcode_prompt_success {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        &.o_om_barcode_prompt_error {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+        &.o_om_barcode_prompt_warning {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        &.o_om_barcode_prompt_info {
+            background-color: $om-barcode-purple-light;
+        }
+    }
+
+    .o_om_barcode_done {
+        background-color: #D1FAE5;
+        color: #065F46;
+        border-radius: 12px;
+        font-weight: 600;
+    }
+
+    .o_om_barcode_camera {
+        position: relative;
+        flex-shrink: 0;
+        overflow: hidden;
+        height: 38vh;
+        min-height: 200px;
+        background-color: #000000;
+        .o_om_barcode_camera_close {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            z-index: 2;
+            border-radius: 50%;
+            min-width: 44px;
+        }
+        video {
+            object-fit: cover;
+        }
+    }
+
+    .o_om_barcode_group {
+        color: #3E2D4F;
+        font-weight: 700;
+        font-size: 0.9rem;
+        text-transform: none;
+    }
+
+    .o_om_barcode_tiles {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 8px;
+    }
+
+    .o_om_barcode_tile {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        min-height: 104px;
+        padding: 12px;
+        border: 1px solid $om-barcode-border;
+        border-radius: 14px;
+        background-color: #FFFFFF;
+        text-align: left;
+        color: #3E2D4F;
+        .oi {
+            font-size: 1.7rem;
+            color: $om-barcode-purple;
+        }
+        .o_om_barcode_tile_name {
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        &:active {
+            background-color: $om-barcode-purple-light;
+        }
+        &.o_om_barcode_tile_tool {
+            background-color: $om-barcode-purple-light;
+        }
+        &.o_om_barcode_tile_incoming .oi {
+            color: #0E7490;
+        }
+        &.o_om_barcode_tile_outgoing .oi {
+            color: #B45309;
+        }
+    }
+
+    .o_om_barcode_card {
+        display: block;
+        background-color: #FFFFFF;
+        border: 1px solid $om-barcode-border;
+        border-left: 5px solid $om-barcode-border;
+        border-radius: 12px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+        color: #2F2540;
+        .o_om_barcode_card_title {
+            font-weight: 700;
+            line-height: 1.25;
+        }
+    }
+
+    .o_om_barcode_line {
+        &.o_om_barcode_line_partial {
+            border-left-color: $om-barcode-amber;
+        }
+        &.o_om_barcode_line_done {
+            border-left-color: $om-barcode-green;
+            background-color: #F0FDF4;
+        }
+        &.o_om_barcode_line_extra {
+            border-left-color: #2563EB;
+            background-color: #EFF6FF;
+        }
+        &.o_om_barcode_line_diff {
+            border-left-color: $om-barcode-amber;
+            background-color: #FFFBEB;
+        }
+        &.o_om_barcode_line_last {
+            box-shadow: 0 0 0 2px $om-barcode-purple;
+        }
+        .o_om_barcode_line_buttons .btn {
+            font-size: 1.25rem;
+            min-height: 48px;
+            border: 1px solid $om-barcode-border;
+        }
+        .o_om_barcode_fill, .o_om_barcode_same {
+            font-size: 1rem !important;
+        }
+    }
+
+    // Tablets: one row per line, the buttons on the right
+    @media (min-width: 768px) {
+        .o_om_barcode_line {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            > :first-child {
+                flex: 1 1 auto;
+                min-width: 0;
+            }
+            .o_om_barcode_line_buttons {
+                flex: 0 0 300px;
+                margin-top: 0 !important;
+            }
+        }
+    }
+
+    .o_om_barcode_line_tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 4px;
+    }
+
+    .o_om_barcode_tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        font-size: 0.8rem;
+        background-color: $om-barcode-purple-light;
+        color: #3E2D4F;
+        border-radius: 8px;
+        padding: 2px 8px;
+        &.o_om_barcode_tag_lot {
+            background-color: #EDE9FE;
+        }
+        &.o_om_barcode_tag_missing {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        &.o_om_barcode_tag_ok {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        &.o_om_barcode_tag_pack {
+            background-color: #E0F2FE;
+        }
+        &.o_om_barcode_tag_diff {
+            background-color: #FEF3C7;
+            color: #92400E;
+            font-weight: 700;
+        }
+    }
+
+    .o_om_barcode_qty {
+        min-width: 84px;
+        .o_om_barcode_qty_value {
+            text-decoration: none;
+            color: inherit;
+        }
+        .o_om_barcode_qty_done {
+            font-size: 1.6rem;
+            font-weight: 800;
+        }
+        .o_om_barcode_qty_demand {
+            font-size: 1rem;
+            color: #6B6478;
+        }
+        .o_om_barcode_qty_input {
+            width: 96px;
+            font-size: 1.3rem;
+            text-align: right;
+        }
+    }
+
+    .o_om_barcode_chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        border-radius: 16px;
+        padding: 4px 10px;
+        background-color: #FFFFFF;
+        border: 1px solid $om-barcode-border;
+        font-weight: 600;
+        font-size: 0.9rem;
+        &.o_om_barcode_chip_source {
+            border-color: #0E7490;
+            color: #0E7490;
+        }
+        &.o_om_barcode_chip_pending {
+            border-color: $om-barcode-amber;
+            color: #92400E;
+        }
+    }
+
+    .o_om_barcode_footer {
+        background-color: #FFFFFF;
+        border-top: 1px solid $om-barcode-border;
+        padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important;
+        .o_om_barcode_manual {
+            min-height: 48px;
+            font-size: 1rem;
+            min-width: 0;
+        }
+        .o_om_barcode_footer_btn {
+            min-width: 48px;
+            min-height: 48px;
+            font-size: 1.3rem;
+            border: 1px solid $om-barcode-border;
+        }
+        .o_om_barcode_validate, .o_om_barcode_apply {
+            min-height: 48px;
+            font-weight: 700;
+            padding-left: 18px;
+            padding-right: 18px;
+            white-space: nowrap;
+        }
+    }
+
+    .o_om_barcode_search {
+        min-height: 48px;
+    }
+
+    .o_om_barcode_lookup_title {
+        font-size: 1.3rem;
+        font-weight: 800;
+    }
+
+    .o_om_barcode_figures {
+        display: grid !important;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .o_om_barcode_figure {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        background-color: $om-barcode-purple-light;
+        border-radius: 10px;
+        padding: 6px 10px;
+        span {
+            font-size: 0.75rem;
+            color: #6B6478;
+        }
+        strong {
+            font-size: 1.2rem;
+        }
+    }
+
+    .o_om_barcode_big_icon {
+        font-size: 3rem;
+        display: block;
+        margin-bottom: 8px;
+        color: $om-barcode-purple;
+    }
+
+    .o_om_barcode_busy {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background-image: linear-gradient(90deg, transparent, $om-barcode-purple, transparent);
+        background-size: 200% 100%;
+        animation: o_om_barcode_busy 0.9s linear infinite;
+        z-index: 5;
+    }
+}
+
+@keyframes o_om_barcode_busy {
+    from {
+        background-position: 200% 0;
+    }
+    to {
+        background-position: -200% 0;
+    }
+}

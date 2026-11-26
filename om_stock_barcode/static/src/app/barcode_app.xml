@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_stock_barcode.App">
+        <div class="o_om_barcode h-100 d-flex flex-column" t-att-class="this.state.flash ? 'o_om_barcode_flash_' + this.state.flash : ''">
+            <t t-if="this.state.screen === 'home'" t-call="om_stock_barcode.Home"/>
+            <t t-elif="this.state.screen === 'type'" t-call="om_stock_barcode.TypeList"/>
+            <t t-elif="this.state.screen === 'picking'" t-call="om_stock_barcode.Picking"/>
+            <t t-elif="this.state.screen === 'count_list'" t-call="om_stock_barcode.CountList"/>
+            <t t-elif="this.state.screen === 'count'" t-call="om_stock_barcode.Count"/>
+            <t t-elif="this.state.screen === 'lookup'" t-call="om_stock_barcode.Lookup"/>
+            <div t-if="this.state.busy" class="o_om_barcode_busy"/>
+        </div>
+    </t>
+
+    <!-- Shared pieces -->
+    <t t-name="om_stock_barcode.Header">
+        <header class="o_om_barcode_header d-flex align-items-center gap-2 px-2">
+            <button t-if="back" class="btn o_om_barcode_icon_btn" t-on-click="() => this.back()" aria-label="Back" title="Back">
+                <i class="oi" data-icon="arrow_back"/>
+            </button>
+            <div class="flex-grow-1 text-truncate">
+                <div class="o_om_barcode_title text-truncate" t-out="title"/>
+                <div t-if="subtitle" class="o_om_barcode_subtitle text-truncate" t-out="subtitle"/>
+            </div>
+            <span t-if="progress" class="o_om_barcode_progress badge rounded-pill" t-out="progress"/>
+            <button class="btn o_om_barcode_icon_btn" t-on-click="() => this.toggleMute()"
+                    title="Sound on or off" aria-label="Sound on or off">
+                <i class="oi" t-att-data-icon="this.state.muted ? 'volume_off' : 'volume_up'"/>
+            </button>
+            <button t-if="back" class="btn o_om_barcode_icon_btn" t-on-click="() => this.goHome()" aria-label="Home" title="Home">
+                <i class="oi" data-icon="home"/>
+            </button>
+        </header>
+    </t>
+
+    <t t-name="om_stock_barcode.Feedback">
+        <div class="o_om_barcode_prompt px-3 py-2"
+             t-att-class="this.state.feedback ? 'o_om_barcode_prompt_' + this.state.feedback.type : ''">
+            <i class="oi me-2" t-att-data-icon="!this.state.feedback ? 'barcode' : this.state.feedback.type === 'error' ? 'error' : this.state.feedback.type === 'warning' ? 'warning' : 'check_circle'"/>
+            <span class="o_om_barcode_prompt_text" t-out="this.state.feedback ? this.state.feedback.message : prompt"/>
+            <div t-if="this.state.feedback and prompt and this.state.feedback.message !== prompt" class="o_om_barcode_prompt_next" t-out="prompt"/>
+        </div>
+    </t>
+
+    <t t-name="om_stock_barcode.Camera">
+        <div t-if="this.state.camera" class="o_om_barcode_camera">
+            <BarcodeVideoScanner facingMode="'environment'"
+                                 onResult.bind="this.onCameraResult"
+                                 onError.bind="this.onCameraError"
+                                 delayBetweenScan="1500"/>
+            <button class="btn btn-light o_om_barcode_camera_close" t-on-click="() => this.toggleCamera()" aria-label="Close the camera" title="Close the camera">
+                <i class="oi" data-icon="close"/>
+            </button>
+        </div>
+    </t>
+
+    <t t-name="om_stock_barcode.Footer">
+        <footer class="o_om_barcode_footer d-flex align-items-center gap-2 p-2">
+            <button t-if="this.cameraAllowed" class="btn o_om_barcode_footer_btn"
+                    t-att-class="this.state.camera ? 'btn-primary' : 'btn-light'"
+                    t-on-click="() => this.toggleCamera()" aria-label="Camera" title="Scan with the camera">
+                <i class="oi" data-icon="photo_camera"/>
+            </button>
+            <input type="text" class="form-control o_om_barcode_manual" t-ref="this.manualRef"
+                   t-att-placeholder="placeholder" autocomplete="off" autocapitalize="off" spellcheck="false"
+                   t-on-input="this.onManualInput" t-on-keydown="this.onManualKeydown"/>
+            <button class="btn btn-light o_om_barcode_footer_btn" t-on-click="() => this.submitManual()" aria-label="Enter" title="Enter">
+                <i class="oi" data-icon="keyboard_arrow_right"/>
+            </button>
+            <t t-out="0"/>
+        </footer>
+    </t>
+
+    <!-- Home -->
+    <t t-name="om_stock_barcode.Home">
+        <t t-call="om_stock_barcode.Header" subtitle="this.state.home ? this.state.home.company : ''" title.translate="Barcode"/>
+        <t t-call="om_stock_barcode.Feedback" prompt.translate="Scan an operation type or a transfer, or any barcode to look it up"/>
+        <t t-call="om_stock_barcode.Camera"/>
+        <main class="o_om_barcode_body flex-grow-1 overflow-auto p-2">
+            <div class="o_om_barcode_tiles">
+                <button class="o_om_barcode_tile o_om_barcode_tile_tool" t-on-click="() => this.openCountList()">
+                    <i class="oi" data-icon="checklist"/>
+                    <span class="o_om_barcode_tile_name">Inventory Count</span>
+                </button>
+                <button class="o_om_barcode_tile o_om_barcode_tile_tool" t-on-click="() => this.openLookup()">
+                    <i class="oi" data-icon="search"/>
+                    <span class="o_om_barcode_tile_name">Lookup</span>
+                </button>
+                <button class="o_om_barcode_tile o_om_barcode_tile_tool" t-on-click="() => this.openAllTransfers()">
+                    <i class="oi" data-icon="format_list_bulleted"/>
+                    <span class="o_om_barcode_tile_name">All Transfers</span>
+                </button>
+            </div>
+            <t t-foreach="this.groupedTypes" t-as="group" t-key="group.name">
+                <h6 t-if="group.name" class="o_om_barcode_group mt-3 mb-2 px-1" t-out="group.name"/>
+                <div class="o_om_barcode_tiles">
+                    <button t-foreach="group.types" t-as="type" t-key="type.id"
+                            class="o_om_barcode_tile" t-att-class="'o_om_barcode_tile_' + type.code"
+                            t-att-data-type-id="type.id"
+                            t-on-click="() => this.openType(type.id)">
+                        <i class="oi" t-att-data-icon="this.typeIcons[type.code]"/>
+                        <span class="o_om_barcode_tile_name" t-out="type.name"/>
+                        <span class="o_om_barcode_tile_counts">
+                            <span t-if="type.ready" class="badge rounded-pill text-bg-primary" t-out="type.ready"/>
+                            <span t-if="type.late" class="badge rounded-pill text-bg-danger ms-1" t-out="type.late"/>
+                        </span>
+                    </button>
+                </div>
+            </t>
+        </main>
+        <t t-call="om_stock_barcode.Footer" placeholder.translate="Type a barcode or a reference"/>
+    </t>
+
+    <!-- Transfers of an operation type -->
+    <t t-name="om_stock_barcode.TypeList">
+        <t t-set="list" t-value="this.state.list"/>
+        <t t-call="om_stock_barcode.Header" back="true" title="list.picking_type ? list.picking_type.name : this.allTransfersLabel"/>
+        <div t-if="this.state.done" class="o_om_barcode_done mx-2 mt-2 p-3">
+            <i class="oi me-2" data-icon="check_circle"/>
+            <span t-out="this.state.done"/>
+        </div>
+        <t t-call="om_stock_barcode.Feedback" prompt.translate="Scan a transfer, or tap one"/>
+        <t t-call="om_stock_barcode.Camera"/>
+        <div class="d-flex gap-2 p-2">
+            <input type="search" class="form-control o_om_barcode_search" placeholder="Search transfers, partners, products"
+                   t-att-value="this.state.search" t-on-input="this.onSearchInput"/>
+            <button t-if="list.picking_type" class="btn btn-primary o_om_barcode_new" t-on-click="() => this.newPicking()">
+                <i class="oi" data-icon="add"/> New
+            </button>
+        </div>
+        <main class="o_om_barcode_body flex-grow-1 overflow-auto px-2 pb-2">
+            <div t-if="!list.pickings.length" class="text-center text-muted p-4">No transfer to process.</div>
+            <button t-foreach="list.pickings" t-as="pick" t-key="pick.id"
+                    class="o_om_barcode_card o_om_barcode_picking_card w-100 text-start" t-att-data-picking-id="pick.id"
+                    t-on-click="() => this.openPicking(pick.id)">
+                <div class="d-flex justify-content-between align-items-start gap-2">
+                    <strong class="o_om_barcode_card_title" t-out="pick.name"/>
+                    <span class="badge rounded-pill" t-att-class="pick.state === 'assigned' ? 'text-bg-success' : pick.late ? 'text-bg-danger' : 'text-bg-light'" t-out="pick.state_label"/>
+                </div>
+                <div class="text-muted small text-truncate">
+                    <span t-if="pick.partner" t-out="pick.partner"/>
+                    <span t-if="pick.origin"> - <t t-out="pick.origin"/></span>
+                </div>
+                <div class="small text-muted d-flex justify-content-between">
+                    <span t-out="this.shortDate(pick.date)"/>
+                    <span><t t-out="pick.products"/> product(s)</span>
+                </div>
+            </button>
+        </main>
+        <t t-call="om_stock_barcode.Footer" placeholder.translate="Type a barcode or a reference"/>
+    </t>
+
+    <!-- A transfer -->
+    <t t-name="om_stock_barcode.Picking">
+        <t t-set="picking" t-value="this.state.picking"/>
+        <t t-set="pstate" t-value="this.state.pickingState"/>
+        <t t-call="om_stock_barcode.Header" back="true" title="picking.name" subtitle="this.pickingSubtitle" progress="this.fmt(picking.progress.done) + ' / ' + this.fmt(picking.progress.demand)"/>
+        <t t-call="om_stock_barcode.Feedback" prompt="this.pickingPrompt"/>
+        <div t-if="pstate.source_location_id or pstate.pending_product_id" class="o_om_barcode_chips d-flex flex-wrap gap-2 px-2 pt-2">
+            <span t-if="pstate.source_location_id" class="o_om_barcode_chip o_om_barcode_chip_source">
+                <i class="oi" data-icon="location_on"/>
+                <t t-out="pstate.source_location_name"/>
+                <button class="btn btn-link p-0 ms-1" t-on-click="() => this.clearSource()" aria-label="Clear" title="Clear"><i class="oi" data-icon="close"/></button>
+            </span>
+            <span t-if="pstate.pending_product_id" class="o_om_barcode_chip o_om_barcode_chip_pending">
+                <i class="oi" data-icon="label"/>
+                <t t-out="pstate.pending_product_name"/>
+                <button class="btn btn-link p-0 ms-1" t-on-click="() => this.clearPending()" aria-label="Cancel" title="Cancel"><i class="oi" data-icon="close"/></button>
+            </span>
+        </div>
+        <t t-call="om_stock_barcode.Camera"/>
+        <main class="o_om_barcode_body flex-grow-1 overflow-auto p-2">
+            <div t-if="this.state.products" class="o_om_barcode_card mb-2">
+                <div class="small text-muted mb-1">Add a product</div>
+                <button t-foreach="this.state.products" t-as="product" t-key="product.id"
+                        class="btn btn-light w-100 text-start mb-1 o_om_barcode_product_pick"
+                        t-on-click="() => this.addProduct(product)">
+                    <strong t-out="product.name"/>
+                    <span t-if="product.barcode" class="text-muted small ms-2" t-out="product.barcode"/>
+                </button>
+            </div>
+            <div t-if="!picking.lines.length and !picking.missing.length" class="text-center text-muted p-4">
+                Nothing reserved yet: scan the products.
+            </div>
+            <t t-foreach="this.pickingGroups" t-as="group" t-key="group.key">
+                <h6 t-if="group.name and picking.settings.multi_location" class="o_om_barcode_group mt-2 mb-1 px-1">
+                    <i class="oi me-1" data-icon="location_on"/><t t-out="group.name"/>
+                </h6>
+                <div class="o_om_barcode_cards">
+                <div t-foreach="group.lines" t-as="line" t-key="line.id"
+                     class="o_om_barcode_card o_om_barcode_line" t-att-class="this.lineClass(line)" t-att-data-line-id="line.id">
+                    <div class="d-flex gap-2 align-items-center">
+                        <div class="flex-grow-1 o_om_barcode_line_info">
+                            <div class="o_om_barcode_card_title" t-out="line.product.name"/>
+                            <div class="o_om_barcode_line_tags">
+                                <span t-if="line.lot" class="o_om_barcode_tag o_om_barcode_tag_lot"><i class="oi" data-icon="label"/> <t t-out="line.lot"/></span>
+                                <span t-elif="line.product.tracking !== 'none' and picking.rules.lots" class="o_om_barcode_tag o_om_barcode_tag_missing">
+                                    <t t-if="line.product.tracking === 'serial'">Serial number needed</t>
+                                    <t t-else="">Lot needed</t>
+                                </span>
+                                <span t-if="line.package" class="o_om_barcode_tag"><i class="oi" data-icon="archive"/> <t t-out="line.package"/></span>
+                                <span t-if="line.result_package and line.result_package !== line.package" class="o_om_barcode_tag o_om_barcode_tag_pack"><i class="oi" data-icon="east"/> <i class="oi" data-icon="archive"/> <t t-out="line.result_package"/></span>
+                                <span t-if="picking.settings.multi_location and picking.code !== 'outgoing' and (line.dest_scanned or picking.code === 'internal')"
+                                      class="o_om_barcode_tag" t-att-class="line.dest_scanned ? 'o_om_barcode_tag_ok' : ''">
+                                    <i class="oi" data-icon="east"/> <t t-out="line.location_dest.name"/>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="o_om_barcode_qty text-end">
+                            <t t-if="this.state.editLine === line.id">
+                                <input type="number" inputmode="decimal" step="any" min="0" class="form-control o_om_barcode_qty_input"
+                                       t-ref="this.qtyRef" t-att-value="this.state.editValue"
+                                       t-on-input="this.onQtyInput" t-on-keydown="this.onQtyKeydown" t-on-blur="() => this.saveQty()"/>
+                            </t>
+                            <button t-else="" class="btn btn-link p-0 o_om_barcode_qty_value" t-on-click="() => this.editQty(line.id, line.done)" title="Enter the quantity">
+                                <span class="o_om_barcode_qty_done" t-out="this.fmt(line.done)"/>
+                                <span class="o_om_barcode_qty_demand"> / <t t-out="this.fmt(line.demand)"/></span>
+                            </button>
+                            <div class="small text-muted" t-out="line.uom"/>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 mt-2 o_om_barcode_line_buttons">
+                        <button class="btn btn-light flex-grow-1 o_om_barcode_minus" t-on-click="() => this.changeQty(line, -1)" t-att-disabled="!line.done" aria-label="Minus one" title="Minus one">
+                            <i class="oi" data-icon="remove"/>
+                        </button>
+                        <button class="btn btn-light flex-grow-1 o_om_barcode_plus" t-on-click="() => this.changeQty(line, 1)" aria-label="Plus one" title="Plus one">
+                            <i class="oi" data-icon="add"/>
+                        </button>
+                        <button t-if="line.product.tracking !== 'serial' and !line.complete and (line.lot or line.product.tracking === 'none' or !picking.rules.lots)" class="btn btn-light flex-grow-1 o_om_barcode_fill" t-on-click="() => this.fillLine(line)" title="All of it">
+                            <i class="oi" data-icon="check"/> <t t-out="this.fmt(line.demand)"/>
+                        </button>
+                    </div>
+                </div>
+                </div>
+            </t>
+            <t t-if="picking.missing.length">
+                <h6 class="o_om_barcode_group mt-3 mb-1 px-1">Not reserved</h6>
+                <div t-foreach="picking.missing" t-as="move" t-key="move.move_id" class="o_om_barcode_card o_om_barcode_missing d-flex align-items-center gap-2">
+                    <div class="flex-grow-1">
+                        <div class="o_om_barcode_card_title" t-out="move.product.name"/>
+                        <div class="small text-muted"><t t-out="this.fmt(move.demand)"/> <t t-out="move.uom"/> to scan</div>
+                    </div>
+                    <button class="btn btn-light o_om_barcode_plus" t-on-click="() => this.addMove(move)" aria-label="Plus one" title="Plus one">
+                        <i class="oi" data-icon="add"/>
+                    </button>
+                </div>
+            </t>
+        </main>
+        <t t-call="om_stock_barcode.Footer" placeholder.translate="Barcode, lot or product">
+            <button t-if="picking.settings.packages" class="btn btn-light o_om_barcode_footer_btn o_om_barcode_pack" t-on-click="() => this.putInPack()" title="Put in a new package" aria-label="Pack">
+                <i class="oi" data-icon="archive"/>
+            </button>
+            <button class="btn btn-primary o_om_barcode_validate" t-on-click="() => this.validate()">
+                Validate
+            </button></t>
+    </t>
+
+    <!-- Inventory count: where -->
+    <t t-name="om_stock_barcode.CountList">
+        <t t-call="om_stock_barcode.Header" back="true" title.translate="Inventory Count"/>
+        <t t-call="om_stock_barcode.Feedback" prompt.translate="Scan the location to count"/>
+        <t t-call="om_stock_barcode.Camera"/>
+        <main class="o_om_barcode_body flex-grow-1 overflow-auto p-2">
+            <div t-if="!this.state.countLocations.length" class="text-center text-muted p-4">No count due: scan any location to count it.</div>
+            <h6 t-else="" class="o_om_barcode_group mb-2 px-1">Counts due or started</h6>
+            <button t-foreach="this.state.countLocations" t-as="loc" t-key="loc.id"
+                    class="o_om_barcode_card w-100 text-start o_om_barcode_count_location" t-att-data-location-id="loc.id"
+                    t-on-click="() => this.openCount(loc.id)">
+                <div class="o_om_barcode_card_title"><i class="oi me-1" data-icon="location_on"/><t t-out="loc.name"/></div>
+                <div class="small text-muted">
+                    <span t-if="loc.due"><t t-out="loc.due"/> to count</span>
+                    <span t-if="loc.counted" class="ms-2"><t t-out="loc.counted"/> counted</span>
+                    <span t-if="loc.next" class="ms-2">due <t t-out="loc.next"/></span>
+                </div>
+            </button>
+        </main>
+        <t t-call="om_stock_barcode.Footer" placeholder.translate="Location barcode"/>
+    </t>
+
+    <!-- Inventory count of a location -->
+    <t t-name="om_stock_barcode.Count">
+        <t t-set="count" t-value="this.state.count"/>
+        <t t-set="cstate" t-value="this.state.countState"/>
+        <t t-call="om_stock_barcode.Header" back="true" title="count.location.name" progress="count.counted + ' / ' + count.lines.length" subtitle.translate="Inventory count"/>
+        <t t-call="om_stock_barcode.Feedback" prompt="this.countPrompt"/>
+        <div t-if="cstate.location_name or cstate.package_name or cstate.pending_product_id" class="o_om_barcode_chips d-flex flex-wrap gap-2 px-2 pt-2">
+            <span t-if="cstate.location_name" class="o_om_barcode_chip o_om_barcode_chip_source"><i class="oi" data-icon="location_on"/> <t t-out="cstate.location_name"/></span>
+            <span t-if="cstate.package_name" class="o_om_barcode_chip"><i class="oi" data-icon="archive"/> <t t-out="cstate.package_name"/></span>
+            <span t-if="cstate.pending_product_id" class="o_om_barcode_chip o_om_barcode_chip_pending"><i class="oi" data-icon="label"/> <t t-out="cstate.pending_product_name"/></span>
+            <button class="btn btn-link p-0" t-on-click="() => this.clearCountContext()" aria-label="Clear" title="Clear"><i class="oi" data-icon="close"/></button>
+        </div>
+        <t t-call="om_stock_barcode.Camera"/>
+        <main class="o_om_barcode_body flex-grow-1 overflow-auto p-2">
+            <div t-if="!count.lines.length" class="text-center text-muted p-4">Nothing recorded here: scan what you find.</div>
+            <div class="o_om_barcode_cards">
+            <div t-foreach="count.lines" t-as="line" t-key="line.id"
+                 class="o_om_barcode_card o_om_barcode_line o_om_barcode_count_line" t-att-class="this.countClass(line)" t-att-data-line-id="line.id">
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="flex-grow-1 o_om_barcode_line_info">
+                        <div class="o_om_barcode_card_title" t-out="line.product.name"/>
+                        <div class="o_om_barcode_line_tags">
+                            <span t-if="line.location.id !== count.location.id" class="o_om_barcode_tag"><i class="oi" data-icon="location_on"/> <t t-out="line.location.name"/></span>
+                            <span t-if="line.lot" class="o_om_barcode_tag o_om_barcode_tag_lot"><i class="oi" data-icon="label"/> <t t-out="line.lot"/></span>
+                            <span t-if="line.package" class="o_om_barcode_tag"><i class="oi" data-icon="archive"/> <t t-out="line.package"/></span>
+                            <span class="o_om_barcode_tag">On hand <t t-out="this.fmt(line.quantity)"/></span>
+                            <span t-if="line.counted !== null and line.diff" class="o_om_barcode_tag o_om_barcode_tag_diff">
+                                <t t-out="(line.diff > 0 ? '+' : '') + this.fmt(line.diff)"/>
+                            </span>
+                        </div>
+                    </div>
+                    <div class="o_om_barcode_qty text-end">
+                        <t t-if="this.state.editLine === line.id">
+                            <input type="number" inputmode="decimal" step="any" min="0" class="form-control o_om_barcode_qty_input"
+                                   t-ref="this.qtyRef" t-att-value="this.state.editValue"
+                                   t-on-input="this.onQtyInput" t-on-keydown="this.onQtyKeydown" t-on-blur="() => this.saveQty()"/>
+                        </t>
+                        <button t-else="" class="btn btn-link p-0 o_om_barcode_qty_value" t-on-click="() => this.editQty(line.id, line.counted)" title="Enter the counted quantity">
+                            <span class="o_om_barcode_qty_done" t-out="line.counted === null ? '-' : this.fmt(line.counted)"/>
+                        </button>
+                        <div class="small text-muted" t-out="line.uom"/>
+                    </div>
+                </div>
+                <div class="d-flex gap-2 mt-2 o_om_barcode_line_buttons">
+                    <button class="btn btn-light flex-grow-1 o_om_barcode_minus" t-on-click="() => this.changeCount(line, -1)" t-att-disabled="!line.counted" aria-label="Minus one" title="Minus one">
+                        <i class="oi" data-icon="remove"/>
+                    </button>
+                    <button class="btn btn-light flex-grow-1 o_om_barcode_plus" t-on-click="() => this.changeCount(line, 1)" aria-label="Plus one" title="Plus one">
+                        <i class="oi" data-icon="add"/>
+                    </button>
+                    <button class="btn btn-light flex-grow-1 o_om_barcode_same" t-on-click="() => this.setCount(line.id, line.quantity)" title="Counted as on hand">
+                        <i class="oi" data-icon="check"/> <t t-out="this.fmt(line.quantity)"/>
+                    </button>
+                </div>
+            </div>
+            </div>
+        </main>
+        <t t-call="om_stock_barcode.Footer" placeholder.translate="Barcode, lot or location">
+            <button class="btn btn-primary o_om_barcode_apply" t-on-click="() => this.applyCount()">
+                Apply<t t-if="count.differences"> (<t t-out="count.differences"/>)</t>
+            </button></t>
+    </t>
+
+    <!-- Lookup -->
+    <t t-name="om_stock_barcode.Lookup">
+        <t t-set="result" t-value="this.state.lookup"/>
+        <t t-call="om_stock_barcode.Header" back="true" subtitle="result ? result.title : ''" title.translate="Lookup"/>
+        <t t-call="om_stock_barcode.Feedback" prompt.translate="Scan a product, a lot, a location or a package"/>
+        <t t-call="om_stock_barcode.Camera"/>
+        <main class="o_om_barcode_body flex-grow-1 overflow-auto p-2">
+            <t t-if="result">
+                <div class="o_om_barcode_card o_om_barcode_lookup_head">
+                    <div class="small text-uppercase text-muted">
+                        <t t-if="result.kind === 'product'">Product</t>
+                        <t t-elif="result.kind === 'lot'">Lot / serial number</t>
+                        <t t-elif="result.kind === 'location'">Location</t>
+                        <t t-elif="result.kind === 'package'">Package</t>
+                        <t t-elif="result.kind === 'picking'">Transfer</t>
+                        <t t-else="">Operation type</t>
+                    </div>
+                    <div class="o_om_barcode_lookup_title" t-out="result.title"/>
+                    <t t-if="result.kind === 'product'">
+                        <div class="text-muted small">
+                            <span t-if="result.product.code">[<t t-out="result.product.code"/>] </span>
+                            <span t-out="result.product.barcode"/>
+                        </div>
+                        <div class="o_om_barcode_figures d-flex flex-wrap gap-2 mt-2">
+                            <div class="o_om_barcode_figure"><span>On hand</span><strong t-out="this.fmt(result.product.on_hand)"/></div>
+                            <div class="o_om_barcode_figure"><span>Forecast</span><strong t-out="this.fmt(result.product.forecast)"/></div>
+                            <div class="o_om_barcode_figure"><span>Incoming</span><strong t-out="this.fmt(result.product.incoming)"/></div>
+                            <div class="o_om_barcode_figure"><span>Outgoing</span><strong t-out="this.fmt(result.product.outgoing)"/></div>
+                        </div>
+                    </t>
+                    <t t-if="result.kind === 'lot'">
+                        <div class="text-muted small" t-out="result.product.name"/>
+                        <div class="o_om_barcode_figures d-flex flex-wrap gap-2 mt-2">
+                            <div class="o_om_barcode_figure"><span>On hand</span><strong t-out="this.fmt(result.lot.quantity)"/></div>
+                            <div t-if="result.lot.expiry" class="o_om_barcode_figure"><span>Expires</span><strong t-out="result.lot.expiry.slice(0, 10)"/></div>
+                        </div>
+                    </t>
+                    <t t-if="result.kind === 'package'">
+                        <div class="text-muted small"><t t-out="result.package.location"/> <t t-if="result.package.type">- <t t-out="result.package.type"/></t></div>
+                    </t>
+                </div>
+                <t t-if="result.quants">
+                    <h6 class="o_om_barcode_group mt-3 mb-1 px-1">
+                        <t t-if="result.kind === 'location' or result.kind === 'package'">Contents</t>
+                        <t t-else="">Stock by location</t>
+                    </h6>
+                    <div t-if="!result.quants.length" class="text-muted p-2">No stock.</div>
+                    <div t-foreach="result.quants" t-as="quant" t-key="quant.id" class="o_om_barcode_card o_om_barcode_quant d-flex align-items-center gap-2">
+                        <div class="flex-grow-1">
+                            <div class="o_om_barcode_card_title" t-out="result.kind === 'location' or result.kind === 'package' ? quant.product : quant.location"/>
+                            <div class="o_om_barcode_line_tags">
+                                <span t-if="result.kind === 'location' or result.kind === 'package'" class="o_om_barcode_tag"><i class="oi" data-icon="location_on"/> <t t-out="quant.location"/></span>
+                                <span t-if="quant.lot" class="o_om_barcode_tag o_om_barcode_tag_lot"><i class="oi" data-icon="label"/> <t t-out="quant.lot"/></span>
+                                <span t-if="quant.package" class="o_om_barcode_tag"><i class="oi" data-icon="archive"/> <t t-out="quant.package"/></span>
+                                <span t-if="quant.reserved" class="o_om_barcode_tag">Reserved <t t-out="this.fmt(quant.reserved)"/></span>
+                            </div>
+                        </div>
+                        <div class="text-end"><strong class="fs-5" t-out="this.fmt(quant.quantity)"/><div class="small text-muted" t-out="quant.uom"/></div>
+                    </div>
+                </t>
+                <t t-if="result.history and result.history.length">
+                    <h6 class="o_om_barcode_group mt-3 mb-1 px-1">History</h6>
+                    <div t-foreach="result.history" t-as="move" t-key="move_index" class="o_om_barcode_card o_om_barcode_history">
+                        <div class="d-flex justify-content-between"><strong t-out="move.reference"/><span class="small text-muted" t-out="this.shortDate(move.date)"/></div>
+                        <div class="small text-muted"><t t-out="move.from"/> <i class="oi" data-icon="east"/> <t t-out="move.to"/>: <t t-out="this.fmt(move.quantity)"/> <t t-out="move.uom"/></div>
+                    </div>
+                </t>
+                <t t-if="result.pickings">
+                    <button t-foreach="result.pickings" t-as="pick" t-key="pick.id" class="btn btn-primary w-100 mt-2" t-on-click="() => this.openPicking(pick.id)">
+                        Open <t t-out="pick.name"/>
+                    </button>
+                </t>
+                <button t-if="result.kind === 'type'" class="btn btn-primary w-100 mt-2" t-on-click="() => this.openType(result.id)">Open</button>
+            </t>
+            <div t-else="" class="text-center text-muted p-4 o_om_barcode_lookup_empty">
+                <i class="oi o_om_barcode_big_icon" data-icon="barcode"/>
+                <div>Scan anything to see where it is and how much there is.</div>
+            </div>
+        </main>
+        <t t-call="om_stock_barcode.Footer" placeholder.translate="Barcode, lot, location or package"/>
+    </t>
+
+</templates>
