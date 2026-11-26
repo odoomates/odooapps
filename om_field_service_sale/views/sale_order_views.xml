@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_view_form_inherit_fs" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.field.service</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_fs_jobs" type="object" class="oe_stat_button" icon="build"
+                    invisible="not fs_job_count" groups="om_field_service.group_fs_user">
+                    <field name="fs_job_count" widget="statinfo" string="Jobs"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

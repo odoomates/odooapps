@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs_inherit_sale" model="ir.ui.view">
+        <field name="name">project.task.form.field.service.sale</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_form_fs"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_fs_print_report']" position="before">
+                <button name="action_fs_create_sale_order" type="object" string="Create Sales Order"
+                    invisible="fs_sale_order_id or is_covered or job_state == 'cancelled'"
+                    groups="sales_team.group_sale_salesman"/>
+                <button name="action_fs_quote_followup" type="object" string="Quote Follow-up"
+                    invisible="job_state == 'new'" groups="sales_team.group_sale_salesman"
+                    help="A quotation for more work found on site"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_fs_view_sale_order" type="object" class="oe_stat_button" icon="receipt_long"
+                    invisible="not fs_sale_order_id" groups="sales_team.group_sale_salesman">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Sales Order</span>
+                    </div>
+                </button>
+                <button name="action_fs_view_followups" type="object" class="oe_stat_button" icon="sell"
+                    invisible="not fs_followup_count" groups="sales_team.group_sale_salesman">
+                    <field name="fs_followup_count" widget="statinfo" string="Follow-ups"/>
+                </button>
+            </xpath>
+            <field name="date_deadline" position="after">
+                <field name="is_covered"/>
+                <field name="coverage" invisible="not is_covered"/>
+                <field name="fs_sale_order_id" readonly="1" invisible="not fs_sale_order_id"
+                    groups="sales_team.group_sale_salesman"/>
+                <field name="allow_billable" invisible="1"/>
+                <field name="sale_line_id" string="Sales Order Item" invisible="is_covered or not allow_billable"
+                    groups="sales_team.group_sale_salesman" options="{'no_create': True}"
+                    context="{'with_remaining_hours': True}"/>
+            </field>
+            <xpath expr="//field[@name='part_ids']/list/field[@name='install_on_site']" position="after">
+                <field name="is_billable" optional="show" readonly="state == 'done'"/>
+                <field name="sale_line_id" optional="hide"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_task_view_list_fs_inherit_sale" model="ir.ui.view">
+        <field name="name">project.task.list.field.service.sale</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_list_fs"/>
+        <field name="arch" type="xml">
+            <field name="job_state" position="before">
+                <field name="is_covered" optional="hide"/>
+                <field name="fs_sale_order_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
