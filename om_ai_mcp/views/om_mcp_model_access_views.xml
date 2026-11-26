@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_mcp_model_access_view_list" model="ir.ui.view">
+        <field name="name">om.mcp.model.access.list</field>
+        <field name="model">om.mcp.model.access</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="model_id" options="{'no_create': True}"/>
+                <field name="model" optional="show"/>
+                <field name="perm_read"/>
+                <field name="perm_create"/>
+                <field name="perm_write"/>
+                <field name="perm_unlink"/>
+                <field name="perm_method"/>
+                <field name="note" optional="show"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_mcp_model_access_view_search" model="ir.ui.view">
+        <field name="name">om.mcp.model.access.search</field>
+        <field name="model">om.mcp.model.access</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="model_id"/>
+                <filter name="filter_write" string="May Change Data" domain="['|', '|', ('perm_create', '=', True), ('perm_write', '=', True), ('perm_unlink', '=', True)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_mcp_model_access_action" model="ir.actions.act_window">
+        <field name="name">MCP Model Permissions</field>
+        <field name="res_model">om.mcp.model.access</field>
+        <field name="path">mcp-models</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No model is available to MCP clients yet</p>
+            <p>Add the models AI apps may use and what they may do on them. The access rights and record rules
+               of the user who owns the key always apply on top.</p>
+        </field>
+    </record>
+</odoo>

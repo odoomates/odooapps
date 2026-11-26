@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_mcp_log_view_list" model="ir.ui.view">
+        <field name="name">om.mcp.log.list</field>
+        <field name="model">om.mcp.log</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" decoration-danger="status in ('error', 'denied')"
+                  decoration-warning="status in ('tool_error', 'rate_limited')">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="key_name" optional="show"/>
+                <field name="auth_type" optional="hide"/>
+                <field name="key_scope" optional="hide"/>
+                <field name="client_name" optional="show"/>
+                <field name="method"/>
+                <field name="tool"/>
+                <field name="target" optional="hide"/>
+                <field name="model" optional="show"/>
+                <field name="duration" optional="show"/>
+                <field name="status" widget="badge" decoration-success="status == 'success'"
+                       decoration-danger="status in ('error', 'denied')"
+                       decoration-warning="status in ('tool_error', 'rate_limited')"/>
+                <field name="error" optional="hide"/>
+                <field name="ip" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_mcp_log_view_form" model="ir.ui.view">
+        <field name="name">om.mcp.log.form</field>
+        <field name="model">om.mcp.log</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="auth_type"/>
+                            <field name="key_name"/>
+                            <field name="grant_id" invisible="not grant_id"/>
+                            <field name="key_scope"/>
+                            <field name="session_id"/>
+                            <field name="client_name"/>
+                            <field name="ip"/>
+                        </group>
+                        <group>
+                            <field name="method"/>
+                            <field name="tool"/>
+                            <field name="target" invisible="not target"/>
+                            <field name="model"/>
+                            <field name="duration"/>
+                            <field name="status"/>
+                        </group>
+                    </group>
+                    <field name="error" invisible="not error"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_mcp_log_view_search" model="ir.ui.view">
+        <field name="name">om.mcp.log.search</field>
+        <field name="model">om.mcp.log</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="tool"/>
+                <field name="model"/>
+                <field name="key_name"/>
+                <field name="client_name"/>
+                <filter name="filter_calls" string="Tool Calls" domain="[('method', '=', 'tools/call')]"/>
+                <filter name="filter_problems" string="Errors and Denials" domain="[('status', '!=', 'success')]"/>
+                <filter name="filter_oauth" string="OAuth Apps" domain="[('auth_type', '=', 'oauth')]"/>
+                <separator/>
+                <filter name="filter_today" string="Today" domain="[('date', '&gt;=', context_today().strftime('%Y-%m-%d'))]"/>
+                <filter name="filter_date" date="date"/>
+                <group>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_tool" string="Tool" context="{'group_by': 'tool'}"/>
+                    <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_mcp_log_view_graph" model="ir.ui.view">
+        <field name="name">om.mcp.log.graph</field>
+        <field name="model">om.mcp.log</field>
+        <field name="arch" type="xml">
+            <graph string="MCP Calls" type="bar" stacked="1">
+                <field name="date" interval="day"/>
+                <field name="status"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="om_mcp_log_action" model="ir.actions.act_window">
+        <field name="name">MCP Log</field>
+        <field name="res_model">om.mcp.log</field>
+        <field name="path">mcp-log</field>
+        <field name="view_mode">list,graph,form</field>
+        <field name="context">{'search_default_filter_calls': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No MCP calls yet</p>
+            <p>Every request of an AI app is logged here with its user, key, tool, duration and result.</p>
+        </field>
+    </record>
+</odoo>

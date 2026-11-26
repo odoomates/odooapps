@@ -45,5 +45,91 @@
             <field name="description">Count records of a model matching simple filters (AND), optionally grouped by a field (e.g. country_id, state, date:month).</field>
             <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "filters": {"type": "array", "items": {"type": "object", "properties": {"field": {"type": "string"}, "operator": {"type": "string", "enum": ["=", "!=", "&gt;", "&gt;=", "&lt;", "&lt;=", "in", "not in", "ilike", "not ilike"]}, "value": {}}, "required": ["field", "operator", "value"]}}, "group_by": {"type": "string"}}, "required": ["model"]}</field>
         </record>
+
+        <record id="tool_aggregate_records" model="om.ai.tool">
+            <field name="name">Aggregate records</field>
+            <field name="code">aggregate_records</field>
+            <field name="sequence">60</field>
+            <field name="method">_ai_tool_aggregate_records</field>
+            <field name="description">Sum, average, min, max or count fields of records matching simple filters (AND), optionally grouped by up to 3 fields (e.g. partner_id, state, date_order:month). Aggregates are "field:function" such as "amount_total:sum". Amounts in different currencies are added as they are.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "filters": {"type": "array", "items": {"type": "object", "properties": {"field": {"type": "string"}, "operator": {"type": "string", "enum": ["=", "!=", "&gt;", "&gt;=", "&lt;", "&lt;=", "in", "not in", "ilike", "not ilike"]}, "value": {}}, "required": ["field", "operator", "value"]}}, "group_by": {"type": "array", "items": {"type": "string"}, "description": "Fields to group by, a date field may end with :day, :week, :month, :quarter or :year"}, "aggregates": {"type": "array", "items": {"type": "string"}, "description": "e.g. amount_total:sum, price_unit:avg"}, "order": {"type": "string", "description": "A group field or an aggregate, optionally followed by desc, e.g. amount_total:sum desc"}, "limit": {"type": "integer", "description": "At most 200 groups"}}, "required": ["model"]}</field>
+        </record>
+
+        <record id="tool_current_user" model="om.ai.tool">
+            <field name="name">Current user</field>
+            <field name="code">current_user</field>
+            <field name="sequence">70</field>
+            <field name="method">_ai_tool_current_user</field>
+            <field name="description">The user who asks: name, login, current company, allowed companies, time zone, language and today's date.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_list_attachments" model="om.ai.tool">
+            <field name="name">List attachments</field>
+            <field name="code">list_attachments</field>
+            <field name="sequence">80</field>
+            <field name="method">_ai_tool_list_attachments</field>
+            <field name="description">List the files attached to a record: id, name, type and size.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "record_id": {"type": "integer"}, "limit": {"type": "integer"}}, "required": ["model", "record_id"]}</field>
+        </record>
+
+        <record id="tool_read_attachment" model="om.ai.tool">
+            <field name="name">Read an attachment</field>
+            <field name="code">read_attachment</field>
+            <field name="sequence">90</field>
+            <field name="method">_ai_tool_read_attachment</field>
+            <field name="description">Read an attached file by its id: the text of text files, the picture of images (PNG, JPEG, GIF, WebP). Other files return only their name, type and size.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"attachment_id": {"type": "integer"}}, "required": ["attachment_id"]}</field>
+        </record>
+
+        <record id="tool_create_records" model="om.ai.tool">
+            <field name="name">Create records</field>
+            <field name="code">create_records</field>
+            <field name="sequence">110</field>
+            <field name="method">_ai_tool_create_records</field>
+            <field name="read_only" eval="False"/>
+            <field name="description">Create one or more records of a model. Each record is an object of field names and values. Relations take an id or a name; lines (one2many) take a list of value objects, e.g. order_line: [{"product_id": 5, "product_uom_qty": 2}]. Use model_fields first.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "records": {"type": "array", "items": {"type": "object"}, "description": "Values of each record to create"}}, "required": ["model", "records"]}</field>
+        </record>
+
+        <record id="tool_update_records" model="om.ai.tool">
+            <field name="name">Update records</field>
+            <field name="code">update_records</field>
+            <field name="sequence">120</field>
+            <field name="method">_ai_tool_update_records</field>
+            <field name="read_only" eval="False"/>
+            <field name="description">Write the same values on one or more records of a model, given by their ids.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "record_ids": {"type": "array", "items": {"type": "integer"}}, "values": {"type": "object", "description": "Field names and new values"}}, "required": ["model", "record_ids", "values"]}</field>
+        </record>
+
+        <record id="tool_delete_records" model="om.ai.tool">
+            <field name="name">Delete records</field>
+            <field name="code">delete_records</field>
+            <field name="sequence">130</field>
+            <field name="method">_ai_tool_delete_records</field>
+            <field name="read_only" eval="False"/>
+            <field name="description">Delete records of a model by their ids. This cannot be undone.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "record_ids": {"type": "array", "items": {"type": "integer"}}}, "required": ["model", "record_ids"]}</field>
+        </record>
+
+        <record id="tool_post_message" model="om.ai.tool">
+            <field name="name">Post a message</field>
+            <field name="code">post_message</field>
+            <field name="sequence">140</field>
+            <field name="method">_ai_tool_post_message</field>
+            <field name="read_only" eval="False"/>
+            <field name="description">Post a message in the chatter of a record: an internal note (default) or a message sent to the followers (kind comment).</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "record_id": {"type": "integer"}, "body": {"type": "string", "description": "Plain text"}, "kind": {"type": "string", "enum": ["note", "comment"]}}, "required": ["model", "record_id", "body"]}</field>
+        </record>
+
+        <record id="tool_upload_attachment" model="om.ai.tool">
+            <field name="name">Upload an attachment</field>
+            <field name="code">upload_attachment</field>
+            <field name="sequence">150</field>
+            <field name="method">_ai_tool_upload_attachment</field>
+            <field name="read_only" eval="False"/>
+            <field name="description">Attach a file to a record. The content is base64 encoded.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "record_id": {"type": "integer"}, "name": {"type": "string", "description": "File name"}, "data": {"type": "string", "description": "Base64 content"}, "mimetype": {"type": "string"}}, "required": ["model", "record_id", "name", "data"]}</field>
+        </record>
     </data>
 </odoo>

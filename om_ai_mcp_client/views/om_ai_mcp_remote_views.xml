@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_mcp_remote_view_list" model="ir.ui.view">
+        <field name="name">om.ai.mcp.remote.list</field>
+        <field name="model">om.ai.mcp.remote</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'error'" decoration-warning="state == 'auth'">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="url"/>
+                <field name="auth_type"/>
+                <field name="tool_prefix" optional="show"/>
+                <field name="tool_count" optional="show"/>
+                <field name="group_ids" widget="many2many_tags" optional="hide"/>
+                <field name="last_connected" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'connected'"
+                       decoration-warning="state == 'auth'" decoration-danger="state == 'error'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_mcp_remote_view_form" model="ir.ui.view">
+        <field name="name">om.ai.mcp.remote.form</field>
+        <field name="model">om.ai.mcp.remote</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_connect" type="object" string="Connect" class="btn-primary"
+                            invisible="state == 'connected' or (auth_type == 'oauth' and not oauth_signed_in)"/>
+                    <button name="action_oauth_sign_in" type="object" string="Sign In" class="btn-primary"
+                            invisible="auth_type != 'oauth' or oauth_signed_in"/>
+                    <button name="action_sync_tools" type="object" string="Refresh Tools"
+                            invisible="state != 'connected'"/>
+                    <button name="action_connect" type="object" string="Reconnect" invisible="state != 'connected'"/>
+                    <button name="action_oauth_sign_out" type="object" string="Sign Out"
+                            invisible="auth_type != 'oauth' or not oauth_signed_in"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,connected"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_tools" type="object" class="oe_stat_button" icon="build">
+                            <field name="tool_count" widget="statinfo" string="Tools"/>
+                        </button>
+                        <button name="action_view_usage" type="object" class="oe_stat_button" icon="bar_chart"
+                                string="Calls"/>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Documentation search"/></h1>
+                    </div>
+                    <div class="alert alert-danger" role="alert" invisible="state not in ('error', 'auth') or not last_error">
+                        <field name="last_error" nolabel="1"/>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="url" placeholder="https://example.com/mcp" widget="url"/>
+                            <field name="tool_prefix" placeholder="e.g. docs"/>
+                            <field name="auth_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="group_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="timeout"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Tools" name="tools">
+                            <field name="tool_ids" context="{'active_test': False}">
+                                <list editable="bottom" create="false" delete="false"
+                                      decoration-muted="not active">
+                                    <field name="active" widget="boolean_toggle" string="Enabled"/>
+                                    <field name="name"/>
+                                    <field name="code" readonly="1"/>
+                                    <field name="read_only" widget="boolean_toggle"/>
+                                    <field name="mcp_read_only_hint" optional="show"/>
+                                    <field name="mcp_destructive_hint" optional="hide"/>
+                                    <field name="description" optional="hide"/>
+                                </list>
+                            </field>
+                            <p class="text-muted">Enabled tools are given to the AI agents. Read-only tools run at
+                                once, and the AI Assistant in Discuss may use them; the others wait for the user to
+                                confirm. The server's own read-only flag is only a hint: you decide.</p>
+                        </page>
+                        <page string="Authentication" name="auth" invisible="auth_type == 'none'">
+                            <group invisible="auth_type != 'bearer'">
+                                <group>
+                                    <field name="bearer_token_input" password="True" placeholder="Type a new token"/>
+                                    <field name="secret_set"/>
+                                </group>
+                            </group>
+                            <group invisible="auth_type != 'oauth'">
+                                <group string="Sign-In">
+                                    <field name="oauth_signed_in"/>
+                                    <field name="oauth_expires" invisible="not oauth_signed_in"/>
+                                    <field name="oauth_issuer" invisible="not oauth_issuer"/>
+                                    <field name="oauth_scope" placeholder="Announced by the server"/>
+                                </group>
+                                <group string="App Registration">
+                                    <field name="oauth_client_id"/>
+                                    <field name="oauth_client_secret_input" password="True"
+                                           placeholder="Only for apps with a secret"/>
+                                </group>
+                            </group>
+                            <p class="text-muted" invisible="auth_type != 'oauth'">Sign In sends you to the
+                                authorization server of the MCP server and back to Odoo. Odoo registers itself when
+                                the server allows it; otherwise ask its administrator for a client ID with this
+                                redirect URI: <code>/om_ai_mcp_client/oauth/callback</code> on the address of this
+                                database. The tools use the account you sign in with, for every allowed user.</p>
+                        </page>
+                        <page string="Advanced" name="advanced">
+                            <group>
+                                <field name="headers" placeholder="X-Api-Version: 2"/>
+                            </group>
+                        </page>
+                        <page string="Server" name="server" invisible="not server_name and not protocol_version">
+                            <group>
+                                <group>
+                                    <field name="server_name"/>
+                                    <field name="server_version"/>
+                                    <field name="protocol_version"/>
+                                    <field name="last_connected"/>
+                                </group>
+                            </group>
+                            <field name="instructions" invisible="not instructions"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_mcp_remote_view_search" model="ir.ui.view">
+        <field name="name">om.ai.mcp.remote.search</field>
+        <field name="model">om.ai.mcp.remote</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="url"/>
+                <filter name="filter_problems" string="Needs Attention" domain="[('state', 'in', ('error', 'auth'))]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_mcp_remote_action" model="ir.actions.act_window">
+        <field name="name">Outside MCP Servers</field>
+        <field name="res_model">om.ai.mcp.remote</field>
+        <field name="path">ai-mcp-servers</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Connect an outside MCP server</p>
+            <p>Add the URL of an MCP server (Streamable HTTP) and connect: its tools become AI tools that the AI
+               agents of Odoo may call. You choose which tools are enabled and which are read only.</p>
+        </field>
+    </record>
+</odoo>

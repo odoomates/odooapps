@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_mcp_session_view_list" model="ir.ui.view">
+        <field name="name">om.mcp.session.list</field>
+        <field name="model">om.mcp.session</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="last_activity"/>
+                <field name="create_date" string="Started" optional="show"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="key_name"/>
+                <field name="client_name"/>
+                <field name="client_version" optional="hide"/>
+                <field name="protocol_version" optional="show"/>
+                <field name="log_count" optional="show"/>
+                <button name="action_end" type="object" string="End" icon="block" invisible="not active"
+                        groups="om_ai.group_ai_manager"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_mcp_session_view_form" model="ir.ui.view">
+        <field name="name">om.mcp.session.form</field>
+        <field name="model">om.mcp.session</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <button name="action_end" type="object" string="End Session" invisible="not active"
+                            groups="om_ai.group_ai_manager"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_logs" type="object" class="oe_stat_button" icon="history">
+                            <field name="log_count" widget="statinfo" string="Calls"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Ended" bg_color="text-bg-secondary" invisible="active"/>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="key_name"/>
+                            <field name="grant_id" invisible="not grant_id"/>
+                            <field name="client_name"/>
+                            <field name="client_version"/>
+                        </group>
+                        <group>
+                            <field name="protocol_version"/>
+                            <field name="create_date" string="Started"/>
+                            <field name="last_activity"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_mcp_session_view_search" model="ir.ui.view">
+        <field name="name">om.mcp.session.search</field>
+        <field name="model">om.mcp.session</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="client_name"/>
+                <filter name="filter_ended" string="Ended" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_mcp_session_action" model="ir.actions.act_window">
+        <field name="name">MCP Sessions</field>
+        <field name="res_model">om.mcp.session</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No MCP sessions</p>
+            <p>A session starts when an AI app connects. Ending it makes the app connect again.</p>
+        </field>
+    </record>
+</odoo>

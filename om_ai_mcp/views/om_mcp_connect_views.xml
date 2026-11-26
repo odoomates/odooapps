@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_mcp_connect_view_form" model="ir.ui.view">
+        <field name="name">om.mcp.connect.form</field>
+        <field name="model">om.mcp.connect</field>
+        <field name="arch" type="xml">
+            <form string="Connect an AI App" create="false" delete="false">
+                <sheet>
+                    <div class="oe_title">
+                        <h1>Connect an AI App</h1>
+                        <p class="text-muted">AI apps that speak the Model Context Protocol (MCP) use Odoo through this
+                            endpoint, with your access rights. Apps that sign in with OAuth need only the endpoint;
+                            for the others, create an MCP key and add the endpoint and the key to your app.</p>
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="enabled">
+                        The MCP server is turned off. An administrator can turn it on in Settings > AI > MCP Server.
+                    </div>
+                    <group>
+                        <group string="1. Endpoint">
+                            <field name="endpoint" widget="CopyClipboardChar"/>
+                            <field name="database"/>
+                            <field name="oauth_enabled"/>
+                            <field name="enabled" invisible="1"/>
+                        </group>
+                        <group string="2. Key">
+                            <field name="key_count"/>
+                            <div colspan="2" class="d-flex flex-wrap gap-2">
+                                <button name="action_new_key" type="object" string="New MCP Key" class="btn-primary" icon="key"/>
+                                <button name="action_new_read_key" type="object" string="New Read-Only Key" class="btn-secondary"/>
+                                <button name="action_my_keys" type="object" string="Keys" class="btn-link" icon="east"/>
+                            </div>
+                        </group>
+                    </group>
+                    <separator string="3. Add Odoo to your app"/>
+                    <field name="examples" readonly="1" nolabel="1"/>
+                    <p class="text-muted mt-3">Replace &lt;your MCP key&gt; with the key. A read-only key offers only the
+                        tools that do not change data. What the AI may do on each model is set in AI > MCP Server >
+                        Model Permissions.</p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_mcp_connect_action" model="ir.actions.server">
+        <field name="name">Connect an AI App</field>
+        <field name="model_id" ref="model_om_mcp_connect"/>
+        <field name="path">mcp-connect</field>
+        <field name="state">code</field>
+        <field name="code">action = model._action_open()</field>
+    </record>
+</odoo>

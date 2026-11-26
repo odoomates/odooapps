@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_ai_mcp</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_ai.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//block[@name='om_ai_setting_container']" position="after">
+                <block title="MCP Server" name="om_ai_mcp_setting_container">
+                    <setting id="om_ai_mcp_enabled"
+                             help="AI apps (Claude Desktop, Claude Code, Cursor, VS Code...) connect to /mcp with an MCP key or an OAuth sign-in of an MCP user.">
+                        <field name="om_ai_mcp_enabled"/>
+                        <div class="content-group mt8" invisible="not om_ai_mcp_enabled">
+                            <button type="action" name="%(om_ai_mcp.om_mcp_connect_action)d" string="Connect an AI App"
+                                    icon="east" class="btn-link"/>
+                            <button type="action" name="%(om_ai_mcp.om_mcp_model_access_action)d" string="Model Permissions"
+                                    icon="east" class="btn-link"/>
+                        </div>
+                    </setting>
+                    <setting id="om_ai_mcp_oauth" string="Browser AI Apps (OAuth)"
+                             help="Apps such as Claude.ai connect with the endpoint URL only: the user signs in to Odoo and allows the app, read only unless the user turns on changes.">
+                        <field name="om_ai_mcp_oauth_enabled"/>
+                        <div class="content-group mt8" invisible="not om_ai_mcp_oauth_enabled">
+                            <div>
+                                <field name="om_ai_mcp_oauth_registration" class="oe_inline"/>
+                                <label for="om_ai_mcp_oauth_registration" string="Apps may register themselves" class="o_light_label"/>
+                            </div>
+                            <div invisible="not om_ai_mcp_oauth_registration">
+                                <field name="om_ai_mcp_oauth_registration_approval" class="oe_inline"/>
+                                <label for="om_ai_mcp_oauth_registration_approval" string="An administrator approves them first" class="o_light_label"/>
+                            </div>
+                            <div class="row mt8">
+                                <label for="om_ai_mcp_oauth_access_minutes" string="Access token (minutes)" class="col-lg-6 o_light_label"/>
+                                <field name="om_ai_mcp_oauth_access_minutes" class="oe_inline"/>
+                            </div>
+                            <div class="row">
+                                <label for="om_ai_mcp_oauth_refresh_days" string="Connection (days)" class="col-lg-6 o_light_label"/>
+                                <field name="om_ai_mcp_oauth_refresh_days" class="oe_inline"/>
+                            </div>
+                            <button type="action" name="%(om_ai_mcp.om_mcp_oauth_client_action)d" string="OAuth Apps"
+                                    icon="east" class="btn-link"/>
+                            <button type="action" name="%(om_ai_mcp.om_mcp_oauth_grant_action)d" string="Connected Apps"
+                                    icon="east" class="btn-link"/>
+                        </div>
+                    </setting>
+                    <setting id="om_ai_mcp_limits" string="MCP Limits"
+                             help="Requests allowed per key in a sliding window (0 for no limit), and most records a tool may create, change or delete in one call.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="om_ai_mcp_rate_limit" string="Requests per key" class="col-lg-6 o_light_label"/>
+                                <field name="om_ai_mcp_rate_limit" class="oe_inline"/>
+                            </div>
+                            <div class="row">
+                                <label for="om_ai_mcp_rate_window" string="Window (seconds)" class="col-lg-6 o_light_label"/>
+                                <field name="om_ai_mcp_rate_window" class="oe_inline"/>
+                            </div>
+                            <div class="row">
+                                <label for="om_ai_mcp_batch_limit" string="Records per call" class="col-lg-6 o_light_label"/>
+                                <field name="om_ai_mcp_batch_limit" class="oe_inline"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="om_ai_mcp_log" string="MCP Log"
+                             help="Every request is logged with its user, key, tool, duration and result.">
+                        <div class="content-group">
+                            <div class="row mt8">
+                                <label for="om_ai_mcp_log_keep_days" string="Keep (days)" class="col-lg-6 o_light_label"/>
+                                <field name="om_ai_mcp_log_keep_days" class="oe_inline"/>
+                            </div>
+                            <button type="action" name="%(om_ai_mcp.om_mcp_log_action)d" string="MCP Log"
+                                    icon="east" class="btn-link"/>
+                        </div>
+                    </setting>
+                    <setting id="om_ai_mcp_origins" string="Browser Apps"
+                             help="Browser origins allowed to call the endpoint, separated by commas. Desktop apps send no origin.">
+                        <field name="om_ai_mcp_allowed_origins" class="w-100" placeholder="http://localhost:6274"/>
+                    </setting>
+                    <setting id="om_ai_mcp_instructions" string="Instructions for the AI"
+                             help="Extra text sent to the AI apps when they connect, e.g. house rules.">
+                        <field name="om_ai_mcp_instructions" class="w-100" placeholder="e.g. Prices are in EUR."/>
+                    </setting>
+                </block>
+            </xpath>
+        </field>
+    </record>
+</odoo>

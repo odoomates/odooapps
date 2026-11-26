@@ -66,15 +66,39 @@ Tools
 
 A registry of functions the AI may call (*AI > Configuration > Tools*). Each
 tool has a code, a description, a JSON schema for its parameters, a read-only
-flag, and optionally the models and groups it is limited to. The built-in
-tools are read-only:
+flag, and optionally the models and groups it is limited to. All tools run
+as the user who asks, never as superuser. Read-only tools:
 
 * find models, list the fields of a model
 * search records with simple filters, read a record
 * count records, grouped by a field if needed
+* aggregate records: sum, average, min, max or count, grouped by up to three
+  fields (dates by day, week, month, quarter or year)
+* the current user: company, allowed companies, time zone, language, today
+* list the attachments of a record, read an attachment (text files as text,
+  images as pictures, within a size limit)
+
+Tools that change data (not read-only, so the AI Assistant asks the user to
+confirm them):
+
+* create records (one or several, lines included), update records, delete
+  records, at most a set number of records per call
+* post a note or a message in the chatter of a record
+* upload an attachment to a record (base64, within a size limit)
+
+**Server actions as tools**: create a tool, pick a server action, and give it
+a name, a description and a parameters schema. The action runs as the user
+with the arguments in the context key ``ai_arguments`` and the records given
+in ``record_ids`` as active records.
+
+The number of records per call and the file size limit are set in
+*Settings > General Settings > AI > Tool Limits*.
 
 To add a tool, a module adds an ``om.ai.tool`` record and a method
-``_ai_tool_<name>(self, tool, **arguments)`` on ``om.ai.tool``.
+``_ai_tool_<name>(self, tool, **arguments)`` on ``om.ai.tool``. A module can
+limit what the tools may do on a model by overriding
+``_ai_check_operation(Model, operation)`` (operations read, create, write,
+unlink, post and method).
 
 Usage log and limits
 ====================

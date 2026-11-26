@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="base.user_admin" model="res.users">
+        <field name="group_ids" eval="[(4, ref('om_ai_mcp.group_mcp_user'))]"/>
+    </record>
+    <record id="base.user_demo" model="res.users">
+        <field name="group_ids" eval="[(4, ref('om_ai_mcp.group_mcp_user'))]"/>
+    </record>
+
+    <record id="mcp_access_partner" model="om.mcp.model.access">
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="perm_create" eval="True"/>
+        <field name="perm_write" eval="True"/>
+        <field name="note">Contacts</field>
+    </record>
+    <record id="mcp_access_country" model="om.mcp.model.access">
+        <field name="model_id" ref="base.model_res_country"/>
+    </record>
+    <record id="mcp_access_company" model="om.mcp.model.access">
+        <field name="model_id" ref="base.model_res_company"/>
+    </record>
+
+    <record id="prompt_customer_brief" model="om.ai.prompt">
+        <field name="name">Customer brief</field>
+        <field name="code">customer_brief</field>
+        <field name="feature">mcp</field>
+        <field name="mcp_available" eval="True"/>
+        <field name="mcp_description">A short brief of a customer before a call: open quotations, orders and the last messages.</field>
+        <field name="system_prompt">You prepare short briefs for sales people. Use the Odoo tools to look up the facts; never guess numbers.</field>
+        <field name="user_template">Prepare a brief of the customer {{ customer }}: who they are, their open quotations and orders, and the last messages in the chatter. Keep it under 150 words.</field>
+    </record>
+    <record id="prompt_sales_summary" model="om.ai.prompt">
+        <field name="name">Sales summary</field>
+        <field name="code">sales_summary</field>
+        <field name="feature">mcp</field>
+        <field name="mcp_available" eval="True"/>
+        <field name="mcp_description">Confirmed sales of a period, by customer and salesperson.</field>
+        <field name="user_template">Summarise the confirmed sales orders of {{ period }}: total amount, top 5 customers and the amount per salesperson. Use aggregate_records on sale.order.</field>
+    </record>
+</odoo>

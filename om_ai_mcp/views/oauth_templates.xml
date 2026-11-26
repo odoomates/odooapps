@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="oauth_layout" name="MCP OAuth Layout">
+        <t t-call="web.frontend_layout"
+            html_data="{'style': 'height: 100%;'}"
+            body_classname.f="bg-100"
+            no_header="True"
+            no_footer="True">
+            <div class="container py-5">
+                <div class="card border mx-auto o_om_mcp_oauth" style="max-width: 520px;">
+                    <div class="card-body p-4">
+                        <t t-out="0"/>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="oauth_consent" name="MCP OAuth Consent">
+        <t t-call="om_ai_mcp.oauth_layout">
+            <div class="text-center mb-3">
+                <img t-if="not user.company_id.uses_default_logo" t-attf-src="/logo.png?company={{ user.company_id.id }}" alt="Logo" style="max-height: 48px;"/>
+            </div>
+            <h1 class="h4 text-center mb-1">
+                <span t-out="client.name"/> wants to use Odoo
+            </h1>
+            <p class="text-center text-muted small mb-4">
+                as <b t-out="user.name"/> (<span t-out="user.login"/>)
+                <t t-if="database"> on database <b t-out="database"/></t>
+            </p>
+
+            <ul class="list-unstyled mb-3">
+                <li class="d-flex gap-2 mb-2">
+                    <i class="oi text-success mt-1" data-icon="check" role="img" aria-label="Allowed"/>
+                    <span>Read the records you may see, through the tools and resources of the MCP server.</span>
+                </li>
+                <li class="d-flex gap-2 mb-2">
+                    <i class="oi text-success mt-1" data-icon="check" role="img" aria-label="Allowed"/>
+                    <span>It works with your access rights and the model permissions set by your administrator.
+                        It never sees more than you do.</span>
+                </li>
+            </ul>
+
+            <form method="post" t-attf-action="/mcp/oauth/authorize">
+                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                <t t-foreach="values.items()" t-as="item">
+                    <input type="hidden" t-att-name="item[0]" t-att-value="item[1]"/>
+                </t>
+
+                <div t-if="can_write" class="border rounded p-3 mb-3 bg-light">
+                    <div class="form-check form-switch mb-1">
+                        <input class="form-check-input" type="checkbox" role="switch" id="allow_write" name="allow_write" value="1"/>
+                        <label class="form-check-label fw-bold" for="allow_write">Create and modify data</label>
+                    </div>
+                    <div class="small text-muted">Off: the app may only read. On: it may also create, update and
+                        delete records, post messages and attach files where the model permissions allow it.</div>
+                </div>
+                <div t-else="" class="alert alert-info small">The app asks to read only: it cannot change data.</div>
+
+                <div class="small mb-3">
+                    <div>App: <b t-out="client.name"/>
+                        <t t-if="client_host"> (<span t-out="client_host"/>)</t>
+                        <t t-if="client.registration == 'dynamic'"> - registered itself</t>
+                    </div>
+                    <div>You will be sent back to: <b t-out="redirect_host"/></div>
+                </div>
+                <div t-if="loopback" class="alert alert-warning small">
+                    The answer goes to a program on this computer (<span t-out="redirect_host"/>). Allow only if you
+                    just started the connection from an app you trust.
+                </div>
+
+                <div class="d-flex gap-2 justify-content-end">
+                    <button type="submit" name="decision" value="deny" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" name="decision" value="allow" class="btn btn-primary">Allow</button>
+                </div>
+            </form>
+            <p class="text-muted small mt-4 mb-0">You can disconnect the app at any time in AI &gt; MCP Server &gt;
+                Connected Apps.</p>
+        </t>
+    </template>
+
+    <template id="oauth_error" name="MCP OAuth Error">
+        <t t-call="om_ai_mcp.oauth_layout">
+            <h1 class="h4 mb-3" t-out="title"/>
+            <p class="mb-0" t-out="message"/>
+        </t>
+    </template>
+</odoo>
