@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_groups_privilege_planning" model="res.groups.privilege">
+        <field name="name">Planning</field>
+        <field name="sequence">8</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+
+    <record id="group_planning_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="comment">Sees their own published slots and the open slots, and asks to claim, switch or leave a slot.</field>
+        <field name="sequence">10</field>
+        <field name="implied_ids" eval="[(4, ref('base.group_user'))]"/>
+        <field name="privilege_id" ref="res_groups_privilege_planning"/>
+    </record>
+
+    <record id="group_planning_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="comment">Plans every resource, publishes schedules and approves requests.</field>
+        <field name="sequence">20</field>
+        <field name="implied_ids" eval="[(4, ref('om_planning.group_planning_user'))]"/>
+        <field name="privilege_id" ref="res_groups_privilege_planning"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+</odoo>

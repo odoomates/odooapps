@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_rotation_apply_view_form" model="ir.ui.view">
+        <field name="name">om.planning.rotation.apply.form</field>
+        <field name="model">om.planning.rotation.apply</field>
+        <field name="arch" type="xml">
+            <form string="Apply Rotation">
+                <group>
+                    <group>
+                        <field name="rotation_id"/>
+                        <field name="resource_ids" widget="many2many_tags"/>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="start_day"/>
+                        <field name="stagger"/>
+                        <field name="skip_leaves"/>
+                        <field name="replace_drafts"/>
+                        <field name="publish"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_apply" type="object" string="Create Slots" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_planning_rotation_apply" model="ir.actions.act_window">
+        <field name="name">Apply Rotation</field>
+        <field name="res_model">om.planning.rotation.apply</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

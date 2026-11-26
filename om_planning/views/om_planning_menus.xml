@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem id="menu_om_planning_root" name="Planning" sequence="55"
+        web_icon="om_planning,static/description/icon.png"
+        groups="om_planning.group_planning_user"/>
+
+    <menuitem id="menu_om_planning_my" name="My Planning" parent="menu_om_planning_root" sequence="5"/>
+    <menuitem id="menu_om_planning_my_slots" name="My Slots" parent="menu_om_planning_my"
+        action="action_om_planning_slot_my" sequence="10"/>
+    <menuitem id="menu_om_planning_open_slots" name="Open Slots" parent="menu_om_planning_my"
+        action="action_om_planning_slot_open" sequence="20"/>
+    <menuitem id="menu_om_planning_my_requests" name="Requests" parent="menu_om_planning_my"
+        action="action_om_planning_request" sequence="30"/>
+
+    <menuitem id="menu_om_planning_schedule" name="Schedule" parent="menu_om_planning_root" sequence="10"
+        groups="om_planning.group_planning_manager"/>
+    <menuitem id="menu_om_planning_schedule_resource" name="By Resource" parent="menu_om_planning_schedule"
+        action="action_om_planning_slot" sequence="10"/>
+    <menuitem id="menu_om_planning_schedule_role" name="By Role" parent="menu_om_planning_schedule"
+        action="action_om_planning_slot_role" sequence="20"/>
+    <menuitem id="menu_om_planning_schedule_source" name="By Source" parent="menu_om_planning_schedule"
+        action="action_om_planning_slot_source" sequence="30"/>
+    <menuitem id="menu_om_planning_schedule_sent" name="Sent Schedules" parent="menu_om_planning_schedule"
+        action="action_om_planning_schedule" sequence="40"/>
+
+    <menuitem id="menu_om_planning_reporting" name="Reporting" parent="menu_om_planning_root" sequence="80"
+        groups="om_planning.group_planning_manager"/>
+    <menuitem id="menu_om_planning_analysis" name="Planning Analysis" parent="menu_om_planning_reporting"
+        action="action_om_planning_slot_analysis" sequence="10"/>
+    <menuitem id="menu_om_planning_load" name="Planned vs Capacity" parent="menu_om_planning_reporting"
+        action="action_om_planning_load_wizard" sequence="20"/>
+
+    <menuitem id="menu_om_planning_config" name="Configuration" parent="menu_om_planning_root" sequence="90"
+        groups="om_planning.group_planning_manager"/>
+    <menuitem id="menu_om_planning_settings" name="Settings" parent="menu_om_planning_config"
+        action="action_om_planning_settings" sequence="1" groups="base.group_system"/>
+    <menuitem id="menu_om_planning_resources" name="Resources" parent="menu_om_planning_config"
+        action="action_resource_planning" sequence="10"/>
+    <menuitem id="menu_om_planning_unavailability" name="Unavailability" parent="menu_om_planning_config"
+        action="action_resource_calendar_leaves_planning" sequence="15"/>
+    <menuitem id="menu_om_planning_roles" name="Roles" parent="menu_om_planning_config"
+        action="action_om_planning_role" sequence="20"/>
+    <menuitem id="menu_om_planning_templates" name="Shift Templates" parent="menu_om_planning_config"
+        action="action_om_planning_template" sequence="30"/>
+    <menuitem id="menu_om_planning_rotations" name="Rotations" parent="menu_om_planning_config"
+        action="action_om_planning_rotation" sequence="40"/>
+    <menuitem id="menu_om_planning_working_times" name="Working Schedules" parent="menu_om_planning_config"
+        action="resource.action_resource_calendar_form" sequence="50" groups="base.group_system"/>
+
+</odoo>

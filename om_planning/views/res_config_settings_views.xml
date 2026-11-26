@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_planning</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="55"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Planning" string="Planning" name="om_planning" groups="om_planning.group_planning_manager">
+                    <block title="Planning Rules" name="planning_rules">
+                        <setting id="planning_min_rest" string="Minimum Rest"
+                            help="Hours between the slots of a person on two different days (0: no rule)">
+                            <field name="planning_min_rest_hours" widget="float_time"/>
+                        </setting>
+                        <setting id="planning_max_day" string="Maximum Hours per Day"
+                            help="Planned hours of a person on one day (0: no rule)">
+                            <field name="planning_max_hours_day" widget="float_time"/>
+                        </setting>
+                        <setting id="planning_max_week" string="Maximum Hours per Week"
+                            help="Planned hours of a person in one week (0: no rule)">
+                            <field name="planning_max_hours_week" widget="float_time"/>
+                        </setting>
+                        <setting id="planning_working_time"
+                            help="A slot outside the working schedule of its resource is a conflict">
+                            <field name="planning_check_working_time"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_planning_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'om_planning', 'bin_size': False}</field>
+    </record>
+
+</odoo>

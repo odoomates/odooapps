@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_template_view_list" model="ir.ui.view">
+        <field name="name">om.planning.template.list</field>
+        <field name="model">om.planning.template</field>
+        <field name="arch" type="xml">
+            <list string="Shift Templates" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="code"/>
+                <field name="name"/>
+                <field name="start_time" widget="float_time"/>
+                <field name="end_time" widget="float_time"/>
+                <field name="break_hours" widget="float_time"/>
+                <field name="duration" widget="float_time"/>
+                <field name="role_id"/>
+                <field name="color" widget="color_picker"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_planning_template_view_form" model="ir.ui.view">
+        <field name="name">om.planning.template.form</field>
+        <field name="model">om.planning.template</field>
+        <field name="arch" type="xml">
+            <form string="Shift Template">
+                <sheet>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Morning"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="start_time" widget="float_time"/>
+                            <field name="end_time" widget="float_time"/>
+                            <field name="break_hours" widget="float_time"/>
+                            <field name="duration" widget="float_time"/>
+                        </group>
+                        <group>
+                            <field name="role_id"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_planning_template" model="ir.actions.act_window">
+        <field name="name">Shift Templates</field>
+        <field name="res_model">om.planning.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a shift template</p>
+            <p>Templates are the usual hours of a slot: morning, evening, night...</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_planning_schedule" model="mail.template">
+            <field name="name">Planning: Your Schedule</field>
+            <field name="model_id" ref="om_planning.model_om_planning_schedule"/>
+            <field name="subject">Your planning: {{ object.name }}</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="use_default_to" eval="False"/>
+            <field name="description">Sent to each person with their slots when a schedule is published</field>
+            <field name="email_layout_xmlid">mail.mail_notification_light</field>
+            <field name="body_html" type="html">
+<div>
+    <t t-set="resource_id" t-value="ctx.get('planning_resource_id')"/>
+    <t t-set="my_slots" t-value="object.planning_resource_slots(resource_id)"/>
+    <t t-set="open_slots" t-value="object.include_open_slots and object.planning_open_slots(resource_id)"/>
+    Hello <t t-out="ctx.get('planning_resource_name') or ''">Marc Demo</t>,<br/><br/>
+    Your planning for <strong t-out="object.name or ''">Schedule</strong> is ready.
+    <t t-if="object.note"><br/><br/><t t-out="object.note or ''"/></t>
+    <br/><br/>
+    <t t-if="my_slots">
+        <table style="border-collapse: collapse; width: 100%;">
+            <t t-foreach="my_slots" t-as="slot">
+                <tr style="border-bottom: 1px solid #E8DFEC;">
+                    <td style="padding: 6px 8px;" t-out="object.planning_format_slot(slot, resource_id)">Mon 01 Dec 08:00 - 17:00</td>
+                    <td style="padding: 6px 8px;" t-out="slot.role_id.name or ''">Technician</td>
+                    <td style="padding: 6px 8px; color: #714B67;" t-out="slot.name or ''"/>
+                </tr>
+            </t>
+        </table>
+    </t>
+    <t t-else="">You have no slot in this period.</t>
+    <t t-if="open_slots">
+        <br/>
+        <t t-out="len(open_slots)">2</t> open slot(s) can be claimed on your planning page.
+    </t>
+    <br/><br/>
+    <div style="margin: 16px 0;">
+        <a t-att-href="ctx.get('planning_url')" style="background-color: #714B67; padding: 8px 16px; text-decoration: none; color: #fff; border-radius: 5px;">View My Planning</a>
+        &amp;nbsp;
+        <a t-att-href="ctx.get('planning_ics_url')" style="color: #714B67;">Add to my calendar</a>
+    </div>
+    <t t-if="user.signature">
+        <div>--<br/><t t-out="user.signature or ''">Mitchell Admin</t></div>
+    </t>
+</div>
+            </field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

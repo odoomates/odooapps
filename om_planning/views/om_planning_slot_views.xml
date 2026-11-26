@@ -1,0 +1,336 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_slot_view_form" model="ir.ui.view">
+        <field name="name">om.planning.slot.form</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <form string="Slot">
+                <header>
+                    <button name="action_publish" type="object" string="Publish" class="btn-primary"
+                        invisible="state == 'published' and not changed_since_published"
+                        groups="om_planning.group_planning_manager"/>
+                    <button name="action_unpublish" type="object" string="Back to Draft"
+                        invisible="state == 'draft'" groups="om_planning.group_planning_manager"/>
+                    <button name="action_request_claim" type="object" string="Claim"
+                        class="btn-primary" invisible="not is_open or state != 'published' or not id"/>
+                    <button name="action_request_switch" type="object" string="Ask to Switch"
+                        invisible="not is_mine or state != 'published'"/>
+                    <button name="action_request_unassign" type="object" string="Ask to Leave"
+                        invisible="not is_mine or state != 'published'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_source" type="object" class="oe_stat_button" icon="link"
+                            invisible="not source_ref">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Source</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="alert alert-danger mb-2" role="alert" invisible="not conflict_count">
+                        <strong>Conflicts</strong>
+                        <field name="conflict_info" class="d-block" style="white-space: pre-line;"/>
+                    </div>
+                    <div class="alert alert-warning mb-2" role="alert" invisible="not changed_since_published">
+                        This slot was changed after it was published. Publish it again to notify the resources.
+                    </div>
+                    <field name="is_open" invisible="1"/>
+                    <field name="is_mine" invisible="1"/>
+                    <field name="conflict_count" invisible="1"/>
+                    <field name="changed_since_published" invisible="1"/>
+                    <field name="recurrence_id" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="resource_ids" widget="many2many_tags"
+                                options="{'color_field': 'color'}" placeholder="Open slot"/>
+                            <field name="role_id" options="{'no_quick_create': True}"/>
+                            <field name="template_id" options="{'no_create': True}"
+                                domain="['|', ('role_id', '=', False), ('role_id', '=', role_id)]"/>
+                            <field name="name" placeholder="e.g. Store opening"/>
+                        </group>
+                        <group>
+                            <field name="start_datetime" string="Dates" widget="daterange"
+                                options="{'end_date_field': 'end_datetime', 'always_range': True}"/>
+                            <field name="end_datetime" invisible="1"/>
+                            <field name="break_hours" widget="float_time"/>
+                            <field name="allocated_percentage"/>
+                            <field name="allocated_hours" widget="float_time"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Repeat" name="recurrence">
+                            <field name="repeat"/>
+                            <label for="repeat_interval" invisible="not repeat"/>
+                            <div class="d-flex gap-2" invisible="not repeat">
+                                <field name="repeat_interval" class="oe_inline" style="max-width: 4rem;"/>
+                                <field name="repeat_unit" class="oe_inline"/>
+                            </div>
+                            <field name="repeat_type" invisible="not repeat"/>
+                            <field name="repeat_until" invisible="not repeat or repeat_type != 'until'"
+                                required="repeat and repeat_type == 'until'"/>
+                            <field name="repeat_count" invisible="not repeat or repeat_type != 'count'"/>
+                            <field name="recurrence_update" widget="radio" invisible="not recurrence_id"/>
+                        </group>
+                        <group string="Source" name="source">
+                            <field name="source_ref"/>
+                            <field name="source_name" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="properties" columns="2"/>
+                    <notebook>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Instructions for the people of the slot"/>
+                        </page>
+                        <page string="Requests" name="requests" groups="om_planning.group_planning_manager"
+                            invisible="not request_ids">
+                            <field name="request_ids" readonly="1">
+                                <list>
+                                    <field name="request_type"/>
+                                    <field name="resource_id"/>
+                                    <field name="target_resource_id"/>
+                                    <field name="state" widget="badge" decoration-warning="state == 'pending'"
+                                        decoration-success="state == 'approved'" decoration-danger="state == 'refused'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                    <div class="d-flex gap-2 justify-content-end" invisible="not recurrence_id"
+                        groups="om_planning.group_planning_manager">
+                        <button name="action_stop_recurrence" type="object" string="Stop Repeating After This"
+                            class="btn-link" confirm="Delete the next slots of the series?"/>
+                        <button name="action_unlink_subsequent" type="object" string="Delete This and Next"
+                            class="btn-link text-danger" confirm="Delete this slot and the next ones of the series?"/>
+                        <button name="action_unlink_all" type="object" string="Delete Series"
+                            class="btn-link text-danger" confirm="Delete every slot of the series?"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_gantt" model="ir.ui.view">
+        <field name="name">om.planning.slot.gantt</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <gantt string="Planning"
+                   js_class="om_planning_gantt"
+                   date_start="start_datetime"
+                   date_stop="end_datetime"
+                   default_scale="week"
+                   scales="day,week,month"
+                   default_group_by="resource_ids"
+                   default_order="start_datetime"
+                   color="color"
+                   consolidation="allocated_hours"
+                   progress_bar="resource_ids,role_id"
+                   empty_row_labels="{'resource_ids': 'Open Shifts', 'role_id': 'No Role', 'source_name': 'No Source'}"
+                   thumbnails="{'resource_ids': 'planning_avatar_128'}"
+                   decoration-striped="state == 'draft'"
+                   decoration-warning="changed_since_published"
+                   decoration-danger="conflict_count &gt; 0"
+                   display_unavailability="1"
+                   precision="{'day': 'hour:half', 'week': 'day:half', 'month': 'day:half'}"
+                   total_row="1">
+                <field name="start_datetime"/>
+                <field name="end_datetime"/>
+                <field name="role_id"/>
+                <field name="resource_ids"/>
+                <field name="state"/>
+                <field name="allocated_hours"/>
+                <field name="break_hours"/>
+                <field name="note"/>
+                <field name="source_name"/>
+                <field name="conflict_count"/>
+                <field name="conflict_info"/>
+                <field name="changed_since_published"/>
+                <field name="is_open"/>
+                <templates>
+                    <t t-name="gantt-popover">
+                        <div class="d-flex gap-2">
+                            <i class="oi oi-fw text-muted lh-base" data-icon="calendar_today" title="Dates"/>
+                            <field name="start_datetime" class="fw-bold"/><span>-</span><field name="end_datetime" class="fw-bold"/>
+                        </div>
+                        <div class="d-flex gap-2" t-if="record.role_id.raw_value">
+                            <span class="fw-bold">Role</span><field name="role_id"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="fw-bold">Resources</span><field name="resource_ids" widget="many2many_tags"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="fw-bold">Hours</span><field name="allocated_hours" widget="float_time"/>
+                            <t t-if="record.break_hours.raw_value">
+                                <span class="text-muted">Break</span><field name="break_hours" widget="float_time" class="text-muted"/>
+                            </t>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="fw-bold">Status</span><field name="state"/>
+                            <span t-if="record.changed_since_published.raw_value" class="text-warning">changed since published</span>
+                        </div>
+                        <div class="d-flex gap-2" t-if="record.source_name.raw_value">
+                            <span class="fw-bold">Source</span><field name="source_name"/>
+                        </div>
+                        <div t-if="record.note.raw_value" class="text-muted"><field name="note"/></div>
+                        <div t-if="record.conflict_count.raw_value" class="text-danger" style="white-space: pre-line;">
+                            <field name="conflict_info"/>
+                        </div>
+                    </t>
+                </templates>
+            </gantt>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_list" model="ir.ui.view">
+        <field name="name">om.planning.slot.list</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <list string="Slots" multi_edit="1" decoration-danger="conflict_count &gt; 0"
+                decoration-muted="state == 'draft'">
+                <field name="start_datetime"/>
+                <field name="end_datetime"/>
+                <field name="resource_ids" widget="many2many_tags"/>
+                <field name="role_id"/>
+                <field name="name" optional="hide"/>
+                <field name="allocated_hours" widget="float_time" sum="Total"/>
+                <field name="source_name" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="conflict_count" optional="show"/>
+                <field name="changed_since_published" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'published'"/>
+                <button name="action_request_claim" type="object" string="Claim" icon="back_hand"
+                    invisible="not is_open or state != 'published'"/>
+                <field name="is_open" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_calendar" model="ir.ui.view">
+        <field name="name">om.planning.slot.calendar</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <calendar string="Planning" date_start="start_datetime" date_stop="end_datetime" color="role_id"
+                mode="week" event_open_popup="1" quick_create="0">
+                <field name="resource_ids" widget="many2many_tags" filters="1"/>
+                <field name="role_id" filters="1"/>
+                <field name="state"/>
+                <field name="allocated_hours" widget="float_time"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_pivot" model="ir.ui.view">
+        <field name="name">om.planning.slot.pivot</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <pivot string="Planning Analysis" sample="1">
+                <field name="role_id" type="row"/>
+                <field name="start_datetime" interval="week" type="col"/>
+                <field name="allocated_hours" type="measure" widget="float_time"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_graph" model="ir.ui.view">
+        <field name="name">om.planning.slot.graph</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <graph string="Planning Analysis" type="bar" sample="1">
+                <field name="role_id"/>
+                <field name="allocated_hours" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_search" model="ir.ui.view">
+        <field name="name">om.planning.slot.search</field>
+        <field name="model">om.planning.slot</field>
+        <field name="arch" type="xml">
+            <search string="Slots">
+                <field name="resource_ids"/>
+                <field name="role_id"/>
+                <field name="name"/>
+                <field name="source_name"/>
+                <filter name="my_slots" string="My Slots" domain="[('resource_ids.user_id', '=', uid)]"/>
+                <filter name="open_slots" string="Open Slots" domain="[('is_open', '=', True)]"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="published" string="Published" domain="[('state', '=', 'published')]"/>
+                <filter name="changed" string="Changed Since Published" domain="[('changed_since_published', '=', True)]"/>
+                <separator/>
+                <filter name="conflicts" string="Conflicts" domain="[('has_conflict', '=', True)]"/>
+                <separator/>
+                <filter name="human" string="People" domain="[('resource_ids.resource_type', '=', 'user')]"/>
+                <filter name="material" string="Equipment" domain="[('resource_ids.resource_type', '=', 'material')]"/>
+                <separator/>
+                <filter name="future" string="Upcoming" domain="[('end_datetime', '&gt;=', 'now')]"/>
+                <filter name="start_datetime" string="Date" date="start_datetime"/>
+                <group>
+                    <filter name="group_resource" string="Resource" context="{'group_by': 'resource_ids'}"/>
+                    <filter name="group_role" string="Role" context="{'group_by': 'role_id'}"/>
+                    <filter name="group_source" string="Source" context="{'group_by': 'source_name'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_company" string="Company" context="{'group_by': 'company_id'}"
+                        groups="base.group_multi_company"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot" model="ir.actions.act_window">
+        <field name="name">Schedule</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,calendar,list,form,pivot,graph</field>
+        <field name="context">{'om_planning_label': 'role'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Plan your first slot</p>
+            <p>Plan people, crews, equipment, vehicles and rooms, then publish and send the schedule.</p>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot_role" model="ir.actions.act_window">
+        <field name="name">Schedule by Role</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,calendar,list,form,pivot,graph</field>
+        <field name="context">{'search_default_group_role': 1, 'om_planning_label': 'resource'}</field>
+    </record>
+
+    <record id="action_om_planning_slot_source" model="ir.actions.act_window">
+        <field name="name">Schedule by Source</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,list,form</field>
+        <field name="context">{'search_default_group_source': 1, 'om_planning_label': 'resource'}</field>
+    </record>
+
+    <record id="action_om_planning_slot_my" model="ir.actions.act_window">
+        <field name="name">My Planning</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">calendar,list,gantt,form</field>
+        <field name="domain">[('resource_ids.user_id', '=', uid), ('state', '=', 'published')]</field>
+        <field name="context">{'create': 0, 'search_default_future': 1, 'om_planning_label': 'role'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No slot planned for you yet</p>
+            <p>Your published slots show here. Open slots can be claimed from the Open Slots menu.</p>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot_open" model="ir.actions.act_window">
+        <field name="name">Open Slots</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">list,calendar,form</field>
+        <field name="domain">[('is_open', '=', True), ('state', '=', 'published')]</field>
+        <field name="context">{'create': 0, 'search_default_future': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No open slot</p>
+            <p>Published slots without anybody show here: claim one and your manager approves it.</p>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot_analysis" model="ir.actions.act_window">
+        <field name="name">Planning Analysis</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">pivot,graph,list</field>
+    </record>
+
+</odoo>

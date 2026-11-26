@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="resource_resource_view_form_planning" model="ir.ui.view">
+        <field name="name">resource.resource.form.planning</field>
+        <field name="model">resource.resource</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <form string="Resource">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_planning" type="object" class="oe_stat_button" icon="view_timeline">
+                            <field name="planning_slot_count" widget="statinfo" string="Slots"/>
+                        </button>
+                    </div>
+                    <field name="active" invisible="1"/>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="planning_image" widget="image" class="oe_avatar"
+                        options="{'preview_image': 'planning_avatar_128'}"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Delivery Van 2"/></h1>
+                        <field name="resource_type" widget="radio" options="{'horizontal': true}"/>
+                    </div>
+                    <group>
+                        <group name="planning">
+                            <field name="planning_role_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="planning_default_role_id" domain="[('id', 'in', planning_role_ids)]"/>
+                            <field name="color" widget="color_picker"/>
+                            <field name="planning_capacity" invisible="resource_type == 'user'"/>
+                            <field name="assigned_resource_id" invisible="resource_type == 'user'"/>
+                            <field name="following_resource_ids" widget="many2many_tags"
+                                invisible="resource_type != 'user'" readonly="1"/>
+                        </group>
+                        <group name="resource_details">
+                            <field name="user_id" invisible="resource_type == 'material'"
+                                help="User who sees the slots of this resource, internal or portal."/>
+                            <field name="calendar_id" placeholder="Fully Flexible"/>
+                            <field name="tz"/>
+                            <field name="company_id" options="{'no_create': True}" groups="base.group_multi_company"
+                                placeholder="Visible to all"/>
+                        </group>
+                    </group>
+                    <field name="planning_note" placeholder="Notes for the planners"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="resource_resource_view_list_planning" model="ir.ui.view">
+        <field name="name">resource.resource.list.planning</field>
+        <field name="model">resource.resource</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <list string="Resources" multi_edit="1">
+                <field name="planning_avatar_128" widget="image" options="{'size': [24, 24]}" nolabel="1" width="30"/>
+                <field name="name"/>
+                <field name="resource_type"/>
+                <field name="planning_role_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                <field name="planning_default_role_id" optional="show"/>
+                <field name="user_id" optional="show"/>
+                <field name="calendar_id" optional="show"/>
+                <field name="planning_capacity" optional="hide"/>
+                <field name="assigned_resource_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="resource_resource_view_search_planning" model="ir.ui.view">
+        <field name="name">resource.resource.search.planning</field>
+        <field name="model">resource.resource</field>
+        <field name="inherit_id" ref="resource.view_resource_resource_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='name']" position="after">
+                <field name="planning_role_ids"/>
+            </xpath>
+            <xpath expr="//group" position="inside">
+                <filter name="group_planning_role" string="Default Role" context="{'group_by': 'planning_default_role_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_resource_planning" model="ir.actions.act_window">
+        <field name="name">Resources</field>
+        <field name="res_model">resource.resource</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('resource_resource_view_list_planning')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('resource_resource_view_form_planning')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a resource</p>
+            <p>People, crews, machines, vehicles and rooms that you plan.</p>
+        </field>
+    </record>
+
+    <record id="action_resource_calendar_leaves_planning" model="ir.actions.act_window">
+        <field name="name">Unavailability</field>
+        <field name="res_model">resource.calendar.leaves</field>
+        <field name="view_mode">list,form,calendar</field>
+        <field name="domain">[('resource_id', '!=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add an unavailability</p>
+            <p>Periods a person or a machine cannot be planned: absence, repair, inspection...</p>
+        </field>
+    </record>
+
+</odoo>

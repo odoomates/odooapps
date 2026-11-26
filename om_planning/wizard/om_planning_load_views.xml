@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_load_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.planning.load.wizard.form</field>
+        <field name="model">om.planning.load.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Planned vs Capacity">
+                <group>
+                    <group>
+                        <field name="date_from"/>
+                        <field name="date_to"/>
+                    </group>
+                    <group>
+                        <field name="resource_ids" widget="many2many_tags"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_open" type="object" string="Analyse" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_planning_load_wizard" model="ir.actions.act_window">
+        <field name="name">Planned vs Capacity</field>
+        <field name="res_model">om.planning.load.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <record id="om_planning_load_view_pivot" model="ir.ui.view">
+        <field name="name">om.planning.load.pivot</field>
+        <field name="model">om.planning.load</field>
+        <field name="arch" type="xml">
+            <pivot string="Planned vs Capacity">
+                <field name="resource_id" type="row"/>
+                <field name="date" interval="week" type="col"/>
+                <field name="capacity_hours" type="measure"/>
+                <field name="planned_hours" type="measure"/>
+                <field name="free_hours" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_planning_load_view_graph" model="ir.ui.view">
+        <field name="name">om.planning.load.graph</field>
+        <field name="model">om.planning.load</field>
+        <field name="arch" type="xml">
+            <graph string="Planned vs Capacity" type="bar">
+                <field name="resource_id"/>
+                <field name="capacity_hours" type="measure"/>
+                <field name="planned_hours" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="om_planning_load_view_list" model="ir.ui.view">
+        <field name="name">om.planning.load.list</field>
+        <field name="model">om.planning.load</field>
+        <field name="arch" type="xml">
+            <list string="Planned vs Capacity" create="0" edit="0">
+                <field name="date"/>
+                <field name="resource_id"/>
+                <field name="role_id"/>
+                <field name="capacity_hours" sum="Total"/>
+                <field name="planned_hours" sum="Total"/>
+                <field name="open_hours" sum="Total" optional="hide"/>
+                <field name="free_hours" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_planning_load_view_search" model="ir.ui.view">
+        <field name="name">om.planning.load.search</field>
+        <field name="model">om.planning.load</field>
+        <field name="arch" type="xml">
+            <search string="Planned vs Capacity">
+                <field name="resource_id"/>
+                <field name="role_id"/>
+                <group>
+                    <filter name="group_resource" string="Resource" context="{'group_by': 'resource_id'}"/>
+                    <filter name="group_role" string="Role" context="{'group_by': 'role_id'}"/>
+                    <filter name="group_date" string="Date" context="{'group_by': 'date:week'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_planning_load" model="ir.actions.act_window">
+        <field name="name">Planned vs Capacity</field>
+        <field name="res_model">om.planning.load</field>
+        <field name="view_mode">pivot,graph,list</field>
+    </record>
+
+</odoo>

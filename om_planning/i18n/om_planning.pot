@@ -1,0 +1,2317 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* om_planning
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-26 04:26+0000\n"
+"PO-Revision-Date: 2026-11-26 04:26+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "%(planned)s / %(capacity)s h"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "%(resource)s is already planned: %(slots)s"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "%(resource)s is not available: %(leaves)s"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "%(resource)s: %(hours)s h outside the working schedule"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid ""
+"%(resource)s: %(hours)s h planned in week %(week)s (maximum %(maximum)s h)"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "%(resource)s: %(hours)s h planned on %(day)s (maximum %(maximum)s h)"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid ""
+"%(resource)s: only %(hours)s h of rest before or after %(slot)s (minimum "
+"%(minimum)s h)"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "%s is not planned on this slot."
+msgstr ""
+
+#. module: om_planning
+#. odoo-javascript
+#: code:addons/om_planning/static/src/planning_gantt.js:0
+msgid "%s slots copied from the previous period."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/wizard/om_planning_rotation_apply.py:0
+msgid "%s slots created."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_schedule.py:0
+msgid "%s slots published and sent."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_schedule.py:0
+msgid "%s slots published."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_recurrence.py:0
+msgid "%s times"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.rotation,name:om_planning.rotation_two_two_two
+msgid "2 mornings, 2 evenings, 2 days off"
+msgstr ""
+
+#. module: om_planning
+#: model:mail.template,body_html:om_planning.mail_template_planning_schedule
+msgid ""
+"<div>\n"
+"    <t t-set=\"resource_id\" t-value=\"ctx.get('planning_resource_id')\"/>\n"
+"    <t t-set=\"my_slots\" t-value=\"object.planning_resource_slots(resource_id)\"/>\n"
+"    <t t-set=\"open_slots\" t-value=\"object.include_open_slots and object.planning_open_slots(resource_id)\"/>\n"
+"    Hello <t t-out=\"ctx.get('planning_resource_name') or ''\">Marc Demo</t>,<br/><br/>\n"
+"    Your planning for <strong t-out=\"object.name or ''\">Schedule</strong> is ready.\n"
+"    <t t-if=\"object.note\"><br/><br/><t t-out=\"object.note or ''\"/></t>\n"
+"    <br/><br/>\n"
+"    <t t-if=\"my_slots\">\n"
+"        <table style=\"border-collapse: collapse; width: 100%;\">\n"
+"            <t t-foreach=\"my_slots\" t-as=\"slot\">\n"
+"                <tr style=\"border-bottom: 1px solid #E8DFEC;\">\n"
+"                    <td style=\"padding: 6px 8px;\" t-out=\"object.planning_format_slot(slot, resource_id)\">Mon 01 Dec 08:00 - 17:00</td>\n"
+"                    <td style=\"padding: 6px 8px;\" t-out=\"slot.role_id.name or ''\">Technician</td>\n"
+"                    <td style=\"padding: 6px 8px; color: #714B67;\" t-out=\"slot.name or ''\"/>\n"
+"                </tr>\n"
+"            </t>\n"
+"        </table>\n"
+"    </t>\n"
+"    <t t-else=\"\">You have no slot in this period.</t>\n"
+"    <t t-if=\"open_slots\">\n"
+"        <br/>\n"
+"        <t t-out=\"len(open_slots)\">2</t> open slot(s) can be claimed on your planning page.\n"
+"    </t>\n"
+"    <br/><br/>\n"
+"    <div style=\"margin: 16px 0;\">\n"
+"        <a t-att-href=\"ctx.get('planning_url')\" style=\"background-color: #714B67; padding: 8px 16px; text-decoration: none; color: #fff; border-radius: 5px;\">View My Planning</a>\n"
+"        &amp;nbsp;\n"
+"        <a t-att-href=\"ctx.get('planning_ics_url')\" style=\"color: #714B67;\">Add to my calendar</a>\n"
+"    </div>\n"
+"    <t t-if=\"user.signature\">\n"
+"        <div data-o-mail-quote=\"1\">--<br data-o-mail-quote=\"1\"/><t t-out=\"user.signature or ''\">Mitchell Admin</t></div>\n"
+"    </t>\n"
+"</div>\n"
+"            "
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_schedule_page
+msgid "<i class=\"oi me-1\" data-icon=\"calendar_today\"/>Add to my calendar"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "<i class=\"oi me-1\" data-icon=\"calendar_today\"/>Calendar feed (ICS)"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid ""
+"<i class=\"oi oi-fw text-muted lh-base\" data-icon=\"calendar_today\" "
+"title=\"Dates\"/>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_slot_rows
+msgid "<span class=\"badge text-bg-warning\">Requested</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span class=\"fw-bold\">Hours</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span class=\"fw-bold\">Resources</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span class=\"fw-bold\">Role</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span class=\"fw-bold\">Source</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span class=\"fw-bold\">Status</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "<span class=\"o_stat_text\">Source</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span class=\"text-muted\">Break</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "<span>-</span>"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "<strong>Conflicts</strong>"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.module.module,description:base.module_om_planning
+msgid ""
+"A planning engine for any resource: people with or without an employee "
+"record, crews, equipment, vehicles and rooms, planned on a Gantt chart and "
+"shared with the people who do the work."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_rotation
+msgid ""
+"A rotation is a cycle of shift templates and days off, applied to resources "
+"from a date."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "A slot outside the working schedule of its resource is a conflict"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_resource_resource__assigned_resource_id
+msgid ""
+"A tool or vehicle that goes with this person: it is added to the slots of "
+"the person."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__access_token
+msgid "Access Token"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_needaction
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_needaction
+msgid "Action Needed"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__active
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__active
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__active
+msgid "Active"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_ids
+msgid "Activities"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_exception_decoration
+msgid "Activity Exception Decoration"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_plans_ids
+msgid "Activity Plans"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_state
+msgid "Activity State"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_type_icon
+msgid "Activity Type Icon"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_resource_calendar_leaves_planning
+msgid "Add an unavailability"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__recurrence_update__all
+msgid "All slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__allocated_hours
+msgid "Allocated Hours"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__allocated_percentage
+msgid "Allocated Time (%)"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__allow_overlap
+msgid "Allow Overlap"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_template__end_time
+msgid "An end hour before the start hour ends the next day."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_wizard_view_form
+msgid "Analyse"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__recurrence_update
+msgid "Apply Changes To"
+msgstr ""
+
+#. module: om_planning
+#. odoo-javascript
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_rotation.py:0
+#: code:addons/om_planning/static/src/planning_gantt.xml:0
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_rotation_apply
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_apply_view_form
+msgid "Apply Rotation"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_rotation_apply
+msgid "Apply a Planning Rotation"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_view_form
+msgid "Apply to Resources"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_list
+msgid "Approve"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "Approve the planning request"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__state__approved
+msgid "Approved"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "Archived"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Ask to Leave"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form_switch
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Ask to Switch"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "Ask to leave"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_list
+msgid "Asked On"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__following_resource_ids
+msgid "Assigned Equipment"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_attachment_count
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_attachment_count
+msgid "Attachment Count"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Back to Draft"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__break_hours
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__break_hours
+msgid "Break"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_schedule_resource
+msgid "By Resource"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_schedule_role
+msgid "By Role"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_schedule_source
+msgid "By Source"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__can_approve
+msgid "Can Approve"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form
+msgid "Cancel Request"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__state__cancelled
+msgid "Cancelled"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_capacity
+msgid "Capacity"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__capacity_hours
+msgid "Capacity (h)"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.role,name:om_planning.role_cashier
+msgid "Cashier"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__changed_since_published
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Changed Since Published"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "Choose the person who takes the slot."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_list
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_schedule_page
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "Claim"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_schedule_page
+msgid "Claim a slot: your manager approves it."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__request_type__claim
+msgid "Claim an open slot"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_request
+msgid ""
+"Claims of open slots, switches and requests to leave a slot show here for "
+"approval."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__code
+msgid "Code"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__color
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__color
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__color
+msgid "Color"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_res_company
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__company_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__company_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__company_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__company_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__company_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__company_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__company_id
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Company"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_config
+msgid "Configuration"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__conflict_info
+msgid "Conflict Details"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__conflict_count
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Conflicts"
+msgstr ""
+
+#. module: om_planning
+#. odoo-javascript
+#: code:addons/om_planning/static/src/planning_gantt.xml:0
+msgid "Copy Previous"
+msgstr ""
+
+#. module: om_planning
+#. odoo-javascript
+#: code:addons/om_planning/static/src/planning_gantt.xml:0
+msgid "Copy the slots of the previous period as drafts"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_apply_view_form
+msgid "Create Slots"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_resource_planning
+msgid "Create a resource"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_role
+msgid "Create a role"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_rotation
+msgid "Create a rotation"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_template
+msgid "Create a shift template"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__create_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__create_uid
+msgid "Created by"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__create_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__create_date
+msgid "Created on"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__line_ids
+msgid "Cycle"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__cycle_length
+msgid "Cycle Length (days)"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__date
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Date"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Dates"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__day_number
+#: model:om.planning.template,name:om_planning.template_day
+msgid "Day"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__is_day_off
+msgid "Day Off"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_rotation_apply__start_day
+msgid "Day of the cycle used on the first date."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_view_form
+msgid "Day off"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_recurrence__repeat_unit__day
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__repeat_unit__day
+msgid "Days"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__approver_id
+msgid "Decided By"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_default_role_id
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_search_planning
+msgid "Default Role"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__template_id
+msgid "Default Template"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Delete Series"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Delete This and Next"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Delete every slot of the series?"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_rotation_apply__replace_drafts
+msgid "Delete the draft slots of the resources in the period first."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Delete the next slots of the series?"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Delete this slot and the next ones of the series?"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__note
+msgid "Description"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_view_form
+msgid "Description of the rotation"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_wizard_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form_switch
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_apply_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form_send
+msgid "Discard"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__display_name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__display_name
+#: model:ir.model.fields,field_description:om_planning.field_res_company__display_name
+#: model:ir.model.fields,field_description:om_planning.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_slot__source_ref
+msgid "Document the slot is planned for (an order, a task, a ticket...)."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_schedule__state__draft
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__state__draft
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Draft"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.role,name:om_planning.role_driver
+msgid "Driver"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__duration_hours
+msgid "Duration"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_rotation_apply__stagger
+msgid "Each next resource starts one day later in the cycle."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__end_datetime
+msgid "End"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__end_time
+msgid "End Hour"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Equipment"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.template,name:om_planning.template_evening
+msgid "Evening"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_recurrence.py:0
+msgid "Every %(interval)s %(unit)s, %(end)s"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+msgid "Extra fields shown on the slots of this role."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_follower_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_follower_ids
+msgid "Followers"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_partner_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_partner_ids
+msgid "Followers (Partners)"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__assigned_resource_id
+msgid "Follows"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.role,name:om_planning.role_forklift
+msgid "Forklift"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__free_hours
+msgid "Free (h)"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__date_from
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__date_from
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__start_datetime
+msgid "From"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "Fully Flexible"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__has_conflict
+msgid "Has Conflicts"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__has_message
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__has_message
+msgid "Has Message"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__duration
+msgid "Hours"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__planning_hours_planned
+msgid "Hours Planned"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Hours between the slots of a person on two different days (0: no rule)"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_slot__allocated_hours
+msgid "Hours of work of each resource of the slot."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_role__template_id
+msgid "Hours proposed for the new slots of this role."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__planning_hours_to_plan
+msgid "Hours to Plan"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__id
+#: model:ir.model.fields,field_description:om_planning.field_res_company__id
+#: model:ir.model.fields,field_description:om_planning.field_res_config_settings__id
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__id
+msgid "ID"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_exception_icon
+msgid "Icon"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__activity_exception_icon
+msgid "Icon to indicate an exception activity."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__message_needaction
+#: model:ir.model.fields,help:om_planning.field_om_planning_schedule__message_needaction
+msgid "If checked, new messages require your attention."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__message_has_error
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__message_has_sms_error
+#: model:ir.model.fields,help:om_planning.field_om_planning_schedule__message_has_error
+#: model:ir.model.fields,help:om_planning.field_om_planning_schedule__message_has_sms_error
+msgid "If checked, some messages have a delivery error."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__include_open_slots
+msgid "Include Open Slots"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Instructions for the people of the slot"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_is_follower
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_is_follower
+msgid "Is Follower"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__write_uid
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__write_uid
+msgid "Last Updated by"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__write_date
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__write_date
+msgid "Last Updated on"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_rotation_line__template_id
+msgid "Leave empty for a day off."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_load_wizard__resource_ids
+msgid "Leave empty for every resource with a planning role."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_schedule__resource_ids
+msgid "Leave empty to publish the slots of every resource."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__request_type__unassign
+msgid "Leave the slot"
+msgstr ""
+
+#. module: om_planning
+#: model:res.groups,name:om_planning.group_planning_manager
+msgid "Manager"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__activity_type_icon
+msgid "Material Symbols icon e.g. checklist"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_res_company__planning_max_hours_day
+#: model:ir.model.fields,field_description:om_planning.field_res_config_settings__planning_max_hours_day
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Maximum Hours per Day"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_res_company__planning_max_hours_week
+#: model:ir.model.fields,field_description:om_planning.field_res_config_settings__planning_max_hours_week
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Maximum Hours per Week"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_res_company__planning_max_hours_week
+#: model:ir.model.fields,help:om_planning.field_res_config_settings__planning_max_hours_week
+msgid "Maximum planned hours of a resource in one week. 0 means no rule."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_res_company__planning_max_hours_day
+#: model:ir.model.fields,help:om_planning.field_res_config_settings__planning_max_hours_day
+msgid "Maximum planned hours of a resource on one day. 0 means no rule."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__note
+msgid "Message"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_has_error
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_has_error
+msgid "Message Delivery error"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form_send
+msgid "Message added to the email"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_ids
+msgid "Messages"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_res_company__planning_min_rest_hours
+#: model:ir.model.fields,field_description:om_planning.field_res_config_settings__planning_min_rest_hours
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Minimum Rest"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_res_company__planning_min_rest_hours
+#: model:ir.model.fields,help:om_planning.field_res_config_settings__planning_min_rest_hours
+msgid ""
+"Minimum hours between the slots of a person on two different days. 0 means "
+"no rule."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_recurrence__repeat_unit__month
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__repeat_unit__month
+msgid "Months"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.template,name:om_planning.template_morning
+msgid "Morning"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__my_activity_date_deadline
+msgid "My Activity Deadline"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_slot_my
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_my
+msgid "My Planning"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_search
+msgid "My Requests"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__is_mine
+msgid "My Slot"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_my_slots
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "My Slots"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "My requests"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "My slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__name
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__name
+msgid "Name"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_calendar_event_id
+msgid "Next Activity Calendar Event"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_date_deadline
+msgid "Next Activity Deadline"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_summary
+msgid "Next Activity Summary"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_type_id
+msgid "Next Activity Type"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.template,name:om_planning.template_night
+msgid "Night"
+msgstr ""
+
+#. module: om_planning
+#: model:res.groups.privilege,placeholder:om_planning.res_groups_privilege_planning
+msgid "No"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_slot_open
+msgid "No open slot"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "No open slot right now."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form
+msgid "No reason given"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_request
+msgid "No request"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_rotation_apply__skip_leaves
+msgid "No slot on days the resource is on leave."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_slot_my
+msgid "No slot planned for you yet"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "No slot planned for you."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_source__planning_status__none
+msgid "Not Planned"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__note
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Notes"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "Notes for the planners"
+msgstr ""
+
+#. module: om_planning
+#. odoo-javascript
+#: code:addons/om_planning/static/src/planning_gantt.js:0
+msgid "Nothing to copy from the previous period."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_needaction_counter
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_needaction_counter
+msgid "Number of Actions"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__resource_count
+msgid "Number of Resources"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__slot_count
+msgid "Number of Slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_recurrence__repeat_type__count
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__repeat_type__count
+msgid "Number of Times"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_has_error_counter
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_has_error_counter
+msgid "Number of errors"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__message_needaction_counter
+#: model:ir.model.fields,help:om_planning.field_om_planning_schedule__message_needaction_counter
+msgid "Number of messages requiring action"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__message_has_error_counter
+#: model:ir.model.fields,help:om_planning.field_om_planning_schedule__message_has_error_counter
+msgid "Number of messages with delivery error"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_resource_resource__planning_capacity
+msgid ""
+"Number of slots this resource can take at the same time (a pool of identical"
+" units)."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__resource_ids
+msgid "Only These Resources"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__role_ids
+msgid "Only These Roles"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "Only open slots can be claimed."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "Only pending requests can be cancelled."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__is_open
+msgid "Open Slot"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_slot_open
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_open_slots
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Open Slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__open_hours
+msgid "Open Slots (h)"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Open slot"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_schedule_page
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "Open slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_source__planning_status__partial
+msgid "Partially Planned"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__pending_request_count
+msgid "Pending Requests"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "People"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_slot__resource_ids
+msgid ""
+"People and equipment of the slot. A slot without resource is an open slot."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_resource_planning
+msgid "People, crews, machines, vehicles and rooms that you plan."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form_send
+msgid "Period"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_resource_calendar_leaves_planning
+msgid ""
+"Periods a person or a machine cannot be planned: absence, repair, "
+"inspection..."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__target_resource_id
+msgid "Person who takes the slot."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_image
+msgid "Picture"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_slot
+msgid ""
+"Plan people, crews, equipment, vehicles and rooms, then publish and send the"
+" schedule."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.module.module,summary:base.module_om_planning
+msgid ""
+"Plan people, crews, machines, vehicles and rooms on a Gantt chart: shifts, "
+"open slots, roles, templates, rotations, recurring slots, conflicts, publish"
+" and send schedules, claim and switch requests, portal and calendar feed"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_slot
+msgid "Plan your first slot"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_source__planning_status__planned
+msgid "Planned"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__planned_hours
+msgid "Planned (h)"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Planned hours of a person in one week (0: no rule)"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Planned hours of a person on one day (0: no rule)"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_load
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_load_wizard
+#: model:ir.model,name:om_planning.model_om_planning_load_wizard
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_load
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_graph
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_list
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_pivot
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_wizard_view_form
+msgid "Planned vs Capacity"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_load
+msgid "Planned vs Capacity Analysis"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.module.module,shortdesc:base.module_om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_root
+#: model:portal.entry,name:om_planning.portal_planning
+#: model:res.groups.privilege,name:om_planning.res_groups_privilege_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_calendar
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_breadcrumbs_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Planning"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_slot_analysis
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_analysis
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_graph
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_pivot
+msgid "Planning Analysis"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_avatar_128
+msgid "Planning Avatar"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_note
+msgid "Planning Notes"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_recurrence
+msgid "Planning Recurrence"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_request
+msgid "Planning Request"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_role
+msgid "Planning Role"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_role_ids
+msgid "Planning Roles"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_rotation
+msgid "Planning Rotation"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_rotation_line
+msgid "Planning Rotation Day"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.res_config_settings_view_form
+msgid "Planning Rules"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_schedule
+msgid "Planning Schedule"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_template
+msgid "Planning Shift Template"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_slot
+msgid "Planning Slot"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__planning_slot_ids
+msgid "Planning Slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_om_planning_source
+msgid "Planning Source"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__planning_status
+msgid "Planning Status"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_token
+msgid "Planning Token"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "Planning request %s"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_source.py:0
+msgid "Planning: %s"
+msgstr ""
+
+#. module: om_planning
+#: model:mail.template,name:om_planning.mail_template_planning_schedule
+msgid "Planning: Your Schedule"
+msgstr ""
+
+#. module: om_planning
+#: model:res.groups,comment:om_planning.group_planning_manager
+msgid "Plans every resource, publishes schedules and approves requests."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__properties
+msgid "Properties"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Publish"
+msgstr ""
+
+#. module: om_planning
+#. odoo-javascript
+#: code:addons/om_planning/static/src/planning_gantt.xml:0
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_schedule_send
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form_send
+msgid "Publish & Send"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__publish
+msgid "Publish Directly"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__state__published
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Published"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__publication_date
+msgid "Published On"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_slot_open
+msgid ""
+"Published slots without anybody show here: claim one and your manager "
+"approves it."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__reason
+msgid "Reason"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__recurrence_id
+msgid "Recurrence"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_list
+msgid "Refuse"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__state__refused
+msgid "Refused"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__repeat
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Repeat"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__repeat_interval
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__repeat_interval
+msgid "Repeat Every"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__repeat_type
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__repeat_type
+msgid "Repeat Type"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__repeat_unit
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__repeat_unit
+msgid "Repeat Unit"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__repeat_until
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__repeat_until
+msgid "Repeat Until"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__repeat_count
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__repeat_count
+msgid "Repetitions"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__replace_drafts
+msgid "Replace Draft Slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_reporting
+msgid "Reporting"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__request_type
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_search
+msgid "Request"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__resource_id
+msgid "Requested By"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_request
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__request_ids
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_my_requests
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_list
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Requests"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model,name:om_planning.model_resource_resource
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__resource_id
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "Resource"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__resource_count
+msgid "Resource Count"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_resource_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__resource_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__resource_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__resource_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__resource_ids
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_resources
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_list_planning
+msgid "Resources"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__activity_user_id
+msgid "Responsible User"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load__role_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation__role_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__role_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__role_id
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Role"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_rotation__role_id
+msgid "Role of the slots, when the template has none."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_resource_resource__planning_default_role_id
+msgid "Role proposed on the new slots of this resource."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_role
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_roles
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_list
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_search
+msgid "Roles"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_role
+msgid ""
+"Roles group the resources that can do a job: technician, driver, cashier, "
+"forklift..."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__rotation_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__rotation_id
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_view_form
+msgid "Rotation"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_rotation
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_rotations
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_view_list
+msgid "Rotations"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__message_has_sms_error
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__message_has_sms_error
+msgid "SMS Delivery error"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_schedule.py:0
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_slot
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_schedule
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form
+msgid "Schedule"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_schedule.py:0
+msgid "Schedule %(start)s - %(end)s"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_slot_role
+msgid "Schedule by Role"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_slot_source
+msgid "Schedule by Source"
+msgstr ""
+
+#. module: om_planning
+#: model:res.groups,comment:om_planning.group_planning_user
+msgid ""
+"Sees their own published slots and the open slots, and asks to claim, switch"
+" or leave a slot."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form
+msgid "Send Again"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_form_switch
+msgid "Send Request"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__send_email
+msgid "Send by Email"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_schedule__state__sent
+msgid "Sent"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__sent_date
+msgid "Sent On"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_schedule
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_schedule_sent
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_list
+msgid "Sent Schedules"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__recipient_ids
+msgid "Sent To"
+msgstr ""
+
+#. module: om_planning
+#: model:mail.template,description:om_planning.mail_template_planning_schedule
+msgid "Sent to each person with their slots when a schedule is published"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__sequence
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__sequence
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__sequence
+msgid "Sequence"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_recurrence.py:0
+msgid "Set the date until which the slot repeats."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_settings
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_settings
+msgid "Settings"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "Shift"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_template_view_form
+msgid "Shift Template"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_om_planning_template
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_templates
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_template_view_list
+msgid "Shift Templates"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_template__code
+msgid "Short code shown on rosters, e.g. M, E or N."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_res_company__planning_check_working_time
+#: model:ir.model.fields,help:om_planning.field_res_config_settings__planning_check_working_time
+msgid ""
+"Show a conflict when a slot is outside the working schedule of its resource."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "Show the last 30 days"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__skip_leaves
+msgid "Skip Days Off and Leaves"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__slot_id
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Slot"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__slot_count
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_source__planning_slot_count
+msgid "Slot Count"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__slot_end
+msgid "Slot End"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_role__slot_properties_definition
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+msgid "Slot Properties"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__role_id
+msgid "Slot Role"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__slot_start
+msgid "Slot Start"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_recurrence__slot_ids
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__slot_ids
+#: model:ir.model.fields,field_description:om_planning.field_resource_resource__planning_slot_count
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_list
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "Slots"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_role__allow_overlap
+msgid ""
+"Slots of this role may overlap other slots of the same resource without a "
+"conflict."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__source_ref
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Source"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__source_name
+msgid "Source Document"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__stagger
+msgid "Stagger Resources"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__start_datetime
+msgid "Start"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_template__start_time
+msgid "Start Hour"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__start_day
+msgid "Start at Day"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__state
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__state
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__state
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_search
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Status"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__activity_state
+msgid ""
+"Status based on activities\n"
+"Overdue: Due date is already passed\n"
+"Today: Activity date is today\n"
+"Planned: Future activities."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "Stop Repeating After This"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_request__target_resource_id
+msgid "Switch With"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__request_type__switch
+msgid "Switch with someone"
+msgstr ""
+
+#. module: om_planning
+#: model:om.planning.role,name:om_planning.role_technician
+msgid "Technician"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_line__template_id
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__template_id
+msgid "Template"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_template
+msgid "Templates are the usual hours of a slot: morning, evening, night..."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.constraint,message:om_planning.constraint_om_planning_slot_check_percentage
+msgid "The allocated time cannot be negative."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_template.py:0
+msgid "The break cannot be negative."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.constraint,message:om_planning.constraint_resource_resource_check_planning_capacity
+msgid "The capacity of a resource must be at least 1."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_schedule_view_form_send
+msgid ""
+"The draft and changed slots of the period are published. Each person receives an email\n"
+"                    with their slots, a link to their planning page and a calendar feed."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/wizard/om_planning_load.py:0
+#: code:addons/om_planning/wizard/om_planning_rotation_apply.py:0
+msgid "The end date must be after the start date."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.constraint,message:om_planning.constraint_om_planning_slot_check_dates
+msgid "The end of a slot must be after its start."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_template.py:0
+msgid "The hours of a template must be between 0 and 24."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_recurrence.py:0
+msgid "The number of repetitions must be between 1 and %s."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_recurrence.py:0
+msgid "The repeat interval must be at least 1."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "The request \"%(request)s\" for %(slot)s was %(state)s."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "The resources %s belong to another company."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/wizard/om_planning_rotation_apply.py:0
+msgid "The rotation has no day."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "The slot %s is already taken."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_slot__changed_since_published
+msgid "The slot was changed after it was sent to the resources."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_schedule.py:0
+msgid "There is no slot to publish in this period."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__recurrence_update__subsequent
+msgid "This and following slots"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "This request is already decided."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__recurrence_update__this
+msgid "This slot"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_message
+msgid "This slot is not available anymore."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid ""
+"This slot was changed after it was published. Publish it again to notify the"
+" resources."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_slot__name
+msgid "Title"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_load_wizard__date_to
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_rotation_apply__date_to
+#: model:ir.model.fields,field_description:om_planning.field_om_planning_schedule__end_datetime
+msgid "To"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_request__state__pending
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_request_view_search
+msgid "To Approve"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_load_view_list
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_list
+msgid "Total"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,help:om_planning.field_om_planning_request__activity_exception_decoration
+msgid "Type of the exception activity on record."
+msgstr ""
+
+#. module: om_planning
+#: model:ir.actions.act_window,name:om_planning.action_resource_calendar_leaves_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_unavailability
+msgid "Unavailability"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_recurrence__repeat_type__until
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__repeat_type__until
+msgid "Until"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_search
+msgid "Upcoming"
+msgstr ""
+
+#. module: om_planning
+#: model:res.groups,name:om_planning.group_planning_user
+msgid "User"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "User who sees the slots of this resource, internal or portal."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "Visible to all"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields,field_description:om_planning.field_res_company__planning_check_working_time
+#: model:ir.model.fields,field_description:om_planning.field_res_config_settings__planning_check_working_time
+msgid "Warn Outside Working Time"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_recurrence__repeat_unit__week
+#: model:ir.model.fields.selection,name:om_planning.selection__om_planning_slot__repeat_unit__week
+msgid "Weeks"
+msgstr ""
+
+#. module: om_planning
+#: model:ir.ui.menu,name:om_planning.menu_om_planning_working_times
+msgid "Working Schedules"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_message
+msgid "You already asked this for this slot."
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_request.py:0
+msgid "You cannot approve or refuse this request."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_schedule_page
+msgid "You have no slot in this period."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.portal_my_planning
+msgid "Your account is not linked to a planning resource yet."
+msgstr ""
+
+#. module: om_planning
+#: model:mail.template,subject:om_planning.mail_template_planning_schedule
+msgid "Your planning: {{ object.name }}"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.actions.act_window,help:om_planning.action_om_planning_slot_my
+msgid ""
+"Your published slots show here. Open slots can be claimed from the Open "
+"Slots menu."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_message
+msgid "Your request was sent to your manager."
+msgstr ""
+
+#. module: om_planning
+#: model:portal.entry,description:om_planning.portal_planning
+msgid "Your shifts, open slots and requests"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_schedule_page
+msgid "Your slots"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "Your user is not linked to a planning resource."
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_gantt
+msgid "changed since published"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_rotation_view_form
+msgid "e.g. 2 mornings, 2 evenings, 2 days off"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.resource_resource_view_form_planning
+msgid "e.g. Delivery Van 2"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_template_view_form
+msgid "e.g. Morning"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_slot_view_form
+msgid "e.g. Store opening"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.om_planning_role_view_form
+msgid "e.g. Technician"
+msgstr ""
+
+#. module: om_planning
+#: model_terms:ir.ui.view,arch_db:om_planning.planning_slot_rows
+msgid "h"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "leave"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_slot.py:0
+msgid "slot"
+msgstr ""
+
+#. module: om_planning
+#. odoo-python
+#: code:addons/om_planning/models/om_planning_recurrence.py:0
+msgid "until %s"
+msgstr ""

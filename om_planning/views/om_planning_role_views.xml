@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_role_view_list" model="ir.ui.view">
+        <field name="name">om.planning.role.list</field>
+        <field name="model">om.planning.role</field>
+        <field name="arch" type="xml">
+            <list string="Roles">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+                <field name="resource_count"/>
+                <field name="template_id"/>
+                <field name="allow_overlap" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_planning_role_view_form" model="ir.ui.view">
+        <field name="name">om.planning.role.form</field>
+        <field name="model">om.planning.role</field>
+        <field name="arch" type="xml">
+            <form string="Role">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_slots" type="object" class="oe_stat_button" icon="view_timeline">
+                            <field name="slot_count" widget="statinfo" string="Slots"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="name" placeholder="e.g. Technician"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="color" widget="color_picker"/>
+                            <field name="template_id"/>
+                            <field name="allow_overlap"/>
+                        </group>
+                        <group>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Resources" name="resources">
+                            <field name="resource_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="resource_type"/>
+                                    <field name="calendar_id"/>
+                                    <field name="planning_capacity"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Slot Properties" name="properties">
+                            <p class="text-muted">Extra fields shown on the slots of this role.</p>
+                            <field name="slot_properties_definition"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_planning_role_view_search" model="ir.ui.view">
+        <field name="name">om.planning.role.search</field>
+        <field name="model">om.planning.role</field>
+        <field name="arch" type="xml">
+            <search string="Roles">
+                <field name="name"/>
+                <field name="resource_ids"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_planning_role" model="ir.actions.act_window">
+        <field name="name">Roles</field>
+        <field name="res_model">om.planning.role</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a role</p>
+            <p>Roles group the resources that can do a job: technician, driver, cashier, forklift...</p>
+        </field>
+    </record>
+
+</odoo>
