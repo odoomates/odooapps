@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_inter_company_rule_view_list" model="ir.ui.view">
+        <field name="name">om.inter.company.rule.list</field>
+        <field name="model">om.inter.company.rule</field>
+        <field name="arch" type="xml">
+            <list string="Inter-Company Rules">
+                <field name="sequence" widget="handle"/>
+                <field name="company_id"/>
+                <field name="direction"/>
+                <field name="target_company_id"/>
+                <field name="mirror_invoices" widget="boolean_toggle"/>
+                <field name="mirror_bills" widget="boolean_toggle"/>
+                <field name="target_state"/>
+                <field name="user_id" optional="show"/>
+                <field name="on_source_change" optional="hide"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_inter_company_rule_view_form" model="ir.ui.view">
+        <field name="name">om.inter.company.rule.form</field>
+        <field name="model">om.inter.company.rule</field>
+        <field name="arch" type="xml">
+            <form string="Inter-Company Rule">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name" string="Between"/>
+                        <h1><field name="name" readonly="1" placeholder="Company ⇄ Other Company"/></h1>
+                    </div>
+                    <group>
+                        <group name="companies">
+                            <field name="company_id" options="{'no_create': True}"/>
+                            <field name="target_company_id" options="{'no_create': True}"/>
+                            <field name="direction" widget="radio" options="{'horizontal': true}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group name="creation">
+                            <field name="user_id" options="{'no_create': True}" placeholder="OdooBot"/>
+                            <field name="target_state" widget="radio" options="{'horizontal': true}"/>
+                            <field name="on_source_change" widget="radio" options="{'horizontal': true}"/>
+                        </group>
+                    </group>
+                    <div class="text-end">
+                        <button name="action_om_ic_swap" type="object" string="Swap Companies" icon="swap_horiz"
+                                class="btn btn-link"/>
+                    </div>
+                    <notebook>
+                        <page string="Invoices and Bills" name="invoices">
+                            <group>
+                                <group string="Documents" name="documents">
+                                    <field name="mirror_invoices"/>
+                                    <field name="mirror_bills"/>
+                                    <field name="copy_pdf"/>
+                                </group>
+                                <group string="Mapping" name="mapping">
+                                    <field name="account_mode"/>
+                                    <field name="tax_mode"/>
+                                    <field name="analytic_mode" groups="analytic.group_analytic_accounting"/>
+                                    <field name="currency_mode" groups="base.group_multi_currency"/>
+                                </group>
+                                <group string="Journals of the Other Company" name="target_journals">
+                                    <field name="target_purchase_journal_id" placeholder="First purchase journal" string="Vendor Bills"
+                                           options="{'no_create': True}"/>
+                                    <field name="target_sale_journal_id" placeholder="First sales journal" string="Customer Invoices"
+                                           options="{'no_create': True}"/>
+                                </group>
+                                <group string="Journals of the Company" name="source_journals" invisible="direction != 'both'">
+                                    <field name="source_purchase_journal_id" placeholder="First purchase journal" string="Vendor Bills"
+                                           options="{'no_create': True}"/>
+                                    <field name="source_sale_journal_id" placeholder="First sales journal" string="Customer Invoices"
+                                           options="{'no_create': True}"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Account Mapping" name="account_mapping">
+                            <field name="account_map_ids">
+                                <list editable="bottom">
+                                    <field name="company_id" column_invisible="True"/>
+                                    <field name="target_company_id" column_invisible="True"/>
+                                    <field name="company_account_id" options="{'no_create': True}"/>
+                                    <field name="target_account_id" options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                An account of a line is replaced with its mapped account, in both directions.
+                                Accounts not mapped follow the Accounts option.
+                            </div>
+                        </page>
+                        <page string="Tax Mapping" name="tax_mapping">
+                            <field name="tax_map_ids">
+                                <list editable="bottom">
+                                    <field name="company_id" column_invisible="True"/>
+                                    <field name="target_company_id" column_invisible="True"/>
+                                    <field name="company_tax_id" options="{'no_create': True}"/>
+                                    <field name="target_tax_id" options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                A tax of a line is replaced with its mapped tax, in both directions. Taxes not mapped
+                                follow the Taxes option and the fiscal position of the partner.
+                            </div>
+                        </page>
+                        <page string="Product Mapping" name="product_mapping">
+                            <field name="product_map_ids">
+                                <list editable="bottom">
+                                    <field name="company_id" column_invisible="True"/>
+                                    <field name="target_company_id" column_invisible="True"/>
+                                    <field name="company_product_id" options="{'no_create': True}"/>
+                                    <field name="target_product_id" options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                Products shared by both companies are kept. A product of one company only is
+                                replaced with its mapped product, or the line keeps its label without a product.
+                            </div>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Agreements between the companies, transfer prices..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_inter_company_rule_view_search" model="ir.ui.view">
+        <field name="name">om.inter.company.rule.search</field>
+        <field name="model">om.inter.company.rule</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="company_id"/>
+                <field name="target_company_id"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_inter_company_rule" model="ir.actions.act_window">
+        <field name="name">Inter-Company Rules</field>
+        <field name="res_model">om.inter.company.rule</field>
+        <field name="path">inter-company-rules</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Connect two companies of the group</p>
+            <p>A rule between two companies creates the vendor bill of one from the customer invoice of the other,
+               with its taxes, accounts and products mapped. Set the partner of each company as the customer or
+               vendor between them.</p>
+        </field>
+    </record>
+</odoo>
