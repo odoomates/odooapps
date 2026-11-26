@@ -958,8 +958,10 @@ class TestDynamicReports(AccountTestInvoicingCommon):
         bs = self.statement_lines(BS, bs_report)
         self.assertAlmostEqual(bs['Assets']['values']['balance'], -self.liabilities(bs_report)['values']['balance'], 2)
         self.assertIn('Currency translation adjustment', bs)
-        # an unsigned section: the profit is a credit
-        self.assertAlmostEqual(bs['Profit (Loss) to report']['values']['balance'], -(1000.0 + 150.0) * 0.5, 2)
+        # unsigned sections: the profit is a credit, at the rates it was earned at: last year's invoice, this
+        # year's invoice and bill
+        self.assertAlmostEqual(bs['Previous Years Unallocated Earnings']['values']['balance'], -1000.0 * 0.5, 2)
+        self.assertAlmostEqual(bs['Current Year Unallocated Earnings']['values']['balance'], -150.0 * 0.5, 2)
         receivable_eur = next(line for name, line in bs.items() if name.startswith(self.receivable.code))
         receivable_usd = next(line for name, line in self.statement_lines(
             BS, self.report(BS, date_preset='custom', date_to='2026-12-31')).items()
