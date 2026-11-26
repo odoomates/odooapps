@@ -321,9 +321,13 @@ BALANCE_LINES = [
     ('non_current_liabilities', 'Non-current Liabilities', ('liability_non_current',), -1, 'line'),
     ('total_liabilities', 'Total Liabilities', ('total_current_liabilities', 'non_current_liabilities'), 1, 'grand'),
     ('equity_title', 'Equity', None, 1, 'title'),
-    ('capital', 'Capital and Reserves', ('equity', 'equity_unaffected'), -1, 'line'),
-    # the profit and loss of the fiscal year, not closed into the equity yet
-    ('current_earnings', 'Current Year Earnings', PROFIT_AND_LOSS, -1, 'earnings'),
+    # not the unaffected earnings account (equity_unaffected): its balance is the profit of the years already
+    # allocated to the reserves, which only makes sense with the income and expense accounts, in the earnings below
+    ('capital', 'Capital and Reserves', ('equity',), -1, 'line'),
+    # the profit and loss of the fiscal year, not closed into the equity yet: with the unaffected earnings account,
+    # whose allocation of the year's result (the year-end closing) closes it into the reserves; that entry must be
+    # dated on the last day of the fiscal year, else it lowers the earnings of the year after
+    ('current_earnings', 'Current Year Earnings', PROFIT_AND_LOSS + ('equity_unaffected',), -1, 'earnings'),
     # what is left once the rest is counted: the earnings of the years not closed yet into the equity
     ('previous_earnings', 'Previous Years Unallocated Earnings',
      ('total_assets', '-total_liabilities', '-capital', '-current_earnings'), 1, 'sum'),
