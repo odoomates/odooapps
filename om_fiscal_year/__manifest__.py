@@ -3,7 +3,7 @@
 
 {
     'name': 'Odoo 15 Fiscal Year & Lock Date',
-    'version': '15.0.2.3.0',
+    'version': '15.0.2.3.1',
     'category': 'Accounting',
     'summary': 'Odoo 15 Fiscal Year, Year-End Closing, Period Closing, Lock Date in Odoo 15',
     'description': 'Odoo 15 Fiscal Year, Fiscal Year in Odoo 15',
