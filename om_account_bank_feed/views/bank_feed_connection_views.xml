@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="bank_feed_connection_view_list" model="ir.ui.view">
+        <field name="name">bank.feed.connection.list</field>
+        <field name="model">bank.feed.connection</field>
+        <field name="arch" type="xml">
+            <list string="Bank Feeds" decoration-muted="state == 'draft'" decoration-danger="state in ('expired', 'error')"
+                  decoration-warning="state == 'expiring'">
+                <field name="name"/>
+                <field name="provider"/>
+                <field name="institution_name"/>
+                <field name="journal_ids" widget="many2many_tags" optional="show"/>
+                <field name="last_sync"/>
+                <field name="consent_expiry_date"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'connected'"
+                       decoration-warning="state == 'expiring'" decoration-danger="state in ('expired', 'error')"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="bank_feed_connection_view_form" model="ir.ui.view">
+        <field name="name">bank.feed.connection.form</field>
+        <field name="model">bank.feed.connection</field>
+        <field name="arch" type="xml">
+            <form string="Bank Feed">
+                <header>
+                    <button name="action_connect" type="object" string="Connect" class="btn-primary"
+                            invisible="state != 'draft'" groups="account.group_account_manager"/>
+                    <button name="action_sync" type="object" string="Sync Now" class="btn-primary"
+                            invisible="state not in ('connected', 'expiring', 'error')"/>
+                    <button name="action_renew" type="object" string="Renew Consent"
+                            invisible="state not in ('expiring', 'expired', 'error')"
+                            class="btn-secondary" groups="account.group_account_manager"/>
+                    <button name="action_disconnect" type="object" string="Disconnect" class="btn-secondary"
+                            invisible="state == 'draft'" groups="account.group_account_manager"
+                            confirm="Remove the connection at the provider and stop the sync of its journals? The transactions already imported stay."/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,connected"/>
+                </header>
+                <div class="alert alert-danger mb-0" role="alert" invisible="not error_message">
+                    <field name="error_message"/>
+                </div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="state != 'expiring'">
+                    The consent of the bank expires on <field name="consent_expiry_date" class="fw-bold"/>:
+                    click Renew Consent to keep the transactions coming.
+                </div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="state != 'expired'">
+                    The consent of the bank has expired: the transactions are no longer fetched until you click
+                    Renew Consent.
+                </div>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_logs" type="object" class="oe_stat_button" icon="history">
+                            <field name="log_count" widget="statinfo" string="Sync Logs"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Main Bank"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="provider" readonly="state != 'draft'"/>
+                            <field name="institution_name" readonly="1" invisible="not institution_name"/>
+                            <field name="provider_reference" invisible="not provider_reference"/>
+                            <field name="pending_journal_id" invisible="state != 'draft' or not pending_journal_id"/>
+                        </group>
+                        <group>
+                            <field name="last_sync"/>
+                            <field name="consent_expiry_date" readonly="1"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Bank Accounts" name="accounts">
+                            <p class="text-muted" invisible="account_ids">
+                                The bank accounts appear here once the bank is connected. Map each of them to its
+                                bank journal, or create the journal from the line.
+                            </p>
+                            <field name="account_ids" invisible="not account_ids">
+                                <list editable="bottom" create="0" delete="0" decoration-warning="balance_mismatch">
+                                    <field name="company_id" column_invisible="1"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                    <field name="name"/>
+                                    <field name="account_number"/>
+                                    <field name="currency_code" string="Currency" optional="hide"/>
+                                    <field name="balance"/>
+                                    <field name="balance_date" optional="hide"/>
+                                    <field name="journal_id" options="{'no_create': True}"/>
+                                    <field name="sync_start_date" optional="show"/>
+                                    <field name="last_sync" optional="hide"/>
+                                    <field name="journal_balance" optional="hide"/>
+                                    <field name="balance_difference" optional="show" string="Difference"
+                                           invisible="not balance_mismatch"/>
+                                    <field name="balance_mismatch" column_invisible="1"/>
+                                    <button name="action_create_journal" type="object" string="Create Journal"
+                                            icon="add" invisible="journal_id" groups="account.group_account_manager"/>
+                                    <button name="action_open_journal" type="object" string="Transactions"
+                                            icon="east" invisible="not journal_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Options" name="options">
+                            <group>
+                                <group>
+                                    <field name="include_pending"/>
+                                    <field name="sync_start_date"/>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="bank_feed_connection_view_search" model="ir.ui.view">
+        <field name="name">bank.feed.connection.search</field>
+        <field name="model">bank.feed.connection</field>
+        <field name="arch" type="xml">
+            <search string="Bank Feeds">
+                <field name="name"/>
+                <field name="institution_name"/>
+                <field name="journal_ids"/>
+                <filter string="Connected" name="connected" domain="[('state', 'in', ('connected', 'expiring'))]"/>
+                <filter string="Needs Attention" name="attention" domain="[('state', 'in', ('expiring', 'expired', 'error'))]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Provider" name="group_provider" context="{'group_by': 'provider'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bank_feed_connection" model="ir.actions.act_window">
+        <field name="name">Bank Feeds</field>
+        <field name="res_model">bank.feed.connection</field>
+        <field name="path">bank-feeds</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Connect a bank</p>
+            <p>Open a bank journal and click Connect Bank: the transactions of the bank account then arrive
+                every few hours. A bank feed provider module is needed.</p>
+        </field>
+    </record>
+
+</odoo>
