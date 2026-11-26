@@ -251,7 +251,9 @@ class SignRequestSigner(models.Model):
             commercial = self.partner_id.commercial_partner_id
             return commercial.name if commercial != self.partner_id or commercial.is_company else ''
         if field_type == 'date':
-            return fields.Date.to_string(fields.Date.context_today(self))
+            # the day where the signer is: the timezone of the contact, else the one of the current user
+            signer = self.with_context(tz=self.partner_id.tz) if self.partner_id.tz else self
+            return fields.Date.to_string(fields.Date.context_today(signer))
         if field_type == 'name':
             return self.partner_id.name or ''
         return ''
