@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_point_form_mrp" model="ir.ui.view">
+        <field name="name">om.quality.point.form.mrp</field>
+        <field name="model">om.quality.point</field>
+        <field name="inherit_id" ref="om_quality_stock.view_om_quality_point_form_stock"/>
+        <field name="arch" type="xml">
+            <field name="picking_type_ids" position="attributes">
+                <attribute name="invisible">point_type not in ('picking', 'production')</attribute>
+                <attribute name="domain">[('code', 'in', ('incoming', 'outgoing', 'internal'))] if point_type == 'picking' else [('code', '=', 'mrp_operation')]</attribute>
+                <attribute name="placeholder">Every manufacturing operation type</attribute>
+            </field>
+            <field name="picking_type_ids" position="after">
+                <field name="operation_ids" widget="many2many_tags" invisible="point_type != 'workorder'"
+                    placeholder="Every operation" options="{'no_create': True}"/>
+                <field name="workcenter_ids" widget="many2many_tags" invisible="point_type != 'workorder'"
+                    placeholder="Every work centre" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_point_list_mrp" model="ir.ui.view">
+        <field name="name">om.quality.point.list.mrp</field>
+        <field name="model">om.quality.point</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_point_list"/>
+        <field name="arch" type="xml">
+            <field name="test_type" position="before">
+                <field name="operation_ids" widget="many2many_tags" optional="hide"/>
+                <field name="workcenter_ids" widget="many2many_tags" optional="hide"/>
+            </field>
+        </field>
+    </record>
+</odoo>

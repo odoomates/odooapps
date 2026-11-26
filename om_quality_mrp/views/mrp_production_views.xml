@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_production_form_view_om_quality" model="ir.ui.view">
+        <field name="name">mrp.production.form.om.quality</field>
+        <field name="model">mrp.production</field>
+        <field name="inherit_id" ref="mrp.mrp_production_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_confirm']" position="after">
+                <field name="om_quality_todo_count" invisible="1"/>
+                <field name="om_quality_check_count" invisible="1"/>
+                <button name="action_om_quality_dialog" type="object" string="Quality Checks" class="btn-primary"
+                    invisible="not om_quality_todo_count or state in ('draft', 'done', 'cancel')" data-hotkey="shift+q"/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_om_quality_dialog" type="object" class="oe_stat_button" icon="checklist"
+                    invisible="not om_quality_check_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="om_quality_todo_count" invisible="not om_quality_todo_count"/>
+                            <span invisible="not om_quality_todo_count"> / </span>
+                            <field name="om_quality_check_count"/>
+                        </span>
+                        <span class="o_stat_text">Quality Checks</span>
+                    </div>
+                </button>
+                <button name="action_om_quality_alerts" type="object" class="oe_stat_button" icon="warning"
+                    invisible="not om_quality_alert_count">
+                    <field name="om_quality_alert_count" widget="statinfo" string="Non-conformances"/>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>

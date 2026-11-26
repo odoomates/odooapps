@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="mrp_production_workorder_tree_editable_view_om_quality" model="ir.ui.view">
+        <field name="name">mrp.workorder.list.om.quality</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_tree_editable_view"/>
+        <field name="arch" type="xml">
+            <button name="button_pending" position="before">
+                <field name="om_quality_todo_count" column_invisible="True"/>
+                <field name="om_quality_check_count" column_invisible="True"/>
+                <button name="action_om_quality_dialog" type="object" title="Quality Checks to Do" class="btn-warning px-2" icon="checklist"
+                    invisible="not om_quality_todo_count or production_state in ('draft', 'cancel')"/>
+                <button name="action_om_quality_dialog" type="object" title="Quality Checks" class="px-2" icon="checklist"
+                    invisible="om_quality_todo_count or not om_quality_check_count"/>
+            </button>
+        </field>
+    </record>
+
+    <record id="mrp_production_workorder_form_view_om_quality" model="ir.ui.view">
+        <field name="name">mrp.workorder.form.om.quality</field>
+        <field name="model">mrp.workorder</field>
+        <field name="inherit_id" ref="mrp.mrp_production_workorder_form_view_inherit"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <field name="om_quality_check_count" invisible="1"/>
+                <button name="action_om_quality_dialog" type="object" class="oe_stat_button" icon="checklist"
+                    invisible="not om_quality_check_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="om_quality_todo_count" invisible="not om_quality_todo_count"/>
+                            <span invisible="not om_quality_todo_count"> / </span>
+                            <field name="om_quality_check_count"/>
+                        </span>
+                        <span class="o_stat_text">Quality Checks</span>
+                    </div>
+                </button>
+            </div>
+        </field>
+    </record>
+</odoo>
