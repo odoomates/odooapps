@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_move_form_om_3way" model="ir.ui.view">
+        <field name="name">account.move.form.om.3way</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_om_force_release" type="object" string="Force Release"
+                        groups="account.group_account_manager"
+                        invisible="move_type != 'in_invoice' or not om_3way_enabled or state == 'cancel' or payment_state in ('paid', 'reversed')"/>
+            </xpath>
+            <xpath expr="//header" position="after">
+                <div class="alert alert-warning mb-0" role="alert"
+                     invisible="move_type != 'in_invoice' or state != 'posted' or om_release_state != 'no' or payment_state in ('paid', 'in_payment', 'reversed')">
+                    <i class="oi" data-icon="schedule"/>
+                    <span class="fw-bold"> Not released to pay: </span>
+                    <span invisible="om_release_forced">the goods are not received yet, or the bill waits for a manual release.</span>
+                    <span invisible="not om_release_forced">held by a manager: <field name="om_release_reason" class="oe_inline"/></span>
+                </div>
+                <div class="alert alert-danger mb-0" role="alert"
+                     invisible="move_type != 'in_invoice' or state != 'posted' or om_release_state != 'exception' or payment_state in ('paid', 'in_payment', 'reversed')">
+                    <i class="oi" data-icon="warning"/>
+                    <span class="fw-bold"> Exception: </span>
+                    <span>more is billed than ordered, or a price is above the purchase order. See the 3-Way Match tab.</span>
+                </div>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_om_view_receipts" type="object" class="oe_stat_button" icon="local_shipping"
+                        groups="stock.group_stock_user"
+                        invisible="move_type not in ('in_invoice', 'in_refund') or om_receipt_count == 0">
+                    <field name="om_receipt_count" widget="statinfo" string="Receipts"/>
+                </button>
+            </xpath>
+            <xpath expr="//group[@id='header_right_group']" position="inside">
+                <field name="om_3way_enabled" invisible="1"/>
+                <field name="om_release_forced" invisible="1"/>
+                <label for="om_release_state" invisible="move_type != 'in_invoice' or not om_3way_enabled or state == 'cancel'"/>
+                <div class="d-flex align-items-center gap-2" invisible="move_type != 'in_invoice' or not om_3way_enabled or state == 'cancel'">
+                    <field name="om_release_state" widget="badge" nolabel="1" class="flex-shrink-0 w-auto"
+                           decoration-success="om_release_state == 'yes'"
+                           decoration-warning="om_release_state == 'no'"
+                           decoration-danger="om_release_state == 'exception'"/>
+                    <span class="text-muted text-nowrap" invisible="not om_release_forced" title="Forced by a manager">(forced)</span>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']/list/field[@name='price_subtotal']" position="before">
+                <field name="om_match_state" widget="badge" optional="show"
+                       column_invisible="parent.move_type != 'in_invoice'"
+                       decoration-success="om_match_state == 'matched'"
+                       decoration-warning="om_match_state == 'waiting'"
+                       decoration-danger="om_match_state in ('qty', 'price')"
+                       decoration-muted="om_match_state == 'none'"/>
+            </xpath>
+            <xpath expr="//page[@id='invoice_tab']" position="after">
+                <page id="om_3way_tab" name="om_3way_tab" string="3-Way Match"
+                      invisible="move_type != 'in_invoice' or not om_3way_enabled">
+                    <field name="om_match_line_ids" readonly="1" nolabel="1">
+                        <list create="0" delete="0" edit="0" no_open="1"
+                              decoration-danger="om_match_state in ('qty', 'price')"
+                              decoration-warning="om_match_state == 'waiting'">
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="product_id"/>
+                            <field name="purchase_order_id" string="PO"/>
+                            <field name="om_ordered_qty" string="Ordered"/>
+                            <field name="om_received_qty" string="Received"/>
+                            <field name="om_billed_qty" string="Billed"/>
+                            <field name="om_po_uom_id" string="Unit" groups="uom.group_uom"/>
+                            <field name="om_po_price_unit" string="PO Price"/>
+                            <field name="om_bill_price_unit" string="Bill Price"/>
+                            <field name="om_two_way" string="2-Way" optional="hide"/>
+                            <field name="om_match_state" string="Status" widget="badge"
+                                   decoration-success="om_match_state == 'matched'"
+                                   decoration-warning="om_match_state == 'waiting'"
+                                   decoration-danger="om_match_state in ('qty', 'price')"/>
+                        </list>
+                    </field>
+                    <div class="text-muted" invisible="om_match_line_ids">
+                        No line of this bill is linked to a purchase order.
+                    </div>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_in_invoice_bill_tree_om_3way" model="ir.ui.view">
+        <field name="name">account.move.bill.list.om.3way</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="arch" type="xml">
+            <field name="status_in_payment" position="before">
+                <field name="om_release_state" widget="badge" optional="show"
+                       decoration-success="om_release_state == 'yes'"
+                       decoration-warning="om_release_state == 'no'"
+                       decoration-danger="om_release_state == 'exception'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_account_bill_filter_om_3way" model="ir.ui.view">
+        <field name="name">account.move.bill.search.om.3way</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_account_bill_filter"/>
+        <field name="arch" type="xml">
+            <filter name="due_date" position="after">
+                <separator/>
+                <filter name="om_release_yes" string="To Pay" domain="[('om_release_state', '=', 'yes')]"/>
+                <filter name="om_release_no" string="Waiting" domain="[('om_release_state', '=', 'no')]"/>
+                <filter name="om_release_exception" string="Exceptions" domain="[('om_release_state', '=', 'exception')]"/>
+            </filter>
+            <xpath expr="//group" position="inside">
+                <filter name="group_om_release_state" string="Release to Pay" context="{'group_by': 'om_release_state'}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_bills_to_check" model="ir.actions.act_window">
+        <field name="name">Bills to Check</field>
+        <field name="res_model">account.move</field>
+        <field name="path">bills-to-check</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="view_id" ref="account.view_in_invoice_bill_tree"/>
+        <field name="search_view_id" ref="account.view_account_bill_filter"/>
+        <field name="domain">[('move_type', '=', 'in_invoice'), ('state', '=', 'posted'), ('om_release_state', 'in', ('no', 'exception')), ('payment_state', 'not in', ('paid', 'in_payment', 'reversed'))]</field>
+        <field name="context">{'default_move_type': 'in_invoice'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No bill to check
+            </p><p>
+                Posted vendor bills that wait for a receipt or do not match their purchase order show here.
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_om_bills_to_check" action="action_om_bills_to_check"
+              parent="account.menu_finance_payables" sequence="3"/>
+
+    <record id="action_om_force_release_server" model="ir.actions.server">
+        <field name="name">Release to Pay</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[(4, ref('account.group_account_manager'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_om_force_release()</field>
+    </record>
+</odoo>
