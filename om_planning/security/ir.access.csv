@@ -1,0 +1,23 @@
+id,name,model_id,group_id/id,operation,domain
+access_om_planning_role_user,om.planning.role.user,om.planning.role,om_planning.group_planning_user,r,
+access_om_planning_role_manager,om.planning.role.manager,om.planning.role,om_planning.group_planning_manager,crud,
+access_om_planning_template_user,om.planning.template.user,om.planning.template,om_planning.group_planning_user,r,
+access_om_planning_template_manager,om.planning.template.manager,om.planning.template,om_planning.group_planning_manager,crud,
+access_om_planning_rotation_manager,om.planning.rotation.manager,om.planning.rotation,om_planning.group_planning_manager,crud,
+access_om_planning_rotation_line_manager,om.planning.rotation.line.manager,om.planning.rotation.line,om_planning.group_planning_manager,crud,
+access_om_planning_recurrence_user,om.planning.recurrence.user,om.planning.recurrence,om_planning.group_planning_user,r,
+access_om_planning_recurrence_manager,om.planning.recurrence.manager,om.planning.recurrence,om_planning.group_planning_manager,crud,
+om_planning_slot_rule_user,Planning slot: own published slots and open slots,om.planning.slot,om_planning.group_planning_user,r,"[('state', '=', 'published'), '|', ('resource_ids', '=', False), ('resource_ids.user_id', '=', user.id)]"
+om_planning_slot_rule_manager,Planning slot: manager,om.planning.slot,om_planning.group_planning_manager,crud,
+om_planning_slot_rule_company,Planning slot: multi-company,om.planning.slot,,crud,"[('company_id', 'in', company_ids + [False])]"
+access_om_planning_schedule_manager,om.planning.schedule.manager,om.planning.schedule,om_planning.group_planning_manager,crud,
+om_planning_schedule_rule_company,Planning schedule: multi-company,om.planning.schedule,,crud,"[('company_id', 'in', company_ids + [False])]"
+om_planning_request_rule_user,Planning request: own requests,om.planning.request,om_planning.group_planning_user,cr,"['|', ('create_uid', '=', user.id), ('resource_id.user_id', '=', user.id)]"
+om_planning_request_rule_user_cancel,Planning request: cancel own requests,om.planning.request,om_planning.group_planning_user,u,"[('create_uid', '=', user.id), ('state', '=', 'pending')]"
+om_planning_request_rule_manager,Planning request: manager,om.planning.request,om_planning.group_planning_manager,crud,
+om_planning_request_rule_company,Planning request: multi-company,om.planning.request,,crud,"[('company_id', 'in', company_ids + [False])]"
+access_om_planning_rotation_apply_manager,om.planning.rotation.apply.manager,om.planning.rotation.apply,om_planning.group_planning_manager,crud,
+access_om_planning_load_wizard_manager,om.planning.load.wizard.manager,om.planning.load.wizard,om_planning.group_planning_manager,crud,
+access_om_planning_load_manager,om.planning.load.manager,om.planning.load,om_planning.group_planning_manager,crud,
+access_resource_resource_planning_manager,resource.resource.planning.manager,resource.resource,om_planning.group_planning_manager,crud,
+access_resource_calendar_leaves_planning_manager,resource.calendar.leaves.planning.manager,resource.calendar.leaves,om_planning.group_planning_manager,crud,

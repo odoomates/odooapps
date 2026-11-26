@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_schedule_view_list" model="ir.ui.view">
+        <field name="name">om.planning.schedule.list</field>
+        <field name="model">om.planning.schedule</field>
+        <field name="arch" type="xml">
+            <list string="Sent Schedules" create="0">
+                <field name="name"/>
+                <field name="start_datetime"/>
+                <field name="end_datetime"/>
+                <field name="slot_count"/>
+                <field name="sent_date"/>
+                <field name="state" widget="badge" decoration-success="state == 'sent'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_planning_schedule_view_form" model="ir.ui.view">
+        <field name="name">om.planning.schedule.form</field>
+        <field name="model">om.planning.schedule</field>
+        <field name="arch" type="xml">
+            <form string="Schedule">
+                <header>
+                    <button name="action_send" type="object" string="Publish &amp; Send" class="btn-primary"
+                        invisible="state == 'sent'"/>
+                    <button name="action_send" type="object" string="Send Again" invisible="state != 'sent'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_slots" type="object" class="oe_stat_button" icon="view_timeline">
+                            <field name="slot_count" widget="statinfo" string="Slots"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="start_datetime" string="Period" widget="daterange"
+                                options="{'end_date_field': 'end_datetime', 'always_range': True}"/>
+                            <field name="end_datetime" invisible="1"/>
+                            <field name="resource_ids" widget="many2many_tags"/>
+                            <field name="role_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="include_open_slots"/>
+                            <field name="send_email"/>
+                            <field name="sent_date" invisible="not sent_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <field name="note" placeholder="Message added to the email"/>
+                    <group invisible="not recipient_ids">
+                        <field name="recipient_ids" widget="many2many_tags"/>
+                    </group>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_planning_schedule_view_form_send" model="ir.ui.view">
+        <field name="name">om.planning.schedule.form.send</field>
+        <field name="model">om.planning.schedule</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <form string="Publish &amp; Send">
+                <p class="text-muted">
+                    The draft and changed slots of the period are published. Each person receives an email
+                    with their slots, a link to their planning page and a calendar feed.
+                </p>
+                <group>
+                    <group>
+                        <field name="start_datetime" string="Period" widget="daterange"
+                            options="{'end_date_field': 'end_datetime', 'always_range': True}"/>
+                        <field name="end_datetime" invisible="1"/>
+                        <field name="resource_ids" widget="many2many_tags"/>
+                        <field name="role_ids" widget="many2many_tags"/>
+                    </group>
+                    <group>
+                        <field name="include_open_slots"/>
+                        <field name="send_email"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                    </group>
+                </group>
+                <field name="note" placeholder="Message added to the email"/>
+                <footer>
+                    <button name="action_send" type="object" string="Publish &amp; Send" class="btn-primary"
+                        context="{'om_planning_from_gantt': True}"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_planning_schedule" model="ir.actions.act_window">
+        <field name="name">Sent Schedules</field>
+        <field name="res_model">om.planning.schedule</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_om_planning_schedule_send" model="ir.actions.act_window">
+        <field name="name">Publish &amp; Send</field>
+        <field name="res_model">om.planning.schedule</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="om_planning_schedule_view_form_send"/>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,521 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="base.main_company" model="res.company">
+            <field name="planning_min_rest_hours" eval="11"/>
+            <field name="planning_max_hours_week" eval="48"/>
+        </record>
+
+        <record id="group_planning_user" model="res.groups">
+            <field name="user_ids" eval="[Command.link(ref('base.user_demo'))]"/>
+        </record>
+
+        <!-- Templates -->
+        <record id="template_morning" model="om.planning.template">
+            <field name="name">Morning</field>
+            <field name="code">M</field>
+            <field name="start_time" eval="6"/>
+            <field name="end_time" eval="14"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="color" eval="3"/>
+        </record>
+        <record id="template_evening" model="om.planning.template">
+            <field name="name">Evening</field>
+            <field name="code">E</field>
+            <field name="start_time" eval="14"/>
+            <field name="end_time" eval="22"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="color" eval="5"/>
+        </record>
+        <record id="template_night" model="om.planning.template">
+            <field name="name">Night</field>
+            <field name="code">N</field>
+            <field name="start_time" eval="22"/>
+            <field name="end_time" eval="6"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="color" eval="8"/>
+        </record>
+        <record id="template_day" model="om.planning.template">
+            <field name="name">Day</field>
+            <field name="code">D</field>
+            <field name="start_time" eval="8"/>
+            <field name="end_time" eval="17"/>
+            <field name="break_hours" eval="1"/>
+        </record>
+
+        <!-- Roles -->
+        <record id="role_technician" model="om.planning.role">
+            <field name="name">Technician</field>
+            <field name="color" eval="4"/>
+            <field name="sequence" eval="1"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="slot_properties_definition" eval="[
+                {'name': 'site', 'string': 'Site', 'type': 'char'},
+                {'name': 'customer_contact', 'string': 'Customer Contact', 'type': 'char'},
+            ]"/>
+        </record>
+        <record id="role_driver" model="om.planning.role">
+            <field name="name">Driver</field>
+            <field name="color" eval="2"/>
+            <field name="sequence" eval="2"/>
+            <field name="template_id" ref="template_day"/>
+        </record>
+        <record id="role_cashier" model="om.planning.role">
+            <field name="name">Cashier</field>
+            <field name="color" eval="10"/>
+            <field name="sequence" eval="3"/>
+        </record>
+        <record id="role_forklift" model="om.planning.role">
+            <field name="name">Forklift</field>
+            <field name="color" eval="9"/>
+            <field name="sequence" eval="4"/>
+        </record>
+        <record id="template_morning" model="om.planning.template">
+            <field name="role_id" ref="role_cashier"/>
+        </record>
+        <record id="template_evening" model="om.planning.template">
+            <field name="role_id" ref="role_cashier"/>
+        </record>
+
+        <!-- Working schedule of the store staff -->
+        <record id="calendar_store" model="resource.calendar">
+            <field name="name">Store Shifts (06:00 - 22:00)</field>
+            <field name="company_id" ref="base.main_company"/>
+            <field name="attendance_ids" eval="[Command.clear()] + [
+                Command.create({'dayofweek': str(day), 'hour_from': 6, 'hour_to': 22}) for day in range(6)]"/>
+        </record>
+
+        <!-- Resources -->
+        <record id="resource_sam" model="resource.resource">
+            <field name="name">Sam Rivera (contractor)</field>
+            <field name="resource_type">user</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="planning_role_ids" eval="[Command.set([ref('role_technician'), ref('role_driver')])]"/>
+            <field name="planning_default_role_id" ref="role_technician"/>
+            <field name="color" eval="4"/>
+        </record>
+        <record id="resource_lena" model="resource.resource">
+            <field name="name">Lena Park</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">user</field>
+            <field name="calendar_id" ref="calendar_store"/>
+            <field name="planning_role_ids" eval="[Command.set([ref('role_cashier')])]"/>
+            <field name="planning_default_role_id" ref="role_cashier"/>
+        </record>
+        <record id="resource_joel" model="resource.resource">
+            <field name="name">Joel Willis</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">user</field>
+            <field name="user_id" ref="base.demo_user0"/>
+            <field name="calendar_id" ref="calendar_store"/>
+            <field name="planning_role_ids" eval="[Command.set([ref('role_cashier')])]"/>
+            <field name="planning_default_role_id" ref="role_cashier"/>
+        </record>
+        <record id="resource_omar" model="resource.resource">
+            <field name="name">Omar Haddad</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">user</field>
+            <field name="planning_role_ids" eval="[Command.set([ref('role_technician'), ref('role_driver'), ref('role_forklift')])]"/>
+            <field name="planning_default_role_id" ref="role_technician"/>
+        </record>
+        <record id="resource_mark" model="resource.resource">
+            <field name="name">Mark Brown</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">user</field>
+            <field name="user_id" ref="base.user_demo"/>
+            <field name="planning_role_ids" eval="[Command.set([ref('role_technician'), ref('role_driver')])]"/>
+            <field name="planning_default_role_id" ref="role_technician"/>
+        </record>
+        <record id="resource_van" model="resource.resource">
+            <field name="name">Delivery Van 1</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">material</field>
+            <field name="assigned_resource_id" ref="resource_sam"/>
+            <field name="planning_note">Follows Sam on his slots.</field>
+        </record>
+        <record id="resource_forklift" model="resource.resource">
+            <field name="name">Forklift FL-02</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">material</field>
+            <field name="planning_role_ids" eval="[Command.set([ref('role_forklift')])]"/>
+            <field name="planning_default_role_id" ref="role_forklift"/>
+        </record>
+        <record id="resource_room" model="resource.resource">
+            <field name="name">Meeting Room A</field>
+            <field name="tz">Europe/Brussels</field>
+            <field name="resource_type">material</field>
+        </record>
+
+        <!-- Rotation -->
+        <record id="rotation_two_two_two" model="om.planning.rotation">
+            <field name="name">2 mornings, 2 evenings, 2 days off</field>
+            <field name="role_id" ref="role_cashier"/>
+        </record>
+        <record id="rotation_line_1" model="om.planning.rotation.line">
+            <field name="rotation_id" ref="rotation_two_two_two"/>
+            <field name="sequence" eval="1"/>
+            <field name="template_id" ref="template_morning"/>
+        </record>
+        <record id="rotation_line_2" model="om.planning.rotation.line">
+            <field name="rotation_id" ref="rotation_two_two_two"/>
+            <field name="sequence" eval="2"/>
+            <field name="template_id" ref="template_morning"/>
+        </record>
+        <record id="rotation_line_3" model="om.planning.rotation.line">
+            <field name="rotation_id" ref="rotation_two_two_two"/>
+            <field name="sequence" eval="3"/>
+            <field name="template_id" ref="template_evening"/>
+        </record>
+        <record id="rotation_line_4" model="om.planning.rotation.line">
+            <field name="rotation_id" ref="rotation_two_two_two"/>
+            <field name="sequence" eval="4"/>
+            <field name="template_id" ref="template_evening"/>
+        </record>
+        <record id="rotation_line_5" model="om.planning.rotation.line">
+            <field name="rotation_id" ref="rotation_two_two_two"/>
+            <field name="sequence" eval="5"/>
+        </record>
+        <record id="rotation_line_6" model="om.planning.rotation.line">
+            <field name="rotation_id" ref="rotation_two_two_two"/>
+            <field name="sequence" eval="6"/>
+        </record>
+
+        <!-- Slots (dates in the timezone of the resource, converted below) -->
+        <record id="slot_sam_0" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=0)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=0)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_lena_0" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=0)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=0)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_sam_1" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_lena_1" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_sam_2" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_lena_2" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_sam_3" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_lena_3" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_sam_4" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_lena_4" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_joel_0" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_joel')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_evening"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=0)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=0)).strftime('%Y-%m-%d 22:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_joel_1" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_joel')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_evening"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 22:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_joel_2" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_joel')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_evening"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 22:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_joel_rest" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_joel')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_forklift_1" model="om.planning.slot">
+            <field name="name">Unload containers</field>
+            <field name="resource_ids" eval="[Command.set([ref('resource_forklift'), ref('resource_omar')])]"/>
+            <field name="role_id" ref="role_forklift"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 12:00:00')"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_omar_1" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_omar')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=1)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_omar_2" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_omar')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_omar_overlap" model="om.planning.slot">
+            <field name="name">Urgent delivery</field>
+            <field name="resource_ids" eval="[Command.set([ref('resource_omar')])]"/>
+            <field name="role_id" ref="role_driver"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 15:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 19:00:00')"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_room_1" model="om.planning.slot">
+            <field name="name">Weekly team meeting</field>
+            <field name="repeat" eval="True"/>
+            <field name="repeat_interval" eval="1"/>
+            <field name="repeat_unit">week</field>
+            <field name="repeat_type">count</field>
+            <field name="repeat_count" eval="6"/>
+            <field name="resource_ids" eval="[Command.set([ref('resource_room'), ref('resource_lena')])]"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 15:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 16:00:00')"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_open_1" model="om.planning.slot">
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_evening"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d 22:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_open_2" model="om.planning.slot">
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_open_3" model="om.planning.slot">
+            <field name="role_id" ref="role_driver"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_sam_n7" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=7)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=7)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_lena_n7" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=7)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=7)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_sam_n8" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_lena_n8" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_sam_n9" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=9)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=9)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_lena_n9" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=9)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=9)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_sam_n10" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=10)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=10)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_lena_n10" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=10)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=10)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_sam_n11" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_sam')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=11)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=11)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">draft</field>
+        </record>
+        <record id="slot_lena_n11" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_lena')])]"/>
+            <field name="role_id" ref="role_cashier"/>
+            <field name="template_id" ref="template_morning"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=11)).strftime('%Y-%m-%d 06:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=11)).strftime('%Y-%m-%d 14:00:00')"/>
+            <field name="break_hours" eval="0.5"/>
+            <field name="state">draft</field>
+        </record>
+
+        <record id="slot_mark_7" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_mark')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=7)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=7)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_mark_8" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_mark')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=8)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_mark_9" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_mark')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=9)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=9)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+        <record id="slot_mark_10" model="om.planning.slot">
+            <field name="resource_ids" eval="[Command.set([ref('resource_mark')])]"/>
+            <field name="role_id" ref="role_technician"/>
+            <field name="template_id" ref="template_day"/>
+            <field name="start_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=10)).strftime('%Y-%m-%d 08:00:00')"/>
+            <field name="end_datetime" eval="(DateTime.today() + relativedelta(days=-6) + relativedelta(weekday=0) + relativedelta(days=10)).strftime('%Y-%m-%d 17:00:00')"/>
+            <field name="break_hours" eval="1"/>
+            <field name="state">published</field>
+        </record>
+
+        <function model="om.planning.slot" name="_planning_demo_localize">
+            <value eval="[ref('slot_sam_0'), ref('slot_lena_0'), ref('slot_sam_1'), ref('slot_lena_1'), ref('slot_sam_2'), ref('slot_lena_2'), ref('slot_sam_3'), ref('slot_lena_3'), ref('slot_sam_4'), ref('slot_lena_4'), ref('slot_joel_0'), ref('slot_joel_1'), ref('slot_joel_2'), ref('slot_joel_rest'), ref('slot_forklift_1'), ref('slot_omar_1'), ref('slot_omar_2'), ref('slot_omar_overlap'), ref('slot_room_1'), ref('slot_open_1'), ref('slot_open_2'), ref('slot_open_3'), ref('slot_sam_n7'), ref('slot_lena_n7'), ref('slot_sam_n8'), ref('slot_lena_n8'), ref('slot_sam_n9'), ref('slot_lena_n9'), ref('slot_sam_n10'), ref('slot_lena_n10'), ref('slot_sam_n11'), ref('slot_lena_n11'), ref('slot_mark_7'), ref('slot_mark_8'), ref('slot_mark_9'), ref('slot_mark_10')]"/>
+        </function>
+
+
+        <!-- A pending claim of an open slot -->
+        <record id="request_joel_claim" model="om.planning.request">
+            <field name="slot_id" ref="slot_open_1"/>
+            <field name="resource_id" ref="resource_joel"/>
+            <field name="request_type">claim</field>
+            <field name="reason">I can stay longer on Thursday.</field>
+        </record>
+
+    </data>
+</odoo>

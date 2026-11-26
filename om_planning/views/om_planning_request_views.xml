@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_request_view_list" model="ir.ui.view">
+        <field name="name">om.planning.request.list</field>
+        <field name="model">om.planning.request</field>
+        <field name="arch" type="xml">
+            <list string="Requests" create="0">
+                <field name="create_date" string="Asked On"/>
+                <field name="request_type"/>
+                <field name="resource_id"/>
+                <field name="slot_id"/>
+                <field name="slot_start"/>
+                <field name="target_resource_id" optional="show"/>
+                <field name="state" widget="badge" decoration-warning="state == 'pending'"
+                    decoration-success="state == 'approved'" decoration-danger="state == 'refused'"/>
+                <field name="can_approve" column_invisible="1"/>
+                <button name="action_approve" type="object" string="Approve" icon="check" invisible="not can_approve"/>
+                <button name="action_refuse" type="object" string="Refuse" icon="close" invisible="not can_approve"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_planning_request_view_form" model="ir.ui.view">
+        <field name="name">om.planning.request.form</field>
+        <field name="model">om.planning.request</field>
+        <field name="arch" type="xml">
+            <form string="Request" create="0">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                        invisible="not can_approve"/>
+                    <button name="action_refuse" type="object" string="Refuse" invisible="not can_approve"/>
+                    <button name="action_cancel" type="object" string="Cancel Request"
+                        invisible="state != 'pending'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,approved"/>
+                </header>
+                <sheet>
+                    <field name="can_approve" invisible="1"/>
+                    <group>
+                        <group>
+                            <field name="request_type" readonly="1"/>
+                            <field name="resource_id" readonly="1"/>
+                            <field name="target_resource_id" invisible="request_type != 'switch'" readonly="1"/>
+                            <field name="approver_id" invisible="not approver_id"/>
+                        </group>
+                        <group>
+                            <field name="slot_id" readonly="1"/>
+                            <field name="role_id"/>
+                            <field name="slot_start"/>
+                            <field name="slot_end"/>
+                        </group>
+                    </group>
+                    <field name="reason" readonly="1" placeholder="No reason given"/>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_planning_request_view_form_switch" model="ir.ui.view">
+        <field name="name">om.planning.request.form.switch</field>
+        <field name="model">om.planning.request</field>
+        <field name="priority">30</field>
+        <field name="arch" type="xml">
+            <form string="Ask to Switch">
+                <group>
+                    <field name="slot_id" readonly="1"/>
+                    <field name="request_type" invisible="1"/>
+                    <field name="target_resource_id" required="1" options="{'no_create': True}"
+                        domain="[('resource_type', '=', 'user'), ('user_id', '!=', uid)]"/>
+                    <field name="reason"/>
+                </group>
+                <footer>
+                    <button string="Send Request" special="save" class="btn-primary"/>
+                    <button string="Discard" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_planning_request_view_search" model="ir.ui.view">
+        <field name="name">om.planning.request.search</field>
+        <field name="model">om.planning.request</field>
+        <field name="arch" type="xml">
+            <search string="Requests">
+                <field name="resource_id"/>
+                <field name="slot_id"/>
+                <filter name="pending" string="To Approve" domain="[('state', '=', 'pending')]"/>
+                <filter name="mine" string="My Requests" domain="[('create_uid', '=', uid)]"/>
+                <group>
+                    <filter name="group_type" string="Request" context="{'group_by': 'request_type'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_planning_request" model="ir.actions.act_window">
+        <field name="name">Requests</field>
+        <field name="res_model">om.planning.request</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No request</p>
+            <p>Claims of open slots, switches and requests to leave a slot show here for approval.</p>
+        </field>
+    </record>
+
+</odoo>

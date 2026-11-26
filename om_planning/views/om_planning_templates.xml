@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="planning_slot_rows" name="Planning: slot rows">
+        <t t-foreach="slot_list" t-as="slot">
+            <tr>
+                <td class="text-nowrap"><t t-out="format_slot(slot)"/></td>
+                <td><span class="badge rounded-pill text-bg-light border" t-out="slot.role_id.name or ''"/></td>
+                <td>
+                    <t t-out="slot.name or ''"/>
+                    <div t-if="slot.note" class="small text-muted" t-out="slot.note"/>
+                </td>
+                <td class="text-end text-nowrap"><t t-out="'%.2f' % slot.allocated_hours"/> h</td>
+                <td t-if="show_action" class="text-end">
+                    <t t-if="slot in pending_slots">
+                        <span class="badge text-bg-warning">Requested</span>
+                    </t>
+                    <form t-else="" t-att-action="'%s%s' % (action_url, slot.id)" method="post" class="d-inline">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <button type="submit" t-attf-class="btn btn-sm #{action_class}" t-out="action_label"/>
+                    </form>
+                </td>
+            </tr>
+        </t>
+    </template>
+
+    <template id="planning_message" name="Planning: message">
+        <div t-if="message == 'claimed' or message == 'sent'" class="alert alert-success">
+            Your request was sent to your manager.
+        </div>
+        <div t-if="message == 'unavailable'" class="alert alert-warning">This slot is not available anymore.</div>
+        <div t-if="message == 'duplicate'" class="alert alert-info">You already asked this for this slot.</div>
+    </template>
+
+    <template id="planning_schedule_page" name="Planning: public schedule">
+        <t t-call="web.frontend_layout" no_header="True" no_footer="True">
+            <div class="container py-4 o_om_planning_schedule">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <h2 class="mb-0" t-out="resource.name"/>
+                        <div class="text-muted" t-out="schedule.name"/>
+                    </div>
+                    <a t-att-href="ics_url" class="btn btn-outline-primary">
+                        <i class="oi me-1" data-icon="calendar_today"/>Add to my calendar
+                    </a>
+                </div>
+                <t t-call="om_planning.planning_message"/>
+                <div t-if="schedule.note" class="alert alert-info" t-out="schedule.note"/>
+                <h4>Your slots</h4>
+                <table t-if="slots" class="table table-sm align-middle">
+                    <tbody>
+                        <t t-call="om_planning.planning_slot_rows" slot_list="slots" show_action="False"/>
+                    </tbody>
+                </table>
+                <p t-else="" class="text-muted">You have no slot in this period.</p>
+                <t t-if="open_slots">
+                    <h4 class="mt-4">Open slots</h4>
+                    <p class="text-muted">Claim a slot: your manager approves it.</p>
+                    <table class="table table-sm align-middle">
+                        <tbody>
+                            <t t-call="om_planning.planning_slot_rows" slot_list="open_slots" show_action="True"
+                                action_url="'/planning/schedule/%s/%s/claim/' % (token, resource_token)"
+                                action_label.translate="Claim" action_class="'btn-primary'"/>
+                        </tbody>
+                    </table>
+                </t>
+                <p class="small text-muted mt-4" t-out="schedule.company_id.name"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="portal_breadcrumbs_planning" name="Portal layout: planning entry" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'planning'" class="breadcrumb-item active">Planning</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_planning" name="My Planning">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True" title.translate="Planning"/>
+            <t t-call="om_planning.planning_message"/>
+            <div t-if="not resources" class="alert alert-warning mt-3">
+                Your account is not linked to a planning resource yet.
+            </div>
+            <t t-else="">
+                <div class="d-flex flex-wrap gap-2 justify-content-end my-3">
+                    <a t-if="not past" href="/my/planning?past=1" class="btn btn-sm btn-light">Show the last 30 days</a>
+                    <a t-att-href="ics_url" class="btn btn-sm btn-outline-primary">
+                        <i class="oi me-1" data-icon="calendar_today"/>Calendar feed (ICS)
+                    </a>
+                </div>
+                <h4>My slots</h4>
+                <table t-if="slots" class="table table-sm align-middle">
+                    <tbody>
+                        <t t-call="om_planning.planning_slot_rows" slot_list="slots" show_action="True"
+                            action_url="'/my/planning/leave/'" action_label.translate="Ask to leave"
+                            action_class="'btn-light'"/>
+                    </tbody>
+                </table>
+                <p t-else="" class="text-muted">No slot planned for you.</p>
+                <h4 class="mt-4">Open slots</h4>
+                <table t-if="open_slots" class="table table-sm align-middle">
+                    <tbody>
+                        <t t-call="om_planning.planning_slot_rows" slot_list="open_slots" show_action="True"
+                            action_url="'/my/planning/claim/'" action_label.translate="Claim"
+                            action_class="'btn-primary'"/>
+                    </tbody>
+                </table>
+                <p t-else="" class="text-muted">No open slot right now.</p>
+                <t t-if="planning_requests">
+                    <h4 class="mt-4">My requests</h4>
+                    <table class="table table-sm align-middle">
+                        <tbody>
+                            <tr t-foreach="planning_requests" t-as="planning_request">
+                                <td t-out="planning_request.name"/>
+                                <td class="text-nowrap" t-out="format_slot(planning_request.slot_id)"/>
+                                <td class="text-end">
+                                    <span t-attf-class="badge #{'text-bg-warning' if planning_request.state == 'pending' else 'text-bg-success' if planning_request.state == 'approved' else 'text-bg-secondary'}"
+                                        t-field="planning_request.state"/>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </t>
+            </t>
+        </t>
+    </template>
+
+</odoo>
