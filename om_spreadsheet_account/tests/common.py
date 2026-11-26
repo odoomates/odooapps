@@ -86,13 +86,19 @@ def check_dashboards(case, names, expected=None):
     )
 
 
-def built_dashboards(module):
-    """ :return: {file name: JSON} as the build script of the module writes them today """
+def build_script(module):
+    """ :return: the build script of the dashboards of the module, as a Python module """
     path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                         module, 'tools', 'build_dashboards.py')
     spec = importlib.util.spec_from_file_location('%s_build_dashboards' % module, path)
     script = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(script)
+    return script
+
+
+def built_dashboards(module):
+    """ :return: {file name: JSON} as the build script of the module writes them today """
+    script = build_script(module)
     return {name: build().to_json() for name, build in script.DASHBOARDS.items()}
 
 
