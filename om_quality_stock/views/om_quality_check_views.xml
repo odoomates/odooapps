@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_check_form_stock" model="ir.ui.view">
+        <field name="name">om.quality.check.form.stock</field>
+        <field name="model">om.quality.check</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_check_form"/>
+        <field name="arch" type="xml">
+            <button name="action_retest" position="before">
+                <field name="picking_state" invisible="1"/>
+                <field name="picking_code" invisible="1"/>
+                <button name="action_om_quality_quarantine" type="object" string="Quarantine" class="btn-warning"
+                    invisible="state != 'failed' or not picking_id or disposition or is_overridden"/>
+                <button name="action_om_quality_scrap" type="object" string="Scrap"
+                    invisible="state != 'failed' or not picking_id or disposition not in (False, 'quarantine') or is_overridden or (picking_state != 'done' and picking_code == 'incoming')"/>
+                <button name="action_om_quality_return" type="object" string="Return to Vendor"
+                    invisible="state != 'failed' or picking_code != 'incoming' or picking_state != 'done' or disposition not in (False, 'quarantine') or is_overridden"/>
+            </button>
+            <field name="partner_id" position="after">
+                <field name="picking_id" invisible="not picking_id"/>
+                <field name="lot_id" invisible="not lot_id and not product_id" readonly="state == 'cancel'"/>
+                <field name="lot_name" invisible="not lot_name or lot_id"/>
+                <label for="quantity" invisible="not quantity"/>
+                <div class="o_row" invisible="not quantity">
+                    <field name="quantity"/>
+                    <field name="product_uom_id" groups="uom.group_uom"/>
+                </div>
+            </field>
+            <field name="disposition" position="after">
+                <field name="quarantine_location_id" invisible="not quarantine_location_id"/>
+                <field name="quarantine_picking_id" invisible="not quarantine_picking_id"/>
+                <field name="return_picking_id" invisible="not return_picking_id"/>
+                <field name="scrap_move_ids" widget="many2many_tags" invisible="not scrap_move_ids" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_list_stock" model="ir.ui.view">
+        <field name="name">om.quality.check.list.stock</field>
+        <field name="model">om.quality.check</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_check_list"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="lot_id" optional="show"/>
+                <field name="quantity" optional="hide"/>
+                <field name="picking_type_id" optional="hide"/>
+            </field>
+            <field name="reason_id" position="after">
+                <field name="disposition" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_search_stock" model="ir.ui.view">
+        <field name="name">om.quality.check.search.stock</field>
+        <field name="model">om.quality.check</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_check_search"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="lot_id"/>
+                <field name="picking_id"/>
+                <field name="picking_type_id"/>
+            </field>
+            <filter name="group_reason" position="after">
+                <filter string="Operation Type" name="group_picking_type" context="{'group_by': 'picking_type_id'}"/>
+                <filter string="Decision" name="group_disposition" context="{'group_by': 'disposition'}"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

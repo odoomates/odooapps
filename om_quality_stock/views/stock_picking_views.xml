@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_form_om_quality" model="ir.ui.view">
+        <field name="name">stock.picking.form.om.quality</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.view_picking_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_assign']" position="after">
+                <field name="om_quality_todo_count" invisible="1"/>
+                <field name="om_quality_check_count" invisible="1"/>
+                <button name="action_om_quality_dialog" type="object" string="Quality Checks" class="btn-primary"
+                    invisible="not om_quality_todo_count or state in ('done', 'cancel')" data-hotkey="shift+q"/>
+            </xpath>
+            <xpath expr="//header/button[@name='action_return']" position="after">
+                <button name="action_om_quality_certificate" type="object" string="Certificate of Analysis"
+                    invisible="picking_type_code != 'outgoing' or state != 'done'"/>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_om_quality_dialog" type="object" class="oe_stat_button" icon="checklist"
+                    invisible="not om_quality_check_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="om_quality_todo_count" invisible="not om_quality_todo_count"/>
+                            <span invisible="not om_quality_todo_count"> / </span>
+                            <field name="om_quality_check_count"/>
+                        </span>
+                        <span class="o_stat_text">Quality Checks</span>
+                    </div>
+                </button>
+                <button name="action_om_quality_alerts" type="object" class="oe_stat_button" icon="warning"
+                    invisible="not om_quality_alert_count">
+                    <field name="om_quality_alert_count" widget="statinfo" string="Non-conformances"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+    <record id="vpicktree_om_quality" model="ir.ui.view">
+        <field name="name">stock.picking.list.om.quality</field>
+        <field name="model">stock.picking</field>
+        <field name="inherit_id" ref="stock.vpicktree"/>
+        <field name="arch" type="xml">
+            <field name="state" position="before">
+                <field name="om_quality_state" string="Quality" optional="hide" widget="badge"
+                    decoration-success="om_quality_state == 'passed'" decoration-danger="om_quality_state == 'failed'"
+                    decoration-warning="om_quality_state == 'todo'" invisible="om_quality_state == 'none'"/>
+            </field>
+        </field>
+    </record>
+</odoo>

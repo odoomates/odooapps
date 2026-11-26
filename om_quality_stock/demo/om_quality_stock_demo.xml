@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="template_dispatch" model="om.quality.test.template">
+        <field name="name">Pre-dispatch checklist</field>
+        <field name="description">Before the goods leave: label, seal and count.</field>
+    </record>
+    <record id="template_dispatch_label" model="om.quality.test.parameter">
+        <field name="template_id" ref="template_dispatch"/>
+        <field name="sequence">1</field>
+        <field name="name">Shipping label matches the order</field>
+        <field name="test_kind">passfail</field>
+    </record>
+    <record id="template_dispatch_seal" model="om.quality.test.parameter">
+        <field name="template_id" ref="template_dispatch"/>
+        <field name="sequence">2</field>
+        <field name="name">Box sealed and undamaged</field>
+        <field name="test_kind">passfail</field>
+    </record>
+    <record id="template_dispatch_weight" model="om.quality.test.parameter">
+        <field name="template_id" ref="template_dispatch"/>
+        <field name="sequence">3</field>
+        <field name="name">Gross weight</field>
+        <field name="test_kind">measure</field>
+        <field name="norm_min">0.9</field>
+        <field name="norm_target">1.0</field>
+        <field name="norm_max">1.2</field>
+        <field name="uom_id" ref="uom.product_uom_kgm"/>
+    </record>
+
+    <record id="point_receipt_packaging" model="om.quality.point">
+        <field name="name">Packaging intact on arrival</field>
+        <field name="point_type">picking</field>
+        <field name="picking_type_ids" eval="[(4, ref('stock.picking_type_in'))]"/>
+        <field name="product_ids" eval="[(4, ref('stock.product_cable_management_box')), (4, ref('product.product_product_27'))]"/>
+        <field name="test_type">passfail</field>
+        <field name="frequency">all</field>
+        <field name="is_blocking" eval="True"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="instructions"><![CDATA[<p>Look at every box before opening: no crushed corners, no water marks, seals unbroken. Take a photo of any damage.</p>]]></field>
+        <field name="failure_message">Do not put the goods away: send them to quarantine and tell the buyer.</field>
+    </record>
+
+    <record id="point_receipt_dimension" model="om.quality.point">
+        <field name="name">Drawer front width</field>
+        <field name="point_type">picking</field>
+        <field name="picking_type_ids" eval="[(4, ref('stock.picking_type_in'))]"/>
+        <field name="product_ids" eval="[(4, ref('product.product_product_27'))]"/>
+        <field name="test_type">measure</field>
+        <field name="norm_min">399.5</field>
+        <field name="norm_target">400</field>
+        <field name="norm_max">400.5</field>
+        <field name="uom_id" ref="uom.product_uom_millimeter"/>
+        <field name="samples">3</field>
+        <field name="frequency">lot</field>
+        <field name="is_blocking" eval="True"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="instructions"><![CDATA[<p>Measure the width of three drawer fronts of the lot with the calliper, at mid-height.</p>]]></field>
+    </record>
+
+    <record id="point_receipt_audit" model="om.quality.point">
+        <field name="name">Random photo audit of receipts</field>
+        <field name="point_type">picking</field>
+        <field name="picking_type_ids" eval="[(4, ref('stock.picking_type_in'))]"/>
+        <field name="product_category_ids" eval="[(4, ref('product.product_category_office'))]"/>
+        <field name="test_type">picture</field>
+        <field name="frequency">random</field>
+        <field name="frequency_percent">20</field>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="create_alert" eval="False"/>
+    </record>
+
+    <record id="point_delivery_dispatch" model="om.quality.point">
+        <field name="name">Pre-dispatch checklist</field>
+        <field name="point_type">picking</field>
+        <field name="picking_type_ids" eval="[(4, ref('stock.picking_type_out'))]"/>
+        <field name="product_ids" eval="[(4, ref('stock.product_cable_management_box'))]"/>
+        <field name="test_type">template</field>
+        <field name="template_id" ref="template_dispatch"/>
+        <field name="frequency">all</field>
+        <field name="is_blocking" eval="True"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+    </record>
+</odoo>

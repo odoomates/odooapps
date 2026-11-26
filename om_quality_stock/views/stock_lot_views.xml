@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_production_lot_form_om_quality" model="ir.ui.view">
+        <field name="name">stock.lot.form.om.quality</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet" position="before">
+                <header>
+                    <button name="action_om_quality_hold" type="object" string="Put on Hold"
+                        invisible="om_quality_state != 'ok'" groups="om_quality.group_om_quality_user"/>
+                    <button name="action_om_quality_release" type="object" string="Release" class="btn-primary"
+                        invisible="om_quality_state == 'ok'" groups="om_quality.group_om_quality_manager"/>
+                    <button name="action_om_quality_reject" type="object" string="Reject"
+                        invisible="om_quality_state == 'rejected'" groups="om_quality.group_om_quality_manager"/>
+                    <field name="om_quality_state" widget="statusbar" statusbar_visible="ok,hold,rejected"/>
+                </header>
+            </xpath>
+            <div name="button_box" position="inside">
+                <button name="action_om_quality_checks" type="object" class="oe_stat_button" icon="checklist"
+                    invisible="not om_quality_check_count">
+                    <field name="om_quality_check_count" widget="statinfo" string="Quality Checks"/>
+                </button>
+            </div>
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <widget name="web_ribbon" title="On Hold" bg_color="text-bg-warning" invisible="om_quality_state != 'hold'"/>
+                <widget name="web_ribbon" title="Rejected" bg_color="text-bg-danger" invisible="om_quality_state != 'rejected'"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_production_lot_tree_om_quality" model="ir.ui.view">
+        <field name="name">stock.lot.list.om.quality</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.view_production_lot_tree"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="om_quality_state" widget="badge" optional="show" string="Quality"
+                    decoration-success="om_quality_state == 'ok'" decoration-warning="om_quality_state == 'hold'"
+                    decoration-danger="om_quality_state == 'rejected'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="search_product_lot_filter_om_quality" model="ir.ui.view">
+        <field name="name">stock.lot.search.om.quality</field>
+        <field name="model">stock.lot</field>
+        <field name="inherit_id" ref="stock.search_product_lot_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <separator/>
+                <filter string="Quality: On Hold" name="om_quality_hold" domain="[('om_quality_state', '=', 'hold')]"/>
+                <filter string="Quality: Rejected" name="om_quality_rejected" domain="[('om_quality_state', '=', 'rejected')]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
