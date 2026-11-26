@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_inter_company_rule_view_form_sale_purchase" model="ir.ui.view">
+        <field name="name">om.inter.company.rule.form.sale.purchase</field>
+        <field name="model">om.inter.company.rule</field>
+        <field name="inherit_id" ref="om_account_inter_company.om_inter_company_rule_view_form"/>
+        <field name="arch" type="xml">
+            <page name="invoices" position="before">
+                <page string="Sales and Purchases" name="orders">
+                    <group>
+                        <group string="Orders" name="orders_documents">
+                            <field name="mirror_sale_orders"/>
+                            <field name="mirror_purchase_orders"/>
+                            <field name="order_state" widget="radio"/>
+                            <field name="keep_prices"/>
+                            <field name="sync_receipt"/>
+                        </group>
+                        <group string="People" name="orders_people">
+                            <field name="salesperson_id" options="{'no_create': True}" placeholder="The user of the rule"/>
+                            <field name="buyer_id" options="{'no_create': True}" placeholder="The user of the rule"/>
+                        </group>
+                        <group string="Warehouse of the Other Company" name="target_stock">
+                            <field name="target_warehouse_id" placeholder="First warehouse" string="Warehouse" options="{'no_create': True}"/>
+                            <field name="target_picking_type_id" placeholder="Receipts of the warehouse" string="Receipt Type" options="{'no_create': True}"/>
+                        </group>
+                        <group string="Warehouse of the Company" name="source_stock" invisible="direction != 'both'">
+                            <field name="source_warehouse_id" placeholder="First warehouse" string="Warehouse" options="{'no_create': True}"/>
+                            <field name="source_picking_type_id" placeholder="Receipts of the warehouse" string="Receipt Type" options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <div class="text-muted">
+                        The invoices of these orders become the bills of their purchase orders with the options of
+                        the Invoices and Bills tab, linked with the purchase order lines: nothing is billed twice.
+                    </div>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <record id="om_inter_company_rule_view_list_sale_purchase" model="ir.ui.view">
+        <field name="name">om.inter.company.rule.list.sale.purchase</field>
+        <field name="model">om.inter.company.rule</field>
+        <field name="inherit_id" ref="om_account_inter_company.om_inter_company_rule_view_list"/>
+        <field name="arch" type="xml">
+            <field name="mirror_bills" position="after">
+                <field name="mirror_sale_orders" widget="boolean_toggle" optional="show"/>
+                <field name="mirror_purchase_orders" widget="boolean_toggle" optional="show"/>
+                <field name="order_state" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <menuitem id="menu_om_inter_company_rule_sale" name="Inter-Company Rules" parent="sale.menu_sale_config"
+              action="om_account_inter_company.action_om_inter_company_rule" sequence="90"
+              groups="base.group_multi_company"/>
+    <menuitem id="menu_om_inter_company_rule_purchase" name="Inter-Company Rules" parent="purchase.menu_purchase_config"
+              action="om_account_inter_company.action_om_inter_company_rule" sequence="90"
+              groups="base.group_multi_company"/>
+</odoo>

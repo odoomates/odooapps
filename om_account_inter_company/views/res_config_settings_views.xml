@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_om_ic" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.ic</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="print_vendor_checks_setting_container" position="after">
+                <block title="Inter-Company" id="om_inter_company_settings" groups="base.group_multi_company">
+                    <setting id="om_inter_company_rules_setting" string="Inter-Company Rules"
+                             help="Create the vendor bill of a group company from the customer invoice of another, with taxes, accounts and products mapped.">
+                        <div class="mt-2">
+                            <button name="%(action_om_inter_company_rule)d" type="action" string="Inter-Company Rules"
+                                    icon="oi-arrow-right" class="btn-link"/>
+                        </div>
+                        <div class="mt-1">
+                            <button name="%(action_om_inter_company_balance)d" type="action" string="Inter-Company Balances"
+                                    icon="oi-arrow-right" class="btn-link"/>
+                        </div>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_base_om_ic" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.base.om.ic</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <setting id="inter_company" position="replace">
+                <setting id="om_inter_company_base_setting" string="Inter-Company Transactions"
+                         help="Create the vendor bills, purchase orders and sales orders of a group company from the documents of another."
+                         groups="base.group_multi_company">
+                    <div class="mt-2">
+                        <button name="%(action_om_inter_company_rule)d" type="action" string="Inter-Company Rules"
+                                icon="oi-arrow-right" class="btn-link"/>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+</odoo>
