@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_field_service</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="56"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Field Service" string="Field Service" name="om_field_service" groups="om_field_service.group_fs_manager">
+                    <block title="Customer Messages" name="fs_messages">
+                        <setting id="fs_notify_on_the_way" string="Technician on the Way"
+                            help="Email the customer when the technician starts travelling to the site">
+                            <field name="fs_notify_on_the_way"/>
+                        </setting>
+                        <setting id="fs_send_report" string="Job Report"
+                            help="Email the job report (PDF) to the customer when the job is done">
+                            <field name="fs_send_report"/>
+                        </setting>
+                    </block>
+                    <block title="Time" name="fs_time">
+                        <setting id="fs_travel_timesheet" string="Travel Time"
+                            help="Record the travel to the site as a timesheet of its own, from Start Travel to Start Work">
+                            <field name="fs_travel_timesheet"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_fs_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module': 'om_field_service', 'bin_size': False}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_om_fs_technician" model="ir.actions.client">
+        <field name="name">My Day</field>
+        <field name="tag">om_fs_technician</field>
+        <field name="path">my-field-service-day</field>
+    </record>
+
+    <record id="action_om_fs_map" model="ir.actions.client">
+        <field name="name">Job Map</field>
+        <field name="tag">om_fs_map</field>
+        <field name="path">field-service-map</field>
+    </record>
+
+    <menuitem id="menu_om_fs_root" name="Field Service" sequence="56"
+        web_icon="om_field_service,static/description/icon.png"
+        groups="om_field_service.group_fs_user"/>
+
+    <menuitem id="menu_om_fs_my_day" name="My Day" parent="menu_om_fs_root"
+        action="action_om_fs_technician" sequence="5"/>
+
+    <menuitem id="menu_om_fs_jobs" name="Jobs" parent="menu_om_fs_root" sequence="10"/>
+    <menuitem id="menu_om_fs_jobs_all" name="All Jobs" parent="menu_om_fs_jobs"
+        action="action_om_fs_job" sequence="10"/>
+    <menuitem id="menu_om_fs_jobs_my" name="My Jobs" parent="menu_om_fs_jobs"
+        action="action_om_fs_job_my" sequence="20"/>
+    <menuitem id="menu_om_fs_jobs_unplanned" name="To Plan" parent="menu_om_fs_jobs"
+        action="action_om_fs_job_unplanned" sequence="30" groups="om_field_service.group_fs_manager"/>
+
+    <menuitem id="menu_om_fs_dispatch" name="Dispatch" parent="menu_om_fs_root" sequence="20"
+        groups="om_field_service.group_fs_manager"/>
+    <menuitem id="menu_om_fs_dispatch_technician" name="By Technician" parent="menu_om_fs_dispatch"
+        action="action_om_fs_dispatch" sequence="10"/>
+    <menuitem id="menu_om_fs_dispatch_team" name="By Team" parent="menu_om_fs_dispatch"
+        action="action_om_fs_dispatch_team" sequence="20"/>
+    <menuitem id="menu_om_fs_dispatch_map" name="Map" parent="menu_om_fs_dispatch"
+        action="action_om_fs_map" sequence="30"/>
+
+    <menuitem id="menu_om_fs_reporting" name="Reporting" parent="menu_om_fs_root" sequence="80"
+        groups="om_field_service.group_fs_manager"/>
+    <menuitem id="menu_om_fs_analysis" name="Jobs Analysis" parent="menu_om_fs_reporting"
+        action="action_om_fs_job_analysis" sequence="10"/>
+    <menuitem id="menu_om_fs_time" name="Travel and Work Time" parent="menu_om_fs_reporting"
+        action="action_om_fs_timesheets" sequence="20"/>
+
+    <menuitem id="menu_om_fs_config" name="Configuration" parent="menu_om_fs_root" sequence="90"
+        groups="om_field_service.group_fs_manager"/>
+    <menuitem id="menu_om_fs_settings" name="Settings" parent="menu_om_fs_config"
+        action="action_om_fs_settings" sequence="1" groups="base.group_system"/>
+    <menuitem id="menu_om_fs_job_types" name="Job Types" parent="menu_om_fs_config"
+        action="action_om_fs_job_type" sequence="10"/>
+    <menuitem id="menu_om_fs_projects" name="Projects" parent="menu_om_fs_config"
+        action="action_om_fs_project" sequence="20"/>
+    <menuitem id="menu_om_fs_technicians" name="Technicians" parent="menu_om_fs_config"
+        action="action_om_fs_technician_list" sequence="30"/>
+    <menuitem id="menu_om_fs_roles" name="Technician Roles" parent="menu_om_fs_config"
+        action="action_om_fs_role" sequence="40"/>
+
+</odoo>

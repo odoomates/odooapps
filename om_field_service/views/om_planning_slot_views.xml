@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_slot_view_gantt_fs" model="ir.ui.view">
+        <field name="name">om.planning.slot.gantt.field.service</field>
+        <field name="model">om.planning.slot</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <gantt string="Dispatch"
+                   js_class="om_fs_dispatch_gantt"
+                   date_start="start_datetime"
+                   date_stop="end_datetime"
+                   default_scale="day"
+                   scales="day,week,month"
+                   default_group_by="resource_ids"
+                   default_order="start_datetime"
+                   color="color"
+                   create="0"
+                   consolidation="allocated_hours"
+                   progress_bar="resource_ids"
+                   empty_row_labels="{'resource_ids': 'No Technician', 'department_id': 'No Team'}"
+                   thumbnails="{'resource_ids': 'planning_avatar_128'}"
+                   decoration-muted="fs_job_state in ('done', 'cancelled')"
+                   decoration-info="fs_job_state in ('travelling', 'in_progress')"
+                   decoration-warning="fs_job_state == 'waiting_parts'"
+                   decoration-danger="conflict_count &gt; 0"
+                   display_unavailability="1"
+                   precision="{'day': 'hour:quarter', 'week': 'day:half', 'month': 'day:half'}"
+                   total_row="1">
+                <field name="start_datetime"/>
+                <field name="end_datetime"/>
+                <field name="resource_ids"/>
+                <field name="allocated_hours"/>
+                <field name="fs_job_id"/>
+                <field name="fs_partner_id"/>
+                <field name="fs_site_address"/>
+                <field name="fs_job_state"/>
+                <field name="fs_job_type_id"/>
+                <field name="conflict_count"/>
+                <field name="conflict_info"/>
+                <templates>
+                    <t t-name="gantt-popover">
+                        <div class="d-flex gap-2">
+                            <i class="oi oi-fw text-muted lh-base" data-icon="calendar_today" title="Dates"/>
+                            <field name="start_datetime" class="fw-bold"/><span>-</span><field name="end_datetime" class="fw-bold"/>
+                        </div>
+                        <div class="d-flex gap-2" t-if="record.fs_partner_id.raw_value">
+                            <i class="oi oi-fw text-muted lh-base" data-icon="person" title="Customer"/>
+                            <field name="fs_partner_id"/>
+                        </div>
+                        <div class="d-flex gap-2" t-if="record.fs_site_address.raw_value">
+                            <i class="oi oi-fw text-muted lh-base" data-icon="location_on" title="Site"/>
+                            <field name="fs_site_address"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="fw-bold">Technicians</span><field name="resource_ids" widget="many2many_tags"/>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <span class="fw-bold">Status</span><field name="fs_job_state"/>
+                            <t t-if="record.fs_job_type_id.raw_value"><span class="text-muted">-</span><field name="fs_job_type_id"/></t>
+                        </div>
+                        <div t-if="record.conflict_count.raw_value" class="text-danger" style="white-space: pre-line;">
+                            <field name="conflict_info"/>
+                        </div>
+                    </t>
+                </templates>
+            </gantt>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_search_fs" model="ir.ui.view">
+        <field name="name">om.planning.slot.search.field.service</field>
+        <field name="model">om.planning.slot</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Dispatch">
+                <field name="resource_ids" string="Technician"/>
+                <field name="fs_job_id"/>
+                <field name="fs_partner_id"/>
+                <field name="department_id" string="Team"/>
+                <filter name="open" string="Open Jobs" domain="[('fs_job_state', 'not in', ('done', 'cancelled'))]"/>
+                <filter name="conflicts" string="Conflicts" domain="[('has_conflict', '=', True)]"/>
+                <group>
+                    <filter name="group_resource" string="Technician" context="{'group_by': 'resource_ids'}"/>
+                    <filter name="group_team" string="Team" context="{'group_by': 'department_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'fs_job_state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_fs_dispatch" model="ir.actions.act_window">
+        <field name="name">Dispatch</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="path">field-service-dispatch</field>
+        <field name="view_mode">gantt,list,form</field>
+        <field name="domain">[('fs_job_id', '!=', False)]</field>
+        <field name="context">{'om_fs_dispatch': True, 'om_planning_label': 'role'}</field>
+        <field name="search_view_id" ref="om_planning_slot_view_search_fs"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'gantt', 'view_id': ref('om_planning_slot_view_gantt_fs')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('om_planning.om_planning_slot_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('om_planning.om_planning_slot_view_form')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No job planned</p>
+            <p>Plan the jobs on the technicians from the list of jobs to plan, or from a job.</p>
+        </field>
+    </record>
+
+    <record id="action_om_fs_dispatch_team" model="ir.actions.act_window">
+        <field name="name">Dispatch by Team</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,list,form</field>
+        <field name="domain">[('fs_job_id', '!=', False)]</field>
+        <field name="context">{'om_fs_dispatch': True, 'om_planning_label': 'role', 'search_default_group_team': 1, 'search_default_group_resource': 1}</field>
+        <field name="search_view_id" ref="om_planning_slot_view_search_fs"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'gantt', 'view_id': ref('om_planning_slot_view_gantt_fs')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('om_planning.om_planning_slot_view_list')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('om_planning.om_planning_slot_view_form')})]"/>
+    </record>
+
+    <record id="om_planning_role_view_form_inherit_fs" model="ir.ui.view">
+        <field name="name">om.planning.role.form.inherit.field.service</field>
+        <field name="model">om.planning.role</field>
+        <field name="inherit_id" ref="om_planning.om_planning_role_view_form"/>
+        <field name="arch" type="xml">
+            <field name="allow_overlap" position="after">
+                <field name="is_field_service"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="action_om_fs_role" model="ir.actions.act_window">
+        <field name="name">Technician Roles</field>
+        <field name="res_model">om.planning.role</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_field_service', '=', True)]</field>
+        <field name="context">{'default_is_field_service': True}</field>
+    </record>
+
+</odoo>

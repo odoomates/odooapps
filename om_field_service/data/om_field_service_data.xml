@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="seq_om_fs_job" model="ir.sequence">
+        <field name="name">Field Service Job</field>
+        <field name="code">om.fs.job</field>
+        <field name="prefix">JOB/</field>
+        <field name="padding">5</field>
+        <field name="company_id" eval="False"/>
+    </record>
+
+    <data noupdate="1">
+        <record id="planning_role_technician" model="om.planning.role">
+            <field name="name">Field Technician</field>
+            <field name="color">4</field>
+            <field name="is_field_service" eval="True"/>
+        </record>
+
+        <record id="project_stage_fs_new" model="project.task.type">
+            <field name="name">New</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="project_stage_fs_progress" model="project.task.type">
+            <field name="name">In Progress</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="project_stage_fs_done" model="project.task.type">
+            <field name="name">Done</field>
+            <field name="sequence">10</field>
+            <field name="fold" eval="True"/>
+        </record>
+
+        <record id="project_field_service" model="project.project">
+            <field name="name">Field Service</field>
+            <field name="is_field_service" eval="True"/>
+            <field name="allow_timesheets" eval="True"/>
+            <field name="privacy_visibility">followers</field>
+            <field name="label_tasks">Jobs</field>
+            <field name="type_ids" eval="[(6, 0, [ref('project_stage_fs_new'), ref('project_stage_fs_progress'), ref('project_stage_fs_done')])]"/>
+        </record>
+    </data>
+
+</odoo>

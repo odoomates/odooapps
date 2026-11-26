@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_breadcrumbs_field_service" name="Portal layout: field service entry" inherit_id="portal.portal_breadcrumbs" priority="40">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'field_service'" class="breadcrumb-item active">Field Service</li>
+            <li t-if="page_name == 'field_service_job'" class="breadcrumb-item">
+                <a href="/my/field_service">Field Service</a>
+            </li>
+            <li t-if="page_name == 'field_service_job'" class="breadcrumb-item active" t-out="job.job_number or job.name"/>
+        </xpath>
+    </template>
+
+    <template id="portal_fs_state_badge" name="Field Service: status badge">
+        <span t-attf-class="badge rounded-pill #{'text-bg-success' if job.job_state == 'done' else 'text-bg-info' if job.job_state in ('travelling', 'in_progress') else 'text-bg-warning' if job.job_state == 'waiting_parts' else 'text-bg-light border'}"
+            t-field="job.job_state"/>
+    </template>
+
+    <template id="portal_my_field_service" name="My Field Service Jobs">
+        <t t-call="portal.portal_layout" breadcrumbs_searchbar="True">
+            <t t-call="portal.portal_searchbar" breadcrumbs_searchbar="True" title.translate="Field Service"/>
+            <p t-if="not jobs" class="text-muted mt-3">There is no intervention at your sites yet.</p>
+            <t t-else="" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th>Job</th>
+                        <th>Site</th>
+                        <th>Date</th>
+                        <th class="text-end">Status</th>
+                        <th class="text-end">Report</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="jobs" t-as="job">
+                        <td>
+                            <a t-att-href="'/my/field_service/%s' % job.id">
+                                <span class="text-muted" t-out="job.job_number or ''"/>
+                                <span t-out="job.name"/>
+                            </a>
+                        </td>
+                        <td><span t-out="job.site_address or ''"/></td>
+                        <td class="text-nowrap">
+                            <span t-if="job.date_done" t-field="job.date_done" t-options="{'widget': 'date'}"/>
+                            <span t-elif="job.planned_start" t-field="job.planned_start"/>
+                        </td>
+                        <td class="text-end"><t t-call="om_field_service.portal_fs_state_badge"/></td>
+                        <td class="text-end">
+                            <a t-if="job.job_state == 'done'" t-att-href="'/my/field_service/%s/report?download=1' % job.id"
+                                class="btn btn-sm btn-light" title="Download the report">
+                                <i class="oi" data-icon="download"/> PDF
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_my_field_service_job" name="My Field Service Job">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-3">
+                <div class="col-lg-9">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <h3 class="mb-0">
+                            <span class="text-muted" t-out="job.job_number or ''"/>
+                            <span t-out="job.name"/>
+                        </h3>
+                        <t t-call="om_field_service.portal_fs_state_badge"/>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Site</strong>
+                            <div t-field="job.site_partner_id" t-options="{'widget': 'contact', 'fields': ['name', 'address'], 'no_marker': True}"/>
+                        </div>
+                        <div class="col-md-6">
+                            <div t-if="job.job_type_id"><strong>Type: </strong><span t-field="job.job_type_id"/></div>
+                            <div t-if="job.planned_start"><strong>Planned: </strong><span t-field="job.planned_start"/></div>
+                            <div t-if="job.technician_ids"><strong>Technicians: </strong><span t-out="', '.join(job.technician_ids.mapped('name'))"/></div>
+                            <div t-if="job.date_done"><strong>Done: </strong><span t-field="job.date_done"/></div>
+                        </div>
+                    </div>
+                    <div t-if="job.site_equipment" class="mb-3">
+                        <strong>Equipment</strong>
+                        <div t-field="job.site_equipment"/>
+                    </div>
+                    <div t-if="job.job_state == 'done' and job.work_summary" class="mb-3">
+                        <h5>Work Done</h5>
+                        <div t-field="job.work_summary"/>
+                    </div>
+                    <div t-if="job.job_state == 'done'" class="mb-4">
+                        <a t-att-href="'/my/field_service/%s/report?download=1' % job.id" class="btn btn-primary">
+                            <i class="oi me-1" data-icon="download"/>Download the report
+                        </a>
+                        <a t-att-href="'/my/field_service/%s/report' % job.id" target="_blank" class="btn btn-light ms-1">
+                            <i class="oi me-1" data-icon="picture_as_pdf"/>View
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

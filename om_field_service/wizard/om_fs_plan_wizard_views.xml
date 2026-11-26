@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_fs_plan_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.fs.plan.wizard.form</field>
+        <field name="model">om.fs.plan.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Plan the Job">
+                <field name="task_id" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="partner_id" readonly="1"/>
+                        <field name="site_address" readonly="1"/>
+                    </group>
+                    <group>
+                        <field name="start"/>
+                        <field name="duration" widget="float_time"/>
+                        <field name="end"/>
+                    </group>
+                </group>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <h5 class="mb-0">Free technicians</h5>
+                    <span class="text-muted small">free from the start (or later in the next</span>
+                    <field name="search_days" class="oe_inline" style="max-width: 3rem;"/>
+                    <span class="text-muted small">days), nearest first</span>
+                    <button name="action_refresh" type="object" string="Search Again" icon="refresh" class="btn-link ms-auto"/>
+                </div>
+                <field name="suggestion_ids" readonly="1" nolabel="1">
+                    <list create="0" delete="0" decoration-success="free_at_start" decoration-muted="not free_at_start">
+                        <field name="employee_id" widget="many2one_avatar_employee"/>
+                        <field name="start"/>
+                        <field name="free_at_start" string="Free" widget="boolean"/>
+                        <field name="distance_km" invisible="not has_distance"/>
+                        <field name="has_distance" column_invisible="1"/>
+                        <field name="load_hours" widget="float_time"/>
+                        <button name="action_choose" type="object" string="Choose" class="btn-primary btn-sm"/>
+                        <button name="action_add" type="object" string="Add" class="btn-secondary btn-sm"
+                            title="Add this technician to the job (a crew)"/>
+                    </list>
+                </field>
+                <p class="text-muted" invisible="suggestion_ids">No technician is free in this period: choose one below or search in more days.</p>
+                <group>
+                    <field name="technician_ids" widget="many2many_avatar_employee" domain="[('is_technician', '=', True)]"/>
+                </group>
+                <div class="alert alert-danger" role="alert" invisible="not conflict_info">
+                    <strong>Conflicts</strong>
+                    <field name="conflict_info" class="d-block" style="white-space: pre-line;"/>
+                </div>
+                <footer>
+                    <button name="action_confirm" type="object" string="Plan" class="btn-primary" data-hotkey="q"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>

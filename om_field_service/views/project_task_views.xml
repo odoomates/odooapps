@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs" model="ir.ui.view">
+        <field name="name">project.task.form.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <form string="Job" class="o_om_fs_job_form">
+                <header>
+                    <button name="action_fs_plan" type="object" string="Plan" class="btn-primary"
+                        invisible="job_state != 'new'" groups="om_field_service.group_fs_manager"/>
+                    <button name="action_fs_plan" type="object" string="Replan"
+                        invisible="job_state not in ('planned', 'waiting_parts')" groups="om_field_service.group_fs_manager"/>
+                    <button name="action_fs_start_travel" type="object" string="Start Travel"
+                        class="btn-primary" invisible="job_state not in ('new', 'planned', 'waiting_parts') or fs_my_timer"/>
+                    <button name="action_fs_start_work" type="object" string="Start Work"
+                        class="btn-primary" invisible="job_state in ('done', 'cancelled') or fs_my_timer == 'work'"/>
+                    <button name="action_fs_pause_work" type="object" string="Pause"
+                        invisible="fs_my_timer != 'work'"/>
+                    <button name="action_fs_stop_work" type="object" string="Stop Timer"
+                        invisible="not fs_my_timer"/>
+                    <button name="action_fs_waiting_parts" type="object" string="Waiting for Parts"
+                        invisible="job_state not in ('in_progress', 'travelling')"/>
+                    <button name="action_fs_done" type="object" string="Mark as Done" class="btn-success"
+                        invisible="job_state in ('done', 'cancelled', 'new')"/>
+                    <button name="action_fs_send_report" type="object" string="Send Report"
+                        invisible="job_state != 'done'"/>
+                    <button name="action_fs_print_report" type="object" string="Print Report"
+                        invisible="job_state == 'new'"/>
+                    <button name="action_fs_cancel" type="object" string="Cancel"
+                        invisible="job_state in ('done', 'cancelled')" confirm="Cancel this job and free its planning?"/>
+                    <button name="action_fs_reset" type="object" string="Reopen"
+                        invisible="job_state not in ('done', 'cancelled')"/>
+                    <field name="job_state" widget="statusbar" statusbar_visible="new,planned,in_progress,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_fs_gantt" type="object" class="oe_stat_button" icon="calendar_today"
+                            invisible="not planned_start" groups="om_field_service.group_fs_manager">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Dispatch</span>
+                            </div>
+                        </button>
+                        <button name="action_fs_open_map" type="object" class="oe_stat_button" icon="map"
+                            invisible="not site_partner_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Map</span>
+                            </div>
+                        </button>
+                        <button name="action_fs_print_report" type="object" class="oe_stat_button" icon="picture_as_pdf"
+                            invisible="job_state != 'done'">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Report</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="alert alert-info mb-2 d-flex align-items-center gap-2" role="status" invisible="not fs_my_timer">
+                        <i class="oi" data-icon="timer"/>
+                        <span invisible="fs_my_timer != 'travel'">You are travelling since</span>
+                        <span invisible="fs_my_timer != 'work'">You are working since</span>
+                        <field name="fs_my_timer_start" readonly="1" class="fw-bold"/>
+                    </div>
+                    <field name="fs_my_timer" invisible="1"/>
+                    <field name="is_field_service" invisible="1"/>
+                    <field name="company_id" invisible="1"/>
+                    <field name="allow_timesheets" invisible="1"/>
+                    <div class="oe_title">
+                        <div class="text-muted" invisible="not job_number">
+                            <field name="job_number"/>
+                        </div>
+                        <h1 class="d-flex flex-row align-items-center">
+                            <field name="priority" widget="priority" class="me-3"/>
+                            <field name="name" placeholder="e.g. Boiler yearly maintenance" options="{'line_breaks': False}" widget="text"/>
+                        </h1>
+                    </div>
+                    <group>
+                        <group name="customer">
+                            <field name="partner_id" widget="res_partner_many2one" required="1"
+                                context="{'res_partner_search_mode': 'customer', 'show_address': 1}"/>
+                            <field name="site_partner_id" context="{'default_parent_id': partner_id, 'default_type': 'delivery'}"/>
+                            <label for="site_address"/>
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <field name="site_address" class="w-auto" readonly="1"/>
+                                <field name="site_map_url" widget="url" text="Directions" invisible="not site_map_url"/>
+                                <button name="action_fs_geolocate" type="object" string="Locate" class="btn-link p-0"
+                                    invisible="not site_partner_id or site_latitude or site_longitude" icon="my_location"
+                                    help="Find the GPS coordinates of the site from its address"/>
+                            </div>
+                            <field name="site_latitude" invisible="1"/>
+                            <field name="site_longitude" invisible="1"/>
+                            <field name="partner_phone" widget="phone"/>
+                            <field name="site_equipment" placeholder="Model, serial number, where it is on site"/>
+                        </group>
+                        <group name="planning">
+                            <field name="project_id" domain="[('is_field_service', '=', True)]" required="1"
+                                options="{'no_create': True}"/>
+                            <field name="job_type_id" options="{'no_quick_create': True}"/>
+                            <field name="technician_ids" widget="many2many_avatar_employee"
+                                domain="[('is_technician', '=', True), ('company_id', 'in', [company_id, False])]"/>
+                            <label for="planned_start" string="Planned"/>
+                            <div class="o_row">
+                                <field name="planned_start" widget="daterange"
+                                    options="{'end_date_field': 'planned_end', 'always_range': True}"/>
+                                <field name="planned_end" invisible="1"/>
+                            </div>
+                            <field name="allocated_hours" widget="float_time" string="Duration"/>
+                            <field name="date_deadline"/>
+                            <field name="user_ids" widget="many2many_avatar_user" groups="base.group_no_one"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page name="description_page" string="Description">
+                            <field name="description" type="html" options="{'collaborative': true, 'resizable': false}"
+                                placeholder="What the customer asked for, access to the site, safety instructions..."/>
+                        </page>
+                        <page name="checklist" string="Checklist">
+                            <field name="checklist_line_ids">
+                                <list editable="bottom" decoration-success="is_done" decoration-muted="not is_done and not required">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="check_type"/>
+                                    <field name="required" optional="show"/>
+                                    <field name="value_check" invisible="check_type != 'check'" widget="boolean_toggle"/>
+                                    <field name="value_text" invisible="check_type != 'text'"/>
+                                    <field name="value_number" invisible="check_type != 'number'"/>
+                                    <field name="value_number_set" column_invisible="1"/>
+                                    <field name="uom_label" optional="hide"/>
+                                    <field name="is_done" optional="show"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page name="work_done" string="Work Done">
+                            <field name="work_summary" placeholder="What was done on site: shown on the job report"/>
+                            <group>
+                                <group string="Photos">
+                                    <field name="photo_ids" widget="many2many_binary" nolabel="1" colspan="2"/>
+                                </group>
+                                <group string="Customer Signature">
+                                    <field name="customer_signature" widget="signature" nolabel="1" colspan="2"
+                                        options="{'full_name': 'signed_by'}"/>
+                                    <field name="signed_by"/>
+                                    <field name="signed_on"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page name="timesheets" string="Time" invisible="not allow_timesheets">
+                            <group>
+                                <group>
+                                    <field name="travel_hours" widget="float_time"/>
+                                    <field name="work_hours" widget="float_time"/>
+                                </group>
+                                <group>
+                                    <field name="date_done"/>
+                                </group>
+                            </group>
+                            <field name="timesheet_ids" context="{'default_project_id': project_id, 'default_task_id': id}">
+                                <list editable="bottom">
+                                    <field name="date"/>
+                                    <field name="employee_id" widget="many2one_avatar_employee"/>
+                                    <field name="name" required="0"/>
+                                    <field name="fs_time_type"/>
+                                    <field name="unit_amount" widget="timesheet_uom" sum="Total"/>
+                                    <field name="project_id" column_invisible="1"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter reload_on_follower="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="project_task_view_list_fs" model="ir.ui.view">
+        <field name="name">project.task.list.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <list string="Jobs" decoration-muted="job_state in ('done', 'cancelled')"
+                decoration-danger="date_deadline and date_deadline &lt; current_date and job_state not in ('done', 'cancelled')">
+                <field name="priority" widget="priority" optional="show" nolabel="1"/>
+                <field name="job_number"/>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="site_address" optional="show"/>
+                <field name="job_type_id" optional="show"/>
+                <field name="planned_start" optional="show"/>
+                <field name="planned_end" optional="hide"/>
+                <field name="technician_ids" widget="many2many_avatar_employee" optional="show"/>
+                <field name="date_deadline" optional="hide"/>
+                <field name="allocated_hours" widget="float_time" optional="hide" sum="Total"/>
+                <field name="effective_hours" widget="float_time" optional="hide" sum="Total"/>
+                <field name="project_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="job_state" widget="badge"
+                    decoration-info="job_state in ('planned', 'travelling')"
+                    decoration-warning="job_state in ('in_progress', 'waiting_parts')"
+                    decoration-success="job_state == 'done'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="project_task_view_kanban_fs" model="ir.ui.view">
+        <field name="name">project.task.kanban.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="job_state" class="o_kanban_small_column" quick_create="0" sample="1"
+                default_order="priority desc, planned_start, id" highlight_color="color">
+                <field name="job_state"/>
+                <field name="date_deadline"/>
+                <progressbar field="priority" colors='{"3": "danger", "2": "warning", "1": "info", "0": "200"}'/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex align-items-baseline gap-2">
+                            <field name="job_number" class="small text-muted"/>
+                            <field name="priority" widget="priority" class="ms-auto"/>
+                        </div>
+                        <field name="name" class="fw-bold fs-5"/>
+                        <div class="text-muted d-flex flex-column">
+                            <span class="d-flex gap-1 align-items-baseline" t-if="record.partner_id.raw_value">
+                                <i class="oi oi-filled" data-icon="person" title="Customer"/>
+                                <field name="partner_id"/>
+                            </span>
+                            <span class="d-flex gap-1 align-items-baseline" t-if="record.site_address.raw_value">
+                                <i class="oi" data-icon="location_on" title="Site"/>
+                                <field name="site_address" class="text-truncate"/>
+                            </span>
+                            <span class="d-flex gap-1 align-items-baseline" t-if="record.planned_start.raw_value">
+                                <i class="oi" data-icon="schedule" title="Planned"/>
+                                <field name="planned_start"/>
+                            </span>
+                            <field name="job_type_id" class="small"/>
+                        </div>
+                        <footer>
+                            <field name="checklist_progress" widget="progressbar" invisible="not checklist_line_ids" class="w-50"/>
+                            <field name="checklist_line_ids" invisible="1"/>
+                            <field name="technician_ids" widget="many2many_avatar_employee" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="project_task_view_calendar_fs" model="ir.ui.view">
+        <field name="name">project.task.calendar.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <calendar string="Jobs" date_start="planned_start" date_stop="planned_end" color="job_type_id"
+                mode="week" event_open_popup="1" quick_create="0">
+                <field name="partner_id"/>
+                <field name="site_address"/>
+                <field name="technician_ids" widget="many2many_avatar_employee" filters="1"/>
+                <field name="job_type_id" filters="1"/>
+                <field name="job_state"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="project_task_view_pivot_fs" model="ir.ui.view">
+        <field name="name">project.task.pivot.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <pivot string="Jobs Analysis" sample="1">
+                <field name="job_type_id" type="row"/>
+                <field name="job_state" type="col"/>
+                <field name="effective_hours" type="measure" widget="float_time"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="project_task_view_graph_fs" model="ir.ui.view">
+        <field name="name">project.task.graph.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <graph string="Jobs Analysis" type="bar" sample="1">
+                <field name="job_type_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="project_task_view_search_fs" model="ir.ui.view">
+        <field name="name">project.task.search.field.service</field>
+        <field name="model">project.task</field>
+        <field name="priority">99</field>
+        <field name="arch" type="xml">
+            <search string="Jobs">
+                <field name="name" string="Job" filter_domain="['|', ('name', 'ilike', self), ('job_number', 'ilike', self)]"/>
+                <field name="partner_id" operator="child_of"/>
+                <field name="site_partner_id"/>
+                <field name="technician_ids"/>
+                <field name="job_type_id"/>
+                <field name="site_equipment"/>
+                <filter name="my_jobs" string="My Jobs" domain="[('user_ids', 'in', uid)]"/>
+                <filter name="unplanned" string="To Plan" domain="[('planned_start', '=', False), ('job_state', 'not in', ('done', 'cancelled'))]"/>
+                <separator/>
+                <filter name="today" string="Today"
+                    domain="[('planned_start', '&lt;', 'today +1d'), ('planned_end', '&gt;=', 'today')]"/>
+                <filter name="this_week" string="This Week"
+                    domain="[('planned_start', '&gt;=', 'today -1w +1d =monday'), ('planned_start', '&lt;', 'today +1w +1d =monday')]"/>
+                <filter name="late" string="Late"
+                    domain="[('date_deadline', '&lt;', 'now'), ('job_state', 'not in', ('done', 'cancelled'))]"/>
+                <separator/>
+                <filter name="open" string="Open" domain="[('job_state', 'not in', ('done', 'cancelled'))]"/>
+                <filter name="in_progress" string="On Site" domain="[('job_state', 'in', ('travelling', 'in_progress'))]"/>
+                <filter name="waiting_parts" string="Waiting for Parts" domain="[('job_state', '=', 'waiting_parts')]"/>
+                <filter name="done" string="Done" domain="[('job_state', '=', 'done')]"/>
+                <separator/>
+                <filter name="planned_start" string="Planned Date" date="planned_start"/>
+                <filter name="date_done" string="Done Date" date="date_done"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'job_state'}"/>
+                    <filter name="group_type" string="Job Type" context="{'group_by': 'job_type_id'}"/>
+                    <filter name="group_technician" string="Technician" context="{'group_by': 'technician_ids'}"/>
+                    <filter name="group_customer" string="Customer" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_project" string="Project" context="{'group_by': 'project_id'}"/>
+                    <filter name="group_planned" string="Planned Date" context="{'group_by': 'planned_start:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_fs_job" model="ir.actions.act_window">
+        <field name="name">Jobs</field>
+        <field name="res_model">project.task</field>
+        <field name="path">field-service-jobs</field>
+        <field name="view_mode">kanban,list,calendar,form,pivot,graph</field>
+        <field name="domain">[('is_field_service', '=', True)]</field>
+        <field name="context">{'om_fs_job': True, 'search_default_open': 1}</field>
+        <field name="search_view_id" ref="project_task_view_search_fs"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_task_view_kanban_fs')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_view_list_fs')}),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('project_task_view_calendar_fs')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project_task_view_form_fs')}),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('project_task_view_pivot_fs')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('project_task_view_graph_fs')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create your first job</p>
+            <p>A job is a visit of a technician at a customer site: plan it, do it from the phone, send the report.</p>
+        </field>
+    </record>
+
+    <record id="action_om_fs_job_my" model="ir.actions.act_window">
+        <field name="name">My Jobs</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">list,kanban,calendar,form</field>
+        <field name="domain">[('is_field_service', '=', True), ('user_ids', 'in', uid)]</field>
+        <field name="context">{'om_fs_job': True, 'search_default_open': 1, 'create': 0}</field>
+        <field name="search_view_id" ref="project_task_view_search_fs"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_view_list_fs')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_task_view_kanban_fs')}),
+            (0, 0, {'view_mode': 'calendar', 'view_id': ref('project_task_view_calendar_fs')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project_task_view_form_fs')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No job for you</p>
+            <p>The jobs you are planned on show here and on the phone screen.</p>
+        </field>
+    </record>
+
+    <record id="action_om_fs_job_unplanned" model="ir.actions.act_window">
+        <field name="name">Jobs to Plan</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('is_field_service', '=', True)]</field>
+        <field name="context">{'om_fs_job': True, 'search_default_unplanned': 1}</field>
+        <field name="search_view_id" ref="project_task_view_search_fs"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_view_list_fs')}),
+            (0, 0, {'view_mode': 'kanban', 'view_id': ref('project_task_view_kanban_fs')}),
+            (0, 0, {'view_mode': 'form', 'view_id': ref('project_task_view_form_fs')})]"/>
+    </record>
+
+    <record id="action_om_fs_job_analysis" model="ir.actions.act_window">
+        <field name="name">Jobs Analysis</field>
+        <field name="res_model">project.task</field>
+        <field name="view_mode">pivot,graph,list</field>
+        <field name="domain">[('is_field_service', '=', True)]</field>
+        <field name="context">{'om_fs_job': True}</field>
+        <field name="search_view_id" ref="project_task_view_search_fs"/>
+        <field name="view_ids" eval="[(5, 0, 0),
+            (0, 0, {'view_mode': 'pivot', 'view_id': ref('project_task_view_pivot_fs')}),
+            (0, 0, {'view_mode': 'graph', 'view_id': ref('project_task_view_graph_fs')}),
+            (0, 0, {'view_mode': 'list', 'view_id': ref('project_task_view_list_fs')})]"/>
+    </record>
+
+    <record id="action_om_fs_timesheets" model="ir.actions.act_window">
+        <field name="name">Field Service Time</field>
+        <field name="res_model">account.analytic.line</field>
+        <field name="view_mode">pivot,list,graph</field>
+        <field name="domain">[('task_id.is_field_service', '=', True)]</field>
+        <field name="context">{'pivot_row_groupby': ['employee_id'], 'pivot_column_groupby': ['fs_time_type'], 'pivot_measures': ['unit_amount']}</field>
+    </record>
+
+    <!-- the generic task form opens the job form -->
+    <record id="project_task_view_form_inherit_fs" model="ir.ui.view">
+        <field name="name">project.task.form.inherit.field.service</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <field name="is_field_service" invisible="1"/>
+                <button name="action_fs_open_job" type="object" string="Open Job" class="btn-secondary"
+                    invisible="not is_field_service"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
