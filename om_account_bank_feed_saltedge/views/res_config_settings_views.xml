@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.bank.feed.saltedge</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_account_bank_feed.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <setting id="bank_feed_settings" position="after">
+                <setting id="bank_feed_saltedge" string="Salt Edge" company_dependent="1"
+                         help="The keys of your own Salt Edge account, from the API keys page of its dashboard.">
+                    <div class="content-group">
+                        <div class="row mt-2">
+                            <label for="saltedge_app_id" string="App ID" class="col-lg-4 o_light_label"/>
+                            <field name="saltedge_app_id" password="True"/>
+                        </div>
+                        <div class="row">
+                            <label for="saltedge_secret" string="Secret" class="col-lg-4 o_light_label"/>
+                            <field name="saltedge_secret" password="True"/>
+                        </div>
+                        <div class="row">
+                            <label for="saltedge_private_key" string="Private Key" class="col-lg-4 o_light_label"/>
+                            <field name="saltedge_private_key" password="True"
+                                   placeholder="Required in Live status"/>
+                        </div>
+                        <div class="row" invisible="not saltedge_customer_id">
+                            <label for="saltedge_customer_id" string="Customer ID" class="col-lg-4 o_light_label"/>
+                            <field name="saltedge_customer_id"/>
+                        </div>
+                        <div class="mt-2">
+                            <field name="saltedge_include_fake" class="w-auto"/>
+                            <label for="saltedge_include_fake" string="Offer the test banks of Salt Edge" class="o_light_label"/>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <button name="action_saltedge_test" type="object" string="Test Connection" icon="check"
+                                class="btn-link"/>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+
+</odoo>
