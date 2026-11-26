@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 15 Accounting Financial Reports',
-    'version': '15.0.9.1.1',
+    'version': '15.0.9.1.2',
     'category': 'Invoicing Management',
     'description': 'Accounting Reports For Odoo 15, Accounting Financial Reports, '
                    'Odoo 15 Financial Reports',
