@@ -1,5 +1,7 @@
 import time
-from odoo import api, models, _
+from datetime import timedelta
+
+from odoo import api, fields, models, _
 from odoo.exceptions import UserError
 
 
@@ -39,12 +41,43 @@ class ReportFinancial(models.AbstractModel):
                 res[row['id']] = row
         return res
 
+    def _get_earnings_accounts(self):
+        """ The accounts of the earnings not allocated yet: the income, the expense and the unaffected earnings
+        account. The unaffected earnings account carries its balance forward (include_initial_balance),
+        so it is named with the income and the expense. """
+        return self.env['account.account'].with_context(active_test=False).search([
+            '|', ('internal_group', 'in', ('income', 'expense')), ('account_type', '=', 'equity_unaffected'),
+        ])
+
+    def _compute_earnings_balance(self, report):
+        """ The earnings not allocated yet at the date of the report, of the fiscal years before its own or of
+        its own up to the date.
+
+        The income and the expense start again at zero every fiscal year. The closing of a year
+        allocates its result to the reserves with an entry on the unaffected earnings account, a debit for a
+        profit. Their balance is what is not allocated yet. """
+        context = self.env.context
+        date_to = fields.Date.to_date(context.get('date_to')) or fields.Date.context_today(self)
+        company = self.env['res.company'].browse(context.get('company_id')) or self.env.company
+        start = company.compute_fiscalyear_dates(date_to)['date_from']
+        if report.earnings_period == 'previous':
+            scope = {'date_from': False, 'date_to': start - timedelta(days=1), 'strict_range': False}
+        else:
+            scope = {'date_from': start, 'date_to': date_to, 'strict_range': True}
+        balances = self.with_context(**scope, initial_bal=False)._compute_account_balance(
+            self._get_earnings_accounts())
+        # rounded: a sum of amounts in floating point can leave a residue, printed -0.00
+        return {field: company.currency_id.round(sum(value[field] for value in balances.values()))
+                for field in ('credit', 'debit', 'balance')}
+
     def _compute_report_balance(self, reports):
         '''returns a dictionary with key=the ID of a record and value=the credit, debit and balance amount
            computed for this record. If the record is of type :
                'accounts' : it's the sum of the linked accounts
                'account_type' : it's the sum of leaf accoutns with such an account_type
                'account_report' : it's the amount of the related report
+               'earnings' : it's the earnings not allocated yet, of the previous fiscal years or of the
+                            current one (see _compute_earnings_balance)
                'sum' : it's the sum of the children of this record (aka a 'view' record)'''
         res = {}
         fields = ['credit', 'debit', 'balance']
@@ -73,6 +106,8 @@ class ReportFinancial(models.AbstractModel):
                 for key, value in res2.items():
                     for field in fields:
                         res[report.id][field] += value[field]
+            elif report.type == 'earnings':
+                res[report.id].update(self._compute_earnings_balance(report))
             elif report.type == 'sum':
                 # it's the sum of the children of this account.report
                 res2 = self._compute_report_balance(report.children_ids)
