@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_tally_import_view_form_stock" model="ir.ui.view">
+        <field name="name">om.tally.import.form.stock</field>
+        <field name="model">om.tally.import</field>
+        <field name="inherit_id" ref="om_tally_account.om_tally_import_view_form_account"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='options']/group" position="inside">
+                <group string="Stock" name="stock_options">
+                    <field name="stock_opening" readonly="state in ('posting', 'done')"/>
+                    <field name="stock_warehouse_id" readonly="state in ('posting', 'done')"/>
+                    <field name="stock_category_source" readonly="state in ('posting', 'done')"/>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='cost_centres']" position="after">
+                <page string="Products" name="products" invisible="state == 'draft' or not stock_item_count">
+                    <div class="text-muted mb-2">Each stock item of Tally next to the product of Odoo. Link to a
+                        product, create one, or skip the item (invoice lines then keep its name only).</div>
+                    <field name="stock_item_ids" readonly="state in ('posting', 'done')">
+                        <list editable="bottom" create="0" delete="0"
+                              decoration-muted="product_action == 'skip'" decoration-info="product_action == 'create'">
+                            <field name="name" readonly="1"/>
+                            <field name="part_number" readonly="1" optional="show"/>
+                            <field name="hsn_code" readonly="1" optional="show"/>
+                            <field name="base_unit_name" readonly="1"/>
+                            <field name="opening_quantity" readonly="1"/>
+                            <field name="opening_value" string="Opening Value" readonly="1" sum="Total"/>
+                            <field name="product_action" string="Action"/>
+                            <field name="product_id" readonly="product_action != 'link'"/>
+                            <field name="product_match_note" string="Matched By" optional="show"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <group>
+                        <group string="Units">
+                            <field name="unit_ids" nolabel="1" colspan="2" readonly="state in ('posting', 'done')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name" readonly="1"/>
+                                    <field name="formal_name" readonly="1"/>
+                                    <field name="uom_action"/>
+                                    <field name="uom_id" readonly="uom_action != 'link'"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Godowns">
+                            <field name="godown_ids" nolabel="1" colspan="2" readonly="state in ('posting', 'done')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name" readonly="1"/>
+                                    <field name="location_action"/>
+                                    <field name="location_id" readonly="location_action != 'link'"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Stock Groups">
+                            <field name="stock_group_ids" nolabel="1" colspan="2"
+                                   readonly="state in ('posting', 'done')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name" readonly="1"/>
+                                    <field name="parent_name" readonly="1"/>
+                                    <field name="categ_action"/>
+                                    <field name="categ_id" readonly="categ_action != 'link'"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Stock Categories">
+                            <field name="stock_category_ids" nolabel="1" colspan="2"
+                                   readonly="state in ('posting', 'done')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name" readonly="1"/>
+                                    <field name="categ_action"/>
+                                    <field name="categ_id" readonly="categ_action != 'link'"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_tally_stock_item_view_form_stock" model="ir.ui.view">
+        <field name="name">om.tally.stock.item.form.stock</field>
+        <field name="model">om.tally.stock.item</field>
+        <field name="inherit_id" ref="om_tally_base.om_tally_stock_item_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='tally']" position="after">
+                <group string="In Odoo" name="odoo">
+                    <group>
+                        <field name="product_action" string="Action"/>
+                        <field name="product_id"/>
+                        <field name="product_match_note"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
