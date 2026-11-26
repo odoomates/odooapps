@@ -1,6 +1,7 @@
 from . import test_aged_partner
 from . import test_annual_report
 from . import test_balance_sheet
+from . import test_unallocated_earnings
 from . import test_cash_flow
 from . import test_company_notice
 from . import test_partner_ledger_initial
