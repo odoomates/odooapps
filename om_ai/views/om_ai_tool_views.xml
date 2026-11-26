@@ -9,6 +9,7 @@
                 <field name="name"/>
                 <field name="code"/>
                 <field name="read_only"/>
+                <field name="server_action_id" optional="hide"/>
                 <field name="model_ids" widget="many2many_tags" optional="show"/>
                 <field name="group_ids" widget="many2many_tags" optional="hide"/>
                 <field name="active" widget="boolean_toggle"/>
@@ -30,8 +31,9 @@
                     <group>
                         <group>
                             <field name="code"/>
-                            <field name="method"/>
+                            <field name="method" readonly="server_action_id"/>
                             <field name="read_only"/>
+                            <field name="server_action_id" options="{'no_create': True}"/>
                             <field name="active" invisible="1"/>
                         </group>
                         <group>
@@ -55,7 +57,8 @@
         <field name="view_mode">list,form</field>
         <field name="help" type="html">
             <p class="o_view_nocontent_smiling_face">No AI tools</p>
-            <p>Tools let the AI look up records. They run with the rights of the user who asks.</p>
+            <p>Tools let the AI look up and change records. They run with the rights of the user who asks.
+               To give the AI a server action, create a tool and pick the action.</p>
         </field>
     </record>
 </odoo>

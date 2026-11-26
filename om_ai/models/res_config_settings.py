@@ -17,3 +17,7 @@ class ResConfigSettings(models.TransientModel):
     om_ai_assistant_tools = fields.Boolean(related='company_id.om_ai_assistant_tools', readonly=False)
     om_ai_usage_keep_days = fields.Integer(string='Keep AI Usage Logs (days)', config_parameter='om_ai.usage_keep_days',
                                            default=365)
+    om_ai_tool_batch_limit = fields.Integer(string='Records per AI Tool Call', config_parameter='om_ai.tool_batch_limit',
+                                            default=20)
+    om_ai_tool_attachment_kb = fields.Integer(string='AI Attachment Size Limit (KB)',
+                                              config_parameter='om_ai.tool_attachment_kb', default=1024)
