@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_open_ai_assistant" model="ir.actions.server">
+        <field name="name">AI Assistant</field>
+        <field name="model_id" ref="base.model_res_users"/>
+        <field name="state">code</field>
+        <field name="code">action = env.user._om_ai_open_assistant()</field>
+    </record>
+
+    <menuitem id="menu_om_ai_root" name="AI" web_icon="om_ai,static/description/icon.png"
+              groups="om_ai.group_ai_user" sequence="95"/>
+    <menuitem id="menu_om_ai_assistant" name="AI Assistant" parent="menu_om_ai_root"
+              action="action_open_ai_assistant" sequence="10"/>
+    <menuitem id="menu_om_ai_usage_my" name="My Usage" parent="menu_om_ai_root"
+              action="om_ai_usage_action_my" sequence="20"/>
+    <menuitem id="menu_om_ai_usage" name="Usage" parent="menu_om_ai_root"
+              action="om_ai_usage_action" groups="om_ai.group_ai_manager" sequence="30"/>
+    <menuitem id="menu_om_ai_config" name="Configuration" parent="menu_om_ai_root"
+              groups="om_ai.group_ai_manager" sequence="90"/>
+    <menuitem id="menu_om_ai_provider" name="Providers" parent="menu_om_ai_config"
+              action="om_ai_provider_action" sequence="10"/>
+    <menuitem id="menu_om_ai_model" name="Models" parent="menu_om_ai_config"
+              action="om_ai_model_action" sequence="20"/>
+    <menuitem id="menu_om_ai_prompt" name="Prompt Templates" parent="menu_om_ai_config"
+              action="om_ai_prompt_action" sequence="30"/>
+    <menuitem id="menu_om_ai_tool" name="Tools" parent="menu_om_ai_config"
+              action="om_ai_tool_action" sequence="40"/>
+</odoo>

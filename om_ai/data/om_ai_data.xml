@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="partner_ai_assistant" model="res.partner">
+            <field name="name">AI Assistant</field>
+            <field name="image_1920" type="bytes" file="om_ai/static/description/icon.png"/>
+            <field name="active" eval="True"/>
+        </record>
+    </data>
+
+    <record id="ir_cron_om_ai_chat" model="ir.cron">
+        <field name="name">AI Assistant: answer Discuss messages</field>
+        <field name="model_id" ref="model_om_ai_chat_job"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_process()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_om_ai_usage_cleanup" model="ir.cron">
+        <field name="name">AI: remove old usage logs</field>
+        <field name="model_id" ref="model_om_ai_usage"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_cleanup()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

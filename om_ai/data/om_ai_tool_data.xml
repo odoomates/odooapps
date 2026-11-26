@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="tool_find_models" model="om.ai.tool">
+            <field name="name">Find models</field>
+            <field name="code">find_models</field>
+            <field name="sequence">10</field>
+            <field name="method">_ai_tool_find_models</field>
+            <field name="description">Find Odoo models (record types) the user may read, by a word in their name, e.g. "partner", "sale", "invoice". Returns technical model names.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"query": {"type": "string", "description": "Word to look for in the model name"}}, "required": ["query"]}</field>
+        </record>
+
+        <record id="tool_model_fields" model="om.ai.tool">
+            <field name="name">List fields of a model</field>
+            <field name="code">model_fields</field>
+            <field name="sequence">20</field>
+            <field name="method">_ai_tool_model_fields</field>
+            <field name="description">List the fields of an Odoo model the user may read: name, type, label and related model.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string", "description": "Technical model name, e.g. res.partner"}}, "required": ["model"]}</field>
+        </record>
+
+        <record id="tool_search_records" model="om.ai.tool">
+            <field name="name">Search records</field>
+            <field name="code">search_records</field>
+            <field name="sequence">30</field>
+            <field name="method">_ai_tool_search_records</field>
+            <field name="description">Search records of a model with simple filters and return some of their fields. Filters are combined with AND. A field may be a path such as country_id.name.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "filters": {"type": "array", "items": {"type": "object", "properties": {"field": {"type": "string"}, "operator": {"type": "string", "enum": ["=", "!=", "&gt;", "&gt;=", "&lt;", "&lt;=", "in", "not in", "ilike", "not ilike"]}, "value": {}}, "required": ["field", "operator", "value"]}}, "fields": {"type": "array", "items": {"type": "string"}}, "limit": {"type": "integer", "description": "At most 50"}, "order": {"type": "string", "description": "Field name, optionally followed by desc"}}, "required": ["model"]}</field>
+        </record>
+
+        <record id="tool_read_record" model="om.ai.tool">
+            <field name="name">Read a record</field>
+            <field name="code">read_record</field>
+            <field name="sequence">40</field>
+            <field name="method">_ai_tool_read_record</field>
+            <field name="description">Read fields of one record by its id.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "record_id": {"type": "integer"}, "fields": {"type": "array", "items": {"type": "string"}}}, "required": ["model", "record_id"]}</field>
+        </record>
+
+        <record id="tool_count_records" model="om.ai.tool">
+            <field name="name">Count records</field>
+            <field name="code">count_records</field>
+            <field name="sequence">50</field>
+            <field name="method">_ai_tool_count_records</field>
+            <field name="description">Count records of a model matching simple filters (AND), optionally grouped by a field (e.g. country_id, state, date:month).</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"model": {"type": "string"}, "filters": {"type": "array", "items": {"type": "object", "properties": {"field": {"type": "string"}, "operator": {"type": "string", "enum": ["=", "!=", "&gt;", "&gt;=", "&lt;", "&lt;=", "in", "not in", "ilike", "not ilike"]}, "value": {}}, "required": ["field", "operator", "value"]}}, "group_by": {"type": "string"}}, "required": ["model"]}</field>
+        </record>
+    </data>
+</odoo>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_ai.AiTextDialog">
+        <Dialog size="'lg'" title.translate="Write with AI">
+            <div class="o_om_ai_text_dialog">
+                <div t-if="this.props.selectedText.trim() and !this.state.result" class="text-muted small mb-2">
+                    The selected text is sent with your request.
+                </div>
+                <div t-if="this.state.result" class="o_om_ai_result border rounded p-3 mb-3 bg-view" t-out="this.preview"/>
+                <div t-if="this.state.error" class="alert alert-danger" role="alert" t-esc="this.state.error"/>
+                <textarea class="form-control o_om_ai_prompt" rows="3" t-model="this.prompt"
+                          t-on-keydown="this.onKeydown" t-att-disabled="this.state.loading"
+                          t-att-placeholder="this.placeholder"/>
+                <div t-if="this.state.loading" class="text-muted mt-2">
+                    <span class="spinner-border spinner-border-sm me-2" role="status"/>Writing...
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button class="btn btn-primary o_om_ai_insert" t-if="this.state.result" t-on-click="this.insert"
+                        t-att-disabled="this.state.loading">Insert</button>
+                <button class="btn o_om_ai_generate" t-att-class="this.state.result ? 'btn-secondary' : 'btn-primary'"
+                        t-on-click="this.generate" t-att-disabled="this.state.loading or !this.prompt().trim()">
+                    <t t-if="this.state.result">Refine</t><t t-else="">Generate</t>
+                </button>
+                <button class="btn btn-secondary" t-on-click="this.props.close">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+</templates>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_tool_view_list" model="ir.ui.view">
+        <field name="name">om.ai.tool.list</field>
+        <field name="model">om.ai.tool</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="read_only"/>
+                <field name="model_ids" widget="many2many_tags" optional="show"/>
+                <field name="group_ids" widget="many2many_tags" optional="hide"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_tool_view_form" model="ir.ui.view">
+        <field name="name">om.ai.tool.form</field>
+        <field name="model">om.ai.tool</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="method"/>
+                            <field name="read_only"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="model_ids" widget="many2many_tags"/>
+                            <field name="group_ids" widget="many2many_tags"/>
+                        </group>
+                    </group>
+                    <label for="description"/>
+                    <field name="description"/>
+                    <label for="parameters_schema"/>
+                    <field name="parameters_schema" widget="code" options="{'mode': 'javascript'}"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_tool_action" model="ir.actions.act_window">
+        <field name="name">AI Tools</field>
+        <field name="res_model">om.ai.tool</field>
+        <field name="path">ai-tools</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No AI tools</p>
+            <p>Tools let the AI look up records. They run with the rights of the user who asks.</p>
+        </field>
+    </record>
+</odoo>

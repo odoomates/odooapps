@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_provider_view_list" model="ir.ui.view">
+        <field name="name">om.ai.provider.list</field>
+        <field name="model">om.ai.provider</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="preset"/>
+                <field name="api_type" optional="hide"/>
+                <field name="base_url"/>
+                <field name="api_key_set"/>
+                <field name="model_count" string="Models"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_provider_view_form" model="ir.ui.view">
+        <field name="name">om.ai.provider.form</field>
+        <field name="model">om.ai.provider</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_test_connection" type="object" string="Test Connection" class="oe_highlight"
+                            icon="wifi" invisible="not id"/>
+                    <button name="action_fetch_models" type="object" string="Fetch Models" icon="cloud_download"
+                            invisible="not id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button class="oe_stat_button" type="object" name="action_view_models" icon="memory">
+                            <field name="model_count" widget="statinfo" string="Models"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. OpenAI"/></h1>
+                    </div>
+                    <group>
+                        <group string="Connection">
+                            <field name="preset"/>
+                            <field name="api_type"/>
+                            <field name="base_url" placeholder="https://api.example.com/v1"/>
+                            <field name="api_version" invisible="api_type != 'azure_openai'" placeholder="2024-10-21"/>
+                            <field name="api_key_input" password="True"
+                                   placeholder="Type a key to save it; the saved key is never shown"/>
+                            <field name="api_key_set"/>
+                        </group>
+                        <group string="Options">
+                            <field name="timeout"/>
+                            <field name="max_retries"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                            <field name="is_local" invisible="1"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-info" role="status" invisible="not is_local">
+                        A local model server runs on your own machine: no key is needed and no data leaves your network.
+                        The address must be reachable from the Odoo server.
+                    </div>
+                    <notebook>
+                        <page string="Models" name="models">
+                            <field name="model_ids" context="{'default_provider_id': id}">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="model_id"/>
+                                    <field name="cap_chat"/>
+                                    <field name="cap_vision"/>
+                                    <field name="cap_tools"/>
+                                    <field name="cap_json"/>
+                                    <field name="cap_embeddings"/>
+                                    <field name="context_size" optional="show"/>
+                                    <field name="input_price" optional="show"/>
+                                    <field name="output_price" optional="show"/>
+                                    <field name="active" widget="boolean_toggle" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Advanced" name="advanced">
+                            <group>
+                                <field name="extra_headers" placeholder='{"X-Title": "Odoo"}'/>
+                                <field name="note"/>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_provider_view_search" model="ir.ui.view">
+        <field name="name">om.ai.provider.search</field>
+        <field name="model">om.ai.provider</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="base_url"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="group_preset" string="Provider" context="{'group_by': 'preset'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_provider_action" model="ir.actions.act_window">
+        <field name="name">AI Providers</field>
+        <field name="res_model">om.ai.provider</field>
+        <field name="path">ai-providers</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Connect your first AI provider</p>
+            <p>Use your own key with an OpenAI compatible API, Anthropic, Gemini or Azure OpenAI, or a local model server such as Ollama.</p>
+        </field>
+    </record>
+</odoo>
