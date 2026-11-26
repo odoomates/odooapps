@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_quick_add.AddBar">
+        <div t-if="this.visible" class="o_om_quick_add_bar mb-2">
+            <div class="d-flex align-items-center gap-2">
+                <div class="o_om_qab_input flex-grow-1 position-relative">
+                    <i class="oi o_om_qab_icon text-muted" data-icon="add_shopping_cart"/>
+                    <input type="text" class="o_input" t-ref="this.inputRef" autocomplete="off"
+                           placeholder="Add products: type a name or code and a quantity, paste rows or scan (Alt+Shift+A)"
+                           t-att-value="this.state.query"
+                           t-on-input="(ev) => this.onInput(ev)"
+                           t-on-keydown="(ev) => this.onKeydown(ev)"
+                           t-on-focus="() => this.onFocus()"
+                           t-on-click="() => this.state.open = true"
+                           t-on-blur="() => this.onBlur()"
+                           t-on-paste="(ev) => this.onPaste(ev)"/>
+                    <div t-if="this.state.open and this.items.length" class="o_om_qab_menu dropdown-menu show w-100">
+                        <div t-if="!this.state.query.trim()" class="dropdown-header">Usual products</div>
+                        <t t-foreach="this.items" t-as="product" t-key="product.id">
+                            <a href="#" class="dropdown-item d-flex align-items-baseline gap-3"
+                               t-att-class="{'active': product_index === this.state.active}"
+                               t-on-mousedown.prevent="() => this.addProduct(product)"
+                               t-on-click.prevent="() => {}"
+                               t-on-mouseenter="() => this.state.active = product_index">
+                                <span class="text-truncate" t-out="product.name"/>
+                                <span class="o_om_qab_info small ms-auto text-nowrap" t-out="this.info(product)"/>
+                            </a>
+                        </t>
+                        <div t-if="this.parsedLabel" class="dropdown-header border-top">
+                            Enter adds: <t t-out="this.parsedLabel"/>
+                        </div>
+                    </div>
+                </div>
+                <div t-if="this.state.data and this.state.data.has_last" class="position-relative">
+                    <button type="button" class="btn btn-secondary"
+                            t-on-click="() => this.state.usualOpen = !this.state.usualOpen"
+                            t-on-blur="() => this.closeUsualLater()">
+                        Usual <i class="oi" data-icon="arrow_drop_down"/>
+                    </button>
+                    <div t-if="this.state.usualOpen" class="dropdown-menu dropdown-menu-end show end-0">
+                        <a href="#" class="dropdown-item" t-on-mousedown.prevent="() => this.addUsual('usual')">
+                            Add the usual products
+                        </a>
+                        <a href="#" class="dropdown-item" t-on-mousedown.prevent="() => this.addUsual('last')">
+                            Repeat the last document
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div t-if="this.state.flash" class="o_om_qab_flash small mt-1"
+                 t-att-class="this.state.flash.type === 'success' ? 'text-success' : 'text-warning'"
+                 t-out="this.state.flash.message"/>
+            <div t-if="this.state.pending.length" class="o_om_qab_pending mt-1">
+                <t t-foreach="this.state.pending" t-as="item" t-key="item_index">
+                    <div class="d-flex align-items-center gap-2 small py-1">
+                        <span t-if="item.choices.length" class="badge text-bg-warning">Choose</span>
+                        <span t-else="" class="badge text-bg-danger">Not found</span>
+                        <span class="text-truncate fw-bold" t-out="item.row"/>
+                        <select t-if="item.choices.length" class="o_input w-auto"
+                                t-on-change="(ev) => this.onChoose(item, ev)">
+                            <option value="">Choose the product...</option>
+                            <t t-foreach="item.choices" t-as="choice" t-key="choice.id">
+                                <option t-att-value="choice.id" t-out="choice.name"/>
+                            </t>
+                        </select>
+                        <button type="button" class="btn btn-link btn-sm p-0 text-muted" title="Skip this row"
+                                t-on-click="() => this.dismiss(item)">
+                            <i class="oi" data-icon="close"/>
+                        </button>
+                    </div>
+                </t>
+            </div>
+        </div>
+    </t>
+
+</templates>

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="account_move_view_form" model="ir.ui.view">
+        <field name="name">account.move.form.om.quick.add</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='invoice_line_ids']" position="before">
+                <widget name="om_quick_add_bar"/>
+            </xpath>
+            <xpath expr="//sheet" position="inside">
+                <field name="om_quick_add_ok" invisible="1"/>
+                <widget name="om_quick_add_scanner"/>
+            </xpath>
+            <xpath expr="//field[@name='invoice_line_ids']/list/control/button[@name='action_add_from_catalog']" position="after">
+                <button name="om_action_quick_paste" string="Paste lines" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok" context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_history" string="Bought before" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok or not parent.partner_id or parent.move_type not in ('out_invoice', 'out_refund', 'out_receipt')" context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_history" string="Supplied before" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok or not parent.partner_id or parent.move_type not in ('in_invoice', 'in_refund', 'in_receipt')" context="{'om_quick_add_id': parent.id}"/>
+                <button name="om_action_quick_copy" string="Copy lines" type="object" class="px-4 btn-link"
+                        invisible="not parent.om_quick_add_ok" context="{'om_quick_add_id': parent.id}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
