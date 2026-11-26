@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_prompt_view_list" model="ir.ui.view">
+        <field name="name">om.ai.prompt.list</field>
+        <field name="model">om.ai.prompt</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="feature"/>
+                <field name="purpose"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_prompt_view_form" model="ir.ui.view">
+        <field name="name">om.ai.prompt.form</field>
+        <field name="model">om.ai.prompt</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Reply to a customer"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="code"/>
+                            <field name="feature"/>
+                        </group>
+                        <group>
+                            <field name="purpose"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <label for="system_prompt"/>
+                    <field name="system_prompt" placeholder="Instructions for the AI"/>
+                    <label for="user_template"/>
+                    <field name="user_template" placeholder="Write a reply to {{ customer }} about {{ subject }}."/>
+                    <div class="text-muted">
+                        Placeholders: <field name="placeholders" class="oe_inline"/>.
+                        Write them as {{ name }}; features fill them in, nothing in the text is run as code.
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_prompt_action" model="ir.actions.act_window">
+        <field name="name">AI Prompt Templates</field>
+        <field name="res_model">om.ai.prompt</field>
+        <field name="path">ai-prompts</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

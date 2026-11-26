@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_usage_view_list" model="ir.ui.view">
+        <field name="name">om.ai.usage.list</field>
+        <field name="model">om.ai.usage</field>
+        <field name="arch" type="xml">
+            <list create="False" edit="False" decoration-danger="status == 'error'" decoration-warning="status == 'blocked'">
+                <field name="date"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="feature"/>
+                <field name="provider_id" optional="show"/>
+                <field name="model_name"/>
+                <field name="prompt_tokens" sum="Total" optional="show"/>
+                <field name="completion_tokens" sum="Total" optional="show"/>
+                <field name="total_tokens" sum="Total"/>
+                <field name="cost" sum="Total"/>
+                <field name="duration" optional="show"/>
+                <field name="status" widget="badge" decoration-success="status == 'success'"
+                       decoration-danger="status == 'error'" decoration-warning="status == 'blocked'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_usage_view_form" model="ir.ui.view">
+        <field name="name">om.ai.usage.form</field>
+        <field name="model">om.ai.usage</field>
+        <field name="arch" type="xml">
+            <form create="False" edit="False">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="date"/>
+                            <field name="user_id"/>
+                            <field name="feature"/>
+                            <field name="provider_id"/>
+                            <field name="model_id"/>
+                            <field name="model_name"/>
+                            <field name="status"/>
+                        </group>
+                        <group>
+                            <field name="prompt_tokens"/>
+                            <field name="completion_tokens"/>
+                            <field name="total_tokens"/>
+                            <field name="cost"/>
+                            <field name="duration"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group invisible="not error">
+                        <field name="error"/>
+                    </group>
+                    <notebook invisible="not request_text and not response_text">
+                        <page string="Request" name="request">
+                            <field name="request_text"/>
+                        </page>
+                        <page string="Response" name="response">
+                            <field name="response_text"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_usage_view_pivot" model="ir.ui.view">
+        <field name="name">om.ai.usage.pivot</field>
+        <field name="model">om.ai.usage</field>
+        <field name="arch" type="xml">
+            <pivot string="AI Usage" sample="1">
+                <field name="date" interval="day" type="row"/>
+                <field name="model_name" type="col"/>
+                <field name="total_tokens" type="measure"/>
+                <field name="cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_ai_usage_view_graph" model="ir.ui.view">
+        <field name="name">om.ai.usage.graph</field>
+        <field name="model">om.ai.usage</field>
+        <field name="arch" type="xml">
+            <graph string="AI Usage" type="bar" stacked="1" sample="1">
+                <field name="date" interval="day"/>
+                <field name="feature"/>
+                <field name="total_tokens" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="om_ai_usage_view_search" model="ir.ui.view">
+        <field name="name">om.ai.usage.search</field>
+        <field name="model">om.ai.usage</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="user_id"/>
+                <field name="feature"/>
+                <field name="model_name"/>
+                <field name="provider_id"/>
+                <filter name="my_usage" string="My Usage" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="success" string="Successful" domain="[('status', '=', 'success')]"/>
+                <filter name="errors" string="Errors" domain="[('status', '=', 'error')]"/>
+                <filter name="blocked" string="Blocked by Limit" domain="[('status', '=', 'blocked')]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                <filter name="group_feature" string="Feature" context="{'group_by': 'feature'}"/>
+                <filter name="group_provider" string="Provider" context="{'group_by': 'provider_id'}"/>
+                <filter name="group_model" string="Model" context="{'group_by': 'model_name'}"/>
+                <filter name="group_status" string="Status" context="{'group_by': 'status'}"/>
+                <filter name="group_date" string="Day" context="{'group_by': 'date:day'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_usage_action" model="ir.actions.act_window">
+        <field name="name">AI Usage</field>
+        <field name="res_model">om.ai.usage</field>
+        <field name="path">ai-usage</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No AI calls yet</p>
+            <p>Every call to an AI provider is logged here with its tokens and estimated cost.</p>
+        </field>
+    </record>
+
+    <record id="om_ai_usage_action_my" model="ir.actions.act_window">
+        <field name="name">My AI Usage</field>
+        <field name="res_model">om.ai.usage</field>
+        <field name="view_mode">list,graph,pivot,form</field>
+        <field name="domain">[('user_id', '=', uid)]</field>
+    </record>
+</odoo>

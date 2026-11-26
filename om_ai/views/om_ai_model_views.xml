@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_model_view_list" model="ir.ui.view">
+        <field name="name">om.ai.model.list</field>
+        <field name="model">om.ai.model</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="provider_id"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="cap_chat"/>
+                <field name="cap_vision"/>
+                <field name="cap_tools"/>
+                <field name="cap_json"/>
+                <field name="cap_embeddings"/>
+                <field name="context_size" optional="show"/>
+                <field name="input_price"/>
+                <field name="output_price"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="active" widget="boolean_toggle" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_model_view_search" model="ir.ui.view">
+        <field name="name">om.ai.model.search</field>
+        <field name="model">om.ai.model</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="provider_id"/>
+                <filter name="chat" string="Chat" domain="[('cap_chat', '=', True)]"/>
+                <filter name="vision" string="Vision" domain="[('cap_vision', '=', True)]"/>
+                <filter name="tools" string="Tools" domain="[('cap_tools', '=', True)]"/>
+                <filter name="embeddings" string="Embeddings" domain="[('cap_embeddings', '=', True)]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="group_provider" string="Provider" context="{'group_by': 'provider_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_model_action" model="ir.actions.act_window">
+        <field name="name">AI Models</field>
+        <field name="res_model">om.ai.model</field>
+        <field name="path">ai-models</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_provider': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No models yet</p>
+            <p>Open a provider and click Fetch Models, or add a model by hand. Prices are per million tokens and are used for cost estimates.</p>
+        </field>
+    </record>
+</odoo>

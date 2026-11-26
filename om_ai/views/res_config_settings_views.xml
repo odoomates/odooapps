@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_ai</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='contacts_settings']" position="before">
+                <div id="om_ai_settings">
+                    <block title="AI" name="om_ai_setting_container">
+                        <setting id="om_ai_models" string="Default AI Models" company_dependent="1"
+                                 help="Features ask for a purpose; this model answers.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="om_ai_chat_model_id" string="Chat" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-9"><field name="om_ai_chat_model_id" class="w-100" options="{'no_create': True, 'no_open': True}"/></div>
+                                </div>
+                                <div class="row">
+                                    <label for="om_ai_fast_model_id" string="Fast" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-9"><field name="om_ai_fast_model_id" class="w-100" options="{'no_create': True, 'no_open': True}" placeholder="Chat model"/></div>
+                                </div>
+                                <div class="row">
+                                    <label for="om_ai_vision_model_id" string="Vision" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-9"><field name="om_ai_vision_model_id" class="w-100" options="{'no_create': True, 'no_open': True}" placeholder="Chat model"/></div>
+                                </div>
+                                <div class="row">
+                                    <label for="om_ai_embeddings_model_id" string="Embeddings" class="col-lg-3 o_light_label"/>
+                                    <div class="col-lg-9"><field name="om_ai_embeddings_model_id" class="w-100" options="{'no_create': True, 'no_open': True}"/></div>
+                                </div>
+                                <div class="mt8">
+                                    <button type="action" name="%(om_ai.om_ai_provider_action)d" string="AI Providers"
+                                            icon="east" class="btn-link"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="om_ai_limits" string="Daily AI Limits" company_dependent="1"
+                                 help="Calls are refused once a limit is reached. 0 means no limit. Costs are estimates from the model prices.">
+                            <div class="content-group">
+                                <div class="row mt8">
+                                    <label for="om_ai_user_daily_tokens" string="Tokens per user" class="col-lg-6 o_light_label"/>
+                                    <field name="om_ai_user_daily_tokens" class="oe_inline"/>
+                                </div>
+                                <div class="row">
+                                    <label for="om_ai_user_daily_cost" string="Cost per user (USD)" class="col-lg-6 o_light_label"/>
+                                    <field name="om_ai_user_daily_cost" class="oe_inline"/>
+                                </div>
+                                <div class="row">
+                                    <label for="om_ai_company_daily_tokens" string="Tokens per company" class="col-lg-6 o_light_label"/>
+                                    <field name="om_ai_company_daily_tokens" class="oe_inline"/>
+                                </div>
+                                <div class="row">
+                                    <label for="om_ai_company_daily_cost" string="Cost per company (USD)" class="col-lg-6 o_light_label"/>
+                                    <field name="om_ai_company_daily_cost" class="oe_inline"/>
+                                </div>
+                            </div>
+                        </setting>
+                        <setting id="om_ai_editor" company_dependent="1"
+                                 help="Text generation and AI translation in the editor (and website texts that use it) go to your default chat model instead of Odoo's service.">
+                            <field name="om_ai_editor_provider" string="Use my provider for Odoo's built-in AI text features"/>
+                        </setting>
+                        <setting id="om_ai_assistant" company_dependent="1"
+                                 help="The AI Assistant in Discuss may search and count records the user can see.">
+                            <field name="om_ai_assistant_tools"/>
+                        </setting>
+                        <setting id="om_ai_privacy" company_dependent="1"
+                                 help="Keep the text sent to the AI and its answers in the usage log. Off by default.">
+                            <field name="om_ai_log_content"/>
+                            <div class="content-group mt8">
+                                <label for="om_ai_usage_keep_days" class="o_light_label me-2"/>
+                                <field name="om_ai_usage_keep_days" class="oe_inline"/>
+                            </div>
+                        </setting>
+                    </block>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
