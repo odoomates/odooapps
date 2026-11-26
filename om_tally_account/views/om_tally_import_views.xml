@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_tally_import_view_form_account" model="ir.ui.view">
+        <field name="name">om.tally.import.form.account</field>
+        <field name="model">om.tally.import</field>
+        <field name="inherit_id" ref="om_tally_base.om_tally_import_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_create_company" type="object" string="Create Odoo Company"
+                        invisible="state not in ('draft', 'analyzed') or not tally_company_name"
+                        groups="om_tally_base.group_om_tally_manager"
+                        confirm="Make a new Odoo company from the details of the Tally company (name, country, currency, tax number, fiscal year) and import into it?"/>
+                <button name="action_next_period" type="object" string="Next Period" class="btn-primary"
+                        invisible="state != 'done' or scope != 'history' or history_method != 'period'"
+                        groups="om_tally_base.group_om_tally_manager"
+                        help="Read, check and import the vouchers of the next period."/>
+                <button name="action_propose_mapping" type="object" string="Propose Mapping" class="btn-primary"
+                        invisible="state != 'analyzed'" groups="om_tally_base.group_om_tally_manager"
+                        help="Match the groups, ledgers, parties and cost centres of Tally with the records of Odoo."/>
+                <button name="action_apply_mapping" type="object" string="Create &amp; Link"
+                        invisible="state != 'analyzed'" groups="om_tally_base.group_om_tally_manager"
+                        confirm="Create the accounts, journals, partners and analytic accounts the mapping asks for?"/>
+                <button name="action_compute_check" type="object" string="Check Balances" class="btn-primary"
+                        invisible="state != 'mapped'" groups="om_tally_base.group_om_tally_manager"/>
+                <button name="action_back_to_mapping" type="object" string="Change Mapping"
+                        invisible="state not in ('mapped', 'checked')" groups="om_tally_base.group_om_tally_manager"/>
+                <button name="action_compute_check" type="object" string="Check Again"
+                        invisible="state != 'checked'" groups="om_tally_base.group_om_tally_manager"/>
+                <button name="action_post" type="object" string="Post" class="btn-primary"
+                        invisible="state != 'checked'" groups="om_tally_base.group_om_tally_manager"
+                        confirm="Post the opening entry and import the vouchers in the background?"/>
+                <button name="action_post_now" type="object" string="Continue Now" class="btn-primary"
+                        invisible="state != 'posting'" groups="om_tally_base.group_om_tally_manager"
+                        help="Import the next batch now instead of waiting for the scheduled job."/>
+                <button name="action_verify" type="object" string="Verify" class="btn-primary"
+                        invisible="state != 'done'" groups="om_tally_base.group_om_tally_manager"
+                        help="Compare the trial balance of Tally with the entries posted in Odoo."/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_moves" type="object" class="oe_stat_button" icon="account_balance"
+                        invisible="not move_count">
+                    <field name="move_count" string="Entries" widget="statinfo"/>
+                </button>
+                <button name="action_open_errors" type="object" class="oe_stat_button text-danger" icon="error"
+                        invisible="not post_error">
+                    <field name="post_error" string="In Error" widget="statinfo"/>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='read_background']" position="attributes">
+                <attribute name="readonly">1</attribute>
+                <attribute name="help">Chosen with What to Import: full history, read in the background.</attribute>
+            </xpath>
+            <xpath expr="//group[@name='vouchers']" position="attributes">
+                <attribute name="invisible">scope == 'history' and history_method == 'period'</attribute>
+            </xpath>
+            <xpath expr="//sheet/group[1]" position="after">
+                <group name="scope_step">
+                    <group string="What to Import">
+                        <field name="scope" widget="radio" readonly="opening_move_id"/>
+                        <field name="cutover_date" readonly="opening_move_id"
+                               required="state in ('mapped', 'checked')"/>
+                        <field name="history_method" widget="radio" invisible="scope != 'history'"
+                               readonly="opening_move_id"/>
+                        <label for="voucher_date_to" string="Period" invisible="scope != 'history' or history_method != 'period'"/>
+                        <div class="o_row" invisible="scope != 'history' or history_method != 'period'">
+                            <field name="voucher_date_from" placeholder="Books beginning" readonly="state not in ('draft', 'analyzed')"/>
+                            <span>to</span>
+                            <field name="voucher_date_to" placeholder="e.g. end of the financial year" readonly="state not in ('draft', 'analyzed')"/>
+                        </div>
+                        <field name="history_date_to" invisible="scope != 'history' or history_method != 'background'"
+                               readonly="state in ('posting', 'done')"/>
+                        <field name="history_mode" widget="radio" invisible="scope != 'history' and not sync_enabled"
+                               readonly="state in ('posting', 'done')"/>
+                        <field name="opening_move_id" invisible="1"/>
+                    </group>
+                    <div colspan="1">
+                        <div class="alert alert-success" role="alert" invisible="scope != 'opening'">
+                            <strong>Recommended.</strong> The opening balances on the cut-over date, with every open
+                            bill of the customers and vendors, is the best way to move to Odoo: the books start
+                            clean, ageing and follow-ups work from day one, and the import takes minutes. Keep the
+                            older years in Tally for reference.
+                        </div>
+                        <div class="alert alert-info" role="alert"
+                             invisible="scope != 'history' or history_method != 'period'">
+                            <strong>Split by period.</strong> Import one financial year (or any period) at a time:
+                            set the period, read it (with files: add the export of that period only), check and
+                            post it, then use Next Period. Each run adds to the previous ones; vouchers already
+                            imported are never doubled.
+                        </div>
+                        <div class="alert alert-info" role="alert"
+                             invisible="scope != 'history' or history_method != 'background'">
+                            <strong>Read in the background.</strong> Tally is read by a background job, one file or
+                            one month at a time, with a progress bar: you can close the browser. Big files are read
+                            piece by piece. Then check and post everything at once.
+                        </div>
+                    </div>
+                </group>
+            </xpath>
+            <xpath expr="//page[@name='analysis']" position="after">
+                <page string="Options" name="options" invisible="state == 'draft'">
+                    <group>
+                        <group string="Accounting">
+                            <field name="opening_journal_id" placeholder="Made when empty"/>
+                            <field name="import_journal_id" placeholder="Made when empty"/>
+                            <field name="difference_account_id" required="state in ('mapped', 'checked')"/>
+                            <field name="exclude_stock_in_hand"/>
+                            <field name="fallback_partner_id" placeholder="Made when a party is skipped"/>
+                        </group>
+                        <group string="Differences">
+                            <field name="accept_difference"/>
+                            <field name="suspense_account_id" invisible="not accept_difference"
+                                   placeholder="Made when empty"/>
+                        </group>
+                        <group string="Posting">
+                            <field name="post_batch_size"/>
+                        </group>
+                    </group>
+                </page>
+                <page string="Chart" name="chart" invisible="state == 'draft'">
+                    <div class="text-muted mb-2">Each ledger of Tally next to the account of Odoo it posts to.
+                        Link to an account of the chart, create a new one, or skip the ledger. Bank and cash ledgers
+                        get a journal.</div>
+                    <field name="account_ledger_ids" readonly="state in ('posting', 'done')">
+                        <list editable="bottom" create="0" delete="0"
+                              decoration-muted="account_action == 'skip'" decoration-info="account_action == 'create'">
+                            <field name="name" readonly="1"/>
+                            <field name="parent_name" string="Tally Group" readonly="1" optional="hide"/>
+                            <field name="role" readonly="1" optional="show"/>
+                            <field name="opening_balance" string="Opening" readonly="1" sum="Total"/>
+                            <field name="account_action" string="Action"/>
+                            <field name="account_id" readonly="account_action != 'link'" options="{'no_create': True}"/>
+                            <field name="new_account_code" string="New Code" invisible="account_action != 'create'" optional="show"/>
+                            <field name="new_account_name" invisible="account_action != 'create'" optional="hide"/>
+                            <field name="account_type" string="New Type" invisible="account_action != 'create'" optional="show"/>
+                            <field name="journal_action" string="Journal" invisible="role not in ('bank', 'cash')" optional="show"/>
+                            <field name="journal_id" string="Odoo Journal" invisible="role not in ('bank', 'cash')" optional="hide"
+                                   options="{'no_create': True}"/>
+                            <field name="tax_id" invisible="role != 'tax'" optional="hide" options="{'no_create': True}"/>
+                            <field name="match_note" string="Matched By" optional="show"/>
+                            <field name="is_applied" optional="hide"/>
+                            <field name="company_id" column_invisible="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                    <separator string="Groups"/>
+                    <field name="group_ids" readonly="state in ('posting', 'done')">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="name" readonly="1"/>
+                            <field name="parent_name" string="Under" readonly="1"/>
+                            <field name="nature" readonly="1"/>
+                            <field name="account_type"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Parties" name="parties" invisible="state == 'draft'">
+                    <div class="d-flex gap-2 mb-2">
+                        <button name="action_parties_link_matched" type="object" string="Link All Matched"
+                                class="btn-secondary" invisible="state in ('posting', 'done')"/>
+                        <button name="action_parties_create_unmatched" type="object" string="Create All Unmatched"
+                                class="btn-secondary" invisible="state in ('posting', 'done')"/>
+                        <button name="action_parties_skip_unmatched" type="object" string="Skip All Unmatched"
+                                class="btn-secondary" invisible="state in ('posting', 'done')"/>
+                    </div>
+                    <field name="party_ledger_ids" readonly="state in ('posting', 'done')">
+                        <list editable="bottom" create="0" delete="0"
+                              decoration-muted="partner_action == 'skip'" decoration-info="partner_action == 'create'">
+                            <field name="name" readonly="1"/>
+                            <field name="role" readonly="1"/>
+                            <field name="gstin" readonly="1" optional="show" column_invisible="parent.tally_country != 'in'"/>
+                            <field name="vat_number" string="TRN / VAT" readonly="1" optional="show"
+                                   column_invisible="parent.tally_country == 'in'"/>
+                            <field name="state_name" readonly="1" optional="hide"/>
+                            <field name="email" readonly="1" optional="hide"/>
+                            <field name="opening_balance" string="Opening" readonly="1" sum="Total"/>
+                            <field name="partner_action" string="Action"/>
+                            <field name="partner_id" readonly="partner_action != 'link'"/>
+                            <field name="partner_match_note" string="Matched By" optional="show"/>
+                            <field name="account_id" optional="hide" options="{'no_create': True}"/>
+                            <field name="company_id" column_invisible="1"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Cost Centres &amp; Voucher Types" name="cost_centres" invisible="state == 'draft'">
+                    <group>
+                        <group string="Cost Centres">
+                            <field name="cost_centre_ids" nolabel="1" colspan="2"
+                                   readonly="state in ('posting', 'done')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name" readonly="1"/>
+                                    <field name="category_name" readonly="1"/>
+                                    <field name="analytic_action"/>
+                                    <field name="analytic_account_id" readonly="analytic_action != 'link'"/>
+                                </list>
+                            </field>
+                        </group>
+                        <group string="Voucher Types">
+                            <field name="voucher_type_ids" nolabel="1" colspan="2"
+                                   readonly="state in ('posting', 'done')">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="name" readonly="1"/>
+                                    <field name="base_type" readonly="1"/>
+                                    <field name="voucher_count" readonly="1"/>
+                                    <field name="journal_id" options="{'no_create': True}"/>
+                                    <field name="company_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </group>
+                    </group>
+                </page>
+                <page string="Check" name="check" invisible="state in ('draft', 'analyzed')">
+                    <div class="alert alert-success" role="alert"
+                         invisible="not check_date or check_difference">
+                        No difference left to explain: every account agrees with Tally, or its difference comes from an option you chose (see the notes).
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not check_difference">
+                        Tally and Odoo differ by <field name="check_difference" class="fw-bold"/>. Change the
+                        mapping, or accept the differences in the options: they go to the suspense account.
+                    </div>
+                    <field name="check_line_ids" readonly="1">
+                        <list decoration-danger="difference and not is_explained" decoration-muted="is_explained">
+                            <field name="label"/>
+                            <field name="ledger_names" optional="show"/>
+                            <field name="tally_balance" sum="Total"/>
+                            <field name="posted_balance" sum="Total"/>
+                            <field name="difference" sum="Total"/>
+                            <field name="existing_balance" optional="show"/>
+                            <field name="note" optional="show"/>
+                            <field name="is_explained" optional="hide"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </page>
+                <page string="Posting" name="posting" invisible="state not in ('posting', 'done')">
+                    <group>
+                        <group>
+                            <field name="opening_move_id"/>
+                            <field name="post_progress" widget="progressbar"/>
+                        </group>
+                        <group>
+                            <field name="post_total"/>
+                            <field name="post_done"/>
+                            <field name="post_error"/>
+                        </group>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_tally_voucher_view_form_account" model="ir.ui.view">
+        <field name="name">om.tally.voucher.form.account</field>
+        <field name="model">om.tally.voucher</field>
+        <field name="inherit_id" ref="om_tally_base.om_tally_voucher_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/field[@name='state']" position="before">
+                <button name="action_retry" type="object" string="Try Again" invisible="state != 'error'"
+                        groups="om_tally_base.group_om_tally_manager"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_open_move" type="object" class="oe_stat_button" icon="account_balance"
+                        invisible="not move_id">
+                    <div class="o_stat_info"><span class="o_stat_text">Odoo Entry</span></div>
+                </button>
+            </xpath>
+            <xpath expr="//field[@name='is_accounting']" position="before">
+                <field name="move_id" invisible="not move_id"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_tally_ledger_view_form_account" model="ir.ui.view">
+        <field name="name">om.tally.ledger.form.account</field>
+        <field name="model">om.tally.ledger</field>
+        <field name="inherit_id" ref="om_tally_base.om_tally_ledger_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='tally']" position="after">
+                <group string="In Odoo" name="odoo">
+                    <group invisible="role in ('receivable', 'payable')">
+                        <field name="account_action"/>
+                        <field name="account_id" invisible="account_action != 'link'"/>
+                        <field name="new_account_code" invisible="account_action != 'create'"/>
+                        <field name="new_account_name" invisible="account_action != 'create'"/>
+                        <field name="account_type" invisible="account_action != 'create'"/>
+                        <field name="journal_action" invisible="role not in ('bank', 'cash')"/>
+                        <field name="journal_id" invisible="role not in ('bank', 'cash')"/>
+                        <field name="tax_id" invisible="role != 'tax'"/>
+                        <field name="match_note"/>
+                        <field name="company_id" invisible="1"/>
+                    </group>
+                    <group invisible="role not in ('receivable', 'payable')">
+                        <field name="partner_action"/>
+                        <field name="partner_id"/>
+                        <field name="partner_match_note"/>
+                        <field name="account_id" string="Receivable/Payable Account"/>
+                    </group>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_tally_ledger_action_link" model="ir.actions.server">
+        <field name="name">Link</field>
+        <field name="model_id" ref="om_tally_base.model_om_tally_ledger"/>
+        <field name="binding_model_id" ref="om_tally_base.model_om_tally_ledger"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_link()</field>
+    </record>
+    <record id="om_tally_ledger_action_create" model="ir.actions.server">
+        <field name="name">Create in Odoo</field>
+        <field name="model_id" ref="om_tally_base.model_om_tally_ledger"/>
+        <field name="binding_model_id" ref="om_tally_base.model_om_tally_ledger"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_create()</field>
+    </record>
+    <record id="om_tally_ledger_action_skip" model="ir.actions.server">
+        <field name="name">Skip</field>
+        <field name="model_id" ref="om_tally_base.model_om_tally_ledger"/>
+        <field name="binding_model_id" ref="om_tally_base.model_om_tally_ledger"/>
+        <field name="binding_view_types">list</field>
+        <field name="state">code</field>
+        <field name="code">records.action_skip()</field>
+    </record>
+
+    <menuitem id="om_tally_menu_accounting" name="Import from Tally" parent="account.menu_finance_configuration"
+              action="om_tally_base.om_tally_import_action" sequence="90"
+              groups="om_tally_base.group_om_tally_manager"/>
+</odoo>

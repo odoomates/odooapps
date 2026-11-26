@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_tally_import_view_form" model="ir.ui.view">
+        <field name="name">om.tally.import.form</field>
+        <field name="model">om.tally.import</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_load_sample_files" type="object" string="Load Sample Files"
+                            invisible="state != 'draft' or source_type != 'file' or file_ids"
+                            groups="om_tally_base.group_om_tally_manager"
+                            help="Attach a sample export of Tally (a trading company) to try the import."/>
+                    <button name="action_test_connection" type="object" string="Test Connection"
+                            invisible="source_type != 'direct'" groups="om_tally_base.group_om_tally_manager"/>
+                    <button name="action_read_tally" type="object" string="Read &amp; Analyze" class="btn-primary"
+                            invisible="state != 'draft' or read_state in ('queued', 'running')"
+                            groups="om_tally_base.group_om_tally_manager"/>
+                    <button name="action_read_tally" type="object" string="Read New Data"
+                            invisible="state == 'draft' or read_state in ('queued', 'running')"
+                            groups="om_tally_base.group_om_tally_manager"
+                            help="Read the files not read yet (direct connection: the vouchers of the period again). Records already read are updated, none is duplicated."/>
+                    <button name="action_read_all_again" type="object" string="Read All Again"
+                            invisible="state == 'draft' or read_state in ('queued', 'running')"
+                            groups="om_tally_base.group_om_tally_manager"/>
+                    <button name="action_resume_reading" type="object" string="Resume Reading" class="btn-primary"
+                            invisible="read_state != 'error'" groups="om_tally_base.group_om_tally_manager"/>
+                    <button name="action_sync_now" type="object" string="Sync Now"
+                            invisible="state == 'draft' or source_type != 'direct'"
+                            groups="om_tally_base.group_om_tally_manager"/>
+                    <button name="action_clear_staging" type="object" string="Clear Data"
+                            invisible="state == 'draft' and not voucher_count and not ledger_count"
+                            groups="om_tally_base.group_om_tally_manager"
+                            confirm="Clear all the data read from Tally? The records already imported in Odoo stay."/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <div class="alert alert-info mb-0" role="alert" invisible="read_state not in ('queued', 'running')">
+                    Tally is read in the background: you can close this page.
+                    <field name="read_message" class="fw-bold"/>
+                    <field name="read_progress" widget="progressbar" class="d-inline-block w-25 ms-2"/>
+                </div>
+                <div class="alert alert-danger mb-0" role="alert" invisible="read_state != 'error'">
+                    The background reading stopped: <field name="read_message"/>
+                </div>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_groups" type="object" class="oe_stat_button" icon="account_tree">
+                            <field name="group_count" string="Groups" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_ledgers" type="object" class="oe_stat_button" icon="list_alt">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="ledger_count"/></span>
+                                <span class="o_stat_text">Ledgers</span>
+                            </div>
+                        </button>
+                        <button name="action_open_parties" type="object" class="oe_stat_button" icon="group">
+                            <field name="party_count" string="Parties" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_vouchers" type="object" class="oe_stat_button" icon="receipt_long">
+                            <field name="voucher_count" string="Vouchers" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_stock_items" type="object" class="oe_stat_button" icon="inventory_2"
+                                invisible="not stock_item_count">
+                            <field name="stock_item_count" string="Stock Items" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_problems" type="object" class="oe_stat_button text-warning"
+                                icon="warning" invisible="not problem_count">
+                            <field name="problem_count" string="Problems" widget="statinfo"/>
+                        </button>
+                        <button name="action_open_mappings" type="object" class="oe_stat_button" icon="link"
+                                invisible="not mapping_count">
+                            <field name="mapping_count" string="Mappings" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. My Company Traders"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="source_type" widget="radio" readonly="state != 'draft'"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="tally_country"/>
+                            <field name="company_id" invisible="1"/>
+                            <field name="active" invisible="1"/>
+                            <field name="read_state" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="tally_company_name" placeholder="As shown in Tally"/>
+                            <field name="books_from"/>
+                            <field name="starting_from"/>
+                            <field name="last_read" invisible="not last_read"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Source" name="source">
+                            <div invisible="source_type != 'file'">
+                                <div class="alert alert-info" role="alert">
+                                    In Tally, export the masters (Display More Reports &gt; List of Accounts, or
+                                    Alt+E Export &gt; Masters, all masters) and the vouchers (Day Book for the period,
+                                    Alt+E Export) in XML format, then add the files here. Exports in UTF-16 (Unicode),
+                                    UTF-8 or ASCII are read.
+                                </div>
+                                <field name="file_ids" widget="many2many_binary" string="Tally Files"/>
+                            </div>
+                            <group invisible="source_type != 'direct'">
+                                <group string="Tally">
+                                    <field name="host" placeholder="e.g. 192.168.1.20 or tally-pc"
+                                           required="source_type == 'direct'"/>
+                                    <field name="port"/>
+                                    <field name="timeout"/>
+                                </group>
+                                <group string="Vouchers" name="vouchers">
+                                    <field name="voucher_date_from"/>
+                                    <field name="voucher_date_to"/>
+                                </group>
+                                <div class="text-muted" colspan="2">
+                                    Tally must run with the company open and act as a server: in TallyPrime,
+                                    F1 Help &gt; Settings &gt; Connectivity, "Client/Server configuration": TallyPrime
+                                    acts as Both or Server, port 9000. Vouchers are read month by month.
+                                </div>
+                            </group>
+                            <group name="reading">
+                                <group string="Reading" name="reading_options">
+                                    <field name="read_background"/>
+                                    <field name="read_state" invisible="read_state == 'idle'"/>
+                                </group>
+                                <group string="Sync" invisible="source_type != 'direct'">
+                                    <field name="sync_enabled"/>
+                                    <field name="last_alter_id"/>
+                                </group>
+                            </group>
+                            <field name="read_file_ids" invisible="not read_file_ids" readonly="1">
+                                <list>
+                                    <field name="name" string="Files Read"/>
+                                    <field name="create_date" string="Added On"/>
+                                </list>
+                            </field>
+                            <field name="period_ids" invisible="not period_ids" readonly="1">
+                                <list>
+                                    <field name="date_from"/>
+                                    <field name="date_to"/>
+                                    <field name="voucher_count"/>
+                                    <field name="posted_count"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'imported'"
+                                           decoration-info="state == 'read'"/>
+                                </list>
+                            </field>
+                            <field name="remote_company_ids" invisible="not remote_company_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="books_from"/>
+                                    <field name="starting_from"/>
+                                    <field name="currency_symbol"/>
+                                    <button name="action_select" type="object" string="Choose" icon="check"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Analysis" name="analysis" invisible="state == 'draft'">
+                            <field name="analysis_html" nolabel="1" readonly="1"/>
+                            <separator string="Problems"/>
+                            <field name="problem_ids" readonly="1">
+                                <list decoration-danger="level == 'error'" decoration-warning="level == 'warning'"
+                                      decoration-muted="level == 'info'">
+                                    <field name="level"/>
+                                    <field name="category"/>
+                                    <field name="message"/>
+                                    <field name="res_model" column_invisible="1"/>
+                                    <field name="res_id" column_invisible="1"/>
+                                    <button name="action_open_record" type="object" icon="open_in_new" title="Open"
+                                            invisible="not res_id"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Tally Company" name="tally_company" invisible="not tally_company_guid and not tally_gstin">
+                            <group>
+                                <group>
+                                    <field name="tally_mailing_name"/>
+                                    <field name="tally_address"/>
+                                    <field name="tally_state_name"/>
+                                    <field name="tally_country_name"/>
+                                    <field name="tally_pincode"/>
+                                </group>
+                                <group>
+                                    <field name="tally_gstin"/>
+                                    <field name="tally_pan"/>
+                                    <field name="tally_email"/>
+                                    <field name="tally_phone"/>
+                                    <field name="tally_currency_symbol"/>
+                                    <field name="tally_company_guid"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Log" name="log">
+                            <field name="log_ids" readonly="1">
+                                <list decoration-danger="level == 'error'" decoration-warning="level == 'warning'">
+                                    <field name="date"/>
+                                    <field name="step"/>
+                                    <field name="level"/>
+                                    <field name="message"/>
+                                    <field name="user_id" optional="hide"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_tally_import_view_list" model="ir.ui.view">
+        <field name="name">om.tally.import.list</field>
+        <field name="model">om.tally.import</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name"/>
+                <field name="tally_company_name"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+                <field name="source_type"/>
+                <field name="books_from"/>
+                <field name="last_read"/>
+                <field name="state" widget="badge" decoration-success="state not in ('draft', 'analyzed')"
+                       decoration-info="state == 'analyzed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_import_view_kanban" model="ir.ui.view">
+        <field name="name">om.tally.import.kanban</field>
+        <field name="model">om.tally.import</field>
+        <field name="arch" type="xml">
+            <kanban class="o_kanban_mobile" sample="1">
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="name" class="fw-bold fs-5"/>
+                            <field name="state" widget="badge"/>
+                        </div>
+                        <field name="tally_company_name" class="text-muted"/>
+                        <div class="d-flex justify-content-between mt-2">
+                            <field name="source_type"/>
+                            <span><field name="voucher_count"/> vouchers</span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="om_tally_import_view_search" model="ir.ui.view">
+        <field name="name">om.tally.import.search</field>
+        <field name="model">om.tally.import</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="tally_company_name"/>
+                <filter name="filter_sync" string="Keep in Sync" domain="[('sync_enabled', '=', True)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_state" string="Step" context="{'group_by': 'state'}"/>
+                    <filter name="group_source" string="Source" context="{'group_by': 'source_type'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_tally_import_action" model="ir.actions.act_window">
+        <field name="name">Imports from Tally</field>
+        <field name="res_model">om.tally.import</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Bring a Tally company into Odoo</p>
+            <p>Connect to Tally or upload its XML export, review the analysis, map groups, ledgers and parties,
+                then import the opening balances or the full history.</p>
+        </field>
+    </record>
+</odoo>

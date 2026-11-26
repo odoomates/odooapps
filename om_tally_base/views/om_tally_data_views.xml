@@ -1,0 +1,609 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- groups -->
+    <record id="om_tally_group_view_list" model="ir.ui.view">
+        <field name="name">om.tally.group.list</field>
+        <field name="model">om.tally.group</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="parent_name" string="Under"/>
+                <field name="primary_group"/>
+                <field name="nature"/>
+                <field name="is_predefined" optional="show"/>
+                <field name="is_billwise" optional="hide"/>
+                <field name="ledger_count" optional="show"/>
+                <field name="import_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_group_view_form" model="ir.ui.view">
+        <field name="name">om.tally.group.form</field>
+        <field name="model">om.tally.group</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group name="tally">
+                        <group string="Tally">
+                            <field name="parent_id"/>
+                            <field name="primary_group"/>
+                            <field name="nature"/>
+                            <field name="is_predefined"/>
+                        </group>
+                        <group string="Behaviour">
+                            <field name="is_revenue"/>
+                            <field name="affects_gross_profit"/>
+                            <field name="is_deemed_positive"/>
+                            <field name="is_billwise"/>
+                            <field name="guid"/>
+                            <field name="alter_id"/>
+                        </group>
+                    </group>
+                    <field name="ledger_ids" readonly="1">
+                        <list>
+                            <field name="name"/>
+                            <field name="opening_debit" sum="Total"/>
+                            <field name="opening_credit" sum="Total"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_tally_group_view_search" model="ir.ui.view">
+        <field name="name">om.tally.group.search</field>
+        <field name="model">om.tally.group</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="parent_name"/>
+                <filter name="filter_predefined" string="Predefined" domain="[('is_predefined', '=', True)]"/>
+                <filter name="filter_user" string="Created in Tally" domain="[('is_predefined', '=', False)]"/>
+                <group>
+                    <filter name="group_nature" string="Nature" context="{'group_by': 'nature'}"/>
+                    <filter name="group_primary" string="Primary Group" context="{'group_by': 'primary_group'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- ledgers -->
+    <record id="om_tally_ledger_view_list" model="ir.ui.view">
+        <field name="name">om.tally.ledger.list</field>
+        <field name="model">om.tally.ledger</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="parent_name" string="Under"/>
+                <field name="role"/>
+                <field name="tax_number" optional="show"/>
+                <field name="state_name" optional="hide"/>
+                <field name="opening_debit" sum="Total"/>
+                <field name="opening_credit" sum="Total"/>
+                <field name="is_billwise" optional="hide"/>
+                <field name="currency_id" column_invisible="1"/>
+                <field name="import_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_ledger_view_form" model="ir.ui.view">
+        <field name="name">om.tally.ledger.form</field>
+        <field name="model">om.tally.ledger</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_voucher_lines" type="object" class="oe_stat_button"
+                                icon="receipt_long">
+                            <field name="voucher_line_count" widget="statinfo"/>
+                        </button>
+                    </div>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group name="tally">
+                        <group string="Tally">
+                            <field name="group_id"/>
+                            <field name="primary_group"/>
+                            <field name="role"/>
+                            <field name="opening_balance"/>
+                            <field name="is_billwise"/>
+                            <field name="credit_period" invisible="not credit_period"/>
+                            <field name="currency_name"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group string="Contact" invisible="role not in ('receivable', 'payable')">
+                            <field name="mailing_name"/>
+                            <field name="address"/>
+                            <field name="state_name"/>
+                            <field name="country_name"/>
+                            <field name="pincode"/>
+                            <field name="email" widget="email"/>
+                            <field name="phone" widget="phone"/>
+                            <field name="mobile" widget="phone"/>
+                            <field name="contact"/>
+                        </group>
+                        <group string="Tax" invisible="not gstin and not vat_number and not tax_type">
+                            <field name="tally_country" invisible="1"/>
+                            <field name="gstin" invisible="tally_country not in ('in', False) and not gstin"/>
+                            <field name="gst_registration_type" invisible="tally_country not in ('in', False)"/>
+                            <field name="vat_number" invisible="not vat_number"/>
+                            <field name="pan" invisible="not pan"/>
+                            <field name="tax_type"/>
+                            <field name="gst_duty_head" invisible="not gst_duty_head"/>
+                            <field name="tax_rate" invisible="not tax_rate"/>
+                        </group>
+                        <group string="Bank" invisible="role != 'bank'">
+                            <field name="bank_name"/>
+                            <field name="bank_account_number"/>
+                            <field name="bank_ifsc"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Opening Bills" name="bills" invisible="not bill_ids">
+                            <field name="bill_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="bill_date"/>
+                                    <field name="due_date"/>
+                                    <field name="is_advance"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_tally_ledger_view_search" model="ir.ui.view">
+        <field name="name">om.tally.ledger.search</field>
+        <field name="model">om.tally.ledger</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name" filter_domain="['|', '|', ('name', 'ilike', self), ('gstin', 'ilike', self), ('aliases', 'ilike', self)]"/>
+                <field name="parent_name"/>
+                <filter name="filter_customers" string="Customers" domain="[('role', '=', 'receivable')]"/>
+                <filter name="filter_vendors" string="Vendors" domain="[('role', '=', 'payable')]"/>
+                <filter name="filter_bank" string="Bank &amp; Cash" domain="[('role', 'in', ('bank', 'cash'))]"/>
+                <filter name="filter_tax" string="Taxes" domain="[('role', '=', 'tax')]"/>
+                <separator/>
+                <filter name="filter_opening" string="With Opening Balance" domain="[('opening_balance', '!=', 0)]"/>
+                <group>
+                    <filter name="group_role" string="Role" context="{'group_by': 'role'}"/>
+                    <filter name="group_group" string="Group" context="{'group_by': 'group_id'}"/>
+                    <filter name="group_nature" string="Nature" context="{'group_by': 'nature'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- vouchers -->
+    <record id="om_tally_voucher_view_list" model="ir.ui.view">
+        <field name="name">om.tally.voucher.list</field>
+        <field name="model">om.tally.voucher</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-muted="not is_accounting" decoration-danger="state == 'error'">
+                <field name="date"/>
+                <field name="voucher_type_name" string="Type"/>
+                <field name="number"/>
+                <field name="party_name"/>
+                <field name="narration" optional="show"/>
+                <field name="amount" sum="Total"/>
+                <field name="difference" optional="hide"/>
+                <field name="is_accounting" optional="hide"/>
+                <field name="is_cancelled" optional="hide"/>
+                <field name="is_optional" optional="hide"/>
+                <field name="is_changed" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'posted'"
+                       decoration-danger="state == 'error'" decoration-muted="state == 'skipped'"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_voucher_view_form" model="ir.ui.view">
+        <field name="name">om.tally.voucher.form</field>
+        <field name="model">om.tally.voucher</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <div class="alert alert-danger mb-0" role="alert" invisible="not error_message">
+                    <field name="error_message"/>
+                </div>
+                <div class="alert alert-warning mb-0" role="alert" invisible="not is_changed">
+                    Tally changed this voucher after it was imported: check the entry in Odoo.
+                </div>
+                <sheet>
+                    <div class="oe_button_box" name="button_box"/>
+                    <div class="oe_title"><h1><field name="display_number" readonly="1"/></h1></div>
+                    <group name="tally">
+                        <group>
+                            <field name="date"/>
+                            <field name="voucher_type_id"/>
+                            <field name="base_type"/>
+                            <field name="party_ledger_id"/>
+                            <field name="reference" invisible="not reference"/>
+                            <field name="amount"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="is_accounting"/>
+                            <field name="is_invoice"/>
+                            <field name="is_cancelled" invisible="not is_cancelled"/>
+                            <field name="is_optional" invisible="not is_optional"/>
+                            <field name="is_postdated" invisible="not is_postdated"/>
+                            <field name="is_deleted" invisible="not is_deleted"/>
+                            <field name="fiscal_year"/>
+                            <field name="guid"/>
+                            <field name="alter_id"/>
+                        </group>
+                    </group>
+                    <field name="narration" readonly="1"/>
+                    <notebook>
+                        <page string="Ledger Entries" name="lines">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="ledger_name"/>
+                                    <field name="ledger_id" optional="hide"/>
+                                    <field name="is_party" optional="show"/>
+                                    <field name="from_inventory" optional="hide"/>
+                                    <field name="instrument_number" optional="hide"/>
+                                    <field name="debit" sum="Total"/>
+                                    <field name="credit" sum="Total"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                                <form>
+                                    <group>
+                                        <group>
+                                            <field name="ledger_name"/>
+                                            <field name="ledger_id"/>
+                                            <field name="amount"/>
+                                            <field name="currency_id" invisible="1"/>
+                                        </group>
+                                        <group>
+                                            <field name="is_party"/>
+                                            <field name="instrument_number"/>
+                                            <field name="instrument_date"/>
+                                        </group>
+                                    </group>
+                                    <field name="bill_ids">
+                                        <list>
+                                            <field name="name"/>
+                                            <field name="bill_type"/>
+                                            <field name="due_date"/>
+                                            <field name="amount"/>
+                                            <field name="currency_id" column_invisible="1"/>
+                                        </list>
+                                    </field>
+                                    <field name="cost_ids">
+                                        <list>
+                                            <field name="category_name"/>
+                                            <field name="name"/>
+                                            <field name="amount"/>
+                                            <field name="currency_id" column_invisible="1"/>
+                                        </list>
+                                    </field>
+                                </form>
+                            </field>
+                        </page>
+                        <page string="Inventory Entries" name="inventory" invisible="not inventory_ids">
+                            <field name="inventory_ids" readonly="1">
+                                <list>
+                                    <field name="item_name"/>
+                                    <field name="godown_name"/>
+                                    <field name="batch_name" optional="show"/>
+                                    <field name="is_inward"/>
+                                    <field name="quantity"/>
+                                    <field name="unit_name"/>
+                                    <field name="rate"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="ledger_name" optional="hide"/>
+                                    <field name="currency_id" column_invisible="1"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_tally_voucher_view_pivot" model="ir.ui.view">
+        <field name="name">om.tally.voucher.pivot</field>
+        <field name="model">om.tally.voucher</field>
+        <field name="arch" type="xml">
+            <pivot string="Vouchers" sample="1">
+                <field name="base_type" type="row"/>
+                <field name="fiscal_year" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_tally_voucher_view_graph" model="ir.ui.view">
+        <field name="name">om.tally.voucher.graph</field>
+        <field name="model">om.tally.voucher</field>
+        <field name="arch" type="xml">
+            <graph string="Vouchers" type="bar" sample="1">
+                <field name="date" interval="month"/>
+                <field name="base_type"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="om_tally_voucher_view_search" model="ir.ui.view">
+        <field name="name">om.tally.voucher.search</field>
+        <field name="model">om.tally.voucher</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="number"/>
+                <field name="party_name"/>
+                <field name="narration"/>
+                <field name="voucher_type_name"/>
+                <filter name="filter_accounting" string="To the Books" domain="[('is_accounting', '=', True)]"/>
+                <filter name="filter_not_accounting" string="Left Out" domain="[('is_accounting', '=', False)]"/>
+                <separator/>
+                <filter name="filter_staged" string="To Import" domain="[('state', '=', 'staged')]"/>
+                <filter name="filter_posted" string="Imported" domain="[('state', '=', 'posted')]"/>
+                <filter name="filter_error" string="Errors" domain="[('state', '=', 'error')]"/>
+                <filter name="filter_changed" string="Changed in Tally" domain="[('is_changed', '=', True)]"/>
+                <separator/>
+                <filter name="filter_date" string="Date" date="date"/>
+                <group>
+                    <filter name="group_type" string="Base Type" context="{'group_by': 'base_type'}"/>
+                    <filter name="group_voucher_type" string="Voucher Type" context="{'group_by': 'voucher_type_id'}"/>
+                    <filter name="group_year" string="Financial Year" context="{'group_by': 'fiscal_year'}"/>
+                    <filter name="group_month" string="Month" context="{'group_by': 'date:month'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_tally_voucher_line_view_list" model="ir.ui.view">
+        <field name="name">om.tally.voucher.line.list</field>
+        <field name="model">om.tally.voucher.line</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="date"/>
+                <field name="voucher_id"/>
+                <field name="ledger_name"/>
+                <field name="debit" sum="Total"/>
+                <field name="credit" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- other masters -->
+    <record id="om_tally_voucher_type_view_list" model="ir.ui.view">
+        <field name="name">om.tally.voucher.type.list</field>
+        <field name="model">om.tally.voucher.type</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="parent_name"/>
+                <field name="base_type"/>
+                <field name="numbering_method" optional="show"/>
+                <field name="is_active" optional="hide"/>
+                <field name="voucher_count"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_cost_centre_view_list" model="ir.ui.view">
+        <field name="name">om.tally.cost.centre.list</field>
+        <field name="model">om.tally.cost.centre</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="category_name"/>
+                <field name="parent_name"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_currency_view_list" model="ir.ui.view">
+        <field name="name">om.tally.currency.list</field>
+        <field name="model">om.tally.currency</field>
+        <field name="arch" type="xml">
+            <list create="0" editable="bottom">
+                <field name="name" readonly="1"/>
+                <field name="formal_name"/>
+                <field name="iso_code"/>
+                <field name="currency_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_unit_view_list" model="ir.ui.view">
+        <field name="name">om.tally.unit.list</field>
+        <field name="model">om.tally.unit</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="formal_name"/>
+                <field name="is_simple"/>
+                <field name="base_unit_name" optional="hide"/>
+                <field name="additional_unit_name" optional="hide"/>
+                <field name="conversion" optional="hide"/>
+                <field name="decimal_places"/>
+                <field name="uqc" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_godown_view_list" model="ir.ui.view">
+        <field name="name">om.tally.godown.list</field>
+        <field name="model">om.tally.godown</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="parent_name"/>
+                <field name="address" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_stock_item_view_list" model="ir.ui.view">
+        <field name="name">om.tally.stock.item.list</field>
+        <field name="model">om.tally.stock.item</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="name"/>
+                <field name="part_number" optional="show"/>
+                <field name="parent_name" string="Stock Group"/>
+                <field name="category_name" optional="show"/>
+                <field name="hsn_code"/>
+                <field name="gst_rate" optional="show"/>
+                <field name="opening_quantity"/>
+                <field name="base_unit_name"/>
+                <field name="opening_value" sum="Total"/>
+                <field name="currency_id" column_invisible="1"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_stock_item_view_form" model="ir.ui.view">
+        <field name="name">om.tally.stock.item.form</field>
+        <field name="model">om.tally.stock.item</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <sheet>
+                    <div class="oe_title"><h1><field name="name" readonly="1"/></h1></div>
+                    <group name="tally">
+                        <group string="Tally">
+                            <field name="stock_group_id"/>
+                            <field name="stock_category_id"/>
+                            <field name="unit_id"/>
+                            <field name="part_number"/>
+                            <field name="hsn_code"/>
+                            <field name="gst_rate"/>
+                            <field name="is_batchwise"/>
+                        </group>
+                        <group string="Opening Stock">
+                            <field name="opening_quantity"/>
+                            <field name="opening_rate"/>
+                            <field name="opening_value"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <field name="opening_ids" readonly="1">
+                        <list>
+                            <field name="godown_name"/>
+                            <field name="batch_name"/>
+                            <field name="quantity" sum="Total"/>
+                            <field name="unit_name"/>
+                            <field name="rate"/>
+                            <field name="value" sum="Total"/>
+                            <field name="currency_id" column_invisible="1"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_tally_mapping_view_list" model="ir.ui.view">
+        <field name="name">om.tally.mapping.list</field>
+        <field name="model">om.tally.mapping</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="tally_type"/>
+                <field name="tally_name"/>
+                <field name="record_ref"/>
+                <field name="tally_guid" optional="hide"/>
+                <field name="alter_id" optional="hide"/>
+                <field name="res_model" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_mapping_view_search" model="ir.ui.view">
+        <field name="name">om.tally.mapping.search</field>
+        <field name="model">om.tally.mapping</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="tally_name"/>
+                <field name="tally_guid"/>
+                <group>
+                    <filter name="group_type" string="Tally Type" context="{'group_by': 'tally_type'}"/>
+                    <filter name="group_model" string="Odoo Model" context="{'group_by': 'res_model'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_tally_problem_view_list" model="ir.ui.view">
+        <field name="name">om.tally.problem.list</field>
+        <field name="model">om.tally.problem</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-danger="level == 'error'" decoration-warning="level == 'warning'"
+                  decoration-muted="level == 'info'">
+                <field name="level"/>
+                <field name="category"/>
+                <field name="message"/>
+                <field name="res_model" column_invisible="1"/>
+                <field name="res_id" column_invisible="1"/>
+                <button name="action_open_record" type="object" icon="open_in_new" title="Open" invisible="not res_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_tally_log_view_list" model="ir.ui.view">
+        <field name="name">om.tally.log.list</field>
+        <field name="model">om.tally.log</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-danger="level == 'error'" decoration-warning="level == 'warning'">
+                <field name="date"/>
+                <field name="import_id"/>
+                <field name="step"/>
+                <field name="level"/>
+                <field name="message"/>
+                <field name="user_id" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- actions -->
+    <record id="om_tally_ledger_action" model="ir.actions.act_window">
+        <field name="name">Ledgers</field>
+        <field name="res_model">om.tally.ledger</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="om_tally_group_action" model="ir.actions.act_window">
+        <field name="name">Groups</field>
+        <field name="res_model">om.tally.group</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="om_tally_voucher_action" model="ir.actions.act_window">
+        <field name="name">Vouchers</field>
+        <field name="res_model">om.tally.voucher</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+    </record>
+    <record id="om_tally_stock_item_action" model="ir.actions.act_window">
+        <field name="name">Stock Items</field>
+        <field name="res_model">om.tally.stock.item</field>
+        <field name="view_mode">list,form</field>
+    </record>
+    <record id="om_tally_mapping_action" model="ir.actions.act_window">
+        <field name="name">Mappings</field>
+        <field name="res_model">om.tally.mapping</field>
+        <field name="view_mode">list</field>
+        <field name="context">{'search_default_group_type': 1}</field>
+    </record>
+    <record id="om_tally_log_action" model="ir.actions.act_window">
+        <field name="name">Log</field>
+        <field name="res_model">om.tally.log</field>
+        <field name="view_mode">list</field>
+    </record>
+</odoo>
