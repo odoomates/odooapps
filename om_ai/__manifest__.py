@@ -1,6 +1,6 @@
 {
     'name': 'AI Engine - Your Own AI Providers',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Productivity',
     'summary': 'AI engine for Odoo with your own provider or a local model: OpenAI compatible APIs, '
                'Claude, Gemini, Azure OpenAI, Mistral, Groq, DeepSeek, OpenRouter, Ollama, LM Studio, '
