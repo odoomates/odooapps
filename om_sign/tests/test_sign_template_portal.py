@@ -134,6 +134,8 @@ class TestSignTemplatePortal(SignTemplateCommon, HttpCase):
     def test_signing_tour(self):
         self.f_text.required = True
         self.f_check.required = True
+        # the date is the day of the signer, whatever the timezone of the browser and of the server
+        self.customer.tz = 'Pacific/Kiritimati'
         sign_request = self.send_template()
         customer, company = sign_request.signer_ids
         self.start_tour(self.url(customer), 'om_sign_signing')
@@ -144,7 +146,7 @@ class TestSignTemplatePortal(SignTemplateCommon, HttpCase):
         self.assertTrue(self.value_of(customer, self.f_check).value_bool)
         self.assertEqual(self.value_of(customer, self.f_company).value_text, 'Acme Corp')
         self.assertEqual(self.value_of(customer, self.f_date).value_text,
-                         fields.Date.to_string(fields.Date.context_today(customer)))
+                         fields.Date.to_string(fields.Date.context_today(customer.with_context(tz=self.customer.tz))))
 
     def test_editor_tour(self):
         template = self.env['sign.template'].create({
