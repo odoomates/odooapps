@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="purchase_order_form_om_3way" model="ir.ui.view">
+        <field name="name">purchase.order.form.om.3way</field>
+        <field name="model">purchase.order</field>
+        <field name="inherit_id" ref="purchase.purchase_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_om_view_bills_to_check" type="object" class="oe_stat_button" icon="warning"
+                        groups="account.group_account_invoice"
+                        invisible="om_bill_exception_count == 0">
+                    <field name="om_bill_exception_count" widget="statinfo" string="Bills to Check"/>
+                </button>
+            </xpath>
+            <xpath expr="//div[@name='receipt_status_on_form']/.." position="after">
+                <label for="om_bill_control" invisible="state != 'purchase'" groups="account.group_account_invoice"/>
+                <div name="om_bill_control_on_form" invisible="state != 'purchase'" groups="account.group_account_invoice">
+                    <field name="om_bill_control" widget="badge"
+                           decoration-success="om_bill_control == 'matched'"
+                           decoration-info="om_bill_control == 'to_bill'"
+                           decoration-warning="om_bill_control == 'waiting'"
+                           decoration-danger="om_bill_control == 'over_billed'"
+                           decoration-muted="om_bill_control == 'nothing'"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

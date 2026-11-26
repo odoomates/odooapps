@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_om_3way" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.3way</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block id="account_vendor_bills" position="after">
+                <block title="3-Way Matching" id="om_3way_settings">
+                    <setting id="om_3way_enabled_setting" company_dependent="1"
+                             help="Match vendor bills with purchase orders and receipts: a bill is released to pay when what is billed is received at the ordered price.">
+                        <field name="om_3way_enabled"/>
+                        <div class="content-group mt-2" invisible="not om_3way_enabled">
+                            <div class="row">
+                                <label for="om_3way_price_tol_percent" class="col-lg-6 o_light_label"/>
+                                <field name="om_3way_price_tol_percent" class="col-lg-4"/>
+                            </div>
+                            <div class="row">
+                                <label for="om_3way_price_tol_amount" class="col-lg-6 o_light_label"/>
+                                <field name="om_3way_price_tol_amount" class="col-lg-4"/>
+                            </div>
+                            <div class="row">
+                                <label for="om_3way_qty_tol_percent" class="col-lg-6 o_light_label"/>
+                                <field name="om_3way_qty_tol_percent" class="col-lg-4"/>
+                            </div>
+                            <div class="text-muted small mt-1">
+                                A bill price may exceed the purchase order price by the larger of the two price tolerances; the amount is per unit.
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="om_3way_ordered_policy_setting" company_dependent="1" invisible="not om_3way_enabled"
+                             string="Products Billed on Ordered Quantities"
+                             help="Products whose control policy is 'On ordered quantities': match the purchase order only, or also wait for the receipt.">
+                        <field name="om_3way_ordered_policy" widget="radio"/>
+                    </setting>
+                    <setting id="om_3way_no_po_policy_setting" company_dependent="1" invisible="not om_3way_enabled"
+                             string="Bills without Purchase Order"
+                             help="Release to pay at once the bills with no line linked to a purchase order, or wait for a manager to release them.">
+                        <field name="om_3way_no_po_policy" widget="radio"/>
+                    </setting>
+                    <setting id="om_3way_payment_policy_setting" company_dependent="1" invisible="not om_3way_enabled"
+                             string="Payment of Bills not Released"
+                             help="When a payment is registered for a bill not released to pay (single or batch payment): allow it, show a warning, or refuse it.">
+                        <field name="om_3way_payment_policy" widget="radio" options="{'horizontal': true}"/>
+                    </setting>
+                    <setting id="om_3way_activity_setting" company_dependent="1" invisible="not om_3way_enabled"
+                             help="Schedule an activity for the purchase representative when a posted bill is in exception.">
+                        <field name="om_3way_activity"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+
+    <record id="res_config_settings_view_form_purchase_om_3way" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.purchase.om.3way</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="purchase.res_config_settings_view_form_purchase"/>
+        <field name="arch" type="xml">
+            <setting id="three_way_matching" position="replace">
+                <setting id="om_3way_purchase_setting" company_dependent="1"
+                         help="Only pay the bills for which the ordered goods are received. Tolerances and payment control in the Accounting settings.">
+                    <field name="om_3way_enabled"/>
+                </setting>
+            </setting>
+        </field>
+    </record>
+</odoo>
