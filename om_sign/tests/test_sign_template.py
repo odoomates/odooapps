@@ -270,6 +270,8 @@ class TestSignTemplate(SignTemplateCommon, TransactionCase):
             customer._sign_fields({self.value_of(customer, self.f_signature).id: SIGNATURE})
 
     def test_simple_signing_page_fills_the_fields(self):
+        # far from UTC, so that the day of the signer differs from the day of the server most of the time
+        self.customer.tz = 'Pacific/Kiritimati'
         sign_request = self.send_template()
         customer, company = sign_request.signer_ids.sudo()
         self.assertFalse(customer._fields_to_fill())
@@ -277,7 +279,8 @@ class TestSignTemplate(SignTemplateCommon, TransactionCase):
         values = {value.field_id: value for value in customer.value_ids}
         self.assertTrue(values[self.f_signature].value_image)
         self.assertEqual(values[self.f_name].value_text, 'Acme Buyer')
-        self.assertEqual(values[self.f_date].value_text, fields.Date.to_string(fields.Date.today()))
+        self.assertEqual(values[self.f_date].value_text,
+                         fields.Date.to_string(fields.Date.context_today(customer.with_context(tz=self.customer.tz))))
         self.assertFalse(values[self.f_text].value_text, 'an optional text is left empty')
         self.assertFalse(values[self.f_check].value_bool)
         company._sign('Clara', SIGNATURE)
