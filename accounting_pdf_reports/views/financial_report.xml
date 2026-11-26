@@ -20,8 +20,9 @@
                         </group>
                     </group>
                     <notebook>
-                        <page string="Report" attrs="{'invisible': [('type', 'not in', ['accounts', 'account_type', 'account_report'])]}">
+                        <page string="Report" attrs="{'invisible': [('type', 'not in', ['accounts', 'account_type', 'account_report', 'earnings'])]}">
                             <group>
+                                <field name="earnings_period" attrs="{'invisible': [('type', '!=', 'earnings')], 'required': [('type', '=', 'earnings')]}"/>
                                 <field name="display_detail" attrs="{'invisible': [('type', 'not in', ['accounts', 'account_type', 'account_report'])]}"/>
                                 <field name="account_report_id" attrs="{'invisible': [('type', '!=', 'account_report')]}"/>
                             </group>
