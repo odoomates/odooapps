@@ -1,4 +1,6 @@
-from odoo import api, models, _, _lt
+from datetime import timedelta
+
+from odoo import api, fields, models, _, _lt
 
 EMPTY = {'debit': 0.0, 'credit': 0.0, 'balance': 0.0}
 
@@ -91,7 +93,8 @@ class OmDynamicReportFinancial(models.AbstractModel):
     def _odr_account_sums(self, options, extra=()):
         """{account id: {'debit', 'credit', 'balance'}} of the period of ``options``: the flows of a
         period at the average rates of their months; the balances at a date at its rate, but for the
-        income and expense in them, at the rates they were earned at (IAS 21). With ``extra``
+        earnings in them, at the rates they were earned at (IAS 21): the income, the expense and the
+        unaffected earnings account that allocates their result (_odr_is_earnings). With ``extra``
         fields, by (account id, their values)."""
         domain = self._odr_domain(options) + self._odr_period_domain(options)
         groupbys = ['account_id', *extra]
@@ -102,7 +105,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
             if self._odr_converts():
                 Account = self.env['account.account'].with_context(active_test=False)
                 earned = [account.id for account in Account.browse({key[0] for key in sums})
-                          if account.internal_group in ('income', 'expense')]
+                          if self._odr_is_earnings(account)]
                 if earned:
                     sums.update(self._odr_grouped_sums(domain + [('account_id', 'in', earned)], groupbys, flow=True))
         return sums if extra else {key[0]: values for key, values in sums.items()}
@@ -114,7 +117,10 @@ class OmDynamicReportFinancial(models.AbstractModel):
         sections = self._odr_root_report()._get_children_by_order()
         account_ids = sections.filtered(lambda s: s.type == 'accounts').account_ids.ids
         types = sections.filtered(lambda s: s.type == 'account_type').account_type_ids.mapped('type')
-        return domain + ['|', ('account_id', 'in', account_ids), ('account_id.account_type', 'in', types)]
+        scope = ['|', ('account_id', 'in', account_ids), ('account_id.account_type', 'in', types)]
+        if 'earnings' in sections.mapped('type'):
+            scope = ['|'] + self._odr_earnings_domain() + scope
+        return domain + scope
 
     @api.model
     def _odr_rates_label(self, options):
@@ -126,9 +132,9 @@ class OmDynamicReportFinancial(models.AbstractModel):
     @api.model
     def _odr_translation_anchor(self, root):
         """The section the currency translation adjustment goes in: the one holding the profit
-        (loss) to report, the equity."""
+        (loss) to report or the unallocated earnings, the equity."""
         for section in root._get_children_by_order():
-            if section.type == 'account_report' and section.parent_id:
+            if section.type in ('account_report', 'earnings') and section.parent_id:
                 return section.parent_id
         return root
 
@@ -144,8 +150,50 @@ class OmDynamicReportFinancial(models.AbstractModel):
         return set()
 
     @api.model
-    def _odr_section_amounts(self, sections, account_sums):
-        """{section id: {'debit', 'credit', 'balance', 'accounts': {account id: sums}}}, unsigned."""
+    def _odr_is_earnings(self, account):
+        """Whether the account holds earnings not allocated yet: the income, the expense and the unaffected
+        earnings account. The unaffected earnings account carries its balance forward
+        (include_initial_balance), so it is named with the income and the expense."""
+        return account.internal_group in ('income', 'expense') or account.account_type == 'equity_unaffected'
+
+    @api.model
+    def _odr_earnings_domain(self):
+        """The journal items of the accounts of _odr_is_earnings."""
+        return ['|', ('account_id.internal_group', 'in', ('income', 'expense')),
+                ('account_id.account_type', '=', 'equity_unaffected')]
+
+    @api.model
+    def _odr_previous_years_options(self, options):
+        """The options of the period at the day before the start of its fiscal year, for the earnings of the
+        previous fiscal years."""
+        start = self._odr_fiscal_year_start(options['date_to'])
+        return {**options, 'date_from': False, 'date_to': fields.Date.to_string(start - timedelta(days=1))}
+
+    @api.model
+    def _odr_earnings_amounts(self, section, account_sums, previous_sums):
+        """The amount of a section of type earnings: the balance of the accounts of the earnings
+        (_odr_is_earnings), the earnings not allocated yet, before the start of the fiscal year (the previous
+        fiscal years) or since (the current one). ``previous_sums`` are the sums before that start; without
+        them (a column another module adds), all the earnings are the current year's."""
+        previous_sums = previous_sums or {}
+        Account = self.env['account.account'].with_context(active_test=False)
+        earnings = {account.id for account in Account.browse(set(account_sums) | set(previous_sums))
+                    if self._odr_is_earnings(account)}
+        before = {key: sum(sums[key] for account_id, sums in previous_sums.items() if account_id in earnings)
+                  for key in EMPTY}
+        if section.earnings_period == 'previous':
+            amounts = before
+        else:
+            amounts = {key: sum(sums[key] for account_id, sums in account_sums.items() if account_id in earnings)
+                       - before[key] for key in EMPTY}
+        # rounded: a sum of amounts in floating point can leave a residue, printed -0.00
+        currency = self._om_currency()
+        return {key: currency.round(amount) for key, amount in amounts.items()}
+
+    @api.model
+    def _odr_section_amounts(self, sections, account_sums, previous_sums=None):
+        """{section id: {'debit', 'credit', 'balance', 'accounts': {account id: sums}}}, unsigned.
+        ``previous_sums``: the sums before the start of the fiscal year, for the earnings sections."""
         result = {}
 
         def compute(section):
@@ -164,6 +212,8 @@ class OmDynamicReportFinancial(models.AbstractModel):
                 source = compute(section.account_report_id)
                 for key in EMPTY:
                     amounts[key] = source[key]
+            elif section.type == 'earnings':
+                amounts.update(self._odr_earnings_amounts(section, account_sums, previous_sums))
             elif section.type == 'sum':
                 for child in section.children_ids:
                     child_amounts = compute(child)
@@ -228,17 +278,28 @@ class OmDynamicReportFinancial(models.AbstractModel):
         period_amounts = []
         translations = []
         flow = self._report_date_mode != 'as_of'
+        # the earnings of the previous fiscal years are the sums before the start of the fiscal year
+        earnings = not flow and 'earnings' in sections.mapped('type')
         for index, (report, period) in enumerate(self._odr_periods(options)):
             account_sums = report._odr_account_sums(period)
+            before = self._odr_previous_years_options(period) if earnings else False
+            previous_sums = report._odr_account_sums(before) if before else None
+            previous_split = {}
             if horizontal:
                 split = report._odr_horizontal_split(options, report._odr_account_sums(period, horizontal))
+                if before:
+                    previous_split = report._odr_horizontal_split(options, report._odr_account_sums(before, horizontal))
             else:
                 split = {'an_%s' % key: report._odr_analytic_sums(period, domain, self._odr_period_domain(period),
                                                                    flow=flow) for key, _label, domain in analytic}
+                if before:
+                    previous_split = {'an_%s' % key: report._odr_analytic_sums(
+                        before, domain, self._odr_period_domain(before), flow=flow) for key, _label, domain in analytic}
             split.update(report._odr_extra_columns(options, index, period, account_sums))
             period_amounts.append({
-                'total': self._odr_section_amounts(sections, account_sums),
-                'columns': {key: self._odr_section_amounts(sections, sums) for key, sums in split.items()},
+                'total': self._odr_section_amounts(sections, account_sums, previous_sums),
+                'columns': {key: self._odr_section_amounts(sections, sums, previous_split.get(key))
+                            for key, sums in split.items()},
             })
             # converted at different rates, the balances no longer add up to zero: what is left is the
             # currency translation adjustment, in the equity
