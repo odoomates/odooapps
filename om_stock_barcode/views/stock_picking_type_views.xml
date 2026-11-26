@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_picking_type_form_om_barcode" model="ir.ui.view">
+        <field name="name">stock.picking.type.form.om.barcode</field>
+        <field name="model">stock.picking.type</field>
+        <field name="inherit_id" ref="stock.view_picking_type_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='second']" position="inside">
+                <group string="Barcode App" name="om_barcode" invisible="code not in ['incoming', 'outgoing', 'internal']">
+                    <field name="om_barcode_require_source" invisible="code == 'incoming'" groups="stock.group_stock_multi_locations"/>
+                    <field name="om_barcode_require_dest" invisible="code == 'outgoing'" groups="stock.group_stock_multi_locations"/>
+                    <field name="om_barcode_require_package" groups="stock.group_tracking_lot"/>
+                    <field name="om_barcode_allow_unplanned"/>
+                </group>
+            </xpath>
+        </field>
+    </record>
+</odoo>
