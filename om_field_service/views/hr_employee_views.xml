@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form_inherit_fs" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.field.service</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_fs_jobs" type="object" class="oe_stat_button" icon="build"
+                    groups="om_field_service.group_fs_user">
+                    <field name="fs_job_count" widget="statinfo" string="Jobs"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_fs_technician_list" model="ir.actions.act_window">
+        <field name="name">Technicians</field>
+        <field name="res_model">hr.employee</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('is_technician', '=', True)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No technician yet</p>
+            <p>Give the Field Technician planning role to the employees who go on site (Planning tab of the employee).</p>
+        </field>
+    </record>
+
+</odoo>

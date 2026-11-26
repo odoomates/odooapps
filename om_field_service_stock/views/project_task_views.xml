@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs_inherit_stock" model="ir.ui.view">
+        <field name="name">project.task.form.field.service.stock</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_form_fs"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_fs_pickings" type="object" class="oe_stat_button" icon="local_shipping"
+                    invisible="not fs_picking_count" groups="stock.group_stock_user">
+                    <field name="fs_picking_count" widget="statinfo" string="Transfers"/>
+                </button>
+            </xpath>
+            <field name="site_equipment" position="before">
+                <field name="commercial_partner_id" invisible="1"/>
+                <field name="equipment_id" context="{'default_partner_id': site_partner_id}"/>
+            </field>
+            <xpath expr="//page[@name='work_done']" position="after">
+                <page name="parts" string="Parts">
+                    <field name="part_ids" readonly="job_state in ('done', 'cancelled')">
+                        <list editable="bottom" decoration-muted="state == 'done'">
+                            <field name="sequence" widget="handle"/>
+                            <field name="product_id" readonly="state == 'done'"/>
+                            <field name="tracking" column_invisible="1"/>
+                            <field name="lot_id" readonly="state == 'done'" invisible="not tracking"
+                                required="tracking" context="{'default_product_id': product_id}"/>
+                            <field name="quantity" readonly="state == 'done' or tracking == 'serial'"/>
+                            <field name="product_uom_id" groups="uom.group_uom" readonly="state == 'done'"/>
+                            <field name="location_id" readonly="state == 'done'" options="{'no_create': True}"/>
+                            <field name="install_on_site" optional="show"/>
+                            <field name="state" widget="badge" decoration-success="state == 'done'"/>
+                        </list>
+                    </field>
+                    <p class="text-muted small">The parts leave their location for the customer when the job is done.</p>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

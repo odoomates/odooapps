@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_groups_privilege_field_service" model="res.groups.privilege">
+        <field name="name">Field Service</field>
+        <field name="sequence">9</field>
+        <field name="category_id" ref="base.module_category_services"/>
+    </record>
+
+    <record id="group_fs_user" model="res.groups">
+        <field name="name">User</field>
+        <field name="comment">Technician: sees the jobs they are assigned to, records travel and work time, the checklist, photos, parts and the customer signature.</field>
+        <field name="sequence">10</field>
+        <field name="implied_ids" eval="[
+            (4, ref('project.group_project_user')),
+            (4, ref('hr_timesheet.group_hr_timesheet_user')),
+            (4, ref('om_planning.group_planning_user')),
+        ]"/>
+        <field name="privilege_id" ref="res_groups_privilege_field_service"/>
+    </record>
+
+    <record id="group_fs_manager" model="res.groups">
+        <field name="name">Manager</field>
+        <field name="comment">Dispatcher: plans every job on the technicians, configures job types and checklists.</field>
+        <field name="sequence">20</field>
+        <field name="implied_ids" eval="[
+            (4, ref('om_field_service.group_fs_user')),
+            (4, ref('project.group_project_manager')),
+            (4, ref('hr_timesheet.group_hr_timesheet_approver')),
+            (4, ref('om_planning.group_planning_manager')),
+        ]"/>
+        <field name="privilege_id" ref="res_groups_privilege_field_service"/>
+        <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+    </record>
+
+</odoo>

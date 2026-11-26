@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_field_service.JobMap">
+        <div class="o_action o_fs_map d-flex flex-column h-100">
+            <div class="o_fs_map_toolbar d-flex flex-wrap align-items-center gap-2 px-3 py-2 border-bottom bg-view">
+                <h4 class="mb-0 me-2">Job Map</h4>
+                <div class="btn-group btn-group-sm">
+                    <t t-foreach="this.periods" t-as="period" t-key="period[0]">
+                        <button type="button" class="btn"
+                            t-att-class="this.state.period === period[0] and !this.jobIds ? 'btn-primary' : 'btn-secondary'"
+                            t-on-click="() => this.setPeriod(period[0])" t-out="period[1]"/>
+                    </t>
+                </div>
+                <select class="form-select form-select-sm w-auto o_fs_map_technician" t-on-change="(ev) => this.setEmployee(ev)">
+                    <option value="">All technicians</option>
+                    <t t-foreach="this.state.technicians" t-as="technician" t-key="technician.id">
+                        <option t-att-value="technician.id" t-att-selected="technician.id === this.state.employeeId"
+                            t-out="technician.name"/>
+                    </t>
+                </select>
+                <a t-if="this.routeUrl" t-att-href="this.routeUrl" target="_blank" rel="noopener"
+                    class="btn btn-sm btn-outline-primary o_fs_map_route">
+                    <i class="oi me-1" data-icon="directions_car"/>Route in Maps
+                </a>
+                <div class="ms-auto d-none d-md-flex flex-wrap gap-2 small">
+                    <t t-foreach="Object.entries(this.colors)" t-as="entry" t-key="entry[0]">
+                        <span t-if="entry[0] !== 'cancelled'" class="d-inline-flex align-items-center gap-1">
+                            <span class="o_fs_map_dot" t-att-style="'background-color: ' + entry[1]"/>
+                            <t t-if="entry[0] === 'new'">New</t>
+                            <t t-elif="entry[0] === 'planned'">Planned</t>
+                            <t t-elif="entry[0] === 'travelling'">Travelling</t>
+                            <t t-elif="entry[0] === 'in_progress'">In progress</t>
+                            <t t-elif="entry[0] === 'waiting_parts'">Waiting for parts</t>
+                            <t t-elif="entry[0] === 'done'">Done</t>
+                        </span>
+                    </t>
+                </div>
+            </div>
+            <div class="d-flex flex-grow-1 overflow-hidden">
+                <div class="o_fs_map_list border-end overflow-auto bg-view d-none d-md-block">
+                    <p t-if="!this.state.jobs.length" class="text-muted p-3 small">No job in this period.</p>
+                    <t t-foreach="this.state.jobs" t-as="job" t-key="job.id">
+                        <div class="o_fs_map_item px-3 py-2 border-bottom"
+                            t-att-class="{ 'o_fs_map_item_active': this.state.selectedId === job.id }"
+                            t-on-click="() => this.focusJob(job)">
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="o_fs_map_dot" t-att-style="'background-color: ' + (this.colors[job.state] or '#714B67')"/>
+                                <span class="fw-bold text-truncate" t-out="job.name"/>
+                            </div>
+                            <div class="small text-muted text-truncate" t-out="job.customer"/>
+                            <div class="small text-muted" t-if="job.start" t-out="this.formatTime(job)"/>
+                            <div class="small text-danger" t-if="!job.lat and !job.lng">No GPS position: not on the map</div>
+                        </div>
+                    </t>
+                </div>
+                <div class="o_fs_map_canvas flex-grow-1" t-ref="this.mapRef"/>
+            </div>
+        </div>
+    </t>
+
+</templates>

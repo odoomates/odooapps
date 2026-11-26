@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_project_view_form_inherit_fs" model="ir.ui.view">
+        <field name="name">project.project.form.inherit.field.service</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='settings']//field[@name='label_tasks']" position="before">
+                <field name="is_field_service"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_fs_project" model="ir.actions.act_window">
+        <field name="name">Field Service Projects</field>
+        <field name="res_model">project.project</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">[('is_field_service', '=', True)]</field>
+        <field name="context">{'default_is_field_service': True, 'default_allow_timesheets': True, 'default_privacy_visibility': 'followers', 'default_label_tasks': 'Jobs'}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a field service project</p>
+            <p>The tasks of a field service project are jobs: one project per team, region or contract type.</p>
+        </field>
+    </record>
+
+</odoo>

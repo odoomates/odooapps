@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="mail_template_fs_on_the_way" model="mail.template">
+            <field name="name">Field Service: Technician on the Way</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">{{ (object.company_id or user.company_id).name or '' }}: your technician is on the way</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_layout_xmlid">mail.mail_notification_light</field>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object.partner_id.name or ''">Brandon Freeman</t>,
+        <br/><br/>
+        <t t-out="ctx.get('om_fs_technician') or 'Your technician'">Marc Demo</t> is on the way to
+        <strong t-out="object.site_address or object.partner_id.contact_address or ''">4557 De Silva St, Fremont</strong>
+        for <strong t-out="object.name or ''">Boiler maintenance</strong>
+        <t t-if="object.job_number">(<t t-out="object.job_number or ''">JOB/00001</t>)</t>.
+        <br/><br/>
+        Thank you,
+        <br/>
+        <t t-out="(object.company_id or user.company_id).name or ''">YourCompany</t>
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+
+        <record id="mail_template_fs_job_report" model="mail.template">
+            <field name="name">Field Service: Job Report</field>
+            <field name="model_id" ref="project.model_project_task"/>
+            <field name="subject">{{ (object.company_id or user.company_id).name or '' }}: report of {{ object.job_number or object.name }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="email_layout_xmlid">mail.mail_notification_light</field>
+            <field name="report_template_ids" eval="[(4, ref('om_field_service.action_report_fs_job'))]"/>
+            <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px;">
+    <p style="margin: 0px; padding: 0px; font-size: 13px;">
+        Hello <t t-out="object.partner_id.name or ''">Brandon Freeman</t>,
+        <br/><br/>
+        Please find attached the report of the job
+        <strong t-out="object.name or ''">Boiler maintenance</strong>
+        <t t-if="object.job_number">(<t t-out="object.job_number or ''">JOB/00001</t>)</t>
+        done at <t t-out="object.site_address or ''">4557 De Silva St, Fremont</t>.
+        <br/><br/>
+        Do not hesitate to contact us if you have any questions.
+        <br/><br/>
+        Thank you,
+        <br/>
+        <t t-out="(object.company_id or user.company_id).name or ''">YourCompany</t>
+    </p>
+</div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+    </data>
+</odoo>

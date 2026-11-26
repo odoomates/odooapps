@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_field_service.Technician">
+        <div class="o_action o_fs_tech h-100 overflow-auto">
+            <div class="o_fs_tech_container mx-auto px-2 py-3">
+                <t t-if="this.state.job" t-call="om_field_service.TechnicianJob"/>
+                <t t-else="" t-call="om_field_service.TechnicianList"/>
+            </div>
+        </div>
+    </t>
+
+    <t t-name="om_field_service.TechnicianList">
+        <div class="d-flex align-items-center gap-2 mb-3">
+            <button type="button" class="btn btn-light" title="Previous day" aria-label="Previous day"
+                t-on-click="() => this.changeDay(-1)">
+                <i class="oi" data-icon="chevron_left"/>
+            </button>
+            <div class="flex-grow-1 text-center">
+                <h3 class="mb-0 o_fs_tech_day" t-out="this.dayLabel"/>
+                <div class="small text-muted">
+                    <t t-out="this.state.jobs.length"/> jobs
+                </div>
+            </div>
+            <button type="button" class="btn btn-light" title="Next day" aria-label="Next day"
+                t-on-click="() => this.changeDay(1)">
+                <i class="oi" data-icon="chevron_right"/>
+            </button>
+        </div>
+        <div t-if="!this.state.jobs.length" class="text-center text-muted py-5">
+            <i class="oi fs-1 d-block mb-2" data-icon="today"/>
+            No job for you on this day.
+            <div class="mt-3">
+                <button type="button" class="btn btn-secondary" t-on-click="() => this.changeDay(0)">Back to today</button>
+            </div>
+        </div>
+        <t t-foreach="this.state.jobs" t-as="job" t-key="job.id">
+            <div class="card mb-2 o_fs_tech_job_card" role="button" t-on-click="() => this.openJob(job.id)">
+                <div class="card-body p-3">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="fw-bold fs-5 o_fs_tech_time" t-out="this.formatPeriod(job)"/>
+                        <span t-if="job.timer" class="badge text-bg-info">
+                            <i class="oi" data-icon="timer"/>
+                            <t t-if="job.timer === 'travel'"> On the way</t>
+                            <t t-else=""> Working</t>
+                        </span>
+                        <span class="badge ms-auto" t-att-class="this.stateClasses[job.state]" t-out="job.state_label"/>
+                    </div>
+                    <div class="fw-bold" t-out="job.name"/>
+                    <div class="text-muted"><t t-out="job.customer"/><t t-if="job.site and job.site !== job.customer"> - <t t-out="job.site"/></t></div>
+                    <div class="small text-muted d-flex gap-1 align-items-baseline" t-if="job.address">
+                        <i class="oi" data-icon="location_on"/>
+                        <span t-out="job.address"/>
+                    </div>
+                    <div class="small text-muted mt-1">
+                        <span t-out="job.number"/>
+                        <t t-if="job.job_type"> - <t t-out="job.job_type"/></t>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </t>
+
+    <t t-name="om_field_service.TechnicianJob">
+        <t t-set="job" t-value="this.state.job"/>
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <button type="button" class="btn btn-light o_fs_tech_back" t-on-click="() => this.back()">
+                <i class="oi" data-icon="arrow_back"/> My Day
+            </button>
+            <span class="badge ms-auto fs-6" t-att-class="this.stateClasses[job.state]" t-out="job.state_label"/>
+            <button type="button" class="btn btn-link px-1" title="Open the form" aria-label="Open the form"
+                t-on-click="() => this.openForm()">
+                <i class="oi" data-icon="open_in_new"/>
+            </button>
+        </div>
+        <div class="mb-3">
+            <div class="small text-muted"><t t-out="job.number"/><t t-if="job.job_type"> - <t t-out="job.job_type"/></t></div>
+            <h3 class="mb-0" t-out="job.name"/>
+            <div class="text-muted" t-out="this.formatPeriod(job)"/>
+        </div>
+
+        <!-- site -->
+        <div class="card mb-3 o_fs_tech_site">
+            <div class="card-body p-3">
+                <div class="fw-bold" t-out="job.customer"/>
+                <div t-if="job.contact" t-out="job.contact"/>
+                <div class="text-muted d-flex gap-1 align-items-baseline mb-2" t-if="job.address">
+                    <i class="oi" data-icon="location_on"/>
+                    <span t-out="job.address"/>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <a t-if="job.nav.geo" t-att-href="job.nav.geo" class="btn btn-primary o_fs_tech_navigate">
+                        <i class="oi" data-icon="near_me"/> Navigate
+                    </a>
+                    <a t-if="job.nav.google" t-att-href="job.nav.google" target="_blank" rel="noopener" class="btn btn-secondary">Google</a>
+                    <a t-if="job.nav.apple" t-att-href="job.nav.apple" target="_blank" rel="noopener" class="btn btn-secondary">Apple</a>
+                    <a t-if="job.nav.osm" t-att-href="job.nav.osm" target="_blank" rel="noopener" class="btn btn-secondary">OSM</a>
+                    <a t-if="job.phone" t-att-href="'tel:' + job.phone" class="btn btn-secondary">
+                        <i class="oi" data-icon="phone"/> Call
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- time -->
+        <div class="card mb-3 o_fs_tech_timer">
+            <div class="card-body p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <div>
+                        <div class="small text-muted">
+                            <t t-if="job.timer === 'travel'">On the way since <t t-out="this.formatTime(job.timer_start)"/></t>
+                            <t t-elif="job.timer === 'work'">Working since <t t-out="this.formatTime(job.timer_start)"/></t>
+                            <t t-else="">Timer stopped</t>
+                        </div>
+                        <div class="fs-2 fw-bold font-monospace o_fs_tech_clock" t-if="job.timer" t-out="this.timerLabel"/>
+                    </div>
+                    <div class="ms-auto text-end small text-muted">
+                        <div>Travel <strong t-out="this.formatHours(job.travel_hours)"/></div>
+                        <div>Work <strong t-out="this.formatHours(job.work_hours)"/></div>
+                    </div>
+                </div>
+                <div t-if="!job.closed" class="d-grid gap-2 o_fs_tech_timer_buttons">
+                    <t t-if="!job.timer">
+                        <button t-if="job.can_travel and ['new', 'planned', 'waiting_parts'].includes(job.state)" type="button"
+                            class="btn btn-lg btn-info o_fs_start_travel" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.doAction('start_travel')">
+                            <i class="oi" data-icon="directions_car"/> Start Travel
+                        </button>
+                        <button type="button" class="btn btn-lg btn-primary o_fs_start_work" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.doAction('start_work')">
+                            <i class="oi" data-icon="play_arrow"/>
+                            <t t-if="job.state === 'in_progress'"> Resume Work</t>
+                            <t t-else=""> Start Work</t>
+                        </button>
+                    </t>
+                    <t t-elif="job.timer === 'travel'">
+                        <button type="button" class="btn btn-lg btn-primary o_fs_start_work" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.doAction('start_work')">
+                            <i class="oi" data-icon="play_arrow"/> Arrived: Start Work
+                        </button>
+                        <button type="button" class="btn btn-secondary o_fs_stop" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.doAction('stop_work')">
+                            <i class="oi" data-icon="stop"/> Stop
+                        </button>
+                    </t>
+                    <div t-else="" class="d-flex gap-2">
+                        <button type="button" class="btn btn-lg btn-warning flex-grow-1 o_fs_pause" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.doAction('pause_work')">
+                            <i class="oi" data-icon="pause"/> Pause
+                        </button>
+                        <button type="button" class="btn btn-lg btn-secondary flex-grow-1 o_fs_stop" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.doAction('stop_work')">
+                            <i class="oi" data-icon="stop"/> Stop
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- what to do -->
+        <div class="card mb-3" t-if="job.description or job.instructions or job.equipment">
+            <div class="card-body p-3">
+                <div t-if="job.description" class="mb-2" style="white-space: pre-line;" t-out="job.description"/>
+                <div t-if="job.equipment" class="mb-2">
+                    <div class="small text-muted">Equipment</div>
+                    <div style="white-space: pre-line;" t-out="job.equipment"/>
+                </div>
+                <div t-if="job.instructions" class="alert alert-info mb-0 small" style="white-space: pre-line;" t-out="job.instructions"/>
+            </div>
+        </div>
+
+        <!-- checklist -->
+        <div class="card mb-3 o_fs_tech_checklist" t-if="job.checklist.length">
+            <div class="card-header d-flex align-items-center">
+                <strong>Checklist</strong>
+                <span class="ms-auto small text-muted"><t t-out="this.checklistDone"/> / <t t-out="job.checklist.length"/></span>
+            </div>
+            <ul class="list-group list-group-flush">
+                <t t-foreach="job.checklist" t-as="line" t-key="line.id">
+                    <li class="list-group-item py-2">
+                        <div t-if="line.type === 'check'" class="form-check form-switch m-0 d-flex align-items-center gap-2">
+                            <input class="form-check-input o_fs_check" type="checkbox" role="switch" t-att-id="'fs_check_' + line.id"
+                                t-att-checked="line.check" t-att-disabled="job.closed" t-on-change="() => this.onToggleCheck(line)"/>
+                            <label class="form-check-label flex-grow-1" t-att-for="'fs_check_' + line.id">
+                                <t t-out="line.name"/><span t-if="line.required" class="text-danger"> *</span>
+                            </label>
+                        </div>
+                        <t t-else="">
+                            <label class="form-label mb-1" t-att-for="'fs_value_' + line.id">
+                                <t t-out="line.name"/><span t-if="line.required" class="text-danger"> *</span>
+                            </label>
+                            <div class="input-group">
+                                <input t-if="line.type === 'number'" type="number" inputmode="decimal" step="any"
+                                    class="form-control o_fs_number" t-att-id="'fs_value_' + line.id"
+                                    t-att-value="line.number" t-att-disabled="job.closed"
+                                    t-on-change="(ev) => this.onChangeNumber(line, ev)"/>
+                                <input t-else="" type="text" class="form-control o_fs_text" t-att-id="'fs_value_' + line.id"
+                                    t-att-value="line.text" t-att-disabled="job.closed"
+                                    t-on-change="(ev) => this.onChangeText(line, ev)"/>
+                                <span t-if="line.uom" class="input-group-text" t-out="line.uom"/>
+                            </div>
+                        </t>
+                    </li>
+                </t>
+            </ul>
+        </div>
+
+        <!-- notes -->
+        <div class="card mb-3">
+            <div class="card-header"><strong>Work Done</strong></div>
+            <div class="card-body p-2">
+                <textarea class="form-control o_fs_notes" rows="4" placeholder="What you did, for the report"
+                    t-att-disabled="job.closed" t-att-value="this.state.notes"
+                    t-on-input="(ev) => this.onNotesInput(ev)" t-on-blur="() => this.saveNotes()"/>
+            </div>
+        </div>
+
+        <!-- photos -->
+        <div class="card mb-3 o_fs_tech_photos">
+            <div class="card-header d-flex align-items-center">
+                <strong>Photos</strong>
+                <label t-if="!job.closed" class="btn btn-sm btn-primary ms-auto mb-0 o_fs_add_photo">
+                    <i class="oi" data-icon="photo_camera"/> Add Photo
+                    <input type="file" accept="image/*" capture="environment" multiple="multiple" class="d-none"
+                        t-on-change="(ev) => this.onPhotoSelected(ev)"/>
+                </label>
+            </div>
+            <div class="card-body p-2">
+                <p t-if="!job.photos.length" class="text-muted small mb-0">No photo yet.</p>
+                <div class="row g-2">
+                    <t t-foreach="job.photos" t-as="photo" t-key="photo.id">
+                        <div class="col-4 position-relative">
+                            <img t-att-src="this.photoUrl(photo)" class="img-fluid rounded w-100 o_fs_photo" t-att-alt="photo.name"/>
+                            <button t-if="!job.closed" type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-1 p-0 px-1"
+                                title="Remove" aria-label="Remove" t-on-click="() => this.removePhoto(photo)">
+                                <i class="oi" data-icon="close"/>
+                            </button>
+                        </div>
+                    </t>
+                </div>
+            </div>
+        </div>
+
+        <div name="extra_sections"/>
+
+        <!-- signature -->
+        <div class="card mb-3 o_fs_tech_signature">
+            <div class="card-header d-flex align-items-center">
+                <strong>Customer Signature</strong>
+                <span t-if="job.signature_required and !job.signed" class="ms-auto small text-danger">Required</span>
+            </div>
+            <div class="card-body p-2">
+                <t t-if="job.signed">
+                    <img t-att-src="this.signatureUrl" class="img-fluid border rounded bg-white o_fs_signature_img" alt="Signature"/>
+                    <div class="small text-muted mt-1">Signed by <t t-out="job.signed_by"/>, <t t-out="this.formatTime(job.signed_on)"/></div>
+                </t>
+                <button t-if="!job.closed" type="button" class="btn w-100 o_fs_sign"
+                    t-att-class="job.signed ? 'btn-light mt-2' : 'btn-secondary btn-lg'"
+                    t-on-click="() => this.openSignature()">
+                    <i class="oi" data-icon="edit_square"/>
+                    <t t-if="job.signed"> Sign Again</t>
+                    <t t-else=""> Customer Signs Here</t>
+                </button>
+            </div>
+        </div>
+
+        <!-- end -->
+        <div class="d-grid gap-2 mb-5 o_fs_tech_end">
+            <t t-if="!job.closed">
+                <button type="button" class="btn btn-lg btn-success o_fs_done" t-att-disabled="this.state.busy"
+                    t-on-click="() => this.doAction('done')">
+                    <i class="oi" data-icon="check_circle"/> Mark as Done
+                </button>
+                <button t-if="job.state !== 'waiting_parts'" type="button" class="btn btn-outline-danger o_fs_waiting"
+                    t-att-disabled="this.state.busy" t-on-click="() => this.doAction('waiting_parts')">
+                    <i class="oi" data-icon="hourglass_top"/> Waiting for Parts
+                </button>
+            </t>
+            <t t-elif="job.state === 'done'">
+                <a t-att-href="this.reportUrl" target="_blank" class="btn btn-lg btn-primary o_fs_report">
+                    <i class="oi" data-icon="picture_as_pdf"/> Job Report
+                </a>
+                <button t-if="job.email" type="button" class="btn btn-secondary o_fs_send_report"
+                    t-att-disabled="this.state.busy" t-on-click="() => this.sendReport()">
+                    <i class="oi" data-icon="send"/> Email the Report Again
+                </button>
+            </t>
+        </div>
+    </t>
+
+</templates>

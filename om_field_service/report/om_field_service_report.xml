@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_fs_job_document">
+        <t t-call="web.external_layout">
+            <t t-set="doc" t-value="doc.with_context(lang=doc.partner_id.lang)"/>
+            <div class="page o_fs_job_report">
+                <h2 class="mt-2">
+                    <span>Job Report</span>
+                    <span t-if="doc.job_number" t-field="doc.job_number">JOB/00001</span>
+                </h2>
+                <h4 t-field="doc.name">Boiler maintenance</h4>
+
+                <div class="row mt-3 mb-3" id="informations">
+                    <div class="col-4" t-if="doc.site_partner_id">
+                        <strong>Site</strong>
+                        <div t-field="doc.site_partner_id" t-options="{'widget': 'contact', 'fields': ['name', 'address'], 'no_marker': True}"/>
+                    </div>
+                    <div class="col-4">
+                        <div t-if="doc.partner_id"><strong>Customer: </strong><span t-field="doc.partner_id"/></div>
+                        <div t-if="doc.job_type_id"><strong>Type: </strong><span t-field="doc.job_type_id"/></div>
+                        <div t-if="doc.technician_ids"><strong>Technicians: </strong><span t-out="', '.join(doc.technician_ids.mapped('name'))"/></div>
+                        <div t-if="doc.planned_start"><strong>Planned: </strong><span t-field="doc.planned_start"/></div>
+                        <div t-if="doc.date_done"><strong>Done: </strong><span t-field="doc.date_done"/></div>
+                    </div>
+                    <div class="col-4" t-if="doc.site_equipment">
+                        <strong>Equipment</strong>
+                        <div t-field="doc.site_equipment"/>
+                    </div>
+                </div>
+
+                <div t-if="doc.work_summary" class="mb-3" name="work_done">
+                    <h5>Work Done</h5>
+                    <div t-field="doc.work_summary"/>
+                </div>
+
+                <div t-if="doc.checklist_line_ids" class="mb-3" name="checklist">
+                    <h5>Checklist</h5>
+                    <table class="table table-sm o_main_table">
+                        <thead>
+                            <tr>
+                                <th class="text-start">Item</th>
+                                <th class="text-end">Result</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="doc.checklist_line_ids" t-as="line">
+                                <td><span t-field="line.name"/></td>
+                                <td class="text-end"><span t-out="line._fs_display_value()"/></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <t t-set="timesheets" t-value="doc.sudo().timesheet_ids.sorted('date')"/>
+                <div t-if="timesheets" class="mb-3" name="time">
+                    <h5>Time</h5>
+                    <table class="table table-sm o_main_table">
+                        <thead>
+                            <tr>
+                                <th class="text-start">Date</th>
+                                <th class="text-start">Technician</th>
+                                <th class="text-start">Description</th>
+                                <th class="text-end">Duration</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr t-foreach="timesheets" t-as="line">
+                                <td><span t-field="line.date"/></td>
+                                <td><span t-field="line.employee_id"/></td>
+                                <td><span t-field="line.name"/></td>
+                                <td class="text-end"><span t-field="line.unit_amount" t-options="{'widget': 'float_time'}"/></td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total</strong></td>
+                                <td class="text-end"><strong t-out="sum(timesheets.mapped('unit_amount'))" t-options="{'widget': 'float_time'}"/></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <div name="parts"/>
+
+                <div t-if="doc.photo_ids" class="mb-3" name="photos" style="page-break-inside: avoid;">
+                    <h5>Photos</h5>
+                    <t t-foreach="doc.sudo().photo_ids" t-as="photo">
+                        <img t-att-src="image_data_uri(photo.raw)" style="max-height: 140px; max-width: 200px; margin: 0 8px 8px 0;" alt="Photo"/>
+                    </t>
+                </div>
+
+                <div t-if="doc.customer_signature" class="mt-4" name="signature" style="page-break-inside: avoid;">
+                    <h5>Customer Signature</h5>
+                    <img t-att-src="image_data_uri(doc.customer_signature)" style="max-height: 120px; max-width: 320px;" alt="Signature"/>
+                    <div>
+                        <span t-field="doc.signed_by"/>
+                        <span t-if="doc.signed_on">- <span t-field="doc.signed_on"/></span>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_fs_job">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="doc">
+                <t t-call="om_field_service.report_fs_job_document" t-lang="doc.partner_id.lang"/>
+            </t>
+        </t>
+    </template>
+
+    <record id="action_report_fs_job" model="ir.actions.report">
+        <field name="name">Job Report</field>
+        <field name="model">project.task</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_field_service.report_fs_job</field>
+        <field name="print_report_name">'Job Report - %s' % (object.job_number or object.name)</field>
+        <field name="binding_model_id" ref="project.model_project_task"/>
+        <field name="binding_type">report</field>
+        <field name="group_ids" eval="[(4, ref('om_field_service.group_fs_user'))]"/>
+    </record>
+
+</odoo>

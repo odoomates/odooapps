@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="product_fs_hour" model="product.product">
+            <field name="name">Field Service (Hour)</field>
+            <field name="default_code">FS-HOUR</field>
+            <field name="type">service</field>
+            <field name="list_price">85.0</field>
+            <field name="uom_id" ref="uom.product_uom_hour"/>
+            <field name="service_policy">delivered_timesheet</field>
+            <field name="service_tracking">no</field>
+            <field name="categ_id" eval="ref('product.product_category_services', raise_if_not_found=False)"/>
+        </record>
+
+        <record id="om_field_service.project_field_service" model="project.project">
+            <field name="allow_billable" eval="True"/>
+        </record>
+    </data>
+</odoo>

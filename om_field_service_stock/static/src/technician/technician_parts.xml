@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_field_service_stock.TechnicianJob" t-inherit="om_field_service.TechnicianJob" t-inherit-mode="extension">
+        <xpath expr="//div[@name='extra_sections']" position="inside">
+            <div t-if="job.extra.stock" class="card mb-3 o_fs_tech_parts">
+                <div class="card-header d-flex align-items-center">
+                    <div>
+                        <strong>Parts</strong>
+                        <div class="small text-muted">From <t t-out="job.extra.part_location"/></div>
+                    </div>
+                    <button t-if="!job.closed and !this.parts.adding" type="button" class="btn btn-sm btn-primary ms-auto o_fs_add_part"
+                        t-on-click="() => this.openPartForm()">
+                        <i class="oi" data-icon="add"/> Add Part
+                    </button>
+                </div>
+                <ul class="list-group list-group-flush" t-if="job.extra.parts.length">
+                    <t t-foreach="job.extra.parts" t-as="part" t-key="part.id">
+                        <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                            <div class="flex-grow-1">
+                                <div t-out="part.product"/>
+                                <div class="small text-muted">
+                                    <t t-out="part.quantity"/> <t t-out="part.uom"/>
+                                    <t t-if="part.lot"> - <t t-out="part.lot"/></t>
+                                </div>
+                            </div>
+                            <span t-if="part.done" class="badge text-bg-success">Done</span>
+                            <button t-elif="!job.closed" type="button" class="btn btn-sm btn-light" title="Remove" aria-label="Remove"
+                                t-on-click="() => this.removePart(part)">
+                                <i class="oi" data-icon="delete"/>
+                            </button>
+                        </li>
+                    </t>
+                </ul>
+                <div t-if="!job.extra.parts.length and !this.parts.adding" class="card-body p-2 small text-muted">No part used.</div>
+                <div t-if="this.parts.adding" class="card-body p-2 border-top o_fs_part_form">
+                    <t t-if="!this.parts.product">
+                        <input type="search" class="form-control mb-2 o_fs_part_search" placeholder="Search a product or scan its barcode"
+                            t-att-value="this.parts.query" t-on-input="(ev) => this.searchParts(ev)"/>
+                        <div class="list-group mb-2">
+                            <t t-foreach="this.parts.products" t-as="product" t-key="product.id">
+                                <button type="button" class="list-group-item list-group-item-action d-flex align-items-center o_fs_part_product"
+                                    t-on-click="() => this.selectPart(product)">
+                                    <span class="flex-grow-1 text-start" t-out="product.name"/>
+                                    <span class="badge" t-att-class="product.available > 0 ? 'text-bg-success' : 'text-bg-light border'">
+                                        <t t-out="product.available"/> <t t-out="product.uom"/>
+                                    </span>
+                                </button>
+                            </t>
+                        </div>
+                    </t>
+                    <t t-else="">
+                        <div class="fw-bold mb-2" t-out="this.parts.product.name"/>
+                        <div t-if="this.parts.product.tracking" class="mb-2">
+                            <label class="form-label small mb-1">Lot/Serial Number</label>
+                            <select class="form-select o_fs_part_lot" t-on-change="(ev) => (this.parts.lotId = ev.target.value)">
+                                <option value="">Choose...</option>
+                                <t t-foreach="this.parts.lots" t-as="lot" t-key="lot.id">
+                                    <option t-att-value="lot.id" t-att-selected="lot.id == this.parts.lotId" t-out="lot.name"/>
+                                </t>
+                            </select>
+                            <div t-if="!this.parts.lots.length" class="small text-danger mt-1">None in stock here.</div>
+                        </div>
+                        <div t-if="this.parts.product.tracking !== 'serial'" class="mb-2">
+                            <label class="form-label small mb-1">Quantity</label>
+                            <input type="number" inputmode="decimal" min="0" step="any" class="form-control o_fs_part_qty"
+                                t-att-value="this.parts.quantity" t-on-change="(ev) => (this.parts.quantity = ev.target.value)"/>
+                        </div>
+                        <button type="button" class="btn btn-primary w-100 mb-2 o_fs_part_confirm" t-att-disabled="this.state.busy"
+                            t-on-click="() => this.addPart()">Add</button>
+                    </t>
+                    <button type="button" class="btn btn-light w-100" t-on-click="() => this.closePartForm()">Cancel</button>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

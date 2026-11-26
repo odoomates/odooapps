@@ -1,0 +1,268 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- technicians -->
+    <record id="base.user_demo" model="res.users">
+        <field name="group_ids" eval="[(4, ref('om_field_service.group_fs_user'))]"/>
+    </record>
+
+    <record id="hr_department_fs_north" model="hr.department">
+        <field name="name">Field Team North</field>
+    </record>
+    <record id="hr_department_fs_south" model="hr.department">
+        <field name="name">Field Team South</field>
+    </record>
+
+    <record id="partner_fs_depot" model="res.partner">
+        <field name="name">Service Depot</field>
+        <field name="is_company" eval="True"/>
+        <field name="street">1200 Folsom Street</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94103</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7726</field>
+        <field name="partner_longitude">-122.4108</field>
+    </record>
+
+    <record id="hr.employee_qdp" model="hr.employee">
+        <field name="planning_role_ids" eval="[(4, ref('planning_role_technician'))]"/>
+        <field name="department_id" ref="hr_department_fs_north"/>
+        <field name="address_id" ref="partner_fs_depot"/>
+    </record>
+    <record id="hr.employee_al" model="hr.employee">
+        <field name="planning_role_ids" eval="[(4, ref('planning_role_technician'))]"/>
+        <field name="department_id" ref="hr_department_fs_north"/>
+        <field name="address_id" ref="partner_fs_depot"/>
+    </record>
+    <record id="hr.employee_jog" model="hr.employee">
+        <field name="planning_role_ids" eval="[(4, ref('planning_role_technician'))]"/>
+        <field name="department_id" ref="hr_department_fs_south"/>
+        <field name="address_id" ref="partner_fs_depot"/>
+    </record>
+    <record id="hr.employee_lur" model="hr.employee">
+        <field name="planning_role_ids" eval="[(4, ref('planning_role_technician'))]"/>
+        <field name="department_id" ref="hr_department_fs_south"/>
+        <field name="address_id" ref="partner_fs_depot"/>
+    </record>
+
+    <!-- customers and their sites -->
+    <record id="partner_fs_bayview" model="res.partner">
+        <field name="name">Bayview Dental Clinic</field>
+        <field name="is_company" eval="True"/>
+        <field name="email">bayview.dental@example.com</field>
+        <field name="phone">+1 415-555-0141</field>
+        <field name="street">2350 Third Street</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94107</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7604</field>
+        <field name="partner_longitude">-122.3889</field>
+    </record>
+    <record id="partner_fs_harbor" model="res.partner">
+        <field name="name">Harbor Cafe</field>
+        <field name="is_company" eval="True"/>
+        <field name="email">harbor.cafe@example.com</field>
+        <field name="phone">+1 415-555-0172</field>
+        <field name="street">520 Embarcadero</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94111</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7955</field>
+        <field name="partner_longitude">-122.3937</field>
+    </record>
+    <record id="partner_fs_sunset" model="res.partner">
+        <field name="name">Sunset Apartments</field>
+        <field name="is_company" eval="True"/>
+        <field name="email">sunset.apartments@example.com</field>
+        <field name="phone">+1 415-555-0118</field>
+        <field name="street">1840 Irving Street</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94122</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7637</field>
+        <field name="partner_longitude">-122.4787</field>
+    </record>
+    <record id="partner_fs_sunset_b" model="res.partner">
+        <field name="name">Building B</field>
+        <field name="type">delivery</field>
+        <field name="parent_id" ref="partner_fs_sunset"/>
+        <field name="street">1868 Irving Street</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94122</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7636</field>
+        <field name="partner_longitude">-122.4796</field>
+    </record>
+    <record id="partner_fs_mission" model="res.partner">
+        <field name="name">Mission Street Bakery</field>
+        <field name="is_company" eval="True"/>
+        <field name="email">mission.bakery@example.com</field>
+        <field name="phone">+1 415-555-0190</field>
+        <field name="street">2690 Mission Street</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94110</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7539</field>
+        <field name="partner_longitude">-122.4186</field>
+    </record>
+    <record id="partner_fs_hills" model="res.partner">
+        <field name="name">Pacific Heights Fitness</field>
+        <field name="is_company" eval="True"/>
+        <field name="email">ph.fitness@example.com</field>
+        <field name="phone">+1 415-555-0133</field>
+        <field name="street">2100 Fillmore Street</field>
+        <field name="city">San Francisco</field>
+        <field name="zip">94115</field>
+        <field name="state_id" ref="base.state_us_5"/>
+        <field name="country_id" ref="base.us"/>
+        <field name="partner_latitude">37.7895</field>
+        <field name="partner_longitude">-122.4335</field>
+    </record>
+
+    <!-- job types -->
+    <record id="job_type_maintenance" model="om.fs.job.type">
+        <field name="name">Yearly Boiler Maintenance</field>
+        <field name="sequence">1</field>
+        <field name="color">4</field>
+        <field name="default_duration">1.5</field>
+        <field name="signature_required" eval="True"/>
+        <field name="checklist_required" eval="True"/>
+        <field name="description">Take the flue gas analyser and the spare gaskets. Switch the boiler off before opening it.</field>
+    </record>
+    <record id="job_type_maintenance_c1" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_maintenance"/>
+        <field name="sequence">1</field>
+        <field name="name">Burner cleaned</field>
+        <field name="check_type">check</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="job_type_maintenance_c2" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_maintenance"/>
+        <field name="sequence">2</field>
+        <field name="name">Water pressure</field>
+        <field name="check_type">number</field>
+        <field name="uom_label">bar</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="job_type_maintenance_c3" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_maintenance"/>
+        <field name="sequence">3</field>
+        <field name="name">Flue gas CO</field>
+        <field name="check_type">number</field>
+        <field name="uom_label">ppm</field>
+    </record>
+    <record id="job_type_maintenance_c4" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_maintenance"/>
+        <field name="sequence">4</field>
+        <field name="name">Safety valve tested</field>
+        <field name="check_type">check</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="job_type_maintenance_c5" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_maintenance"/>
+        <field name="sequence">5</field>
+        <field name="name">Remarks for the customer</field>
+        <field name="check_type">text</field>
+    </record>
+
+    <record id="job_type_repair" model="om.fs.job.type">
+        <field name="name">Repair</field>
+        <field name="sequence">2</field>
+        <field name="color">1</field>
+        <field name="default_duration">2</field>
+    </record>
+    <record id="job_type_repair_c1" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="sequence">1</field>
+        <field name="name">Cause of the failure</field>
+        <field name="check_type">text</field>
+        <field name="required" eval="True"/>
+    </record>
+    <record id="job_type_repair_c2" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="sequence">2</field>
+        <field name="name">Tested after repair</field>
+        <field name="check_type">check</field>
+        <field name="required" eval="True"/>
+    </record>
+
+    <record id="job_type_installation" model="om.fs.job.type">
+        <field name="name">Installation</field>
+        <field name="sequence">3</field>
+        <field name="color">10</field>
+        <field name="default_duration">3</field>
+        <field name="signature_required" eval="True"/>
+    </record>
+    <record id="job_type_installation_c1" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_installation"/>
+        <field name="sequence">1</field>
+        <field name="name">Old unit removed</field>
+        <field name="check_type">check</field>
+    </record>
+    <record id="job_type_installation_c2" model="om.fs.job.type.check">
+        <field name="job_type_id" ref="job_type_installation"/>
+        <field name="sequence">2</field>
+        <field name="name">Customer shown how to use it</field>
+        <field name="check_type">check</field>
+        <field name="required" eval="True"/>
+    </record>
+
+    <!-- jobs -->
+    <record id="job_bayview" model="project.task">
+        <field name="name">Boiler yearly maintenance</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_bayview"/>
+        <field name="job_type_id" ref="job_type_maintenance"/>
+        <field name="site_equipment">Wall-hung gas boiler, basement plant room, serial WB-24-88213</field>
+        <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_qdp')])]"/>
+        <field name="description" type="html"><p>Yearly maintenance under the service contract. Ask for the key at the reception.</p></field>
+    </record>
+    <record id="job_harbor" model="project.task">
+        <field name="name">Espresso machine leaking</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_harbor"/>
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="priority">2</field>
+        <field name="site_equipment">Two-group espresso machine behind the bar</field>
+        <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_qdp')])]"/>
+        <field name="description" type="html"><p>Water leaks under the machine since this morning.</p></field>
+    </record>
+    <record id="job_sunset" model="project.task">
+        <field name="name">Heat pump installation</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_sunset"/>
+        <field name="site_partner_id" ref="partner_fs_sunset_b"/>
+        <field name="job_type_id" ref="job_type_installation"/>
+        <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_jog'), ref('hr.employee_lur')])]"/>
+    </record>
+    <record id="job_mission" model="project.task">
+        <field name="name">Oven not heating</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_mission"/>
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="priority">3</field>
+        <field name="site_equipment">Deck oven, three decks</field>
+    </record>
+    <record id="job_hills" model="project.task">
+        <field name="name">Boiler yearly maintenance</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_hills"/>
+        <field name="job_type_id" ref="job_type_maintenance"/>
+    </record>
+    <record id="job_bayview_old" model="project.task">
+        <field name="name">Radiator valve replacement</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_bayview"/>
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_al')])]"/>
+    </record>
+
+    <function model="project.task" name="_fs_demo_plan"/>
+
+</odoo>

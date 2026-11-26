@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_fs_van_replenish_view_form" model="ir.ui.view">
+        <field name="name">om.fs.van.replenish.form</field>
+        <field name="model">om.fs.van.replenish</field>
+        <field name="arch" type="xml">
+            <form string="Replenish the Van">
+                <group>
+                    <group>
+                        <field name="employee_id" readonly="1"/>
+                        <field name="van_location_id"/>
+                    </group>
+                    <group>
+                        <field name="source_location_id" options="{'no_create': True}"/>
+                        <label for="days"/>
+                        <div class="o_row">
+                            <field name="days" class="oe_inline"/> days
+                        </div>
+                    </group>
+                </group>
+                <field name="line_ids">
+                    <list editable="bottom">
+                        <field name="product_id"/>
+                        <field name="quantity"/>
+                        <field name="product_uom_id" groups="uom.group_uom"/>
+                    </list>
+                </field>
+                <footer>
+                    <button name="action_confirm" type="object" string="Create Transfer" class="btn-primary" data-hotkey="q"/>
+                    <button special="cancel" string="Cancel" class="btn-secondary" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
