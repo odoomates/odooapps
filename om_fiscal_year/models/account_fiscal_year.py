@@ -188,6 +188,10 @@ class AccountFiscalYear(models.Model):
         for fy in self:
             if fy.state != 'closed':
                 continue
+            lock_date = fy.company_id.fiscalyear_lock_date
+            if fy.closing_move_id.state == 'posted' and lock_date and fy.closing_move_id.date <= lock_date:
+                raise UserError(_('The closing entry of %s is in a locked period: lower the lock date first.',
+                                  fy.name))
             if fy.closing_move_id.state == 'posted':
                 fy.closing_move_id._reverse_moves(default_values_list=[{
                     'date': fy.closing_move_id.date,
