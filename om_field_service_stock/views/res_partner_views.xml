@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_partner_view_form_inherit_fs_stock" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.field.service.stock</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_fs_equipment" type="object" class="oe_stat_button" icon="inventory_2"
+                    groups="om_field_service.group_fs_user" invisible="not fs_equipment_count">
+                    <field name="fs_equipment_count" widget="statinfo" string="Equipment"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

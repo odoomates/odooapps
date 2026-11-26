@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form_inherit_fs_stock" model="ir.ui.view">
+        <field name="name">hr.employee.form.inherit.field.service.stock</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_van_stock" type="object" class="oe_stat_button" icon="local_shipping"
+                    invisible="not van_location_id" groups="om_field_service.group_fs_manager">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Van Stock</span>
+                    </div>
+                </button>
+            </xpath>
+            <xpath expr="//group[@name='work_location']" position="inside">
+                <label for="van_location_id" groups="om_field_service.group_fs_manager"/>
+                <div class="o_row" groups="om_field_service.group_fs_manager">
+                    <field name="van_location_id" options="{'no_create': True}"/>
+                    <button name="action_create_van_location" type="object" string="Create Van" class="btn-link"
+                        invisible="van_location_id"/>
+                    <button name="action_replenish_van" type="object" string="Replenish" class="btn-link"
+                        invisible="not van_location_id"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

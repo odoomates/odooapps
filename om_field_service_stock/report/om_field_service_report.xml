@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_fs_job_document_parts" inherit_id="om_field_service.report_fs_job_document">
+        <xpath expr="//div[@name='parts']" position="inside">
+            <t t-set="parts" t-value="doc.sudo().part_ids"/>
+            <div t-if="parts" class="mb-3">
+                <h5>Parts</h5>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th class="text-start">Product</th>
+                            <th class="text-start">Lot/Serial Number</th>
+                            <th class="text-end">Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="parts" t-as="part">
+                            <td><span t-field="part.product_id"/></td>
+                            <td><span t-field="part.lot_id"/></td>
+                            <td class="text-end">
+                                <span t-field="part.quantity"/>
+                                <span t-field="part.product_uom_id" groups="uom.group_uom"/>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>
