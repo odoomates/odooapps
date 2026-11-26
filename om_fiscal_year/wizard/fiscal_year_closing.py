@@ -13,8 +13,8 @@ class AccountFiscalYearClosing(models.TransientModel):
     currency_id = fields.Many2one(related='company_id.currency_id')
     date = fields.Date(string='Closing Entry Date', required=True,
                        compute='_compute_date', store=True, readonly=False, precompute=True,
-                       help='By default the first day after the fiscal year, so that the balance sheet at the end '
-                            'of the year still shows its earnings.')
+                       help='By default the last day of the fiscal year, so that the next fiscal year starts without '
+                            'its earnings; the day after when the fiscal year is already locked.')
     journal_id = fields.Many2one('account.journal', string='Journal', required=True, check_company=True,
                                  domain=[('type', '=', 'general')],
                                  compute='_compute_journal_id', store=True, readonly=False, precompute=True)
@@ -43,7 +43,10 @@ class AccountFiscalYearClosing(models.TransientModel):
     @api.depends('fiscal_year_id')
     def _compute_date(self):
         for wizard in self:
-            wizard.date = wizard.fiscal_year_id.date_to and wizard.fiscal_year_id.date_to + timedelta(days=1)
+            date_to = wizard.fiscal_year_id.date_to
+            lock_date = wizard.fiscal_year_id.company_id.fiscalyear_lock_date
+            # an entry on the last day cannot be posted once the fiscal year is locked
+            wizard.date = date_to and (date_to + timedelta(days=1) if lock_date and lock_date >= date_to else date_to)
 
     @api.depends('company_id')
     def _compute_journal_id(self):
