@@ -13,13 +13,14 @@ class TestBalanceSheet(OmAccountTestCommon):
         Balance Sheet
         |-- Assets
         `-- Liability                     (a sum)
-            |-- Liability                 (payable, credit card, equity, liabilities, unaffected)
-            `-- Profit (Loss) to report
+            |-- Liability                 (payable, credit card, liabilities)
+            `-- Equity                    (a sum)
+                |-- Capital and Reserves  (equity)
+                |-- Previous Years Unallocated Earnings
+                `-- Current Year Unallocated Earnings
 
-    so the equity is counted among the liabilities and two nodes carry the same name.
-    Both are deliberate here: separating them changes a record the customer may have
-    adapted, and that is a migration rather than a fix. The tests below say what the
-    report does today, whichever way that question is answered later.
+    so two nodes carry the same name, and the liability side prints negative: changing the
+    sign changes a report people read every day. The tests below say what the report does.
     """
 
     def _balance_sheet(self, date_to):
@@ -112,8 +113,11 @@ class TestBalanceSheet(OmAccountTestCommon):
         self.assertAlmostEqual(sides['Assets'], 1000.0)
         self.assertAlmostEqual(sides['Liability'], -1000.0)
         self.assertAlmostEqual(sides['Assets'] + sides['Liability'], 0.0)
-        self.assertAlmostEqual(dict(((n, l), b) for n, l, b in printed)[('Profit (Loss) to report', 2)],
-                               -1000.0, msg='the profit of the period sits on the side of the owners')
+        by_name = dict(((n, l), b) for n, l, b in printed)
+        self.assertAlmostEqual(by_name[('Equity', 2)], -1000.0, msg='the profit of the period sits on the side of the owners')
+        self.assertAlmostEqual(by_name[('Current Year Unallocated Earnings', 3)], -1000.0)
+        self.assertAlmostEqual(by_name[('Previous Years Unallocated Earnings', 3)], 0.0)
+        self.assertAlmostEqual(by_name[('Capital and Reserves', 3)], 0.0)
 
     def test_the_lines_carry_their_level(self):
         """ The sections are indented by their depth in the report.
@@ -131,7 +135,10 @@ class TestBalanceSheet(OmAccountTestCommon):
             ('Assets', 1),
             ('Liability', 1),
             ('Liability', 2),
-            ('Profit (Loss) to report', 2),
+            ('Equity', 2),
+            ('Capital and Reserves', 3),
+            ('Previous Years Unallocated Earnings', 3),
+            ('Current Year Unallocated Earnings', 3),
         ]))
 
         self.env.ref('accounting_pdf_reports.account_financial_report_liability0').style_overwrite = '1'
@@ -165,16 +172,26 @@ class TestBalanceSheet(OmAccountTestCommon):
 
         self.assertFalse(overlap, 'an account type belongs to one side of the balance sheet')
 
-    def test_the_equity_is_reported_with_the_liabilities(self):
-        """ 19.0 keeps the equity inside the Liability node. This test records that, so that
-        the day it is separated the change is a decision and not a surprise. """
+    def test_the_equity_is_not_among_the_liabilities(self):
+        """ The equity accounts are in the Capital and Reserves, the unaffected earnings account in the
+        earnings, with the income and the expense: neither is counted among the liabilities. """
         liabilities = self.env.ref('accounting_pdf_reports.account_financial_report_liability0')
+        capital = self.env.ref('accounting_pdf_reports.account_financial_report_equity_accounts0')
 
-        types = {t._get_om_kind() for t in liabilities.account_type_ids}
+        liability_types = {t._get_om_kind() for t in liabilities.account_type_ids}
+        equity_types = {t._get_om_kind() for t in capital.account_type_ids}
 
-        self.assertIn('equity', types)
-        self.assertIn('equity_unaffected', types)
-        self.assertIn('liability_credit_card', types)
+        self.assertEqual(equity_types, {'equity'},
+                         'the unaffected earnings account is in the earnings, with the income and the expense')
+        self.assertFalse(equity_types & liability_types, 'nothing is counted on both sides')
+        self.assertNotIn('equity_unaffected', liability_types)
+        self.assertIn('liability_credit_card', liability_types,
+                      'a credit card is money owed: without it the balance sheet does not balance')
+        equity = [line.name for line in self.env.ref('accounting_pdf_reports.account_financial_report_equity0')
+                  .children_ids.sorted('sequence')]
+        self.assertEqual(equity, ['Capital and Reserves', 'Previous Years Unallocated Earnings',
+                                  'Current Year Unallocated Earnings'],
+                         'the profit not allocated yet belongs to the owners')
 
     def test_the_sections_keep_their_order(self):
         """ The sections without a sequence print in the order they were created (Assets before the

@@ -35,7 +35,15 @@ class AccountFinancialReport(models.Model):
         ('accounts', 'Accounts'),
         ('account_type', 'Account Type'),
         ('account_report', 'Report Value'),
+        ('earnings', 'Unallocated Earnings'),
         ], 'Type', default='sum')
+    earnings_period = fields.Selection([
+        ('previous', 'Previous Fiscal Years'),
+        ('current', 'Current Fiscal Year'),
+        ], 'Fiscal Years',
+        help="The earnings not allocated yet to the reserves, of the fiscal years before the one of the date of "
+             "the report, or of that fiscal year up to the date: the balance of the income, the expense and the "
+             "unaffected earnings account, which start again at zero every fiscal year.")
     account_ids = fields.Many2many(
         'account.account', 'account_account_financial_report',
         'report_line_id', 'account_id', 'Accounts'
