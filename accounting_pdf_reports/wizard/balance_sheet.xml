@@ -88,18 +88,31 @@
         <field name="parent_id" ref="account_financial_report_equity0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
-        <field name="account_type_ids" eval="[(6,0,[ref('accounting_pdf_reports.data_account_type_equity'),
-        ref('accounting_pdf_reports.data_unaffected_earnings')])]"/>
+        <field name="account_type_ids" eval="[(6,0,[ref('accounting_pdf_reports.data_account_type_equity')])]"/>
     </record>
 
-    <record id="account_financial_report_profitloss_toreport0" model="account.financial.report">
-        <field name="name">Profit (Loss) to report</field>
+    <!-- The earnings not allocated yet to the reserves, split by fiscal year as in the Balance Sheet dashboard of
+         om_spreadsheet_account: the income, the expense and the unaffected earnings account (equity_unaffected),
+         which start again at zero every fiscal year. The unaffected earnings account is not counted in the Capital
+         and Reserves: its balance only makes sense with the income and the expense, here. -->
+    <record id="account_financial_report_previous_earnings0" model="account.financial.report">
+        <field name="name">Previous Years Unallocated Earnings</field>
         <field name="sequence">20</field>
         <field name="sign">-1</field>
         <field name="parent_id" ref="account_financial_report_equity0"/>
         <field name="display_detail">no_detail</field>
-        <field name="type">account_report</field>
-        <field name="account_report_id" ref="account_financial_report_profitandloss0"/>
+        <field name="type">earnings</field>
+        <field name="earnings_period">previous</field>
+    </record>
+
+    <record id="account_financial_report_current_earnings0" model="account.financial.report">
+        <field name="name">Current Year Unallocated Earnings</field>
+        <field name="sequence">30</field>
+        <field name="sign">-1</field>
+        <field name="parent_id" ref="account_financial_report_equity0"/>
+        <field name="display_detail">no_detail</field>
+        <field name="type">earnings</field>
+        <field name="earnings_period">current</field>
     </record>
 
     <record id="accounting_report_view" model="ir.ui.view">

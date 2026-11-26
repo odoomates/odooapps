@@ -79,15 +79,17 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
         self.assertEqual(sections, ['Liabilities', 'Equity'])
         equity = [line.name for line in self.env.ref(
             'accounting_pdf_reports.account_financial_report_equity0').children_ids]
-        self.assertEqual(equity, ['Capital and Reserves', 'Profit (Loss) to report'],
-                         'the profit of the period belongs to the owners')
+        self.assertEqual(equity, ['Capital and Reserves', 'Previous Years Unallocated Earnings',
+                                  'Current Year Unallocated Earnings'],
+                         'the profit not allocated yet belongs to the owners')
 
     def test_the_equity_is_not_among_the_liabilities(self):
         equity_types = self.env.ref('accounting_pdf_reports.account_financial_report_equity_accounts0')\
             .account_type_ids.mapped('type')
         liability_types = self.env.ref('accounting_pdf_reports.account_financial_report_liability0')\
             .account_type_ids.mapped('type')
-        self.assertEqual(set(equity_types), {'equity', 'equity_unaffected'})
+        self.assertEqual(set(equity_types), {'equity'},
+                         'the unaffected earnings account is in the earnings, with the income and the expense')
         self.assertFalse(set(equity_types) & set(liability_types), 'nothing is counted on both sides')
         self.assertIn('liability_credit_card', liability_types,
                       'a credit card is money owed: without it the balance sheet does not balance')
@@ -102,7 +104,8 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
         self.assertAlmostEqual(printed['Assets'], printed['Liabilities and Equity'],
                                msg='the two sides of the balance sheet face each other')
         self.assertAlmostEqual(printed['Equity'], 1000.0, msg='the profit of the period is in the equity')
-        self.assertAlmostEqual(printed['Profit (Loss) to report'], 1000.0)
+        self.assertAlmostEqual(printed['Current Year Unallocated Earnings'], 1000.0)
+        self.assertAlmostEqual(printed['Previous Years Unallocated Earnings'], 0.0)
         self.assertAlmostEqual(printed['Capital and Reserves'], 0.0)
 
     def test_a_credit_card_balances(self):
@@ -141,7 +144,8 @@ class TestBalanceSheet(AccountTestInvoicingCommon):
             'Liabilities': 2,
             'Equity': 2,
             'Capital and Reserves': 3,
-            'Profit (Loss) to report': 3,
+            'Previous Years Unallocated Earnings': 3,
+            'Current Year Unallocated Earnings': 3,
         })
         self.env.ref('accounting_pdf_reports.account_financial_report_equity0').style_overwrite = '1'
         lines = self.env['report.accounting_pdf_reports.report_financial'].get_account_lines({
