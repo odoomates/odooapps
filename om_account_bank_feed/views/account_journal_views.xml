@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_account_journal_form" model="ir.ui.view">
+        <field name="name">account.journal.form.inherit.bank.feed</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.view_account_journal_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='bank_account']/group" position="after">
+                <group name="bank_feed" string="Bank Feed" invisible="type not in ('bank', 'credit')"
+                       groups="account.group_account_basic">
+                    <group>
+                        <field name="bank_feed_state" string="Status" widget="badge"
+                               decoration-success="bank_feed_state == 'connected'"
+                               decoration-warning="bank_feed_state == 'expiring'"
+                               decoration-danger="bank_feed_state in ('expired', 'error')"
+                               invisible="not bank_feed_connection_id"/>
+                        <field name="bank_feed_connection_id" string="Connection" invisible="not bank_feed_connection_id"/>
+                        <field name="bank_feed_account_id" string="Bank Account" invisible="not bank_feed_connection_id"/>
+                        <div colspan="2" class="text-muted" invisible="bank_feed_connection_id">
+                            Fetch the transactions of this bank account automatically: connect the bank once
+                            through a bank feed provider, the new transactions then arrive every few hours.
+                        </div>
+                    </group>
+                    <group invisible="not bank_feed_connection_id">
+                        <field name="bank_feed_last_sync" string="Last Sync"/>
+                        <field name="bank_feed_consent_expiry_date" string="Consent Expires On"/>
+                        <field name="bank_feed_balance_mismatch" string="Balance Mismatch"
+                               invisible="not bank_feed_balance_mismatch"/>
+                    </group>
+                    <div colspan="2" class="d-flex flex-wrap gap-1">
+                        <button name="action_bank_feed_connect" type="object" string="Connect Bank" icon="link"
+                                class="btn-primary" invisible="bank_feed_connection_id"
+                                groups="account.group_account_manager"/>
+                        <button name="action_bank_feed_sync" type="object" string="Sync Now" icon="refresh"
+                                class="btn-primary"
+                                invisible="not bank_feed_connection_id or bank_feed_state not in ('connected', 'expiring', 'error')"/>
+                        <button name="action_bank_feed_renew" type="object" string="Renew Consent" icon="schedule"
+                                class="btn-secondary"
+                                invisible="not bank_feed_connection_id or bank_feed_state not in ('expiring', 'expired', 'error')"
+                                groups="account.group_account_manager"/>
+                        <button name="action_bank_feed_open" type="object" string="Open Connection"
+                                class="btn-secondary" invisible="not bank_feed_connection_id"/>
+                        <button name="action_bank_feed_disconnect" type="object" string="Disconnect" icon="link_off"
+                                class="btn-secondary" invisible="not bank_feed_connection_id"
+                                groups="account.group_account_manager"
+                                confirm="Stop the bank feed of this journal? The transactions already imported stay. When the connection feeds no other journal, it is removed at the provider."/>
+                    </div>
+                </group>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="account_journal_dashboard_kanban_view" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.inherit.bank.feed</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='bank_account_id']" position="after">
+                <field name="bank_feed_connection_id"/>
+                <field name="bank_feed_state"/>
+                <field name="bank_feed_last_sync"/>
+                <field name="bank_feed_balance_mismatch"/>
+            </xpath>
+            <xpath expr="//div[@id='dashboard_bank_cash_right']/t[@t-call='JournalChecks']" position="before">
+                <div class="row o_bank_feed_dashboard_status"
+                     t-if="['bank', 'credit'].includes(journal_type) and record.bank_feed_connection_id.raw_value">
+                    <div class="col overflow-hidden text-start">
+                        <a type="object" name="action_bank_feed_open" title="Bank Feed">
+                            <i class="oi me-1" data-icon="link"/>Bank Feed
+                        </a>
+                        <a type="object" name="action_bank_feed_sync" class="ms-2" title="Sync Now"
+                           t-if="['connected', 'expiring', 'error'].includes(record.bank_feed_state.raw_value)">
+                            <i class="oi" data-icon="refresh"/>
+                        </a>
+                    </div>
+                    <div class="col-auto text-end">
+                        <span t-attf-class="badge rounded-pill {{ record.bank_feed_state.raw_value == 'connected' ? 'text-bg-success' : (record.bank_feed_state.raw_value == 'expiring' ? 'text-bg-warning' : 'text-bg-danger') }}">
+                            <t t-out="record.bank_feed_state.value"/>
+                        </span>
+                        <i t-if="record.bank_feed_balance_mismatch.raw_value" class="oi text-warning ms-1"
+                           data-icon="warning" title="The balance of the bank differs from the journal"/>
+                    </div>
+                </div>
+            </xpath>
+            <xpath expr="//div[@id='action_card_statements']" position="inside">
+                <t t-if="['bank', 'credit'].includes(journal_type)">
+                    <a t-if="!record.bank_feed_connection_id.raw_value" role="menuitem" type="object"
+                       name="action_bank_feed_connect" groups="account.group_account_manager">Connect Bank Feed</a>
+                    <a t-else="" role="menuitem" type="object" name="action_bank_feed_sync">Sync Bank Feed</a>
+                </t>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

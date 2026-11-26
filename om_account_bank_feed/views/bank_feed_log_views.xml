@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="bank_feed_log_view_list" model="ir.ui.view">
+        <field name="name">bank.feed.log.list</field>
+        <field name="model">bank.feed.log</field>
+        <field name="arch" type="xml">
+            <list string="Sync Logs" create="0" edit="0" decoration-danger="level == 'error'"
+                  decoration-warning="level == 'warning'">
+                <field name="create_date" string="Date"/>
+                <field name="connection_id"/>
+                <field name="account_id"/>
+                <field name="journal_id" optional="show"/>
+                <field name="date_from" optional="hide"/>
+                <field name="imported_count" sum="Imported"/>
+                <field name="skipped_count" optional="show"/>
+                <field name="pending_count" optional="show"/>
+                <field name="level" widget="badge" decoration-success="level == 'info'"
+                       decoration-warning="level == 'warning'" decoration-danger="level == 'error'"/>
+                <field name="message" optional="show"/>
+                <field name="company_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="bank_feed_log_view_form" model="ir.ui.view">
+        <field name="name">bank.feed.log.form</field>
+        <field name="model">bank.feed.log</field>
+        <field name="arch" type="xml">
+            <form string="Sync Log" create="0" edit="0">
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="create_date" string="Date"/>
+                            <field name="connection_id"/>
+                            <field name="account_id"/>
+                            <field name="journal_id"/>
+                        </group>
+                        <group>
+                            <field name="level"/>
+                            <field name="date_from"/>
+                            <field name="imported_count"/>
+                            <field name="skipped_count"/>
+                            <field name="pending_count"/>
+                        </group>
+                    </group>
+                    <field name="message"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="bank_feed_log_view_search" model="ir.ui.view">
+        <field name="name">bank.feed.log.search</field>
+        <field name="model">bank.feed.log</field>
+        <field name="arch" type="xml">
+            <search string="Sync Logs">
+                <field name="connection_id"/>
+                <field name="account_id"/>
+                <filter string="Warnings and Errors" name="problems" domain="[('level', 'in', ('warning', 'error'))]"/>
+                <filter string="Imported Transactions" name="imported" domain="[('imported_count', '>', 0)]"/>
+                <separator/>
+                <filter string="Date" name="filter_date" date="create_date"/>
+                <group>
+                    <filter string="Connection" name="group_connection" context="{'group_by': 'connection_id'}"/>
+                    <filter string="Result" name="group_level" context="{'group_by': 'level'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_bank_feed_log" model="ir.actions.act_window">
+        <field name="name">Sync Logs</field>
+        <field name="res_model">bank.feed.log</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'create': False}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No sync yet</p>
+            <p>Each sync of a bank feed writes here what it imported, and the warnings and errors.</p>
+        </field>
+    </record>
+
+</odoo>

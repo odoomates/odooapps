@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="bank_feed_connect_wizard_view_form" model="ir.ui.view">
+        <field name="name">bank.feed.connect.wizard.form</field>
+        <field name="model">bank.feed.connect.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Connect a Bank Feed">
+                <field name="company_id" invisible="1"/>
+                <field name="has_providers" invisible="1"/>
+                <div class="alert alert-warning" role="alert" invisible="has_providers">
+                    No bank feed provider is installed. Install the module of a provider, then connect the bank.
+                </div>
+                <group>
+                    <group>
+                        <field name="journal_id" readonly="1"/>
+                        <field name="mode" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="provider" invisible="mode != 'new'" required="mode == 'new'"/>
+                        <field name="name" invisible="mode != 'new'" required="mode == 'new'"/>
+                        <field name="feed_account_id" invisible="mode != 'existing'" required="mode == 'existing'"
+                               options="{'no_create': True}"/>
+                        <field name="sync_start_date"/>
+                    </group>
+                </group>
+                <p class="text-muted" invisible="mode != 'new'">
+                    You go to the page of the provider to choose the bank and give your consent, then come back
+                    here to map the bank accounts. The credentials of the bank are entered at the provider, never
+                    in Odoo.
+                </p>
+                <footer>
+                    <button name="action_connect" type="object" string="Continue" class="btn-primary"
+                            data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+</odoo>
