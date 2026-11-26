@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_slot_view_form" model="ir.ui.view">
+        <field name="name">om.planning.slot.form.om_planning_hr</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_form"/>
+        <field name="arch" type="xml">
+            <field name="role_id" position="after">
+                <field name="department_id" invisible="not department_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_list" model="ir.ui.view">
+        <field name="name">om.planning.slot.list.om_planning_hr</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_list"/>
+        <field name="arch" type="xml">
+            <field name="role_id" position="after">
+                <field name="department_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_gantt" model="ir.ui.view">
+        <field name="name">om.planning.slot.gantt.om_planning_hr</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_gantt"/>
+        <field name="arch" type="xml">
+            <xpath expr="//gantt" position="attributes">
+                <attribute name="empty_row_labels">{'resource_ids': 'Open Shifts', 'role_id': 'No Role', 'source_name': 'No Source', 'department_id': 'No Department'}</attribute>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_search" model="ir.ui.view">
+        <field name="name">om.planning.slot.search.om_planning_hr</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_search"/>
+        <field name="arch" type="xml">
+            <field name="role_id" position="after">
+                <field name="department_id" operator="child_of"/>
+                <field name="employee_ids" string="Employee" filter_domain="[('resource_ids.employee_id', 'ilike', self)]"/>
+            </field>
+            <filter name="open_slots" position="after">
+                <filter name="my_department" string="My Department"
+                    domain="[('department_id.member_ids.user_id', '=', uid)]"/>
+                <filter name="my_team" string="My Team"
+                    domain="[('resource_ids.employee_id.parent_id.user_id', '=', uid)]"/>
+            </filter>
+            <filter name="group_role" position="after">
+                <filter name="group_department" string="Department" context="{'group_by': 'department_id'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot_department" model="ir.actions.act_window">
+        <field name="name">Schedule by Department</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,calendar,list,form,pivot,graph</field>
+        <field name="context">{'group_by': ['department_id', 'resource_ids'], 'om_planning_label': 'role'}</field>
+    </record>
+
+    <menuitem id="menu_om_planning_schedule_department" name="By Department"
+        parent="om_planning.menu_om_planning_schedule" action="action_om_planning_slot_department" sequence="25"/>
+
+    <menuitem id="menu_om_planning_employees" name="Employees" parent="om_planning.menu_om_planning_config"
+        action="hr.open_view_employee_list_my" sequence="12" groups="hr.group_hr_user"/>
+
+</odoo>

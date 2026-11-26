@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_employee_view_form" model="ir.ui.view">
+        <field name="name">hr.employee.form.om_planning_hr</field>
+        <field name="model">hr.employee</field>
+        <field name="inherit_id" ref="hr.view_employee_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_planning" type="object" class="oe_stat_button" icon="view_timeline"
+                    groups="om_planning.group_planning_manager" invisible="not id">
+                    <field name="planning_slot_count" widget="statinfo" string="Planning"/>
+                </button>
+            </div>
+            <page name="work_information" position="after">
+                <page name="planning" string="Planning" groups="om_planning.group_planning_manager">
+                    <group>
+                        <group>
+                            <field name="planning_role_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="planning_default_role_id" domain="[('id', 'in', planning_role_ids)]"/>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>

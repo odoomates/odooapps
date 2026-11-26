@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="hr.employee_hne" model="hr.employee">
+            <field name="resource_calendar_id" ref="om_planning.calendar_store"/>
+            <field name="planning_role_ids" eval="[Command.set([ref('om_planning.role_cashier')])]"/>
+            <field name="planning_default_role_id" ref="om_planning.role_cashier"/>
+        </record>
+        <record id="hr.employee_jep" model="hr.employee">
+            <field name="resource_calendar_id" ref="om_planning.calendar_store"/>
+            <field name="planning_role_ids" eval="[Command.set([ref('om_planning.role_cashier')])]"/>
+            <field name="planning_default_role_id" ref="om_planning.role_cashier"/>
+        </record>
+        <record id="hr.employee_jod" model="hr.employee">
+            <field name="planning_role_ids" eval="[Command.set([ref('om_planning.role_driver'), ref('om_planning.role_technician')])]"/>
+            <field name="planning_default_role_id" ref="om_planning.role_driver"/>
+        </record>
+
+        <function model="om.planning.slot" name="_planning_hr_demo"/>
+
+    </data>
+</odoo>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_request_view_search" model="ir.ui.view">
+        <field name="name">om.planning.request.search.om_planning_hr</field>
+        <field name="model">om.planning.request</field>
+        <field name="inherit_id" ref="om_planning.om_planning_request_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="my_team" string="My Team"
+                    domain="['|', ('resource_id.employee_id.parent_id.user_id', '=', uid), ('resource_id.employee_id.department_id.manager_id.user_id', '=', uid)]"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
