@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_tool_view_list" model="ir.ui.view">
+        <field name="name">om.ai.tool.list.mcp.client</field>
+        <field name="model">om.ai.tool</field>
+        <field name="inherit_id" ref="om_ai.om_ai_tool_view_list"/>
+        <field name="arch" type="xml">
+            <field name="server_action_id" position="after">
+                <field name="mcp_remote_id" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_ai_tool_view_form" model="ir.ui.view">
+        <field name="name">om.ai.tool.form.mcp.client</field>
+        <field name="model">om.ai.tool</field>
+        <field name="inherit_id" ref="om_ai.om_ai_tool_view_form"/>
+        <field name="arch" type="xml">
+            <field name="method" position="attributes">
+                <attribute name="readonly">server_action_id or mcp_remote_id</attribute>
+            </field>
+            <field name="server_action_id" position="attributes">
+                <attribute name="invisible">mcp_remote_id</attribute>
+            </field>
+            <field name="server_action_id" position="after">
+                <field name="mcp_remote_id" invisible="not mcp_remote_id"/>
+                <field name="mcp_tool_name" invisible="not mcp_remote_id"/>
+                <field name="mcp_read_only_hint" invisible="not mcp_remote_id"/>
+                <field name="mcp_destructive_hint" invisible="not mcp_remote_id"/>
+            </field>
+            <field name="parameters_schema" position="attributes">
+                <attribute name="readonly">mcp_remote_id</attribute>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_ai_tool_view_search" model="ir.ui.view">
+        <field name="name">om.ai.tool.search.mcp.client</field>
+        <field name="model">om.ai.tool</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="mcp_remote_id"/>
+                <filter name="filter_read_only" string="Read Only" domain="[('read_only', '=', True)]"/>
+                <filter name="filter_outside" string="Outside MCP Tools" domain="[('mcp_remote_id', '!=', False)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Disabled" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_remote" string="Outside MCP Server" context="{'group_by': 'mcp_remote_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+</odoo>
