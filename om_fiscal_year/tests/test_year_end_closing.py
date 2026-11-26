@@ -61,7 +61,7 @@ class TestYearEndClosing(AccountTestInvoicingCommon):
             'retained_earnings_account_id': self.retained_earnings.id,
         })
         self.assertEqual(wizard.earnings, 600.0)
-        self.assertEqual(wizard.date, date(2026, 1, 1))
+        self.assertEqual(wizard.date, date(2025, 12, 31))
         self.assertEqual(wizard.journal_id.type, 'general')
         self.assertFalse(wizard.blocking_issues)
         wizard.action_close()
@@ -69,15 +69,15 @@ class TestYearEndClosing(AccountTestInvoicingCommon):
         closing_move = self.fy_2025.closing_move_id
         self.assertEqual(self.fy_2025.state, 'closed')
         self.assertEqual(closing_move.state, 'posted')
-        self.assertEqual(closing_move.date, date(2026, 1, 1))
+        self.assertEqual(closing_move.date, date(2025, 12, 31))
         self.assertRecordValues(closing_move.line_ids.sorted('balance'), [
             {'account_id': self.retained_earnings.id, 'balance': -600.0},
             {'account_id': self.unaffected_earnings.id, 'balance': 600.0},
         ])
         # the closed year keeps its figures, and nothing is left to allocate afterwards
         self.assertEqual(self._profit_and_loss('2025-01-01', '2025-12-31'), 600.0)
-        self.assertEqual(self._balance(self.retained_earnings, '2025-12-31'), 0.0)
-        self.assertEqual(self._balance(self.retained_earnings, '2026-01-01'), -600.0)
+        self.assertEqual(self._balance(self.retained_earnings, '2025-12-30'), 0.0)
+        self.assertEqual(self._balance(self.retained_earnings, '2025-12-31'), -600.0)
         self.assertEqual(self.company.fiscalyear_lock_date, date(2025, 12, 31))
         self.assertEqual(self.company.retained_earnings_account_id, self.retained_earnings)
 
@@ -138,7 +138,7 @@ class TestYearEndClosing(AccountTestInvoicingCommon):
         self.assertFalse(self.company.fiscalyear_lock_date)
 
     def test_reopen_reverses_the_closing(self):
-        self._close(self.fy_2025)
+        self._close(self.fy_2025, lock=False)
         closing_move = self.fy_2025.closing_move_id
         self.fy_2025.action_reopen()
 
@@ -147,7 +147,7 @@ class TestYearEndClosing(AccountTestInvoicingCommon):
         self.assertEqual(closing_move.reversal_move_ids.state, 'posted')
         self.assertEqual(self._balance(self.retained_earnings, '2026-01-01'), 0.0)
 
-        self._close(self.fy_2025)
+        self._close(self.fy_2025, lock=False)
         self.assertEqual(self._balance(self.retained_earnings, '2026-01-01'), -600.0)
 
     def test_closed_year_is_protected(self):
