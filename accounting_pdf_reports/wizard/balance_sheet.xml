@@ -51,22 +51,53 @@
 
     <record id="account_financial_report_liability0" model="account.financial.report">
         <field name="name">Liability</field>
+        <field name="sequence">10</field>
         <field name="parent_id" ref="account_financial_report_liabilitysum0"/>
         <field name="display_detail">detail_with_hierarchy</field>
         <field name="type">account_type</field>
         <field name="account_type_ids" eval="[(4,ref('account.data_account_type_payable')),
-        (4,ref('account.data_account_type_credit_card')),
-        (4,ref('account.data_account_type_equity')), (4,ref('account.data_account_type_current_liabilities')),
+        (4,ref('account.data_account_type_credit_card')), (4,ref('account.data_account_type_current_liabilities')),
         (4,ref('account.data_account_type_non_current_liabilities')),
-        (4,ref('account.data_unaffected_earnings'))]"/>
+        (3,ref('account.data_account_type_equity')), (3,ref('account.data_unaffected_earnings'))]"/>
     </record>
 
-    <record id="account_financial_report_profitloss_toreport0" model="account.financial.report">
-        <field name="name">Profit (Loss) to report</field>
+    <!-- What belongs to the owners: the capital and the reserves, and the earnings not allocated yet to them, split
+         by fiscal year: the income, the expense and the unaffected earnings account, which holds the allocations.
+         The unaffected earnings account is not counted in the Capital and Reserves: its balance only makes sense
+         with the income and the expense. -->
+    <record id="account_financial_report_equity0" model="account.financial.report">
+        <field name="name">Equity</field>
+        <field name="sequence">20</field>
         <field name="parent_id" ref="account_financial_report_liabilitysum0"/>
         <field name="display_detail">no_detail</field>
-        <field name="type">account_report</field>
-        <field name="account_report_id" ref="account_financial_report_profitandloss0"/>
+        <field name="type">sum</field>
+    </record>
+
+    <record id="account_financial_report_equity_accounts0" model="account.financial.report">
+        <field name="name">Capital and Reserves</field>
+        <field name="sequence">10</field>
+        <field name="parent_id" ref="account_financial_report_equity0"/>
+        <field name="display_detail">detail_with_hierarchy</field>
+        <field name="type">account_type</field>
+        <field name="account_type_ids" eval="[(6,0,[ref('account.data_account_type_equity')])]"/>
+    </record>
+
+    <record id="account_financial_report_previous_earnings0" model="account.financial.report">
+        <field name="name">Previous Years Unallocated Earnings</field>
+        <field name="sequence">20</field>
+        <field name="parent_id" ref="account_financial_report_equity0"/>
+        <field name="display_detail">no_detail</field>
+        <field name="type">earnings</field>
+        <field name="earnings_period">previous</field>
+    </record>
+
+    <record id="account_financial_report_current_earnings0" model="account.financial.report">
+        <field name="name">Current Year Unallocated Earnings</field>
+        <field name="sequence">30</field>
+        <field name="parent_id" ref="account_financial_report_equity0"/>
+        <field name="display_detail">no_detail</field>
+        <field name="type">earnings</field>
+        <field name="earnings_period">current</field>
     </record>
 
     <record id="accounting_report_view" model="ir.ui.view">
