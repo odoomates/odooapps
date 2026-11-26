@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_quality.QualityDashboard">
+        <div class="o_om_quality_dashboard o_action h-100 overflow-auto">
+            <div class="container-fluid py-3" t-if="this.state.data">
+                <t t-set="data" t-value="this.state.data"/>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <h2 class="mb-0 me-auto">Quality Overview</h2>
+                    <div class="btn-group">
+                        <t t-foreach="this.periods" t-as="period" t-key="period[0]">
+                            <button type="button" class="btn" t-att-class="this.state.days === period[0] ? 'btn-primary' : 'btn-secondary'"
+                                    t-on-click="() => this.setPeriod(period[0])" t-out="period[1]"/>
+                        </t>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openTodo()">
+                            <div class="card-body">
+                                <div class="text-muted">Checks to do</div>
+                                <div class="fs-1 fw-bold" t-out="data.kpi.todo"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openWaiting()">
+                            <div class="card-body">
+                                <div class="text-muted">Holding a document</div>
+                                <div class="fs-1 fw-bold" t-att-class="data.kpi.waiting ? 'text-warning' : ''" t-out="data.kpi.waiting"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openDone()">
+                            <div class="card-body">
+                                <div class="text-muted">Checks done</div>
+                                <div class="fs-1 fw-bold" t-out="data.kpi.done"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openFailed()">
+                            <div class="card-body">
+                                <div class="text-muted">Failed</div>
+                                <div class="fs-1 fw-bold" t-att-class="data.kpi.failed ? 'text-danger' : ''" t-out="data.kpi.failed"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openDone()">
+                            <div class="card-body">
+                                <div class="text-muted">Pass rate</div>
+                                <div class="fs-1 fw-bold" t-att-class="data.kpi.done ? this.rateClass(data.kpi.pass_rate) : ''"><t t-out="data.kpi.pass_rate"/> %</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openAlerts()">
+                            <div class="card-body">
+                                <div class="text-muted">Open non-conformances</div>
+                                <div class="fs-1 fw-bold" t-out="data.kpi.alerts_open"/>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3 col-xl">
+                        <div class="card o_om_quality_kpi o_om_quality_click h-100" t-on-click="() => this.openActions(true)">
+                            <div class="card-body">
+                                <div class="text-muted">Late actions</div>
+                                <div class="fs-1 fw-bold" t-att-class="data.kpi.actions_late ? 'text-danger' : ''">
+                                    <t t-out="data.kpi.actions_late"/> <small class="fs-6 text-muted fw-normal">of <t t-out="data.kpi.actions_open"/> open</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <t t-foreach="this.rateSections" t-as="section" t-key="section.field">
+            <div class="col-lg-6">
+                <div class="card h-100">
+                    <div class="card-header fw-bold" t-out="section.title"/>
+                    <div class="card-body p-0">
+                        <table t-if="section.rows.length" class="table table-sm table-hover mb-0 o_om_quality_table">
+                            <thead>
+                                <tr><th/><th class="text-end">Passed</th><th class="text-end">Failed</th><th class="text-end">Pass rate</th></tr>
+                            </thead>
+                            <tbody>
+                                <tr t-foreach="section.rows" t-as="row" t-key="row.id" class="o_om_quality_click" t-on-click="() => this.openRow(section.field, row)">
+                                    <td class="text-truncate" t-out="row.name"/>
+                                    <td class="text-end" t-out="row.passed"/>
+                                    <td class="text-end" t-att-class="row.failed ? 'text-danger fw-bold' : ''" t-out="row.failed"/>
+                                    <td class="text-end fw-bold" t-att-class="this.rateClass(row.rate)"><t t-out="row.rate"/> %</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div t-else="" class="p-3 text-muted">No check done in this period.</div>
+                    </div>
+                </div>
+            </div>
+                    </t>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold">Failure reasons</div>
+                            <div class="card-body">
+                                <div t-if="!data.reasons.length" class="text-muted">No failure with a reason in this period.</div>
+                                <div t-foreach="data.reasons" t-as="row" t-key="row.id" class="mb-2 o_om_quality_click" t-on-click="() => this.openRow('reason_id', row, true)">
+                                    <div class="d-flex"><span class="text-truncate" t-out="row.name"/><b class="ms-auto" t-out="row.count"/></div>
+                                    <div class="progress" style="height: 0.5rem;">
+                                        <div class="progress-bar bg-danger" t-att-style="this.barWidth(row, data.reasons)"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold">Non-conformances by stage</div>
+                            <div class="card-body">
+                                <div t-if="!data.stages.length" class="text-muted">No non-conformance.</div>
+                                <div t-foreach="data.stages" t-as="stage" t-key="stage.id" class="mb-2 o_om_quality_click" t-on-click="() => this.openAlerts(stage)">
+                                    <div class="d-flex"><span t-out="stage.name"/><b class="ms-auto" t-out="stage.count"/></div>
+                                    <div class="progress" style="height: 0.5rem;">
+                                        <div class="progress-bar" t-att-class="stage.closed ? 'bg-success' : 'bg-primary'" t-att-style="this.barWidth(stage, data.stages)"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header fw-bold">By control point</div>
+                            <div class="card-body p-0">
+                                <table t-if="data.points.length" class="table table-sm table-hover mb-0 o_om_quality_table">
+                                    <tbody>
+                                        <tr t-foreach="data.points" t-as="row" t-key="row.id" class="o_om_quality_click" t-on-click="() => this.openRow('point_id', row)">
+                                            <td class="text-truncate" t-out="row.name"/>
+                                            <td class="text-end text-danger" t-out="row.failed or ''"/>
+                                            <td class="text-end fw-bold" t-att-class="this.rateClass(row.rate)"><t t-out="row.rate"/> %</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <div t-else="" class="p-3 text-muted">No check done in this period.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

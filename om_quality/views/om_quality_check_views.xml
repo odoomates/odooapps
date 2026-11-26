@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_check_search" model="ir.ui.view">
+        <field name="name">om.quality.check.search</field>
+        <field name="model">om.quality.check</field>
+        <field name="arch" type="xml">
+            <search string="Quality Checks">
+                <field name="name" filter_domain="['|', '|', ('name', 'ilike', self), ('title', 'ilike', self), ('document_name', 'ilike', self)]"/>
+                <field name="product_id"/>
+                <field name="partner_id" operator="child_of"/>
+                <field name="point_id"/>
+                <field name="team_id"/>
+                <field name="document_name"/>
+                <field name="reason_id"/>
+                <filter string="To Do" name="filter_todo" domain="[('state', '=', 'todo')]"/>
+                <filter string="Passed" name="filter_passed" domain="[('state', '=', 'passed')]"/>
+                <filter string="Failed" name="filter_failed" domain="[('state', '=', 'failed')]"/>
+                <filter string="Not Cancelled" name="filter_not_cancel" domain="[('state', '!=', 'cancel')]"/>
+                <separator/>
+                <filter string="Holding a Document" name="filter_waiting" domain="[('blocking_pending', '=', True)]"/>
+                <filter string="Blocking" name="filter_blocking" domain="[('is_blocking', '=', True)]"/>
+                <filter string="Overridden" name="filter_overridden" domain="[('is_overridden', '=', True)]"/>
+                <separator/>
+                <filter string="Assigned to Me" name="filter_mine" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Done On" name="filter_date_done" date="date_done"/>
+                <group>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Control Point" name="group_point" context="{'group_by': 'point_id'}"/>
+                    <filter string="Product" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Failure Reason" name="group_reason" context="{'group_by': 'reason_id'}"/>
+                    <filter string="Team" name="group_team" context="{'group_by': 'team_id'}"/>
+                    <filter string="Test" name="group_test_type" context="{'group_by': 'test_type'}"/>
+                    <filter string="Done On" name="group_date_done" context="{'group_by': 'date_done'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_list" model="ir.ui.view">
+        <field name="name">om.quality.check.list</field>
+        <field name="model">om.quality.check</field>
+        <field name="arch" type="xml">
+            <list string="Quality Checks" sample="1" decoration-muted="state == 'cancel'">
+                <header>
+                    <button name="action_open_dialog" type="object" string="Check Screen"/>
+                </header>
+                <field name="name" readonly="1"/>
+                <field name="title"/>
+                <field name="document_name" optional="show"/>
+                <field name="product_id" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="test_type" optional="hide"/>
+                <field name="result_summary" optional="show"/>
+                <field name="reason_id" optional="hide"/>
+                <field name="team_id" optional="hide"/>
+                <field name="done_user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="date_done" optional="show"/>
+                <field name="is_blocking" optional="hide"/>
+                <field name="blocking_pending" column_invisible="True"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'passed'" decoration-danger="state == 'failed'"
+                    decoration-warning="state == 'todo' and blocking_pending" decoration-info="state == 'todo' and not blocking_pending"/>
+                <button name="action_open_dialog" type="object" icon="checklist" title="Open on the check screen" invisible="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_kanban" model="ir.ui.view">
+        <field name="name">om.quality.check.kanban</field>
+        <field name="model">om.quality.check</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" sample="1" quick_create="0" group_create="0" records_draggable="0">
+                <field name="state"/>
+                <field name="blocking_pending"/>
+                <progressbar field="state" colors='{"passed": "success", "failed": "danger", "todo": "200"}'/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex">
+                            <field name="title" class="fw-bold"/>
+                            <span t-if="record.blocking_pending.raw_value" class="badge text-bg-warning ms-auto">Blocking</span>
+                        </div>
+                        <div class="text-muted small"><field name="name"/> - <field name="document_name"/></div>
+                        <field name="product_id"/>
+                        <field name="result_summary" class="small"/>
+                        <footer>
+                            <field name="test_type" class="small text-muted"/>
+                            <field name="done_user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_form" model="ir.ui.view">
+        <field name="name">om.quality.check.form</field>
+        <field name="model">om.quality.check</field>
+        <field name="arch" type="xml">
+            <form string="Quality Check">
+                <header>
+                    <button name="action_open_dialog" type="object" string="Check Screen" class="btn-primary" invisible="state != 'todo'"/>
+                    <button name="action_pass" type="object" string="Pass" class="btn-success"
+                        invisible="state != 'todo' or test_type in ('measure', 'template')"/>
+                    <button name="action_fail" type="object" string="Fail" class="btn-danger"
+                        invisible="state != 'todo' or test_type in ('measure', 'template', 'instructions')"/>
+                    <button name="action_record_measures" type="object" string="Record Measures" class="btn-success"
+                        invisible="state != 'todo' or test_type not in ('measure', 'template')"/>
+                    <button name="action_retest" type="object" string="Retest" invisible="state != 'failed' or disposition or is_overridden"/>
+                    <button name="action_create_alert" type="object" string="Raise Non-conformance" invisible="state != 'failed' or alert_count"/>
+                    <button name="action_override" type="object" string="Override" groups="om_quality.group_om_quality_manager"
+                        invisible="not blocking_pending"/>
+                    <button name="action_reset" type="object" string="Reset to To Do" invisible="state not in ('passed', 'failed') or is_overridden or disposition"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'todo'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="todo,passed,failed"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_document" type="object" class="oe_stat_button" icon="description" invisible="not document_name">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Document</span>
+                            </div>
+                        </button>
+                        <button name="action_view_alerts" type="object" class="oe_stat_button" icon="warning" invisible="not alert_count">
+                            <field name="alert_count" widget="statinfo" string="Non-conformances"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Passed" bg_color="text-bg-success" invisible="state != 'passed'"/>
+                    <widget name="web_ribbon" title="Failed" bg_color="text-bg-danger" invisible="state != 'failed'"/>
+                    <div class="alert alert-warning" role="alert" invisible="not blocking_pending">
+                        This check holds its document: it cannot be validated until the check passes.
+                    </div>
+                    <div class="alert alert-info" role="alert" invisible="not is_overridden">
+                        Overridden by <field name="override_user_id" class="fw-bold" readonly="1"/> on <field name="override_date" readonly="1"/>:
+                        <field name="override_reason" readonly="1"/>
+                    </div>
+                    <div class="oe_title">
+                        <field name="name" class="text-muted"/>
+                        <h1><field name="title" placeholder="What is checked" readonly="state != 'todo'"/></h1>
+                    </div>
+                    <group>
+                        <group name="main">
+                            <field name="point_id" readonly="state != 'todo'"/>
+                            <field name="test_type" readonly="point_id or state != 'todo'"/>
+                            <field name="product_id" readonly="state != 'todo'"/>
+                            <field name="partner_id"/>
+                            <field name="document_ref" invisible="not document_ref" readonly="1"/>
+                            <field name="document_name" invisible="1"/>
+                            <field name="is_blocking" readonly="1"/>
+                            <field name="blocking_pending" invisible="1"/>
+                            <field name="is_overridden" invisible="1"/>
+                            <field name="alert_count" invisible="1"/>
+                        </group>
+                        <group name="result">
+                            <field name="team_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="done_user_id" widget="many2one_avatar_user" invisible="not done_user_id"/>
+                            <field name="date_done" invisible="not date_done"/>
+                            <field name="reason_id" invisible="state != 'failed'" options="{'no_create': True}"/>
+                            <field name="disposition" invisible="not disposition"/>
+                            <field name="retest_of_id" invisible="not retest_of_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <div class="alert alert-danger" role="alert" invisible="state != 'failed' or not failure_message">
+                        <field name="failure_message"/>
+                    </div>
+                    <notebook>
+                        <page string="Measures" name="measures" invisible="test_type not in ('measure', 'template')">
+                            <field name="measure_line_ids" readonly="state != 'todo'">
+                                <list editable="bottom" create="0" delete="0" decoration-danger="(value_set or result) and not is_ok" decoration-success="is_ok">
+                                    <field name="name" readonly="1"/>
+                                    <field name="sample" readonly="1" optional="show"/>
+                                    <field name="test_kind" column_invisible="True"/>
+                                    <field name="norm_min" readonly="1" invisible="test_kind != 'measure'"/>
+                                    <field name="norm_target" readonly="1" invisible="test_kind != 'measure'" optional="show"/>
+                                    <field name="norm_max" readonly="1" invisible="test_kind != 'measure'"/>
+                                    <field name="value" invisible="test_kind != 'measure'"/>
+                                    <field name="uom_id" readonly="1" invisible="test_kind != 'measure'" optional="show"/>
+                                    <field name="value_set" invisible="test_kind != 'measure'"/>
+                                    <field name="result" invisible="test_kind != 'passfail'"/>
+                                    <field name="is_ok"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Instructions" name="instructions" invisible="not instructions and not instruction_file">
+                            <field name="instructions"/>
+                            <group>
+                                <field name="instruction_file" filename="instruction_filename" invisible="not instruction_file"/>
+                                <field name="instruction_filename" invisible="1"/>
+                            </group>
+                        </page>
+                        <page string="Photos" name="photos">
+                            <field name="photo_ids" widget="many2many_binary" string="Photos"/>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="What was seen"/>
+                        </page>
+                        <page string="Retests" name="retests" invisible="not retest_ids">
+                            <field name="retest_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="date_done"/>
+                                    <field name="done_user_id"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'passed'" decoration-danger="state == 'failed'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_pivot" model="ir.ui.view">
+        <field name="name">om.quality.check.pivot</field>
+        <field name="model">om.quality.check</field>
+        <field name="arch" type="xml">
+            <pivot string="Quality Checks" sample="1">
+                <field name="product_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_graph" model="ir.ui.view">
+        <field name="name">om.quality.check.graph</field>
+        <field name="model">om.quality.check</field>
+        <field name="arch" type="xml">
+            <graph string="Quality Checks" type="bar" stacked="1" sample="1">
+                <field name="product_id"/>
+                <field name="state"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_om_quality_check" model="ir.actions.act_window">
+        <field name="name">Quality Checks</field>
+        <field name="res_model">om.quality.check</field>
+        <field name="view_mode">list,kanban,form,pivot,graph</field>
+        <field name="context">{'search_default_filter_not_cancel': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No quality check yet</p>
+            <p>Checks appear by themselves on the documents that match a control point, or are created by hand from a point.</p>
+        </field>
+    </record>
+
+    <record id="action_om_quality_check_todo" model="ir.actions.act_window">
+        <field name="name">Checks to Do</field>
+        <field name="res_model">om.quality.check</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="context">{'search_default_filter_todo': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Nothing to check</p>
+            <p>Checks waiting for a result show here.</p>
+        </field>
+    </record>
+
+    <record id="action_om_quality_check_analysis" model="ir.actions.act_window">
+        <field name="name">Check Analysis</field>
+        <field name="res_model">om.quality.check</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+        <field name="context">{'search_default_filter_not_cancel': 1}</field>
+    </record>
+</odoo>

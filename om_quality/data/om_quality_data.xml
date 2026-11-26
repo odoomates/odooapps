@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="decimal_quality_measure" model="decimal.precision" forcecreate="True">
+        <field name="name">Quality Measure</field>
+        <field name="digits">3</field>
+    </record>
+
+    <data noupdate="1">
+        <record id="stage_new" model="om.quality.alert.stage">
+            <field name="name">New</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="stage_analysis" model="om.quality.alert.stage">
+            <field name="name">Root Cause Analysis</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="stage_action" model="om.quality.alert.stage">
+            <field name="name">Actions in Progress</field>
+            <field name="sequence">20</field>
+        </record>
+        <record id="stage_verification" model="om.quality.alert.stage">
+            <field name="name">Effectiveness Check</field>
+            <field name="sequence">30</field>
+        </record>
+        <record id="stage_closed" model="om.quality.alert.stage">
+            <field name="name">Closed</field>
+            <field name="sequence">40</field>
+            <field name="fold" eval="True"/>
+            <field name="is_closed" eval="True"/>
+        </record>
+
+        <record id="reason_dimension" model="om.quality.reason">
+            <field name="name">Out of tolerance</field>
+            <field name="sequence">1</field>
+        </record>
+        <record id="reason_damage" model="om.quality.reason">
+            <field name="name">Damaged</field>
+            <field name="sequence">2</field>
+        </record>
+        <record id="reason_contamination" model="om.quality.reason">
+            <field name="name">Contamination</field>
+            <field name="sequence">3</field>
+        </record>
+        <record id="reason_wrong_item" model="om.quality.reason">
+            <field name="name">Wrong item or quantity</field>
+            <field name="sequence">4</field>
+        </record>
+        <record id="reason_documents" model="om.quality.reason">
+            <field name="name">Missing documents</field>
+            <field name="sequence">5</field>
+        </record>
+        <record id="reason_workmanship" model="om.quality.reason">
+            <field name="name">Workmanship</field>
+            <field name="sequence">6</field>
+        </record>
+
+        <record id="team_main" model="om.quality.team">
+            <field name="name">Quality Control</field>
+        </record>
+    </data>
+</odoo>

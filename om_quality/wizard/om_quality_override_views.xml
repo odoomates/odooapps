@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_override_form" model="ir.ui.view">
+        <field name="name">om.quality.override.form</field>
+        <field name="model">om.quality.override</field>
+        <field name="arch" type="xml">
+            <form string="Override Blocking Check">
+                <div class="alert alert-warning" role="alert">
+                    The document goes on without these checks passing. The reason is logged on each check and on its document.
+                </div>
+                <group>
+                    <field name="check_ids" widget="many2many_tags" readonly="1"/>
+                    <field name="reason" placeholder="e.g. Accepted under deviation, approved by the customer"/>
+                </group>
+                <footer>
+                    <button name="action_confirm" type="object" string="Override" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

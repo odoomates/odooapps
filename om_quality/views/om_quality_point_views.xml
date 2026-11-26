@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_point_search" model="ir.ui.view">
+        <field name="name">om.quality.point.search</field>
+        <field name="model">om.quality.point</field>
+        <field name="arch" type="xml">
+            <search string="Control Points">
+                <field name="name" filter_domain="['|', ('name', 'ilike', self), ('code', 'ilike', self)]"/>
+                <field name="product_ids"/>
+                <field name="product_category_ids"/>
+                <field name="partner_ids"/>
+                <field name="team_id"/>
+                <filter string="Blocking" name="blocking" domain="[('is_blocking', '=', True)]"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Where" name="group_point_type" context="{'group_by': 'point_type'}"/>
+                    <filter string="Test" name="group_test_type" context="{'group_by': 'test_type'}"/>
+                    <filter string="How Often" name="group_frequency" context="{'group_by': 'frequency'}"/>
+                    <filter string="Team" name="group_team" context="{'group_by': 'team_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_quality_point_list" model="ir.ui.view">
+        <field name="name">om.quality.point.list</field>
+        <field name="model">om.quality.point</field>
+        <field name="arch" type="xml">
+            <list string="Control Points">
+                <field name="sequence" widget="handle"/>
+                <field name="code" optional="show"/>
+                <field name="name"/>
+                <field name="point_type"/>
+                <field name="product_ids" widget="many2many_tags" optional="show"/>
+                <field name="product_category_ids" widget="many2many_tags" optional="hide"/>
+                <field name="partner_ids" widget="many2many_tags" optional="hide"/>
+                <field name="test_type"/>
+                <field name="frequency"/>
+                <field name="is_blocking" widget="boolean_toggle" optional="show"/>
+                <field name="team_id" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_quality_point_form" model="ir.ui.view">
+        <field name="name">om.quality.point.form</field>
+        <field name="model">om.quality.point</field>
+        <field name="arch" type="xml">
+            <form string="Control Point">
+                <header>
+                    <button name="action_create_check" type="object" string="New Check" class="btn-primary"
+                        invisible="not id or point_type != 'manual'"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_checks" type="object" class="oe_stat_button" icon="assignment">
+                            <field name="check_count" widget="statinfo" string="Checks"/>
+                        </button>
+                        <button name="action_view_checks" type="object" class="oe_stat_button" icon="verified" invisible="not check_count">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="pass_rate" widget="float" digits="[16, 1]"/> %</span>
+                                <span class="o_stat_text">Pass Rate</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <field name="code" class="text-muted" invisible="code == '/'"/>
+                        <h1><field name="name" placeholder="e.g. Incoming visual inspection"/></h1>
+                    </div>
+                    <group>
+                        <group string="Where" name="where">
+                            <field name="point_type" widget="radio"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group string="What" name="what">
+                            <field name="product_ids" widget="many2many_tags" placeholder="Every product"/>
+                            <field name="product_category_ids" widget="many2many_tags" placeholder="Every category"/>
+                            <field name="partner_ids" widget="many2many_tags" placeholder="Everyone"/>
+                        </group>
+                        <group string="How Often" name="frequency">
+                            <field name="frequency"/>
+                            <label for="frequency_nth" invisible="frequency != 'nth'"/>
+                            <div class="o_row" invisible="frequency != 'nth'">
+                                <field name="frequency_nth" class="oe_inline"/> <span>times: the Nth, the 2Nth...</span>
+                            </div>
+                            <field name="frequency_percent" invisible="frequency != 'random'"/>
+                            <label for="frequency_days" invisible="frequency != 'periodic'"/>
+                            <div class="o_row" invisible="frequency != 'periodic'">
+                                <field name="frequency_days" class="oe_inline"/> <span>days, per product</span>
+                            </div>
+                            <div class="text-muted" colspan="2" invisible="frequency != 'lot'">
+                                One check for each new lot or serial number; a lot already checked is not checked again.
+                            </div>
+                        </group>
+                        <group string="Who and What Then" name="who">
+                            <field name="team_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="is_blocking"/>
+                            <field name="create_alert"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Test" name="test">
+                            <group>
+                                <group>
+                                    <field name="test_type" widget="radio"/>
+                                    <field name="template_id" invisible="test_type != 'template'" required="test_type == 'template'"/>
+                                </group>
+                                <group invisible="test_type != 'measure'">
+                                    <field name="norm_min"/>
+                                    <field name="norm_target"/>
+                                    <field name="norm_max"/>
+                                    <field name="uom_id" options="{'no_create': True}"/>
+                                    <field name="samples"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Instructions" name="instructions">
+                            <field name="instructions" placeholder="What the operator checks, and how."/>
+                            <group>
+                                <field name="instruction_file" filename="instruction_filename"/>
+                                <field name="instruction_filename" invisible="1"/>
+                                <field name="failure_message" placeholder="e.g. Put the goods aside and call the quality team."/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Internal notes"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_quality_point" model="ir.actions.act_window">
+        <field name="name">Control Points</field>
+        <field name="res_model">om.quality.point</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a control point</p>
+            <p>A control point says what to check, where and how often: checks then appear by themselves on the documents.</p>
+        </field>
+    </record>
+</odoo>

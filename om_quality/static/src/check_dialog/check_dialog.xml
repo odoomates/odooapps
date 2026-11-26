@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="om_quality.QualityCheckDialog">
+        <div class="o_om_quality_dialog">
+            <div t-if="this.state.loading" class="p-5 text-center text-muted">Loading...</div>
+            <t t-else="">
+                <div t-if="this.message and this.todoCount" class="alert alert-warning m-3 mb-0 d-flex gap-2 align-items-center" role="alert">
+                    <i class="oi oi-lg" data-icon="block"/>
+                    <span t-out="this.message"/>
+                </div>
+                <div t-if="!this.state.checks.length" class="p-5 text-center text-muted">No quality check on this document.</div>
+                <div t-else="" class="d-flex flex-column flex-md-row">
+                    <nav t-if="this.state.checks.length > 1" class="o_om_quality_dialog_list border-end p-2">
+                        <t t-foreach="this.state.checks" t-as="check" t-key="check.id">
+                            <button type="button" class="btn w-100 text-start mb-1 d-flex align-items-center gap-2"
+                                    t-att-class="check_index === this.state.index ? 'btn-primary' : 'btn-light'"
+                                    t-on-click="() => this.select(check_index)">
+                                <i class="oi" t-att-data-icon="check.state === 'passed' ? 'check_circle' : check.state === 'failed' ? 'cancel' : 'assignment'"
+                                   t-att-class="check_index !== this.state.index and (check.state === 'passed' ? 'text-success' : check.state === 'failed' ? 'text-danger' : '')"/>
+                                <span class="text-truncate flex-grow-1">
+                                    <span class="d-block text-truncate fw-bold" t-out="check.title"/>
+                                    <small class="d-block text-truncate" t-out="check.product or check.name"/>
+                                </span>
+                                <i t-if="check.blocking_pending" class="oi text-warning" data-icon="block" title="Holds the document"/>
+                            </button>
+                        </t>
+                    </nav>
+                    <t t-set="check" t-value="this.current"/>
+                    <section class="o_om_quality_dialog_check flex-grow-1 p-3">
+                        <div class="d-flex flex-wrap align-items-start gap-2 mb-2">
+                            <div class="flex-grow-1">
+                                <h3 class="mb-1" t-out="check.title"/>
+                                <div class="text-muted">
+                                    <span t-out="check.name"/>
+                                    <t t-if="check.product"> - <span t-out="check.product"/></t>
+                                    <t t-foreach="check.extra" t-as="extra" t-key="extra_index"> - <span t-out="extra[0]"/>: <b t-out="extra[1]"/></t>
+                                    <t t-if="check.document"> - <span t-out="check.document"/></t>
+                                </div>
+                            </div>
+                            <span t-if="check.is_blocking" class="badge text-bg-light border fs-6">Blocking</span>
+                            <span class="badge fs-6" t-att-class="this.stateClass(check)" t-out="this.stateLabel(check)"/>
+                        </div>
+
+                        <div t-if="check.instructions or check.instruction_file_url" class="o_om_quality_instructions card card-body mb-3">
+                            <div t-if="check.instructions" t-out="this.html(check.instructions)"/>
+                            <a t-if="check.instruction_file_url" t-att-href="check.instruction_file_url" target="_blank" class="d-inline-flex align-items-center gap-1">
+                                <i class="oi" data-icon="description"/> <span t-out="check.instruction_filename or 'Instructions'"/>
+                            </a>
+                        </div>
+
+                        <!-- measures and template parameters -->
+                        <div t-if="check.lines.length" class="mb-3">
+                            <t t-foreach="check.lines" t-as="line" t-key="line.id">
+                                <t t-set="status" t-value="this.lineStatus(line)"/>
+                                <div class="o_om_quality_line d-flex flex-wrap align-items-center gap-2 p-2 mb-2 rounded border"
+                                     t-att-class="status === 'ok' ? 'o_om_quality_ok' : status === 'ko' ? 'o_om_quality_ko' : ''">
+                                    <div class="flex-grow-1">
+                                        <div class="fw-bold"><span t-out="line.name"/><t t-if="line.sample > 1 or check.lines.filter((l) => l.name === line.name).length > 1"> #<t t-out="line.sample"/></t></div>
+                                        <small class="text-muted">
+                                            <t t-if="line.has_limits"><t t-out="this.limitsText(line)"/></t>
+                                            <t t-if="line.instructions"> <t t-out="line.instructions"/></t>
+                                        </small>
+                                    </div>
+                                    <t t-if="line.test_kind === 'measure'">
+                                        <input type="text" inputmode="decimal" class="form-control form-control-lg o_om_quality_value text-end"
+                                               t-att-placeholder="this.labels.valuePlaceholder"
+                                               t-att-value="this.edit.lines[line.id].value" t-att-readonly="check.state !== 'todo'"
+                                               t-on-input="(ev) => this.onValue(line, ev)"/>
+                                        <span class="o_om_quality_unit text-muted" t-out="line.uom"/>
+                                    </t>
+                                    <t t-else="">
+                                        <button type="button" class="btn btn-lg" t-att-disabled="check.state !== 'todo'"
+                                                t-att-class="this.edit.lines[line.id].result === 'pass' ? 'btn-success' : 'btn-outline-success'"
+                                                t-on-click="() => this.setLineResult(line, 'pass')" t-out="this.labels.pass"/>
+                                        <button type="button" class="btn btn-lg" t-att-disabled="check.state !== 'todo'"
+                                                t-att-class="this.edit.lines[line.id].result === 'fail' ? 'btn-danger' : 'btn-outline-danger'"
+                                                t-on-click="() => this.setLineResult(line, 'fail')" t-out="this.labels.fail"/>
+                                    </t>
+                                    <i t-if="status" class="oi oi-lg" t-att-data-icon="status === 'ok' ? 'check_circle' : 'error'"
+                                       t-att-class="status === 'ok' ? 'text-success' : 'text-danger'"/>
+                                </div>
+                            </t>
+                        </div>
+
+                        <!-- photos -->
+                        <div class="mb-3">
+                            <div class="d-flex flex-wrap gap-2 align-items-center">
+                                <t t-foreach="check.photos" t-as="photo" t-key="photo.id">
+                                    <div class="o_om_quality_photo position-relative">
+                                        <a t-att-href="photo.url" target="_blank"><img t-att-src="photo.url" t-att-alt="photo.name" class="rounded border"/></a>
+                                        <button t-if="check.state === 'todo'" type="button" class="btn btn-sm btn-light position-absolute top-0 end-0 m-1"
+                                                t-att-title="this.labels.removePhoto" t-on-click="() => this.removePhoto(photo)">
+                                            <i class="oi" data-icon="close"/>
+                                        </button>
+                                    </div>
+                                </t>
+                                <label t-if="check.state === 'todo' or check.state === 'failed'" class="btn btn-lg btn-outline-secondary d-inline-flex align-items-center gap-2 mb-0"
+                                       t-att-class="check.test_type === 'picture' and !check.photos.length ? 'btn-outline-primary' : ''">
+                                    <i class="oi oi-lg" data-icon="photo_camera"/>
+                                    <span t-out="this.labels.photo"/>
+                                    <input type="file" accept="image/*" capture="environment" multiple="multiple" class="d-none"
+                                           t-on-change="(ev) => this.onPhoto(ev)"/>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- note and reason -->
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-8">
+                                <textarea class="form-control" rows="2" t-att-placeholder="this.labels.notePlaceholder"
+                                          t-att-readonly="check.state !== 'todo' and check.state !== 'failed'"
+                                          t-att-value="this.edit.note" t-on-input="(ev) => this.onNote(ev)"/>
+                            </div>
+                            <div class="col-md-4" t-if="check.state === 'todo' or check.state === 'failed'">
+                                <select class="form-select" t-on-change="(ev) => this.onReason(ev)">
+                                    <option value="">Failure reason...</option>
+                                    <t t-foreach="this.state.reasons" t-as="reason" t-key="reason[0]">
+                                        <option t-att-value="reason[0]" t-att-selected="reason[0] === this.edit.reasonId" t-out="reason[1]"/>
+                                    </t>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- result buttons -->
+                        <div t-if="check.state === 'todo'" class="o_om_quality_buttons d-flex gap-3 mb-3">
+                            <t t-if="check.test_type === 'measure' or check.test_type === 'template'">
+                                <button type="button" class="btn btn-primary btn-lg flex-grow-1" t-att-disabled="this.state.busy"
+                                        t-on-click="() => this.run('action_record_measures', { advance: true })">
+                                    <i class="oi oi-lg me-2" data-icon="check"/><t t-out="this.labels.record"/>
+                                </button>
+                            </t>
+                            <t t-elif="check.test_type === 'instructions'">
+                                <button type="button" class="btn btn-success btn-lg flex-grow-1" t-att-disabled="this.state.busy"
+                                        t-on-click="() => this.run('action_pass', { advance: true })">
+                                    <i class="oi oi-lg me-2" data-icon="check"/><t t-out="this.labels.done"/>
+                                </button>
+                            </t>
+                            <t t-else="">
+                                <button type="button" class="btn btn-success btn-lg flex-grow-1" t-att-disabled="this.state.busy"
+                                        t-on-click="() => this.run('action_pass', { advance: true })">
+                                    <i class="oi oi-lg me-2" data-icon="thumb_up"/><t t-out="this.labels.pass"/>
+                                </button>
+                                <button type="button" class="btn btn-danger btn-lg flex-grow-1" t-att-disabled="this.state.busy"
+                                        t-on-click="() => this.run('action_fail')">
+                                    <i class="oi oi-lg me-2" data-icon="thumb_down"/><t t-out="this.labels.fail"/>
+                                </button>
+                            </t>
+                        </div>
+
+                        <!-- after the result -->
+                        <div t-if="check.state !== 'todo'" class="mb-3">
+                            <div class="alert mb-2" t-att-class="check.state === 'passed' ? 'alert-success' : check.state === 'failed' ? 'alert-danger' : 'alert-secondary'" role="alert">
+                                <b t-out="this.stateLabel(check)"/>
+                                <t t-if="check.done_by"> - <t t-out="check.done_by"/></t>
+                                <t t-if="check.disposition"> - <t t-out="check.disposition"/></t>
+                                <t t-if="check.alert"> - <t t-out="check.alert"/></t>
+                                <div t-if="check.state === 'failed' and check.failure_message" class="mt-1" t-out="check.failure_message"/>
+                                <div t-if="check.is_overridden" class="mt-1">Overridden: <t t-out="check.override_reason"/></div>
+                            </div>
+                            <div class="d-flex flex-wrap gap-2">
+                                <t t-foreach="check.actions" t-as="act" t-key="act.method">
+                                    <button type="button" class="btn btn-lg" t-att-class="'btn-' + act.style" t-att-disabled="this.state.busy"
+                                            t-on-click="() => this.run(act.method)" t-out="act.label"/>
+                                </t>
+                                <button t-if="(check.state === 'failed' or check.state === 'passed') and !check.disposition and !check.is_overridden" type="button" class="btn btn-lg btn-link" t-att-disabled="this.state.busy"
+                                        t-on-click="() => this.run('action_reset', { save: false })">Record Again</button>
+                            </div>
+                        </div>
+
+                        <!-- override -->
+                        <div t-if="check.blocking_pending and this.state.canOverride" class="border-top pt-3">
+                            <button t-if="!this.state.overrideOpen" type="button" class="btn btn-outline-warning"
+                                    t-on-click="() => this.state.overrideOpen = true">
+                                <i class="oi me-1" data-icon="lock_open"/>Override as quality manager
+                            </button>
+                            <div t-else="" class="d-flex flex-column gap-2">
+                                <textarea class="form-control" rows="2" placeholder="Why may the document go on without this check?"
+                                          t-att-value="this.state.overrideReason" t-on-input="(ev) => this.onOverrideReason(ev)"/>
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-warning" t-on-click="() => this.confirmOverride()">Override</button>
+                                    <button type="button" class="btn btn-secondary" t-on-click="() => this.state.overrideOpen = false">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+                <footer class="o_om_quality_dialog_footer d-flex flex-wrap gap-2 p-3 border-top">
+                    <button type="button" class="btn btn-primary" t-on-click="() => this.close()">Close</button>
+                    <button t-if="this.state.checks.length" type="button" class="btn btn-secondary" t-on-click="() => this.openForm()">Open the Check</button>
+                    <span t-if="this.state.checks.length > 1" class="ms-auto align-self-center text-muted">
+                        <t t-out="this.todoCount"/> to do of <t t-out="this.state.checks.length"/>
+                    </span>
+                </footer>
+            </t>
+        </div>
+    </t>
+</templates>
