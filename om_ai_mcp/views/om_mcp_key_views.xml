@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_mcp_key_view_list" model="ir.ui.view">
+        <field name="name">res.users.apikeys.list.mcp</field>
+        <field name="model">res.users.apikeys</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" delete="false">
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="name"/>
+                <field name="scope"/>
+                <field name="create_date"/>
+                <field name="expiration_date"/>
+                <button type="object" name="remove" string="Revoke" title="Revoke the key" icon="delete"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_mcp_key_action" model="ir.actions.act_window">
+        <field name="name">MCP Keys</field>
+        <field name="res_model">res.users.apikeys</field>
+        <field name="view_mode">list</field>
+        <field name="view_id" ref="om_mcp_key_view_list"/>
+        <field name="domain">[('scope', 'in', ('mcp', 'mcp_read'))]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No MCP keys</p>
+            <p>Create a key in AI > MCP Server > Connect. Administrators see the keys of every user here.</p>
+        </field>
+    </record>
+
+    <record id="form_res_users_key_show" model="ir.ui.view">
+        <field name="name">res.users.apikeys.show.mcp</field>
+        <field name="model">res.users.apikeys.show</field>
+        <field name="inherit_id" ref="base.form_res_users_key_show"/>
+        <field name="arch" type="xml">
+            <div id="rpc_key_card" position="attributes">
+                <attribute name="invisible">scope in ('mcp', 'mcp_read')</attribute>
+            </div>
+            <div id="rpc_key_card" position="after">
+                <div id="mcp_key_card" class="card" invisible="scope not in ('mcp', 'mcp_read')">
+                    <div class="card-header">
+                        <strong>Use this key in your AI app (MCP)</strong>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">Endpoint: <code><field name="base_url" class="d-inline"/>/mcp</code></p>
+                        <p class="mb-1">Header: <code>Authorization: Bearer &lt;this key&gt;</code></p>
+                        <p class="mb-0 text-muted">The key only works on the MCP endpoint.
+                            <span invisible="scope != 'mcp_read'">It is read only: tools that change data are not offered.</span>
+                            See AI > MCP Server > Connect for the settings of each app.</p>
+                    </div>
+                </div>
+            </div>
+        </field>
+    </record>
+</odoo>

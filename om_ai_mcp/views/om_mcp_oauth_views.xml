@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Apps (OAuth clients) -->
+    <record id="om_mcp_oauth_client_view_list" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.client.list</field>
+        <field name="model">om.mcp.oauth.client</field>
+        <field name="arch" type="xml">
+            <list decoration-warning="state == 'pending'" decoration-muted="state == 'blocked'">
+                <field name="name"/>
+                <field name="client_id" optional="show"/>
+                <field name="registration" optional="show"/>
+                <field name="auth_method" optional="hide"/>
+                <field name="software_id" optional="hide"/>
+                <field name="create_date" string="Registered On" optional="show"/>
+                <field name="ip" optional="hide"/>
+                <field name="grant_count" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'approved'"
+                       decoration-warning="state == 'pending'" decoration-danger="state == 'blocked'"/>
+                <button name="action_approve" type="object" string="Approve" icon="check" invisible="state == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_client_view_form" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.client.form</field>
+        <field name="model">om.mcp.oauth.client</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            invisible="state == 'approved'"/>
+                    <button name="action_block" type="object" string="Block" invisible="state == 'blocked'"
+                            confirm="Block this app? Its connections end at once."/>
+                    <button name="action_new_secret" type="object" string="New Client Secret"
+                            invisible="auth_method == 'none' or not id"/>
+                    <field name="state" widget="statusbar" statusbar_visible="pending,approved"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_grants" type="object" class="oe_stat_button" icon="link">
+                            <field name="grant_count" widget="statinfo" string="Connections"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Claude"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="client_id" widget="CopyClipboardChar"/>
+                            <field name="auth_method"/>
+                            <field name="registration"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="client_uri" widget="url"/>
+                            <field name="logo_uri" widget="url"/>
+                            <field name="software_id"/>
+                            <field name="software_version"/>
+                            <field name="ip"/>
+                        </group>
+                    </group>
+                    <label for="redirect_uris"/>
+                    <field name="redirect_uris" placeholder="https://app.example.com/oauth/callback"/>
+                    <p class="text-muted">Answers go only to these addresses, compared character by character
+                        (the port of 127.0.0.1 may change). Use https, or http on localhost.</p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_client_view_secret" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.client.secret</field>
+        <field name="model">om.mcp.oauth.client</field>
+        <field name="priority">50</field>
+        <field name="arch" type="xml">
+            <form>
+                <p>Copy the secret now: Odoo keeps only a hash of it and cannot show it again.</p>
+                <group>
+                    <field name="client_id" readonly="1" widget="CopyClipboardChar"/>
+                    <field name="secret_shown" readonly="1" widget="CopyClipboardChar"/>
+                </group>
+                <footer>
+                    <button string="Done" special="cancel" class="btn-primary"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_client_view_search" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.client.search</field>
+        <field name="model">om.mcp.oauth.client</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="client_id"/>
+                <filter name="filter_pending" string="Waiting for Approval" domain="[('state', '=', 'pending')]"/>
+                <filter name="filter_blocked" string="Blocked" domain="[('state', '=', 'blocked')]"/>
+                <separator/>
+                <filter name="filter_dynamic" string="Registered by the App" domain="[('registration', '=', 'dynamic')]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_client_action" model="ir.actions.act_window">
+        <field name="name">OAuth Apps</field>
+        <field name="res_model">om.mcp.oauth.client</field>
+        <field name="path">mcp-oauth-apps</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No OAuth app yet</p>
+            <p>Browser AI apps register here when a user connects them with the MCP endpoint URL. You can also add
+               an app yourself and give its client ID to the app.</p>
+        </field>
+    </record>
+
+    <!-- Connected apps (grants) -->
+    <record id="om_mcp_oauth_grant_view_list" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.grant.list</field>
+        <field name="model">om.mcp.oauth.grant</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false" decoration-muted="not active">
+                <field name="client_name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="scope" widget="badge" decoration-warning="scope == 'mcp'" decoration-info="scope == 'mcp:read'"/>
+                <field name="create_date" string="Connected On"/>
+                <field name="last_used"/>
+                <field name="expires" optional="show"/>
+                <field name="log_count" optional="hide"/>
+                <field name="revoked" optional="hide"/>
+                <field name="active" column_invisible="True"/>
+                <button name="action_revoke" type="object" string="Disconnect" icon="link_off" invisible="not active"
+                        confirm="Disconnect this app? It stops working at once and must ask you again."/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_grant_view_form" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.grant.form</field>
+        <field name="model">om.mcp.oauth.grant</field>
+        <field name="arch" type="xml">
+            <form create="false" edit="false">
+                <header>
+                    <button name="action_revoke" type="object" string="Disconnect" class="btn-primary"
+                            invisible="not active"
+                            confirm="Disconnect this app? It stops working at once and must ask you again."/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_logs" type="object" class="oe_stat_button" icon="history">
+                            <field name="log_count" widget="statinfo" string="Calls"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Disconnected" bg_color="text-bg-secondary" invisible="active"/>
+                    <div class="oe_title">
+                        <h1><field name="client_name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="user_id"/>
+                            <field name="scope"/>
+                            <field name="client_id" groups="om_ai.group_ai_manager"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Connected On"/>
+                            <field name="last_used"/>
+                            <field name="expires"/>
+                            <field name="revoked" invisible="active"/>
+                            <field name="resource" groups="base.group_no_one"/>
+                            <field name="redirect_uri" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_grant_view_search" model="ir.ui.view">
+        <field name="name">om.mcp.oauth.grant.search</field>
+        <field name="model">om.mcp.oauth.grant</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="client_name"/>
+                <field name="user_id"/>
+                <filter name="filter_mine" string="My Apps" domain="[('user_id', '=', uid)]"/>
+                <filter name="filter_write" string="Read and Write" domain="[('scope', '=', 'mcp')]"/>
+                <separator/>
+                <filter name="filter_disconnected" string="Disconnected" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_user" string="User" context="{'group_by': 'user_id'}"/>
+                    <filter name="group_app" string="App" context="{'group_by': 'client_name'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_mcp_oauth_grant_action" model="ir.actions.act_window">
+        <field name="name">Connected Apps</field>
+        <field name="res_model">om.mcp.oauth.grant</field>
+        <field name="path">mcp-connected-apps</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No connected app</p>
+            <p>When you connect a browser AI app to Odoo with its MCP endpoint URL, Odoo asks you what the app may
+               do and lists it here. Disconnect it here when you no longer use it. Administrators see the apps of
+               every user.</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_prompt_view_list" model="ir.ui.view">
+        <field name="name">om.ai.prompt.list.mcp</field>
+        <field name="model">om.ai.prompt</field>
+        <field name="inherit_id" ref="om_ai.om_ai_prompt_view_list"/>
+        <field name="arch" type="xml">
+            <field name="purpose" position="after">
+                <field name="mcp_available" string="MCP" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_ai_prompt_view_form" model="ir.ui.view">
+        <field name="name">om.ai.prompt.form.mcp</field>
+        <field name="model">om.ai.prompt</field>
+        <field name="inherit_id" ref="om_ai.om_ai_prompt_view_form"/>
+        <field name="arch" type="xml">
+            <field name="purpose" position="after">
+                <field name="mcp_available"/>
+                <field name="mcp_description" invisible="not mcp_available"
+                       placeholder="e.g. Summary of a customer for a call"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_ai_prompt_view_search" model="ir.ui.view">
+        <field name="name">om.ai.prompt.search.mcp</field>
+        <field name="model">om.ai.prompt</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="code"/>
+                <field name="feature"/>
+                <filter name="filter_mcp" string="Available to MCP" domain="[('mcp_available', '=', True)]"/>
+                <separator/>
+                <filter name="filter_archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+</odoo>
