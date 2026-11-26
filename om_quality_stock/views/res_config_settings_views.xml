@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_om_quality_stock" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om.quality.stock</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_quality.res_config_settings_view_form_om_quality"/>
+        <field name="arch" type="xml">
+            <block name="om_quality_failures" position="after">
+                <block title="Inventory" name="om_quality_stock_block">
+                    <setting id="om_quality_lot_hold_reservation" company_dependent="1"
+                             help="Lots and serial numbers on hold or rejected are skipped when Odoo reserves goods for deliveries, transfers and manufacturing. A lot chosen by hand is still reserved.">
+                        <field name="om_quality_lot_hold_reservation"/>
+                    </setting>
+                    <setting id="om_quality_quarantine" string="Quarantine Locations"
+                             help="Each warehouse sends the goods of failed checks to its quarantine location, created at the first quarantine.">
+                        <button name="action_om_quality_warehouses" type="object" string="Warehouses" class="btn-link" icon="east"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+</odoo>

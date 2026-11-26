@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_check_form_mrp" model="ir.ui.view">
+        <field name="name">om.quality.check.form.mrp</field>
+        <field name="model">om.quality.check</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_check_form"/>
+        <field name="arch" type="xml">
+            <button name="action_retest" position="before">
+                <field name="production_state" invisible="1"/>
+                <button name="action_om_quality_rework" type="object" string="Rework" class="btn-warning"
+                    invisible="state != 'failed' or not production_id or disposition or is_overridden"/>
+                <button name="action_om_quality_mrp_scrap" type="object" string="Scrap"
+                    invisible="state != 'failed' or not production_id or disposition or is_overridden or production_state in ('draft', 'cancel')"/>
+            </button>
+            <field name="partner_id" position="before">
+                <field name="production_id" invisible="not production_id"/>
+                <field name="workorder_id" invisible="not workorder_id"/>
+                <field name="workcenter_id" invisible="not workcenter_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_list_mrp" model="ir.ui.view">
+        <field name="name">om.quality.check.list.mrp</field>
+        <field name="model">om.quality.check</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_check_list"/>
+        <field name="arch" type="xml">
+            <field name="document_name" position="after">
+                <field name="workcenter_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_check_search_mrp" model="ir.ui.view">
+        <field name="name">om.quality.check.search.mrp</field>
+        <field name="model">om.quality.check</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_check_search"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="production_id"/>
+                <field name="workcenter_id"/>
+            </field>
+            <filter name="group_reason" position="after">
+                <filter string="Work Centre" name="group_workcenter" context="{'group_by': 'workcenter_id'}"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

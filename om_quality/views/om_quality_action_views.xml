@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_action_search" model="ir.ui.view">
+        <field name="name">om.quality.action.search</field>
+        <field name="model">om.quality.action</field>
+        <field name="arch" type="xml">
+            <search string="Actions">
+                <field name="name"/>
+                <field name="alert_id"/>
+                <field name="user_id"/>
+                <field name="product_id"/>
+                <filter string="My Actions" name="my" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter string="Open" name="open" domain="[('state', '=', 'open')]"/>
+                <filter string="Late" name="late" domain="[('state', '=', 'open'), ('date_deadline', '&lt;', 'today')]"/>
+                <filter string="Done" name="done" domain="[('state', '=', 'done')]"/>
+                <separator/>
+                <filter string="To Verify" name="to_verify" domain="[('state', '=', 'done'), ('effectiveness', '=', 'pending')]"/>
+                <filter string="Not Effective" name="not_effective" domain="[('effectiveness', '=', 'not_effective')]"/>
+                <separator/>
+                <filter string="Due Date" name="filter_date_deadline" date="date_deadline"/>
+                <group>
+                    <filter string="Type" name="group_type" context="{'group_by': 'action_type'}"/>
+                    <filter string="Owner" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Non-conformance" name="group_alert" context="{'group_by': 'alert_id'}"/>
+                    <filter string="Status" name="group_state" context="{'group_by': 'state'}"/>
+                    <filter string="Effectiveness" name="group_effectiveness" context="{'group_by': 'effectiveness'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_quality_action_list" model="ir.ui.view">
+        <field name="name">om.quality.action.list</field>
+        <field name="model">om.quality.action</field>
+        <field name="arch" type="xml">
+            <list string="Actions" decoration-muted="state == 'cancel'" decoration-danger="is_late" sample="1">
+                <field name="alert_id"/>
+                <field name="action_type"/>
+                <field name="name"/>
+                <field name="user_id" widget="many2one_avatar_user"/>
+                <field name="date_deadline" widget="remaining_days" invisible="state != 'open'"/>
+                <field name="date_done" optional="show"/>
+                <field name="effectiveness" widget="badge" decoration-success="effectiveness == 'effective'" decoration-danger="effectiveness == 'not_effective'"/>
+                <field name="is_late" column_invisible="True"/>
+                <field name="activity_ids" widget="list_activity" optional="hide"/>
+                <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'open'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_quality_action_form" model="ir.ui.view">
+        <field name="name">om.quality.action.form</field>
+        <field name="model">om.quality.action</field>
+        <field name="arch" type="xml">
+            <form string="Action">
+                <header>
+                    <button name="action_done" type="object" string="Mark as Done" class="btn-primary" invisible="state != 'open'"/>
+                    <button name="action_set_effective" type="object" string="Effective" class="btn-success" invisible="state != 'done' or effectiveness != 'pending'"/>
+                    <button name="action_set_not_effective" type="object" string="Not Effective" invisible="state != 'done' or effectiveness != 'pending'"/>
+                    <button name="action_reopen" type="object" string="Reopen" invisible="state == 'open'"/>
+                    <button name="action_cancel" type="object" string="Cancel" invisible="state != 'open'"/>
+                    <field name="state" widget="statusbar" statusbar_visible="open,done"/>
+                </header>
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Add an incoming flatness check for this vendor"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="alert_id"/>
+                            <field name="action_type" widget="radio"/>
+                            <field name="product_id" invisible="not product_id"/>
+                        </group>
+                        <group>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="date_deadline"/>
+                            <field name="date_done" invisible="not date_done"/>
+                            <field name="effectiveness"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="What to do"/>
+                        </page>
+                        <page string="Effectiveness" name="effectiveness">
+                            <field name="effectiveness_note" placeholder="How the result was verified"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_quality_action_kanban" model="ir.ui.view">
+        <field name="name">om.quality.action.kanban</field>
+        <field name="model">om.quality.action</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="state" sample="1" quick_create="0">
+                <field name="state"/>
+                <field name="is_late"/>
+                <templates>
+                    <t t-name="card">
+                        <field name="name" class="fw-bold"/>
+                        <field name="alert_id" class="small text-muted"/>
+                        <div class="small">
+                            <field name="action_type"/> -
+                            <span t-att-class="record.is_late.raw_value ? 'text-danger' : ''"><field name="date_deadline"/></span>
+                        </div>
+                        <footer>
+                            <field name="effectiveness" class="small text-muted"/>
+                            <field name="activity_ids" widget="kanban_activity"/>
+                            <field name="user_id" widget="many2one_avatar_user" class="ms-auto"/>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_om_quality_action_pivot" model="ir.ui.view">
+        <field name="name">om.quality.action.pivot</field>
+        <field name="model">om.quality.action</field>
+        <field name="arch" type="xml">
+            <pivot string="Actions">
+                <field name="user_id" type="row"/>
+                <field name="state" type="col"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_om_quality_action" model="ir.actions.act_window">
+        <field name="name">Corrective and Preventive Actions</field>
+        <field name="res_model">om.quality.action</field>
+        <field name="view_mode">list,kanban,form,pivot</field>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No action yet</p>
+            <p>Containment, corrective and preventive actions of the non-conformances, with their owner, due date and effectiveness.</p>
+        </field>
+    </record>
+</odoo>

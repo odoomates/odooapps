@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="team_main" model="om.quality.team">
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="member_ids" eval="[(4, ref('base.user_admin')), (4, ref('base.user_demo'))]"/>
+    </record>
+
+    <record id="tag_customer" model="om.quality.tag">
+        <field name="name">Customer complaint</field>
+        <field name="color">1</field>
+    </record>
+    <record id="tag_supplier" model="om.quality.tag">
+        <field name="name">Supplier</field>
+        <field name="color">4</field>
+    </record>
+
+    <record id="template_panel" model="om.quality.test.template">
+        <field name="name">Panel inspection</field>
+        <field name="description">Measure the panel at three points and check the surface under good light.</field>
+    </record>
+    <record id="template_panel_thickness" model="om.quality.test.parameter">
+        <field name="template_id" ref="template_panel"/>
+        <field name="sequence">1</field>
+        <field name="name">Thickness</field>
+        <field name="test_kind">measure</field>
+        <field name="norm_min">17.8</field>
+        <field name="norm_target">18.0</field>
+        <field name="norm_max">18.2</field>
+        <field name="uom_id" ref="uom.product_uom_millimeter"/>
+        <field name="samples">3</field>
+    </record>
+    <record id="template_panel_surface" model="om.quality.test.parameter">
+        <field name="template_id" ref="template_panel"/>
+        <field name="sequence">2</field>
+        <field name="name">Surface free of scratches</field>
+        <field name="test_kind">passfail</field>
+    </record>
+    <record id="template_panel_label" model="om.quality.test.parameter">
+        <field name="template_id" ref="template_panel"/>
+        <field name="sequence">3</field>
+        <field name="name">Label and lot number readable</field>
+        <field name="test_kind">passfail</field>
+    </record>
+
+    <record id="point_manual_audit" model="om.quality.point">
+        <field name="name">Weekly workplace safety walk</field>
+        <field name="point_type">manual</field>
+        <field name="test_type">picture</field>
+        <field name="team_id" ref="team_main"/>
+        <field name="instructions"><![CDATA[<p>Walk the shop floor, take a photo of each blocked aisle or missing guard, and fail the check if anything is unsafe.</p>]]></field>
+    </record>
+
+    <record id="alert_demo_1" model="om.quality.alert">
+        <field name="name">Scratched panels from the last delivery</field>
+        <field name="team_id" ref="team_main"/>
+        <field name="priority">2</field>
+        <field name="reason_id" ref="reason_damage"/>
+        <field name="tag_ids" eval="[(4, ref('tag_customer'))]"/>
+        <field name="stage_id" ref="stage_analysis"/>
+        <field name="cost">450</field>
+        <field name="description"><![CDATA[<p>The customer found scratches on 12 panels out of 200.</p>]]></field>
+        <field name="root_cause"><![CDATA[<p>The pallets were wrapped without corner protection.</p>]]></field>
+    </record>
+    <record id="action_demo_1" model="om.quality.action">
+        <field name="alert_id" ref="alert_demo_1"/>
+        <field name="name">Replace the 12 panels for the customer</field>
+        <field name="action_type">containment</field>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=2)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="action_demo_2" model="om.quality.action">
+        <field name="alert_id" ref="alert_demo_1"/>
+        <field name="name">Add corner protection to the packing instructions</field>
+        <field name="action_type">corrective</field>
+        <field name="user_id" ref="base.user_demo"/>
+        <field name="date_deadline" eval="(DateTime.today() + relativedelta(days=10)).strftime('%Y-%m-%d')"/>
+    </record>
+</odoo>

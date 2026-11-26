@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_test_template_list" model="ir.ui.view">
+        <field name="name">om.quality.test.template.list</field>
+        <field name="model">om.quality.test.template</field>
+        <field name="arch" type="xml">
+            <list string="Inspection Templates">
+                <field name="name"/>
+                <field name="parameter_count"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_quality_test_template_form" model="ir.ui.view">
+        <field name="name">om.quality.test.template.form</field>
+        <field name="model">om.quality.test.template</field>
+        <field name="arch" type="xml">
+            <form string="Inspection Template">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Incoming steel sheet"/></h1>
+                    </div>
+                    <group>
+                        <field name="description" placeholder="Shown to the operator above the parameters"/>
+                        <field name="company_id" groups="base.group_multi_company"/>
+                        <field name="active" invisible="1"/>
+                    </group>
+                    <field name="parameter_ids">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="test_kind"/>
+                            <field name="norm_min" invisible="test_kind != 'measure'"/>
+                            <field name="norm_target" invisible="test_kind != 'measure'"/>
+                            <field name="norm_max" invisible="test_kind != 'measure'"/>
+                            <field name="uom_id" invisible="test_kind != 'measure'" options="{'no_create': True}"/>
+                            <field name="samples"/>
+                            <field name="instructions" optional="show"/>
+                        </list>
+                    </field>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_quality_test_template" model="ir.actions.act_window">
+        <field name="name">Inspection Templates</field>
+        <field name="res_model">om.quality.test.template</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an inspection template</p>
+            <p>A list of parameters to inspect, each pass/fail or measured against limits, reused by control points.</p>
+        </field>
+    </record>
+</odoo>

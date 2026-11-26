@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_measure_line_search" model="ir.ui.view">
+        <field name="name">om.quality.measure.line.search</field>
+        <field name="model">om.quality.measure.line</field>
+        <field name="arch" type="xml">
+            <search string="Measures">
+                <field name="name"/>
+                <field name="product_id"/>
+                <field name="point_id"/>
+                <field name="check_id"/>
+                <filter string="Out of Limits" name="filter_out" domain="[('is_ok', '=', False), ('value_set', '=', True)]"/>
+                <filter string="Recorded" name="filter_recorded" domain="['|', ('value_set', '=', True), ('result', '!=', False)]"/>
+                <separator/>
+                <filter string="Done On" name="filter_date_done" date="date_done"/>
+                <group>
+                    <filter string="Measure" name="group_name" context="{'group_by': 'name'}"/>
+                    <filter string="Product" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Control Point" name="group_point" context="{'group_by': 'point_id'}"/>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Done On" name="group_date" context="{'group_by': 'date_done'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_quality_measure_line_list" model="ir.ui.view">
+        <field name="name">om.quality.measure.line.list</field>
+        <field name="model">om.quality.measure.line</field>
+        <field name="arch" type="xml">
+            <list string="Measures" create="0" edit="0" decoration-danger="value_set and not is_ok">
+                <field name="check_id"/>
+                <field name="product_id"/>
+                <field name="name"/>
+                <field name="sample" optional="show"/>
+                <field name="norm_min"/>
+                <field name="norm_target" optional="show"/>
+                <field name="norm_max"/>
+                <field name="value"/>
+                <field name="uom_id" optional="show"/>
+                <field name="deviation" optional="hide"/>
+                <field name="value_set" column_invisible="True"/>
+                <field name="is_ok"/>
+                <field name="date_done" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_quality_measure_line_pivot" model="ir.ui.view">
+        <field name="name">om.quality.measure.line.pivot</field>
+        <field name="model">om.quality.measure.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Measures">
+                <field name="name" type="row"/>
+                <field name="is_ok" type="col"/>
+                <field name="value" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_om_quality_measure_line_graph" model="ir.ui.view">
+        <field name="name">om.quality.measure.line.graph</field>
+        <field name="model">om.quality.measure.line</field>
+        <field name="arch" type="xml">
+            <graph string="Measures" type="line">
+                <field name="date_done" interval="day"/>
+                <field name="value" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_om_quality_measure_line" model="ir.actions.act_window">
+        <field name="name">Measure Analysis</field>
+        <field name="res_model">om.quality.measure.line</field>
+        <field name="view_mode">list,pivot,graph</field>
+        <field name="domain">[('test_kind', '=', 'measure')]</field>
+        <field name="context">{'search_default_filter_recorded': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_empty_folder">No measure yet</p>
+            <p>Values recorded on measure checks and inspection templates show here.</p>
+        </field>
+    </record>
+</odoo>

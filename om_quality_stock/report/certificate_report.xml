@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="action_report_om_quality_certificate" model="ir.actions.report">
+        <field name="name">Certificate of Analysis</field>
+        <field name="model">stock.picking</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_quality_stock.report_om_quality_certificate</field>
+        <field name="print_report_name">'Certificate of Analysis - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="stock.model_stock_picking"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_om_quality_certificate_document">
+        <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang or o.env.lang)"/>
+        <t t-set="partner" t-value="o.partner_id.commercial_partner_id"/>
+        <t t-set="address">
+            <div t-if="partner">
+                <strong>Customer</strong>
+                <div t-out="partner" t-options='{"widget": "contact", "fields": ["address", "name", "vat"], "no_marker": True}'/>
+            </div>
+        </t>
+        <t t-call="web.external_layout" partner="partner" address="address">
+            <div class="page">
+                <h2>Certificate of Analysis</h2>
+                <div class="row mb-4" id="informations">
+                    <div class="col col-3 mw-100 mb-2" name="div_delivery">
+                        <strong>Delivery</strong>
+                        <div t-field="o.name" class="m-0"/>
+                    </div>
+                    <div class="col col-3 mw-100 mb-2" t-if="o.origin" name="div_origin">
+                        <strong>Order</strong>
+                        <div t-field="o.origin" class="m-0"/>
+                    </div>
+                    <div class="col col-3 mw-100 mb-2" name="div_date">
+                        <strong>Date</strong>
+                        <div t-out="o.date_done or o.scheduled_date" t-options='{"widget": "date"}' class="m-0"/>
+                    </div>
+                </div>
+                <p>We certify that the goods below were inspected and passed the following quality checks.</p>
+                <t t-foreach="o._om_quality_certificate_lines()" t-as="group">
+                    <div class="mt-4" style="page-break-inside: avoid;">
+                        <h5 class="mb-1">
+                            <span t-out="group['product'].display_name"/>
+                            <span t-if="group['lot']"> - Lot/Serial: <span t-out="group['lot'].name"/></span>
+                        </h5>
+                        <div class="text-muted mb-2">
+                            Quantity: <span t-out="group['quantity']" t-options='{"widget": "float", "decimal_precision": "Product Unit"}'/>
+                            <span t-out="group['uom'].name"/>
+                        </div>
+                        <table class="table table-sm o_main_table" t-if="group['checks']">
+                            <thead>
+                                <tr>
+                                    <th class="text-start">Check</th>
+                                    <th class="text-start">Parameter</th>
+                                    <th class="text-end">Specification</th>
+                                    <th class="text-end">Result</th>
+                                    <th class="text-start">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="group['checks']" t-as="check">
+                                    <t t-set="lines" t-value="check.measure_line_ids"/>
+                                    <tr t-if="not lines">
+                                        <td><span t-out="check.title"/> <small class="text-muted" t-out="check.name"/></td>
+                                        <td/>
+                                        <td/>
+                                        <td class="text-end">Passed</td>
+                                        <td><span t-out="check.date_done" t-options='{"widget": "date"}'/></td>
+                                    </tr>
+                                    <t t-foreach="lines" t-as="line">
+                                        <tr>
+                                            <td><t t-if="line_first"><span t-out="check.title"/> <small class="text-muted" t-out="check.name"/></t></td>
+                                            <td><span t-out="line.display_name"/></td>
+                                            <td class="text-end">
+                                                <t t-if="line.test_kind == 'measure' and (line.norm_min or line.norm_max)">
+                                                    <span t-out="line.norm_min"/> - <span t-out="line.norm_max"/> <span t-out="line.uom_id.name"/>
+                                                </t>
+                                                <t t-elif="line.test_kind == 'passfail'">Pass</t>
+                                            </td>
+                                            <td class="text-end"><span t-out="line._format_value()"/></td>
+                                            <td><t t-if="line_first"><span t-out="check.date_done" t-options='{"widget": "date"}'/></t></td>
+                                        </tr>
+                                    </t>
+                                </t>
+                            </tbody>
+                        </table>
+                        <p t-else="" class="text-muted">No quality check recorded for these goods.</p>
+                    </div>
+                </t>
+                <div class="mt-5" name="signature">
+                    <strong>Quality Department</strong>
+                    <p class="mt-4">______________________________</p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_om_quality_certificate">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="om_quality_stock.report_om_quality_certificate_document" t-lang="o.partner_id.lang or o.env.lang"/>
+            </t>
+        </t>
+    </template>
+</odoo>

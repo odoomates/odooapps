@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_alert_form_mrp" model="ir.ui.view">
+        <field name="name">om.quality.alert.form.mrp</field>
+        <field name="model">om.quality.alert</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_alert_form"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="production_id" invisible="not production_id"/>
+                <field name="workorder_id" invisible="not workorder_id"/>
+                <field name="workcenter_id"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_search_mrp" model="ir.ui.view">
+        <field name="name">om.quality.alert.search.mrp</field>
+        <field name="model">om.quality.alert</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_alert_search"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="production_id"/>
+                <field name="workcenter_id"/>
+            </field>
+            <filter name="group_reason" position="after">
+                <filter string="Work Centre" name="group_workcenter" context="{'group_by': 'workcenter_id'}"/>
+            </filter>
+        </field>
+    </record>
+</odoo>

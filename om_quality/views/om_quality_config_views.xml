@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_alert_stage_list" model="ir.ui.view">
+        <field name="name">om.quality.alert.stage.list</field>
+        <field name="model">om.quality.alert.stage</field>
+        <field name="arch" type="xml">
+            <list string="Stages" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="team_ids" widget="many2many_tags" optional="show"/>
+                <field name="fold"/>
+                <field name="is_closed"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_om_quality_alert_stage" model="ir.actions.act_window">
+        <field name="name">Non-conformance Stages</field>
+        <field name="res_model">om.quality.alert.stage</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a stage</p>
+            <p>e.g. New, Root Cause Analysis, Actions in Progress, Effectiveness Check, Closed.</p>
+        </field>
+    </record>
+
+    <record id="view_om_quality_reason_list" model="ir.ui.view">
+        <field name="name">om.quality.reason.list</field>
+        <field name="model">om.quality.reason</field>
+        <field name="arch" type="xml">
+            <list string="Failure Reasons" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="description" optional="show"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_om_quality_reason" model="ir.actions.act_window">
+        <field name="name">Failure Reasons</field>
+        <field name="res_model">om.quality.reason</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a failure reason</p>
+            <p>Reasons classify failed checks and non-conformances for the reports.</p>
+        </field>
+    </record>
+
+    <record id="view_om_quality_tag_list" model="ir.ui.view">
+        <field name="name">om.quality.tag.list</field>
+        <field name="model">om.quality.tag</field>
+        <field name="arch" type="xml">
+            <list string="Tags" editable="bottom">
+                <field name="name"/>
+                <field name="color" widget="color_picker"/>
+            </list>
+        </field>
+    </record>
+    <record id="action_om_quality_tag" model="ir.actions.act_window">
+        <field name="name">Tags</field>
+        <field name="res_model">om.quality.tag</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a tag</p>
+        </field>
+    </record>
+
+    <record id="action_om_quality_dashboard" model="ir.actions.client">
+        <field name="name">Quality Overview</field>
+        <field name="tag">om_quality_dashboard</field>
+    </record>
+</odoo>

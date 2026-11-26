@@ -1,0 +1,760 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* om_quality_stock
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 20.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-11-26 06:08+0000\n"
+"PO-Revision-Date: 2026-11-26 06:08+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: om_quality_stock
+#: model:ir.module.module,description:base.module_om_quality_stock
+msgid ""
+"\n"
+"Quality checks on transfers: control points on receipts, deliveries and internal transfers create\n"
+"their checks when the transfer is confirmed, or once per lot when lots are set. A blocking check\n"
+"holds the validation until it passes or a quality manager overrides it. A failed check moves the\n"
+"goods to the quarantine location of the warehouse, scraps them, returns them to the vendor or asks\n"
+"for a retest; its lot is put on hold and kept out of reservation. Deliveries print a certificate of\n"
+"analysis with the passed checks and their measures.\n"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_om_quality_check__picking_state
+msgid ""
+" * Draft: The transfer is not confirmed yet. Reservation doesn't apply.\n"
+" * Waiting another operation: This transfer is waiting for another operation before being ready.\n"
+" * Waiting: The transfer is waiting for the availability of some products.\n"
+"(a) The shipping policy is \"As soon as possible\": no product could be reserved.\n"
+"(b) The shipping policy is \"When all products are ready\": not all the products could be reserved.\n"
+" * Ready: The transfer is ready to be processed.\n"
+"(a) The shipping policy is \"As soon as possible\": at least one product has been reserved.\n"
+"(b) The shipping policy is \"When all products are ready\": all product have been reserved.\n"
+" * Done: The transfer has been processed.\n"
+" * Cancelled: The transfer has been cancelled."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.actions.report,print_report_name:om_quality_stock.action_report_om_quality_certificate
+msgid "'Certificate of Analysis - %s' % (object.name)"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "- Lot/Serial:"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_picking_form_om_quality
+msgid "<span class=\"o_stat_text\">Quality Checks</span>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_picking_form_om_quality
+msgid "<span invisible=\"not om_quality_todo_count\"> / </span>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "<strong>Customer</strong>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "<strong>Date</strong>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "<strong>Delivery</strong>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "<strong>Order</strong>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "<strong>Quality Department</strong>"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.test.template,description:om_quality_stock.template_dispatch
+msgid "Before the goods leave: label, seal and count."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.test.parameter,name:om_quality_stock.template_dispatch_seal
+msgid "Box sealed and undamaged"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.actions.report,name:om_quality_stock.action_report_om_quality_certificate
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_picking_form_om_quality
+msgid "Certificate of Analysis"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Check"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_point.py:0
+msgid "Choose the operation types of the control point %s."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_res_company
+msgid "Company"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_res_config_settings
+msgid "Config Settings"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_warehouse_om_quality
+msgid "Created at the first quarantine"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Date"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__disposition
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_om_quality_check_search_stock
+msgid "Decision"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_om_quality_check__product_uom_id
+msgid "Default unit of measure used for all stock operations."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_alert__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_point__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_res_company__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_res_config_settings__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_location__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_lot__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_move__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_quant__display_name
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_warehouse__display_name
+msgid "Display Name"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.point,failure_message:om_quality_stock.point_receipt_packaging
+msgid "Do not put the goods away: send them to quarantine and tell the buyer."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.point,name:om_quality_stock.point_receipt_dimension
+msgid "Drawer front width"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.res_config_settings_view_form_om_quality_stock
+msgid ""
+"Each warehouse sends the goods of failed checks to its quarantine location, "
+"created at the first quarantine."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__om_quality_failed_count
+msgid "Failed Quality Checks"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_stock_location__om_quality_quarantine
+msgid ""
+"Goods put aside by a failed quality check. A route does not take goods out "
+"of it by itself."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Goods sent to quarantine: %s."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.test.parameter,name:om_quality_stock.template_dispatch_weight
+msgid "Gross weight"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_alert__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_point__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_res_company__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_res_config_settings__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_location__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_lot__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_move__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_quant__id
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_warehouse__id
+msgid "ID"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.res_config_settings_view_form_om_quality_stock
+msgid "Inventory"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_stock_location
+msgid "Inventory Location"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_res_company__om_quality_lot_hold_reservation
+#: model:ir.model.fields,field_description:om_quality_stock.field_res_config_settings__om_quality_lot_hold_reservation
+msgid "Keep Lots on Hold out of Reservation"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:om.quality.point,instructions:om_quality_stock.point_receipt_packaging
+msgid ""
+"Look at every box before opening: no crushed corners, no water marks, seals "
+"unbroken. Take a photo of any damage."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Lot"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_om_quality_check__lot_name
+msgid "Lot or serial number entered on a receipt before it exists."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_stock_lot
+msgid "Lot/Serial"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__lot_name
+msgid "Lot/Serial Name"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_alert__lot_id
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__lot_id
+msgid "Lot/Serial Number"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_res_company__om_quality_lot_hold_reservation
+#: model:ir.model.fields,help:om_quality_stock.field_res_config_settings__om_quality_lot_hold_reservation
+msgid ""
+"Lots and serial numbers on hold or rejected are skipped when Odoo picks the "
+"lots to reserve. A lot chosen by hand, or brought by the previous step of a "
+"route, is still reserved."
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.res_config_settings_view_form_om_quality_stock
+msgid ""
+"Lots and serial numbers on hold or rejected are skipped when Odoo reserves "
+"goods for deliveries, transfers and manufacturing. A lot chosen by hand is "
+"still reserved."
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:om.quality.point,instructions:om_quality_stock.point_receipt_dimension
+msgid ""
+"Measure the width of three drawer fronts of the lot with the calliper, at "
+"mid-height."
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "No quality check recorded for these goods."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_om_quality_alert
+msgid "Non-conformance"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_picking_form_om_quality
+msgid "Non-conformances"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__om_quality_alert_count
+msgid "Non-conformances Count"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__stock_lot__om_quality_state__ok
+msgid "OK"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_move__om_quality_evaluated
+msgid "Om Quality Evaluated"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__stock_lot__om_quality_state__hold
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_form_om_quality
+msgid "On Hold"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_om_quality_point__point_type
+msgid ""
+"On demand: checks are created by hand from the point or a document.\n"
+"The inventory and manufacturing apps add transfers, manufacturing orders and work orders."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_stock_lot__om_quality_state
+msgid ""
+"On hold: a quality check failed, the lot waits for a decision. Rejected: scrapped or returned.\n"
+"Lots on hold or rejected are not reserved by Odoo for deliveries and manufacturing."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid ""
+"Only a failed check sends goods to quarantine, scrap or back to the vendor."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Only the goods of a validated receipt go back to the vendor."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__picking_code
+msgid "Operation Kind"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__picking_type_id
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_om_quality_check_search_stock
+msgid "Operation Type"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_point__picking_type_ids
+msgid "Operation Types"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.point,name:om_quality_stock.point_receipt_packaging
+msgid "Packaging intact on arrival"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Parameter"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Pass"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Passed"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.point,name:om_quality_stock.point_delivery_dispatch
+#: model:om.quality.test.template,name:om_quality_stock.template_dispatch
+msgid "Pre-dispatch checklist"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_form_om_quality
+msgid "Put on Hold"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/stock_lot.py:0
+msgid "Put on hold by %s."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Put on hold: the check %s failed."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_lot__om_quality_state
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__om_quality_state
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_tree_om_quality
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.vpicktree_om_quality
+msgid "Quality"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.module.module,shortdesc:base.module_om_quality_stock
+msgid "Quality - Inventory"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_om_quality_check
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_move__om_quality_check_id
+msgid "Quality Check"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__om_quality_check_ids
+msgid "Quality Check Records"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_lot__om_quality_check_ids
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__om_quality_check_count
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_picking_form_om_quality
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_form_om_quality
+msgid "Quality Checks"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_lot__om_quality_check_count
+msgid "Quality Checks Count"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_picking__om_quality_todo_count
+msgid "Quality Checks to Do"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_om_quality_point
+msgid "Quality Control Point"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.module.module,summary:base.module_om_quality_stock
+msgid ""
+"Quality checks on receipts, deliveries and internal transfers: blocking "
+"validation, quarantine location, lots on hold kept out of reservation, "
+"scrap, return to vendor and certificate of analysis"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.search_product_lot_filter_om_quality
+msgid "Quality: On Hold"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.search_product_lot_filter_om_quality
+msgid "Quality: Rejected"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_stock_quant
+msgid "Quant"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__quantity
+msgid "Quantity"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Quantity:"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+#: code:addons/om_quality_stock/models/stock_warehouse.py:0
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_om_quality_check_form_stock
+msgid "Quarantine"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_location__om_quality_quarantine
+#: model:ir.model.fields,field_description:om_quality_stock.field_stock_warehouse__om_quality_quarantine_location_id
+msgid "Quarantine Location"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.res_config_settings_view_form_om_quality_stock
+msgid "Quarantine Locations"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__quarantine_picking_id
+msgid "Quarantine Transfer"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Quarantine of the goods of the check"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__om_quality_check__disposition__quarantine
+msgid "Quarantined"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__quarantine_location_id
+msgid "Quarantined In"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Quarantined by the check %s."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.point,name:om_quality_stock.point_receipt_audit
+msgid "Random photo audit of receipts"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_form_om_quality
+msgid "Reject"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__stock_lot__om_quality_state__rejected
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_form_om_quality
+msgid "Rejected"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Rejected after the check %s."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/stock_lot.py:0
+msgid "Rejected by %s."
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_production_lot_form_om_quality
+msgid "Release"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/stock_lot.py:0
+msgid "Released by %s."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Released: the check %s passed."
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Result"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__return_picking_id
+msgid "Return"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_om_quality_check_form_stock
+msgid "Return to Vendor"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Return to the vendor: %s."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__om_quality_check__disposition__return
+msgid "Returned to vendor"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_om_quality_check_form_stock
+msgid "Scrap"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__om_quality_check__disposition__scrap
+msgid "Scrapped"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__scrap_move_ids
+msgid "Scraps"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Sent to %s by the check"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Set the received quantity (and lot) of %s on the transfer first."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:om.quality.test.parameter,name:om_quality_stock.template_dispatch_label
+msgid "Shipping label matches the order"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid "Specification"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_stock_move
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__move_id
+msgid "Stock Move"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "The check %s is already decided."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "The check %s is not on a transfer."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_stock_move__om_quality_evaluated
+msgid "The control points of the move were looked at."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_stock_move__om_quality_check_id
+msgid "The failed check this scrap comes from."
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "The goods of the check %s are already in quarantine."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_om_quality_point__picking_type_ids
+msgid "The receipts, deliveries or internal transfers that get the check."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_stock_picking
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_alert__picking_id
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__picking_id
+msgid "Transfer"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__picking_state
+msgid "Transfer Status"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields.selection,name:om_quality_stock.selection__om_quality_point__point_type__picking
+msgid "Transfers"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_check__product_uom_id
+msgid "Unit"
+msgstr ""
+
+#. module: om_quality_stock
+#. odoo-python
+#: code:addons/om_quality_stock/models/om_quality_check.py:0
+msgid "Validate the receipt first: goods not received yet cannot be scrapped."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model,name:om_quality_stock.model_stock_warehouse
+msgid "Warehouse"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.res_config_settings_view_form_om_quality_stock
+msgid "Warehouses"
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.report_om_quality_certificate_document
+msgid ""
+"We certify that the goods below were inspected and passed the following "
+"quality checks."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_om_quality_check__disposition
+msgid "What was done after the failure."
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,field_description:om_quality_stock.field_om_quality_point__point_type
+msgid "Where"
+msgstr ""
+
+#. module: om_quality_stock
+#: model:ir.model.fields,help:om_quality_stock.field_stock_warehouse__om_quality_quarantine_location_id
+msgid ""
+"Where a failed quality check sends the goods. Created at the first "
+"quarantine when empty. Keep it outside the stock location, so that "
+"deliveries do not reserve from it."
+msgstr ""
+
+#. module: om_quality_stock
+#: model_terms:ir.ui.view,arch_db:om_quality_stock.view_om_quality_point_form_stock
+msgid "e.g. Receipts"
+msgstr ""

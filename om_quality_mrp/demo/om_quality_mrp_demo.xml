@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="point_assembly_torque" model="om.quality.point">
+        <field name="name">Leg screws torque</field>
+        <field name="point_type">workorder</field>
+        <field name="operation_ids" eval="[(4, ref('mrp.mrp_routing_workcenter_5'))]"/>
+        <field name="product_ids" eval="[(4, ref('mrp.product_product_computer_desk'))]"/>
+        <field name="test_type">measure</field>
+        <field name="norm_min">8</field>
+        <field name="norm_target">10</field>
+        <field name="norm_max">12</field>
+        <field name="samples">4</field>
+        <field name="frequency">all</field>
+        <field name="is_blocking" eval="True"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="instructions"><![CDATA[<p>Tighten the four leg screws, then read the torque of each one on the wrench (Nm).</p>]]></field>
+    </record>
+
+    <record id="point_assembly_instructions" model="om.quality.point">
+        <field name="name">Assembly instructions read</field>
+        <field name="point_type">workorder</field>
+        <field name="operation_ids" eval="[(4, ref('mrp.mrp_routing_workcenter_5'))]"/>
+        <field name="product_ids" eval="[(4, ref('mrp.product_product_computer_desk'))]"/>
+        <field name="test_type">instructions</field>
+        <field name="frequency">all</field>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="instructions"><![CDATA[<ol><li>Lay the table top upside down on the felt.</li><li>Screw the four legs by hand.</li><li>Tighten with the torque wrench.</li></ol>]]></field>
+    </record>
+
+    <record id="point_final_table" model="om.quality.point">
+        <field name="name">Final inspection of each table</field>
+        <field name="point_type">production</field>
+        <field name="product_ids" eval="[(4, ref('mrp.product_product_computer_desk'))]"/>
+        <field name="test_type">template</field>
+        <field name="template_id" ref="om_quality.template_panel"/>
+        <field name="frequency">lot</field>
+        <field name="is_blocking" eval="True"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+    </record>
+</odoo>

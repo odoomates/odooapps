@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_alert_search" model="ir.ui.view">
+        <field name="name">om.quality.alert.search</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <search string="Non-conformances">
+                <field name="name" filter_domain="['|', '|', ('name', 'ilike', self), ('number', 'ilike', self), ('document_name', 'ilike', self)]"/>
+                <field name="product_id"/>
+                <field name="partner_id" operator="child_of"/>
+                <field name="team_id"/>
+                <field name="user_id"/>
+                <field name="reason_id"/>
+                <field name="tag_ids"/>
+                <filter string="My Non-conformances" name="my" domain="[('user_id', '=', uid)]"/>
+                <filter string="Followed" name="followed" domain="[('message_is_follower', '=', True)]"/>
+                <separator/>
+                <filter string="Open" name="open" domain="[('is_closed', '=', False)]"/>
+                <filter string="Closed" name="closed" domain="[('is_closed', '=', True)]"/>
+                <separator/>
+                <filter string="Urgent" name="urgent" domain="[('priority', '=', '3')]"/>
+                <filter string="With Open Actions" name="open_actions" domain="[('action_ids.state', '=', 'open')]"/>
+                <separator/>
+                <filter string="Opened On" name="filter_date_open" date="date_open"/>
+                <separator/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter string="Stage" name="group_stage" context="{'group_by': 'stage_id'}"/>
+                    <filter string="Team" name="group_team" context="{'group_by': 'team_id'}"/>
+                    <filter string="Responsible" name="group_user" context="{'group_by': 'user_id'}"/>
+                    <filter string="Product" name="group_product" context="{'group_by': 'product_id'}"/>
+                    <filter string="Partner" name="group_partner" context="{'group_by': 'partner_id'}"/>
+                    <filter string="Failure Reason" name="group_reason" context="{'group_by': 'reason_id'}"/>
+                    <filter string="Priority" name="group_priority" context="{'group_by': 'priority'}"/>
+                    <filter string="Opened On" name="group_date_open" context="{'group_by': 'date_open'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_list" model="ir.ui.view">
+        <field name="name">om.quality.alert.list</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <list string="Non-conformances" multi_edit="1" sample="1">
+                <field name="number" readonly="1"/>
+                <field name="name"/>
+                <field name="product_id" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="document_name" optional="hide"/>
+                <field name="reason_id" optional="show"/>
+                <field name="team_id" optional="hide"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="priority" widget="priority" optional="show"/>
+                <field name="action_open_count" optional="show" string="Open Actions"/>
+                <field name="cost" optional="hide" sum="Total cost"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="activity_ids" widget="list_activity" optional="show"/>
+                <field name="date_open" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+                <field name="stage_id"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_kanban" model="ir.ui.view">
+        <field name="name">om.quality.alert.kanban</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <kanban default_group_by="stage_id" highlight_color="color" class="o_kanban_small_column" sample="1">
+                <field name="stage_id"/>
+                <field name="active"/>
+                <progressbar field="kanban_state" colors='{"done": "success", "blocked": "danger", "normal": "200"}'/>
+                <templates>
+                    <t t-name="menu">
+                        <a t-if="widget.editable" role="menuitem" type="open" class="dropdown-item">Edit</a>
+                        <a t-if="widget.deletable" role="menuitem" type="delete" class="dropdown-item">Delete</a>
+                        <field name="color" widget="kanban_color_picker"/>
+                    </t>
+                    <t t-name="card">
+                        <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                        <field name="name" class="fw-bold"/>
+                        <div class="text-muted small">
+                            <field name="number"/>
+                            <span t-if="record.partner_id.raw_value"> - <field name="partner_id"/></span>
+                        </div>
+                        <field name="product_id" class="small"/>
+                        <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                        <div t-if="record.action_open_count.raw_value" class="small text-muted">
+                            <field name="action_open_count"/> open actions
+                        </div>
+                        <footer>
+                            <field name="priority" widget="priority"/>
+                            <field name="activity_ids" widget="kanban_activity"/>
+                            <div class="d-flex ms-auto align-items-center gap-1">
+                                <field name="kanban_state" widget="state_selection"/>
+                                <field name="user_id" widget="many2one_avatar_user"/>
+                            </div>
+                        </footer>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_form" model="ir.ui.view">
+        <field name="name">om.quality.alert.form</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <form string="Non-conformance">
+                <header>
+                    <field name="stage_id" widget="statusbar" options="{'clickable': '1', 'fold_field': 'fold'}"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_checks" type="object" class="oe_stat_button" icon="assignment" invisible="not check_count">
+                            <field name="check_count" widget="statinfo" string="Checks"/>
+                        </button>
+                        <button name="action_view_actions" type="object" class="oe_stat_button" icon="checklist">
+                            <field name="action_count" widget="statinfo" string="Actions"/>
+                        </button>
+                        <button name="action_open_document" type="object" class="oe_stat_button" icon="description" invisible="not document_name">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Document</span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="kanban_state" widget="state_selection" class="float-end"/>
+                    <div class="oe_title">
+                        <field name="number" class="text-muted" invisible="number == '/'"/>
+                        <h1><field name="name" placeholder="e.g. Scratches on incoming panels"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="product_id"/>
+                            <field name="partner_id"/>
+                            <field name="reason_id" options="{'no_create': True}"/>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create_edit': True}"/>
+                            <field name="document_name" invisible="not document_name"/>
+                        </group>
+                        <group>
+                            <field name="team_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="priority" widget="priority"/>
+                            <field name="cost"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="date_open"/>
+                            <field name="date_closed" invisible="not date_closed"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Description" name="description">
+                            <field name="description" placeholder="What was found, where, how much"/>
+                        </page>
+                        <page string="Root Cause" name="root_cause">
+                            <field name="root_cause" placeholder="Why it happened: e.g. 5 whys, fishbone"/>
+                        </page>
+                        <page string="Corrective and Preventive Actions" name="actions">
+                            <field name="action_ids" context="{'default_alert_id': id}">
+                                <list editable="bottom" decoration-muted="state == 'cancel'" decoration-danger="is_late">
+                                    <field name="action_type"/>
+                                    <field name="name"/>
+                                    <field name="user_id" widget="many2one_avatar_user"/>
+                                    <field name="date_deadline"/>
+                                    <field name="date_done" optional="show"/>
+                                    <field name="effectiveness" optional="show"/>
+                                    <field name="is_late" column_invisible="True"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'done'" decoration-info="state == 'open'"/>
+                                    <button name="action_done" type="object" icon="check" title="Mark as done" invisible="state != 'open'"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Checks" name="checks">
+                            <field name="check_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="title"/>
+                                    <field name="document_name"/>
+                                    <field name="product_id"/>
+                                    <field name="result_summary"/>
+                                    <field name="date_done"/>
+                                    <field name="state" widget="badge" decoration-success="state == 'passed'" decoration-danger="state == 'failed'"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter reload_on_follower="True"/>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_pivot" model="ir.ui.view">
+        <field name="name">om.quality.alert.pivot</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <pivot string="Non-conformances" sample="1">
+                <field name="reason_id" type="row"/>
+                <field name="stage_id" type="col"/>
+                <field name="cost" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_graph" model="ir.ui.view">
+        <field name="name">om.quality.alert.graph</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <graph string="Non-conformances" type="bar" sample="1">
+                <field name="reason_id"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="view_om_quality_alert_calendar" model="ir.ui.view">
+        <field name="name">om.quality.alert.calendar</field>
+        <field name="model">om.quality.alert</field>
+        <field name="arch" type="xml">
+            <calendar string="Non-conformances" date_start="date_open" color="team_id" mode="month">
+                <field name="product_id"/>
+                <field name="user_id"/>
+            </calendar>
+        </field>
+    </record>
+
+    <record id="action_om_quality_alert" model="ir.actions.act_window">
+        <field name="name">Non-conformances</field>
+        <field name="res_model">om.quality.alert</field>
+        <field name="view_mode">kanban,list,form,calendar,pivot,graph</field>
+        <field name="context">{'search_default_open': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No non-conformance</p>
+            <p>A non-conformance records a quality problem: what was found, its root cause, its cost and the corrective and preventive actions that close it.</p>
+        </field>
+    </record>
+
+    <record id="action_om_quality_alert_analysis" model="ir.actions.act_window">
+        <field name="name">Non-conformance Analysis</field>
+        <field name="res_model">om.quality.alert</field>
+        <field name="view_mode">graph,pivot,list,form</field>
+    </record>
+</odoo>

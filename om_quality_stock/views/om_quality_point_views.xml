@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_om_quality_point_form_stock" model="ir.ui.view">
+        <field name="name">om.quality.point.form.stock</field>
+        <field name="model">om.quality.point</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_point_form"/>
+        <field name="arch" type="xml">
+            <field name="point_type" position="after">
+                <field name="picking_type_ids" widget="many2many_tags" invisible="point_type != 'picking'"
+                    required="point_type == 'picking'" placeholder="e.g. Receipts"
+                    domain="[('code', 'in', ('incoming', 'outgoing', 'internal'))]" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_point_list_stock" model="ir.ui.view">
+        <field name="name">om.quality.point.list.stock</field>
+        <field name="model">om.quality.point</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_point_list"/>
+        <field name="arch" type="xml">
+            <field name="point_type" position="after">
+                <field name="picking_type_ids" widget="many2many_tags" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_om_quality_point_search_stock" model="ir.ui.view">
+        <field name="name">om.quality.point.search.stock</field>
+        <field name="model">om.quality.point</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_point_search"/>
+        <field name="arch" type="xml">
+            <field name="team_id" position="after">
+                <field name="picking_type_ids"/>
+            </field>
+        </field>
+    </record>
+</odoo>
