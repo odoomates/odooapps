@@ -37,6 +37,11 @@ runs:
         sed -i 's/^CHECK_BROWSER_ITERATIONS = 100$/CHECK_BROWSER_ITERATIONS = 300/' odoo/odoo/tests/common.py
         grep -q '^CHECK_BROWSER_ITERATIONS = 300$' odoo/odoo/tests/common.py \
           || echo "::warning::the wait for Chrome of the Odoo tests was not changed"
+        # newer Chrome refuses a storage origin without its scheme ("127.0.0.1 is not a valid URL"), which fails
+        # every browser test before it starts: the origin is given as the base URL of the tests
+        sed -i "s|params={'origin': HOST, 'storageTypes'|params={'origin': 'http://%s:%s' % (HOST, odoo.tools.config['http_port']), 'storageTypes'|" odoo/odoo/tests/common.py
+        grep -q "params={'origin': HOST," odoo/odoo/tests/common.py \
+          && echo "::warning::the storage origin of the Odoo tests was not changed"
         timeout 60 google-chrome --headless --no-sandbox --disable-gpu --dump-dom about:blank > /dev/null 2>&1 || true
     - uses: actions/setup-python@v7
       with:
