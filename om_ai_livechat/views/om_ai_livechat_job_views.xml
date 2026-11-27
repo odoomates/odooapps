@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_livechat_job_view_list" model="ir.ui.view">
+        <field name="name">om.ai.livechat.job.list</field>
+        <field name="model">om.ai.livechat.job</field>
+        <field name="arch" type="xml">
+            <list create="0">
+                <field name="create_date" string="Asked On"/>
+                <field name="agent_id"/>
+                <field name="channel_id"/>
+                <field name="question"/>
+                <field name="answer" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'pending'"
+                       decoration-success="state == 'done'" decoration-warning="state == 'handover'"
+                       decoration-danger="state == 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_job_view_form" model="ir.ui.view">
+        <field name="name">om.ai.livechat.job.form</field>
+        <field name="model">om.ai.livechat.job</field>
+        <field name="arch" type="xml">
+            <form create="0" edit="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="agent_id"/>
+                            <field name="channel_id"/>
+                        </group>
+                        <group>
+                            <field name="create_date" string="Asked On"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                    <group>
+                        <field name="question"/>
+                        <field name="answer"/>
+                        <field name="sources"/>
+                        <field name="tool_log"/>
+                        <field name="error" invisible="not error"/>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_job_view_search" model="ir.ui.view">
+        <field name="name">om.ai.livechat.job.search</field>
+        <field name="model">om.ai.livechat.job</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="agent_id"/>
+                <field name="channel_id"/>
+                <filter name="done" string="Answered" domain="[('state', '=', 'done')]"/>
+                <filter name="handover" string="Handed Over" domain="[('state', '=', 'handover')]"/>
+                <filter name="failed" string="Failed" domain="[('state', '=', 'failed')]"/>
+                <group>
+                    <filter name="group_agent" string="Agent" context="{'group_by': 'agent_id'}"/>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_job_action" model="ir.actions.act_window">
+        <field name="name">AI Answers</field>
+        <field name="res_model">om.ai.livechat.job</field>
+        <field name="path">ai-livechat-answers</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>

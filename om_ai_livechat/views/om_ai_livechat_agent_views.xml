@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_livechat_agent_view_list" model="ir.ui.view">
+        <field name="name">om.ai.livechat.agent.list</field>
+        <field name="model">om.ai.livechat.agent</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="channel_ids" widget="many2many_tags"/>
+                <field name="source_ids" widget="many2many_tags" optional="show"/>
+                <field name="conversation_count" optional="show"/>
+                <field name="job_count" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_agent_view_form" model="ir.ui.view">
+        <field name="name">om.ai.livechat.agent.form</field>
+        <field name="model">om.ai.livechat.agent</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_reindex" type="object" string="Read Sources Again" invisible="not source_ids"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_conversations" type="object" class="oe_stat_button" icon="fa-comments">
+                            <field name="conversation_count" widget="statinfo" string="Chats"/>
+                        </button>
+                        <button name="action_view_jobs" type="object" class="oe_stat_button" icon="fa-reply">
+                            <field name="job_count" widget="statinfo" string="Answers"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="image_1920" widget="image" class="oe_avatar" options="{'preview_image': 'image_1920', 'size': [90, 90]}"
+                           invisible="not partner_id"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Ava, your shop assistant"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="channel_ids" widget="many2many_tags" readonly="1"/>
+                            <field name="purpose"/>
+                            <field name="ai_model_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="partner_id" readonly="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                            <field name="has_crm" invisible="1"/>
+                            <field name="has_helpdesk" invisible="1"/>
+                            <field name="has_products" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Knowledge" name="knowledge">
+                            <field name="source_ids">
+                                <list>
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="name"/>
+                                    <field name="source_type"/>
+                                    <field name="chunk_count"/>
+                                    <field name="indexed_date"/>
+                                </list>
+                            </field>
+                            <group>
+                                <group>
+                                    <field name="knowledge_count"/>
+                                </group>
+                                <group>
+                                    <field name="use_embeddings"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Instructions" name="instructions">
+                            <field name="instructions" placeholder="e.g. You help visitors choose office furniture. Be friendly, short, and answer in their language."/>
+                            <div class="text-muted">
+                                The agent always answers from the knowledge and the tools only, never gives a price that
+                                a tool did not return, and never asks for secrets. The base prompt is the template
+                                "Live chat agent" in AI &gt; Configuration &gt; Prompt Templates.
+                            </div>
+                        </page>
+                        <page string="Tools" name="tools">
+                            <group>
+                                <group string="Products" invisible="not has_products">
+                                    <field name="tool_products"/>
+                                    <field name="show_stock_quantity" invisible="not tool_products"/>
+                                </group>
+                                <group string="Leads and Tickets">
+                                    <field name="tool_lead" invisible="not has_crm"/>
+                                    <field name="tool_ticket" invisible="not has_helpdesk"/>
+                                    <div colspan="2" class="text-muted" invisible="has_crm and has_helpdesk">
+                                        Install CRM to create leads, and Helpdesk to create tickets.
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Hand-over" name="handover">
+                            <group>
+                                <group string="When">
+                                    <field name="handover_keywords"/>
+                                    <field name="handover_uncertain"/>
+                                    <field name="no_operator_message"/>
+                                </group>
+                                <group string="Operator Hours">
+                                    <field name="handover_hours"/>
+                                    <label for="handover_hour_from" string="Hours" invisible="not handover_hours"/>
+                                    <div class="o_row" invisible="not handover_hours">
+                                        <field name="handover_hour_from" widget="float_time" class="oe_inline"/>
+                                        <span>to</span>
+                                        <field name="handover_hour_to" widget="float_time" class="oe_inline"/>
+                                    </div>
+                                    <field name="handover_weekdays" invisible="not handover_hours"/>
+                                    <field name="handover_tz" invisible="not handover_hours"/>
+                                </group>
+                            </group>
+                            <div class="text-muted">
+                                Operators get the chat when they are online in the live chat channel. Outside the
+                                hours, or when nobody is online, the visitor gets the message above and the agent
+                                goes on, so it can still take the visitor's email for a lead or a ticket.
+                            </div>
+                        </page>
+                        <page string="Limits" name="limits">
+                            <group>
+                                <group>
+                                    <field name="max_replies"/>
+                                    <field name="max_messages_hour"/>
+                                    <field name="max_message_chars"/>
+                                </group>
+                                <group>
+                                    <div colspan="2" class="text-muted">
+                                        The token and cost limits of the AI settings apply too. All calls are logged
+                                        in the AI usage under the feature "livechat".
+                                    </div>
+                                </group>
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_agent_action" model="ir.actions.act_window">
+        <field name="name">AI Agents</field>
+        <field name="res_model">om.ai.livechat.agent</field>
+        <field name="path">ai-livechat-agents</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Let an AI agent answer your website visitors</p>
+            <p>Give it your FAQ, texts, website pages and products, then choose it on a live chat channel.</p>
+        </field>
+    </record>
+</odoo>

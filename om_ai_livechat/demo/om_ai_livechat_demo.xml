@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_source_faq" model="om.ai.livechat.source">
+        <field name="name">Shipping and Returns</field>
+        <field name="source_type">faq</field>
+    </record>
+    <record id="demo_faq_shipping" model="om.ai.livechat.faq">
+        <field name="source_id" ref="demo_source_faq"/>
+        <field name="question">How long does shipping take?</field>
+        <field name="answer">Orders leave our warehouse within 2 working days. Delivery takes 3 to 5 working days in the country.</field>
+    </record>
+    <record id="demo_faq_returns" model="om.ai.livechat.faq">
+        <field name="source_id" ref="demo_source_faq"/>
+        <field name="question">What is your return policy?</field>
+        <field name="answer">You can return any unused product within 30 days of delivery for a full refund. Write to us for a return label.</field>
+    </record>
+    <record id="demo_faq_payment" model="om.ai.livechat.faq">
+        <field name="source_id" ref="demo_source_faq"/>
+        <field name="question">Which payment methods do you accept?</field>
+        <field name="answer">We accept bank transfers and the online payment methods shown at checkout.</field>
+    </record>
+
+    <record id="demo_source_text" model="om.ai.livechat.source">
+        <field name="name">About Us</field>
+        <field name="source_type">text</field>
+        <field name="content"><![CDATA[<p>We sell office furniture to companies and home offices: desks, chairs, storage and accessories.</p>
+<p>Our showroom is open Monday to Friday, 9:00 to 17:00. Every desk has a 5 year warranty.</p>]]></field>
+    </record>
+
+    <record id="demo_agent" model="om.ai.livechat.agent">
+        <field name="name">Ava</field>
+        <field name="instructions">You help visitors choose office furniture. Be friendly and brief: two or three sentences. Answer in the language of the visitor.</field>
+        <field name="source_ids" eval="[(6, 0, [ref('demo_source_faq'), ref('demo_source_text')])]"/>
+    </record>
+
+    <record id="im_livechat.im_livechat_channel_data" model="im_livechat.channel">
+        <field name="om_ai_agent_id" ref="demo_agent"/>
+        <field name="om_ai_agent_mode">no_operator</field>
+    </record>
+</odoo>

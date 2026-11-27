@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_livechat_source_view_list" model="ir.ui.view">
+        <field name="name">om.ai.livechat.source.list</field>
+        <field name="model">om.ai.livechat.source</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="source_type"/>
+                <field name="agent_ids" widget="many2many_tags" optional="show"/>
+                <field name="chunk_count"/>
+                <field name="indexed_date" optional="show"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_source_view_form" model="ir.ui.view">
+        <field name="name">om.ai.livechat.source.form</field>
+        <field name="model">om.ai.livechat.source</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_index" type="object" string="Read Again" invisible="not id"/>
+                </header>
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Shipping and Returns"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="source_type" widget="radio" options="{'horizontal': true}"/>
+                            <field name="agent_ids" widget="many2many_tags"/>
+                        </group>
+                        <group>
+                            <field name="chunk_count"/>
+                            <field name="indexed_date"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Text" name="text" invisible="source_type != 'text'">
+                            <field name="content" placeholder="Write what the agent should know: opening hours, delivery, returns, warranty..."/>
+                        </page>
+                        <page string="Questions and Answers" name="faq" invisible="source_type != 'faq'">
+                            <field name="faq_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="question"/>
+                                    <field name="answer"/>
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Website Pages" name="pages" invisible="source_type != 'page'">
+                            <field name="page_ids">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="url"/>
+                                    <field name="website_id" groups="website.group_multi_website"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">The texts of the pages are read again every day.</div>
+                        </page>
+                        <page string="Products" name="products" invisible="source_type != 'product'">
+                            <group>
+                                <field name="product_domain" widget="domain"
+                                       options="{'model': 'product.template', 'in_dialog': True}"
+                                       invisible="source_type != 'product'"/>
+                            </group>
+                            <div class="text-muted">
+                                The names, categories and descriptions of the products are read every day.
+                                Prices and stock are looked up live when a visitor asks.
+                            </div>
+                        </page>
+                        <page string="Indexed Parts" name="chunks">
+                            <field name="chunk_ids" readonly="1">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="content"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_livechat_source_action" model="ir.actions.act_window">
+        <field name="name">AI Knowledge</field>
+        <field name="res_model">om.ai.livechat.source</field>
+        <field name="path">ai-livechat-knowledge</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
