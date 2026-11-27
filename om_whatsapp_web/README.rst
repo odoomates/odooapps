@@ -69,7 +69,7 @@ Configuration
 * Install the Odoo Mates WhatsApp Connector extension in Chrome or Firefox. On a page of your Odoo,
   click its icon and Allow this Odoo (or add the address in its options).
 * Open web.whatsapp.com once and link it to your phone.
-* In WhatsApp > Configuration > Accounts, set the provider of the account to WhatsApp Web.
+* In Social Inbox > Configuration > Accounts, set the provider of the account to WhatsApp Web.
 
 Usage
 =====

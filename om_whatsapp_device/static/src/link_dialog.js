@@ -26,7 +26,7 @@ export class DeviceLink extends Component {
 
     async refresh() {
         try {
-            this.state.status = await this.orm.call("om.whatsapp.account", "device_link_status", [[this.accountId]]);
+            this.state.status = await this.orm.call("om.social.account", "device_link_status", [[this.accountId]]);
         } catch (error) {
             this.state.error = error.data?.message || error.message;
         }
@@ -38,7 +38,7 @@ export class DeviceLink extends Component {
     async linkWithCode() {
         this.state.error = "";
         try {
-            this.state.status = await this.orm.call("om.whatsapp.account", "device_link_with_code", [
+            this.state.status = await this.orm.call("om.social.account", "device_link_with_code", [
                 [this.accountId],
                 this.state.phone,
             ]);

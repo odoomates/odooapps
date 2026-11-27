@@ -13,15 +13,15 @@ class MailNotification(models.Model):
         hence the sudo once checked. """
         self.mail_message_id.check_access('read')
         for notification in self.sudo():
-            account = notification.mail_message_id.om_whatsapp_account_id
-            if (notification.notification_type != 'om_whatsapp' or notification.notification_status not in statuses
+            account = notification.mail_message_id.om_social_account_id
+            if (notification.notification_type != 'om_social' or notification.notification_status not in statuses
                     or account.provider != 'web'):
                 raise UserError(_("Only queued messages of a WhatsApp Web account can be sent from the browser."))
-            account._om_whatsapp_check_user()
+            account._om_social_check_user()
         return self.sudo()
 
     def _om_whatsapp_web_phone(self):
-        return ''.join(char for char in self.om_whatsapp_number or '' if char.isdigit())
+        return ''.join(char for char in self.om_social_address or '' if char.isdigit())
 
     def om_whatsapp_web_payload(self):
         """ What the browser hands to the extension; the files are fetched by
@@ -32,10 +32,10 @@ class MailNotification(models.Model):
         taken.write({'notification_status': 'process'})
         return [{
             'id': notification.id,
-            'recipient': notification.res_partner_id.name or notification.om_whatsapp_number,
+            'recipient': notification.res_partner_id.name or notification.om_social_address,
             'phone': notification._om_whatsapp_web_phone(),
-            'body': notification.mail_message_id._om_whatsapp_text(),
-            'quoted': notification.mail_message_id._om_whatsapp_quoted(),
+            'body': notification.mail_message_id._om_social_text(),
+            'quoted': notification.mail_message_id._om_social_quoted(),
             'attachments': [{
                 'id': attachment.id,
                 'name': attachment.name,
@@ -50,14 +50,14 @@ class MailNotification(models.Model):
         nothing. """
         notifications = self._om_whatsapp_web_check(statuses=('process', 'pending', 'sent'))
         if error:
-            notifications.filtered(lambda n: n.notification_status == 'process')._om_whatsapp_set_status('failed', error)
+            notifications.filtered(lambda n: n.notification_status == 'process')._om_social_set_status('failed', error)
             return
-        if whatsapp_id and len(notifications) == 1 and not notifications.mail_message_id.om_whatsapp_id:
-            notifications.mail_message_id.om_whatsapp_id = whatsapp_id
-        notifications._om_whatsapp_set_status('sent')
+        if whatsapp_id and len(notifications) == 1 and not notifications.mail_message_id.om_social_message_id:
+            notifications.mail_message_id.om_social_message_id = whatsapp_id
+        notifications._om_social_set_status('sent')
 
     def om_whatsapp_web_cancel(self):
-        self._om_whatsapp_web_check(statuses=('ready', 'process'))._om_whatsapp_set_status('cancel')
+        self._om_whatsapp_web_check(statuses=('ready', 'process'))._om_social_set_status('cancel')
 
     def om_whatsapp_web_fallback(self):
         """ No extension in this browser: open the chat in WhatsApp Web with
@@ -65,8 +65,8 @@ class MailNotification(models.Model):
         and Odoo cannot know whether it was sent. """
         self.ensure_one()
         notification = self._om_whatsapp_web_check()
-        notification._om_whatsapp_set_status('sent')
-        text = notification.mail_message_id._om_whatsapp_text()
+        notification._om_social_set_status('sent')
+        text = notification.mail_message_id._om_social_text()
         return {
             'type': 'ir.actions.act_url',
             'url': f'https://web.whatsapp.com/send?phone={notification._om_whatsapp_web_phone()}&text={quote(text)}',

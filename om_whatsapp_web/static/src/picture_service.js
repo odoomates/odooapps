@@ -2,7 +2,7 @@ import { registry } from "@web/core/registry";
 import { getExtensionInfo, getPicture } from "./extension_bridge";
 import { whatsappStatus } from "./status_service";
 
-const ACCOUNT = "om.whatsapp.account";
+const ACCOUNT = "om.social.account";
 const PICTURE_DELAY = 5 * 60000;
 
 /**

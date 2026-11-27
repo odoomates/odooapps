@@ -44,7 +44,7 @@ Features
 Configuration
 =============
 
-In WhatsApp > Configuration > Accounts, create an account with the provider Meta, save it, and click
+In Social Inbox > Configuration > Accounts, create an account with the provider Meta, save it, and click
 Connect to Meta. The assistant has one task a page, with its progress across the top, a button to the
 right page of Meta and a drawing of where the value is on it. It checks each value as soon as it is
 pasted, and ends on a summary of the number: quality, daily limit, token, and what was set up:

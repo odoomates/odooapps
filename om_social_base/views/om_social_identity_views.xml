@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_social_identity_view_list" model="ir.ui.view">
+        <field name="name">om.social.identity.list</field>
+        <field name="model">om.social.identity</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="channel"/>
+                <field name="partner_id"/>
+                <field name="address"/>
+                <field name="username"/>
+                <field name="user_ref"/>
+                <field name="profile_name" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_social_identity_view_search" model="ir.ui.view">
+        <field name="name">om.social.identity.search</field>
+        <field name="model">om.social.identity</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="partner_id"/>
+                <field name="address"/>
+                <field name="user_ref" filter_domain="['|', ('user_ref', 'ilike', self), ('username', 'ilike', self)]"/>
+                <filter name="no_contact" string="Without Contact" domain="[('partner_id', '=', False)]"/>
+                <filter name="group_channel" string="Channel" context="{'group_by': 'channel'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_social_identity_action" model="ir.actions.act_window">
+        <field name="name">Customer Identities</field>
+        <field name="res_model">om.social.identity</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No customer yet</p>
+            <p>The customers who wrote in a channel, with their user ID and username, and their contact once known.</p>
+        </field>
+    </record>
+</odoo>

@@ -19,10 +19,10 @@ Features
   providers that send in batch. Numbers of the phone blacklist and documents without a valid number
   are skipped.
 * Every message is a message of the chatter of its document, with the WhatsApp icon and its status
-  (queued, sent, delivered, read, failed), and is listed in WhatsApp > Messages. A failed message
+  (queued, sent, delivered, read, failed), and is listed in Social Inbox > Messages. A failed message
   is in the failures of the messaging menu, and is sent again from its status.
-* WhatsApp conversations in Discuss, one per number, shared by the users of the account: a WhatsApp
-  tab in the messaging menu and in Discuss, the chat window opens on a new message, and what a user
+* WhatsApp conversations in Discuss, one per number, shared by the users of the account: a Social
+  Inbox tab in the messaging menu and in Discuss, the chat window opens on a new message, and what a user
   writes there goes out on WhatsApp. The messages sent from documents are in the conversation too,
   with their ticks, and its header opens the document it last spoke about.
 * Received messages go to the conversation, and to the chatter of the document they answer: the one
@@ -88,7 +88,7 @@ clicking on the upgrade button.
 Configuration
 =============
 
-Go to WhatsApp > Configuration > Accounts, create an account and add its allowed users. Give the
+Go to Social Inbox > Configuration > Accounts, create an account and add its allowed users. Give the
 users the WhatsApp User access in their settings; the WhatsApp Administrator manages accounts and
 templates and sees every message.
 
@@ -96,8 +96,8 @@ Usage
 =====
 
 Open a contact and use Action > Send WhatsApp. To send from other documents, create a template in
-WhatsApp > Templates and click Add Action Menu: the template is then in the Action menu of that kind
-of document.
+Social Inbox > WhatsApp > Templates and click Add Action Menu: the template is then in the Action menu
+of that kind of document.
 
 To send automatically, for example the quotation when an order is confirmed, set up an automation
 rule yourself (the WhatsApp modules do not install the Automation Rules app):
@@ -113,19 +113,20 @@ The same works on invoices, deliveries and any document with a chatter.
 Providers
 =========
 
-A WhatsApp message is a ``mail.message`` of type ``om_whatsapp``; a sent one has a
-``mail.notification`` of type ``om_whatsapp`` per recipient, which holds its status with the values
-of Odoo: ``ready`` (queued), ``pending`` (sent), ``sent`` (delivered), ``is_read`` (read),
-``exception`` (failed) and ``canceled``.
+WhatsApp is a channel of the Social Inbox (``om_social_base``): a WhatsApp account is an
+``om.social.account`` of the channel ``whatsapp``, and a WhatsApp message a ``mail.message`` of type
+``om_social``; a sent one has a ``mail.notification`` of type ``om_social`` per recipient, which holds
+its status with the values of Odoo: ``ready`` (queued), ``pending`` (sent), ``sent`` (delivered),
+``is_read`` (read), ``exception`` (failed) and ``canceled``.
 
-A provider module adds its key to the ``provider`` field of ``om.whatsapp.account`` and implements
-``_om_whatsapp_send_<key>(notifications)``. It moves the notifications with
-``_om_whatsapp_set_status()``, records what comes in with ``account._om_whatsapp_receive()`` and
-``account._om_whatsapp_update_status()``, and extends ``_compute_capabilities`` when it sends files
-or batches. A provider that knows the WhatsApp user ID of the customer passes ``user_id`` and
-``username`` to ``_om_whatsapp_receive()`` (the number may then be empty), or puts them in the
-context as ``om_whatsapp_user_id`` and ``om_whatsapp_username``; one that sends to it sets
-``can_send_user_id`` and reads ``om_whatsapp_user_id`` on the notifications without a number.
+A provider module adds its key to the ``provider`` field of ``om.social.account`` and implements
+``_om_social_send_<key>(notifications)``. It moves the notifications with ``_om_social_set_status()``,
+records what comes in with ``account._om_whatsapp_receive()`` and ``account._om_social_update_status()``,
+and extends ``_compute_capabilities`` when it sends files or batches. A provider that knows the WhatsApp
+user ID of the customer passes ``user_id`` and ``username`` to ``_om_whatsapp_receive()`` (the number may
+then be empty), or puts them in the context as ``om_whatsapp_user_id`` and ``om_whatsapp_username``; one
+that sends to it sets ``can_send_user_ref``: the notifications without a number then have the user ID as
+their ``om_social_address``.
 
 Credits
 =======

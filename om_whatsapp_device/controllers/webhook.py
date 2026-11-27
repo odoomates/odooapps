@@ -6,7 +6,7 @@ import logging
 from odoo import SUPERUSER_ID, http
 from odoo.http import request
 
-from odoo.addons.om_whatsapp_device.models.om_whatsapp_account import WEBHOOK_PATH
+from odoo.addons.om_whatsapp_device.models.om_social_account import WEBHOOK_PATH
 
 _logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class OmWhatsappDeviceWebhook(http.Controller):
     def receive(self):
         body = request.httprequest.get_data()
         env = request.env(user=SUPERUSER_ID)
-        Account = env['om.whatsapp.account'].with_context(active_test=False)
+        Account = env['om.social.account'].with_context(active_test=False)
         secret = Account._device_bridge_secret().encode()
         expected = 'sha256=' + hmac.new(secret, body, hashlib.sha256).hexdigest()
         if not hmac.compare_digest(expected, request.httprequest.headers.get('X-Signature-256', '')):

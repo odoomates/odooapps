@@ -8,8 +8,8 @@ patch(Composer.prototype, {
         const channel = this.thread?.channel;
         if (
             !this.props.placeholder &&
-            channel?.channel_type === "om_whatsapp" &&
-            channel.om_whatsapp_provider === "web" &&
+            channel?.channel_type === "om_social" &&
+            channel.om_social_provider === "web" &&
             whatsappStatus.blocking
         ) {
             return whatsappStatus.reason;

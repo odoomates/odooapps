@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_social_composer_view_form" model="ir.ui.view">
+        <field name="name">om.social.composer.form</field>
+        <field name="model">om.social.composer</field>
+        <field name="arch" type="xml">
+            <form string="Send a Message">
+                <field name="res_model" invisible="1"/>
+                <field name="res_ids" invisible="1"/>
+                <field name="res_count" invisible="1"/>
+                <field name="can_send_files" invisible="1"/>
+                <group>
+                    <group>
+                        <field name="account_id" options="{'no_create': True, 'no_open': True}"/>
+                    </group>
+                    <group invisible="res_count != 1">
+                        <field name="partner_id" readonly="1" invisible="not partner_id"/>
+                        <field name="address" required="res_count == 1"/>
+                    </group>
+                </group>
+                <field name="body" placeholder="Write your message..." required="1"/>
+                <group invisible="not can_send_files or res_count != 1">
+                    <field name="attachment_ids" widget="many2many_binary"/>
+                </group>
+                <footer>
+                    <button name="action_send" type="object" string="Send" class="btn-primary" data-hotkey="q"/>
+                    <button string="Discard" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

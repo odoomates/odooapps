@@ -4,7 +4,7 @@ from unittest.mock import patch
 from freezegun import freeze_time
 
 from odoo import Command
-from odoo.addons.om_whatsapp_base.models.om_whatsapp_account import OmWhatsappAccount
+from odoo.addons.om_social_base.models.om_social_account import OmSocialAccount as OmWhatsappAccount
 from odoo.exceptions import UserError
 from odoo.tests import TransactionCase, new_test_user, tagged
 
@@ -17,7 +17,7 @@ class TestOmWhatsappWeb(TransactionCase):
         super().setUpClass()
         cls.user = new_test_user(cls.env, 'om_whatsapp_web_user', groups='base.group_user,om_whatsapp_base.group_om_whatsapp_user')
         cls.other = new_test_user(cls.env, 'om_whatsapp_web_other', groups='base.group_user,om_whatsapp_base.group_om_whatsapp_user')
-        cls.account = cls.env['om.whatsapp.account'].create({
+        cls.account = cls.env['om.social.account'].create({
             'name': 'Browser',
             'provider': 'web',
             'user_ids': [Command.set(cls.user.ids)],
@@ -30,13 +30,13 @@ class TestOmWhatsappWeb(TransactionCase):
         ).create({'account_id': self.account.id, 'body': 'Your order is ready', **values})
         action = composer.action_send()
         notification = self.env['mail.notification'].search([
-            ('notification_type', '=', 'om_whatsapp'), ('res_partner_id', '=', self.alice.id),
+            ('notification_type', '=', 'om_social'), ('res_partner_id', '=', self.alice.id),
             ('mail_message_id.model', '=', 'res.partner'),
         ], limit=1)
         return action, notification.with_user(self.user)
 
     def test_new_accounts_use_the_browser(self):
-        self.assertEqual(self.env['om.whatsapp.account'].create({'name': 'New'}).provider, 'web')
+        self.assertEqual(self.env['om.social.account'].create({'name': 'New'}).provider, 'web')
 
     def test_the_browser_sends(self):
         self.assertTrue(self.account.can_send_files)
@@ -48,7 +48,7 @@ class TestOmWhatsappWeb(TransactionCase):
         message = notification.mail_message_id
         self.assertEqual(action['tag'], 'om_whatsapp_web_send')
         self.assertEqual(action['params']['notification_ids'], notification.ids)
-        self.assertEqual(message.om_whatsapp_status, 'queued')
+        self.assertEqual(message.om_social_status, 'queued')
         self.assertEqual(message.attachment_ids, attachment)
         self.assertEqual((attachment.res_model, attachment.res_id), ('res.partner', self.alice.id))
         [payload] = notification.om_whatsapp_web_payload()
@@ -62,18 +62,18 @@ class TestOmWhatsappWeb(TransactionCase):
         self.assertEqual(payload['attachments'], [{'id': attachment.id, 'name': 'order.pdf', 'mimetype': 'application/pdf'}])
 
         notification.om_whatsapp_web_done(whatsapp_id='3EB0AB')
-        self.assertEqual(message.om_whatsapp_status, 'sent')
-        self.assertEqual(message.om_whatsapp_id, '3EB0AB')
+        self.assertEqual(message.om_social_status, 'sent')
+        self.assertEqual(message.om_social_message_id, '3EB0AB')
         # a late answer changes nothing
         notification.om_whatsapp_web_done(error='late')
-        self.assertEqual(message.om_whatsapp_status, 'sent')
+        self.assertEqual(message.om_social_status, 'sent')
 
     def test_the_extension_reports_an_error(self):
         _action, notification = self._send()
         notification.om_whatsapp_web_payload()
         notification.om_whatsapp_web_done(error='Not on WhatsApp')
         self.assertEqual((notification.notification_status, notification.failure_reason), ('exception', 'Not on WhatsApp'))
-        action = notification.mail_message_id.action_om_whatsapp_retry()
+        action = notification.mail_message_id.action_om_social_retry()
         self.assertEqual(action['tag'], 'om_whatsapp_web_send')
         self.assertEqual(notification.notification_status, 'ready')
 
@@ -98,10 +98,10 @@ class TestOmWhatsappWeb(TransactionCase):
     # ------------------------------------------------------------
 
     def _accept(self, me, items):
-        return self.env['om.whatsapp.account'].with_user(self.user).om_whatsapp_web_accept(me, items)
+        return self.env['om.social.account'].with_user(self.user).om_whatsapp_web_accept(me, items)
 
     def _receive(self, me, items):
-        return self.env['om.whatsapp.account'].with_user(self.user).om_whatsapp_web_receive(me, items)
+        return self.env['om.social.account'].with_user(self.user).om_whatsapp_web_receive(me, items)
 
     def test_accept_only_known_numbers(self):
         items = [
@@ -115,14 +115,14 @@ class TestOmWhatsappWeb(TransactionCase):
         self.account.phone = '+32 470 00 00 00'
         self.assertEqual(self._accept('32470000000', items)['account'], True)
         self.assertEqual(self._accept('32471111111', items), {'account': False, 'accept': []})
-        self.assertEqual(self.env['om.whatsapp.account'].with_user(self.other).om_whatsapp_web_accept('32470000000', items),
+        self.assertEqual(self.env['om.social.account'].with_user(self.other).om_whatsapp_web_accept('32470000000', items),
                          {'account': False, 'accept': []})
 
     def test_only_messages_since_the_account_started(self):
         """ The extension keeps what it read for any Odoo: a new database gets
         the messages from its first connection on, not the old chats. """
         with freeze_time('2026-10-20 10:00:00'):
-            self.env['om.whatsapp.account'].with_user(self.user).om_whatsapp_web_status('32470000000')
+            self.env['om.social.account'].with_user(self.user).om_whatsapp_web_status('32470000000')
         self.assertEqual(str(self.account.om_whatsapp_web_since), '2026-10-20 10:00:00')
         old = 1792490400 - 3600  # 09:00 UTC
         new = 1792490400 + 30  # 10:00:30 UTC
@@ -132,8 +132,8 @@ class TestOmWhatsappWeb(TransactionCase):
         ]
         self.assertEqual(self._accept('32470000000', items)['accept'], ['NEW'])
         self.assertEqual(self._receive('32470000000', items), 1)
-        received = self.env['mail.message'].search([('om_whatsapp_id', 'in', ['OLD', 'NEW'])])
-        self.assertEqual(set(received.mapped('om_whatsapp_id')), {'NEW'})
+        received = self.env['mail.message'].search([('om_social_message_id', 'in', ['OLD', 'NEW'])])
+        self.assertEqual(set(received.mapped('om_social_message_id')), {'NEW'})
 
     def test_started_account_keeps_its_backlog(self):
         """ An account connected before the start was recorded starts from its
@@ -160,19 +160,19 @@ class TestOmWhatsappWeb(TransactionCase):
             {'kind': 'message', 'id': 'A6', 'phone': '32470123456', 'type': 'sticker', 'body': '', 'media_error': 'gone'},
         ])
         self.assertEqual(count, 8)
-        messages = self.alice.message_ids.filtered(lambda m: m.om_whatsapp_id in ('A1', 'A2', 'A3')).sorted('id')
-        self.assertEqual(messages.mapped('om_whatsapp_status'), ['received'] * 3)
+        messages = self.alice.message_ids.filtered(lambda m: m.om_social_message_id in ('A1', 'A2', 'A3')).sorted('id')
+        self.assertEqual(messages.mapped('om_social_status'), ['received'] * 3)
         self.assertEqual((messages[0].attachment_ids.name, messages[0].attachment_ids.file_size), ('plan.pdf', 8))
-        self.assertEqual(messages[1]._om_whatsapp_text(), '[Voice message]')
-        self.assertIn('The file is too big.', messages[2]._om_whatsapp_text())
-        self.assertEqual(notification.mail_message_id.om_whatsapp_status, 'read')
+        self.assertEqual(messages[1]._om_social_text(), '[Voice message]')
+        self.assertIn('The file is too big.', messages[2]._om_social_text())
+        self.assertEqual(notification.mail_message_id.om_social_status, 'read')
         self.assertEqual(notification.sudo().mail_message_id.reaction_ids.content, '👍')
-        unknown = self.env['mail.message'].search([('om_whatsapp_id', '=', 'A4')])
+        unknown = self.env['mail.message'].search([('om_social_message_id', '=', 'A4')])
         self.assertEqual(unknown.email_from, 'Zoe (+32470999999)')
-        voice = self.env['mail.message'].search([('om_whatsapp_id', '=', 'A5'), ('model', '=', 'discuss.channel')])
+        voice = self.env['mail.message'].search([('om_social_message_id', '=', 'A5'), ('model', '=', 'discuss.channel')])
         self.assertTrue(voice.attachment_ids.voice_ids)
-        sticker = self.env['mail.message'].search([('om_whatsapp_id', '=', 'A6'), ('model', '=', 'discuss.channel')])
-        self.assertTrue(sticker._om_whatsapp_text().startswith('[Sticker]'))
+        sticker = self.env['mail.message'].search([('om_social_message_id', '=', 'A6'), ('model', '=', 'discuss.channel')])
+        self.assertTrue(sticker._om_social_text().startswith('[Sticker]'))
 
     def test_done_only_for_a_message_taken(self):
         _action, notification = self._send()
@@ -190,12 +190,12 @@ class TestOmWhatsappWeb(TransactionCase):
             {'kind': 'message', 'id': 'P1', 'phone': '32470123456', 'from_me': True, 'body': 'Typed on the phone'},
         ])
         message = notification.mail_message_id
-        self.assertEqual((message.om_whatsapp_id, message.om_whatsapp_status), ('S9', 'sent'))
+        self.assertEqual((message.om_social_message_id, message.om_social_status), ('S9', 'sent'))
         # then the extension answers
         notification.om_whatsapp_web_done(whatsapp_id='S9')
-        self.assertEqual(len(self.env['mail.message'].search([('om_whatsapp_id', '=', 'S9')])), 2)  # order and conversation
-        phone = self.alice.message_ids.filtered(lambda m: m.om_whatsapp_id == 'P1')
-        self.assertEqual((phone.author_id, phone.om_whatsapp_status), (self.user.partner_id, 'sent'))
+        self.assertEqual(len(self.env['mail.message'].search([('om_social_message_id', '=', 'S9')])), 2)  # order and conversation
+        phone = self.alice.message_ids.filtered(lambda m: m.om_social_message_id == 'P1')
+        self.assertEqual((phone.author_id, phone.om_social_status), (self.user.partner_id, 'sent'))
 
     # ------------------------------------------------------------
     # AUTOMATION
@@ -205,10 +205,10 @@ class TestOmWhatsappWeb(TransactionCase):
         template = self.env['om.whatsapp.template'].create({
             'name': 'Welcome', 'model_id': self.env['ir.model']._get_id('res.partner'), 'body': 'Welcome {{ object.name }}',
         })
-        with patch.object(OmWhatsappAccount, '_om_whatsapp_user_at_screen', return_value=at_screen):
+        with patch.object(OmWhatsappAccount, '_om_social_user_at_screen', return_value=at_screen):
             partners.with_user(self.user)._message_om_whatsapp_template(template, account=self.account)
         return self.env['mail.notification'].search([
-            ('notification_type', '=', 'om_whatsapp'), ('res_partner_id', 'in', partners.ids),
+            ('notification_type', '=', 'om_social'), ('res_partner_id', 'in', partners.ids),
             ('mail_message_id.model', '=', 'res.partner'),
         ])
 
@@ -216,19 +216,19 @@ class TestOmWhatsappWeb(TransactionCase):
         """ A reaction of a user in Odoo: their browser reacts in WhatsApp Web. """
         self._send()
         message = self.env['mail.message'].search([('model', '=', 'res.partner'), ('res_id', '=', self.alice.id),
-                                                   ('message_type', '=', 'om_whatsapp')], limit=1)
-        message.om_whatsapp_id = '3EB0AB'
+                                                   ('message_type', '=', 'om_social')], limit=1)
+        message.om_social_message_id = '3EB0AB'
         with patch.object(type(self.env.user), '_bus_send', autospec=True) as bus_send:
             message.with_user(self.user).sudo()._message_reaction('👍', 'add', self.user.partner_id, self.env['mail.guest'])
         (user, kind, payload), _kwargs = bus_send.call_args
-        self.assertEqual((user, kind), (self.user, 'om_whatsapp/action'))
+        self.assertEqual((user, kind), (self.user, 'om_social/action'))
         self.assertEqual(payload['action']['tag'], 'om_whatsapp_web_react')
         self.assertEqual(payload['action']['params'], {'phone': '32470123456', 'whatsapp_id': '3EB0AB', 'emoji': '👍'})
 
     def test_status_records_the_last_connection(self):
         """ The pages tell the number linked in WhatsApp Web: its account
         records who was connected and when, at most once a minute. """
-        Account = self.env['om.whatsapp.account'].with_user(self.user)
+        Account = self.env['om.social.account'].with_user(self.user)
         self.account.phone = '+32 470 00 00 00'
         self.assertEqual(Account.om_whatsapp_web_status(False), {'has_account': True, 'account': False})
         self.assertFalse(self.account.om_whatsapp_web_seen)
@@ -246,22 +246,22 @@ class TestOmWhatsappWeb(TransactionCase):
             self.assertGreater(self.account.om_whatsapp_web_seen, seen)
 
         self.assertFalse(Account.om_whatsapp_web_status('32470999999')['account'], "another number is no account")
-        stranger = self.env['om.whatsapp.account'].with_user(self.other)
+        stranger = self.env['om.social.account'].with_user(self.other)
         self.assertEqual(stranger.om_whatsapp_web_status('32470000000'), {'has_account': False, 'account': False})
 
     def test_receipt_goes_through_the_browser(self):
         self.account._om_whatsapp_receive('+32470123456', 'Is it ready?', '3EB0R1')
-        message = self.env['mail.message'].search([('om_whatsapp_id', '=', '3EB0R1')], limit=1)
+        message = self.env['mail.message'].search([('om_social_message_id', '=', '3EB0R1')], limit=1)
         with patch.object(type(self.env.user), '_bus_send', autospec=True) as bus_send:
-            message.with_user(self.user)._om_whatsapp_send_receipts('read')
+            message.with_user(self.user)._om_social_send_receipts('read')
         (user, kind, payload), _kwargs = bus_send.call_args
-        self.assertEqual((user, kind, payload['action']['tag']), (self.user, 'om_whatsapp/action', 'om_whatsapp_web_receipt'))
+        self.assertEqual((user, kind, payload['action']['tag']), (self.user, 'om_social/action', 'om_whatsapp_web_receipt'))
         self.assertEqual(payload['action']['params'], {'phone': '32470123456', 'ids': ['3EB0R1'], 'kind': 'read'})
 
     def test_pictures_read_by_the_browser(self):
         png = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
         self.account.phone = '+32 470 00 00 00'
-        Account = self.env['om.whatsapp.account'].with_user(self.user)
+        Account = self.env['om.social.account'].with_user(self.user)
         self.account._om_whatsapp_receive('+32470123456', 'Hi', '3EB0P1')
         self.assertEqual(Account.om_whatsapp_web_pictures_due('32470000000'), ['32470123456'])
         self.assertEqual(Account.om_whatsapp_web_pictures_due('32470999999'), [], "another WhatsApp")
@@ -270,8 +270,8 @@ class TestOmWhatsappWeb(TransactionCase):
         self.assertEqual(Account.om_whatsapp_web_pictures_due('32470000000'), [])
 
     def test_picture_downloaded_from_whatsapp_only(self):
-        Account = self.env['om.whatsapp.account']
-        with patch('odoo.addons.om_whatsapp_web.models.om_whatsapp_account.requests.get') as get:
+        Account = self.env['om.social.account']
+        with patch('odoo.addons.om_whatsapp_web.models.om_social_account.requests.get') as get:
             get.return_value.raw.read.return_value = b'\x89PNG'
             self.assertTrue(Account._om_whatsapp_web_download_picture('https://pps.whatsapp.net/v/t61/photo.jpg?oe=1'))
             self.assertFalse(Account._om_whatsapp_web_download_picture('https://evil.example.com/photo.jpg'))
@@ -285,7 +285,7 @@ class TestOmWhatsappWeb(TransactionCase):
             notification = self._automate(self.alice, at_screen=True)
         self.assertEqual(notification.notification_status, 'ready')
         (_user, kind, payload), _kwargs = bus_send.call_args
-        self.assertEqual(kind, 'om_whatsapp/action')
+        self.assertEqual(kind, 'om_social/action')
         self.assertEqual(payload['action']['params']['notification_ids'], notification.ids)
 
     def test_automation_without_a_user_does_not_send(self):

@@ -13,7 +13,7 @@ class IrActionsServer(models.Model):
         'om.whatsapp.template', 'WhatsApp Template', compute='_compute_om_whatsapp_template_id',
         ondelete='set null', readonly=False, store=True, domain="[('model_id', '=', model_id)]")
     om_whatsapp_account_id = fields.Many2one(
-        'om.whatsapp.account', 'WhatsApp Account', ondelete='set null',
+        'om.social.account', 'WhatsApp Account', ondelete='set null', domain="[('channel', '=', 'whatsapp')]",
         help="The account to send from. Empty: the one of the template, else the one of the user who triggers it.")
 
     def _name_depends(self):

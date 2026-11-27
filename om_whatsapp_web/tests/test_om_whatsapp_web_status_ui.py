@@ -25,12 +25,12 @@ class TestOmWhatsappWebStatusUi(HttpCase):
         super().setUpClass()
         admin = cls.env.ref('base.user_admin')
         admin.group_ids = [Command.link(cls.env.ref('om_whatsapp_base.group_om_whatsapp_manager').id)]
-        cls.account = cls.env['om.whatsapp.account'].create({
+        cls.account = cls.env['om.social.account'].create({
             'name': 'Browser', 'provider': 'web', 'user_ids': [Command.set(admin.ids)],
         })
 
     def test_red_dots_without_the_extension(self):
-        action = 'om_whatsapp_base.om_whatsapp_account_action'
+        action = 'om_social_base.om_social_account_action'
         self.browser_js(f'/odoo/action-{action}/{self.account.id}', WAIT_FOR + """
             (async () => {
                 const status = await waitFor(".o_om_whatsapp_web_status");

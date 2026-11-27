@@ -6,7 +6,7 @@ import { defineModels, getService, models, onRpc } from "@web/../tests/web_test_
 describe.current.tags("desktop");
 
 class OmWhatsappAccount extends models.Model {
-    _name = "om.whatsapp.account";
+    _name = "om.social.account";
 }
 defineMailModels();
 defineModels([OmWhatsappAccount]);
@@ -17,7 +17,7 @@ test("the QR code, live, until linked", async () => {
     // what the bridge says now: WhatsApp changes the QR code every few seconds
     let current = { state: "linking", qr_image: "data:image/png;base64,ONE" };
     const asked = [];
-    onRpc("om.whatsapp.account", "device_link_status", ({ args }) => {
+    onRpc("om.social.account", "device_link_status", ({ args }) => {
         asked.push(args[0][0]);
         return current;
     });
@@ -39,8 +39,8 @@ test("the QR code, live, until linked", async () => {
 });
 
 test("a pairing code instead", async () => {
-    onRpc("om.whatsapp.account", "device_link_status", () => ({ state: "linking", qr_image: "data:image/png;base64,QR" }));
-    onRpc("om.whatsapp.account", "device_link_with_code", ({ args }) => {
+    onRpc("om.social.account", "device_link_status", () => ({ state: "linking", qr_image: "data:image/png;base64,QR" }));
+    onRpc("om.social.account", "device_link_with_code", ({ args }) => {
         expect(args).toEqual([[7], "+965 5555 1234"]);
         return { state: "linking", pairing_code: "ABCD1234" };
     });
@@ -55,7 +55,7 @@ test("a pairing code instead", async () => {
 });
 
 test("the bridge not running is told", async () => {
-    onRpc("om.whatsapp.account", "device_link_status", () => ({
+    onRpc("om.social.account", "device_link_status", () => ({
         state: "offline",
         reason: "The WhatsApp Bridge does not answer at http://127.0.0.1:8077: start it.",
     }));

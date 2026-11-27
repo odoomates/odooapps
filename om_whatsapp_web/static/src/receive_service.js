@@ -3,7 +3,7 @@ import { registry } from "@web/core/registry";
 import { user } from "@web/core/user";
 import { fetchMedia, getExtensionInfo, inboxDone, onInboxWake, onStatusWake, takeInbox } from "./extension_bridge";
 
-const ACCOUNT = "om.whatsapp.account";
+const ACCOUNT = "om.social.account";
 const POLL_DELAY = 20000;
 // how often to look for the extension again when it is not in this page
 const PING_DELAY = 60000;
