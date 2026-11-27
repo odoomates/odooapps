@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form_fs_subscription" model="ir.ui.view">
+        <field name="name">sale.order.form.field.service.subscription</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="om_sale_subscription.view_order_form_subscription"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <field name="fs_has_maintenance" invisible="1"/>
+                <button name="action_fs_view_subscription_jobs" type="object" class="oe_stat_button" icon="build"
+                    invisible="not fs_subscription_job_count" groups="om_field_service.group_fs_user">
+                    <field name="fs_subscription_job_count" widget="statinfo" string="Visits"/>
+                </button>
+            </xpath>
+            <xpath expr="//page[@name='subscription']/group[last()]" position="inside">
+                <group string="Maintenance Visits" name="fs_maintenance" invisible="not fs_has_maintenance">
+                    <field name="fs_technician_id" widget="many2one_avatar_employee" options="{'no_create': True}"/>
+                    <button name="action_fs_create_due_jobs" type="object" string="Create Due Visits"
+                        class="btn-link p-0" colspan="2" invisible="subscription_state != 'progress'"
+                        groups="om_field_service.group_fs_manager"/>
+                </group>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list//field[@name='subscription_recurring']" position="after">
+                <field name="fs_maintenance" column_invisible="1"/>
+                <field name="fs_next_job_date" column_invisible="not parent.fs_has_maintenance" optional="show"
+                    invisible="not fs_maintenance"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

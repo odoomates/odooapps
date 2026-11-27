@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs_inherit_subscription" model="ir.ui.view">
+        <field name="name">project.task.form.field.service.subscription</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service_sale.project_task_view_form_fs_inherit_sale"/>
+        <field name="arch" type="xml">
+            <field name="is_covered" position="before">
+                <field name="commercial_partner_id" invisible="1"/>
+                <field name="fs_subscription_id" options="{'no_create': True}"
+                    groups="sales_team.group_sale_salesman"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_search_fs_inherit_subscription" model="ir.ui.view">
+        <field name="name">project.task.search.field.service.subscription</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_search_fs"/>
+        <field name="arch" type="xml">
+            <filter name="unplanned" position="after">
+                <filter name="contract_visits" string="Contract Visits" domain="[('fs_subscription_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="project_task_view_list_fs_inherit_subscription" model="ir.ui.view">
+        <field name="name">project.task.list.field.service.subscription</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_list_fs"/>
+        <field name="arch" type="xml">
+            <field name="job_state" position="before">
+                <field name="fs_subscription_id" optional="hide"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

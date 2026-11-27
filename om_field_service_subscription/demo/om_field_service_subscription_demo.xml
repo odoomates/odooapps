@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- maintenance contracts -->
+    <record id="product_fs_boiler_contract" model="product.product">
+        <field name="name">Boiler Maintenance Contract</field>
+        <field name="type">service</field>
+        <field name="list_price">90.0</field>
+        <field name="is_subscription_product" eval="True"/>
+        <field name="description_sale">Boiler maintenance visit every quarter, labour of the visits included</field>
+        <field name="fs_maintenance" eval="True"/>
+        <field name="fs_job_interval">1</field>
+        <field name="fs_lead_days">14</field>
+        <field name="fs_job_type_id" ref="om_field_service.job_type_maintenance"/>
+        <field name="fs_technician_id" ref="hr.employee_qdp"/>
+        <field name="fs_coverage">contract</field>
+    </record>
+    <record id="product_fs_full_care" model="product.product">
+        <field name="name">Full Care Contract</field>
+        <field name="type">service</field>
+        <field name="list_price">250.0</field>
+        <field name="is_subscription_product" eval="True"/>
+        <field name="description_sale">Two maintenance visits a year and every repair included</field>
+        <field name="fs_maintenance" eval="True"/>
+        <field name="fs_job_interval">6</field>
+        <field name="fs_lead_days">14</field>
+        <field name="fs_job_type_id" ref="om_field_service.job_type_maintenance"/>
+        <field name="fs_coverage">all</field>
+    </record>
+
+    <record id="subscription_fs_bayview" model="sale.order">
+        <field name="partner_id" ref="om_field_service.partner_fs_bayview"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="subscription_plan_id" ref="om_sale_subscription.plan_quarterly"/>
+        <field name="subscription_start_date" eval="(DateTime.today() + relativedelta(days=7)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="subscription_fs_bayview_line" model="sale.order.line">
+        <field name="order_id" ref="subscription_fs_bayview"/>
+        <field name="product_id" ref="product_fs_boiler_contract"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+
+    <record id="subscription_fs_hills" model="sale.order">
+        <field name="partner_id" ref="om_field_service.partner_fs_hills"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="subscription_plan_id" ref="om_sale_subscription.plan_monthly"/>
+        <field name="fs_technician_id" ref="hr.employee_al"/>
+        <field name="subscription_start_date" eval="(DateTime.today() + relativedelta(days=3)).strftime('%Y-%m-%d')"/>
+    </record>
+    <record id="subscription_fs_hills_line" model="sale.order.line">
+        <field name="order_id" ref="subscription_fs_hills"/>
+        <field name="product_id" ref="product_fs_full_care"/>
+        <field name="product_uom_qty">1</field>
+    </record>
+
+    <function model="sale.order" name="action_confirm"
+        eval="[[ref('subscription_fs_bayview'), ref('subscription_fs_hills')]]"/>
+
+</odoo>
