@@ -4,7 +4,7 @@ DEFAULT_MESSAGE = "Good news! Your order {order} is on its way with {carrier}.\n
 
 
 class OmWhatsappAccount(models.Model):
-    _inherit = 'om.whatsapp.account'
+    _inherit = 'om.social.account'
 
     om_ai_shipping_messages = fields.Boolean(
         'Shipping Messages', default=True,
