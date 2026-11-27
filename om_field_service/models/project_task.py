@@ -7,6 +7,8 @@ from odoo.exceptions import UserError
 from odoo.fields import Command, Domain
 from odoo.tools import html2plaintext, plaintext2html
 
+from odoo.addons.om_field_service.wizard.om_fs_route_wizard import maps_route_url
+
 JOB_STATES = [
     ('new', 'New'),
     ('planned', 'Planned'),
@@ -180,10 +182,13 @@ class ProjectTask(models.Model):
     def write(self, vals):
         if 'technician_ids' in vals:
             old_users = {task.id: task.sudo().technician_ids.user_id for task in self}
+        planning = self.filtered(lambda t: t.job_state != 'planned') if vals.get('job_state') == 'planned' else None
         res = super().write(vals)
         jobs = self.filtered('is_field_service')
         if not jobs:
             return res
+        if planning:
+            (planning & jobs)._fs_on_planned()
         if vals.get('project_id'):
             jobs.filtered(lambda j: not j.job_number).with_context(om_fs_no_sync=True).write({
                 'job_number': self.env['ir.sequence'].next_by_code('om.fs.job')})
@@ -196,6 +201,14 @@ class ProjectTask(models.Model):
         if SLOT_SYNC_FIELDS & set(vals) and not self.env.context.get('om_fs_no_sync'):
             jobs._fs_sync_slots()
         return res
+
+    def _fs_on_planned(self):
+        """ Hook called when jobs get planned (from New to Planned): tell the customer through the
+        channels of :meth:`_fs_notify_channels`. """
+        if self.env.context.get('install_mode') or self.env.context.get('om_fs_no_notify'):
+            return
+        for job in self.filtered('partner_id'):
+            job._fs_notify_channels('planned')
 
     def _fs_sync_assignees(self, old_users=None):
         """ The users of the technicians are assignees of the job. """
@@ -414,8 +427,11 @@ class ProjectTask(models.Model):
             if closed_stage:
                 values['stage_id'] = closed_stage.id
             job.with_context(om_fs_no_sync=True).write(values)
-            if job._fs_company().fs_send_report and job.partner_id.email:
-                job._fs_send_report()
+            if job._fs_company().fs_send_report:
+                if job.partner_id.email:
+                    job._fs_send_report()
+                elif job.partner_id:
+                    job._fs_notify_channels('report')
         return True
 
     def action_fs_cancel(self):
@@ -454,7 +470,8 @@ class ProjectTask(models.Model):
         return True
 
     def _fs_notify_channels(self, event):
-        """ Hook to send a job event (``on_the_way``, ``report``) through another channel. """
+        """ Hook to send a job event (``planned``, ``on_the_way``, ``report``) through another
+        channel. """
         return False
 
     def _fs_send_report(self):
@@ -537,10 +554,34 @@ class ProjectTask(models.Model):
             | Domain('job_state', 'in', ACTIVE_STATES)
         ))
         jobs = jobs.sorted(lambda j: (j.planned_start or datetime.max, j.id))
+        employee = self.env.user.employee_id
         return {
             'day': fields.Date.to_string(local_day),
             'jobs': [job._fs_mobile_summary() for job in jobs],
+            'route_url': jobs._fs_route_url(employee) if employee else False,
+            'can_optimise': bool(employee.sudo().is_technician) and len(jobs.filtered('planned_start')) > 1,
         }
+
+    def _fs_route_url(self, employee):
+        """ Maps link of the route of the technician through these jobs, in their planned order,
+        from their start address. """
+        start = employee._fs_route_start_partner()
+        points = []
+        for partner in [start] + [job.site_partner_id or job.partner_id
+                                  for job in self.filtered('planned_start').sorted('planned_start')]:
+            if partner and (partner.partner_latitude or partner.partner_longitude):
+                points.append((partner.partner_latitude, partner.partner_longitude))
+        return maps_route_url(points)
+
+    @api.model
+    def fs_mobile_optimise_action(self, day=None):
+        """ Open the route optimisation of the current user for the day. """
+        employee = self._fs_my_employee()
+        wizard = self.env['om.fs.route.wizard'].create({
+            'employee_id': employee.id,
+            'date': fields.Date.to_date(day) if day else fields.Date.context_today(self),
+        })
+        return wizard._fs_reopen()
 
     def _fs_dt(self, value):
         return fields.Datetime.to_string(value) if value else False
@@ -726,7 +767,9 @@ class ProjectTask(models.Model):
         close a job of last week with its time, checklist and work done. """
         plans = [
             ('om_field_service.job_bayview', 0, 9, 1.5),
+            ('om_field_service.job_sunset_thermostat', 0, 10.5, 1),
             ('om_field_service.job_harbor', 0, 13, 2),
+            ('om_field_service.job_hills_softener', 0, 15.5, 1),
             ('om_field_service.job_sunset', 1, 9, 3),
             ('om_field_service.job_bayview_old', -7, 10, 2),
         ]
@@ -736,7 +779,7 @@ class ProjectTask(models.Model):
             if not job:
                 continue
             tz = ZoneInfo(job.technician_ids[:1].resource_id.tz or self.env.user.tz or 'UTC')
-            start = datetime.combine(today + timedelta(days=days), time(hour), tz)
+            start = datetime.combine(today + timedelta(days=days), time(int(hour), int(hour % 1 * 60)), tz)
             start = start.astimezone(UTC).replace(tzinfo=None)
             job.write({'planned_start': start, 'planned_end': start + timedelta(hours=duration)})
         old = self.env.ref('om_field_service.job_bayview_old', raise_if_not_found=False)

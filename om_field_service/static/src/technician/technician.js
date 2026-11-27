@@ -69,6 +69,8 @@ export class FieldServiceTechnician extends Component {
             now: DateTime.now(),
             notes: "",
             notesDirty: false,
+            routeUrl: false,
+            canOptimise: false,
         });
         onWillStart(async () => {
             await this.loadJobs();
@@ -87,6 +89,13 @@ export class FieldServiceTechnician extends Component {
     async loadJobs() {
         const data = await this.orm.call("project.task", "fs_mobile_jobs", [this.state.day]);
         this.state.jobs = data.jobs;
+        this.state.routeUrl = data.route_url || false;
+        this.state.canOptimise = data.can_optimise || false;
+    }
+
+    async optimiseDay() {
+        const action = await this.orm.call("project.task", "fs_mobile_optimise_action", [this.state.day]);
+        await this.action.doAction(action, { onClose: () => this.loadJobs() });
     }
 
     setJob(data) {

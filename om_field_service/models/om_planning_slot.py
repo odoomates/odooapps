@@ -1,7 +1,7 @@
 from datetime import timedelta
 
 from odoo import api, fields, models
-from odoo.fields import Command
+from odoo.fields import Command, Domain
 
 # slot fields that change the dates or the technicians of its job
 JOB_SYNC_FIELDS = {'start_datetime', 'end_datetime', 'resource_ids', 'source_ref'}
@@ -71,20 +71,22 @@ class OmPlanningSlot(models.Model):
     # ------------------------------------------------------------------
 
     @api.model
-    def fs_plan_jobs(self, task_ids, defaults):
+    def fs_plan_jobs(self, task_ids, defaults, exact=False):
         """ Plan jobs in a cell of the dispatch Gantt: each job takes the first free period of the
         technician of the row in the cell (the start of the cell when they are busy).
 
         :param list task_ids: jobs to plan
         :param dict defaults: context defaults of the cell (dates, row values)
+        :param bool exact: the jobs start at the start of the period (a job dropped at a time)
         :return: number of jobs planned
         """
         start = fields.Datetime.to_datetime(defaults.get('default_start_datetime'))
         stop = fields.Datetime.to_datetime(defaults.get('default_end_datetime'))
         if not (start and stop):
             return 0
-        period = self.with_context(default_start_datetime=start)._adjust_cell_period(start, stop, {})
-        start, stop = period.get('start_datetime', start), period.get('end_datetime', stop)
+        if not exact:
+            period = self.with_context(default_start_datetime=start)._adjust_cell_period(start, stop, {})
+            start, stop = period.get('start_datetime', start), period.get('end_datetime', stop)
         resource_ids = self._ids_from_commands(defaults.get('default_resource_ids'))
         resources = self.env['resource.resource'].browse(resource_ids).exists()
         employees = resources.employee_id
@@ -92,7 +94,7 @@ class OmPlanningSlot(models.Model):
         for job in self.env['project.task'].browse(task_ids).exists().filtered('is_field_service'):
             duration = timedelta(hours=job._fs_duration())
             begin = start
-            if resources:
+            if resources and not exact:
                 free = resources[:1]._planning_free_intervals(start, max(stop, start + duration))
                 for s, e, _recs in free[resources[:1].id]:
                     s = s.replace(tzinfo=None)
@@ -111,11 +113,8 @@ class OmPlanningSlot(models.Model):
     @api.model
     def fs_unplanned_jobs(self, limit=80):
         """ Jobs to plan, for the side panel of the dispatch Gantt. """
-        jobs = self.env['project.task'].search([
-            ('is_field_service', '=', True),
-            ('planned_start', '=', False),
-            ('job_state', 'not in', ('done', 'cancelled')),
-        ], order='priority desc, date_deadline, id', limit=limit)
+        jobs = self.env['project.task'].search(
+            self._fs_unplanned_domain(), order='priority desc, date_deadline, id', limit=limit)
         return [{
             'id': job.id,
             'number': job.job_number or '',
@@ -127,6 +126,12 @@ class OmPlanningSlot(models.Model):
             'duration': job._fs_duration(),
             'job_type': job.job_type_id.name or '',
         } for job in jobs]
+
+    @api.model
+    def _fs_unplanned_domain(self):
+        """ Jobs offered in the side panel of the dispatch Gantt. """
+        return Domain('is_field_service', '=', True) & Domain('planned_start', '=', False) \
+            & Domain('job_state', 'not in', ('done', 'cancelled'))
 
     def action_open_fs_job(self):
         self.ensure_one()

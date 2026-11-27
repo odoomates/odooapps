@@ -21,7 +21,7 @@ export class DispatchGanttController extends PlanningGanttController {
 
     setup() {
         super.setup();
-        this.dispatch = proxy({ jobs: [], showPanel: true });
+        this.dispatch = proxy({ jobs: [], showPanel: true, dragJob: null });
         onWillStart(() => this.loadJobs());
     }
 
@@ -85,6 +85,123 @@ export class DispatchGanttController extends PlanningGanttController {
 
     openMap() {
         this.actionService.doAction("om_field_service.action_om_fs_map");
+    }
+
+    openRoutes() {
+        const range = this.model.data.range;
+        this.actionService.doAction("om_field_service.action_om_fs_route_wizard", {
+            additionalContext: { default_date: range.start.toISODate() },
+            onClose: () => this.reload(),
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // Drag a job of the side panel onto a technician at a time
+    // ------------------------------------------------------------------
+
+    onJobDragStart(ev, job) {
+        if (!this.model.canWrite) {
+            ev.preventDefault();
+            return;
+        }
+        ev.dataTransfer.setData("application/x-om-fs-job", String(job.id));
+        ev.dataTransfer.effectAllowed = "move";
+        this.dispatch.dragJob = job;
+    }
+
+    onJobDragEnd() {
+        this.dispatch.dragJob = null;
+        this.clearDropTarget();
+    }
+
+    clearDropTarget() {
+        for (const el of document.querySelectorAll(".o_fs_drop_target")) {
+            el.classList.remove("o_fs_drop_target");
+        }
+    }
+
+    findRow(key) {
+        const search = (rows) => {
+            for (const row of rows) {
+                if (row.key === key) {
+                    return row;
+                }
+                const found = search(row.children || []);
+                if (found) {
+                    return found;
+                }
+            }
+            return null;
+        };
+        return search(this.model.data.rows);
+    }
+
+    /**
+     * The row and the time under the pointer.
+     *
+     * @returns {{ row: Object, start: luxon.DateTime, stop: luxon.DateTime, el: HTMLElement } | null}
+     */
+    dropTargetAt(ev) {
+        const rowEl = ev.target.closest?.(".o_gantt_row[data-row-key]");
+        const contentEl = rowEl?.querySelector(".o_gantt_row_content");
+        if (!contentEl) {
+            return null;
+        }
+        const row = this.findRow(rowEl.dataset.rowKey);
+        if (!row || row.isGroup) {
+            return null;
+        }
+        const rect = contentEl.getBoundingClientRect();
+        const columns = this.model.data.columns;
+        const position = Math.max(0, Math.min(columns.length - 1e-6, ((ev.clientX - rect.left) / rect.width) * columns.length));
+        const column = columns[Math.floor(position)];
+        let start = this.model.positionToDate(position);
+        if (start >= column.stop) {
+            start = column.start;
+        }
+        return { row, start, stop: column.stop, el: rowEl };
+    }
+
+    onDragOver(ev) {
+        if (!this.dispatch.dragJob) {
+            return;
+        }
+        const target = this.dropTargetAt(ev);
+        if (!target) {
+            this.clearDropTarget();
+            return;
+        }
+        ev.preventDefault();
+        ev.dataTransfer.dropEffect = "move";
+        if (!target.el.classList.contains("o_fs_drop_target")) {
+            this.clearDropTarget();
+            target.el.classList.add("o_fs_drop_target");
+        }
+    }
+
+    onDragLeave(ev) {
+        if (!ev.currentTarget.contains(ev.relatedTarget)) {
+            this.clearDropTarget();
+        }
+    }
+
+    async onDrop(ev) {
+        const job = this.dispatch.dragJob;
+        const target = job && this.dropTargetAt(ev);
+        this.onJobDragEnd();
+        if (!target) {
+            return;
+        }
+        ev.preventDefault();
+        // day scale: the job starts where it is dropped; other scales: first free time that day
+        const exact = this.model.scale === "day";
+        const stop = exact ? target.start.plus({ minutes: Math.round(job.duration * 60) }) : target.stop;
+        const defaults = this.model.getContextDefaults({ start: target.start, stop, row: target.row });
+        const count = await this.orm.call("om.planning.slot", "fs_plan_jobs", [[job.id], defaults], { exact });
+        if (count) {
+            this.notification.add(_t("%s planned.", job.number || job.name), { type: "success" });
+        }
+        await this.reload();
     }
 
     priorityStars(job) {

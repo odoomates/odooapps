@@ -10,3 +10,6 @@ class ResCompany(models.Model):
     fs_travel_timesheet = fields.Boolean(
         string="Record Travel Time", default=True,
         help="Travel from Start Travel to Start Work is recorded as a timesheet of its own.")
+    fs_route_speed = fields.Float(
+        string="Average Travel Speed", default=40.0,
+        help="Average speed (km/h) between two sites, used to plan the travel time when a route is optimised.")

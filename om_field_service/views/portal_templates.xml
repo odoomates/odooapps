@@ -26,6 +26,7 @@
                         <th>Job</th>
                         <th>Site</th>
                         <th>Date</th>
+                        <th>Technician</th>
                         <th class="text-end">Status</th>
                         <th class="text-end">Report</th>
                     </tr>
@@ -43,6 +44,7 @@
                             <span t-if="job.date_done" t-field="job.date_done" t-options="{'widget': 'date'}"/>
                             <span t-elif="job.planned_start" t-field="job.planned_start"/>
                         </td>
+                        <td><span t-out="', '.join(job.technician_ids.mapped('name'))"/></td>
                         <td class="text-end"><t t-call="om_field_service.portal_fs_state_badge"/></td>
                         <td class="text-end">
                             <a t-if="job.job_state == 'done'" t-att-href="'/my/field_service/%s/report?download=1' % job.id"
