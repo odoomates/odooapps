@@ -1,6 +1,6 @@
 {
     'name': 'Odoo 18 Accounting Dashboards',
-    'version': '1.0.2',
+    'version': '1.0.3',
     'category': 'Accounting',
     'summary': 'Accounting dashboards in the Dashboards app of Odoo 18 Community: overview, profit and loss, '
                'balance sheet, receivables and payables, bank and cash',
