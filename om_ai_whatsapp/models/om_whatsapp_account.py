@@ -171,11 +171,10 @@ class OmWhatsappAccount(models.Model):
     # RECEIVING: every provider ends here
     # ------------------------------------------------------------
 
-    def _om_whatsapp_receive(self, number, body='', whatsapp_id=False, attachments=None, quoted_id=False,
-                             from_me=False, profile_name=False, voice=False):
-        message = super()._om_whatsapp_receive(
-            number, body=body, whatsapp_id=whatsapp_id, attachments=attachments, quoted_id=quoted_id,
-            from_me=from_me, profile_name=profile_name, voice=voice)
+    def _om_whatsapp_receive(self, number, body='', *args, **kwargs):
+        message = super()._om_whatsapp_receive(number, body, *args, **kwargs)
+        # from_me comes after whatsapp_id, attachments and quoted_id
+        from_me = args[3] if len(args) > 3 else kwargs.get('from_me')
         if message and not from_me and self.om_ai_active and message.model == 'discuss.channel':
             self._om_ai_queue(message)
         return message
