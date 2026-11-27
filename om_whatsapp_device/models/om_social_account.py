@@ -50,7 +50,7 @@ class OmWhatsappAccount(models.Model):
     module. The user scans a QR code in Odoo; then messages go out from the
     server, one at a time, with the pause of a person between two, up to a
     number a day. """
-    _inherit = 'om.whatsapp.account'
+    _inherit = 'om.social.account'
 
     provider = fields.Selection(selection_add=[('device', 'WhatsApp QR (Linked Device)')], ondelete={'device': 'set default'})
     device_key = fields.Char('Session', readonly=True, copy=False, default=lambda self: secrets.token_urlsafe(18),
@@ -170,7 +170,7 @@ class OmWhatsappAccount(models.Model):
             # an image the bridge draws: no drawing library needed on the server of Odoo
             'qr_image': status.get('qr_image') or False,
             'pairing_code': status.get('pairing_code'),
-            'number': self.phone if self.device_state == 'linked' else False,
+            'number': self.address if self.device_state == 'linked' else False,
             'reason': status.get('reason'),
         }
 
@@ -206,7 +206,7 @@ class OmWhatsappAccount(models.Model):
         values = {'device_state': BRIDGE_STATES.get(status.get('state'), self.device_state),
                   'device_reason': status.get('reason') or False}
         if status.get('state') == 'open' and status.get('me'):
-            values['phone'] = f"+{status['me']}"
+            values['address'] = f"+{status['me']}"
         account = self.sudo()
         values = {name: value for name, value in values.items() if account[name] != value}
         if checked:
@@ -311,24 +311,24 @@ class OmWhatsappAccount(models.Model):
     # SENDING
     # ------------------------------------------------------------
 
-    def _om_whatsapp_send_device(self, notifications):
+    def _om_social_send_device(self, notifications):
         """ One message a user sends goes at once; several wait in the queue,
         sent one at a time up to the number a day. """
         self.ensure_one()
         if len(notifications) > 1:
             return self._device_queue()
         if self._device_sent_today() >= self.device_daily_limit:
-            notifications._om_whatsapp_set_status('failed', _(
+            notifications._om_social_set_status('failed', _(
                 "%(account)s sent its %(count)s messages of the day: send it again tomorrow, or raise the number a day "
                 "slowly.", account=self.name, count=self.device_daily_limit))
             return None
         self._device_send(notifications)
         return None
 
-    def _om_whatsapp_send_automated(self, notifications):
+    def _om_social_send_automated(self, notifications):
         self.ensure_one()
         if self.provider != 'device':
-            return super()._om_whatsapp_send_automated(notifications)
+            return super()._om_social_send_automated(notifications)
         return self._device_queue()
 
     def _device_queue(self):
@@ -341,12 +341,12 @@ class OmWhatsappAccount(models.Model):
         self.ensure_one()
         start = datetime.combine(fields.Date.today(), day_time.min)
         notifications = self.env['mail.notification'].sudo().search([
-            ('notification_type', '=', 'om_whatsapp'),
+            ('notification_type', '=', 'om_social'),
             ('notification_status', 'in', ('pending', 'sent')),
-            ('mail_message_id.om_whatsapp_account_id', '=', self.id),
+            ('mail_message_id.om_social_account_id', '=', self.id),
             ('mail_message_id.date', '>=', start),
         ])
-        return len(set(notifications.mail_message_id.mapped(lambda m: m.om_whatsapp_id or m.id)))
+        return len(set(notifications.mail_message_id.mapped(lambda m: m.om_social_message_id or m.id)))
 
     @api.model
     def _cron_device_send_queue(self, limit=200):
@@ -354,27 +354,27 @@ class OmWhatsappAccount(models.Model):
         up to the number a day of each: the others wait for tomorrow. """
         Notification = self.env['mail.notification'].sudo()
         queued = Notification.search([
-            ('notification_type', '=', 'om_whatsapp'),
+            ('notification_type', '=', 'om_social'),
             ('notification_status', '=', 'ready'),
-            ('mail_message_id.om_whatsapp_account_id.provider', '=', 'device'),
+            ('mail_message_id.om_social_account_id.provider', '=', 'device'),
         ], order='id', limit=limit)
-        for account in queued.mail_message_id.om_whatsapp_account_id:
+        for account in queued.mail_message_id.om_social_account_id:
             if account.device_state != 'linked':
                 continue
             room = account.device_daily_limit - account._device_sent_today()
-            for notification in queued.filtered(lambda n: n.mail_message_id.om_whatsapp_account_id == account)[:max(room, 0)]:
+            for notification in queued.filtered(lambda n: n.mail_message_id.om_social_account_id == account)[:max(room, 0)]:
                 account._device_send(notification)
                 if self.env.context.get('cron_id'):
                     self.env['ir.cron']._commit_progress(1, remaining=0)
 
-    def _om_whatsapp_picture_device(self, number):
+    def _om_social_picture_device(self, number):
         """ The profile picture of ``number``, read by the bridge: base64, or False. """
         self.ensure_one()
         if self.device_state != 'linked':
             return False
         return self._device_bridge().picture(self.device_key, number) or False
 
-    def _om_whatsapp_receipt_device(self, number, whatsapp_ids, kind):
+    def _om_social_receipt_device(self, number, whatsapp_ids, kind):
         self.ensure_one()
         if self.device_state != 'linked':
             raise UserError(_("%(account)s is not linked to WhatsApp: link it on the account.", account=self.name))
@@ -384,13 +384,13 @@ class OmWhatsappAccount(models.Model):
             raise UserError(str(error)) from error
         return None
 
-    def _om_whatsapp_react_device(self, number, message, emoji, from_me):
+    def _om_social_react_device(self, number, message, emoji, from_me):
         """ A reaction goes at once, through the bridge: not one of the messages of the day. """
         self.ensure_one()
         if self.device_state != 'linked':
             raise UserError(_("%(account)s is not linked to WhatsApp: link it on the account.", account=self.name))
         try:
-            self._device_bridge().react(self.device_key, number, message.om_whatsapp_id, from_me, emoji)
+            self._device_bridge().react(self.device_key, number, message.om_social_message_id, from_me, emoji)
         except BridgeError as error:
             raise UserError(str(error)) from error
         return None
@@ -398,7 +398,7 @@ class OmWhatsappAccount(models.Model):
     def _device_send(self, notifications):
         self.ensure_one()
         if self.device_state != 'linked':
-            notifications._om_whatsapp_set_status('failed', _(
+            notifications._om_social_set_status('failed', _(
                 "%(account)s is not linked to WhatsApp: link it on the account.", account=self.name))
             return
         bridge = self._device_bridge()
@@ -410,10 +410,10 @@ class OmWhatsappAccount(models.Model):
                 'data': base64.b64encode(attachment.raw or b'').decode(),
             } for attachment in message.attachment_ids]
             try:
-                ids = bridge.send(self.device_key, notification.om_whatsapp_number, message._om_whatsapp_text(), files,
-                                  quoted=message._om_whatsapp_quoted())
+                ids = bridge.send(self.device_key, notification.om_social_address, message._om_social_text(), files,
+                                  quoted=message._om_social_quoted())
             except BridgeError as error:
-                notification._om_whatsapp_set_status('failed', str(error))
+                notification._om_social_set_status('failed', str(error))
                 continue
-            message.om_whatsapp_id = ids[0] if ids else False
-            notification._om_whatsapp_set_status('sent')
+            message.om_social_message_id = ids[0] if ids else False
+            notification._om_social_set_status('sent')

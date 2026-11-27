@@ -10,7 +10,7 @@ from odoo.exceptions import AccessError, UserError
 from odoo.tests import HttpCase, TransactionCase, new_test_user, tagged
 from odoo.tools import mute_logger
 
-from odoo.addons.om_whatsapp_device.models import om_whatsapp_account as device_module
+from odoo.addons.om_whatsapp_device.models import om_social_account as device_module
 
 from .fake_bridge import fake_bridge
 
@@ -22,7 +22,7 @@ class DeviceCase(TransactionCase):
         super().setUpClass()
         cls.manager = new_test_user(cls.env, 'om_whatsapp_device_manager',
                                     groups='base.group_user,base.group_partner_manager,om_whatsapp_base.group_om_whatsapp_manager')
-        cls.account = cls.env['om.whatsapp.account'].create({
+        cls.account = cls.env['om.social.account'].create({
             'name': 'Shop', 'provider': 'device', 'user_ids': [Command.set(cls.manager.ids)],
             'device_min_gap': 0, 'device_max_gap': 0,
         })
@@ -43,7 +43,7 @@ class DeviceCase(TransactionCase):
 
     def _notification(self, partner=None):
         return self.env['mail.notification'].search([
-            ('notification_type', '=', 'om_whatsapp'), ('res_partner_id', '=', (partner or self.alice).id),
+            ('notification_type', '=', 'om_social'), ('res_partner_id', '=', (partner or self.alice).id),
             ('mail_message_id.model', '=', 'res.partner'),
         ], order='id desc', limit=1)
 
@@ -142,15 +142,15 @@ class TestOmWhatsappDeviceBridgeProcess(DeviceCase):
         with fake_bridge() as bridge:
             self._link(bridge)
             bridge.running = False
-            self.env['om.whatsapp.account']._cron_device_check()
+            self.env['om.social.account']._cron_device_check()
             self.assertEqual(self.account.device_state, 'offline')
             self.env['ir.config_parameter'].sudo().set_bool('om_whatsapp_device.autostart', True)
             with patch.object(type(self.account), '_device_start_bridge_process') as start:
-                self.env['om.whatsapp.account']._cron_device_check()
+                self.env['om.social.account']._cron_device_check()
             self.assertTrue(start.called)
             bridge.running = True
             bridge.sessions[self.account.device_key]['state'] = 'logged_out'
-            self.env['om.whatsapp.account']._cron_device_check()
+            self.env['om.social.account']._cron_device_check()
         self.assertEqual(self.account.device_state, 'logged_out')
 
 
@@ -163,7 +163,7 @@ class TestOmWhatsappDeviceSend(DeviceCase):
             self._composer().action_send()
             notification = self._notification()
             self.assertEqual(bridge.sent[-1], {'to': '+32470123456', 'text': 'Your order is ready', 'files': []})
-            self.assertEqual((notification.notification_status, notification.mail_message_id.om_whatsapp_id),
+            self.assertEqual((notification.notification_status, notification.mail_message_id.om_social_message_id),
                              ('pending', 'OUT1'))
             pdf = self.env['ir.attachment'].with_user(self.manager).create(
                 {'name': 'S00042.pdf', 'raw': b'%PDF-1.4', 'res_model': 'om.whatsapp.composer', 'res_id': 0})
@@ -178,7 +178,7 @@ class TestOmWhatsappDeviceSend(DeviceCase):
         with fake_bridge() as bridge:
             self._link(bridge)
             self.account._om_whatsapp_receive('+32470123456', 'Is it ready?', 'IN1')
-            message = self.env['mail.message'].search([('om_whatsapp_id', '=', 'IN1')], limit=1)
+            message = self.env['mail.message'].search([('om_social_message_id', '=', 'IN1')], limit=1)
             message.with_user(self.manager).sudo()._message_reaction(
                 '👍', 'add', self.manager.partner_id, self.env['mail.guest'])
         self.assertEqual(bridge.reactions, [{'to': '+32470123456', 'id': 'IN1', 'from_me': False, 'emoji': '👍'}])
@@ -188,8 +188,8 @@ class TestOmWhatsappDeviceSend(DeviceCase):
         with fake_bridge() as bridge:
             self._link(bridge)
             self.account._om_whatsapp_receive('+32470123456', 'Is it ready?', 'IN7')
-            message = self.env['mail.message'].search([('om_whatsapp_id', '=', 'IN7')], limit=1)
-            message.with_user(self.manager)._om_whatsapp_send_receipts('read')
+            message = self.env['mail.message'].search([('om_social_message_id', '=', 'IN7')], limit=1)
+            message.with_user(self.manager)._om_social_send_receipts('read')
         self.assertEqual(bridge.receipts, [{'to': '+32470123456', 'ids': ['IN7'], 'kind': 'read'}])
 
     def test_pictures_by_the_scheduled_action(self):
@@ -197,7 +197,7 @@ class TestOmWhatsappDeviceSend(DeviceCase):
             self._link(bridge)
             bridge.picture = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
             self.account._om_whatsapp_receive('+32470123456', 'Hi', 'IN9')
-            self.env['om.whatsapp.account']._cron_om_whatsapp_pictures()
+            self.env['om.social.account']._cron_om_social_pictures()
         self.assertEqual(bridge.pictures_asked, ['+32470123456'])
         self.assertTrue(self.alice.image_1920)
 
@@ -225,16 +225,16 @@ class TestOmWhatsappDeviceSend(DeviceCase):
                 (self.alice | bob | carol)._message_om_whatsapp_template(template, account=self.account)
             self.assertTrue(trigger.called)
             self.assertFalse(bridge.sent)
-            self.env['om.whatsapp.account']._cron_device_send_queue()
+            self.env['om.social.account']._cron_device_send_queue()
             self.assertEqual(sorted(sent['text'] for sent in bridge.sent), ['Welcome Alice', 'Welcome Bob'])
             self.assertEqual(self._notification(carol).notification_status, 'ready')
             # a message by hand, over the limit, is refused with the reason
             self._composer().action_send()
             self.assertIn('messages of the day', self._notification().failure_reason)
             # the next day
-            self.env['mail.message'].search([('om_whatsapp_account_id', '=', self.account.id)]).date = \
+            self.env['mail.message'].search([('om_social_account_id', '=', self.account.id)]).date = \
                 fields.Datetime.now() - timedelta(days=1)
-            self.env['om.whatsapp.account']._cron_device_send_queue()
+            self.env['om.social.account']._cron_device_send_queue()
         self.assertEqual(bridge.sent[-1]['text'], 'Welcome Carol')
 
 
@@ -244,7 +244,7 @@ class TestOmWhatsappDeviceWebhook(HttpCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.account = cls.env['om.whatsapp.account'].create({'name': 'Shop', 'provider': 'device', 'device_state': 'linking'})
+        cls.account = cls.env['om.social.account'].create({'name': 'Shop', 'provider': 'device', 'device_state': 'linking'})
         cls.alice = cls.env['res.partner'].create({'name': 'Alice', 'phone': '+32470123456'})
 
     def _post(self, items, secret=None):
@@ -268,17 +268,17 @@ class TestOmWhatsappDeviceWebhook(HttpCase):
             {'kind': 'message', 'id': 'IN2', 'phone': '32470123456', 'type': 'ptt', 'body': '',
              'media': {'name': 'voice-message-IN2.ogg', 'mimetype': 'audio/ogg', 'data': 'T2dnUw=='}},
         ])
-        incoming = self.env['mail.message'].search([('om_whatsapp_id', '=', 'IN1')])
-        self.assertEqual((incoming.author_id, incoming._om_whatsapp_text()), (self.alice, 'Is it ready?'))
-        voice = self.env['mail.message'].search([('om_whatsapp_id', '=', 'IN2')])
+        incoming = self.env['mail.message'].search([('om_social_message_id', '=', 'IN1')])
+        self.assertEqual((incoming.author_id, incoming._om_social_text()), (self.alice, 'Is it ready?'))
+        voice = self.env['mail.message'].search([('om_social_message_id', '=', 'IN2')])
         self.assertTrue(voice.attachment_ids.voice_ids)
 
-        channel = self.env['discuss.channel'].search([('om_whatsapp_partner_id', '=', self.alice.id)])
+        channel = self.env['discuss.channel'].search([('om_social_partner_id', '=', self.alice.id)])
         sent = channel._message_om_whatsapp(self.account, 'Yes, tomorrow', '+32470123456', partner=self.alice,
-                                            status='pending', om_whatsapp_id='OUT1')
+                                            status='pending', om_social_message_id='OUT1')
         self._post([{'kind': 'status', 'id': 'OUT1', 'status': 'read'},
                     {'kind': 'reaction', 'id': 'OUT1:32470123456', 'message_id': 'OUT1', 'phone': '32470123456', 'emoji': '👍'}])
-        self.assertEqual(sent.om_whatsapp_status, 'read')
+        self.assertEqual(sent.om_social_status, 'read')
         self.assertEqual(sent.sudo().reaction_ids.content, '👍')
 
         self._post([{'kind': 'state', 'state': 'logged_out', 'reason': 'Unlinked from the phone.'}])

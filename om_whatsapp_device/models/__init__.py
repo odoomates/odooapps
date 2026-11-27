@@ -1,1 +1,1 @@
-from . import om_whatsapp_account
+from . import om_social_account
