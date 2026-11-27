@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="point_fs_gas_tightness" model="om.quality.point">
+        <field name="name">Gas tightness test</field>
+        <field name="point_type">fs_job</field>
+        <field name="fs_job_type_ids" eval="[(6, 0, [ref('om_field_service.job_type_maintenance')])]"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="test_type">passfail</field>
+        <field name="is_blocking" eval="True"/>
+        <field name="create_alert" eval="True"/>
+        <field name="instructions" type="html"><p>Close the gas valve, pressurise the line and check the gauge for 5 minutes: no pressure drop.</p></field>
+        <field name="failure_message">Leave the boiler off, tell the customer and put the warning label on the valve.</field>
+    </record>
+
+    <record id="point_fs_flue_co" model="om.quality.point">
+        <field name="name">Flue gas CO (ppm)</field>
+        <field name="point_type">fs_job</field>
+        <field name="fs_job_type_ids" eval="[(6, 0, [ref('om_field_service.job_type_maintenance')])]"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="test_type">measure</field>
+        <field name="norm_min">0</field>
+        <field name="norm_target">20</field>
+        <field name="norm_max">50</field>
+        <field name="create_alert" eval="True"/>
+        <field name="instructions" type="html"><p>Measure at the flue test point with the burner at full load.</p></field>
+    </record>
+
+    <record id="point_fs_data_plate" model="om.quality.point">
+        <field name="name">Photo of the data plate</field>
+        <field name="point_type">fs_job</field>
+        <field name="fs_job_type_ids" eval="[(6, 0, [ref('om_field_service.job_type_maintenance'), ref('om_field_service.job_type_installation')])]"/>
+        <field name="team_id" ref="om_quality.team_main"/>
+        <field name="test_type">picture</field>
+        <field name="create_alert" eval="False"/>
+    </record>
+
+    <function model="project.task" name="_fs_quality_demo_checks"/>
+
+</odoo>
