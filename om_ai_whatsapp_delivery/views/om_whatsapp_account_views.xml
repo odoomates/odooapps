@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_form" model="ir.ui.view">
+        <field name="name">om.whatsapp.account.form.ai.delivery</field>
+        <field name="model">om.whatsapp.account</field>
+        <field name="inherit_id" ref="om_ai_whatsapp.om_whatsapp_account_view_form"/>
+        <field name="arch" type="xml">
+            <field name="om_ai_reminder_hours" position="after">
+                <field name="om_ai_shipping_messages"/>
+            </field>
+            <xpath expr="//label[@for='om_ai_persona']" position="before">
+                <label for="om_ai_shipping_text" invisible="not om_ai_shipping_messages"/>
+                <field name="om_ai_shipping_text" invisible="not om_ai_shipping_messages"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>
