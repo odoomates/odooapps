@@ -395,7 +395,7 @@ class OmCommissionPlan(models.Model):
                 ('plan_id', '=', plan.id),
                 ('state', 'in', ('open', 'draft')),
                 '|',
-                ('is_clawback', '=', True),
+                ('origin_line_id', '!=', False),
                 '&', ('period_start', '>=', periods[0][0] if periods else date_from),
                 ('period_start', '<=', periods[-1][0] if periods else date_to),
             ]).unlink()
@@ -572,36 +572,60 @@ class OmCommissionPlan(models.Model):
         self.ensure_one()
         today = fields.Date.context_today(self)
         start, end = self._get_period_of(today)
+        Line = self.env['om.commission.line']
+        invalid = self._get_locked_lines().filtered(lambda line: not line._is_source_valid())
+        # Commissions already taken back by the credit notes of an invoice are not taken back again when the
+        # invoice itself is cancelled: only what is left is clawed back.
+        groups = defaultdict(lambda: Line)
+        for line in invalid:
+            groups[(line.move_id, line.user_id, line.partner_id, line.role)] |= line
         vals_list = []
-        for line in self._get_locked_lines():
-            if line._is_source_valid():
-                continue
-            vals_list.append({
-                'name': self.env._('Clawback: %(line)s', line=line.name),
-                'plan_id': self.id,
-                'rule_id': line.rule_id.id,
-                'company_id': line.company_id.id,
-                'date': today,
-                'period_start': start,
-                'period_end': end,
-                'user_id': line.user_id.id,
-                'partner_id': line.partner_id.id,
-                'team_id': line.team_id.id,
-                'role': line.role,
-                'customer_id': line.customer_id.id,
-                'product_id': line.product_id.id,
-                'quantity': -line.quantity,
-                'base_amount': -line.base_amount,
-                'margin_amount': -line.margin_amount,
-                'rate': line.rate,
-                'amount': -line.amount,
-                'move_id': line.move_id.id,
-                'order_id': line.order_id.id,
-                'source_key': f'{line.source_key}:clawback',
-                'is_clawback': True,
-                'origin_line_id': line.id,
-            })
-        return self.env['om.commission.line'].sudo().create(vals_list)
+        for (move, user, partner, role), lines in groups.items():
+            factor = 1.0
+            total = sum(lines.mapped('amount'))
+            if move and not self.currency_id.is_zero(total):
+                refunded = sum(Line.search([
+                    ('plan_id', '=', self.id),
+                    ('move_id.reversed_entry_id', '=', move.id),
+                    ('user_id', '=', user.id),
+                    ('partner_id', '=', partner.id),
+                    ('role', '=', role),
+                ]).mapped('amount'))
+                factor = (total + refunded) / total
+                if factor <= 0 or self.currency_id.is_zero(total + refunded):
+                    continue
+                factor = min(factor, 1.0)
+            for line in lines:
+                vals_list.append(self._prepare_clawback_values(line, factor, today, start, end))
+        return Line.sudo().create(vals_list)
+
+    def _prepare_clawback_values(self, line, factor, today, start, end):
+        self.ensure_one()
+        return {
+            'name': self.env._('Clawback: %(line)s', line=line.name),
+            'plan_id': self.id,
+            'rule_id': line.rule_id.id,
+            'company_id': line.company_id.id,
+            'date': today,
+            'period_start': start,
+            'period_end': end,
+            'user_id': line.user_id.id,
+            'partner_id': line.partner_id.id,
+            'team_id': line.team_id.id,
+            'role': line.role,
+            'customer_id': line.customer_id.id,
+            'product_id': line.product_id.id,
+            'quantity': -line.quantity * factor,
+            'base_amount': -line.base_amount * factor,
+            'margin_amount': -line.margin_amount * factor,
+            'rate': line.rate,
+            'amount': self.currency_id.round(-line.amount * factor),
+            'move_id': line.move_id.id,
+            'order_id': line.order_id.id,
+            'source_key': f'{line.source_key}:clawback',
+            'is_clawback': True,
+            'origin_line_id': line.id,
+        }
 
 
 class OmCommissionRule(models.Model):
