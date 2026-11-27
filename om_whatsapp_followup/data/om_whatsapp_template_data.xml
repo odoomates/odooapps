@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_followup" model="om.whatsapp.template">
+        <field name="name">Follow-up: Payment Reminder</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="lang">{{ object.lang }}</field>
+        <field name="body">Hello {{ object.name }}, this is a reminder from {{ user.env.company.name }}: *{{ object.om_whatsapp_followup_amount() }}* is overdue on your account. Overdue invoices: {{ object.om_whatsapp_followup_invoices() }}
+You can pay them online from these links. If you have already paid, please ignore this message. Thank you!</field>
+    </record>
+
+</odoo>

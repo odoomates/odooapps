@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_followup_line_tree" model="ir.ui.view">
+        <field name="name">followup.line.list.inherit.om_whatsapp_followup</field>
+        <field name="model">followup.line</field>
+        <field name="inherit_id" ref="om_account_followup.view_om_account_followup_followup_line_tree"/>
+        <field name="arch" type="xml">
+            <field name="send_letter" position="after">
+                <field name="send_whatsapp"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_followup_line_form" model="ir.ui.view">
+        <field name="name">followup.line.form.inherit.om_whatsapp_followup</field>
+        <field name="model">followup.line</field>
+        <field name="inherit_id" ref="om_account_followup.view_om_account_followup_followup_line_form"/>
+        <field name="arch" type="xml">
+            <field name="send_letter" position="after">
+                <field name="send_whatsapp" widget="boolean_toggle"/>
+            </field>
+            <page name="letter" position="after">
+                <page string="WhatsApp" name="whatsapp" invisible="not send_whatsapp">
+                    <group>
+                        <field name="whatsapp_template_id" options="{'no_create': True}"
+                               placeholder="Follow-up: Payment Reminder"/>
+                    </group>
+                    <div class="text-muted">
+                        Sent to the mobile number of the customer, with the amount overdue and the overdue invoices
+                        with their payment links. A customer without a valid number gets a note in the chatter
+                        instead, and opted-out numbers are skipped.
+                    </div>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <record id="view_followup_form" model="ir.ui.view">
+        <field name="name">followup.followup.form.inherit.om_whatsapp_followup</field>
+        <field name="model">followup.followup</field>
+        <field name="inherit_id" ref="om_account_followup.view_om_account_followup_followup_form"/>
+        <field name="arch" type="xml">
+            <field name="auto_user_id" position="after">
+                <field name="om_whatsapp_account_id" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
