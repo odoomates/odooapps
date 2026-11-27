@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_consolidation_group_view_list" model="ir.ui.view">
+        <field name="name">om.consolidation.group.list</field>
+        <field name="model">om.consolidation.group</field>
+        <field name="arch" type="xml">
+            <list string="Consolidation Groups">
+                <field name="name"/>
+                <field name="parent_company_id"/>
+                <field name="member_company_ids" widget="many2many_tags"/>
+                <field name="currency_id"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_consolidation_group_view_form" model="ir.ui.view">
+        <field name="name">om.consolidation.group.form</field>
+        <field name="model">om.consolidation.group</field>
+        <field name="arch" type="xml">
+            <form string="Consolidation Group">
+                <header>
+                    <button name="action_load_default_chart" type="object" string="Load Default Group Chart"
+                            class="btn-primary" invisible="account_ids or not id"
+                            groups="account.group_account_manager"/>
+                    <button name="action_check_mapping" type="object" string="Check Mapping" invisible="not id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_periods" type="object" class="oe_stat_button" icon="calendar_today">
+                            <field name="period_count" widget="statinfo" string="Periods"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Mates Group"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="parent_company_id" options="{'no_create': True}"/>
+                            <field name="currency_id" options="{'no_create': True}"/>
+                        </group>
+                        <group>
+                            <field name="company_id" options="{'no_create': True}"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Companies" name="companies">
+                            <field name="member_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="company_id" options="{'no_create': True}"/>
+                                    <field name="currency_id"/>
+                                    <field name="ownership"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                The companies are consolidated in full; the ownership is kept for the record.
+                            </div>
+                        </page>
+                        <page string="Group Chart" name="chart">
+                            <field name="account_ids">
+                                <list editable="bottom">
+                                    <field name="code"/>
+                                    <field name="name"/>
+                                    <field name="kind"/>
+                                    <field name="rate_type"/>
+                                    <field name="elimination"/>
+                                </list>
+                            </field>
+                            <group string="Group Accounts" name="group_accounts">
+                                <group>
+                                    <field name="retained_earnings_account_id" options="{'no_create': True}"/>
+                                    <field name="translation_account_id" options="{'no_create': True}"/>
+                                    <field name="difference_account_id" options="{'no_create': True}"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Account Mapping" name="mapping">
+                            <field name="mapping_ids" context="{'default_group_id': id}">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="group_id" column_invisible="True"/>
+                                    <field name="company_id" options="{'no_create': True}" placeholder="All companies"
+                                           domain="[('id', 'in', parent.member_company_ids)]"/>
+                                    <field name="method"/>
+                                    <field name="account_ids" widget="many2many_tags" options="{'no_create': True}"
+                                           invisible="method != 'account'" required="method == 'account'"/>
+                                    <field name="code_from" invisible="method != 'range'" required="method == 'range'"/>
+                                    <field name="code_to" invisible="method != 'range'" required="method == 'range'"/>
+                                    <field name="account_type" invisible="method != 'type'" required="method == 'type'"/>
+                                    <field name="group_account_id" options="{'no_create': True}"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                The accounts chosen one by one come first, then the code ranges, then the account
+                                types. A code range compares the codes from their start: 4000 to 4999 takes the
+                                accounts 400000 to 499999. Check Mapping lists the accounts with a balance that map
+                                to nothing.
+                            </div>
+                        </page>
+                        <page string="Historical Rates" name="historical_rates">
+                            <field name="historical_rate_ids" context="{'default_group_id': id}">
+                                <list editable="bottom">
+                                    <field name="group_id" column_invisible="True"/>
+                                    <field name="company_id" options="{'no_create': True}"
+                                           domain="[('id', 'in', parent.member_company_ids)]"/>
+                                    <field name="group_account_id" options="{'no_create': True}"
+                                           placeholder="All equity accounts"/>
+                                    <field name="rate" digits="[16, 6]"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                The equity is translated at these rates (group currency for one unit of the
+                                currency of the company). Without one, the equity of the previous period is carried
+                                over and its movements since are translated at the average rate.
+                            </div>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_consolidation_group_view_search" model="ir.ui.view">
+        <field name="name">om.consolidation.group.search</field>
+        <field name="model">om.consolidation.group</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="member_ids" string="Company" filter_domain="[('member_ids.company_id', 'ilike', self)]"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_consolidation_group" model="ir.actions.act_window">
+        <field name="name">Consolidation Groups</field>
+        <field name="res_model">om.consolidation.group</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a consolidation group</p>
+            <p>Add the companies of the group, load the default group chart or build your own, map the accounts
+                of the companies to it, then compute a consolidation period.</p>
+        </field>
+    </record>
+
+    <record id="om_consolidation_unmapped_view_list" model="ir.ui.view">
+        <field name="name">om.consolidation.unmapped.list</field>
+        <field name="model">om.consolidation.unmapped</field>
+        <field name="arch" type="xml">
+            <list string="Unmapped Accounts" create="0" edit="0" delete="0">
+                <field name="company_id"/>
+                <field name="code"/>
+                <field name="account_id"/>
+                <field name="account_type"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="balance" sum="Total"/>
+            </list>
+        </field>
+    </record>
+</odoo>
