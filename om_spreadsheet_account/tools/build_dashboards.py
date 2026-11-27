@@ -324,15 +324,15 @@ BALANCE_LINES = [
     # not the unaffected earnings account (equity_unaffected): its balance is the profit of the years already
     # allocated to the reserves, which only makes sense with the income and expense accounts, in the earnings below
     ('capital', 'Capital and Reserves', ('equity',), -1, 'line'),
+    # what is left once the rest is counted: the earnings of the years not closed yet into the equity
+    ('previous_earnings', 'Previous Years Unallocated Earnings',
+     ('total_assets', '-total_liabilities', '-capital', '-current_earnings'), 1, 'sum'),
     # the profit and loss of the fiscal year, not closed into the equity yet: with the unaffected earnings account,
     # whose allocation of the year's result (the year-end closing) closes it into the reserves; that entry must be
     # dated on the last day of the fiscal year, else it lowers the earnings of the year after
     ('current_earnings', 'Current Year Unallocated Earnings', PROFIT_AND_LOSS + ('equity_unaffected',), -1,
      'earnings'),
-    # what is left once the rest is counted: the earnings of the years not closed yet into the equity
-    ('previous_earnings', 'Previous Years Unallocated Earnings',
-     ('total_assets', '-total_liabilities', '-capital', '-current_earnings'), 1, 'sum'),
-    ('total_equity', 'Total Equity', ('capital', 'current_earnings', 'previous_earnings'), 1, 'grand'),
+    ('total_equity', 'Total Equity', ('capital', 'previous_earnings', 'current_earnings'), 1, 'grand'),
     ('total_liabilities_equity', 'Total Liabilities and Equity', ('total_liabilities', 'total_equity'), 1, 'grand'),
 ]
 
@@ -350,11 +350,11 @@ def build_balance_sheet():
     dashboard.set(1, top, '=TEXT(%s,"mm/dd/yyyy")' % END, HEADER_RIGHT)
     dashboard.set(2, top, '=TEXT(%s,"mm/dd/yyyy")' % COMPARE_END, HEADER_RIGHT)
     dashboard.set(3, top, label('Change'), HEADER_RIGHT)
-    rows = {}
+    # all the rows first: a line may add up the lines below it
+    rows = {key: top + 1 + index for index, (key, *_rest) in enumerate(BALANCE_LINES)}
     dates = {1: (FISCAL_START, END), 2: (COMPARE_FISCAL_START, COMPARE_END)}
-    for index, (key, text, members, sign, kind) in enumerate(BALANCE_LINES):
-        row = top + 1 + index
-        rows[key] = row
+    for key, text, members, sign, kind in BALANCE_LINES:
+        row = rows[key]
         if kind == 'title':
             dashboard.set(0, row, label(text), HEADER)
             for col in (1, 2, 3):
