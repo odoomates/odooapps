@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_field_view_list" model="ir.ui.view">
+        <field name="name">om.ai.field.list</field>
+        <field name="model">om.ai.field</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="field_id"/>
+                <field name="field_type" optional="show"/>
+                <field name="trigger_on_change" optional="show"/>
+                <field name="trigger_cron" optional="show"/>
+                <field name="fill_count" optional="show"/>
+                <field name="today_count" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_field_view_form" model="ir.ui.view">
+        <field name="name">om.ai.field.form</field>
+        <field name="model">om.ai.field</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_create_field" type="object" string="Create Field" class="btn-primary"
+                            invisible="field_id or not id"/>
+                    <button name="action_test" type="object" string="Try on One Record"
+                            invisible="not field_id"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_jobs" type="object" class="oe_stat_button" icon="fa-tasks"
+                                invisible="not action_id">
+                            <field name="job_count" widget="statinfo" string="Queued / Failed"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Company Summary"/></h1>
+                    </div>
+                    <group>
+                        <group string="Field">
+                            <field name="model_id" options="{'no_create': True}" readonly="field_id"/>
+                            <field name="model_name" invisible="1"/>
+                            <field name="field_id" options="{'no_create': True}"
+                                   invisible="not model_id or (not field_id and new_field_label)"/>
+                            <field name="field_type" invisible="not field_id"/>
+                            <field name="active" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                        <group string="New Field" invisible="field_id or not model_id">
+                            <field name="new_field_label" placeholder="e.g. AI Summary"/>
+                            <field name="new_field_name" placeholder="x_ai_summary"/>
+                            <field name="new_field_type"/>
+                            <field name="new_field_selection" invisible="new_field_type != 'selection'"
+                                   placeholder="hot:Hot&#10;warm:Warm&#10;cold:Cold"/>
+                            <field name="new_field_relation_id" invisible="new_field_type != 'many2one'"
+                                   options="{'no_create': True}"/>
+                            <div colspan="2" class="text-muted">
+                                Save, then click Create Field: the field is added to the model and shown on its form.
+                            </div>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Prompt" name="prompt">
+                            <label for="prompt"/>
+                            <field name="prompt" placeholder="Write a two-sentence summary of {{ name }}, a company from {{ city }}, {{ country_id.name }}. Their website: {{ website }}."/>
+                            <div class="text-muted mb-3">
+                                Record values: <field name="placeholders" class="oe_inline"/>.
+                                Write them as {{ field }} or {{ field.sub_field }}; nothing in the text is run as code.
+                            </div>
+                            <label for="instructions"/>
+                            <field name="instructions" placeholder="e.g. Answer in English, at most 40 words, no marketing tone."/>
+                            <group>
+                                <group>
+                                    <field name="purpose"/>
+                                    <field name="ai_model_id" options="{'no_create': True}"/>
+                                </group>
+                                <group>
+                                    <field name="relation_model" invisible="1"/>
+                                    <field name="relation_domain" widget="domain"
+                                           options="{'model': 'relation_model', 'in_dialog': True}"
+                                           invisible="not relation_model"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="When" name="when">
+                            <group>
+                                <group string="Records">
+                                    <field name="domain" widget="domain" options="{'model': 'model_name', 'in_dialog': True}"/>
+                                    <field name="overwrite"/>
+                                    <field name="daily_limit"/>
+                                </group>
+                                <group string="Triggers">
+                                    <div colspan="2" class="text-muted mb-2">
+                                        Always available in the Actions menu of the records: Fill with AI.
+                                    </div>
+                                    <field name="trigger_on_change"/>
+                                    <field name="trigger_field_ids" widget="many2many_tags"
+                                           invisible="not trigger_on_change" options="{'no_create': True}"/>
+                                    <field name="trigger_cron"/>
+                                    <field name="cron_batch" invisible="not trigger_cron"/>
+                                </group>
+                            </group>
+                        </page>
+                        <page string="Technical" name="technical">
+                            <group>
+                                <group>
+                                    <field name="action_id"/>
+                                    <field name="automation_id"/>
+                                    <field name="view_id"/>
+                                </group>
+                                <group>
+                                    <field name="fill_count"/>
+                                    <field name="today_count"/>
+                                    <field name="today_date"/>
+                                </group>
+                            </group>
+                            <label for="last_error"/>
+                            <field name="last_error"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_field_view_search" model="ir.ui.view">
+        <field name="name">om.ai.field.search</field>
+        <field name="model">om.ai.field</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="model_id"/>
+                <field name="field_id"/>
+                <filter name="on_change" string="When Fields Change" domain="[('trigger_on_change', '=', True)]"/>
+                <filter name="scheduled" string="Scheduled" domain="[('trigger_cron', '=', True)]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_model" string="Model" context="{'group_by': 'model_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_field_action" model="ir.actions.act_window">
+        <field name="name">AI Fields</field>
+        <field name="res_model">om.ai.field</field>
+        <field name="path">ai-fields</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Let the AI fill a field</p>
+            <p>Pick a model and a field, or create one, and write a prompt with record values such as
+                {{ partner_id.name }}. The AI fills it on demand, when other fields change, or on a schedule.</p>
+        </field>
+    </record>
+</odoo>

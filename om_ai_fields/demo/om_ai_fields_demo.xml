@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="demo_ai_field_partner_industry" model="om.ai.field">
+        <field name="name">Industry of a Company</field>
+        <field name="model_id" ref="base.model_res_partner"/>
+        <field name="field_id" ref="base.field_res_partner__industry_id"/>
+        <field name="domain">[('parent_id', '=', False)]</field>
+        <field name="prompt">Which industry is the company {{ name }} in?
+Website: {{ website }}
+City: {{ city }}, {{ country_id.name }}
+Tags: {{ category_id }}</field>
+        <field name="instructions">Choose the closest industry of the list. Answer null when the name and the website do not tell.</field>
+        <field name="trigger_field_ids" eval="[(6, 0, [ref('base.field_res_partner__name'), ref('base.field_res_partner__website')])]"/>
+    </record>
+</odoo>
