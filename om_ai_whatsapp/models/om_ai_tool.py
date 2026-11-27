@@ -310,12 +310,12 @@ class OmAiTool(models.Model):
                 language.lower().replace('-', '_'))), None)
             if code:
                 values['lang'] = code
-        partner = self.env['res.partner'].sudo().with_context(om_whatsapp_channel_id=conversation.channel_id.id) \
+        partner = self.env['res.partner'].sudo().with_context(om_social_channel_id=conversation.channel_id.id) \
             .create(values)
         partner.message_post(body=self.env._('Contact made by the WhatsApp Assistant from %s.', conversation.number))
         conversation.write({'partner_id': partner.id, 'partner_created': True})
-        if conversation.channel_id.om_whatsapp_partner_id != partner:
-            conversation.channel_id._om_whatsapp_link_partner(partner)
+        if conversation.channel_id.om_social_partner_id != partner:
+            conversation.channel_id._om_social_link_partner(partner)
         return {'done': True, 'customer_name': partner.name, 'level': 1}
 
     def _ai_tool_wa_add_to_cart(self, tool, product_id, quantity=1):

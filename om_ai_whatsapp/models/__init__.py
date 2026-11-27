@@ -3,7 +3,7 @@ from . import res_partner
 from . import om_ai
 from . import om_ai_usage
 from . import om_ai_tool
-from . import om_whatsapp_account
+from . import om_social_account
 from . import om_ai_whatsapp_conversation
 from . import om_ai_whatsapp_job
 from . import discuss_channel

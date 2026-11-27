@@ -34,18 +34,18 @@ class ResPartner(models.Model):
         """ Whether ``number`` was verified for this contact in the last ``days``. """
         self.ensure_one()
         partner = self.sudo()
-        clean = self.env['om.whatsapp.account']._om_whatsapp_clean_number
+        clean = self.env['om.social.account']._om_social_clean_address
         if not number or not partner.om_ai_whatsapp_verified_date or \
                 clean(partner.om_ai_whatsapp_verified_number or '') != clean(number):
             return False
         if days is None:
-            accounts = self.env['om.whatsapp.account'].sudo().search([('om_ai_active', '=', True)])
+            accounts = self.env['om.social.account'].sudo().search([('om_ai_active', '=', True)])
             days = max(accounts.mapped('om_ai_verify_days') or [30])
         return partner.om_ai_whatsapp_verified_date >= fields.Datetime.now() - timedelta(days=days or 30)
 
     def _om_ai_whatsapp_set_verified(self, number, note):
         self.ensure_one()
-        clean = self.env['om.whatsapp.account']._om_whatsapp_clean_number
+        clean = self.env['om.social.account']._om_social_clean_address
         self.sudo().write({'om_ai_whatsapp_verified_number': clean(number),
                            'om_ai_whatsapp_verified_date': fields.Datetime.now()})
         self.sudo().message_post(body=note)

@@ -12,7 +12,7 @@ class OmAiWhatsappReport(models.Model):
 
     conversation_id = fields.Many2one('om.ai.whatsapp.conversation', string='Conversation', readonly=True)
     date = fields.Datetime(readonly=True)
-    account_id = fields.Many2one('om.whatsapp.account', string='WhatsApp Account', readonly=True)
+    account_id = fields.Many2one('om.social.account', string='WhatsApp Account', readonly=True)
     company_id = fields.Many2one('res.company', string='Company', readonly=True)
     partner_id = fields.Many2one('res.partner', string='Customer', readonly=True)
     state = fields.Selection([('ai', 'Assistant'), ('human', 'Person'), ('stopped', 'Opted Out')], readonly=True)

@@ -10,7 +10,7 @@ async function switchAssistant(channel, owner, method, message) {
 /** A person answers this WhatsApp customer: the AI assistant stops. */
 registerThreadAction("om-ai-whatsapp-take-over", {
     condition: ({ channel }) =>
-        channel?.channel_type === "om_whatsapp" && channel.om_ai_whatsapp_state === "ai",
+        channel?.channel_type === "om_social" && channel.om_ai_whatsapp_state === "ai",
     icon: "back_hand",
     name: _t("Take Over from the AI Assistant"),
     onSelected: ({ channel, owner }) =>
@@ -27,7 +27,7 @@ registerThreadAction("om-ai-whatsapp-take-over", {
 /** The AI assistant answers this WhatsApp customer again. */
 registerThreadAction("om-ai-whatsapp-give-back", {
     condition: ({ channel }) =>
-        channel?.channel_type === "om_whatsapp" && channel.om_ai_whatsapp_state === "human",
+        channel?.channel_type === "om_social" && channel.om_ai_whatsapp_state === "human",
     icon: "undo",
     name: _t("Give Back to the AI Assistant"),
     onSelected: ({ channel, owner }) =>

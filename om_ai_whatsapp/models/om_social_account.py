@@ -9,7 +9,7 @@ DEFAULT_HANDOVER = 'human, person, agent, operator, salesperson, talk to someone
 
 
 class OmWhatsappAccount(models.Model):
-    _inherit = 'om.whatsapp.account'
+    _inherit = 'om.social.account'
 
     om_ai_active = fields.Boolean(
         'AI Assistant',
@@ -171,10 +171,8 @@ class OmWhatsappAccount(models.Model):
     # RECEIVING: every provider ends here
     # ------------------------------------------------------------
 
-    def _om_whatsapp_receive(self, number, body='', *args, **kwargs):
-        message = super()._om_whatsapp_receive(number, body, *args, **kwargs)
-        # from_me comes after whatsapp_id, attachments and quoted_id
-        from_me = args[3] if len(args) > 3 else kwargs.get('from_me')
+    def _om_social_receive(self, address, body='', *args, from_me=False, **kwargs):
+        message = super()._om_social_receive(address, body, *args, from_me=from_me, **kwargs)
         if message and not from_me and self.om_ai_active and message.model == 'discuss.channel':
             self._om_ai_queue(message)
         return message
@@ -210,14 +208,14 @@ class OmWhatsappAccount(models.Model):
         """ Send the messages of the assistant. """
         self.ensure_one()
         if self.can_send_unattended:
-            return self._om_whatsapp_send_automated(notifications)
+            return self._om_social_send_automated(notifications)
         user = self._om_ai_browser_user()
         if user and len(notifications) == 1:
-            action = self._om_whatsapp_send(notifications)
+            action = self._om_social_send(notifications)
             if action:
-                user._bus_send('om_whatsapp/action', {'action': action})
+                user._bus_send('om_social/action', {'action': action})
             return None
-        return self._om_whatsapp_send_automated(notifications)
+        return self._om_social_send_automated(notifications)
 
     @staticmethod
     def _om_ai_today_start():

@@ -64,11 +64,11 @@ class OmAiWhatsappConversation(models.Model):
 
     channel_id = fields.Many2one('discuss.channel', string='Conversation', required=True, ondelete='cascade',
                                  index=True, readonly=True)
-    account_id = fields.Many2one('om.whatsapp.account', string='WhatsApp Account', required=True,
+    account_id = fields.Many2one('om.social.account', string='WhatsApp Account', required=True,
                                  ondelete='cascade', index=True, readonly=True)
     company_id = fields.Many2one(related='account_id.company_id', store=True)
     number = fields.Char('WhatsApp Number', readonly=True)
-    profile_name = fields.Char(related='channel_id.om_whatsapp_profile_name', string='Profile Name')
+    profile_name = fields.Char(related='channel_id.om_social_profile_name', string='Profile Name')
     partner_id = fields.Many2one('res.partner', string='Customer', readonly=True, index='btree_not_null',
                                  help="The contact the assistant serves: the only contact with this number, or "
                                       "the one made in this conversation.")
@@ -114,8 +114,8 @@ class OmAiWhatsappConversation(models.Model):
         if not conversation:
             conversation = self.create({
                 'channel_id': channel.id,
-                'account_id': channel.om_whatsapp_account_id.id,
-                'number': channel.om_whatsapp_number,
+                'account_id': channel.om_social_account_id.id,
+                'number': channel.om_social_address,
             })
         return conversation
 
@@ -217,18 +217,18 @@ class OmAiWhatsappConversation(models.Model):
         for attachment in attachments or []:
             attachment_ids.append(attachment.sudo().copy({'res_model': 'discuss.channel', 'res_id': channel.id}).id
                                   if attachment.res_model != 'discuss.channel' else attachment.id)
-        message = channel.with_context(om_ai_whatsapp_sending=True)._message_om_whatsapp(
-            account, text or '', channel.om_whatsapp_number, partner=conversation.partner_id,
+        message = channel.with_context(om_ai_whatsapp_sending=True)._message_om_social(
+            account, text or '', channel._om_social_recipient(), partner=conversation.partner_id,
             author_id=user.partner_id.id, attachment_ids=attachment_ids,
         )
-        notifications = message._om_whatsapp_notifications().filtered(lambda n: n.notification_status == 'ready')
+        notifications = message._om_social_notifications().filtered(lambda n: n.notification_status == 'ready')
         if notifications:
             try:
                 with self.env.cr.savepoint():
                     account._om_ai_deliver(notifications)
             except Exception as error:  # noqa: BLE001 - the message stays in Discuss to send again
                 _logger.warning("WhatsApp assistant message %s not sent: %s", message.id, error)
-                notifications._om_whatsapp_set_status('failed', str(error))
+                notifications._om_social_set_status('failed', str(error))
         return message
 
     @staticmethod
@@ -310,13 +310,13 @@ class OmAiWhatsappConversation(models.Model):
 
     def action_take_over(self):
         for conversation in self:
-            conversation.account_id._om_whatsapp_check_user()
+            conversation.account_id._om_social_check_user()
         self._om_ai_take_over(self.env.user)
         return True
 
     def action_give_back(self):
         for conversation in self:
-            conversation.account_id._om_whatsapp_check_user()
+            conversation.account_id._om_social_check_user()
         self._om_ai_give_back(self.env.user)
         return True
 
@@ -507,7 +507,7 @@ class OmAiWhatsappConversation(models.Model):
         assistant = self.account_id._om_ai_get_user().partner_id
         messages = self.env['mail.message'].sudo().search([
             ('model', '=', 'discuss.channel'), ('res_id', '=', channel.id),
-            ('message_type', 'in', ('om_whatsapp', 'comment')),
+            ('message_type', 'in', ('om_social', 'comment')),
         ], order='id desc', limit=HISTORY_SIZE)
         history = []
         for message in reversed(messages):
