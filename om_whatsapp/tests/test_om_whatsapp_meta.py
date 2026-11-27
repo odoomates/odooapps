@@ -20,12 +20,12 @@ class MetaCase(TransactionCase):
     def setUpClass(cls):
         super().setUpClass()
         # the test server has several databases: as if a dbfilter kept this one
-        cls.startClassPatcher(patch.object(type(cls.env['om.whatsapp.account']), '_meta_database_reachable',
+        cls.startClassPatcher(patch.object(type(cls.env['om.social.account']), '_meta_database_reachable',
                                            return_value=True))
         cls.env['ir.config_parameter'].sudo().set_str('web.base.url', 'https://odoo.example.com')
         cls.manager = new_test_user(cls.env, 'om_whatsapp_meta_manager',
                                     groups='base.group_user,base.group_partner_manager,om_whatsapp_base.group_om_whatsapp_manager')
-        cls.account = cls.env['om.whatsapp.account'].create({
+        cls.account = cls.env['om.social.account'].create({
             'name': 'Meta', 'provider': 'meta', 'user_ids': [Command.set(cls.manager.ids)],
         })
         cls.alice = cls.env['res.partner'].create({'name': 'Alice', 'phone': '+32470123456'})
@@ -256,7 +256,7 @@ class TestOmWhatsappMetaSetup(MetaCase):
         and the user is told which. """
         with fake_meta():
             self._connect()
-            second = self.env['om.whatsapp.account'].create({'name': 'Second', 'provider': 'meta'})
+            second = self.env['om.social.account'].create({'name': 'Second', 'provider': 'meta'})
             setup = self.env['om.whatsapp.meta.setup'].with_user(self.manager).create({
                 'account_id': second.id, 'app_id': APP_ID, 'app_secret': APP_SECRET, 'access_token': TOKEN})
             setup.action_check_token()
@@ -278,7 +278,7 @@ class TestOmWhatsappMetaSetup(MetaCase):
         self.account._om_whatsapp_receive('+32470123456', 'Hello', 'wamid.x')
         with self.assertRaisesRegex(UserError, 'archive it instead'):
             self.account.unlink()
-        empty = self.env['om.whatsapp.account'].create({'name': 'Empty', 'provider': 'meta'})
+        empty = self.env['om.social.account'].create({'name': 'Empty', 'provider': 'meta'})
         empty.unlink()
         self.assertFalse(empty.exists())
 
@@ -343,7 +343,7 @@ class TestOmWhatsappMetaSend(MetaCase):
 
     def _notification(self):
         return self.env['mail.notification'].search([
-            ('notification_type', '=', 'om_whatsapp'), ('res_partner_id', '=', self.alice.id),
+            ('notification_type', '=', 'om_social'), ('res_partner_id', '=', self.alice.id),
             ('mail_message_id.model', '=', 'res.partner'),
         ], limit=1)
 
@@ -357,7 +357,7 @@ class TestOmWhatsappMetaSend(MetaCase):
             self.assertEqual(meta.sent, [{'to': '32470123456', 'type': 'text',
                                           'text': {'body': 'Your order is ready', 'preview_url': True}}])
             self.assertEqual(notification.notification_status, 'pending')
-            self.assertEqual(notification.mail_message_id.om_whatsapp_id, 'wamid.2')
+            self.assertEqual(notification.mail_message_id.om_social_message_id, 'wamid.2')
 
             meta.sent.clear()
             pdf = self.env['ir.attachment'].with_user(self.manager).create(
@@ -384,7 +384,7 @@ class TestOmWhatsappMetaSend(MetaCase):
             self._connect()
             self._open_window()
             meta.sent.clear()
-            message = self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in-+32470123456')], limit=1)
+            message = self.env['mail.message'].search([('om_social_message_id', '=', 'wamid.in-+32470123456')], limit=1)
             message = message.with_user(self.manager).sudo()
             guest = self.env['mail.guest']
             message._message_reaction('👍', 'add', self.manager.partner_id, guest)
@@ -400,7 +400,7 @@ class TestOmWhatsappMetaSend(MetaCase):
             self._connect()
             self._open_window()
             meta.sent.clear()
-            received = self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in-+32470123456'),
+            received = self.env['mail.message'].search([('om_social_message_id', '=', 'wamid.in-+32470123456'),
                                                         ('model', '=', 'discuss.channel')], limit=1)
             channel = self.env['discuss.channel'].browse(received.res_id)
             channel.with_user(self.manager).message_post(body='Yes, Friday', message_type='comment', parent_id=received.id)
@@ -412,10 +412,10 @@ class TestOmWhatsappMetaSend(MetaCase):
             self._connect()
             self._open_window()
             meta.sent.clear()
-            message = self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in-+32470123456')], limit=1)
-            message.with_user(self.manager)._om_whatsapp_send_receipts('played')
+            message = self.env['mail.message'].search([('om_social_message_id', '=', 'wamid.in-+32470123456')], limit=1)
+            message.with_user(self.manager)._om_social_send_receipts('played')
         self.assertEqual(meta.sent, [{'status': 'read', 'message_id': 'wamid.in-+32470123456'}])
-        self.assertEqual(message.om_whatsapp_receipt, 'played')
+        self.assertEqual(message.om_social_receipt, 'played')
 
     def test_not_connected(self):
         with fake_meta() as meta:
@@ -440,7 +440,7 @@ class TestOmWhatsappMetaSend(MetaCase):
                 (self.alice | bob)._message_om_whatsapp_template(template, account=self.account)
             self.assertTrue(trigger.called)
             self.assertFalse(meta.sent)
-            self.env['om.whatsapp.account']._cron_meta_send_queue()
+            self.env['om.social.account']._cron_meta_send_queue()
         self.assertEqual(sorted(payload['text']['body'] for payload in meta.sent), ['Welcome Alice', 'Welcome Bob'])
 
     def test_24_hours(self):
@@ -451,9 +451,9 @@ class TestOmWhatsappMetaSend(MetaCase):
             with self.assertRaisesRegex(UserError, '24 hours'):
                 self._composer().action_send()
             self._open_window()
-            channel = self.env['discuss.channel'].search([('om_whatsapp_number', '=', '+32470123456')])
+            channel = self.env['discuss.channel'].search([('om_social_address', '=', '+32470123456')])
             channel.with_user(self.manager).message_post(body='Yes, tomorrow', message_type='comment')
-            channel.om_whatsapp_last_incoming = fields.Datetime.now() - timedelta(hours=25)
+            channel.om_social_last_incoming = fields.Datetime.now() - timedelta(hours=25)
             with self.assertRaisesRegex(UserError, '24 hours'):
                 channel.with_user(self.manager).message_post(body='Still there?', message_type='comment')
         self.assertEqual([payload['text']['body'] for payload in meta.sent[1:]], ['Yes, tomorrow'])
@@ -464,13 +464,13 @@ class TestOmWhatsappMetaSend(MetaCase):
         with fake_meta():
             self._connect()
             self._open_window()
-        channel = self.env['discuss.channel'].search([('om_whatsapp_number', '=', '+32470123456')])
-        channel.om_whatsapp_last_incoming = fields.Datetime.now() - timedelta(hours=1)
+        channel = self.env['discuss.channel'].search([('om_social_address', '=', '+32470123456')])
+        channel.om_social_last_incoming = fields.Datetime.now() - timedelta(hours=1)
         result = Store().add(channel, '_store_om_whatsapp_window_fields').as_dict()
-        until = result['discuss.channel'][0]['om_whatsapp_free_text_until']
-        self.assertEqual(until, fields.Datetime.to_string(channel.om_whatsapp_last_incoming + timedelta(hours=24)))
+        until = result['discuss.channel'][0]['om_social_free_text_until']
+        self.assertEqual(until, fields.Datetime.to_string(channel.om_social_last_incoming + timedelta(hours=24)))
         with patch.object(Store, 'add', autospec=True, side_effect=Store.add) as add:
-            channel.om_whatsapp_last_incoming = fields.Datetime.now()
+            channel.om_social_last_incoming = fields.Datetime.now()
         self.assertIn('_store_om_whatsapp_window_fields', [call.args[2] for call in add.call_args_list])
 
 
@@ -531,9 +531,9 @@ class TestOmWhatsappMetaTemplates(MetaCase):
                 {'type': 'header', 'parameters': [{'type': 'document', 'document': {'id': 'media-1', 'filename': 'Card.pdf'}}]},
                 {'type': 'body', 'parameters': [{'type': 'text', 'text': 'Alice'}, {'type': 'text', 'text': 'C-042'}]},
             ]}}])
-        message = self.alice.message_ids.filtered(lambda m: m.message_type == 'om_whatsapp')
-        self.assertEqual(message._om_whatsapp_text(), 'Hello Alice, your customer code is C-042. Thank you!')
-        self.assertEqual(message.om_whatsapp_status, 'sent')
+        message = self.alice.message_ids.filtered(lambda m: m.message_type == 'om_social')
+        self.assertEqual(message._om_social_text(), 'Hello Alice, your customer code is C-042. Thank you!')
+        self.assertEqual(message.om_social_status, 'sent')
 
     def test_what_needs_a_new_approval(self):
         self.template.with_context(om_whatsapp_meta_sync=True).write(
@@ -583,14 +583,14 @@ class TestOmWhatsappMetaTemplates(MetaCase):
             meta.templates[0]['status'] = 'APPROVED'
             meta.templates.append({'id': 'tpl-8', 'name': 'missed', 'language': 'en', 'status': 'APPROVED',
                                    'category': 'UTILITY', 'components': [{'type': 'BODY', 'text': 'Bye'}]})
-            self.env['om.whatsapp.account']._cron_meta_sync_templates()
+            self.env['om.social.account']._cron_meta_sync_templates()
             self.assertEqual(Template.search([('meta_template_id', '=', 'tpl-7')]).meta_status, 'APPROVED')
             self.assertTrue(Template.search([('meta_template_id', '=', 'tpl-8')]))
             # Meta not answering stops neither the webhook nor the cron
             with patch.object(MetaApi, 'get_templates', side_effect=MetaApiError('Service temporarily unavailable', 2)):
                 self.account._meta_process_webhook('message_template_status_update', {
                     'event': 'APPROVED', 'message_template_id': 'tpl-99'})
-                self.env['om.whatsapp.account']._cron_meta_sync_templates()
+                self.env['om.social.account']._cron_meta_sync_templates()
 
     def test_preview(self):
         """ The message as WhatsApp shows it: the PDF, the text with the
@@ -616,7 +616,7 @@ class TestOmWhatsappMetaWebhook(HttpCase):
     def setUpClass(cls):
         super().setUpClass()
         cls.user = new_test_user(cls.env, 'om_whatsapp_meta_user', groups='base.group_user,om_whatsapp_base.group_om_whatsapp_user')
-        cls.account = cls.env['om.whatsapp.account'].create({
+        cls.account = cls.env['om.social.account'].create({
             'name': 'Meta', 'provider': 'meta', 'user_ids': [Command.set(cls.user.ids)],
             'meta_app_id': APP_ID, 'meta_app_secret': APP_SECRET, 'meta_access_token': TOKEN,
             'meta_waba_id': WABA_ID, 'meta_phone_number_id': PHONE_ID, 'meta_state': 'connected',
@@ -651,17 +651,17 @@ class TestOmWhatsappMetaWebhook(HttpCase):
             response = self._post({'messages': [{'from': '32470123456', 'id': 'wamid.in1', 'type': 'text', 'text': {'body': 'Hi'}}]},
                                   secret='forged')
         self.assertEqual(response.status_code, 403)
-        self.assertFalse(self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in1')]))
+        self.assertFalse(self.env['mail.message'].search([('om_social_message_id', '=', 'wamid.in1')]))
 
     def test_messages_statuses_and_reactions(self):
         self.assertEqual(self._message({'from': '32470123456', 'id': 'wamid.in1', 'type': 'text',
                                         'text': {'body': 'Is it ready?'}}).status_code, 200)
-        incoming = self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in1')])
-        self.assertEqual((incoming.author_id, incoming._om_whatsapp_text(), incoming.model), (self.alice, 'Is it ready?', 'discuss.channel'))
+        incoming = self.env['mail.message'].search([('om_social_message_id', '=', 'wamid.in1')])
+        self.assertEqual((incoming.author_id, incoming._om_social_text(), incoming.model), (self.alice, 'Is it ready?', 'discuss.channel'))
 
         # an unknown number, with its WhatsApp name
         self._message({'from': '32470999999', 'id': 'wamid.in2', 'type': 'text', 'text': {'body': 'Who?'}}, name='Zoe')
-        channel = self.env['discuss.channel'].search([('om_whatsapp_number', '=', '+32470999999')])
+        channel = self.env['discuss.channel'].search([('om_social_address', '=', '+32470999999')])
         self.assertEqual(channel.name, 'Zoe (+32470999999)')
 
         # a picture, downloaded from Meta
@@ -670,24 +670,24 @@ class TestOmWhatsappMetaWebhook(HttpCase):
             self._message({'from': '32470123456', 'id': 'wamid.in3', 'type': 'image',
                            'image': {'id': 'media-in-1', 'caption': 'the plan', 'mime_type': 'image/jpeg'},
                            'context': {'id': 'wamid.in1'}})
-        image = self.env['mail.message'].search([('om_whatsapp_id', '=', 'wamid.in3')])
-        self.assertEqual((image._om_whatsapp_text(), image.attachment_ids.mimetype), ('the plan', 'image/jpeg'))
+        image = self.env['mail.message'].search([('om_social_message_id', '=', 'wamid.in3')])
+        self.assertEqual((image._om_social_text(), image.attachment_ids.mimetype), ('the plan', 'image/jpeg'))
         self.assertEqual(image.parent_id, incoming)
 
         # the ticks, and a failure with the words of Meta
-        sent = self.env['discuss.channel'].search([('om_whatsapp_partner_id', '=', self.alice.id)])._message_om_whatsapp(
-            self.account, 'Yes, tomorrow', '+32470123456', partner=self.alice, status='pending', om_whatsapp_id='wamid.out1')
+        sent = self.env['discuss.channel'].search([('om_social_partner_id', '=', self.alice.id)])._message_om_whatsapp(
+            self.account, 'Yes, tomorrow', '+32470123456', partner=self.alice, status='pending', om_social_message_id='wamid.out1')
         self._post({'statuses': [{'id': 'wamid.out1', 'status': 'delivered', 'recipient_id': '32470123456'}]})
-        self.assertEqual(sent.om_whatsapp_status, 'delivered')
+        self.assertEqual(sent.om_social_status, 'delivered')
         self._post({'statuses': [{'id': 'wamid.out1', 'status': 'read', 'recipient_id': '32470123456'}]})
-        self.assertEqual(sent.om_whatsapp_status, 'read')
+        self.assertEqual(sent.om_social_status, 'read')
         self._message({'from': '32470123456', 'id': 'wamid.in4', 'type': 'reaction',
                        'reaction': {'message_id': 'wamid.out1', 'emoji': '👍'}})
         self.assertEqual(sent.sudo().reaction_ids.content, '👍')
 
-        failed = self.env['discuss.channel'].search([('om_whatsapp_partner_id', '=', self.alice.id)])._message_om_whatsapp(
-            self.account, 'Hello', '+32470123456', partner=self.alice, status='pending', om_whatsapp_id='wamid.out2')
+        failed = self.env['discuss.channel'].search([('om_social_partner_id', '=', self.alice.id)])._message_om_whatsapp(
+            self.account, 'Hello', '+32470123456', partner=self.alice, status='pending', om_social_message_id='wamid.out2')
         self._post({'statuses': [{'id': 'wamid.out2', 'status': 'failed', 'errors': [
             {'code': 131026, 'title': 'Message undeliverable', 'error_data': {'details': 'The number is not on WhatsApp'}}]}]})
-        self.assertEqual(failed.om_whatsapp_status, 'failed')
-        self.assertEqual(failed._om_whatsapp_notifications().failure_reason, 'The number is not on WhatsApp')
+        self.assertEqual(failed.om_social_status, 'failed')
+        self.assertEqual(failed._om_social_notifications().failure_reason, 'The number is not on WhatsApp')

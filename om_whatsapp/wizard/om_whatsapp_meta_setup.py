@@ -7,7 +7,7 @@ from markupsafe import Markup
 from odoo import _, api, fields, models
 from odoo.exceptions import AccessError, UserError
 
-from odoo.addons.om_whatsapp.models.om_whatsapp_account import WEBHOOK_FIELDS
+from odoo.addons.om_whatsapp.models.om_social_account import WEBHOOK_FIELDS
 from odoo.addons.om_whatsapp.tools import MetaApi, MetaApiError
 
 # the pages of Meta the assistant opens, for the app of the App ID once known
@@ -35,7 +35,7 @@ class OmWhatsappMetaSetup(models.TransientModel):
     _name = 'om.whatsapp.meta.setup'
     _description = 'Connect WhatsApp to Meta'
 
-    account_id = fields.Many2one('om.whatsapp.account', required=True, ondelete='cascade')
+    account_id = fields.Many2one('om.social.account', required=True, ondelete='cascade')
     step = fields.Selection([
         ('app', 'Create the App'),
         ('app_id', 'App ID'),
@@ -155,7 +155,7 @@ class OmWhatsappMetaSetup(models.TransientModel):
         values = super().default_get(fields)
         if account_id := values.get('account_id'):
             # default_get is open to anyone: the secret only goes to who may change the account
-            account = self.env['om.whatsapp.account'].browse(account_id)
+            account = self.env['om.social.account'].browse(account_id)
             self._check_account(account)
             account = account.sudo()
             values.update(app_id=account.meta_app_id, app_secret=account.meta_app_secret)

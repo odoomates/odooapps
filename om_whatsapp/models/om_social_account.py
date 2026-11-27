@@ -43,7 +43,7 @@ class OmWhatsappAccount(models.Model):
     """ Meta: the WhatsApp Cloud API, from the app of the company in Meta for
     Developers. The setup assistant needs its App ID, App Secret and access
     token, and does the rest: the number, its registration, the webhook. """
-    _inherit = 'om.whatsapp.account'
+    _inherit = 'om.social.account'
 
     provider = fields.Selection(selection_add=[('meta', 'Meta (Cloud API)')], ondelete={'meta': 'set default'})
     meta_app_id = fields.Char('App ID', groups='om_whatsapp_base.group_om_whatsapp_manager', copy=False)
@@ -86,9 +86,9 @@ class OmWhatsappAccount(models.Model):
             account.can_send_unattended = True
 
     @api.depends('provider')
-    def _compute_can_send_user_id(self):
-        super()._compute_can_send_user_id()
-        self.filtered(lambda a: a.provider == 'meta').can_send_user_id = True
+    def _compute_can_send_user_ref(self):
+        super()._compute_can_send_user_ref()
+        self.filtered(lambda a: a.provider == 'meta').can_send_user_ref = True
 
     def _compute_meta_webhook_url(self):
         """ The address of this Odoo, in https: the one Meta accepts. A
@@ -308,14 +308,14 @@ class OmWhatsappAccount(models.Model):
             'meta_verified_name': number.get('verified_name'),
             'meta_quality_rating': number.get('quality_rating'),
             'meta_messaging_limit': number.get('messaging_limit_tier'),
-            'phone': number.get('display_phone_number') or self.phone,
+            'address': number.get('display_phone_number') or self.address,
         })
 
     # ------------------------------------------------------------
     # SENDING
     # ------------------------------------------------------------
 
-    def _om_whatsapp_send_meta(self, notifications):
+    def _om_social_send_meta(self, notifications):
         """ One message a user sends (composer, Discuss, send again) goes at
         once; several wait in the queue of the scheduled action, so that the
         user never waits for Meta. """
@@ -325,12 +325,12 @@ class OmWhatsappAccount(models.Model):
         self._meta_send(notifications)
         return None
 
-    def _om_whatsapp_send_automated(self, notifications):
+    def _om_social_send_automated(self, notifications):
         """ An automation rule queues: the confirmation of an order never
         waits for Meta. """
         self.ensure_one()
         if self.provider != 'meta':
-            return super()._om_whatsapp_send_automated(notifications)
+            return super()._om_social_send_automated(notifications)
         return self._meta_queue(notifications)
 
     def _meta_queue(self, notifications):
@@ -343,12 +343,12 @@ class OmWhatsappAccount(models.Model):
         other, saved one by one. """
         Notification = self.env['mail.notification'].sudo()
         notifications = Notification.search([
-            ('notification_type', '=', 'om_whatsapp'),
+            ('notification_type', '=', 'om_social'),
             ('notification_status', '=', 'ready'),
-            ('mail_message_id.om_whatsapp_account_id.provider', '=', 'meta'),
+            ('mail_message_id.om_social_account_id.provider', '=', 'meta'),
         ], order='id', limit=limit)
-        for account in notifications.mail_message_id.om_whatsapp_account_id:
-            for notification in notifications.filtered(lambda n: n.mail_message_id.om_whatsapp_account_id == account):
+        for account in notifications.mail_message_id.om_social_account_id:
+            for notification in notifications.filtered(lambda n: n.mail_message_id.om_social_account_id == account):
                 account._meta_send(notification)
                 if self.env.context.get('cron_id'):
                     self.env['ir.cron']._commit_progress(1, remaining=0)
@@ -360,20 +360,20 @@ class OmWhatsappAccount(models.Model):
         with the id of the message, the webhook tells the rest. """
         self.ensure_one()
         if self.meta_state == 'draft' or not self.meta_phone_number_id:
-            notifications._om_whatsapp_set_status('failed', _("%(account)s is not connected to Meta.", account=self.name))
+            notifications._om_social_set_status('failed', _("%(account)s is not connected to Meta.", account=self.name))
             return
         api = self._meta_api()
         for notification in notifications:
             try:
                 whatsapp_id = self._meta_send_notification(api, notification)
             except MetaApiError as error:
-                notification._om_whatsapp_set_status('failed', self._meta_explain(error))
+                notification._om_social_set_status('failed', self._meta_explain(error))
                 continue
             except UserError as error:
-                notification._om_whatsapp_set_status('failed', str(error))
+                notification._om_social_set_status('failed', str(error))
                 continue
-            notification.mail_message_id.sudo().om_whatsapp_id = whatsapp_id
-            notification._om_whatsapp_set_status('sent')
+            notification.mail_message_id.sudo().om_social_message_id = whatsapp_id
+            notification._om_social_set_status('sent')
 
     def _meta_send_notification(self, api, notification):
         """ An approved template of Meta, with the PDF as its header; else the
@@ -382,7 +382,7 @@ class OmWhatsappAccount(models.Model):
         first message, which a reply quotes. """
         self.ensure_one()
         message = notification.mail_message_id.sudo()
-        to = self._meta_recipient(notification.om_whatsapp_number, notification.om_whatsapp_user_id)
+        to = self._meta_recipient(notification.om_social_address)
         template = message.om_whatsapp_template_id
         record = self.env[message.model].browse(message.res_id).exists() \
             if message.model and message.model in self.env and message.model != 'discuss.channel' else None
@@ -401,8 +401,8 @@ class OmWhatsappAccount(models.Model):
                 'name': template.meta_name, 'language': {'code': template.meta_language}, 'components': components}})
             text = ''
         else:
-            self._meta_check_window(notification.om_whatsapp_number, user_id=notification.om_whatsapp_user_id)
-            text = message._om_whatsapp_text()
+            self._meta_check_window(notification.om_social_address)
+            text = message._om_social_text()
         for attachment in attachments:
             kind = media_kind(attachment)
             media_id = api.upload_media(self.meta_phone_number_id, attachment.name, attachment.raw, attachment.mimetype)
@@ -417,7 +417,7 @@ class OmWhatsappAccount(models.Model):
             payloads.insert(0, {**to, 'type': 'text', 'text': {'body': text, 'preview_url': True}})
         if not payloads:
             raise UserError(_("The message is empty."))
-        if quoted := message._om_whatsapp_quoted():
+        if quoted := message._om_social_quoted():
             # a reply in Discuss: the first message quotes the one it answers
             payloads[0]['context'] = {'message_id': quoted['id']}
         ids = [api.send_message(self.meta_phone_number_id, payload) for payload in payloads]
@@ -427,7 +427,7 @@ class OmWhatsappAccount(models.Model):
         """ Who a message goes to, as Meta takes it: the number (``to``), else
         the WhatsApp user ID of the customer (``recipient``). ``number`` may
         be a user ID itself, the one of a chat without a number. """
-        if number and self._om_whatsapp_is_user_id(number):
+        if number and self._om_social_is_user_ref(number):
             number, user_id = False, number
         if number:
             return {'to': ''.join(char for char in number if char.isdigit())}
@@ -435,7 +435,7 @@ class OmWhatsappAccount(models.Model):
             return {'recipient': user_id}
         raise UserError(_("The message has no number to go to."))
 
-    def _om_whatsapp_receipt_meta(self, number, whatsapp_ids, kind):
+    def _om_social_receipt_meta(self, number, whatsapp_ids, kind):
         """ Meta takes a read receipt for the last message, and marks the ones
         before read too; it has no played receipt: a played voice message is
         read. """
@@ -445,7 +445,7 @@ class OmWhatsappAccount(models.Model):
         self._meta_api().mark_read(self.meta_phone_number_id, whatsapp_ids[-1])
         return None
 
-    def _om_whatsapp_react_meta(self, number, message, emoji, from_me):
+    def _om_social_react_meta(self, number, message, emoji, from_me):
         """ A reaction goes at once, from the server: an empty emoji takes it back. """
         self.ensure_one()
         if self.meta_state == 'draft' or not self.meta_phone_number_id:
@@ -455,7 +455,7 @@ class OmWhatsappAccount(models.Model):
                 **self._meta_recipient(number),
                 'recipient_type': 'individual',
                 'type': 'reaction',
-                'reaction': {'message_id': message.om_whatsapp_id, 'emoji': emoji},
+                'reaction': {'message_id': message.om_social_message_id, 'emoji': emoji},
             })
         except MetaApiError as error:
             raise UserError(self._meta_explain(error)) from error
@@ -465,24 +465,28 @@ class OmWhatsappAccount(models.Model):
     # THE 24 HOURS
     # ------------------------------------------------------------
 
-    def _om_whatsapp_free_text_until(self, channel):
+    def _om_social_free_text_until(self, channel):
         """ Meta takes free text within 24 hours of the last message of the
         number; before any, never. """
         if self.provider != 'meta':
-            return super()._om_whatsapp_free_text_until(channel)
-        last = channel.om_whatsapp_last_incoming
+            return super()._om_social_free_text_until(channel)
+        last = channel.om_social_last_incoming
         return last + timedelta(hours=24) if last else datetime(2000, 1, 1)
 
     def _meta_check_window(self, number, user_id=False):
-        number = self._om_whatsapp_clean_number(number) or False
-        channel = self.env['discuss.channel'].sudo().search([
-            ('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.id),
-            *self._om_whatsapp_address_domain(number, user_id),
-        ], order='om_whatsapp_last_incoming desc', limit=1)
+        """ Refuse free text to a customer (a number, or a WhatsApp user ID)
+        outside the 24 hours after their last message. """
+        number = self._om_social_clean_address(number) or False
+        if number and self._om_social_is_user_ref(number):
+            number, user_id = False, user_id or number
+        Channel = self.env['discuss.channel'].sudo()
+        domain = [('channel_type', '=', 'om_social'), ('om_social_account_id', '=', self.id)]
+        channel = Channel.search([*domain, ('om_social_address', '=', number)], limit=1) if number else Channel
+        if not channel and user_id:
+            channel = Channel.search([*domain, ('om_social_identity_id.user_ref', '=', user_id)], limit=1)
         if not channel:
-            channel = self.env['discuss.channel'].new(
-                {'name': number or user_id, 'om_whatsapp_number': number, 'om_whatsapp_user_id': user_id})
-        self._om_whatsapp_check_free_text(channel)
+            channel = Channel.new({'name': number or user_id, 'om_social_address': number})
+        self._om_social_check_free_text(channel)
 
     def _meta_send_template(self, number, name, language='en_US', components=None):
         """ Send a template of Meta by its name: the one way to write first to
@@ -539,13 +543,10 @@ class OmWhatsappAccount(models.Model):
         """ WhatsApp gave the customer of the user ID ``previous`` the user ID
         ``new``: their conversation and contact keep finding them. """
         self.ensure_one()
-        Channel = self.env['discuss.channel'].sudo()
-        domain = [('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.id)]
-        if Channel.search_count([*domain, ('om_whatsapp_user_id', '=', new)], limit=1):
+        Identity = self.env['om.social.identity'].sudo()
+        if Identity.search_count([('channel', '=', self.channel), ('user_ref', '=', new)], limit=1):
             return
-        Channel.search([*domain, ('om_whatsapp_user_id', '=', previous)]).write({'om_whatsapp_user_id': new})
-        partners = self.env['res.partner'].sudo().search([('om_whatsapp_user_id', '=', previous)])
-        partners.write({'om_whatsapp_user_id': new})
+        Identity.search([('channel', '=', self.channel), ('user_ref', '=', previous)]).write({'user_ref': new})
 
     def _meta_receive_status(self, status):
         state = META_STATUS.get(status.get('status'))
@@ -554,7 +555,7 @@ class OmWhatsappAccount(models.Model):
         reasons = []
         for error in status.get('errors') or []:
             reasons.append((error.get('error_data') or {}).get('details') or error.get('message') or error.get('title') or '')
-        self._om_whatsapp_update_status(status['id'], state, '; '.join(filter(None, reasons)) or False)
+        self._om_social_update_status(status['id'], state, '; '.join(filter(None, reasons)) or False)
 
     def _meta_receive_message(self, message, profile_name=None, contact=None):
         """ One message of the webhook. Meta gives the WhatsApp user ID of the
@@ -570,8 +571,8 @@ class OmWhatsappAccount(models.Model):
             return
         if kind == 'reaction':
             reaction = message.get('reaction') or {}
-            self._om_whatsapp_receive_reaction(number, reaction.get('message_id'), reaction.get('emoji') or '',
-                                               user_id=user_id)
+            self._om_social_receive_reaction(number, reaction.get('message_id'), reaction.get('emoji') or '',
+                                             user_ref=user_id)
             return
         body, attachments, voice = '', [], False
         if kind == 'system':

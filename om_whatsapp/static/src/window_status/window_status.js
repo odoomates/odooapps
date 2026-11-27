@@ -10,7 +10,7 @@ import { patch } from "@web/core/utils/patch";
 const MINUTE = 60 * 1000;
 
 function isMetaConversation(channel) {
-    return channel?.channel_type === "om_whatsapp" && channel.om_whatsapp_provider === "meta";
+    return channel?.channel_type === "om_social" && channel.om_social_provider === "meta";
 }
 
 /** How long free text is still accepted in a conversation of Meta, minute by minute. */
@@ -22,7 +22,7 @@ export class OmWhatsappWindowStatus extends Component {
         this.channel = propComputed("channel", types.object());
         this.status = computedUntilStale(
             () => {
-                const until = this.channel().om_whatsapp_free_text_until;
+                const until = this.channel().om_social_free_text_until;
                 const left = until ? deserializeDateTime(until).ts - Date.now() : 0;
                 if (left <= 0) {
                     return {
@@ -42,7 +42,7 @@ export class OmWhatsappWindowStatus extends Component {
                 };
             },
             () => {
-                const until = this.channel().om_whatsapp_free_text_until;
+                const until = this.channel().om_social_free_text_until;
                 const left = until ? deserializeDateTime(until).ts - Date.now() : 0;
                 return left > 0 ? Math.min(left % MINUTE || MINUTE, left) : 60 * MINUTE;
             }
