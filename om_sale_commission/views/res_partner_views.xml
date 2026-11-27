@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_partner_form_commission" model="ir.ui.view">
+        <field name="name">res.partner.form.commission</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='sale']" position="inside">
+                <field name="om_commission_grade_id" groups="sales_team.group_sale_salesman"/>
+                <field name="om_referrer_id" groups="sales_team.group_sale_salesman"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_res_partner_filter_commission" model="ir.ui.view">
+        <field name="name">res.partner.search.commission</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <filter name="group_grade" string="Reseller Grade" context="{'group_by': 'om_commission_grade_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

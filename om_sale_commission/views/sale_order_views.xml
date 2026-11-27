@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form_commission" model="ir.ui.view">
+        <field name="name">sale.order.form.commission</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//group[@name='sales_person']/field[@name='team_id']" position="after">
+                <field name="om_referrer_id" readonly="state == 'cancel' or locked"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_sales_order_filter_commission" model="ir.ui.view">
+        <field name="name">sale.order.search.commission</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_sales_order_filter"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="om_referrer_id"/>
+                <filter name="group_referrer" string="Referrer" context="{'group_by': 'om_referrer_id'}"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

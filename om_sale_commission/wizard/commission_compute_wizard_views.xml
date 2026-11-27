@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_compute_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.commission.compute.wizard.form</field>
+        <field name="model">om.commission.compute.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Recompute Commissions">
+                <p class="text-muted">
+                    Commissions already in an approved or paid statement are kept. A commission whose invoice or
+                    order no longer counts is taken back with a clawback line.
+                </p>
+                <group>
+                    <group>
+                        <label for="date_from" string="Dates"/>
+                        <div class="o_row">
+                            <field name="date_from"/>
+                            <span>-</span>
+                            <field name="date_to"/>
+                        </div>
+                        <field name="plan_ids" widget="many2many_tags" placeholder="All plans"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_compute" type="object" string="Recompute" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_commission_compute_wizard" model="ir.actions.act_window">
+        <field name="name">Recompute Commissions</field>
+        <field name="res_model">om.commission.compute.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

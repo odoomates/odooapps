@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_statement_view_list" model="ir.ui.view">
+        <field name="name">om.commission.statement.list</field>
+        <field name="model">om.commission.statement</field>
+        <field name="arch" type="xml">
+            <list string="Commission Statements">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="payout_method" optional="hide"/>
+                <field name="move_id" optional="show"/>
+                <field name="amount_clawback" sum="Total" optional="hide"/>
+                <field name="amount_total" sum="Total"/>
+                <field name="state" widget="badge" decoration-warning="state == 'draft'"
+                       decoration-primary="state == 'approved'" decoration-success="state == 'paid'"
+                       decoration-muted="state == 'cancel'"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_commission_statement_view_form" model="ir.ui.view">
+        <field name="name">om.commission.statement.form</field>
+        <field name="model">om.commission.statement</field>
+        <field name="arch" type="xml">
+            <form string="Commission Statement">
+                <header>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            invisible="state != 'draft'" groups="sales_team.group_sale_manager"/>
+                    <button name="action_create_bill" type="object" string="Create Vendor Bill" class="btn-primary"
+                            invisible="state != 'approved' or payout_method != 'bill' or move_id"
+                            groups="account.group_account_invoice"/>
+                    <button name="action_mark_paid" type="object" string="Mark as Paid" class="btn-primary"
+                            invisible="state != 'approved' or payout_method != 'manual'"
+                            groups="sales_team.group_sale_manager"/>
+                    <button name="action_reset_draft" type="object" string="Reset to Draft"
+                            invisible="state not in ('approved', 'cancel')" groups="sales_team.group_sale_manager"/>
+                    <button name="action_cancel" type="object" string="Cancel"
+                            invisible="state not in ('draft', 'approved')" groups="sales_team.group_sale_manager"/>
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,paid"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_bill" type="object" class="oe_stat_button" icon="receipt_long"
+                                invisible="not move_id" groups="account.group_account_invoice">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Vendor Bill</span>
+                                <field name="bill_payment_state" class="o_stat_value"/>
+                            </div>
+                        </button>
+                        <button name="action_view_lines" type="object" class="oe_stat_button" icon="view_list">
+                            <field name="line_count" widget="statinfo" string="Lines"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="partner_id" readonly="state != 'draft'"/>
+                            <field name="user_id" widget="many2one_avatar_user" readonly="state != 'draft'"/>
+                            <field name="beneficiary_type" invisible="1"/>
+                            <label for="date_from" string="Period"/>
+                            <div class="o_row">
+                                <field name="date_from" readonly="state != 'draft'"/>
+                                <span>-</span>
+                                <field name="date_to" readonly="state != 'draft'"/>
+                            </div>
+                            <field name="payout_method" readonly="state not in ('draft', 'approved') or move_id"/>
+                        </group>
+                        <group>
+                            <field name="move_id" invisible="not move_id" groups="account.group_account_invoice"/>
+                            <field name="approved_user_id" invisible="not approved_user_id"/>
+                            <field name="approved_date" invisible="not approved_date"/>
+                            <field name="paid_date" invisible="not paid_date"/>
+                            <field name="company_id" groups="base.group_multi_company" readonly="state != 'draft'"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Commissions" name="lines">
+                            <field name="line_ids" readonly="state != 'draft'"
+                                   domain="[('state', '=', 'open'), ('partner_id', '=', partner_id), ('company_id', '=', company_id)]">
+                                <list create="0" decoration-danger="is_clawback">
+                                    <field name="date"/>
+                                    <field name="name"/>
+                                    <field name="plan_id"/>
+                                    <field name="role" optional="show"/>
+                                    <field name="customer_id" optional="show"/>
+                                    <field name="base_amount" sum="Total"/>
+                                    <field name="rate" optional="show"/>
+                                    <field name="amount" sum="Total"/>
+                                    <field name="is_clawback" column_invisible="True"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </list>
+                            </field>
+                            <group class="oe_subtotal_footer" colspan="2" name="totals">
+                                <field name="amount_commission"/>
+                                <field name="amount_clawback"/>
+                                <field name="amount_total" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note"/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_commission_statement_view_search" model="ir.ui.view">
+        <field name="name">om.commission.statement.search</field>
+        <field name="model">om.commission.statement</field>
+        <field name="arch" type="xml">
+            <search string="Commission Statements">
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="user_id"/>
+                <filter name="my" string="My Statements" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="to_pay" string="To Pay" domain="[('state', '=', 'approved')]"/>
+                <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                <separator/>
+                <filter name="salespersons" string="Salespersons" domain="[('user_id', '!=', False)]"/>
+                <filter name="resellers" string="Resellers" domain="[('user_id', '=', False)]"/>
+                <separator/>
+                <filter name="date_to" string="Period" date="date_to"/>
+                <filter name="group_partner" string="Beneficiary" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                <filter name="group_period" string="Period" context="{'group_by': 'date_to:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_commission_statement_view_pivot" model="ir.ui.view">
+        <field name="name">om.commission.statement.pivot</field>
+        <field name="model">om.commission.statement</field>
+        <field name="arch" type="xml">
+            <pivot string="Statements" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="amount_total" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="action_commission_statement" model="ir.actions.act_window">
+        <field name="name">Statements</field>
+        <field name="res_model">om.commission.statement</field>
+        <field name="view_mode">list,form,pivot</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No commission statement yet</p>
+            <p>A statement gathers the commissions of a salesperson or reseller for a period. The sales manager
+                approves it, then the accounting pays it with a vendor bill.</p>
+        </field>
+    </record>
+
+    <record id="action_commission_statement_my" model="ir.actions.act_window">
+        <field name="name">My Statements</field>
+        <field name="res_model">om.commission.statement</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_my': 1}</field>
+    </record>
+
+    <record id="action_commission_statement_to_bill" model="ir.actions.act_window">
+        <field name="name">Commissions to Pay</field>
+        <field name="res_model">om.commission.statement</field>
+        <field name="view_mode">list,form</field>
+        <field name="context">{'search_default_to_pay': 1}</field>
+    </record>
+
+</odoo>

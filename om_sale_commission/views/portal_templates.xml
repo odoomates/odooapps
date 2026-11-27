@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="portal_breadcrumbs_commission" name="Portal layout: commission entries" inherit_id="portal.portal_breadcrumbs" priority="30">
+        <xpath expr="//ol[hasclass('o_portal_submenu')]" position="inside">
+            <li t-if="page_name == 'commission'" t-attf-class="breadcrumb-item #{'active ' if not statement else ''}">
+                <a t-if="statement" href="/my/commissions">Commissions</a>
+                <t t-else="">Commissions</t>
+            </li>
+            <li t-if="page_name == 'commission' and statement" class="breadcrumb-item active">
+                <t t-out="statement.name"/>
+            </li>
+        </xpath>
+    </template>
+
+    <template id="commission_state_badge" name="Commission Statement Status Badge">
+        <span t-if="state == 'paid'" class="badge rounded-pill text-bg-success">Paid</span>
+        <span t-else="" class="badge rounded-pill text-bg-info">Approved, to be paid</span>
+    </template>
+
+    <template id="portal_my_commissions" name="My Commissions">
+        <t t-call="portal.portal_layout">
+            <t t-set="breadcrumbs_searchbar" t-value="True"/>
+            <t t-call="portal.portal_searchbar" title.translate="Commissions"/>
+            <div t-if="not statements" class="alert alert-warning" role="alert">
+                There are currently no commission statements for your account.
+            </div>
+            <t t-if="statements" t-call="portal.portal_table">
+                <thead>
+                    <tr class="active">
+                        <th>Statement #</th>
+                        <th>Period</th>
+                        <th class="text-end">Amount</th>
+                        <th class="text-center">Status</th>
+                    </tr>
+                </thead>
+                <t t-foreach="statements" t-as="statement_item">
+                    <tr>
+                        <td><a t-att-href="statement_item.get_portal_url()"><t t-out="statement_item.name"/></a></td>
+                        <td><span t-field="statement_item.date_from"/> - <span t-field="statement_item.date_to"/></td>
+                        <td class="text-end"><span t-field="statement_item.amount_total"/></td>
+                        <td class="text-center">
+                            <t t-call="om_sale_commission.commission_state_badge" state="statement_item.state"/>
+                        </td>
+                    </tr>
+                </t>
+            </t>
+        </t>
+    </template>
+
+    <template id="portal_commission_page" name="My Commission Statement">
+        <t t-call="portal.portal_layout">
+            <div class="row mt-4">
+                <div class="col-12 col-lg-10">
+                    <div class="card mb-4">
+                        <div class="card-header d-flex align-items-center">
+                            <h4 class="mb-0 me-auto">Commission Statement <span t-field="statement.name"/></h4>
+                            <a class="btn btn-secondary btn-sm me-2" t-att-href="statement.get_portal_url(report_type='pdf', download=True)">Download</a>
+                            <t t-call="om_sale_commission.commission_state_badge" state="statement.state"/>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-sm-6">
+                                    <div><strong>Period:</strong> <span t-field="statement.date_from"/> - <span t-field="statement.date_to"/></div>
+                                    <div><strong>Beneficiary:</strong> <span t-field="statement.partner_id"/></div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div><strong>Total:</strong> <span t-field="statement.amount_total"/></div>
+                                    <div t-if="statement.paid_date"><strong>Paid On:</strong> <span t-field="statement.paid_date"/></div>
+                                </div>
+                            </div>
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Sale</th>
+                                        <th>Customer</th>
+                                        <th class="text-end">Revenue</th>
+                                        <th class="text-end">Rate</th>
+                                        <th class="text-end">Commission</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <t t-foreach="statement.line_ids" t-as="line">
+                                        <tr t-att-class="'text-danger' if line.is_clawback else None">
+                                            <td><span t-field="line.date"/></td>
+                                            <td><span t-field="line.name"/></td>
+                                            <td><span t-field="line.customer_id"/></td>
+                                            <td class="text-end"><span t-field="line.base_amount"/></td>
+                                            <td class="text-end"><t t-if="line.rate"><span t-field="line.rate"/> %</t></td>
+                                            <td class="text-end"><span t-field="line.amount"/></td>
+                                        </tr>
+                                    </t>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

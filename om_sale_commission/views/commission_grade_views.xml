@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_grade_view_list" model="ir.ui.view">
+        <field name="name">om.commission.grade.list</field>
+        <field name="model">om.commission.grade</field>
+        <field name="arch" type="xml">
+            <list string="Reseller Grades" editable="bottom">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="partner_count" string="Resellers"/>
+                <field name="active" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_commission_grade_view_search" model="ir.ui.view">
+        <field name="name">om.commission.grade.search</field>
+        <field name="model">om.commission.grade</field>
+        <field name="arch" type="xml">
+            <search string="Reseller Grades">
+                <field name="name"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_commission_grade" model="ir.actions.act_window">
+        <field name="name">Reseller Grades</field>
+        <field name="res_model">om.commission.grade</field>
+        <field name="view_mode">list</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a reseller grade</p>
+            <p>Grades such as Gold or Silver let one commission plan apply to every reseller of the grade.</p>
+        </field>
+    </record>
+
+    <record id="action_commission_resellers" model="ir.actions.act_window">
+        <field name="name">Resellers</field>
+        <field name="res_model">res.partner</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('om_commission_grade_id', '!=', False)]</field>
+        <field name="context">{'search_default_group_grade': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No reseller yet</p>
+            <p>Set a reseller grade on a contact, in its Sales and Purchase tab, to make it a reseller.</p>
+        </field>
+    </record>
+
+</odoo>
