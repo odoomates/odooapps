@@ -24,7 +24,7 @@ class OmWhatsappAccount(models.Model):
     browser extension, and the extension to the WhatsApp Web tab. The
     extension also reads the messages of WhatsApp Web, which the Odoo page
     hands back here. """
-    _inherit = 'om.whatsapp.account'
+    _inherit = 'om.social.account'
 
     provider = fields.Selection(selection_add=[('web', 'WhatsApp Web')], ondelete={'web': 'set default'}, default='web')
     om_whatsapp_web_seen = fields.Datetime(
@@ -43,7 +43,7 @@ class OmWhatsappAccount(models.Model):
         for account in self.filtered(lambda a: a.provider == 'web'):
             account.can_send_files = True
 
-    def _om_whatsapp_send_automated(self, notifications):
+    def _om_social_send_automated(self, notifications):
         """ WhatsApp Web sends what a user does: one message, triggered from
         their browser (an order they confirm), goes through it as from
         Discuss. Several at once, or without a user, would be the bulk
@@ -51,23 +51,22 @@ class OmWhatsappAccount(models.Model):
         again from the chatter. """
         self.ensure_one()
         if self.provider != 'web':
-            return super()._om_whatsapp_send_automated(notifications)
-        if len(notifications) == 1 and self._om_whatsapp_user_at_screen():
-            action = self._om_whatsapp_send(notifications)
-            self.env.user._bus_send('om_whatsapp/action', {'action': action})
+            return super()._om_social_send_automated(notifications)
+        if len(notifications) == 1 and self._om_social_user_at_screen():
+            self._om_social_send_action(self._om_social_send(notifications))
             return None
-        notifications._om_whatsapp_set_status('failed', _(
+        notifications._om_social_set_status('failed', _(
             "WhatsApp Web sends the messages of a user one by one, not by itself: send it again from the chatter."))
         return None
 
-    def _om_whatsapp_send_web(self, notifications):
+    def _om_social_send_web(self, notifications):
         return {
             'type': 'ir.actions.client',
             'tag': 'om_whatsapp_web_send',
             'params': {'notification_ids': notifications.ids},
         }
 
-    def _om_whatsapp_receipt_web(self, number, whatsapp_ids, kind):
+    def _om_social_receipt_web(self, number, whatsapp_ids, kind):
         """ The browser of the user marks them read or played, in WhatsApp Web. """
         return {
             'type': 'ir.actions.client',
@@ -75,14 +74,14 @@ class OmWhatsappAccount(models.Model):
             'params': {'phone': ''.join(char for char in number if char.isdigit()), 'ids': whatsapp_ids, 'kind': kind},
         }
 
-    def _om_whatsapp_react_web(self, number, message, emoji, from_me):
+    def _om_social_react_web(self, number, message, emoji, from_me):
         """ The browser of the user reacts, in WhatsApp Web. """
         return {
             'type': 'ir.actions.client',
             'tag': 'om_whatsapp_web_react',
             'params': {
                 'phone': ''.join(char for char in number if char.isdigit()),
-                'whatsapp_id': message.om_whatsapp_id,
+                'whatsapp_id': message.om_social_message_id,
                 'emoji': emoji,
             },
         }
@@ -101,10 +100,10 @@ class OmWhatsappAccount(models.Model):
             ('provider', '=', 'web'), ('user_ids', 'in', self.env.uid), ('company_id', 'in', self.env.companies.ids),
         ])
         digits = lambda value: ''.join(char for char in value or '' if char.isdigit())  # noqa: E731
-        matching = accounts.filtered(lambda a: me and digits(a.phone) == digits(me))
+        matching = accounts.filtered(lambda a: me and digits(a.address) == digits(me))
         if matching:
             return matching[:1]
-        if len(accounts) == 1 and not accounts.phone:
+        if len(accounts) == 1 and not accounts.address:
             return accounts
         return self.browse()
 
@@ -149,7 +148,7 @@ class OmWhatsappAccount(models.Model):
                 account.sudo().write({'om_whatsapp_web_seen': now, 'om_whatsapp_web_seen_user_id': self.env.uid})
         return {
             'has_account': bool(accounts),
-            'account': {'id': account.id, 'name': account.name, 'phone': account.phone or ''} if account else False,
+            'account': {'id': account.id, 'name': account.name, 'phone': account.address or ''} if account else False,
         }
 
     @api.model
@@ -160,8 +159,8 @@ class OmWhatsappAccount(models.Model):
         account = self._om_whatsapp_web_account(me)
         if not account:
             return []
-        return [''.join(char for char in channel.om_whatsapp_number if char.isdigit())
-                for channel in account._om_whatsapp_pictures_due()]
+        return [''.join(char for char in channel.om_social_address if char.isdigit())
+                for channel in account._om_social_pictures_due()]
 
     @api.model
     def om_whatsapp_web_set_picture(self, me, phone, data=False, url=False):
@@ -173,7 +172,7 @@ class OmWhatsappAccount(models.Model):
             return False
         if not data and url:
             data = self._om_whatsapp_web_download_picture(url)
-        return account._om_whatsapp_set_picture(account._om_whatsapp_format_number(f'+{phone}'), data)
+        return account._om_social_set_picture(account._om_social_format_address(f'+{phone}'), data)
 
     @api.model
     def _om_whatsapp_web_download_picture(self, url):
@@ -210,8 +209,8 @@ class OmWhatsappAccount(models.Model):
         for item in items:
             if item.get('kind') != 'message' or not item.get('phone') or account._om_whatsapp_web_is_old(item):
                 continue
-            number = account._om_whatsapp_format_number(f"+{item['phone']}")
-            if account._om_whatsapp_accepts(number, item.get('quoted_id')):
+            number = account._om_social_format_address(f"+{item['phone']}")
+            if account._om_social_accepts(number, item.get('quoted_id')):
                 accept.append(item['id'])
         return {'account': True, 'accept': accept}
 

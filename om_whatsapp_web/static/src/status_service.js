@@ -4,7 +4,7 @@ import { registry } from "@web/core/registry";
 import { user } from "@web/core/user";
 import { getExtensionInfo, getStatus, onStatusWake, openWhatsappTab } from "./extension_bridge";
 
-const ACCOUNT = "om.whatsapp.account";
+const ACCOUNT = "om.social.account";
 const CHECK_DELAY = 30000;
 // the server is told the same status at most this often (it records the last connection)
 const SERVER_DELAY = 60000;

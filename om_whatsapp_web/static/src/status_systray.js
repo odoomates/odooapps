@@ -34,7 +34,7 @@ export class WhatsappWebStatusSystray extends Component {
     }
 
     openAccounts() {
-        this.action.doAction("om_whatsapp_base.om_whatsapp_account_action");
+        this.action.doAction("om_social_base.om_social_account_action");
     }
 }
 
