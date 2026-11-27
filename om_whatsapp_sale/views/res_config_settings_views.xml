@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_whatsapp_sale</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block name="quotation_order_setting_container" position="after">
+                <block title="WhatsApp" name="om_whatsapp_sale_settings">
+                    <setting id="om_whatsapp_quotation_template" string="Quotation Template" company_dependent="1"
+                             help="Offered by the Send by WhatsApp button of a quotation, with its PDF">
+                        <field name="om_whatsapp_quotation_template_id" options="{'no_create': True}"/>
+                    </setting>
+                    <setting id="om_whatsapp_order_auto" company_dependent="1"
+                             help="Send each order by WhatsApp once, when it is confirmed (online orders included)">
+                        <field name="om_whatsapp_order_auto"/>
+                        <div class="content-group mt16">
+                            <div class="row">
+                                <label for="om_whatsapp_order_template_id" string="Template" class="col-lg-4 o_light_label"/>
+                                <field name="om_whatsapp_order_template_id" options="{'no_create': True}"/>
+                            </div>
+                        </div>
+                    </setting>
+                    <setting id="om_whatsapp_sale_account" string="Send From" company_dependent="1"
+                             help="WhatsApp account of the automatic messages: empty for the account of the template or of the user">
+                        <field name="om_whatsapp_sale_account_id" options="{'no_create': True}"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+
+</odoo>

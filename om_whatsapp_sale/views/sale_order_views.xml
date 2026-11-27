@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_order_form" model="ir.ui.view">
+        <field name="name">sale.order.form.inherit.om_whatsapp_sale</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@id='quotation_send']" position="after">
+                <button name="action_om_whatsapp_send" type="object" string="Send by WhatsApp"
+                        groups="om_whatsapp_base.group_om_whatsapp_user"
+                        invisible="state not in ('draft', 'sent', 'sale')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_whatsapp_send_orders" model="ir.actions.server">
+        <field name="name">Send by WhatsApp</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="binding_model_id" ref="sale.model_sale_order"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_om_whatsapp_send()</field>
+    </record>
+
+</odoo>
