@@ -62,7 +62,7 @@ class TestBalanceSheetDashboard(AccountTestInvoicingCommon):
         amounts = self._dashboard(date_to)
         with self.subTest(date_to=date_to):
             self.assertAlmostEqual(amounts['capital'], capital, 2, 'Capital and Reserves')
-            self.assertAlmostEqual(amounts['current_earnings'], current, 2, 'Current Year Earnings')
+            self.assertAlmostEqual(amounts['current_earnings'], current, 2, 'Current Year Unallocated Earnings')
             self.assertAlmostEqual(amounts['previous_earnings'], previous, 2, 'Previous Years Unallocated Earnings')
             self.assertAlmostEqual(amounts['total_equity'], amounts['total_assets'] - amounts['total_liabilities'], 2)
 
@@ -80,3 +80,10 @@ class TestBalanceSheetDashboard(AccountTestInvoicingCommon):
 
         self.assertEquity('2026-06-30', capital=0.0, current=300.0, previous=1000.0)
         self.assertEquity('2025-12-31', capital=0.0, current=1000.0, previous=0.0)
+
+    def test_the_earnings_lines_are_named_as_the_balance_sheet(self):
+        """ The earnings not allocated yet, of the previous fiscal years and of the current one, named as in the
+        Balance Sheet of accounting_pdf_reports: once a year is closed, its earnings are 0 on the closing day """
+        names = {key: text for key, text, *_rest in self.lines}
+        self.assertEqual(names['previous_earnings'], 'Previous Years Unallocated Earnings')
+        self.assertEqual(names['current_earnings'], 'Current Year Unallocated Earnings')
