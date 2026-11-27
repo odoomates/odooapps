@@ -7,7 +7,7 @@ class ResCompany(models.Model):
     _inherit = 'res.company'
 
     fs_whatsapp_account_id = fields.Many2one(
-        'om.whatsapp.account', string="Field Service WhatsApp Account",
+        'om.social.account', string="Field Service WhatsApp Account", domain="[('channel', '=', 'whatsapp')]",
         help="Account the job messages are sent from. Empty: the account of the template, else the one of "
              "the user.")
     fs_whatsapp_planned_id = fields.Many2one(
