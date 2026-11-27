@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_helpdesk.team_tech" model="om.helpdesk.team">
+        <field name="use_field_service" eval="True"/>
+        <field name="fs_project_id" ref="om_field_service.project_field_service"/>
+        <field name="fs_job_type_id" ref="om_field_service.job_type_repair"/>
+        <field name="fs_done_message">customer</field>
+        <field name="fs_close_ticket" eval="True"/>
+    </record>
+
+    <record id="om_helpdesk.type_installation" model="om.helpdesk.ticket.type">
+        <field name="fs_create_job" eval="True"/>
+        <field name="fs_job_type_id" ref="om_field_service.job_type_installation"/>
+    </record>
+
+    <!-- a ticket to plan an intervention from -->
+    <record id="ticket_fs_boiler" model="om.helpdesk.ticket">
+        <field name="name">Boiler makes a banging noise</field>
+        <field name="team_id" ref="om_helpdesk.team_tech"/>
+        <field name="partner_id" ref="om_field_service.partner_fs_harbor"/>
+        <field name="ticket_type_id" ref="om_helpdesk.type_issue"/>
+        <field name="priority">2</field>
+        <field name="fs_equipment">Gas boiler in the back kitchen, serial GB-30-55120</field>
+        <field name="description" type="html"><p>The boiler bangs loudly when the heating starts, every morning since Monday.</p></field>
+    </record>
+
+    <!-- a ticket of a type that creates its job -->
+    <record id="ticket_fs_install" model="om.helpdesk.ticket">
+        <field name="name">Install the new dishwasher</field>
+        <field name="team_id" ref="om_helpdesk.team_tech"/>
+        <field name="partner_id" ref="om_field_service.partner_fs_mission"/>
+        <field name="ticket_type_id" ref="om_helpdesk.type_installation"/>
+        <field name="fs_equipment">Commercial dishwasher, delivered on site</field>
+        <field name="description" type="html"><p>Please connect and test the dishwasher delivered last week.</p></field>
+    </record>
+
+</odoo>

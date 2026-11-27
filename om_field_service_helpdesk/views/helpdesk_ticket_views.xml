@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_helpdesk_ticket_form_inherit_fs" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.form.inherit.field.service</field>
+        <field name="model">om.helpdesk.ticket</field>
+        <field name="inherit_id" ref="om_helpdesk.view_helpdesk_ticket_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_close']" position="before">
+                <field name="use_field_service" invisible="1"/>
+                <field name="fs_job_done_id" invisible="1"/>
+                <button name="action_fs_create_job" type="object" string="Plan Intervention"
+                    class="btn-secondary" invisible="not use_field_service or is_closed or not id"
+                    groups="om_field_service.group_fs_user"
+                    help="Create a field service job with the customer, site, description and equipment of the ticket"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_fs_view_jobs" type="object" class="oe_stat_button" icon="build"
+                    invisible="not fs_job_count" groups="om_field_service.group_fs_user">
+                    <field name="fs_job_count" widget="statinfo" string="Jobs"/>
+                </button>
+                <button name="action_fs_print_report" type="object" class="oe_stat_button" icon="picture_as_pdf"
+                    invisible="not fs_job_done_id">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Job Report</span>
+                    </div>
+                </button>
+            </xpath>
+            <field name="partner_phone" position="after">
+                <field name="fs_equipment" invisible="not use_field_service" placeholder="Model, serial number, where it is on site"/>
+                <field name="fs_job_state" widget="badge" invisible="not fs_job_state"
+                    decoration-info="fs_job_state in ('planned', 'travelling')"
+                    decoration-warning="fs_job_state in ('in_progress', 'waiting_parts')"
+                    decoration-success="fs_job_state == 'done'"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="view_helpdesk_ticket_list_inherit_fs" model="ir.ui.view">
+        <field name="name">om.helpdesk.ticket.list.inherit.field.service</field>
+        <field name="model">om.helpdesk.ticket</field>
+        <field name="inherit_id" ref="om_helpdesk.view_helpdesk_ticket_list"/>
+        <field name="arch" type="xml">
+            <field name="ticket_type_id" position="after">
+                <field name="fs_job_state" widget="badge" optional="show"
+                    decoration-info="fs_job_state in ('planned', 'travelling')"
+                    decoration-warning="fs_job_state in ('in_progress', 'waiting_parts')"
+                    decoration-success="fs_job_state == 'done'"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

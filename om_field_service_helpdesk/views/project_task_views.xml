@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs_inherit_helpdesk" model="ir.ui.view">
+        <field name="name">project.task.form.field.service.helpdesk</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_form_fs"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_fs_view_ticket" type="object" class="oe_stat_button" icon="confirmation_number"
+                    invisible="not helpdesk_ticket_id" groups="om_helpdesk.group_helpdesk_user">
+                    <div class="o_stat_info">
+                        <span class="o_stat_text">Ticket</span>
+                    </div>
+                </button>
+            </xpath>
+            <field name="site_equipment" position="after">
+                <field name="helpdesk_ticket_id" invisible="not helpdesk_ticket_id" readonly="1"
+                    groups="om_helpdesk.group_helpdesk_user"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_search_fs_inherit_helpdesk" model="ir.ui.view">
+        <field name="name">project.task.search.field.service.helpdesk</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_search_fs"/>
+        <field name="arch" type="xml">
+            <field name="site_equipment" position="after">
+                <field name="helpdesk_ticket_id"/>
+            </field>
+            <filter name="unplanned" position="after">
+                <filter name="from_ticket" string="From Tickets" domain="[('helpdesk_ticket_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>
