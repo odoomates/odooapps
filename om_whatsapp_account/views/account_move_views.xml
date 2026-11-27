@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_move_form" model="ir.ui.view">
+        <field name="name">account.move.form.inherit.om_whatsapp_account</field>
+        <field name="model">account.move</field>
+        <field name="inherit_id" ref="account.view_move_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_invoice_sent'][last()]" position="after">
+                <button name="action_om_whatsapp_send" type="object" string="Send by WhatsApp"
+                        groups="om_whatsapp_base.group_om_whatsapp_user"
+                        invisible="state != 'posted' or move_type not in ('out_invoice', 'out_refund')"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_whatsapp_send_invoices" model="ir.actions.server">
+        <field name="name">Send by WhatsApp</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="binding_model_id" ref="account.model_account_move"/>
+        <field name="binding_view_types">list</field>
+        <field name="group_ids" eval="[Command.link(ref('om_whatsapp_base.group_om_whatsapp_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_om_whatsapp_send()</field>
+    </record>
+
+</odoo>
