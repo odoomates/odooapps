@@ -53,7 +53,8 @@ class TestBalanceSheetDashboard(AccountTestInvoicingCommon):
                 amounts[key] = sign * balance(members, False)
             elif kind == 'earnings':
                 amounts[key] = sign * balance(members, fiscal_start)
-            elif kind != 'title':
+        for key, _text, members, sign, kind in self.lines:
+            if kind not in ('title', 'line', 'earnings'):
                 amounts[key] = sum(-amounts[member[1:]] if member.startswith('-') else amounts[member]
                                    for member in members)
         return amounts
@@ -87,3 +88,10 @@ class TestBalanceSheetDashboard(AccountTestInvoicingCommon):
         names = {key: text for key, text, *_rest in self.lines}
         self.assertEqual(names['previous_earnings'], 'Previous Years Unallocated Earnings')
         self.assertEqual(names['current_earnings'], 'Current Year Unallocated Earnings')
+
+    def test_the_earnings_lines_are_in_the_order_of_the_balance_sheet(self):
+        """ Capital and Reserves, then the earnings of the previous years, then those of the current one, as in the
+        Balance Sheet of accounting_pdf_reports """
+        keys = [key for key, *_rest in self.lines]
+        self.assertEqual(keys[keys.index('capital'):keys.index('total_equity')],
+                         ['capital', 'previous_earnings', 'current_earnings'])
