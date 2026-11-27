@@ -61,3 +61,17 @@ class TestBalanceFormula(AccountTestInvoicingCommon):
         )
         self.assertAlmostEqual(posted, 0.0)
         self.assertAlmostEqual(all_entries, -1000.0, msg='the drafts, never the cancelled entries')
+
+    def test_rounded_to_the_currency(self):
+        """ Added up as floats, 0.1 + 0.2 - 0.3 is not 0: a dashboard could show it as -0.00 """
+        accounts = self.env['account.account'].create([
+            {'code': code, 'name': code, 'account_type': 'income'} for code in ('ROUND1', 'ROUND2', 'ROUND3')
+        ])
+        self.env['account.move'].create({
+            'journal_id': self.company_data['default_journal_misc'].id,
+            'date': '2025-03-10',
+            'line_ids': [Command.create({'name': 'rounding', 'account_id': account.id, 'balance': balance})
+                         for account, balance in zip(accounts, (0.1, 0.2, -0.3))],
+        }).action_post()
+        balance, = self._fetch(self.company, self._args(['income'], '2025-01-01', '2025-12-31'))
+        self.assertEqual(balance, 0.0)
