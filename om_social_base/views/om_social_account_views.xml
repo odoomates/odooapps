@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_social_account_view_list" model="ir.ui.view">
+        <field name="name">om.social.account.list</field>
+        <field name="model">om.social.account</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="channel"/>
+                <field name="address"/>
+                <field name="provider"/>
+                <field name="company_id" groups="base.group_multi_company"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_social_account_view_form" model="ir.ui.view">
+        <field name="name">om.social.account.form</field>
+        <field name="model">om.social.account</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_messages" type="object" class="oe_stat_button" icon="forum">
+                            <field name="message_count" widget="statinfo" string="Messages"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Sales Team"/></h1>
+                    </div>
+                    <group>
+                        <group name="account">
+                            <field name="channel"/>
+                            <field name="provider"/>
+                            <field name="address"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="active" invisible="1"/>
+                        </group>
+                        <group name="receiving">
+                            <field name="reply_days"/>
+                            <field name="receive_unknown"/>
+                            <field name="fetch_pictures"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Allowed Users" name="users">
+                            <field name="user_ids" widget="many2many_tags_avatar" options="{'no_create': True}"/>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_social_account_view_search" model="ir.ui.view">
+        <field name="name">om.social.account.search</field>
+        <field name="model">om.social.account</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="address"/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="group_channel" string="Channel" context="{'group_by': 'channel'}"/>
+                <filter name="group_provider" string="Provider" context="{'group_by': 'provider'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_social_account_action" model="ir.actions.act_window">
+        <field name="name">Accounts</field>
+        <field name="res_model">om.social.account</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Add an account</p>
+            <p>An account is a number or a handle your users answer from, and how its messages reach Odoo.</p>
+        </field>
+    </record>
+</odoo>

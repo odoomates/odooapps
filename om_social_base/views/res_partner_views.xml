@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form_inherit_om_social" model="ir.ui.view">
+        <field name="name">res.partner.form.inherit.om.social</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_om_social_messages" type="object" class="oe_stat_button" icon="forum"
+                        groups="om_social_base.group_om_social_user" invisible="not om_social_message_count">
+                    <field name="om_social_message_count" widget="statinfo" string="Conversations"/>
+                </button>
+            </div>
+            <xpath expr="//sheet//field[@name='phone'][@widget='phone']/.." position="after">
+                <label for="om_social_identity_ids" string="Channels" class="d-md-none" invisible="not om_social_identity_ids"
+                       groups="om_social_base.group_om_social_user"/>
+                <div class="d-flex align-items-baseline w-md-50 gap-2" invisible="not om_social_identity_ids"
+                     groups="om_social_base.group_om_social_user">
+                    <i class="oi d-none d-md-inline-flex" data-icon="forum" title="Channels"/>
+                    <field name="om_social_identity_ids" widget="many2many_tags" readonly="1" class="w-auto"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_res_partner_filter_inherit_om_social" model="ir.ui.view">
+        <field name="name">res.partner.search.inherit.om.social</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <field name="email" position="after">
+                <field name="om_social_identity_ids" string="Channel User"
+                       filter_domain="['|', '|', ('om_social_identity_ids.user_ref', 'ilike', self), ('om_social_identity_ids.username', 'ilike', self), ('om_social_identity_ids.address', 'ilike', self)]"
+                       groups="om_social_base.group_om_social_user"/>
+            </field>
+        </field>
+    </record>
+</odoo>
