@@ -12,7 +12,7 @@
         <field name="name">Field Service: Technician on the Way</field>
         <field name="model_id" ref="project.model_project_task"/>
         <field name="lang">{{ object.partner_id.lang }}</field>
-        <field name="body">Hello {{ object.partner_id.name }}, {{ user.employee_id.name or user.name }} is on the way to {{ object.site_address or 'your site' }} for {{ object.job_number or object.name }}. See you soon!</field>
+        <field name="body">Hello {{ object.partner_id.name }}, {{ user.employee_id.name or user.name }} is on the way to {{ object.site_address or 'your site' }} for {{ object.job_number or object.name }}. See you soon!{{ object.fs_tracking_url and ' Follow the technician live: ' + object.fs_tracking_url or '' }}</field>
     </record>
 
     <record id="om_whatsapp_template_fs_report" model="om.whatsapp.template">

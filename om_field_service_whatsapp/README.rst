@@ -8,7 +8,8 @@ Field Service and the WhatsApp connector are both installed: neither depends
 on the other.
 
 * **Job planned**: when a job gets planned, with its date, site and technician.
-* **Technician on the way**: when the technician starts travelling.
+* **Technician on the way**: when the technician starts travelling, with the
+  link of the live tracking page.
 * **Job done**: when the job is done, with the job report (PDF, for the
   providers that send files) and the link to the customer portal.
 
