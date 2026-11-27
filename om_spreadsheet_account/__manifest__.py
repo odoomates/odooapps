@@ -9,7 +9,7 @@ Spreadsheet dashboards for accounting in the Dashboards app of Odoo 18 Community
 year, the profit and loss by month, the balance sheet with its ratios, the receivables and payables by age and the
 bank and cash movements, all computed from the account types so that they work with any chart of accounts.
     """,
-    'sequence': '1',
+    'sequence': 1,
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'license': 'LGPL-3',

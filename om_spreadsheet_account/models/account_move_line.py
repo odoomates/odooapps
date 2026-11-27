@@ -18,8 +18,10 @@ class AccountMoveLine(models.Model):
                 include_unposted: bool,
             }]
 
-        The journal items are grouped by account once per period, then summed by type.
+        The journal items are grouped by account once per period, then summed by type and rounded to the currency
+        of the company.
         """
+        currency = self.env.company.currency_id
         balances_by_period = {}
         results = []
         for args in args_list:
@@ -43,6 +45,7 @@ class AccountMoveLine(models.Model):
                 balances_by_period[period] = balances
             balances = balances_by_period[period]
             results.append({
-                'balance': sum(balances.get(account_type, 0.0) for account_type in args.get('account_types') or []),
+                'balance': currency.round(
+                    sum(balances.get(account_type, 0.0) for account_type in args.get('account_types') or [])),
             })
         return results
