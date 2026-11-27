@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 20.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-11-27 12:24+0000\n"
-"PO-Revision-Date: 2026-11-27 12:24+0000\n"
+"POT-Creation-Date: 2026-11-27 13:41+0000\n"
+"PO-Revision-Date: 2026-11-27 13:41+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -49,6 +49,11 @@ msgid ""
 "        <strong t-out=\"object.site_address or object.partner_id.contact_address or ''\">4557 De Silva St, Fremont</strong>\n"
 "        for <strong t-out=\"object.name or ''\">Boiler maintenance</strong>\n"
 "        <t t-if=\"object.job_number\">(<t t-out=\"object.job_number or ''\">JOB/00001</t>)</t>.\n"
+"        <t t-if=\"object.fs_tracking_url\">\n"
+"            <br/><br/>\n"
+"            Follow your technician and the arrival time live:\n"
+"            <a t-att-href=\"object.fs_tracking_url\" style=\"color: #714B67;\">track the visit</a>\n"
+"        </t>\n"
 "        <br/><br/>\n"
 "        Thank you,\n"
 "        <br/>\n"
@@ -255,6 +260,12 @@ msgid ""
 msgstr ""
 
 #. module: om_field_service
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
+msgid "About %(minutes)s min, around %(time)s"
+msgstr ""
+
+#. module: om_field_service
 #: model:ir.model.fields,field_description:om_field_service.field_om_fs_job_type__active
 msgid "Active"
 msgstr ""
@@ -323,6 +334,12 @@ msgstr ""
 #. module: om_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.om_fs_job_type_view_form
 msgid "Archived"
+msgstr ""
+
+#. module: om_field_service
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
+msgid "Arrived"
 msgstr ""
 
 #. module: om_field_service
@@ -579,6 +596,11 @@ msgid "Customer shown how to use it"
 msgstr ""
 
 #. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_form_fs
+msgid "Customer tracking page"
+msgstr ""
+
+#. module: om_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.portal_my_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.report_fs_job_document
 msgid "Date"
@@ -678,6 +700,8 @@ msgstr ""
 
 #. module: om_field_service
 #. odoo-javascript
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
 #: code:addons/om_field_service/static/src/map/job_map.xml:0
 #: model:ir.model.fields,field_description:om_field_service.field_om_fs_checklist_line__is_done
 #: model:ir.model.fields.selection,name:om_field_service.selection__project_task__job_state__done
@@ -1161,8 +1185,20 @@ msgid "Late"
 msgstr ""
 
 #. module: om_field_service
+#: model:ir.model.fields,field_description:om_field_service.field_res_company__fs_live_tracking
+#: model:ir.model.fields,field_description:om_field_service.field_res_config_settings__fs_live_tracking
+#: model_terms:ir.ui.view,arch_db:om_field_service.res_config_settings_view_form
+msgid "Live Tracking Page"
+msgstr ""
+
+#. module: om_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_form_fs
 msgid "Locate"
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_layout
+msgid "Logo"
 msgstr ""
 
 #. module: om_field_service
@@ -1357,6 +1393,8 @@ msgstr ""
 
 #. module: om_field_service
 #. odoo-javascript
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
 #: code:addons/om_field_service/static/src/technician/technician.xml:0
 msgid "On the way"
 msgstr ""
@@ -1402,6 +1440,11 @@ msgid "Open the route in Maps"
 msgstr ""
 
 #. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_page
+msgid "OpenStreetMap"
+msgstr ""
+
+#. module: om_field_service
 #. odoo-javascript
 #: code:addons/om_field_service/static/src/dispatch/dispatch_gantt.xml:0
 #: model:ir.actions.act_window,name:om_field_service.action_om_fs_route_wizard
@@ -1430,6 +1473,11 @@ msgstr ""
 #. module: om_field_service
 #: model:ir.model.fields,field_description:om_field_service.field_om_fs_route_wizard__distance_after
 msgid "Optimised Distance (km)"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,help:om_field_service.field_project_task__fs_tracking_url
+msgid "Page where the customer follows the technician on the way."
 msgstr ""
 
 #. module: om_field_service
@@ -1501,6 +1549,8 @@ msgstr ""
 
 #. module: om_field_service
 #. odoo-javascript
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
 #: code:addons/om_field_service/static/src/map/job_map.xml:0
 #: model:ir.model.fields.selection,name:om_field_service.selection__project_task__job_state__planned
 #: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_form_fs
@@ -1551,6 +1601,16 @@ msgstr ""
 #. module: om_field_service
 #: model:ir.model.fields,field_description:om_field_service.field_project_task__planning_status
 msgid "Planning Status"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,field_description:om_field_service.field_project_task__fs_track_date
+msgid "Position Updated On"
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_page
+msgid "Position at"
 msgstr ""
 
 #. module: om_field_service
@@ -1701,6 +1761,12 @@ msgstr ""
 #: model:ir.actions.act_window,name:om_field_service.action_om_fs_settings
 #: model:ir.ui.menu,name:om_field_service.menu_om_fs_settings
 msgid "Settings"
+msgstr ""
+
+#. module: om_field_service
+#. odoo-javascript
+#: code:addons/om_field_service/static/src/technician/technician.xml:0
+msgid "Share my position with the customer until I arrive"
 msgstr ""
 
 #. module: om_field_service
@@ -1877,11 +1943,22 @@ msgstr ""
 #: model:ir.model.fields,field_description:om_field_service.field_hr_employee__is_technician
 #: model:ir.model.fields,field_description:om_field_service.field_om_fs_plan_suggestion__employee_id
 #: model:ir.model.fields,field_description:om_field_service.field_om_fs_route_wizard__employee_id
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_page
 #: model_terms:ir.ui.view,arch_db:om_field_service.om_planning_slot_view_search_fs
 #: model_terms:ir.ui.view,arch_db:om_field_service.portal_my_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_search_fs
 #: model_terms:ir.ui.view,arch_db:om_field_service.report_fs_job_document
 msgid "Technician"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,field_description:om_field_service.field_project_task__fs_track_latitude
+msgid "Technician Latitude"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,field_description:om_field_service.field_project_task__fs_track_longitude
+msgid "Technician Longitude"
 msgstr ""
 
 #. module: om_field_service
@@ -1932,6 +2009,20 @@ msgstr ""
 #: model:ir.model.fields.selection,name:om_field_service.selection__om_fs_checklist_line__check_type__text
 #: model:ir.model.fields.selection,name:om_field_service.selection__om_fs_job_type_check__check_type__text
 msgid "Text"
+msgstr ""
+
+#. module: om_field_service
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
+msgid ""
+"The arrival time shows as soon as the technician shares their position."
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.res_config_settings_view_form
+msgid ""
+"The customer follows the technician on the way: status, arrival time and "
+"position shared from the phone of the technician while on the way only"
 msgstr ""
 
 #. module: om_field_service
@@ -1990,6 +2081,19 @@ msgstr ""
 #. module: om_field_service
 #. odoo-javascript
 #: code:addons/om_field_service/static/src/technician/technician.js:0
+msgid "The position is not available."
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_page
+msgid ""
+"The position of the technician is shared only while they are on the way to you.\n"
+"                This page closes once the visit is done."
+msgstr ""
+
+#. module: om_field_service
+#. odoo-javascript
+#: code:addons/om_field_service/static/src/technician/technician.js:0
 msgid "The report was sent to the customer."
 msgstr ""
 
@@ -2023,6 +2127,11 @@ msgid ""
 msgstr ""
 
 #. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_expired
+msgid "The visit is over: thank you for your trust."
+msgstr ""
+
+#. module: om_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.portal_my_field_service
 msgid "There is no intervention at your sites yet."
 msgstr ""
@@ -2036,6 +2145,16 @@ msgstr ""
 #. module: om_field_service
 #: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_search_fs
 msgid "This Week"
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_expired
+msgid "This link has expired"
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_expired
+msgid "This tracking link is not valid."
 msgstr ""
 
 #. module: om_field_service
@@ -2081,6 +2200,16 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_form_fs
 #: model_terms:ir.ui.view,arch_db:om_field_service.project_task_view_list_fs
 msgid "Total"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,field_description:om_field_service.field_project_task__fs_tracking_url
+msgid "Tracking Link"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,field_description:om_field_service.field_project_task__fs_track_token
+msgid "Tracking Token"
 msgstr ""
 
 #. module: om_field_service
@@ -2209,6 +2338,12 @@ msgid "Valve seized by limescale"
 msgstr ""
 
 #. module: om_field_service
+#. odoo-python
+#: code:addons/om_field_service/controllers/tracking.py:0
+msgid "Visit planned on %s"
+msgstr ""
+
+#. module: om_field_service
 #. odoo-javascript
 #: code:addons/om_field_service/static/src/technician/technician.xml:0
 #: model:ir.model.fields.selection,name:om_field_service.selection__project_task__job_state__waiting_parts
@@ -2248,6 +2383,16 @@ msgstr ""
 #. odoo-javascript
 #: code:addons/om_field_service/static/src/technician/technician.xml:0
 msgid "What you did, for the report"
+msgstr ""
+
+#. module: om_field_service
+#: model:ir.model.fields,help:om_field_service.field_res_company__fs_live_tracking
+#: model:ir.model.fields,help:om_field_service.field_res_config_settings__fs_live_tracking
+msgid ""
+"When the technician leaves for the site, the customer gets a link to a page "
+"with the technician, the status of the visit and the arrival time. The "
+"position of the technician is shared from their phone only while they are on"
+" the way, and the page expires once the job is done."
 msgstr ""
 
 #. module: om_field_service
@@ -2315,9 +2460,19 @@ msgid "Yes"
 msgstr ""
 
 #. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_page
+msgid "Your technician"
+msgstr ""
+
+#. module: om_field_service
 #. odoo-python
 #: code:addons/om_field_service/models/project_task.py:0
 msgid "Your user is not linked to an employee: ask your manager to create it."
+msgstr ""
+
+#. module: om_field_service
+#: model_terms:ir.ui.view,arch_db:om_field_service.fs_track_layout
+msgid "Your visit"
 msgstr ""
 
 #. module: om_field_service

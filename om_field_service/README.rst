@@ -48,6 +48,22 @@ Planning and dispatch
   messages through a messaging app too (WhatsApp with the Field Service -
   WhatsApp module).
 
+Live tracking page
+==================
+
+* When the technician taps *Start Travel*, the customer gets a link (in the
+  "on the way" email, and in the WhatsApp message with Field Service -
+  WhatsApp) to a page with the technician (name and photo), the job, the
+  status steps (planned, on the way, arrived, done) and the arrival time.
+* The phone of the technician shares its position (Geolocation of the browser,
+  with the consent of the technician and a switch to stop it) about every 30
+  seconds while they are on the way only. Only the last position is kept on
+  the job, and it is cleared when the technician arrives.
+* The page shows both on an OpenStreetMap map (Leaflet) and computes the
+  arrival time from the straight-line distance and the average travel speed of
+  the settings. It refreshes by itself and expires once the job is done.
+* Setting *Live Tracking Page* to turn it off.
+
 Technician phone screen
 =======================
 
@@ -81,8 +97,9 @@ Settings
 ========
 
 *Field Service > Configuration > Settings*: email the customer when the
-technician is on the way, email the report when the job is done, record travel
-time, average travel speed of the route optimisation.
+technician is on the way, live tracking page, email the report when the job is
+done, record travel time, average travel speed of the route optimisation and of
+the arrival time.
 
 Credits
 =======

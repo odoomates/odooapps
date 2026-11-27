@@ -34,6 +34,7 @@
         'views/res_config_settings_views.xml',
         'views/om_field_service_menus.xml',
         'views/portal_templates.xml',
+        'views/tracking_templates.xml',
     ],
     'demo': [
         'demo/om_field_service_demo.xml',

@@ -129,6 +129,14 @@
                         <div>Work <strong t-out="this.formatHours(job.work_hours)"/></div>
                     </div>
                 </div>
+                <div t-if="job.tracking" class="form-check form-switch mb-2 o_fs_tech_share">
+                    <input class="form-check-input" type="checkbox" role="switch" id="o_fs_share_location"
+                        t-att-checked="this.state.shareLocation" t-on-change="(ev) => this.toggleShareLocation(ev)"/>
+                    <label class="form-check-label small" for="o_fs_share_location">
+                        Share my position with the customer until I arrive
+                    </label>
+                    <div t-if="this.state.locationError" class="small text-danger" t-out="this.state.locationError"/>
+                </div>
                 <div t-if="!job.closed" class="d-grid gap-2 o_fs_tech_timer_buttons">
                     <t t-if="!job.timer">
                         <button t-if="job.can_travel and ['new', 'planned', 'waiting_parts'].includes(job.state)" type="button"

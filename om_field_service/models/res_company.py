@@ -13,3 +13,8 @@ class ResCompany(models.Model):
     fs_route_speed = fields.Float(
         string="Average Travel Speed", default=40.0,
         help="Average speed (km/h) between two sites, used to plan the travel time when a route is optimised.")
+    fs_live_tracking = fields.Boolean(
+        string="Live Tracking Page", default=True,
+        help="When the technician leaves for the site, the customer gets a link to a page with the technician, "
+             "the status of the visit and the arrival time. The position of the technician is shared from their "
+             "phone only while they are on the way, and the page expires once the job is done.")

@@ -1,4 +1,6 @@
 import base64
+import math
+import uuid
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -7,6 +9,7 @@ from odoo.exceptions import UserError
 from odoo.fields import Command, Domain
 from odoo.tools import html2plaintext, plaintext2html
 
+from odoo.addons.om_field_service.wizard.om_fs_plan_wizard import _distance_km
 from odoo.addons.om_field_service.wizard.om_fs_route_wizard import maps_route_url
 
 JOB_STATES = [
@@ -73,6 +76,17 @@ class ProjectTask(models.Model):
     ], compute='_compute_fs_my_timer', string="My Timer")
     fs_my_timer_start = fields.Datetime(compute='_compute_fs_my_timer', string="My Timer Start")
     fs_signature_required = fields.Boolean(related='job_type_id.signature_required', string="Signature Needed")
+    # live tracking page of the customer: the last position of the technician, only while on the way
+    fs_track_token = fields.Char(string="Tracking Token", copy=False, readonly=True, index='btree_not_null',
+                                 groups='om_field_service.group_fs_user')
+    fs_track_latitude = fields.Float(string="Technician Latitude", digits=(10, 7), copy=False, readonly=True,
+                                     groups='om_field_service.group_fs_user')
+    fs_track_longitude = fields.Float(string="Technician Longitude", digits=(10, 7), copy=False, readonly=True,
+                                      groups='om_field_service.group_fs_user')
+    fs_track_date = fields.Datetime(string="Position Updated On", copy=False, readonly=True,
+                                    groups='om_field_service.group_fs_user')
+    fs_tracking_url = fields.Char(compute='_compute_fs_tracking_url', string="Tracking Link",
+                                  help="Page where the customer follows the technician on the way.")
 
     # ------------------------------------------------------------------
     # Computes
@@ -95,6 +109,13 @@ class ProjectTask(models.Model):
             partner = task.site_partner_id
             task.site_address = partner._fs_address_line() if partner else False
             task.site_map_url = partner._fs_map_urls().get('google') if partner else False
+
+    @api.depends('fs_track_token', 'company_id.fs_live_tracking')
+    def _compute_fs_tracking_url(self):
+        for task in self:
+            token = task.sudo().fs_track_token
+            enabled = task._fs_company().fs_live_tracking if task.is_field_service else False
+            task.fs_tracking_url = f'{task.get_base_url()}/field-service/track/{token}' if token and enabled else False
 
     @api.depends('checklist_line_ids.is_done')
     def _compute_checklist_progress(self):
@@ -184,6 +205,10 @@ class ProjectTask(models.Model):
             old_users = {task.id: task.sudo().technician_ids.user_id for task in self}
         planning = self.filtered(lambda t: t.job_state != 'planned') if vals.get('job_state') == 'planned' else None
         res = super().write(vals)
+        if vals.get('job_state') and vals['job_state'] != 'travelling':
+            # the position of the technician is only kept while they are on the way
+            self.sudo().filtered('fs_track_date').write(
+                {'fs_track_latitude': 0.0, 'fs_track_longitude': 0.0, 'fs_track_date': False})
         jobs = self.filtered('is_field_service')
         if not jobs:
             return res
@@ -374,9 +399,52 @@ class ProjectTask(models.Model):
             else:
                 job._fs_my_timers()._fs_stop()
             job.job_state = 'travelling'
+            job._fs_tracking_start()
             if job._fs_company().fs_notify_on_the_way:
                 job._fs_notify_on_the_way()
         return True
+
+    # ------------------------------------------------------------------
+    # Live tracking
+    # ------------------------------------------------------------------
+
+    def _fs_tracking_start(self):
+        """ The link of the tracking page, made when the technician leaves for the site. """
+        for job in self.sudo():
+            if job._fs_company().fs_live_tracking and not job.fs_track_token:
+                job.fs_track_token = uuid.uuid4().hex
+
+    def fs_mobile_set_position(self, latitude, longitude):
+        """ Last position of the technician on the way, from the browser of their phone.
+
+        :return: whether the job still wants the position (False: stop sharing it)
+        """
+        self.ensure_one()
+        job = self.sudo()
+        if job.job_state != 'travelling' or not job._fs_company().fs_live_tracking \
+                or self.env.user not in job.technician_ids.user_id | job.user_ids:
+            return False
+        try:
+            latitude, longitude = float(latitude), float(longitude)
+        except (TypeError, ValueError):
+            return True
+        if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+            return True
+        job.write({'fs_track_latitude': latitude, 'fs_track_longitude': longitude,
+                   'fs_track_date': fields.Datetime.now()})
+        return True
+
+    def _fs_tracking_eta(self):
+        """ Minutes to the site from the last position, at the average travel speed, or None. """
+        self.ensure_one()
+        job = self.sudo()
+        site = job.site_partner_id or job.partner_id
+        if job.job_state != 'travelling' or not job.fs_track_date or \
+                not (site.partner_latitude or site.partner_longitude):
+            return None
+        km = _distance_km(job.fs_track_latitude, job.fs_track_longitude, site.partner_latitude, site.partner_longitude)
+        speed = max(job._fs_company().fs_route_speed or 40.0, 1.0)
+        return max(1, math.ceil(km / speed * 60))
 
     def action_fs_start_work(self):
         self._fs_check_open()
@@ -631,6 +699,7 @@ class ProjectTask(models.Model):
             'technicians': ', '.join(self.technician_ids.mapped('name')),
             'closed': self.job_state in CLOSED_STATES,
             'can_travel': self._fs_company().fs_travel_timesheet,
+            'tracking': self.job_state == 'travelling' and self._fs_company().fs_live_tracking,
             'extra': {},
         })
         return data

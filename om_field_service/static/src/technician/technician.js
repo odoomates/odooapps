@@ -1,4 +1,5 @@
 import { Component, onWillStart, onWillUnmount, proxy, useProps } from "@odoo/owl";
+import { browser } from "@web/core/browser/browser";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { SignatureDialog } from "@web/core/signature/signature_dialog";
@@ -6,6 +7,9 @@ import { useService } from "@web/core/utils/hooks";
 import { standardActionServiceProps } from "@web/webclient/actions/action_plugin";
 
 const { DateTime } = luxon;
+// the position of the technician on the way is sent at most this often
+const TRACK_INTERVAL_MS = 30000;
+const SHARE_KEY = "om_fs_share_location";
 
 const STATE_CLASSES = {
     new: "text-bg-light border",
@@ -71,6 +75,8 @@ export class FieldServiceTechnician extends Component {
             notesDirty: false,
             routeUrl: false,
             canOptimise: false,
+            shareLocation: browser.localStorage.getItem(SHARE_KEY) !== "0",
+            locationError: "",
         });
         onWillStart(async () => {
             await this.loadJobs();
@@ -79,7 +85,100 @@ export class FieldServiceTechnician extends Component {
             }
         });
         this.interval = setInterval(() => (this.state.now = DateTime.now()), 1000);
-        onWillUnmount(() => clearInterval(this.interval));
+        this.tracking = { watchId: null, intervalId: null, jobId: null, lastSent: 0, pending: null };
+        onWillUnmount(() => {
+            clearInterval(this.interval);
+            this.stopTracking();
+        });
+    }
+
+    // ------------------------------------------------------------------
+    // Live position, only while on the way (Geolocation API of the phone)
+    // ------------------------------------------------------------------
+
+    trackedJobId() {
+        const job = this.state.job;
+        if (job) {
+            return job.tracking ? job.id : null;
+        }
+        const travelling = this.state.jobs.find((j) => j.state === "travelling" && j.timer === "travel");
+        return travelling ? travelling.id : null;
+    }
+
+    syncTracking() {
+        const jobId = this.state.shareLocation ? this.trackedJobId() : null;
+        if (jobId === this.tracking.jobId) {
+            return;
+        }
+        this.stopTracking();
+        if (!jobId || !navigator.geolocation) {
+            return;
+        }
+        this.tracking.jobId = jobId;
+        this.tracking.lastSent = 0;
+        this.tracking.pending = null;
+        const onError = (error) => {
+            this.state.locationError = error.message || _t("The position is not available.");
+        };
+        const options = { enableHighAccuracy: true, maximumAge: 15000, timeout: 60000 };
+        this.tracking.watchId = navigator.geolocation.watchPosition(
+            (position) => this.onPosition(jobId, position),
+            onError,
+            options
+        );
+        // a move reported too soon after the last one is sent at the next interval; some phones
+        // only report a move: ask for the position at each interval too
+        this.tracking.intervalId = setInterval(() => {
+            if (this.tracking.pending) {
+                this.sendPosition(jobId);
+            }
+            navigator.geolocation.getCurrentPosition(
+                (position) => this.onPosition(jobId, position),
+                onError,
+                options
+            );
+        }, TRACK_INTERVAL_MS);
+    }
+
+    stopTracking() {
+        if (this.tracking.watchId !== null && navigator.geolocation) {
+            navigator.geolocation.clearWatch(this.tracking.watchId);
+        }
+        clearInterval(this.tracking.intervalId);
+        this.tracking.watchId = null;
+        this.tracking.intervalId = null;
+        this.tracking.jobId = null;
+    }
+
+    onPosition(jobId, position) {
+        this.state.locationError = "";
+        this.tracking.pending = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+        if (Date.now() - this.tracking.lastSent >= TRACK_INTERVAL_MS - 5000) {
+            this.sendPosition(jobId);
+        }
+    }
+
+    async sendPosition(jobId) {
+        const pending = this.tracking.pending;
+        if (!pending || this.tracking.jobId !== jobId) {
+            return;
+        }
+        this.tracking.pending = null;
+        this.tracking.lastSent = Date.now();
+        const keep = await this.orm.call("project.task", "fs_mobile_set_position", [
+            [jobId],
+            pending.latitude,
+            pending.longitude,
+        ]);
+        if (!keep && this.tracking.jobId === jobId) {
+            this.stopTracking();
+        }
+    }
+
+    toggleShareLocation(ev) {
+        this.state.shareLocation = ev.target.checked;
+        browser.localStorage.setItem(SHARE_KEY, this.state.shareLocation ? "1" : "0");
+        this.syncTracking();
     }
 
     // ------------------------------------------------------------------
@@ -89,6 +188,7 @@ export class FieldServiceTechnician extends Component {
     async loadJobs() {
         const data = await this.orm.call("project.task", "fs_mobile_jobs", [this.state.day]);
         this.state.jobs = data.jobs;
+        this.syncTracking();
         this.state.routeUrl = data.route_url || false;
         this.state.canOptimise = data.can_optimise || false;
     }
@@ -102,6 +202,7 @@ export class FieldServiceTechnician extends Component {
         this.state.job = data;
         this.state.notes = data.notes;
         this.state.notesDirty = false;
+        this.syncTracking();
     }
 
     async openJob(jobId) {
