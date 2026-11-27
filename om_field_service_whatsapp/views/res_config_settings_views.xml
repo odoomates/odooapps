@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_field_service_whatsapp</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_field_service.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block name="fs_messages" position="after">
+                <block title="WhatsApp Messages" name="fs_whatsapp">
+                    <setting id="fs_whatsapp_planned" string="Job Planned"
+                        help="WhatsApp to the customer when the job gets planned">
+                        <field name="fs_whatsapp_planned_id" options="{'no_create': True}"/>
+                    </setting>
+                    <setting id="fs_whatsapp_on_the_way" string="Technician on the Way"
+                        help="WhatsApp to the customer when the technician starts travelling">
+                        <field name="fs_whatsapp_on_the_way_id" options="{'no_create': True}"/>
+                    </setting>
+                    <setting id="fs_whatsapp_report" string="Job Done"
+                        help="WhatsApp to the customer when the job is done, with the job report">
+                        <field name="fs_whatsapp_report_id" options="{'no_create': True}"/>
+                    </setting>
+                    <setting id="fs_whatsapp_account" string="Send From"
+                        help="WhatsApp account of these messages: empty for the account of the template or of the user">
+                        <field name="fs_whatsapp_account_id" options="{'no_create': True}"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+
+</odoo>

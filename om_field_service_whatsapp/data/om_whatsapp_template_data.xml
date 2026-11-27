@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_fs_planned" model="om.whatsapp.template">
+        <field name="name">Field Service: Job Planned</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body">Hello {{ object.partner_id.name }}, your service visit *{{ object.job_number or object.name }}* ({{ object.name }}) is planned on *{{ format_datetime(object.planned_start, tz=object.partner_id.tz or user.tz, dt_format='EEEE d MMMM, HH:mm') }}* at {{ object.site_address or '' }}. Technician: {{ ', '.join(object.technician_ids.mapped('name')) or '-' }}. Reply here if the time does not suit you.</field>
+    </record>
+
+    <record id="om_whatsapp_template_fs_on_the_way" model="om.whatsapp.template">
+        <field name="name">Field Service: Technician on the Way</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body">Hello {{ object.partner_id.name }}, {{ user.employee_id.name or user.name }} is on the way to {{ object.site_address or 'your site' }} for {{ object.job_number or object.name }}. See you soon!</field>
+    </record>
+
+    <record id="om_whatsapp_template_fs_report" model="om.whatsapp.template">
+        <field name="name">Field Service: Job Done</field>
+        <field name="model_id" ref="project.model_project_task"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="om_field_service.action_report_fs_job"/>
+        <field name="body">Hello {{ object.partner_id.name }}, the job *{{ object.job_number or object.name }}* ({{ object.name }}) is done. Thank you! Your job report: {{ object.get_base_url() }}/my/field_service/{{ object.id }}</field>
+    </record>
+
+    <record id="base.main_company" model="res.company">
+        <field name="fs_whatsapp_planned_id" ref="om_whatsapp_template_fs_planned"/>
+        <field name="fs_whatsapp_on_the_way_id" ref="om_whatsapp_template_fs_on_the_way"/>
+        <field name="fs_whatsapp_report_id" ref="om_whatsapp_template_fs_report"/>
+    </record>
+
+</odoo>
