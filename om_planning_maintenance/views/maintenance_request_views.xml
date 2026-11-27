@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="hr_equipment_request_view_form" model="ir.ui.view">
+        <field name="name">maintenance.request.form.om_planning_maintenance</field>
+        <field name="model">maintenance.request</field>
+        <field name="inherit_id" ref="maintenance.hr_equipment_request_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//sheet/div[hasclass('d-flex')]" position="before">
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_plan" type="object" class="oe_stat_button" icon="view_timeline"
+                        groups="om_planning.group_planning_manager" invisible="not planning_slot_count">
+                        <field name="planning_slot_count" widget="statinfo" string="Planning"/>
+                    </button>
+                </div>
+                <div class="alert alert-danger mb-2" role="alert" invisible="not planning_conflict_info">
+                    <strong>Planning conflicts</strong>
+                    <field name="planning_conflict_info" class="d-block" style="white-space: pre-line;"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
