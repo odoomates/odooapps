@@ -1,0 +1,257 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="tool_wa_search_products" model="om.ai.tool">
+            <field name="name">Search products</field>
+            <field name="code">wa_search_products</field>
+            <field name="sequence">200</field>
+            <field name="method">_ai_tool_wa_search_products</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">0</field>
+            <field name="description">Find products the shop sells by words of their name, their code or barcode. Returns the price for one unit (without and with taxes, from the price list of the customer), and whether they are in stock.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"query": {"type": "string", "description": "Words the customer used, e.g. blue chair"}, "limit": {"type": "integer", "description": "At most 10"}}, "required": ["query"]}</field>
+        </record>
+
+        <record id="tool_wa_product_details" model="om.ai.tool">
+            <field name="name">Product details</field>
+            <field name="code">wa_product_details</field>
+            <field name="sequence">205</field>
+            <field name="method">_ai_tool_wa_product_details</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">0</field>
+            <field name="description">Description, price, stock and the other variants of one product found with wa_search_products.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"product_id": {"type": "integer"}}, "required": ["product_id"]}</field>
+        </record>
+
+        <record id="tool_wa_set_customer_name" model="om.ai.tool">
+            <field name="name">Set the customer name</field>
+            <field name="code">wa_set_customer_name</field>
+            <field name="sequence">210</field>
+            <field name="method">_ai_tool_wa_set_customer_name</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">0</field>
+            <field name="description">Make the contact of a new customer with the name they chose (offer their WhatsApp profile name first). Needed before the first item of an order. Never use it to change the name of a known customer.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"name": {"type": "string", "description": "Full name for the order"}, "language": {"type": "string", "description": "Code of the language the customer writes in, e.g. en, es, fr, ar"}}, "required": ["name"]}</field>
+        </record>
+
+        <record id="tool_wa_add_to_cart" model="om.ai.tool">
+            <field name="name">Add to the quotation</field>
+            <field name="code">wa_add_to_cart</field>
+            <field name="sequence">215</field>
+            <field name="method">_ai_tool_wa_add_to_cart</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">0</field>
+            <field name="description">Add a product to the draft quotation of the customer (made on the first item, with the price list and taxes of the customer). Checks the stock: when there is not enough, nothing is added and the available quantity is returned.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"product_id": {"type": "integer"}, "quantity": {"type": "number"}}, "required": ["product_id", "quantity"]}</field>
+        </record>
+
+        <record id="tool_wa_hand_over" model="om.ai.tool">
+            <field name="name">Hand over to a person</field>
+            <field name="code">wa_hand_over</field>
+            <field name="sequence">220</field>
+            <field name="method">_ai_tool_wa_hand_over</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">0</field>
+            <field name="description">Give the conversation to a salesperson: when the customer asks for a person, when you are unsure or cannot help, for complaints, or for anything the tools do not allow. You stop answering after it.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"reason": {"type": "string", "description": "Why, for the salesperson"}, "message_to_customer": {"type": "string", "description": "Short message to the customer in their language, e.g. a colleague will answer here shortly"}}, "required": ["reason", "message_to_customer"]}</field>
+        </record>
+
+        <record id="tool_wa_view_cart" model="om.ai.tool">
+            <field name="name">View the quotation</field>
+            <field name="code">wa_view_cart</field>
+            <field name="sequence">225</field>
+            <field name="method">_ai_tool_wa_view_cart</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">The draft quotation of the customer: lines, delivery, untaxed amount, taxes and total.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_set_cart_quantity" model="om.ai.tool">
+            <field name="name">Change a quantity</field>
+            <field name="code">wa_set_cart_quantity</field>
+            <field name="sequence">230</field>
+            <field name="method">_ai_tool_wa_set_cart_quantity</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Change the quantity of a product in the quotation; 0 removes it.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"product_id": {"type": "integer"}, "quantity": {"type": "number"}}, "required": ["product_id", "quantity"]}</field>
+        </record>
+
+        <record id="tool_wa_set_delivery_address" model="om.ai.tool">
+            <field name="name">Set the delivery address</field>
+            <field name="code">wa_set_delivery_address</field>
+            <field name="sequence">235</field>
+            <field name="method">_ai_tool_wa_set_delivery_address</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Save the delivery address the customer gave in text or as a location pin (a maps link holds latitude,longitude). Read it back to the customer.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"street": {"type": "string"}, "street2": {"type": "string"}, "city": {"type": "string"}, "zip_code": {"type": "string"}, "state": {"type": "string"}, "country": {"type": "string", "description": "Country name or ISO code"}, "latitude": {"type": "number"}, "longitude": {"type": "number"}}, "required": ["street", "city"]}</field>
+        </record>
+
+        <record id="tool_wa_use_saved_address" model="om.ai.tool">
+            <field name="name">Use the saved address</field>
+            <field name="code">wa_use_saved_address</field>
+            <field name="sequence">240</field>
+            <field name="method">_ai_tool_wa_use_saved_address</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Deliver to the address already saved on the contact of the customer, when they ask for it.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_set_email" model="om.ai.tool">
+            <field name="name">Set the email</field>
+            <field name="code">wa_set_email</field>
+            <field name="sequence">245</field>
+            <field name="method">_ai_tool_wa_set_email</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Save the email of a customer whose contact was made in this conversation (optional, for the order confirmation).</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"email": {"type": "string"}}, "required": ["email"]}</field>
+        </record>
+
+        <record id="tool_wa_delivery_options" model="om.ai.tool">
+            <field name="name">Delivery options</field>
+            <field name="code">wa_delivery_options</field>
+            <field name="sequence">250</field>
+            <field name="method">_ai_tool_wa_delivery_options</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Delivery methods available for the address of the quotation, with their price.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_set_delivery_method" model="om.ai.tool">
+            <field name="name">Set the delivery method</field>
+            <field name="code">wa_set_delivery_method</field>
+            <field name="sequence">255</field>
+            <field name="method">_ai_tool_wa_set_delivery_method</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Add the delivery method the customer chose to the quotation.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"carrier_id": {"type": "integer"}}, "required": ["carrier_id"]}</field>
+        </record>
+
+        <record id="tool_wa_send_quotation" model="om.ai.tool">
+            <field name="name">Send the quotation and payment link</field>
+            <field name="code">wa_send_quotation</field>
+            <field name="sequence">260</field>
+            <field name="method">_ai_tool_wa_send_quotation</field>
+            <field name="read_only" eval="False"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">When the quotation is complete (items, name, delivery address and method), call this to show the customer the summary: they confirm with YES, then the quotation PDF and the online payment link are sent. The order is confirmed when it is paid. Write one short sentence with it; the summary is added for you.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_list_orders" model="om.ai.tool">
+            <field name="name">List my orders</field>
+            <field name="code">wa_list_orders</field>
+            <field name="sequence">265</field>
+            <field name="method">_ai_tool_wa_list_orders</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">The last quotations and orders of the customer with their status, payment and deliveries.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_order_status" model="om.ai.tool">
+            <field name="name">Order status</field>
+            <field name="code">wa_order_status</field>
+            <field name="sequence">270</field>
+            <field name="method">_ai_tool_wa_order_status</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Status, lines, payment and deliveries (with tracking when there is one) of one order of the customer.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"reference": {"type": "string", "description": "Order reference, e.g. S00012"}}, "required": ["reference"]}</field>
+        </record>
+
+        <record id="tool_wa_order_payment_link" model="om.ai.tool">
+            <field name="name">Send an order payment link</field>
+            <field name="code">wa_order_payment_link</field>
+            <field name="sequence">275</field>
+            <field name="method">_ai_tool_wa_order_payment_link</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Send the online payment link of an unpaid quotation of the customer again.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"reference": {"type": "string"}}, "required": ["reference"]}</field>
+        </record>
+
+        <record id="tool_wa_send_verification_code" model="om.ai.tool">
+            <field name="name">Send the verification code</field>
+            <field name="code">wa_send_verification_code</field>
+            <field name="sequence">280</field>
+            <field name="method">_ai_tool_wa_send_verification_code</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">1</field>
+            <field name="description">Mail a 6-digit code to the email saved on the contact; the customer types it here to see invoices, balance and addresses. Never ask for the code otherwise.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_list_invoices" model="om.ai.tool">
+            <field name="name">List my invoices</field>
+            <field name="code">wa_list_invoices</field>
+            <field name="sequence">285</field>
+            <field name="method">_ai_tool_wa_list_invoices</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">2</field>
+            <field name="description">The last invoices and credit notes of the customer with amounts due.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"unpaid_only": {"type": "boolean"}}}</field>
+        </record>
+
+        <record id="tool_wa_send_invoice" model="om.ai.tool">
+            <field name="name">Send an invoice</field>
+            <field name="code">wa_send_invoice</field>
+            <field name="sequence">290</field>
+            <field name="method">_ai_tool_wa_send_invoice</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">2</field>
+            <field name="description">Send the PDF of an invoice of the customer, with an online payment link when something is due.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {"reference": {"type": "string", "description": "Invoice number"}}, "required": ["reference"]}</field>
+        </record>
+
+        <record id="tool_wa_open_balance" model="om.ai.tool">
+            <field name="name">Open balance</field>
+            <field name="code">wa_open_balance</field>
+            <field name="sequence">295</field>
+            <field name="method">_ai_tool_wa_open_balance</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">2</field>
+            <field name="description">What the customer owes: open and overdue amounts.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+        <record id="tool_wa_my_addresses" model="om.ai.tool">
+            <field name="name">My addresses</field>
+            <field name="code">wa_my_addresses</field>
+            <field name="sequence">300</field>
+            <field name="method">_ai_tool_wa_my_addresses</field>
+            <field name="read_only" eval="True"/>
+            <field name="om_ai_whatsapp" eval="True"/>
+            <field name="om_ai_whatsapp_level">2</field>
+            <field name="description">The addresses saved on the contact of the customer.</field>
+            <field name="parameters_schema">{"type": "object", "properties": {}}</field>
+        </record>
+
+    </data>
+</odoo>
