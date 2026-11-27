@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_rental_lift" model="product.product">
+        <field name="name">Scissor Lift SL-10</field>
+        <field name="default_code">RENT-LIFT</field>
+        <field name="type">service</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="rent_ok" eval="True"/>
+        <field name="invoice_policy">order</field>
+        <field name="list_price">0.0</field>
+        <field name="rental_availability">unit</field>
+        <field name="rental_padding_before_hours">1</field>
+        <field name="rental_padding_hours">2</field>
+        <field name="rental_extra_hour_price">15.0</field>
+        <field name="rental_extra_day_price">90.0</field>
+        <field name="rental_staff_role_id" ref="om_planning.role_driver"/>
+        <field name="rental_staff_count">1</field>
+        <field name="rental_staff_hours">1</field>
+    </record>
+    <record id="pricing_lift_day" model="om.rental.pricing">
+        <field name="product_template_id" ref="product_rental_lift_product_template"/>
+        <field name="duration">1</field>
+        <field name="unit">day</field>
+        <field name="price">90</field>
+    </record>
+    <record id="pricing_lift_week" model="om.rental.pricing">
+        <field name="product_template_id" ref="product_rental_lift_product_template"/>
+        <field name="duration">1</field>
+        <field name="unit">week</field>
+        <field name="price">450</field>
+    </record>
+
+    <record id="product_rental_generator" model="product.product">
+        <field name="name">Generator 20 kVA</field>
+        <field name="default_code">RENT-GEN</field>
+        <field name="type">service</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="rent_ok" eval="True"/>
+        <field name="invoice_policy">order</field>
+        <field name="list_price">0.0</field>
+        <field name="rental_availability">unit</field>
+        <field name="rental_padding_before_hours">1</field>
+        <field name="rental_padding_hours">1</field>
+        <field name="rental_extra_day_price">120.0</field>
+    </record>
+    <record id="pricing_generator_day" model="om.rental.pricing">
+        <field name="product_template_id" ref="product_rental_generator_product_template"/>
+        <field name="duration">1</field>
+        <field name="unit">day</field>
+        <field name="price">120</field>
+    </record>
+
+    <function model="product.template" name="_rental_planning_demo_units"/>
+
+    <!-- picked up and not back: the booking of the unit runs late -->
+    <record id="rental_order_lift_late" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_4"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="is_rental_order" eval="True"/>
+        <field name="rental_start_date" eval="(DateTime.today().replace(hour=8, minute=0, second=0, microsecond=0) + relativedelta(days=-4)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="rental_return_date" eval="(DateTime.today().replace(hour=16, minute=0, second=0, microsecond=0) + relativedelta(days=-1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="order_line" eval="[Command.create({'product_id': ref('product_rental_lift'), 'product_uom_qty': 1})]"/>
+    </record>
+    <function model="sale.order.line" name="_rental_planning_demo_set_unit"
+        eval="[ref('rental_order_lift_late'), ref('om_planning_maintenance.equipment_scissor_lift')]"/>
+    <function model="sale.order" name="action_confirm" eval="[[ref('rental_order_lift_late')]]"/>
+    <function model="sale.order" name="_rental_process_demo" eval="[[ref('rental_order_lift_late')], 'pickup']"/>
+
+    <!-- the next rental of the same unit, waiting for it -->
+    <record id="rental_order_lift_next" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_12"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="is_rental_order" eval="True"/>
+        <field name="rental_start_date" eval="DateTime.today().replace(hour=7, minute=0, second=0, microsecond=0).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="rental_return_date" eval="(DateTime.today().replace(hour=16, minute=0, second=0, microsecond=0) + relativedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="order_line" eval="[Command.create({'product_id': ref('product_rental_lift'), 'product_uom_qty': 1})]"/>
+    </record>
+    <function model="sale.order.line" name="_rental_planning_demo_set_unit"
+        eval="[ref('rental_order_lift_next'), ref('om_planning_maintenance.equipment_scissor_lift')]"/>
+    <function model="sale.order" name="action_confirm" eval="[[ref('rental_order_lift_next')]]"/>
+
+    <!-- the second lift is booked for a few days -->
+    <record id="rental_order_lift_reserved" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_3"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="is_rental_order" eval="True"/>
+        <field name="rental_start_date" eval="(DateTime.today().replace(hour=7, minute=0, second=0, microsecond=0) + relativedelta(days=1, weekday=0)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="rental_return_date" eval="(DateTime.today().replace(hour=16, minute=0, second=0, microsecond=0) + relativedelta(days=1, weekday=0) + relativedelta(days=4)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="order_line" eval="[Command.create({'product_id': ref('product_rental_lift'), 'product_uom_qty': 1})]"/>
+    </record>
+    <function model="sale.order" name="action_confirm" eval="[[ref('rental_order_lift_reserved')]]"/>
+
+    <!-- quotations: the units are busy (rental, maintenance) -->
+    <record id="rental_order_lift_quotation" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_2"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="is_rental_order" eval="True"/>
+        <field name="rental_start_date" eval="(DateTime.today().replace(hour=7, minute=0, second=0, microsecond=0) + relativedelta(days=1, weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="rental_return_date" eval="(DateTime.today().replace(hour=16, minute=0, second=0, microsecond=0) + relativedelta(days=1, weekday=0) + relativedelta(days=3)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="order_line" eval="[Command.create({'product_id': ref('product_rental_lift'), 'product_uom_qty': 1})]"/>
+    </record>
+    <record id="rental_order_generator_quotation" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_1"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="is_rental_order" eval="True"/>
+        <field name="rental_start_date" eval="(DateTime.today().replace(hour=9, minute=0, second=0, microsecond=0) + relativedelta(days=1, weekday=0)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="rental_return_date" eval="(DateTime.today().replace(hour=17, minute=0, second=0, microsecond=0) + relativedelta(days=1, weekday=0)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="order_line" eval="[Command.create({'product_id': ref('product_rental_generator'), 'product_uom_qty': 1})]"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_form_view_rental_planning" model="ir.ui.view">
+        <field name="name">product.template.form.om.rental.planning</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="om_sale_renting.product_template_form_view_rental"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='rental_qty']" position="attributes">
+                <attribute name="invisible">rental_availability == 'unit'</attribute>
+            </xpath>
+            <xpath expr="//group[@name='rental_rules']" position="before">
+                <group name="rental_units" string="Availability">
+                    <group>
+                        <field name="rental_availability" widget="radio" options="{'horizontal': true}"/>
+                        <field name="rental_unit_ids" widget="many2many_tags" invisible="rental_availability != 'unit'"
+                            required="rental_availability == 'unit'" options="{'color_field': 'color'}"
+                            context="{'default_resource_type': 'material'}"/>
+                        <field name="rental_unit_count" invisible="1"/>
+                    </group>
+                    <group invisible="rental_availability != 'unit'">
+                        <field name="rental_staff_role_id" options="{'no_create': True}"/>
+                        <field name="rental_staff_count" invisible="not rental_staff_role_id"/>
+                        <field name="rental_staff_hours" widget="float_time" invisible="not rental_staff_role_id"/>
+                    </group>
+                    <div colspan="2" invisible="rental_availability != 'unit' or not id">
+                        <button name="action_view_rental_unit_schedule" type="object" class="btn-link ps-0"
+                            icon="arrow_forward" string="Unit Schedule"/>
+                    </div>
+                </group>
+            </xpath>
+            <xpath expr="//label[@for='rental_padding_hours']" position="before">
+                <label for="rental_padding_before_hours" invisible="rental_availability != 'unit'"/>
+                <div class="o_row" invisible="rental_availability != 'unit'">
+                    <field name="rental_padding_before_hours" class="oe_inline" widget="float_time"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="product_template_view_list_rental_planning" model="ir.ui.view">
+        <field name="name">product.template.list.om.rental.planning</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="om_sale_renting.product_template_view_list_rental"/>
+        <field name="arch" type="xml">
+            <field name="rental_qty" position="before">
+                <field name="rental_availability" optional="show"/>
+                <field name="rental_unit_count" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
