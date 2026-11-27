@@ -1,6 +1,6 @@
 {
     'name': 'Social Inbox',
-    'version': '1.0',
+    'version': '1.0.1',
     'author': 'Odoo Mates',
     'category': 'Marketing',
     'description': 'One inbox in Discuss for the chats of your customers: accounts, contacts, conversations, '
