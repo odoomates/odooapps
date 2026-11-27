@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om.documents.account</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_documents.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block name="om_documents_integrations" position="inside">
+                <setting id="om_documents_account_sync" company_dependent="1"
+                         help="The files of the invoices and the bills are kept in a folder.">
+                    <field name="om_documents_account_sync"/>
+                    <div class="mt-2" invisible="not om_documents_account_sync">
+                        <field name="om_documents_account_folder_id" required="om_documents_account_sync"
+                               options="{'no_create': True}"/>
+                    </div>
+                </setting>
+            </block>
+        </field>
+    </record>
+
+</odoo>
