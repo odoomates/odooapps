@@ -42,7 +42,7 @@ class OmWhatsappTemplate(models.Model):
         'ir.actions.report', string='Attach Report', domain="[('model', '=', model)]",
         help="Printed as a PDF and sent with the message, by the providers that send files.")
     account_id = fields.Many2one(
-        'om.whatsapp.account', string='Account', index='btree_not_null',
+        'om.social.account', string='Account', index='btree_not_null', domain="[('channel', '=', 'whatsapp')]",
         help="Only offered when sending from this account. Leave empty to use it with every account.")
     company_id = fields.Many2one('res.company', related='account_id.company_id', store=True)
     sidebar_action_id = fields.Many2one('ir.actions.act_window', readonly=True, copy=False)

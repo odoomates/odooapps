@@ -1,9 +1,6 @@
 import logging
 
-from markupsafe import Markup
-
 from odoo import api, models
-from odoo.tools import plaintext2html
 
 _logger = logging.getLogger(__name__)
 
@@ -14,29 +11,23 @@ class MailThread(models.AbstractModel):
     def _message_om_whatsapp(self, account, body, number, partner=False, failure_type=False, failure_reason=False,
                              status='ready', om_whatsapp_user_id=False, **post_values):
         """ Post on this document a WhatsApp message to ``number`` (or to the
-        WhatsApp user ID ``om_whatsapp_user_id`` without one), queued for
-        the provider of ``account`` (or with ``status``), or failed or
-        cancelled right away when ``failure_type`` says why it cannot go.
-        ``body`` is plain text, or Markup when it is html already.
-        ``post_values`` go to ``message_post`` (attachment_ids, attachments,
-        om_whatsapp_id...). """
-        self.ensure_one()
-        if body and not isinstance(body, Markup):
-            body = plaintext2html(body)
-        message = self.message_post(
-            body=body or '',
-            message_type='om_whatsapp',
-            subtype_xmlid='mail.mt_note',
-            om_whatsapp_account_id=account.id,
-            **post_values,
-        )
+        WhatsApp user ID ``om_whatsapp_user_id`` without one): see
+        ``_message_om_social``. ``post_values`` go to ``message_post``; the
+        id of the message in WhatsApp may be given as ``om_whatsapp_id``. """
+        if 'om_whatsapp_id' in post_values:
+            post_values['om_social_message_id'] = post_values.pop('om_whatsapp_id')
+        if failure_type == 'om_whatsapp_error':
+            failure_type = 'om_social_error'
+        return self._message_om_social(account, body, number or om_whatsapp_user_id or False, partner=partner,
+                                       failure_type=failure_type, failure_reason=failure_reason, status=status,
+                                       **post_values)
+
+    @api.model
+    def _om_social_failure_status(self, failure_type):
+        """ A number opted out is not a failure: the message is cancelled. """
         if failure_type == 'om_whatsapp_optout':
-            status = 'canceled'
-        elif failure_type:
-            status = 'exception'
-        message._om_whatsapp_add_notification(number, partner, status, failure_type, failure_reason,
-                                              user_id=om_whatsapp_user_id)
-        return message
+            return 'canceled'
+        return super()._om_social_failure_status(failure_type)
 
     def _message_om_whatsapp_template(self, template, account=False):
         """ Send ``template`` from each of these records, as the composer
@@ -49,7 +40,7 @@ class MailThread(models.AbstractModel):
         :return: the messages posted
         """
         Message = self.env['mail.message']
-        account = account or template.account_id or self.env['om.whatsapp.account']._get_default_account()
+        account = account or template.account_id or self.env['om.social.account']._get_default_account('whatsapp')
         if not self or not account:
             if self:
                 _logger.warning("WhatsApp %s not sent from %s: no WhatsApp account", template.name, self)
@@ -61,29 +52,13 @@ class MailThread(models.AbstractModel):
                     active_model=self._name, active_ids=self.ids, active_id=self.ids[0],
                 ).create({'account_id': account.id, 'template_id': template.id})
                 messages = composer._post_messages(composer._get_records())
-                queued = messages._om_whatsapp_notifications().filtered(lambda n: n.notification_status == 'ready')
+                queued = messages._om_social_notifications().filtered(lambda n: n.notification_status == 'ready')
                 if queued:
-                    account.sudo()._om_whatsapp_send_automated(queued)
+                    account.sudo()._om_social_send_automated(queued)
         except Exception:
             _logger.exception("WhatsApp %s not sent from %s", template.name, self)
             return Message
         return messages.with_env(self.env)
 
     def _get_message_create_valid_field_names(self):
-        return super()._get_message_create_valid_field_names() | {
-            'om_whatsapp_account_id', 'om_whatsapp_id', 'om_whatsapp_template_id'}
-
-    def _notify_get_recipients(self, message, **kwargs):
-        """ A WhatsApp message is not mailed: the customer has it in WhatsApp,
-        the users who follow the document get it in their Inbox. """
-        recipients = super()._notify_get_recipients(message, **kwargs)
-        if message.message_type != 'om_whatsapp':
-            return recipients
-        return [dict(recipient, notif='inbox') for recipient in recipients if recipient['uid'] and not recipient['share']]
-
-    @api.model
-    def notify_cancel_by_type(self, notification_type):
-        super().notify_cancel_by_type(notification_type)
-        if notification_type == 'om_whatsapp':
-            self._notify_cancel_by_type_generic('om_whatsapp')
-        return True
+        return super()._get_message_create_valid_field_names() | {'om_whatsapp_template_id'}

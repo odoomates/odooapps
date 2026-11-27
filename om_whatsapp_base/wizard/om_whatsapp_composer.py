@@ -1,5 +1,3 @@
-from ast import literal_eval
-
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -9,48 +7,30 @@ class OmWhatsappComposer(models.TransientModel):
     gets an editable number and text; several documents get the template
     rendered for each of them, at the number found on each document. """
     _name = 'om.whatsapp.composer'
+    _inherit = ['om.social.composer']
     _description = 'Send WhatsApp'
 
-    @api.model
-    def default_get(self, fields):
-        res = super().default_get(fields)
-        context = self.env.context
-        res_model = res.get('res_model') or context.get('active_model')
-        res_ids = context.get('active_ids') or (context.get('active_id') and [context['active_id']]) or []
-        if not res.get('res_ids') and res_ids:
-            res['res_ids'] = repr(res_ids)
-        res['res_model'] = res_model
-        return res
-
-    res_model = fields.Char('Document Model', required=True)
-    res_ids = fields.Char('Document IDs', required=True)
-    res_count = fields.Integer(compute='_compute_res_count')
-    account_id = fields.Many2one(
-        'om.whatsapp.account', required=True, default=lambda self: self.env['om.whatsapp.account']._get_default_account(),
-        domain="[('user_ids', 'in', uid)]")
-    can_send_files = fields.Boolean(related='account_id.can_send_files')
-    can_send_user_id = fields.Boolean(related='account_id.can_send_user_id')
+    account_id = fields.Many2one(domain="[('user_ids', 'in', uid), ('channel', '=', 'whatsapp')]")
+    can_send_user_id = fields.Boolean(related='account_id.can_send_user_ref')
     template_id = fields.Many2one(
         'om.whatsapp.template', string='Template',
         domain="[('model', '=', res_model), ('account_id', 'in', [False, account_id])]")
-    partner_id = fields.Many2one('res.partner', compute='_compute_recipient', store=True, readonly=False)
+    partner_id = fields.Many2one(compute='_compute_recipient')
     number = fields.Char(compute='_compute_recipient', store=True, readonly=False)
     om_whatsapp_user_id = fields.Char(
         'WhatsApp User ID', compute='_compute_recipient', store=True,
         help="The contact has no number: the message goes to the id WhatsApp gives them for your business.")
-    body = fields.Text('Message', compute='_compute_body', store=True, readonly=False)
+    body = fields.Text(compute='_compute_body', store=True, readonly=False)
     attach_report = fields.Boolean(compute='_compute_attach_report', store=True, readonly=False)
-    attachment_ids = fields.Many2many('ir.attachment', string='Attachments')
     use_exclusion_list = fields.Boolean(
         'Skip Opted-out Numbers', default=True,
         help="Do not send to the numbers of the phone blacklist.")
     recipient_valid_count = fields.Integer(compute='_compute_recipient_counts')
     recipient_invalid_count = fields.Integer(compute='_compute_recipient_counts')
 
-    @api.depends('res_ids')
-    def _compute_res_count(self):
-        for composer in self:
-            composer.res_count = len(composer._get_res_ids())
+    @api.model
+    def _default_account(self):
+        return self.env['om.social.account']._get_default_account('whatsapp')
 
     @api.depends('res_model', 'res_ids')
     @api.depends_context('om_whatsapp_number')
@@ -67,7 +47,12 @@ class OmWhatsappComposer(models.TransientModel):
             info = records._phone_get_recipients_info()[records.id]
             composer.partner_id = info['partner'][:1] if info['partner'] else False
             composer.number = self.env.context.get('om_whatsapp_number') or info['sanitized'] or info['number']
-            composer.om_whatsapp_user_id = composer.partner_id.sudo().om_whatsapp_user_id or False
+            composer.om_whatsapp_user_id = composer._get_user_id(composer.partner_id)
+
+    def _compute_address(self):
+        """ The number of the composer is the address. """
+        for composer in self:
+            composer.address = False
 
     @api.depends('res_model', 'res_ids', 'account_id')
     def _compute_recipient_counts(self):
@@ -98,47 +83,17 @@ class OmWhatsappComposer(models.TransientModel):
     @api.model
     def _get_user_id(self, partners):
         """ The WhatsApp user ID of the contact, for one without a number. """
-        return partners[:1].sudo().om_whatsapp_user_id or False if partners else False
-
-    def _get_res_ids(self):
-        self.ensure_one()
-        return literal_eval(self.res_ids) if self.res_ids else []
-
-    def _get_records(self):
-        self.ensure_one()
-        if not self.res_model or self.res_model not in self.env:
-            return self.env['res.partner']
-        return self.env[self.res_model].browse(self._get_res_ids()).exists()
+        identity = partners[:1].sudo().om_social_identity_ids.filtered(
+            lambda i: i.channel == 'whatsapp' and i.user_ref)[:1] if partners else False
+        return identity.user_ref if identity else False
 
     # ------------------------------------------------------------
     # SENDING
     # ------------------------------------------------------------
 
-    def action_send(self):
-        self.ensure_one()
-        records = self._get_records()
-        if not records:
-            raise UserError(_("There is no document to send from."))
+    def _check_content(self):
         if not self.body and not self.template_id:
             raise UserError(_("Write a message or pick a template."))
-        messages = self._post_messages(records)
-        notifications = messages._om_whatsapp_notifications()
-        queued = notifications.filtered(lambda n: n.notification_status == 'ready')
-        action = queued._om_whatsapp_send() if queued else None
-        if action:
-            return action
-        skipped = len(notifications) - len(queued)
-        if len(notifications) == 1 and skipped:
-            raise UserError(_("Not sent: %(reason)s", reason=notifications.failure_reason))
-        return {
-            'type': 'ir.actions.client',
-            'tag': 'display_notification',
-            'params': {
-                'type': 'warning' if skipped else 'success',
-                'message': _("%(queued)s WhatsApp message(s) sent, %(skipped)s skipped.", queued=len(queued), skipped=skipped),
-                'next': {'type': 'ir.actions.act_window_close'},
-            },
-        }
 
     def _post_messages(self, records):
         """ Post the message on each document, or on its contact when the
@@ -182,17 +137,13 @@ class OmWhatsappComposer(models.TransientModel):
         return messages
 
     def _prepare_attachments(self, record, single):
-        attachments = self.env['ir.attachment']
-        if single and self.attachment_ids:
-            uploaded = self.attachment_ids.filtered(lambda a: a.res_model == self._name)
-            uploaded.sudo().write({'res_model': record._name, 'res_id': record.id})
-            attachments |= self.attachment_ids
+        attachment_ids = super()._prepare_attachments(record, single)
         if self.attach_report and (report := self.template_id._om_whatsapp_render_report(record.id)):
             name, content = report
-            attachments |= self.env['ir.attachment'].create({
+            attachment_ids.append(self.env['ir.attachment'].create({
                 'name': name,
                 'raw': content,
                 'res_model': record._name,
                 'res_id': record.id,
-            })
-        return attachments.ids
+            }).id)
+        return attachment_ids
