@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_plan_view_form_subscription" model="ir.ui.view">
+        <field name="name">om.commission.plan.form.subscription</field>
+        <field name="model">om.commission.plan</field>
+        <field name="inherit_id" ref="om_sale_commission.om_commission_plan_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//page[@name='target']" position="after">
+                <page string="Subscriptions" name="subscription">
+                    <group>
+                        <group>
+                            <field name="subscription_base" widget="radio"/>
+                            <field name="subscription_recurrence" widget="radio"
+                                   invisible="subscription_base == 'new_mrr' or (subscription_base == 'invoice' and base == 'order')"/>
+                            <field name="subscription_only"/>
+                        </group>
+                        <div class="text-muted">
+                            Monthly Recurring Revenue pays on the MRR of the running subscriptions, for each month
+                            of the period. New MRR pays on the MRR added by new subscriptions and upsells in the
+                            period. These commissions have no product: use a rule on all products.
+                        </div>
+                    </group>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
