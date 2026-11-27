@@ -4,6 +4,12 @@ from odoo import _, api, fields, models
 class ResPartner(models.Model):
     _inherit = 'res.partner'
 
+    om_whatsapp_user_id = fields.Char(
+        'WhatsApp User ID', index='btree_not_null', copy=False,
+        help="The id WhatsApp gives this customer for your business (US.1234...), with or without their phone "
+             "number: their messages reach this contact, and a message to them goes to it when they have no phone.")
+    om_whatsapp_username = fields.Char(
+        'WhatsApp Username', copy=False, help="The username the customer chose in WhatsApp, as WhatsApp gave it.")
     om_whatsapp_message_count = fields.Integer(
         'WhatsApp Messages', compute='_compute_om_whatsapp_message_count',
         groups='om_whatsapp_base.group_om_whatsapp_user')
@@ -15,7 +21,7 @@ class ResPartner(models.Model):
         partners = super().create(vals_list)
         if channel_id := self.env.context.get('om_whatsapp_channel_id'):
             channel = self.env['discuss.channel'].sudo().browse(channel_id).exists()
-            partner = partners.filtered(lambda p: p.phone_sanitized == channel.om_whatsapp_number)[:1]
+            partner = partners.filtered(lambda p: channel._om_whatsapp_is_of(p))[:1]
             if channel and partner and not channel.om_whatsapp_partner_id:
                 channel._om_whatsapp_link_partner(partner)
         return partners

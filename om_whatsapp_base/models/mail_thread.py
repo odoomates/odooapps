@@ -12,8 +12,9 @@ class MailThread(models.AbstractModel):
     _inherit = 'mail.thread'
 
     def _message_om_whatsapp(self, account, body, number, partner=False, failure_type=False, failure_reason=False,
-                             status='ready', **post_values):
-        """ Post on this document a WhatsApp message to ``number``, queued for
+                             status='ready', om_whatsapp_user_id=False, **post_values):
+        """ Post on this document a WhatsApp message to ``number`` (or to the
+        WhatsApp user ID ``om_whatsapp_user_id`` without one), queued for
         the provider of ``account`` (or with ``status``), or failed or
         cancelled right away when ``failure_type`` says why it cannot go.
         ``body`` is plain text, or Markup when it is html already.
@@ -33,7 +34,8 @@ class MailThread(models.AbstractModel):
             status = 'canceled'
         elif failure_type:
             status = 'exception'
-        message._om_whatsapp_add_notification(number, partner, status, failure_type, failure_reason)
+        message._om_whatsapp_add_notification(number, partner, status, failure_type, failure_reason,
+                                              user_id=om_whatsapp_user_id)
         return message
 
     def _message_om_whatsapp_template(self, template, account=False):

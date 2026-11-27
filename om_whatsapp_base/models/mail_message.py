@@ -38,7 +38,8 @@ class MailMessage(models.Model):
     has_om_whatsapp_error = fields.Boolean(
         'Has WhatsApp Error', compute='_compute_has_om_whatsapp_error', search='_search_has_om_whatsapp_error')
 
-    @api.depends('message_type', 'author_id', 'email_from', 'notification_ids.res_partner_id', 'notification_ids.om_whatsapp_number')
+    @api.depends('message_type', 'author_id', 'email_from', 'notification_ids.res_partner_id',
+                 'notification_ids.om_whatsapp_number', 'notification_ids.om_whatsapp_user_id')
     def _compute_display_name(self):
         """ A WhatsApp message has no subject: it is named by the other side
         of the chat. """
@@ -48,7 +49,8 @@ class MailMessage(models.Model):
             notification = message._om_whatsapp_notifications()[:1]
             if notification:
                 message.display_name = _("WhatsApp to %(contact)s",
-                                         contact=notification.res_partner_id.name or notification.om_whatsapp_number)
+                                         contact=notification.res_partner_id.name
+                                         or notification._om_whatsapp_address())
             else:
                 message.display_name = _("WhatsApp from %(contact)s",
                                          contact=message.author_id.name or message.email_from or _("unknown"))
@@ -125,14 +127,17 @@ class MailMessage(models.Model):
         text = re.sub(r'<br\s*/?>', '\n', text)
         return html.unescape(re.sub(r'<[^>]+>', '', text)).strip()
 
-    def _om_whatsapp_add_notification(self, number, partner=False, status='ready', failure_type=False, failure_reason=False):
-        """ Make this message a WhatsApp message to ``number``: its
+    def _om_whatsapp_add_notification(self, number, partner=False, status='ready', failure_type=False,
+                                      failure_reason=False, user_id=False):
+        """ Make this message a WhatsApp message to ``number``, or to the
+        WhatsApp user ID ``user_id`` (with or without a number): its
         notification holds its status. """
         self.ensure_one()
         partner = partner or self.env['res.partner']
         values = {
             'author_id': self.author_id.id,
-            'om_whatsapp_number': self.env['om.whatsapp.account']._om_whatsapp_clean_number(number),
+            'om_whatsapp_number': self.env['om.whatsapp.account']._om_whatsapp_clean_number(number) or False,
+            'om_whatsapp_user_id': user_id or False,
             'notification_type': 'om_whatsapp',
             'notification_status': status,
             'failure_type': failure_type,
@@ -168,15 +173,16 @@ class MailMessage(models.Model):
 
     def _om_whatsapp_chat(self):
         """ (number of the chat, whether the message was sent from Odoo): the
-        number of its notification, else the one of its conversation. """
+        number of its notification, else the one of its conversation; the
+        WhatsApp user ID of the customer when the number is unknown. """
         self.ensure_one()
         copies = self._om_whatsapp_copies()
         notification = copies._om_whatsapp_notifications()[:1]
         if notification:
-            return notification.om_whatsapp_number, True
+            return notification._om_whatsapp_address(), True
         channel = self.env['discuss.channel'].sudo().browse(
             copies.filtered(lambda m: m.model == 'discuss.channel').mapped('res_id')).exists()[:1]
-        return channel.om_whatsapp_number or False, False
+        return (channel._om_whatsapp_address() if channel else False), False
 
     # ------------------------------------------------------------
     # RECEIPTS: read in Discuss, played in Odoo
@@ -269,7 +275,7 @@ class MailMessage(models.Model):
         """ Send the failed or cancelled messages again, by the author. """
         self.check_access('read')
         notifications = self._om_whatsapp_notifications().filtered(
-            lambda n: n.notification_status in ('exception', 'canceled') and n.om_whatsapp_number)
+            lambda n: n.notification_status in ('exception', 'canceled') and n._om_whatsapp_address())
         if not notifications:
             raise UserError(_("There is no failed WhatsApp message to send again."))
         notifications.write({'notification_status': 'ready', 'failure_type': False, 'failure_reason': False})

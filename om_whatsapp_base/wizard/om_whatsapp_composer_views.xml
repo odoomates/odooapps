@@ -9,6 +9,7 @@
                 <field name="res_ids" invisible="1"/>
                 <field name="res_count" invisible="1"/>
                 <field name="can_send_files" invisible="1"/>
+                <field name="can_send_user_id" invisible="1"/>
                 <div class="alert alert-info" role="alert" invisible="res_count &lt;= 1">
                     <field name="recipient_valid_count" class="oe_inline"/> document(s) with a valid number will get
                     the message<span invisible="not recipient_invalid_count">, <field name="recipient_invalid_count" class="oe_inline"/> without one are skipped</span>.
@@ -21,7 +22,8 @@
                     </group>
                     <group invisible="res_count != 1">
                         <field name="partner_id" readonly="1" invisible="not partner_id"/>
-                        <field name="number" widget="phone" required="res_count == 1"/>
+                        <field name="number" widget="phone" required="res_count == 1 and not (om_whatsapp_user_id and can_send_user_id)"/>
+                        <field name="om_whatsapp_user_id" invisible="not om_whatsapp_user_id or not can_send_user_id or number"/>
                     </group>
                 </group>
                 <field name="body" placeholder="Write your message..." readonly="res_count &gt; 1 and template_id"/>

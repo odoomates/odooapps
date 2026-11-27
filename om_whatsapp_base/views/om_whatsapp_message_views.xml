@@ -57,6 +57,7 @@
                         <list>
                             <field name="res_partner_id" string="Contact"/>
                             <field name="om_whatsapp_number"/>
+                            <field name="om_whatsapp_user_id" optional="hide"/>
                             <field name="notification_status" string="Status"/>
                             <field name="failure_reason"/>
                         </list>
@@ -75,7 +76,7 @@
                 <field name="body" string="Message"/>
                 <field name="author_id"/>
                 <field name="record_name" string="Document"/>
-                <field name="notification_ids" string="Number" filter_domain="[('notification_ids.om_whatsapp_number', 'ilike', self)]"/>
+                <field name="notification_ids" string="Number" filter_domain="['|', ('notification_ids.om_whatsapp_number', 'ilike', self), ('notification_ids.om_whatsapp_user_id', 'ilike', self)]"/>
                 <filter name="outgoing" string="Sent"
                         domain="[('notification_ids', 'any', [('notification_type', '=', 'om_whatsapp')])]"/>
                 <filter name="incoming" string="Received"

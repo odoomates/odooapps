@@ -11,6 +11,30 @@
                     <field name="om_whatsapp_message_count" widget="statinfo" string="WhatsApp"/>
                 </button>
             </div>
+            <xpath expr="//sheet//field[@name='phone'][@widget='phone']/.." position="after">
+                <label for="om_whatsapp_user_id" class="d-md-none" invisible="not om_whatsapp_user_id"
+                       groups="om_whatsapp_base.group_om_whatsapp_user"/>
+                <div class="d-flex align-items-baseline w-md-50 gap-2" invisible="not om_whatsapp_user_id"
+                     groups="om_whatsapp_base.group_om_whatsapp_user">
+                    <i class="oi oi-filled d-none d-md-inline-flex" data-icon="oi_whatsapp" title="WhatsApp"/>
+                    <field name="om_whatsapp_username" placeholder="WhatsApp Username" invisible="not om_whatsapp_username"
+                           class="w-auto"/>
+                    <field name="om_whatsapp_user_id" placeholder="WhatsApp User ID" class="text-muted"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_res_partner_filter_inherit_om_whatsapp" model="ir.ui.view">
+        <field name="name">res.partner.search.inherit.om.whatsapp</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_res_partner_filter"/>
+        <field name="arch" type="xml">
+            <field name="email" position="after">
+                <field name="om_whatsapp_user_id" string="WhatsApp"
+                       filter_domain="['|', ('om_whatsapp_user_id', 'ilike', self), ('om_whatsapp_username', 'ilike', self)]"
+                       groups="om_whatsapp_base.group_om_whatsapp_user"/>
+            </field>
         </field>
     </record>
 

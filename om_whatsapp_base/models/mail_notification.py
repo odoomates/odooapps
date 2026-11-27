@@ -14,6 +14,9 @@ class MailNotification(models.Model):
     notification_type = fields.Selection(
         selection_add=[('om_whatsapp', 'WhatsApp')], ondelete={'om_whatsapp': 'cascade'})
     om_whatsapp_number = fields.Char('WhatsApp Number', groups='base.group_user')
+    om_whatsapp_user_id = fields.Char(
+        'WhatsApp User ID', groups='base.group_user',
+        help="The id WhatsApp gives the customer for your business: the message goes to it when the number is unknown.")
     failure_type = fields.Selection(selection_add=[
         ('om_whatsapp_number', 'No Valid Number'),
         ('om_whatsapp_optout', 'Number Opted Out'),
@@ -25,6 +28,11 @@ class MailNotification(models.Model):
         is_whatsapp = lambda n: n.notification_type == 'om_whatsapp'  # noqa: E731
         res.attr('failure_reason', predicate=is_whatsapp)
         res.attr('om_whatsapp_read', lambda n: n.is_read and n._om_whatsapp_tracks_read(), predicate=is_whatsapp)
+
+    def _om_whatsapp_address(self):
+        """ Where the message goes: the number, else the WhatsApp user ID. """
+        self.ensure_one()
+        return self.om_whatsapp_number or self.om_whatsapp_user_id or False
 
     def _om_whatsapp_get_status(self):
         self.ensure_one()
@@ -69,18 +77,19 @@ class MailNotification(models.Model):
     def _om_whatsapp_copy_to_conversation(self):
         """ A message sent from a document goes to the WhatsApp conversation
         with its number too, once it is sent. """
-        for notification in self.filtered(lambda n: n.om_whatsapp_number):
+        for notification in self.filtered(lambda n: n.om_whatsapp_number or n.om_whatsapp_user_id):
             message = notification.mail_message_id
             account = message.om_whatsapp_account_id
             if not account or message.model == 'discuss.channel':
                 continue
-            channel = account._om_whatsapp_get_channel(notification.om_whatsapp_number, notification.res_partner_id)
+            channel = account._om_whatsapp_get_channel(notification.om_whatsapp_number, notification.res_partner_id,
+                                                       user_id=notification.om_whatsapp_user_id)
             document = self.env[message.model].browse(message.res_id) if message.model in self.env else None
             channel._om_whatsapp_set_document(document)
             attachments = message.attachment_ids.sudo()
             channel._message_om_whatsapp(
                 account, message.body, notification.om_whatsapp_number, partner=notification.res_partner_id,
-                status=notification.notification_status,
+                status=notification.notification_status, om_whatsapp_user_id=notification.om_whatsapp_user_id,
                 author_id=message.author_id.id,
                 om_whatsapp_id=message.om_whatsapp_id or False,
                 attachment_ids=[attachment.copy({'res_model': 'discuss.channel', 'res_id': channel.id}).id
