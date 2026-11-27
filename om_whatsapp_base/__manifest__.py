@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp Connector Base',
-    'version': '1.1.1',
+    'version': '2.0.0',
     'author': 'Odoo Mates',
     'category': 'Marketing',
     'description': 'WhatsApp in the Social Inbox: templates, composer and messages for any document, ready for any '

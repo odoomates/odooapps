@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp Connector QR',
-    'version': '1.0',
+    'version': '2.0.0',
     'author': 'Odoo Mates',
     'category': 'Marketing',
     'description': 'Link your WhatsApp to Odoo with a QR code, as a linked device, and send and receive from the server, '
