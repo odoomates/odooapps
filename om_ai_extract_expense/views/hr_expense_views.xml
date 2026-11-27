@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_expense_view_form_om_ai" model="ir.ui.view">
+        <field name="name">hr.expense.form.om_ai</field>
+        <field name="model">hr.expense</field>
+        <field name="inherit_id" ref="hr_expense.hr_expense_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/widget[@name='attach_document']" position="before">
+                <button name="action_om_ai_read_receipt" type="object" string="Read Receipt with AI"
+                        invisible="state != 'draft' or nb_attachment == 0"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="om_ai_read_state" invisible="1"/>
+                <div class="alert alert-warning mb-0" role="alert" invisible="om_ai_read_state != 'to_check' or state != 'draft'">
+                    <strong>Read by the AI, check before submitting:</strong>
+                    <field name="om_ai_read_notes" class="d-block" style="white-space: pre-line;"/>
+                </div>
+                <div class="alert alert-info mb-0" role="status" invisible="om_ai_read_state != 'done' or state != 'draft'">
+                    Read by the AI from the receipt: check the amounts before submitting.
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
