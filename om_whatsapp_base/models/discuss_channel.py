@@ -13,6 +13,12 @@ class DiscussChannel(models.Model):
     om_whatsapp_account_id = fields.Many2one(
         'om.whatsapp.account', string='WhatsApp Account', index='btree_not_null', ondelete='cascade', readonly=True)
     om_whatsapp_number = fields.Char('WhatsApp Number', readonly=True)
+    om_whatsapp_user_id = fields.Char(
+        'WhatsApp User ID', readonly=True,
+        help="The id WhatsApp gives the customer for your business: the conversation of a customer whose number "
+             "WhatsApp does not share is kept by it.")
+    om_whatsapp_username = fields.Char('WhatsApp Username', readonly=True,
+                                       help="The username the customer chose in WhatsApp.")
     om_whatsapp_partner_id = fields.Many2one('res.partner', string='WhatsApp Contact', ondelete='set null', readonly=True)
     om_whatsapp_last_incoming = fields.Datetime(
         'Last Message of the Contact', readonly=True,
@@ -26,6 +32,8 @@ class DiscussChannel(models.Model):
 
     _om_whatsapp_number_unique = models.UniqueIndex(
         "(om_whatsapp_account_id, om_whatsapp_number) WHERE channel_type = 'om_whatsapp'")
+    _om_whatsapp_user_id_unique = models.UniqueIndex(
+        "(om_whatsapp_account_id, om_whatsapp_user_id) WHERE channel_type = 'om_whatsapp'")
 
     @api.model_create_multi
     def create(self, vals_list):
@@ -78,6 +86,26 @@ class DiscussChannel(models.Model):
             return None
         return self.env[self.om_whatsapp_res_model].browse(self.om_whatsapp_res_id).exists() or None
 
+    def _om_whatsapp_address(self):
+        """ Where a message of this conversation goes: the number, else the
+        WhatsApp user ID of the customer. """
+        self.ensure_one()
+        return self.om_whatsapp_number or self.om_whatsapp_user_id or False
+
+    def _om_whatsapp_label(self):
+        """ How the customer of a conversation without a contact is shown: the
+        number, else the username, else the WhatsApp user ID. """
+        self.ensure_one()
+        return self.om_whatsapp_number or (self.om_whatsapp_username and f'@{self.om_whatsapp_username}') \
+            or self.om_whatsapp_user_id or False
+
+    def _om_whatsapp_is_of(self, partner):
+        """ Whether ``partner`` is the customer of this conversation, by
+        their number or their WhatsApp user ID. """
+        self.ensure_one()
+        return bool((self.om_whatsapp_number and partner.phone_sanitized == self.om_whatsapp_number)
+                    or (self.om_whatsapp_user_id and partner.om_whatsapp_user_id == self.om_whatsapp_user_id))
+
     def _om_whatsapp_link_partner(self, partner):
         """ The contact of an unknown number is made: the conversation is with
         them now, and so are its messages. """
@@ -86,15 +114,42 @@ class DiscussChannel(models.Model):
         if self.image_128 and not partner.image_1920:
             partner.sudo().image_1920 = self.image_128
         self.write({'om_whatsapp_partner_id': partner.id, 'name': partner.name, 'image_128': False})
+        if self.om_whatsapp_user_id and not partner.om_whatsapp_user_id:
+            partner.sudo().write({'om_whatsapp_user_id': self.om_whatsapp_user_id,
+                                  'om_whatsapp_username': self.om_whatsapp_username or False})
         self._om_whatsapp_sync_members()
         self.env['mail.message'].sudo().search([
             ('model', '=', 'discuss.channel'), ('res_id', '=', self.id), ('message_type', '=', 'om_whatsapp'),
             ('author_id', '=', False),
         ]).write({'author_id': partner.id, 'email_from': False})
         self.env['mail.notification'].sudo().search([
-            ('notification_type', '=', 'om_whatsapp'), ('om_whatsapp_number', '=', self.om_whatsapp_number),
+            ('notification_type', '=', 'om_whatsapp'),
+            *self.om_whatsapp_account_id._om_whatsapp_address_domain(self.om_whatsapp_number, self.om_whatsapp_user_id),
             ('res_partner_id', '=', False), ('mail_message_id.om_whatsapp_account_id', '=', self.om_whatsapp_account_id.id),
         ]).write({'res_partner_id': partner.id})
+
+    def _om_whatsapp_merge_into(self, channel):
+        """ The customer of this conversation, known by their WhatsApp user ID
+        only, is the one of ``channel``, known by the number: its messages go
+        there, and this one, empty, is archived (not deleted: the open pages
+        may still be told about it in this transaction). """
+        self.ensure_one()
+        messages = self.env['mail.message'].sudo().search([('model', '=', 'discuss.channel'), ('res_id', '=', self.id)])
+        messages.write({'res_id': channel.id})
+        self.env['ir.attachment'].sudo().search([
+            ('res_model', '=', 'discuss.channel'), ('res_id', '=', self.id), ('id', 'in', messages.attachment_ids.ids),
+        ]).write({'res_id': channel.id})
+        last = [date for date in (self.om_whatsapp_last_incoming, channel.om_whatsapp_last_incoming) if date]
+        values = {'om_whatsapp_last_incoming': max(last, default=False)}
+        if not channel.om_whatsapp_partner_id and self.om_whatsapp_partner_id:
+            values['om_whatsapp_partner_id'] = self.om_whatsapp_partner_id.id
+        user_id, username = self.om_whatsapp_user_id, self.om_whatsapp_username
+        self.write({'active': False, 'om_whatsapp_user_id': False, 'om_whatsapp_res_model': False,
+                    'om_whatsapp_res_id': False})
+        # the user ID leaves this conversation before the other one takes it: one conversation each
+        self.flush_recordset(['om_whatsapp_user_id'])
+        channel.write(dict(values, om_whatsapp_user_id=user_id,
+                           om_whatsapp_username=channel.om_whatsapp_username or username))
 
     def om_whatsapp_action_create_contact(self):
         """ The form of a new contact with the number of this conversation;
@@ -108,8 +163,11 @@ class DiscussChannel(models.Model):
             'views': [(False, 'form')],
             'target': 'new',
             'context': {
-                'default_name': self.om_whatsapp_profile_name or self.om_whatsapp_number,
+                'default_name': self.om_whatsapp_profile_name or self.om_whatsapp_username
+                or self._om_whatsapp_address(),
                 'default_phone': self.om_whatsapp_number,
+                'default_om_whatsapp_user_id': self.om_whatsapp_user_id,
+                'default_om_whatsapp_username': self.om_whatsapp_username,
                 'om_whatsapp_channel_id': self.id,
             },
         }
@@ -138,7 +196,8 @@ class DiscussChannel(models.Model):
         account._om_whatsapp_check_user()
         account._om_whatsapp_check_free_text(self)
         message = super().message_post(message_type='om_whatsapp', om_whatsapp_account_id=account.id, **kwargs)
-        notification = message._om_whatsapp_add_notification(self.om_whatsapp_number, self.om_whatsapp_partner_id)
+        notification = message._om_whatsapp_add_notification(
+            self.om_whatsapp_number, self.om_whatsapp_partner_id, user_id=self.om_whatsapp_user_id)
         action = notification._om_whatsapp_send()
         if action:
             # posted from Discuss, which runs no action: the page of the user does
@@ -186,24 +245,48 @@ class DiscussChannel(models.Model):
 class OmWhatsappAccount(models.Model):
     _inherit = 'om.whatsapp.account'
 
-    def _om_whatsapp_get_channel(self, number, partner=False, profile_name=False):
-        """ The conversation of this account with ``number``, made on the first
-        message. Without a contact, it is named by the number, and the name
-        the person gave themselves in WhatsApp. """
+    def _om_whatsapp_get_channel(self, number, partner=False, profile_name=False, user_id=False, username=False):
+        """ The conversation of this account with ``number``, or with the
+        customer of the WhatsApp user ID ``user_id`` when WhatsApp does not
+        share their number, made on the first message. A conversation known
+        by one of them learns the other; two conversations of the same
+        customer become one. Without a contact, it is named by the number (or
+        the username, or the user ID), and the name the person gave
+        themselves in WhatsApp. """
         self.ensure_one()
-        number = self._om_whatsapp_clean_number(number)
+        number = self._om_whatsapp_clean_number(number) or False
         Channel = self.env['discuss.channel'].sudo()
-        channel = Channel.search([
-            ('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.id), ('om_whatsapp_number', '=', number),
-        ], limit=1)
+        domain = [('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.id)]
+        by_number = Channel.search([*domain, ('om_whatsapp_number', '=', number)], limit=1) if number else Channel
+        by_user_id = Channel.search([*domain, ('om_whatsapp_user_id', '=', user_id)], limit=1) if user_id else Channel
+        if by_number and by_user_id and by_number != by_user_id:
+            if by_user_id.om_whatsapp_number:
+                # the user ID moved to another number: the conversation of the number takes it
+                by_user_id.write({'om_whatsapp_user_id': False})
+                by_user_id.flush_recordset(['om_whatsapp_user_id'])
+            else:
+                by_user_id._om_whatsapp_merge_into(by_number)
+        channel = by_number or by_user_id
+        learned = {}
+        if channel and number and not channel.om_whatsapp_number:
+            learned['om_whatsapp_number'] = number
+        if channel and user_id and channel.om_whatsapp_user_id != user_id:
+            learned['om_whatsapp_user_id'] = user_id
+        if channel and username and channel.om_whatsapp_username != username:
+            learned['om_whatsapp_username'] = username
+        if learned:
+            channel.write(learned)
         profile_name = profile_name or channel.om_whatsapp_profile_name
-        name = partner.name if partner else (f'{profile_name} ({number})' if profile_name else number)
+        label = channel._om_whatsapp_label() if channel else number or (f'@{username}' if username else user_id)
+        name = partner.name if partner else (f'{profile_name} ({label})' if profile_name else label)
         if not channel:
             channel = Channel.create({
                 'name': name,
                 'channel_type': 'om_whatsapp',
                 'om_whatsapp_account_id': self.id,
                 'om_whatsapp_number': number,
+                'om_whatsapp_user_id': user_id or False,
+                'om_whatsapp_username': username or False,
                 'om_whatsapp_partner_id': partner.id if partner else False,
                 'om_whatsapp_profile_name': profile_name or False,
                 'channel_partner_ids': [Command.link(p.id) for p in self.user_ids.partner_id | (partner or self.env['res.partner'])],
@@ -217,5 +300,8 @@ class OmWhatsappAccount(models.Model):
             # a conversation with a contact keeps the name of the contact
             channel.write({'om_whatsapp_profile_name': profile_name,
                            **({} if channel.om_whatsapp_partner_id else {'name': name})})
+        elif not partner and not channel.om_whatsapp_partner_id and learned and name != channel.name:
+            # named by the number now, or by the new username
+            channel.name = name
         channel._om_whatsapp_sync_members()
         return channel

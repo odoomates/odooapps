@@ -20,4 +20,7 @@ class OmWhatsappComposer(models.TransientModel):
         if self.account_id.provider == 'meta' and not self.meta_template_ready and self.res_count == 1 and self.number:
             records = self._get_records()
             self.account_id._meta_check_window(records._phone_format(number=self.number) or self.number)
+        elif self.account_id.provider == 'meta' and not self.meta_template_ready and self.res_count == 1 \
+                and self.om_whatsapp_user_id:
+            self.account_id._meta_check_window(False, user_id=self.om_whatsapp_user_id)
         return super().action_send()

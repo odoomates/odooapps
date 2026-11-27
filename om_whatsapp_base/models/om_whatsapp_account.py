@@ -32,6 +32,9 @@ MEDIA_LABELS = {
 }
 from odoo.tools import plaintext2html
 
+# a WhatsApp user ID: the country of the user, a dot, letters and digits (US.13491208655302741918, US.ENT.1234)
+USER_ID = re.compile(r'^[A-Z]{2}\.[A-Za-z0-9.]+$')
+
 
 class OmWhatsappAccount(models.Model):
     """ A WhatsApp number Odoo sends from. The provider decides how a message
@@ -70,6 +73,7 @@ class OmWhatsappAccount(models.Model):
     can_send_files = fields.Boolean(compute='_compute_capabilities')
     can_send_batch = fields.Boolean(compute='_compute_capabilities')
     can_send_unattended = fields.Boolean(compute='_compute_capabilities')
+    can_send_user_id = fields.Boolean('Sends to WhatsApp User IDs', compute='_compute_can_send_user_id')
     message_count = fields.Integer(compute='_compute_message_count')
 
     @api.depends('provider')
@@ -81,6 +85,12 @@ class OmWhatsappAccount(models.Model):
             account.can_send_files = False
             account.can_send_batch = False
             account.can_send_unattended = False
+
+    @api.depends('provider')
+    def _compute_can_send_user_id(self):
+        """ Provider modules extend this when their provider sends to the
+        WhatsApp user ID of a customer whose number is unknown. """
+        self.can_send_user_id = False
 
     def _compute_message_count(self):
         counts = dict(self.env['mail.message']._read_group(
@@ -130,6 +140,13 @@ class OmWhatsappAccount(models.Model):
         send = getattr(self, f'_om_whatsapp_send_{self.provider}', None)
         if not send:
             raise UserError(_("The provider of %(account)s cannot send messages.", account=self.display_name))
+        if not self.can_send_user_id and (no_number := notifications.filtered(lambda n: not n.om_whatsapp_number)):
+            no_number._om_whatsapp_set_status('failed', _(
+                "%(account)s sends to phone numbers only: the contact has a WhatsApp user ID and no number.",
+                account=self.display_name))
+            notifications -= no_number
+            if not notifications:
+                return None
         return send(notifications)
 
     def _om_whatsapp_send_automated(self, notifications):
@@ -310,20 +327,45 @@ class OmWhatsappAccount(models.Model):
         typed; +32 470 55 51 23 and +32470555123 are one customer. """
         return re.sub(r'(?!^\+)[^\d]', '', number.strip()) if number else number
 
-    def _om_whatsapp_find_partner(self, number):
+    @api.model
+    def _om_whatsapp_is_user_id(self, address):
+        """ Whether ``address`` is a WhatsApp user ID rather than a number. """
+        return bool(address and USER_ID.match(address))
+
+    @api.model
+    def _om_whatsapp_address_domain(self, number, user_id=False):
+        """ The records (conversations, notifications) of the chat with
+        ``number``, or with the WhatsApp user ID ``user_id``. """
+        if number and user_id:
+            return ['|', ('om_whatsapp_number', '=', number), ('om_whatsapp_user_id', '=', user_id)]
+        if user_id:
+            return [('om_whatsapp_user_id', '=', user_id)]
+        return [('om_whatsapp_number', '=', number)]
+
+    def _om_whatsapp_find_partner(self, number, user_id=False):
+        """ The contact of ``number``, or of the WhatsApp user ID ``user_id``
+        (on the contact, or on a conversation with a contact). """
         self.ensure_one()
         Partner = self.env['res.partner'].sudo()
         domain = [('company_id', 'in', [False, self.company_id.id])]
+        if user_id:
+            partner = Partner.search([('om_whatsapp_user_id', '=', user_id), *domain], limit=1) \
+                or self.env['discuss.channel'].sudo().search([
+                    ('channel_type', '=', 'om_whatsapp'), ('om_whatsapp_account_id', '=', self.id),
+                    ('om_whatsapp_user_id', '=', user_id), ('om_whatsapp_partner_id', '!=', False),
+                ], limit=1).om_whatsapp_partner_id
+            if partner or not number:
+                return partner
         partner = Partner.search([('phone_sanitized', '=', number), *domain], limit=1)
         if partner or not number:
             return partner
         # without the phonenumbers library, a phone keeps its spaces: compared without them
         return Partner.search([('phone_mobile_search', '=', number), *domain], limit=1)
 
-    def _om_whatsapp_find_document(self, number, quoted_id=False):
-        """ The document a message of ``number`` belongs to: the one of the
-        message it quotes, else the one of the last message sent to that
-        number within the reply window. """
+    def _om_whatsapp_find_document(self, number, quoted_id=False, user_id=False):
+        """ The document a message of ``number`` (or of the WhatsApp user ID
+        ``user_id``) belongs to: the one of the message it quotes, else the
+        one of the last message sent to them within the reply window. """
         self.ensure_one()
         message = self.env['mail.message']
         if quoted_id:
@@ -334,7 +376,7 @@ class OmWhatsappAccount(models.Model):
         if not message and self.reply_days > 0:
             message = self.env['mail.notification'].sudo().search([
                 ('notification_type', '=', 'om_whatsapp'),
-                ('om_whatsapp_number', '=', number),
+                *self._om_whatsapp_address_domain(number, user_id),
                 ('notification_status', 'in', ('pending', 'sent')),
                 ('mail_message_id.om_whatsapp_account_id', '=', self.id),
                 ('mail_message_id.model', 'not in', [False, 'discuss.channel']),
@@ -345,13 +387,13 @@ class OmWhatsappAccount(models.Model):
         document = self.env[message.model].sudo().browse(message.res_id).exists()
         return document if document and hasattr(document, 'message_post') else None
 
-    def _om_whatsapp_find_sent(self, number, body, whatsapp_id):
+    def _om_whatsapp_find_sent(self, number, body, whatsapp_id, user_id=False):
         """ A message of the phone may be one Odoo just sent, before the
         provider gave its id: give it the id instead of logging it twice. """
         self.ensure_one()
         notifications = self.env['mail.notification'].sudo().search([
             ('notification_type', '=', 'om_whatsapp'),
-            ('om_whatsapp_number', '=', number),
+            *self._om_whatsapp_address_domain(number, user_id),
             # process: a browser is sending it, and has not told its id yet
             ('notification_status', 'in', ('ready', 'process', 'pending', 'sent')),
             ('mail_message_id.om_whatsapp_account_id', '=', self.id),
@@ -365,15 +407,16 @@ class OmWhatsappAccount(models.Model):
         sent._om_whatsapp_set_status('sent')
         return sent.mail_message_id
 
-    def _om_whatsapp_accepts(self, number, quoted_id=False):
-        """ Whether a message of ``number`` is kept: a contact, a chat about a
-        document, or any number when the account keeps the unknown ones. """
+    def _om_whatsapp_accepts(self, number, quoted_id=False, user_id=False):
+        """ Whether a message of ``number`` (or of the WhatsApp user ID
+        ``user_id``) is kept: a contact, a chat about a document, or anyone
+        when the account keeps the unknown ones. """
         self.ensure_one()
-        return bool(self.receive_unknown or self._om_whatsapp_find_partner(number)
-                    or self._om_whatsapp_find_document(number, quoted_id))
+        return bool(self.receive_unknown or self._om_whatsapp_find_partner(number, user_id=user_id)
+                    or self._om_whatsapp_find_document(number, quoted_id, user_id=user_id))
 
     def _om_whatsapp_receive(self, number, body='', whatsapp_id=False, attachments=None, quoted_id=False, from_me=False,
-                             profile_name=False, voice=False):
+                             profile_name=False, voice=False, user_id=False, username=False):
         """ Record a message of a chat of this account: received from
         ``number``, or sent to it from the phone itself when ``from_me``. It
         goes to the WhatsApp conversation with that number, as an answer to
@@ -382,23 +425,41 @@ class OmWhatsappAccount(models.Model):
         ``attachments`` is a list of (filename, content); ``voice`` makes them
         a voice message. ``profile_name`` is the name the contact gave
         themselves in WhatsApp. A message seen twice is kept once.
+        ``user_id`` is the WhatsApp user ID of the customer for this business
+        and ``username`` their WhatsApp username, when the provider gives
+        them; ``number`` may then be empty, when WhatsApp does not share it.
+        A provider may give both in the context instead
+        (``om_whatsapp_user_id``, ``om_whatsapp_username``), which keeps the
+        modules that extend this method with fewer arguments working.
 
         :return: the mail.message of the conversation, or False when skipped
         """
         self.ensure_one()
+        user_id = user_id or self.env.context.get('om_whatsapp_user_id') or False
+        username = username or self.env.context.get('om_whatsapp_username') or False
         Message = self.env['mail.message'].sudo()
         if whatsapp_id:
             existing = Message.search([('om_whatsapp_account_id', '=', self.id), ('om_whatsapp_id', '=', whatsapp_id)], limit=1)
             if existing:
                 return existing
-        number = self._om_whatsapp_format_number(number)
-        if from_me and (sent := self._om_whatsapp_find_sent(number, body, whatsapp_id)):
+        number = self._om_whatsapp_format_number(number) if number else False
+        if not number and not user_id:
+            return False
+        if from_me and (sent := self._om_whatsapp_find_sent(number, body, whatsapp_id, user_id=user_id)):
             return sent
-        partner = self._om_whatsapp_find_partner(number)
-        document = self._om_whatsapp_find_document(number, quoted_id)
+        partner = self._om_whatsapp_find_partner(number, user_id=user_id)
+        document = self._om_whatsapp_find_document(number, quoted_id, user_id=user_id)
         if not document and not partner and not self.receive_unknown:
             return False
-        channel = self._om_whatsapp_get_channel(number, partner, profile_name=profile_name)
+        if partner and user_id and not partner.om_whatsapp_user_id:
+            # the contact found by the number: their user ID finds them when the number is not shared
+            partner.write({'om_whatsapp_user_id': user_id,
+                           'om_whatsapp_username': username or partner.om_whatsapp_username})
+        elif partner and username and partner.om_whatsapp_user_id == user_id \
+                and partner.om_whatsapp_username != username:
+            partner.om_whatsapp_username = username
+        channel = self._om_whatsapp_get_channel(number, partner, profile_name=profile_name, user_id=user_id,
+                                                username=username)
         channel._om_whatsapp_set_document(document)
         message = False
         for target in (document, channel):
@@ -411,7 +472,8 @@ class OmWhatsappAccount(models.Model):
                     ('model', '=', 'discuss.channel'), ('res_id', '=', channel.id), ('om_whatsapp_id', '=', quoted_id),
                 ], limit=1).id or False
             if from_me:
-                posted = target._message_om_whatsapp(self, body, number, partner=partner, status='pending', **post_values)
+                posted = target._message_om_whatsapp(self, body, number, partner=partner, status='pending',
+                                                     om_whatsapp_user_id=user_id, **post_values)
             else:
                 posted = target.message_post(
                     body=plaintext2html(body) if body else '',
@@ -429,7 +491,7 @@ class OmWhatsappAccount(models.Model):
             channel.om_whatsapp_last_incoming = fields.Datetime.now()
         return message
 
-    def _om_whatsapp_receive_reaction(self, number, whatsapp_id, emoji, from_me=False):
+    def _om_whatsapp_receive_reaction(self, number, whatsapp_id, emoji, from_me=False, user_id=False):
         """ A reaction of the contact (or of the user, from the phone) to a
         message: shown on it in Odoo, on the document and in the conversation.
         One reaction per person, as in WhatsApp; no emoji takes it back. """
@@ -441,8 +503,8 @@ class OmWhatsappAccount(models.Model):
         if from_me:
             partner = self.env.user.partner_id
         else:
-            number = self._om_whatsapp_format_number(number)
-            partner = self._om_whatsapp_find_partner(number)
+            number = self._om_whatsapp_format_number(number) if number else False
+            partner = self._om_whatsapp_find_partner(number, user_id=user_id)
         if not partner:
             return False
         Reaction = self.env['mail.message.reaction'].sudo()

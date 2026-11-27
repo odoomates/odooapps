@@ -47,6 +47,12 @@ Features
 * A number Odoo does not know, neither a contact nor a chat about a document, opens a conversation
   named by its number and WhatsApp name, where Create Contact makes the contact with its number. With
   Keep Chats of Unknown Numbers unchecked on the account, its messages are not kept.
+* WhatsApp user IDs and usernames, with the providers that give them (Meta): a customer whose number
+  WhatsApp does not share has a conversation of their own, named by their username, and the contact
+  made from it keeps their WhatsApp user ID and username, shown under the phone of the contact and
+  found by the search WhatsApp. The messages of a contact are matched by that ID, and by the number;
+  a message to a contact without a number goes to the ID with the providers that can (Meta). The ID
+  is shown, and found, on the WhatsApp messages too.
 * Saved replies (canned responses) in the conversations: type ``::``.
 * Send WhatsApp from automation rules, contextual actions and scheduled actions: a server action of
   type Send WhatsApp sends a template, with its report as a PDF, for example when an order is
@@ -116,7 +122,10 @@ A provider module adds its key to the ``provider`` field of ``om.whatsapp.accoun
 ``_om_whatsapp_send_<key>(notifications)``. It moves the notifications with
 ``_om_whatsapp_set_status()``, records what comes in with ``account._om_whatsapp_receive()`` and
 ``account._om_whatsapp_update_status()``, and extends ``_compute_capabilities`` when it sends files
-or batches.
+or batches. A provider that knows the WhatsApp user ID of the customer passes ``user_id`` and
+``username`` to ``_om_whatsapp_receive()`` (the number may then be empty), or puts them in the
+context as ``om_whatsapp_user_id`` and ``om_whatsapp_username``; one that sends to it sets
+``can_send_user_id`` and reads ``om_whatsapp_user_id`` on the notifications without a number.
 
 Credits
 =======

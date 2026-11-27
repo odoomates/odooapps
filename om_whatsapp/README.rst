@@ -18,6 +18,14 @@ Features
 * Text, documents, pictures, videos and audio, with the text as the caption of the first file.
 * The webhook, signed by Meta with the App Secret: messages (text, files, locations, buttons), the
   sent, delivered, read and failed statuses with the reason of Meta, and reactions.
+* WhatsApp usernames: Meta gives each customer a WhatsApp user ID for your business (``US.1234...``),
+  their username when they chose one, and their number only when it may share it. A customer known by
+  the user ID alone gets a conversation of their own, named by their username; their contact keeps
+  the user ID and username (shown under the phone, and found by the search WhatsApp), and is matched
+  by it, still by the number when there is one. When the number comes later, it joins the same
+  conversation, and a conversation of the number made before takes the messages of the user ID.
+  Replies and templates go to the number when there is one, else to the user ID. A new user ID given
+  by WhatsApp (system message) replaces the old one on the conversation and the contact.
 * Automation rules and scheduled actions queue their messages; the scheduled action WhatsApp: send
   the queue of Meta sends them, so that confirming an order never waits for Meta.
 * The 24 hours of Meta: free text, from the composer or a conversation of Discuss, within 24 hours of

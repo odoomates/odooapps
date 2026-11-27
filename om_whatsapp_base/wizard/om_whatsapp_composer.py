@@ -29,11 +29,15 @@ class OmWhatsappComposer(models.TransientModel):
         'om.whatsapp.account', required=True, default=lambda self: self.env['om.whatsapp.account']._get_default_account(),
         domain="[('user_ids', 'in', uid)]")
     can_send_files = fields.Boolean(related='account_id.can_send_files')
+    can_send_user_id = fields.Boolean(related='account_id.can_send_user_id')
     template_id = fields.Many2one(
         'om.whatsapp.template', string='Template',
         domain="[('model', '=', res_model), ('account_id', 'in', [False, account_id])]")
     partner_id = fields.Many2one('res.partner', compute='_compute_recipient', store=True, readonly=False)
     number = fields.Char(compute='_compute_recipient', store=True, readonly=False)
+    om_whatsapp_user_id = fields.Char(
+        'WhatsApp User ID', compute='_compute_recipient', store=True,
+        help="The contact has no number: the message goes to the id WhatsApp gives them for your business.")
     body = fields.Text('Message', compute='_compute_body', store=True, readonly=False)
     attach_report = fields.Boolean(compute='_compute_attach_report', store=True, readonly=False)
     attachment_ids = fields.Many2many('ir.attachment', string='Attachments')
@@ -58,17 +62,20 @@ class OmWhatsappComposer(models.TransientModel):
             if len(records) != 1:
                 composer.partner_id = False
                 composer.number = False
+                composer.om_whatsapp_user_id = False
                 continue
             info = records._phone_get_recipients_info()[records.id]
             composer.partner_id = info['partner'][:1] if info['partner'] else False
             composer.number = self.env.context.get('om_whatsapp_number') or info['sanitized'] or info['number']
+            composer.om_whatsapp_user_id = composer.partner_id.sudo().om_whatsapp_user_id or False
 
-    @api.depends('res_model', 'res_ids')
+    @api.depends('res_model', 'res_ids', 'account_id')
     def _compute_recipient_counts(self):
         for composer in self:
             records = composer._get_records()
             info = records._phone_get_recipients_info() if len(records) > 1 else {}
-            composer.recipient_valid_count = len([1 for values in info.values() if values['sanitized']])
+            composer.recipient_valid_count = len([1 for values in info.values() if values['sanitized'] or (
+                composer.can_send_user_id and composer._get_user_id(values['partner']))])
             composer.recipient_invalid_count = len(info) - composer.recipient_valid_count
 
     @api.depends('template_id', 'res_ids')
@@ -87,6 +94,11 @@ class OmWhatsappComposer(models.TransientModel):
     def _compute_attach_report(self):
         for composer in self:
             composer.attach_report = bool(composer.template_id.report_id)
+
+    @api.model
+    def _get_user_id(self, partners):
+        """ The WhatsApp user ID of the contact, for one without a number. """
+        return partners[:1].sudo().om_whatsapp_user_id or False if partners else False
 
     def _get_res_ids(self):
         self.ensure_one()
@@ -154,7 +166,10 @@ class OmWhatsappComposer(models.TransientModel):
                 raise UserError(_("%(record)s has no chatter and no contact to log the message on.", record=record.display_name))
             failure = {}
             attachment_ids = []
-            if not values['sanitized']:
+            # without a number, the WhatsApp user ID of the contact, for a provider that sends to it
+            user_id = not values['sanitized'] and self.can_send_user_id \
+                and (self.om_whatsapp_user_id if single else self._get_user_id(partner))
+            if not values['sanitized'] and not user_id:
                 failure = {'failure_type': 'om_whatsapp_number', 'failure_reason': _("No valid number")}
             elif values['sanitized'] in opted_out:
                 failure = {'failure_type': 'om_whatsapp_optout', 'failure_reason': _("Number is opted out")}
@@ -163,7 +178,7 @@ class OmWhatsappComposer(models.TransientModel):
             messages |= document._message_om_whatsapp(
                 self.account_id, bodies[record.id], values['sanitized'] or values['number'] or False,
                 partner=partner, attachment_ids=attachment_ids, om_whatsapp_template_id=self.template_id.id or False,
-                **failure)
+                om_whatsapp_user_id=user_id or False, **failure)
         return messages
 
     def _prepare_attachments(self, record, single):
