@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_event_registration" model="om.whatsapp.template">
+        <field name="name">Event: Registration</field>
+        <field name="model_id" ref="event.model_event_registration"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body">Hello {{ object.name or object.partner_id.name }}, your registration to *{{ object.event_id.name }}* is confirmed. It starts on {{ format_datetime(object.event_begin_date, tz=object.event_id.date_tz, dt_format='medium') }}. {{ object.om_whatsapp_event_place() }} See you there!</field>
+    </record>
+
+    <record id="om_whatsapp_template_event_reminder" model="om.whatsapp.template">
+        <field name="name">Event: Reminder</field>
+        <field name="model_id" ref="event.model_event_registration"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body">Hello {{ object.name or object.partner_id.name }}, a reminder: *{{ object.event_id.name }}* starts {{ object.event_date_range }}. {{ object.om_whatsapp_event_place() }} We look forward to seeing you!</field>
+    </record>
+
+</odoo>
