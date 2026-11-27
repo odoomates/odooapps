@@ -22,6 +22,9 @@ class TestFieldGuard(HttpCase):
             # reading a contact in full computes the accounting fields of Odoo 20 without a group of their own
             # (days_sales_outstanding, supplier_invoice_count), which need to read the journal entries
             groups += ',account.group_account_readonly'
+        if cls.env.ref('fleet.fleet_group_user', raise_if_not_found=False):
+            # same with the driver history count of Fleet, which reads the assignation logs of the vehicles
+            groups += ',fleet.fleet_group_user'
         cls.user = new_test_user(cls.env, 'om_access_guard_user', groups=groups, password=cls.password)
         Fields = cls.env['ir.model.fields']
         partner_model = cls.env['ir.model']._get('res.partner')
