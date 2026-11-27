@@ -1,6 +1,6 @@
 {
     'name': 'WhatsApp Connector Meta',
-    'version': '1.0',
+    'version': '1.0.1',
     'author': 'Odoo Mates',
     'category': 'Marketing',
     'description': 'Send and receive WhatsApp messages in Odoo through the official WhatsApp Cloud API of Meta: '
