@@ -1,6 +1,6 @@
 {
     'name': 'Rental - Planning',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Sales/Sales',
     'summary': 'Rent identified units from the planning: availability by units (equipment, vehicles, '
                'rooms), unit booked from pickup to return with preparation time, next free date, '
