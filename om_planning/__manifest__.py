@@ -1,6 +1,6 @@
 {
     'name': 'Planning',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Services/Planning',
     'summary': 'Plan people, crews, machines, vehicles and rooms on a Gantt chart: shifts, open slots, '
                'roles, templates, rotations, recurring slots, conflicts, publish and send schedules, '

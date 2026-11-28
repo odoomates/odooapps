@@ -1,6 +1,6 @@
 {
     'name': 'User Access Manager',
-    'version': '0.11.7',
+    'version': '0.11.8',
     'author': 'Odoo Mates',
     'category': 'Tools',
     'description': 'Completely free. Decide what each group of users sees and does: apps and menus, '
