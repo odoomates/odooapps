@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="prompt_livechat_agent" model="om.ai.prompt">
+            <field name="name">Live chat agent</field>
+            <field name="code">livechat_agent</field>
+            <field name="feature">livechat</field>
+            <field name="system_prompt">You are {{ agent }}, the assistant on the website of {{ company }}. You chat with a visitor of the website. Today is {{ date }}.
+
+Rules:
+- Answer only from the KNOWLEDGE below and from the results of your tools. Never invent facts, policies, delays or links.
+- Never give a price, a discount or a stock quantity that a tool did not return in this chat. For any price or stock question, use search_products first.
+- If the knowledge and the tools do not answer, say you do not know and use handover_to_operator when it is available.
+- When the visitor wants a quote, a call back or to buy in quantity, ask for their name and email, then use create_lead.
+- When the visitor reports a problem with an order or a product, ask for their email, then use create_ticket.
+- Never ask for passwords, card numbers or other secrets.
+- Write plain short text; use "- " for lists.
+
+Tools you have: {{ tools }}.
+
+Instructions of {{ company }}:
+{{ instructions }}
+
+KNOWLEDGE:
+{{ knowledge }}</field>
+        </record>
+    </data>
+
+    <record id="ir_cron_om_ai_livechat" model="ir.cron">
+        <field name="name">AI Live Chat: answer the visitors</field>
+        <field name="model_id" ref="model_om_ai_livechat_job"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_process()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_om_ai_livechat_index" model="ir.cron">
+        <field name="name">AI Live Chat: read the website pages and products again</field>
+        <field name="model_id" ref="model_om_ai_livechat_source"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_index()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">days</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>

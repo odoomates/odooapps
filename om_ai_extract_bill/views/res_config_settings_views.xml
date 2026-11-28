@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_om_ai_bill" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.om_ai_bill</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_account_bill_ocr.res_config_settings_view_form_bill_ocr"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='om_bill_ocr_mode']/.." position="after">
+                <div class="row" invisible="om_bill_ocr_mode == 'off'">
+                    <label for="om_bill_ocr_engine" string="Engine" class="col-lg-4 o_light_label"/>
+                    <field name="om_bill_ocr_engine"/>
+                </div>
+                <div class="mt8" invisible="om_bill_ocr_mode == 'off' or om_bill_ocr_engine != 'ai'">
+                    <field name="om_bill_ai_fallback" class="w-auto"/>
+                    <label for="om_bill_ai_fallback" class="o_light_label"/>
+                </div>
+                <div class="text-muted mt8" invisible="om_bill_ocr_mode == 'off' or om_bill_ocr_engine != 'ai'">
+                    The bills are sent to the chat model of the AI settings, and the scans and photos to its vision
+                    model. Usage is logged under "extract".
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

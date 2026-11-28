@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="hr_applicant_view_form_om_ai" model="ir.ui.view">
+        <field name="name">hr.applicant.form.om_ai</field>
+        <field name="model">hr.applicant</field>
+        <field name="inherit_id" ref="hr_recruitment.hr_applicant_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='archive_applicant']" position="before">
+                <button name="action_om_ai_read_cv" type="object" string="Read CV with AI"
+                        invisible="not active or attachment_number == 0"/>
+            </xpath>
+            <xpath expr="//sheet" position="before">
+                <field name="om_ai_read_state" invisible="1"/>
+                <field name="attachment_number" invisible="1"/>
+                <div class="alert alert-warning mb-0" role="alert" invisible="om_ai_read_state != 'to_check'">
+                    <strong>Read from the CV by the AI, to check:</strong>
+                    <field name="om_ai_read_notes" class="d-block" style="white-space: pre-line;"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

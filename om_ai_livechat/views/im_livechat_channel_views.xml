@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="im_livechat_channel_view_form_om_ai" model="ir.ui.view">
+        <field name="name">im_livechat.channel.form.om_ai</field>
+        <field name="model">im_livechat.channel</field>
+        <field name="inherit_id" ref="im_livechat.im_livechat_channel_view_form"/>
+        <field name="arch" type="xml">
+            <page name="options" position="after">
+                <page string="AI Agent" name="om_ai_agent" groups="im_livechat.im_livechat_group_manager">
+                    <group>
+                        <group>
+                            <field name="om_ai_agent_id"/>
+                            <field name="om_ai_agent_mode" invisible="not om_ai_agent_id"/>
+                        </group>
+                        <group>
+                            <div colspan="2" class="text-muted">
+                                The AI agent answers the visitors of this channel from its knowledge. Operators of
+                                the channel take over when the visitor asks for a person or the agent is not sure.
+                            </div>
+                        </group>
+                    </group>
+                </page>
+            </page>
+        </field>
+    </record>
+
+    <record id="discuss_channel_view_search_om_ai" model="ir.ui.view">
+        <field name="name">discuss.channel.search.om_ai</field>
+        <field name="model">discuss.channel</field>
+        <field name="inherit_id" ref="im_livechat.discuss_channel_view_search"/>
+        <field name="arch" type="xml">
+            <xpath expr="//search" position="inside">
+                <field name="om_ai_agent_id"/>
+                <filter name="om_ai_agent" string="With AI Agent" domain="[('om_ai_agent_id', '!=', False)]"/>
+                <filter name="om_ai_handed_over" string="Handed Over by AI" domain="[('om_ai_handed_over', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

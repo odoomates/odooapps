@@ -18,6 +18,9 @@ class TestFieldGuard(HttpCase):
         super().setUpClass()
         cls.password = 'om-access-manager-guard-pw'
         groups = 'base.group_user,base.group_partner_manager'
+        if cls.env.ref('im_livechat.im_livechat_group_user', raise_if_not_found=False):
+            # reading a contact in full counts its live chats, which reads the live chat member history
+            groups += ',im_livechat.im_livechat_group_user'
         if cls.env.ref('account.group_account_readonly', raise_if_not_found=False):
             # reading a contact in full computes the accounting fields of Odoo 20 without a group of their own
             # (days_sales_outstanding, supplier_invoice_count), which need to read the journal entries

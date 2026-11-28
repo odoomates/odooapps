@@ -234,8 +234,11 @@ class AccountMove(models.Model):
             return default
         return matching[:1]
 
-    def _om_ocr_fill(self, text, source):
-        """ Fill the bill with what its text says, and say what is to be checked. """
+    def _om_ocr_fill(self, text, source, parsed=None):
+        """ Fill the bill with what its text says, and say what is to be checked.
+
+        :param parsed: the fields of the bill read by another engine, in the format of
+            ``bill_parser.parse_bill``; the text is then only used to recognize the vendor """
         self.ensure_one()
         own_vats, own_ibans, own_domains = self._om_ocr_own_identifiers()
         preliminary = {
@@ -250,7 +253,7 @@ class AccountMove(models.Model):
             profile = profile._for_partner(partner, self.company_id)
         date_order = self._om_ocr_date_order(profile)
         currencies = self.env['res.currency'].search([])
-        result = bill_parser.parse_bill(
+        result = parsed or bill_parser.parse_bill(
             text, date_order=date_order, decimals=self.company_id.currency_id.decimal_places,
             anchors=profile._anchors() if profile else None, known_currencies=set(currencies.mapped('name')))
         to_check = []
@@ -371,6 +374,11 @@ class AccountMove(models.Model):
         })
         self._om_ocr_message(found_by, source, to_check, line_mode)
 
+    def _om_ocr_source_text(self, source):
+        if source == 'text':
+            return self.env._("The bill was read from its text.")
+        return self.env._("The bill was read from its scan, by OCR.")
+
     def _om_ocr_message(self, found_by, source, to_check, line_mode):
         how = {
             'vat': self.env._("its tax number"),
@@ -379,8 +387,7 @@ class AccountMove(models.Model):
             'email': self.env._("its email"),
             'name': self.env._("its name"),
         }
-        parts = [self.env._("The bill was read from its text.") if source == 'text'
-                 else self.env._("The bill was read from its scan, by OCR.")]
+        parts = [self._om_ocr_source_text(source)]
         if found_by:
             parts.append(self.env._("The vendor was recognized by %(how)s.", how=how[found_by]))
         parts.append(self.env._("Its lines were read from its table.") if line_mode == 'lines'
@@ -432,6 +439,27 @@ class AccountMove(models.Model):
                 _logger.warning("Bill recognition could not learn from %s", move.display_name, exc_info=True)
         return posted
 
+    def _om_ocr_learn_labels(self, text, data):
+        """ The labels printed before the reference, the dates and the total, and the order of the dates. """
+        values = {}
+        if self.ref and (label := bill_parser.label_before(text, [self.ref])):
+            values['anchor_ref'] = label
+        for field_name in ('invoice_date', 'invoice_date_due'):
+            value = self[field_name]
+            if not value:
+                continue
+            positions = bill_parser.date_positions(text, value)
+            if positions:
+                position, order = positions[0]
+                if label := bill_parser.label_at(text, position):
+                    values[f'anchor_{field_name}'] = label
+                if field_name == 'invoice_date' and order and data.get('ambiguous_dates'):
+                    values['date_order'] = order
+        positions = bill_parser.amount_positions(text, self.amount_total, self.currency_id.decimal_places)
+        if positions and (label := bill_parser.label_at(text, positions[-1])):
+            values['anchor_amount_total'] = label
+        return values
+
     def _om_ocr_learn(self):
         """ Learn from a read bill, as it was posted after the accountant's corrections: the labels the
         vendor prints before its fields, how it writes its dates, and the account and the taxes of its
@@ -455,22 +483,9 @@ class AccountMove(models.Model):
             if data.get('line_mode') == 'lines':
                 values['line_mode'] = 'lines' if len(lines) > 1 else 'single'
 
-        if self.ref and (label := bill_parser.label_before(text, [self.ref])):
-            values['anchor_ref'] = label
-        for field_name in ('invoice_date', 'invoice_date_due'):
-            value = self[field_name]
-            if not value:
-                continue
-            positions = bill_parser.date_positions(text, value)
-            if positions:
-                position, order = positions[0]
-                if label := bill_parser.label_at(text, position):
-                    values[f'anchor_{field_name}'] = label
-                if field_name == 'invoice_date' and order and data.get('ambiguous_dates'):
-                    values['date_order'] = order
-        positions = bill_parser.amount_positions(text, self.amount_total, self.currency_id.decimal_places)
-        if positions and (label := bill_parser.label_at(text, positions[-1])):
-            values['anchor_amount_total'] = label
+        # the labels the vendor prints, only from the real text of the bill
+        if data.get('learn_labels', True):
+            values.update(self._om_ocr_learn_labels(text, data))
 
         profile.write(values)
         keys = data.get('vat_numbers', []) + data.get('ibans', []) + data.get('email_domains', [])

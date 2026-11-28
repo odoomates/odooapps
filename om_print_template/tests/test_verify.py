@@ -8,7 +8,7 @@ class TestVerify(HttpCase):
         partner = self.env['res.partner'].create({'name': 'Verified Holder'})
         template = self.env['print.template'].create({
             'name': 'Confirmation', 'model_id': self.env['ir.model']._get_id('res.partner'),
-            'body_html': '<p>Hello</p>', 'show_qr': True})
+            'body_html': '<p>Printed body 7c41</p>', 'show_qr': True})
         issue = self.env['print.issue']._create_from_template(template, partner.ids)
         issue.action_issue()
         url = '/print/verify/%s' % issue.access_token
@@ -17,7 +17,7 @@ class TestVerify(HttpCase):
         self.assertIn('Genuine', page)
         self.assertIn('Verified Holder', page)
         self.assertIn(issue.name, page)
-        self.assertNotIn('Hello', page, 'the text of the print is not shown')
+        self.assertNotIn('Printed body 7c41', page, 'the text of the print is not shown')
 
         issue.action_cancel()
         self.assertIn('Cancelled', self.url_open(url).text)

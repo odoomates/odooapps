@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_extract_statement_view_form" model="ir.ui.view">
+        <field name="name">om.ai.extract.statement.form</field>
+        <field name="model">om.ai.extract.statement</field>
+        <field name="arch" type="xml">
+            <form>
+                <field name="state" invisible="1"/>
+                <field name="currency_id" invisible="1"/>
+                <field name="company_id" invisible="1"/>
+                <div invisible="state != 'upload'">
+                    <p class="text-muted">
+                        Upload a bank statement as a PDF or a photo. The AI reads its transactions, and you check them
+                        before the statement lines are created.
+                    </p>
+                    <group>
+                        <field name="journal_id" options="{'no_create': True}"/>
+                        <field name="file" filename="filename" required="state == 'upload'"/>
+                        <field name="filename" invisible="1"/>
+                    </group>
+                </div>
+                <div invisible="state != 'review'">
+                    <div class="alert alert-warning" role="alert" invisible="not checks">
+                        <strong>To check before creating:</strong>
+                        <field name="checks" class="d-block" style="white-space: pre-line;"/>
+                    </div>
+                    <div class="alert alert-success" role="status" invisible="checks">
+                        The balances and the transactions add up.
+                    </div>
+                    <group>
+                        <group>
+                            <field name="journal_id" readonly="1"/>
+                            <field name="name"/>
+                            <field name="date"/>
+                            <field name="confidence" widget="percentage"/>
+                        </group>
+                        <group>
+                            <field name="balance_start"/>
+                            <field name="balance_end_real"/>
+                            <field name="balance_end"/>
+                            <field name="read_currency" invisible="not read_currency"/>
+                            <field name="read_account" invisible="not read_account"/>
+                        </group>
+                    </group>
+                    <field name="line_ids">
+                        <list editable="bottom" decoration-warning="flag">
+                            <field name="sequence" widget="handle"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="date"/>
+                            <field name="payment_ref"/>
+                            <field name="partner_name" optional="show"/>
+                            <field name="partner_id" optional="show"/>
+                            <field name="ref" optional="hide"/>
+                            <field name="amount" sum="Total"/>
+                            <field name="flag" optional="show"/>
+                        </list>
+                    </field>
+                </div>
+                <footer>
+                    <button name="action_read" type="object" string="Read with AI" class="btn-primary"
+                            invisible="state != 'upload'"/>
+                    <button name="action_create" type="object" string="Create Statement" class="btn-primary"
+                            invisible="state != 'review'"/>
+                    <button name="action_back" type="object" string="Read Another File" invisible="state != 'review'"/>
+                    <button special="cancel" string="Cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_om_ai_extract_statement" model="ir.actions.act_window">
+        <field name="name">Read a Bank Statement with AI</field>
+        <field name="res_model">om.ai.extract.statement</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <menuitem id="menu_om_ai_extract_statement" name="Read Statement with AI"
+              parent="account.account_transactions_menu" action="action_om_ai_extract_statement"
+              groups="account.group_account_invoice" sequence="20"/>
+
+    <record id="view_account_journal_kanban_om_ai" model="ir.ui.view">
+        <field name="name">account.journal.dashboard.kanban.om_ai</field>
+        <field name="model">account.journal</field>
+        <field name="inherit_id" ref="account.account_journal_dashboard_kanban_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@id='dashboard_bank_cash_left']" position="inside">
+                <div class="mt-1" groups="account.group_account_invoice">
+                    <a type="action" name="%(om_ai_extract.action_om_ai_extract_statement)d"
+                       context="{'default_journal_id': id}" class="small">Read a statement with AI</a>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

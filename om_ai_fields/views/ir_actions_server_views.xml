@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_server_action_form_om_ai_fields" model="ir.ui.view">
+        <field name="name">ir.actions.server.form.om_ai_fields</field>
+        <field name="model">ir.actions.server</field>
+        <field name="inherit_id" ref="base.view_server_action_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//t[@name='action_content']//notebook" position="before">
+                <div invisible="state != 'om_ai_fields'">
+                    <div class="alert alert-info" role="status" invisible="not om_ai_field_def_id">
+                        This action belongs to the AI field <field name="om_ai_field_def_id" class="oe_inline"/>:
+                        change its prompt and fields there.
+                    </div>
+                    <group invisible="om_ai_field_def_id">
+                        <field name="om_ai_target_field_ids" widget="many2many_tags" options="{'no_create': True}"
+                               required="state == 'om_ai_fields' and not om_ai_field_def_id"/>
+                        <field name="om_ai_prompt" required="state == 'om_ai_fields' and not om_ai_field_def_id"
+                               placeholder="Classify the lead {{ name }} from {{ partner_name }}: {{ description }}"/>
+                        <field name="om_ai_instructions" placeholder="e.g. Use only the given text."/>
+                        <field name="om_ai_purpose"/>
+                        <field name="om_ai_model_id" options="{'no_create': True}"/>
+                        <field name="om_ai_overwrite"/>
+                    </group>
+                    <div class="text-muted" invisible="om_ai_field_def_id">
+                        Record values as {{ field }} or {{ field.sub_field }}. In automation rules the fields are
+                        filled in the background, so saving never waits for the AI. Usage is logged under "fields".
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>
