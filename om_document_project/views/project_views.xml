@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="edit_project" model="ir.ui.view">
+        <field name="name">project.project.form.om.documents</field>
+        <field name="model">project.project</field>
+        <field name="inherit_id" ref="project.edit_project"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_om_documents" type="object" class="oe_stat_button" icon="folder"
+                        groups="om_document.group_documents_user" invisible="not use_om_documents">
+                    <field name="om_documents_count" widget="statinfo" string="Documents"/>
+                </button>
+                <button name="action_share_om_documents" type="object" class="oe_stat_button" icon="share"
+                        string="Share Documents" groups="om_document.group_documents_user"
+                        invisible="not use_om_documents or not partner_id"/>
+            </div>
+            <xpath expr="//page[@name='settings']/group/group[1]" position="inside">
+                <field name="use_om_documents" groups="om_document.group_documents_user"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="view_task_form2" model="ir.ui.view">
+        <field name="name">project.task.form.om.documents</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="project.view_task_form2"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_open_om_documents" type="object" class="oe_stat_button" icon="folder"
+                        groups="om_document.group_documents_user" invisible="not om_documents_count">
+                    <field name="om_documents_count" widget="statinfo" string="Documents"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>
