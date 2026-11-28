@@ -31,15 +31,118 @@ const EXACT = 0;
 const PREFIX = 1;
 const WORD = 2;
 const INSIDE = 3;
+const SYNONYM = 3.5;
 const FUZZY = 4;
+const TYPO = 4.5;
 const MISS = Infinity;
+
+/**
+ * Words people type for a menu that Odoo names otherwise. Each one also finds the menus whose name
+ * matches one of the terms listed: "bill" finds Vendor Bills, "salary" finds Payroll.
+ */
+export const SYNONYMS = {
+    bill: ["vendor bills", "bills"],
+    bills: ["vendor bills"],
+    salary: ["payroll", "payslips"],
+    salaries: ["payroll", "payslips"],
+    payslip: ["payslips", "payroll"],
+    wage: ["payroll", "contracts"],
+    stock: ["inventory"],
+    warehouse: ["inventory", "warehouses"],
+    customer: ["customers", "contacts"],
+    client: ["customers", "contacts"],
+    supplier: ["vendors"],
+    vendor: ["vendors", "vendor bills"],
+    quote: ["quotations"],
+    estimate: ["quotations"],
+    leave: ["time off"],
+    leaves: ["time off"],
+    holiday: ["time off"],
+    vacation: ["time off"],
+    staff: ["employees"],
+    employee: ["employees"],
+    po: ["purchase orders", "purchase"],
+    so: ["sales orders", "orders"],
+    delivery: ["deliveries", "delivery orders"],
+    shipment: ["deliveries", "transfers"],
+    ticket: ["tickets", "helpdesk"],
+    ledger: ["general ledger"],
+    gst: ["taxes"],
+    vat: ["taxes"],
+    permission: ["access", "groups"],
+    rights: ["access", "groups"],
+};
+
+/**
+ * The edit distance of two words, swaps of two letters counting as one edit. It gives up as soon as
+ * it is sure to go over `max`, which is all the caller needs to know.
+ */
+function editDistance(a, b, max) {
+    if (Math.abs(a.length - b.length) > max) {
+        return max + 1;
+    }
+    const rows = [Array.from({ length: b.length + 1 }, (_, j) => j)];
+    for (let i = 1; i <= a.length; i++) {
+        rows.push([i]);
+        let best = i;
+        for (let j = 1; j <= b.length; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            let value = Math.min(rows[i - 1][j] + 1, rows[i][j - 1] + 1, rows[i - 1][j - 1] + cost);
+            if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+                value = Math.min(value, rows[i - 2][j - 2] + 1);
+            }
+            rows[i][j] = value;
+            best = Math.min(best, value);
+        }
+        if (best > max) {
+            return max + 1;
+        }
+    }
+    return rows[a.length][b.length];
+}
+
+/**
+ * Whether every word searched is in the name, give or take a typo: one wrong, missing, extra or
+ * swapped letter in a word of 4 letters or more, two in a word of 8 or more. The first letter has to
+ * be right, which keeps "invoice" from finding "Voice". A word may also be the start of a longer
+ * one, so "invocie" finds "Invoices".
+ */
+export function typoMatch(hay, needle) {
+    const hayWords = hay.split(/[\s/(\-_.]+/).filter(Boolean);
+    return needle.split(/\s+/).filter(Boolean).every((word) => {
+        if (hay.includes(word)) {
+            return true;
+        }
+        if (word.length < 4) {
+            return false;
+        }
+        const max = word.length >= 8 ? 2 : 1;
+        return hayWords.some(
+            (hayWord) =>
+                hayWord[0] === word[0] &&
+                (editDistance(word, hayWord, max) <= max ||
+                    (hayWord.length > word.length && editDistance(word, hayWord.slice(0, word.length), max) <= max))
+        );
+    });
+}
+
+// the English names of the menus, loaded once per page for users working in another language
+let englishNamesLoaded;
+function loadEnglishNames(orm) {
+    englishNamesLoaded ||= orm
+        .call("ir.ui.menu", "om_launcher_english_names", [])
+        .then((names) => new Map(Object.entries(names).map(([id, name]) => [Number(id), name])))
+        .catch(() => new Map());
+    return englishNamesLoaded;
+}
 
 /**
  * Score a name against the search.
  *
  * Both sides are normalised, so "facturacion" finds "Facturación". Fuzzy matching is
  * kept for app names, where it rescues a typo, and left out for menu items, where
- * it would bury the real hits under dozens of loose ones.
+ * it would bury the real hits under dozens of loose ones. A typo inside a word is
+ * forgiven everywhere: it ranks last and only matches words that are nearly the same.
  */
 export function matchScore(name, needle, { fuzzy = false } = {}) {
     const hay = normalize(name);
@@ -55,6 +158,9 @@ export function matchScore(name, needle, { fuzzy = false } = {}) {
     }
     if (fuzzy && needle.length >= 3 && fuzzyTest(needle, hay)) {
         return FUZZY;
+    }
+    if (needle.length >= 4 && typoMatch(hay, needle)) {
+        return TYPO;
     }
     return MISS;
 }
@@ -95,6 +201,11 @@ export class AppLauncher extends Component {
     picked = signal({ query: "", index: -1 });
     // app xmlids in the order the user dragged them into
     appOrder = signal(Array.isArray(session.om_app_order) ? session.om_app_order : []);
+    // menu id -> English name, for users working in another language
+    englishNames = signal(new Map());
+    // the menus found on which the user may create a record, and those already asked about
+    creatable = signal(new Set());
+    creatableAsked = new Set();
     props = useProps({
         ...standardActionServiceProps,
     });
@@ -103,6 +214,9 @@ export class AppLauncher extends Component {
         this.menuService = useService("menu");
         this.actionService = useService("action");
         this.orm = useService("orm");
+        if (!(user.lang || "en_US").startsWith("en")) {
+            loadEnglishNames(this.orm).then((names) => this.englishNames.set(names));
+        }
 
         // The search box stays out of the way until there is something to search
         // for, so the first keystroke has to be caught on the document: there is
@@ -263,7 +377,7 @@ export class AppLauncher extends Component {
      * numbered in the order it is drawn, so the arrow keys can walk them.
      */
     get results() {
-        const query = this.query().trim();
+        const query = this.searchText;
         const needle = normalize(query);
         let entries;
         if (!needle) {
@@ -271,7 +385,7 @@ export class AppLauncher extends Component {
         } else {
             entries = this.apps
                 .map((app, order) => {
-                    const score = matchScore(app.name, needle, { fuzzy: true });
+                    const score = this.scoreName(app, needle, { fuzzy: true });
                     const items = this.matchingItems(app, needle);
                     // an app's own name beats a menu item that matches as well, so
                     // "sal" puts Sales ahead of CRM's "Sales Teams"
@@ -285,6 +399,7 @@ export class AppLauncher extends Component {
             for (const entry of entries) {
                 entry.items = entry.items.slice(0, cap);
             }
+            this.askCreatable(entries.flatMap((entry) => entry.items));
         }
         let index = 0;
         for (const entry of entries) {
@@ -304,15 +419,84 @@ export class AppLauncher extends Component {
         const walk = (menu, trail) => {
             for (const child of menu.childrenTree || []) {
                 const path = [...trail, child.name];
-                const score = child.actionID ? matchScore(child.name, needle) : MISS;
+                const score = child.actionID ? this.scoreName(child, needle) : MISS;
                 if (score !== MISS) {
-                    found.push({ id: child.id, name: child.name, path: path.join(" / "), score });
+                    found.push({
+                        id: child.id,
+                        name: child.name,
+                        path: path.join(" / "),
+                        parent: trail.join(" / "),
+                        window: child.actionModel === "ir.actions.act_window",
+                        score,
+                    });
                 }
                 walk(child, path);
             }
         };
         walk(this.menuService.getMenuAsTree(app.id), []);
         return found.sort((a, b) => a.score - b.score);
+    }
+
+    /**
+     * How well a menu matches: by its name, by its English name for users working in another
+     * language, and through the synonyms of the word searched.
+     */
+    scoreName(menu, needle, options = {}) {
+        const english = this.englishNames().get(menu.id);
+        let score = matchScore(menu.name, needle, options);
+        if (english && english !== menu.name) {
+            score = Math.min(score, matchScore(english, needle, options));
+        }
+        if (score > SYNONYM) {
+            const terms = SYNONYMS[needle] || [];
+            if (terms.some((term) => matchScore(menu.name, term) !== MISS || (english && matchScore(english, term) !== MISS))) {
+                score = SYNONYM;
+            }
+        }
+        return score;
+    }
+
+    /**
+     * The words that ask for a new record rather than a menu: "new invoice", "create lead".
+     */
+    get createWords() {
+        return new Set(["new", "create", "add", _t("New"), _t("Create")].map((word) => normalize(word)));
+    }
+
+    /** What is searched for, without a leading "new" or "create". */
+    get searchText() {
+        const query = this.query().trim();
+        const [first, ...rest] = query.split(/\s+/);
+        return rest.length && this.createWords.has(normalize(first)) ? rest.join(" ") : query;
+    }
+
+    /** Whether the search asks for a new record: Enter then creates one on the best menu. */
+    get wantsCreate() {
+        return this.searchText !== this.query().trim();
+    }
+
+    /** Ask the server, once per menu, which of the menus found let the user create a record. */
+    askCreatable(items) {
+        const ids = items.filter((item) => item.window && !this.creatableAsked.has(item.id)).map((item) => item.id);
+        if (!ids.length) {
+            return;
+        }
+        ids.forEach((id) => this.creatableAsked.add(id));
+        this.orm
+            .call("ir.ui.menu", "om_launcher_creatable", [ids])
+            .then((found) => found.length && this.creatable.set(new Set([...this.creatable(), ...found])))
+            .catch(() => {});
+    }
+
+    /** The menu item drawn at that position of the results, if it is one. */
+    itemAt(index) {
+        for (const entry of this.results) {
+            const item = entry.items.find((candidate) => candidate.index === index);
+            if (item) {
+                return item;
+            }
+        }
+        return null;
     }
 
     /**
@@ -328,6 +512,12 @@ export class AppLauncher extends Component {
         const first = this.results[0];
         if (!first || !this.query().trim()) {
             return -1;
+        }
+        if (this.wantsCreate) {
+            const creatable = this.results.flatMap((entry) => entry.items).find((item) => this.creatable().has(item.id));
+            if (creatable) {
+                return creatable.index;
+            }
         }
         return first.items.length && first.items[0].score < first.score
             ? first.items[0].index
@@ -400,6 +590,19 @@ export class AppLauncher extends Component {
         }
     }
 
+    /**
+     * Open a new record on the menu: the menu first, so the breadcrumb leads back to its list, then a
+     * blank form in the same action, which keeps its defaults (a customer invoice, not a vendor bill).
+     */
+    async createFrom(menuId) {
+        const menu = this.menuService.getMenu(menuId);
+        if (!menu) {
+            return;
+        }
+        await this.menuService.selectMenu(menu);
+        await this.actionService.switchView("form", { resId: false });
+    }
+
     openIndex(index) {
         for (const entry of this.results) {
             if (entry.index === index) {
@@ -431,6 +634,11 @@ export class AppLauncher extends Component {
             return;
         }
         if (ev.key === "Enter" && this.activeIndex >= 0) {
+            const item = this.itemAt(this.activeIndex);
+            if (item && (ev.shiftKey || this.wantsCreate) && this.creatable().has(item.id)) {
+                this.createFrom(item.id);
+                return;
+            }
             this.openIndex(this.activeIndex);
         }
     }
@@ -452,7 +660,7 @@ export class AppLauncher extends Component {
     }
 
     get emptyMessage() {
-        return _t("No app or menu matches “%s”", this.query());
+        return _t("No app or menu matches “%s”", this.searchText);
     }
 }
 

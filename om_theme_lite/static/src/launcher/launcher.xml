@@ -30,14 +30,19 @@
             <div class="om-launcher-body">
                 <!-- no heading over the plain app grid: the grid is self-evident,
                      and a label only earns its place once results are filtered -->
-                <div t-if="this.query()" class="om-launcher-section">Results</div>
+                <div t-if="this.query()" class="om-launcher-section">
+                    <span>Results</span>
+                    <span t-if="this.creatable().size" class="om-launcher-hint">
+                        <kbd>Shift</kbd> + <kbd>Enter</kbd> creates a new record
+                    </span>
+                </div>
 
                 <div t-if="!this.results.length" class="om-launcher-empty">
                     <i class="oi om-launcher-icon" data-icon="search"/>
                     <p t-out="this.emptyMessage"/>
                 </div>
 
-                <div class="om-launcher-grid" t-ref="this.gridRef">
+                <div class="om-launcher-grid" t-att-class="{'om-searching': this.query()}" t-ref="this.gridRef">
                     <t t-foreach="this.results" t-as="entry" t-key="entry.app.id">
                         <div class="om-app-wrap" t-att-data-app-key="this.appKey(entry.app)">
                             <a class="om-app" t-att-href="this.menuHref(entry.app)" draggable="false"
@@ -61,14 +66,23 @@
                             <!-- menu items that matched, so a search finds what is
                                  inside an app and not only the app itself -->
                             <div t-if="entry.items.length" class="om-app-items">
-                                <a t-foreach="entry.items" t-as="item" t-key="item.id"
-                                   class="om-app-item" t-att-title="item.path" draggable="false"
-                                   t-att-href="this.menuHref(this.menuService.getMenu(item.id))"
-                                   t-att-class="{'om-active': item.index === this.activeIndex}"
-                                   t-on-click="(ev) => this.onLinkClick(ev, () => this.openMenu(item.id))">
-                                    <i class="oi om-launcher-caret" data-icon="chevron_forward"/>
-                                    <span><t t-call="om_theme_lite.Highlighted" parts="item.nameParts"/></span>
-                                </a>
+                                <div t-foreach="entry.items" t-as="item" t-key="item.id" class="om-app-item-row">
+                                    <a class="om-app-item" t-att-title="item.path" draggable="false"
+                                       t-att-href="this.menuHref(this.menuService.getMenu(item.id))"
+                                       t-att-class="{'om-active': item.index === this.activeIndex}"
+                                       t-on-click="(ev) => this.onLinkClick(ev, () => this.openMenu(item.id))">
+                                        <i class="oi om-launcher-caret" data-icon="chevron_forward"/>
+                                        <span class="om-app-item-text">
+                                            <span><t t-call="om_theme_lite.Highlighted" parts="item.nameParts"/></span>
+                                            <small t-if="item.parent" class="om-app-item-parent" t-out="item.parent"/>
+                                        </span>
+                                    </a>
+                                    <button t-if="this.creatable().has(item.id)" type="button" class="om-app-item-new"
+                                            t-att-class="{'om-active': this.wantsCreate and item.index === this.activeIndex}"
+                                            title="Create a new record" t-on-click="() => this.createFrom(item.id)">
+                                        <i class="oi" data-icon="add"/>New
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </t>
