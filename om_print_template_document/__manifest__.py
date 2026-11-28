@@ -1,6 +1,6 @@
 {
     'name': 'Print Templates: Documents',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Productivity',
     'summary': 'File the prints of a template in Documents, linked to the record, expiring after a number of days',
     'author': 'Odoo Mates',

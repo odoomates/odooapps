@@ -1,6 +1,6 @@
 {
     'name': 'Documents',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Productivity/Documents',
     'summary': 'Document management: folders with access rights, tags, preview, versions, upload by email, '
                'share links, document requests, workflow actions, and expiring documents with reminders and '
