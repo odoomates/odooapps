@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_consolidation_period_view_list" model="ir.ui.view">
+        <field name="name">om.consolidation.period.list</field>
+        <field name="model">om.consolidation.period</field>
+        <field name="arch" type="xml">
+            <list string="Consolidation Periods" decoration-muted="state == 'approved'" decoration-info="state == 'draft'">
+                <field name="group_id"/>
+                <field name="name"/>
+                <field name="date_from"/>
+                <field name="date_to"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="difference_amount" optional="show"/>
+                <field name="computed_on" optional="hide"/>
+                <field name="approved_by_id" optional="hide"/>
+                <field name="state" widget="badge" decoration-info="state == 'draft'"
+                       decoration-warning="state == 'computed'" decoration-success="state == 'approved'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_consolidation_period_view_form" model="ir.ui.view">
+        <field name="name">om.consolidation.period.form</field>
+        <field name="model">om.consolidation.period</field>
+        <field name="arch" type="xml">
+            <form string="Consolidation Period">
+                <header>
+                    <button name="action_compute" type="object" string="Compute" class="btn-primary"
+                            invisible="state != 'draft'" groups="account.group_account_manager"/>
+                    <button name="action_approve" type="object" string="Approve" class="btn-primary"
+                            invisible="state != 'computed'" groups="account.group_account_manager"
+                            confirm="Approving locks the period: its figures, rates and adjustments can no longer change. Approve?"/>
+                    <button name="action_compute" type="object" string="Recompute"
+                            invisible="state != 'computed'" groups="account.group_account_manager"/>
+                    <button name="action_update_rates" type="object" string="Update Rates"
+                            invisible="state == 'approved'" groups="account.group_account_manager"/>
+                    <button name="action_check_mapping" type="object" string="Check Mapping"
+                            invisible="state == 'approved'"/>
+                    <button name="action_reset_to_draft" type="object" string="Reset to Draft"
+                            invisible="state != 'computed'" groups="account.group_account_manager"/>
+                    <button name="action_reopen" type="object" string="Reopen"
+                            invisible="state != 'approved'" groups="account.group_account_manager"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_trial_balance" type="object" class="oe_stat_button"
+                                icon="balance" string="Trial Balance" invisible="state == 'draft'"/>
+                        <button name="action_open_profit_loss" type="object" class="oe_stat_button"
+                                icon="show_chart" string="Profit and Loss" invisible="state == 'draft'"/>
+                        <button name="action_open_balance_sheet" type="object" class="oe_stat_button"
+                                icon="account_balance" string="Balance Sheet" invisible="state == 'draft'"/>
+                        <button name="action_open_lines" type="object" class="oe_stat_button"
+                                icon="list_alt" string="Lines" invisible="state == 'draft'"/>
+                        <button name="action_open_adjustments" type="object" class="oe_stat_button" icon="edit">
+                            <field name="adjustment_count" widget="statinfo" string="Adjustments"/>
+                        </button>
+                    </div>
+                    <div class="alert alert-warning" role="alert" invisible="not warning">
+                        <field name="warning"/>
+                    </div>
+                    <div class="alert alert-danger" role="alert" invisible="difference_count == 0">
+                        <field name="difference_count" class="oe_inline"/> inter-company pair(s) do not agree:
+                        <field name="difference_amount" class="oe_inline"/> went to the elimination differences.
+                        See the Inter-Company tab.
+                    </div>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="state == 'approved'" placeholder="e.g. Q1 2026"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="group_id" options="{'no_create': True}" readonly="state != 'draft'"/>
+                            <field name="period_type" widget="radio" options="{'horizontal': true}" readonly="state != 'draft'"/>
+                            <field name="date_from" readonly="state != 'draft'"/>
+                            <field name="date_to" readonly="state != 'draft' or period_type != 'custom'" force_save="1"/>
+                        </group>
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="computed_on" invisible="not computed_on"/>
+                            <field name="computed_by_id" invisible="not computed_by_id"/>
+                            <field name="approved_on" invisible="not approved_on"/>
+                            <field name="approved_by_id" invisible="not approved_by_id"/>
+                            <field name="company_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Rates" name="rates">
+                            <field name="rate_ids" readonly="state == 'approved'">
+                                <list editable="bottom" create="0" delete="0">
+                                    <field name="company_id" readonly="1"/>
+                                    <field name="company_currency_id"/>
+                                    <field name="closing_rate" digits="[16, 6]"/>
+                                    <field name="average_rate" digits="[16, 6]"/>
+                                    <field name="group_currency_id"/>
+                                    <field name="manual" widget="boolean_toggle"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                One unit of the currency of each company in the group currency. Computing fills the
+                                rates from the currency rates: the rate of the last day of the period, and the average
+                                of the rates of its days. A rate changed by hand is marked Entered and kept.
+                            </div>
+                        </page>
+                        <page string="Inter-Company" name="pairs" invisible="state == 'draft'">
+                            <field name="pair_ids" readonly="1">
+                                <list decoration-danger="difference != 0">
+                                    <field name="elimination"/>
+                                    <field name="company_id"/>
+                                    <field name="partner_company_id"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="amount"/>
+                                    <field name="partner_amount"/>
+                                    <field name="difference" sum="Total"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                What each pair of companies books with each other, translated into the group currency.
+                                Both sides are eliminated; a difference goes to the Elimination Differences account
+                                of the group.
+                            </div>
+                        </page>
+                        <page string="Adjustments" name="adjustments">
+                            <field name="adjustment_ids" readonly="state == 'approved'" context="{'default_period_id': id}">
+                                <list>
+                                    <field name="name"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                    <field name="total"/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_consolidation_period_view_search" model="ir.ui.view">
+        <field name="name">om.consolidation.period.search</field>
+        <field name="model">om.consolidation.period</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="name"/>
+                <field name="group_id"/>
+                <filter name="draft" string="Draft" domain="[('state', '=', 'draft')]"/>
+                <filter name="computed" string="Computed" domain="[('state', '=', 'computed')]"/>
+                <filter name="approved" string="Approved" domain="[('state', '=', 'approved')]"/>
+                <separator/>
+                <filter name="group_by_group" string="Group" context="{'group_by': 'group_id'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_consolidation_period" model="ir.actions.act_window">
+        <field name="name">Consolidation Periods</field>
+        <field name="res_model">om.consolidation.period</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Consolidate a period</p>
+            <p>Choose the group and the period, compute it, check the rates, the inter-company differences and the
+                consolidated reports, then approve it to lock it.</p>
+        </field>
+    </record>
+
+    <record id="om_consolidation_adjustment_view_form" model="ir.ui.view">
+        <field name="name">om.consolidation.adjustment.form</field>
+        <field name="model">om.consolidation.adjustment</field>
+        <field name="arch" type="xml">
+            <form string="Consolidation Adjustment">
+                <sheet>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" readonly="state == 'approved'" placeholder="e.g. Unrealized profit in stock"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="period_id" options="{'no_create': True}" readonly="state == 'approved'"/>
+                            <field name="group_id" invisible="1"/>
+                            <field name="state" invisible="1"/>
+                        </group>
+                        <group>
+                            <field name="currency_id"/>
+                            <field name="total"/>
+                        </group>
+                    </group>
+                    <field name="line_ids" readonly="state == 'approved'">
+                        <list editable="bottom">
+                            <field name="sequence" widget="handle"/>
+                            <field name="group_id" column_invisible="True"/>
+                            <field name="group_account_id" options="{'no_create': True}"/>
+                            <field name="company_id" options="{'no_create': True}" placeholder="Group"/>
+                            <field name="name"/>
+                            <field name="currency_id" column_invisible="True"/>
+                            <field name="debit" sum="Total"/>
+                            <field name="credit" sum="Total"/>
+                        </list>
+                    </field>
+                    <field name="note" placeholder="Why the adjustment is made..." readonly="state == 'approved'"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_consolidation_adjustment_view_list" model="ir.ui.view">
+        <field name="name">om.consolidation.adjustment.list</field>
+        <field name="model">om.consolidation.adjustment</field>
+        <field name="arch" type="xml">
+            <list string="Adjustments">
+                <field name="period_id"/>
+                <field name="name"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_consolidation_line_view_list" model="ir.ui.view">
+        <field name="name">om.consolidation.line.list</field>
+        <field name="model">om.consolidation.line</field>
+        <field name="arch" type="xml">
+            <list string="Consolidation Lines" create="0" edit="0" delete="0">
+                <field name="group_account_id"/>
+                <field name="kind"/>
+                <field name="company_id"/>
+                <field name="account_id"/>
+                <field name="elimination" optional="show"/>
+                <field name="partner_company_id" optional="show"/>
+                <field name="company_currency_id" column_invisible="True"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="amount"/>
+                <field name="rate" optional="show" digits="[16, 6]"/>
+                <field name="translated" sum="Total"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_consolidation_line_view_pivot" model="ir.ui.view">
+        <field name="name">om.consolidation.line.pivot</field>
+        <field name="model">om.consolidation.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Consolidation Lines">
+                <field name="group_account_id" type="row"/>
+                <field name="company_id" type="col"/>
+                <field name="translated" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_consolidation_line_view_search" model="ir.ui.view">
+        <field name="name">om.consolidation.line.search</field>
+        <field name="model">om.consolidation.line</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="group_account_id"/>
+                <field name="company_id"/>
+                <field name="account_id"/>
+                <filter name="balances" string="Balances" domain="[('kind', '=', 'balance')]"/>
+                <filter name="eliminations" string="Eliminations" domain="[('kind', 'in', ('elimination', 'difference'))]"/>
+                <filter name="translation" string="Translation Reserve" domain="[('kind', '=', 'translation')]"/>
+                <separator/>
+                <filter name="group_by_group_account" string="Group Account" context="{'group_by': 'group_account_id'}"/>
+                <filter name="group_by_company" string="Company" context="{'group_by': 'company_id'}"/>
+                <filter name="group_by_kind" string="Type" context="{'group_by': 'kind'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_om_consolidation_trial_balance" model="ir.actions.client">
+        <field name="name">Consolidated Trial Balance</field>
+        <field name="tag">om_report</field>
+        <field name="path">consolidated-trial-balance</field>
+        <field name="context">{'om_report_model': 'om.consolidation.trial.balance', 'om_report_app': 'accounting'}</field>
+    </record>
+
+    <record id="action_om_consolidation_profit_loss" model="ir.actions.client">
+        <field name="name">Consolidated Profit and Loss</field>
+        <field name="tag">om_report</field>
+        <field name="path">consolidated-profit-loss</field>
+        <field name="context">{'om_report_model': 'om.consolidation.profit.loss', 'om_report_app': 'accounting'}</field>
+    </record>
+
+    <record id="action_om_consolidation_balance_sheet" model="ir.actions.client">
+        <field name="name">Consolidated Balance Sheet</field>
+        <field name="tag">om_report</field>
+        <field name="path">consolidated-balance-sheet</field>
+        <field name="context">{'om_report_model': 'om.consolidation.balance.sheet', 'om_report_app': 'accounting'}</field>
+    </record>
+</odoo>
