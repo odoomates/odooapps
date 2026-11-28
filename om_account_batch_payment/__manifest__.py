@@ -1,6 +1,6 @@
 {
     'name': 'Batch Payments',
-    'version': '0.1.1',
+    'version': '0.1.2',
     'category': 'Accounting',
     'summary': 'Batch Payments, Batch Deposits, Bank Upload Files, one Bank Transaction for many Payments',
     'description': """
