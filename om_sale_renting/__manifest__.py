@@ -1,6 +1,6 @@
 {
     'name': 'Rental',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.0.2',
     'category': 'Sales/Sales',
     'summary': 'Rent products: rental orders with pickup and return dates, hourly, daily, weekly and monthly '
                'prices, availability, late fees, damages, rental schedule, rental agreement, reminders',

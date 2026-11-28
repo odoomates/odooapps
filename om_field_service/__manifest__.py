@@ -1,6 +1,6 @@
 {
     'name': 'Field Service',
-    'version': '20.0.1.0.1',
+    'version': '20.0.1.0.2',
     'category': 'Services/Field Service',
     'sequence': 56,
     'summary': 'Field service for technicians on site: jobs with site address and equipment, job types '

@@ -1,6 +1,6 @@
 {
     'name': 'Helpdesk',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Services/Helpdesk',
     'sequence': 45,
     'summary': 'Helpdesk and customer support tickets: teams, email alias, automatic assignment, SLA policies, '

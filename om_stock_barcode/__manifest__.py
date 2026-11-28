@@ -1,6 +1,6 @@
 {
     'name': 'Barcode Scanning for Inventory',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Inventory/Inventory',
     'summary': 'Scan receipts, deliveries, internal transfers and inventory counts on a phone, a tablet '
                'or a handheld scanner: lots, serial numbers, packages, locations, GS1 barcodes, camera '

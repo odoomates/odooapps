@@ -1,6 +1,6 @@
 {
     'name': 'Sign',
-    'version': '2.1.1',
+    'version': '2.1.2',
     'category': 'Productivity',
     'summary': 'Send PDF files for electronic signature: fields placed on the PDF, signed in order from an '
                'email link, with a signature certificate',

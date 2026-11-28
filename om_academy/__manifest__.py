@@ -1,6 +1,6 @@
 {
     'name': 'Odoo Mates Academy: Odoo Development',
-    'version': '0.1.0',
+    'version': '0.1.1',
     'author': 'Odoo Mates',
     'category': 'Tools',
     'summary': 'Learn Odoo development step by step, made for beginners: build your first app, '

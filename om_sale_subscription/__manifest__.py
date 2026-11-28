@@ -1,6 +1,6 @@
 {
     'name': 'Subscriptions',
-    'version': '20.0.1.0.2',
+    'version': '20.0.1.0.3',
     'category': 'Sales/Subscriptions',
     'summary': 'Recurring sales orders: subscription plans, recurring invoices, automatic payments, '
                'upsell, renewal, pause and close, customer portal, MRR, ARR, churn and retention reports',

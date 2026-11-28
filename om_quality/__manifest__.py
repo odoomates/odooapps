@@ -1,6 +1,6 @@
 {
     'name': 'Quality',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Supply Chain/Quality',
     'sequence': 55,
     'summary': 'Quality management: control points, inspection templates, quality checks with measures and '

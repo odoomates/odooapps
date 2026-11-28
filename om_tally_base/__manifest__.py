@@ -1,6 +1,6 @@
 {
     'name': 'Tally Connector Base',
-    'version': '20.0.1.0.0',
+    'version': '20.0.1.0.1',
     'category': 'Accounting/Accounting',
     'summary': 'Read Tally data into Odoo: XML export upload, direct connection to Tally, reading in the '
                'background, staging of masters and vouchers, analysis report',
