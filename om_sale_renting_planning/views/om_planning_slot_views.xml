@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_slot_view_gantt_rental" model="ir.ui.view">
+        <field name="name">om.planning.slot.gantt.rental</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning_maintenance.om_planning_slot_view_gantt_equipment"/>
+        <field name="mode">primary</field>
+        <field name="priority">41</field>
+        <field name="arch" type="xml">
+            <xpath expr="//gantt" position="attributes">
+                <attribute name="empty_row_labels">{'material_resource_ids': 'No Unit'}</attribute>
+                <attribute name="decoration-info">rental_state == 'pickup'</attribute>
+                <attribute name="decoration-success">rental_state == 'returned'</attribute>
+            </xpath>
+            <field name="material_resource_ids" position="after">
+                <field name="rental_state"/>
+                <field name="rental_partner_id"/>
+            </field>
+            <xpath expr="//t[@t-name='gantt-popover']/div[1]" position="after">
+                <div class="d-flex gap-2" t-if="record.rental_partner_id.raw_value">
+                    <span class="fw-bold">Customer</span><field name="rental_partner_id"/>
+                </div>
+                <div class="d-flex gap-2" t-if="record.rental_state.raw_value">
+                    <span class="fw-bold">Rental</span><field name="rental_state"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_form" model="ir.ui.view">
+        <field name="name">om.planning.slot.form.om_sale_renting_planning</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_form"/>
+        <field name="arch" type="xml">
+            <field name="source_ref" position="after">
+                <field name="rental_line_id" invisible="not rental_line_id" readonly="1"/>
+                <field name="rental_slot_type" invisible="not rental_slot_type" readonly="1"/>
+                <field name="rental_state" invisible="not rental_state" readonly="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_search" model="ir.ui.view">
+        <field name="name">om.planning.slot.search.om_sale_renting_planning</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_search"/>
+        <field name="arch" type="xml">
+            <field name="source_name" position="after">
+                <field name="rental_partner_id"/>
+            </field>
+            <filter name="material" position="after">
+                <filter name="rentals" string="Rentals" domain="[('rental_line_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="action_rental_unit_schedule" model="ir.actions.act_window">
+        <field name="name">Unit Schedule</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="path">rental-unit-schedule</field>
+        <field name="view_mode">gantt,list,form</field>
+        <field name="domain">[('material_resource_ids.rental_product_tmpl_ids', '!=', False)]</field>
+        <field name="context">{'om_planning_label': 'role', 'om_planning_material_rows': [('rental_product_tmpl_ids', '!=', False)]}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'gantt', 'view_id': ref('om_planning_slot_view_gantt_rental')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No booking of rental units yet</p>
+            <p>Rent a product by units: its rentals, maintenance and other bookings of each unit show here.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_rental_unit_schedule" name="Unit Schedule" parent="om_sale_renting.menu_rental_root"
+        action="action_rental_unit_schedule" sequence="21"/>
+
+</odoo>

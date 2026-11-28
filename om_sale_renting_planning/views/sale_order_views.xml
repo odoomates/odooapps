@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="sale_order_view_form_rental_planning" model="ir.ui.view">
+        <field name="name">sale.order.form.om.rental.planning</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="om_sale_renting.sale_order_view_form_rental"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_view_rental_slots" type="object" class="oe_stat_button" icon="view_timeline"
+                        invisible="not rental_slot_count">
+                    <field name="rental_slot_count" widget="statinfo" string="Unit Bookings"/>
+                </button>
+            </xpath>
+            <xpath expr="//sheet/div[@name='button_box']" position="after">
+                <field name="rental_by_units" invisible="1"/>
+                <div class="alert alert-warning mb-2" role="alert" invisible="not is_rental_order or not rental_planning_warning">
+                    <strong>Units</strong>
+                    <field name="rental_planning_warning" class="d-block" style="white-space: pre-line;"/>
+                </div>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list" position="attributes">
+                <attribute name="decoration-danger">rental_unavailable or rental_unit_busy</attribute>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='rental_line_status']" position="after">
+                <field name="rental_by_units" column_invisible="True"/>
+                <field name="rental_unit_busy" column_invisible="True"/>
+                <field name="rental_allowed_unit_ids" column_invisible="True"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/list/field[@name='rental_available_qty']" position="after">
+                <field name="rental_unit_ids" widget="many2many_tags" optional="show"
+                       options="{'no_create': True}"
+                       invisible="not rental_by_units"
+                       readonly="rental_line_status in ('returned', 'cancel') or qty_picked_up"
+                       column_invisible="not parent.rental_by_units"/>
+                <field name="rental_next_free_date" optional="show" invisible="not rental_next_free_date"
+                       column_invisible="not parent.rental_by_units or parent.state not in ('draft', 'sent')"/>
+            </xpath>
+            <xpath expr="//field[@name='order_line']/form//field[@name='rental_return_date']" position="after">
+                <field name="rental_by_units" invisible="1"/>
+                <field name="rental_allowed_unit_ids" invisible="1"/>
+                <field name="rental_unit_ids" widget="many2many_tags" invisible="not rental_by_units"
+                       options="{'no_create': True}"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="sale_order_line_view_form_rental_planning" model="ir.ui.view">
+        <field name="name">sale.order.line.form.om.rental.planning</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="om_sale_renting.sale_order_line_view_form_rental"/>
+        <field name="arch" type="xml">
+            <field name="rental_busy_stop" position="after">
+                <field name="rental_by_units" invisible="1"/>
+                <field name="rental_allowed_unit_ids" invisible="1"/>
+                <field name="rental_unit_ids" widget="many2many_tags" invisible="not rental_by_units"
+                       readonly="rental_line_status in ('returned', 'cancel')" options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="sale_order_line_view_list_rental_planning" model="ir.ui.view">
+        <field name="name">sale.order.line.list.om.rental.planning</field>
+        <field name="model">sale.order.line</field>
+        <field name="inherit_id" ref="om_sale_renting.sale_order_line_view_list_rental"/>
+        <field name="arch" type="xml">
+            <field name="product_id" position="after">
+                <field name="rental_unit_ids" widget="many2many_tags" optional="show"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

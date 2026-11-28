@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_slot_view_gantt_vehicle" model="ir.ui.view">
+        <field name="name">om.planning.slot.gantt.vehicle</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_gantt"/>
+        <field name="mode">primary</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <xpath expr="//gantt" position="attributes">
+                <attribute name="default_group_by">material_resource_ids</attribute>
+                <attribute name="progress_bar">material_resource_ids</attribute>
+                <attribute name="thumbnails">{'material_resource_ids': 'planning_avatar_128'}</attribute>
+                <attribute name="empty_row_labels">{'material_resource_ids': 'No Asset'}</attribute>
+                <attribute name="display_unavailability">0</attribute>
+                <attribute name="js_class"></attribute>
+            </xpath>
+            <field name="resource_ids" position="after">
+                <field name="material_resource_ids"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_search" model="ir.ui.view">
+        <field name="name">om.planning.slot.search.om_planning_fleet</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_search"/>
+        <field name="arch" type="xml">
+            <field name="role_id" position="after">
+                <field name="fleet_vehicle_ids"/>
+            </field>
+            <filter name="material" position="after">
+                <filter name="vehicles" string="Vehicles" domain="[('resource_ids.fleet_vehicle_id', '!=', False)]"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot_vehicle" model="ir.actions.act_window">
+        <field name="name">Vehicle Schedule</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,calendar,list,form,pivot</field>
+        <field name="domain">[('material_resource_ids.fleet_vehicle_id', '!=', False)]</field>
+        <field name="context">{'om_planning_label': 'role', 'om_planning_material_rows': [('fleet_vehicle_id', '!=', False)]}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'gantt', 'view_id': ref('om_planning_slot_view_gantt_vehicle')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No booking of vehicles yet</p>
+            <p>Book a vehicle on its row, or plan its driver: the vehicle follows the slots of its driver.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_om_planning_schedule_vehicle" name="By Vehicle"
+        parent="om_planning.menu_om_planning_schedule" action="action_om_planning_slot_vehicle" sequence="34"/>
+
+    <menuitem id="menu_fleet_vehicle_schedule" name="Vehicle Schedule"
+        parent="fleet.fleet_vehicles" action="action_om_planning_slot_vehicle" sequence="5"
+        groups="om_planning.group_planning_manager"/>
+
+</odoo>

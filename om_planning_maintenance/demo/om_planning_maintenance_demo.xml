@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="equipment_generator" model="maintenance.equipment">
+        <field name="name">Generator 20 kVA</field>
+        <field name="serial_no">GEN-20-001</field>
+        <field name="model">G20</field>
+        <field name="technician_user_id" ref="base.user_admin"/>
+        <field name="maintenance_team_id" ref="maintenance.equipment_team_maintenance"/>
+    </record>
+
+    <record id="equipment_scissor_lift" model="maintenance.equipment">
+        <field name="name">Scissor Lift SL-10</field>
+        <field name="serial_no">SL10-001</field>
+        <field name="model">SL-10</field>
+        <field name="maintenance_team_id" ref="maintenance.equipment_team_maintenance"/>
+    </record>
+
+    <record id="equipment_scissor_lift_2" model="maintenance.equipment">
+        <field name="name">Scissor Lift SL-10 (2)</field>
+        <field name="serial_no">SL10-002</field>
+        <field name="model">SL-10</field>
+        <field name="maintenance_team_id" ref="maintenance.equipment_team_maintenance"/>
+    </record>
+
+    <record id="request_generator_service" model="maintenance.request">
+        <field name="name">Yearly service</field>
+        <field name="equipment_id" ref="equipment_generator"/>
+        <field name="maintenance_type">preventive</field>
+        <field name="user_ids" eval="[Command.set([ref('base.user_admin')])]"/>
+        <field name="schedule_date" eval="(DateTime.today() + relativedelta(days=1, weekday=0)).strftime('%Y-%m-%d 07:00:00')"/>
+        <field name="schedule_end" eval="(DateTime.today() + relativedelta(days=1, weekday=0)).strftime('%Y-%m-%d 11:00:00')"/>
+    </record>
+
+    <record id="request_lift_inspection" model="maintenance.request">
+        <field name="name">Safety inspection</field>
+        <field name="equipment_id" ref="equipment_scissor_lift"/>
+        <field name="maintenance_type">preventive</field>
+        <field name="user_ids" eval="[Command.set([ref('base.user_demo')])]"/>
+        <field name="schedule_date" eval="(DateTime.today() + relativedelta(days=1, weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 07:00:00')"/>
+        <field name="schedule_end" eval="(DateTime.today() + relativedelta(days=1, weekday=0) + relativedelta(days=2)).strftime('%Y-%m-%d 11:00:00')"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_planning_slot_view_gantt_equipment" model="ir.ui.view">
+        <field name="name">om.planning.slot.gantt.equipment</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_gantt"/>
+        <field name="mode">primary</field>
+        <field name="priority">40</field>
+        <field name="arch" type="xml">
+            <xpath expr="//gantt" position="attributes">
+                <attribute name="default_group_by">material_resource_ids</attribute>
+                <attribute name="progress_bar">material_resource_ids</attribute>
+                <attribute name="thumbnails">{'material_resource_ids': 'planning_avatar_128'}</attribute>
+                <attribute name="empty_row_labels">{'material_resource_ids': 'No Asset'}</attribute>
+                <attribute name="display_unavailability">0</attribute>
+                <attribute name="js_class"></attribute>
+            </xpath>
+            <field name="resource_ids" position="after">
+                <field name="material_resource_ids"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_form" model="ir.ui.view">
+        <field name="name">om.planning.slot.form.om_planning_maintenance</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_form"/>
+        <field name="arch" type="xml">
+            <field name="source_name" position="after">
+                <field name="maintenance_request_id" invisible="1"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="om_planning_slot_view_search" model="ir.ui.view">
+        <field name="name">om.planning.slot.search.om_planning_maintenance</field>
+        <field name="model">om.planning.slot</field>
+        <field name="inherit_id" ref="om_planning.om_planning_slot_view_search"/>
+        <field name="arch" type="xml">
+            <filter name="material" position="after">
+                <filter name="maintenance" string="Maintenance" domain="[('maintenance_request_id', '!=', False)]"/>
+            </filter>
+            <filter name="group_resource" position="after">
+                <filter name="group_material" string="Assets" context="{'group_by': 'material_resource_ids'}"/>
+            </filter>
+        </field>
+    </record>
+
+    <record id="action_om_planning_slot_equipment" model="ir.actions.act_window">
+        <field name="name">Equipment Schedule</field>
+        <field name="res_model">om.planning.slot</field>
+        <field name="view_mode">gantt,calendar,list,form,pivot</field>
+        <field name="domain">[('material_resource_ids.maintenance_equipment_id', '!=', False)]</field>
+        <field name="context">{'om_planning_label': 'role', 'om_planning_material_rows': [('maintenance_equipment_id', '!=', False)]}</field>
+        <field name="view_ids" eval="[Command.clear(),
+            Command.create({'view_mode': 'gantt', 'view_id': ref('om_planning_slot_view_gantt_equipment')})]"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No booking of equipment yet</p>
+            <p>Scheduled maintenance requests, rentals, field service jobs and other slots of your equipment show here.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_om_planning_schedule_equipment" name="By Equipment"
+        parent="om_planning.menu_om_planning_schedule" action="action_om_planning_slot_equipment" sequence="32"/>
+
+    <menuitem id="menu_maintenance_equipment_schedule" name="Equipment Schedule"
+        parent="maintenance.menu_m_request" action="action_om_planning_slot_equipment" sequence="5"
+        groups="om_planning.group_planning_manager"/>
+
+</odoo>

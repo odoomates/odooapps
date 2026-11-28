@@ -629,6 +629,8 @@ class OmPlanningSlot(models.Model):
         start = self.start_datetime.replace(tzinfo=UTC).astimezone(tz)
         end = self.end_datetime.replace(tzinfo=UTC).astimezone(tz)
         label = self.role_id.name or self.name or self.env._("slot")
+        if end.date() != start.date():
+            return f"{label} {start:%m/%d %H:%M}-{end:%m/%d %H:%M}"
         return f"{label} {start:%m/%d %H:%M}-{end:%H:%M}"
 
     @api.constrains('resource_ids', 'company_id')

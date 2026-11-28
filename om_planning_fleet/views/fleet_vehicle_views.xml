@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="fleet_vehicle_view_form" model="ir.ui.view">
+        <field name="name">fleet.vehicle.form.om_planning_fleet</field>
+        <field name="model">fleet.vehicle</field>
+        <field name="inherit_id" ref="fleet.fleet_vehicle_view_form"/>
+        <field name="arch" type="xml">
+            <div name="button_box" position="inside">
+                <button name="action_view_planning" type="object" class="oe_stat_button" icon="view_timeline"
+                    groups="om_planning.group_planning_manager" invisible="not id">
+                    <field name="planning_slot_count" widget="statinfo" string="Bookings"/>
+                </button>
+            </div>
+            <field name="future_driver_id" position="after">
+                <field name="planning_follow_driver" groups="om_planning.group_planning_manager"/>
+                <field name="planning_driver_resource_id" groups="om_planning.group_planning_manager"
+                    invisible="not planning_driver_resource_id"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

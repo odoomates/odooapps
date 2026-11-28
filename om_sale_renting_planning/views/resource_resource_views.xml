@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="resource_resource_view_form_planning" model="ir.ui.view">
+        <field name="name">resource.resource.form.planning.om_sale_renting_planning</field>
+        <field name="model">resource.resource</field>
+        <field name="inherit_id" ref="om_planning.resource_resource_view_form_planning"/>
+        <field name="arch" type="xml">
+            <field name="assigned_resource_id" position="before">
+                <field name="rental_product_tmpl_ids" widget="many2many_tags"
+                    invisible="resource_type != 'material'" groups="sales_team.group_sale_salesman"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_rental_washer" model="product.product">
+        <field name="name">Pressure Washer PW-200</field>
+        <field name="default_code">RENT-PW200</field>
+        <field name="type">consu</field>
+        <field name="is_storable" eval="True"/>
+        <field name="tracking">serial</field>
+        <field name="sale_ok" eval="True"/>
+        <field name="rent_ok" eval="True"/>
+        <field name="invoice_policy">order</field>
+        <field name="list_price">0.0</field>
+        <field name="rental_availability">unit</field>
+        <field name="rental_units_from_serials" eval="True"/>
+        <field name="rental_padding_hours">1</field>
+        <field name="rental_extra_day_price">35.0</field>
+    </record>
+    <record id="pricing_washer_day" model="om.rental.pricing">
+        <field name="product_template_id" ref="product_rental_washer_product_template"/>
+        <field name="duration">1</field>
+        <field name="unit">day</field>
+        <field name="price">35</field>
+    </record>
+
+    <record id="lot_rental_washer_1" model="stock.lot">
+        <field name="name">PW-0001</field>
+        <field name="product_id" ref="product_rental_washer"/>
+    </record>
+    <record id="lot_rental_washer_2" model="stock.lot">
+        <field name="name">PW-0002</field>
+        <field name="product_id" ref="product_rental_washer"/>
+    </record>
+
+    <record id="quant_rental_washer_1" model="stock.quant">
+        <field name="product_id" ref="product_rental_washer"/>
+        <field name="lot_id" ref="lot_rental_washer_1"/>
+        <field name="inventory_quantity">1.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+    <record id="quant_rental_washer_2" model="stock.quant">
+        <field name="product_id" ref="product_rental_washer"/>
+        <field name="lot_id" ref="lot_rental_washer_2"/>
+        <field name="inventory_quantity">1.0</field>
+        <field name="location_id" model="stock.location" eval="obj().env.ref('stock.warehouse0').lot_stock_id.id"/>
+    </record>
+    <function model="stock.quant" name="action_apply_inventory">
+        <function eval="[[('id', 'in', (ref('quant_rental_washer_1'), ref('quant_rental_washer_2')))]]"
+                  model="stock.quant" name="search"/>
+    </function>
+
+    <record id="rental_order_washer" model="sale.order">
+        <field name="partner_id" ref="base.res_partner_2"/>
+        <field name="user_id" ref="base.user_admin"/>
+        <field name="is_rental_order" eval="True"/>
+        <field name="rental_start_date" eval="(DateTime.today().replace(hour=8, minute=0, second=0, microsecond=0) + relativedelta(days=-1)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="rental_return_date" eval="(DateTime.today().replace(hour=16, minute=0, second=0, microsecond=0) + relativedelta(days=2)).strftime('%Y-%m-%d %H:%M:%S')"/>
+        <field name="order_line" eval="[Command.create({'product_id': ref('product_rental_washer'), 'product_uom_qty': 1})]"/>
+    </record>
+    <function model="sale.order" name="action_confirm" eval="[[ref('rental_order_washer')]]"/>
+    <function model="sale.order" name="_rental_process_demo" eval="[[ref('rental_order_washer')], 'pickup']"/>
+
+</odoo>
