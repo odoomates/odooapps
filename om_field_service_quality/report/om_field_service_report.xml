@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="report_fs_job_document_quality" inherit_id="om_field_service.report_fs_job_document">
+        <xpath expr="//div[@name='checklist']" position="after">
+            <t t-set="quality_checks" t-value="doc.sudo()._om_quality_checks().sorted('id')"/>
+            <div t-if="quality_checks" class="mb-3" name="quality_checks" style="page-break-inside: avoid;">
+                <h5>Quality Checks</h5>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th class="text-start">Check</th>
+                            <th class="text-start">Result</th>
+                            <th class="text-end">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="quality_checks" t-as="check">
+                            <td>
+                                <span t-out="check.title or check.point_id.name or check.name"/>
+                                <div t-if="check.reason_id" class="text-muted small">
+                                    <span t-field="check.reason_id"/>
+                                </div>
+                            </td>
+                            <td>
+                                <t t-foreach="check.measure_line_ids.filtered(lambda l: l._has_value())" t-as="line">
+                                    <div>
+                                        <span t-out="line.display_name"/>:
+                                        <strong t-out="line._format_value()"/>
+                                        <span t-if="line.test_kind == 'measure' and (line.norm_min or line.norm_max)" class="text-muted small">
+                                            (<span t-out="line.norm_min"/> - <span t-out="line.norm_max"/>)
+                                        </span>
+                                    </div>
+                                </t>
+                                <div t-if="check.photo_ids">
+                                    <t t-foreach="check.photo_ids" t-as="photo">
+                                        <img t-att-src="image_data_uri(photo.raw)" style="max-height: 70px; max-width: 100px; margin: 2px 4px 2px 0;" alt="Photo"/>
+                                    </t>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <span t-field="check.state"/>
+                                <div t-if="check.is_overridden" class="text-muted small">Overridden</div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

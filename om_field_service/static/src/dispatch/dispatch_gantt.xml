@@ -10,12 +10,21 @@
         <button type="button" class="btn btn-secondary o_fs_button_map" t-on-click="() => this.openMap()">
             <i class="oi me-1" data-icon="map"/>Map
         </button>
+        <button type="button" class="btn btn-secondary o_fs_button_routes" t-on-click="() => this.openRoutes()">
+            <i class="oi me-1" data-icon="near_me"/>Optimise Routes
+        </button>
     </t>
 
     <t t-name="om_field_service.DispatchGanttController" t-inherit="om_web_gantt.GanttController" t-inherit-mode="primary">
         <xpath expr="//t[@t-component='this.props.Renderer']" position="replace">
-            <div class="d-flex flex-grow-1 overflow-hidden o_fs_dispatch_body">
-                <t t-component="this.props.Renderer" t-props="this.rendererProps"/>
+            <div class="d-flex flex-grow-1 overflow-hidden o_fs_dispatch_body"
+                t-att-class="{ o_fs_dragging: this.dispatch.dragJob }">
+                <div class="d-flex flex-grow-1 overflow-hidden o_fs_dispatch_drop"
+                    t-on-dragover="(ev) => this.onDragOver(ev)"
+                    t-on-dragleave="(ev) => this.onDragLeave(ev)"
+                    t-on-drop="(ev) => this.onDrop(ev)">
+                    <t t-component="this.props.Renderer" t-props="this.rendererProps"/>
+                </div>
                 <aside t-if="this.dispatch.showPanel" class="o_fs_dispatch_panel border-start bg-view d-flex flex-column">
                     <div class="d-flex align-items-center px-3 py-2 border-bottom">
                         <h5 class="mb-0 me-auto">Jobs to Plan</h5>
@@ -27,9 +36,14 @@
                     <div class="overflow-auto flex-grow-1 p-2">
                         <p t-if="!this.dispatch.jobs.length" class="text-muted small p-2">Every job is planned.</p>
                         <t t-foreach="this.dispatch.jobs" t-as="job" t-key="job.id">
-                            <div class="card mb-2 o_fs_dispatch_job">
+                            <div class="card mb-2 o_fs_dispatch_job" draggable="true"
+                                t-att-data-job-id="job.id"
+                                title="Drag onto a technician at a time to plan it"
+                                t-on-dragstart="(ev) => this.onJobDragStart(ev, job)"
+                                t-on-dragend="() => this.onJobDragEnd()">
                                 <div class="card-body p-2">
                                     <div class="d-flex align-items-baseline gap-2">
+                                        <i class="oi text-muted o_fs_drag_handle" data-icon="drag_indicator"/>
                                         <span class="small text-muted" t-out="job.number"/>
                                         <span class="ms-auto text-warning small" t-if="this.priorityStars(job)">
                                             <t t-foreach="[...Array(this.priorityStars(job)).keys()]" t-as="star" t-key="star">
@@ -53,7 +67,8 @@
                             </div>
                         </t>
                         <p class="small text-muted p-2 mb-0">
-                            Or click the search button of a cell to plan jobs on that technician at that time.
+                            Drag a job onto a technician at a time, or click the search button of a cell to plan
+                            jobs on that technician at that time.
                         </p>
                     </div>
                 </aside>

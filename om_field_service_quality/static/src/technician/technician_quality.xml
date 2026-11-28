@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_field_service_quality.TechnicianJob" t-inherit="om_field_service.TechnicianJob" t-inherit-mode="extension">
+        <xpath expr="//div[@name='extra_sections']" position="before">
+            <div t-if="job.extra.quality and job.extra.quality.length" class="card mb-3 o_fs_tech_quality">
+                <div class="card-header d-flex align-items-center">
+                    <strong>Quality Checks</strong>
+                    <span class="ms-auto small text-muted">
+                        <t t-out="job.extra.quality.length - this.qualityTodo"/> / <t t-out="job.extra.quality.length"/>
+                    </span>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <t t-foreach="job.extra.quality" t-as="check" t-key="check.id">
+                        <li class="list-group-item py-2 d-flex align-items-center gap-2 o_fs_tech_quality_check"
+                            role="button" t-on-click="() => this.openQualityChecks(check)">
+                            <div class="flex-grow-1">
+                                <div><t t-out="check.title"/><span t-if="check.blocking" class="text-danger"> *</span></div>
+                                <div t-if="check.result" class="small text-muted" t-out="check.result"/>
+                            </div>
+                            <span class="badge" t-att-class="this.qualityClass(check)" t-out="check.state_label"/>
+                        </li>
+                    </t>
+                </ul>
+                <div t-if="this.qualityTodo and !job.closed" class="card-body p-2">
+                    <button type="button" class="btn btn-primary w-100 o_fs_tech_quality_start"
+                        t-on-click="() => this.openQualityChecks()">
+                        <i class="oi" data-icon="checklist"/> Do the Quality Checks
+                    </button>
+                </div>
+            </div>
+        </xpath>
+    </t>
+
+</templates>

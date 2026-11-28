@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_fs_job_type_view_form_quality" model="ir.ui.view">
+        <field name="name">om.fs.job.type.form.quality</field>
+        <field name="model">om.fs.job.type</field>
+        <field name="inherit_id" ref="om_field_service.om_fs_job_type_view_form"/>
+        <field name="arch" type="xml">
+            <page name="checklist" position="after">
+                <page name="quality" string="Quality Checks">
+                    <field name="quality_point_ids" context="{'default_point_type': 'fs_job', 'default_fs_job_type_ids': [id]}">
+                        <list>
+                            <field name="sequence" widget="handle"/>
+                            <field name="code" optional="show"/>
+                            <field name="name"/>
+                            <field name="test_type"/>
+                            <field name="frequency" optional="show"/>
+                            <field name="is_blocking" widget="boolean_toggle"/>
+                            <field name="create_alert" optional="show"/>
+                        </list>
+                    </field>
+                    <div class="text-muted">
+                        The technician does these checks on site: pass or fail, measures with their tolerances,
+                        photos. A failed check can raise a non-conformance.
+                    </div>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>

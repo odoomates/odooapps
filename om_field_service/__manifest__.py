@@ -24,6 +24,7 @@
         'data/mail_template_data.xml',
         'data/portal_entry_data.xml',
         'wizard/om_fs_plan_wizard_views.xml',
+        'wizard/om_fs_route_wizard_views.xml',
         'views/om_fs_job_type_views.xml',
         'views/project_task_views.xml',
         'views/project_project_views.xml',
@@ -33,6 +34,7 @@
         'views/res_config_settings_views.xml',
         'views/om_field_service_menus.xml',
         'views/portal_templates.xml',
+        'views/tracking_templates.xml',
     ],
     'demo': [
         'demo/om_field_service_demo.xml',

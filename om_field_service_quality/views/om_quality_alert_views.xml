@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_om_quality_alert_search_fs" model="ir.ui.view">
+        <field name="name">om.quality.alert.search.field.service</field>
+        <field name="model">om.quality.alert</field>
+        <field name="inherit_id" ref="om_quality.view_om_quality_alert_search"/>
+        <field name="arch" type="xml">
+            <field name="partner_id" position="after">
+                <field name="fs_job_id"/>
+            </field>
+            <xpath expr="//group" position="before">
+                <filter name="fs_jobs" string="Field Service Jobs" domain="[('fs_job_id', '!=', False)]"/>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_om_fs_quality_alert" model="ir.actions.act_window">
+        <field name="name">Non-conformances</field>
+        <field name="res_model">om.quality.alert</field>
+        <field name="view_mode">kanban,list,form</field>
+        <field name="domain">[('fs_job_id', '!=', False)]</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No non-conformance from the jobs</p>
+            <p>A quality check failed on a job raises a non-conformance, linked to the job and the customer.</p>
+        </field>
+    </record>
+
+    <menuitem id="menu_om_fs_quality_alerts" name="Non-conformances" parent="om_field_service.menu_om_fs_reporting"
+        action="action_om_fs_quality_alert" sequence="30"/>
+
+</odoo>

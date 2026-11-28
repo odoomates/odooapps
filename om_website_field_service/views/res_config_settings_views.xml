@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_website_field_service</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="om_field_service.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <block name="fs_messages" position="before">
+                <block title="Online Requests" name="fs_online_requests">
+                    <setting id="fs_request_form" string="Service Request Form"
+                        help="Customers ask for an intervention on the website: the request becomes a job to plan">
+                        <div class="mt-2">
+                            <a href="/field-service/request" target="_blank" class="btn-link" role="button">
+                                <i class="oi me-1" data-icon="open_in_new"/>Open the form
+                            </a>
+                        </div>
+                        <div class="mt-2">
+                            <label for="fs_request_project_id" class="o_light_label me-2"/>
+                            <field name="fs_request_project_id" options="{'no_create': True}"/>
+                        </div>
+                    </setting>
+                    <setting id="fs_request_review" string="Review Online Requests"
+                        help="A dispatcher accepts each online request before it is offered for planning">
+                        <field name="fs_request_review"/>
+                    </setting>
+                </block>
+            </block>
+        </field>
+    </record>
+
+</odoo>

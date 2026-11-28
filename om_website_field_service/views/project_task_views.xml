@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs_inherit_website" model="ir.ui.view">
+        <field name="name">project.task.form.field.service.website</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_form_fs"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_fs_plan']" position="before">
+                <button name="action_fs_accept_request" type="object" string="Accept Request" class="btn-primary"
+                    invisible="not fs_to_review" groups="om_field_service.group_fs_manager"/>
+                <button name="action_fs_reject_request" type="object" string="Decline"
+                    invisible="not fs_to_review" groups="om_field_service.group_fs_manager"
+                    confirm="Decline this request? The job is cancelled."/>
+            </xpath>
+            <xpath expr="//div[hasclass('oe_title')]" position="before">
+                <field name="fs_online_request" invisible="1"/>
+                <field name="fs_to_review" invisible="1"/>
+                <div class="alert alert-warning mb-2" role="status" invisible="not fs_to_review">
+                    Online request to review: accept it to plan it, or decline it.
+                </div>
+            </xpath>
+            <xpath expr="//group[@name='planning']/field[@name='date_deadline']" position="before">
+                <label for="fs_preferred_date" string="Preferred" invisible="not fs_online_request and not fs_preferred_date"/>
+                <div class="o_row" invisible="not fs_online_request and not fs_preferred_date">
+                    <field name="fs_preferred_date" widget="daterange"
+                        options="{'end_date_field': 'fs_preferred_date_to'}"/>
+                    <field name="fs_preferred_date_to" invisible="1"/>
+                    <field name="fs_preferred_time"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_task_view_list_fs_inherit_website" model="ir.ui.view">
+        <field name="name">project.task.list.field.service.website</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_list_fs"/>
+        <field name="arch" type="xml">
+            <field name="job_state" position="before">
+                <field name="fs_preferred_date" optional="hide"/>
+                <field name="fs_to_review" optional="hide" widget="boolean"/>
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_kanban_fs_inherit_website" model="ir.ui.view">
+        <field name="name">project.task.kanban.field.service.website</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_kanban_fs"/>
+        <field name="arch" type="xml">
+            <field name="job_type_id" position="after">
+                <field name="fs_to_review" invisible="1"/>
+                <span class="badge text-bg-warning align-self-start" invisible="not fs_to_review">To Review</span>
+            </field>
+        </field>
+    </record>
+
+    <record id="project_task_view_search_fs_inherit_website" model="ir.ui.view">
+        <field name="name">project.task.search.field.service.website</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_search_fs"/>
+        <field name="arch" type="xml">
+            <filter name="unplanned" position="after">
+                <filter name="online_requests" string="Online Requests" domain="[('fs_online_request', '=', True)]"/>
+                <filter name="to_review" string="To Review" domain="[('fs_to_review', '=', True)]"/>
+            </filter>
+        </field>
+    </record>
+
+</odoo>

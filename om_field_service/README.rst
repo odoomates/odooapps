@@ -31,20 +31,46 @@ Planning and dispatch
   the day or their work address) and least loaded, with the conflicts of the
   choice (overlap, time off, outside working hours).
 * **Dispatch** Gantt by technician or by team: the jobs to plan on the side,
-  planned from their card or with the search button of a cell (first free time
-  of the technician in the cell). Moving or resizing a slot moves the job.
+  dragged onto a technician at a time, planned from their card or with the
+  search button of a cell (first free time of the technician in the cell).
+  Moving or resizing a slot moves the job.
 * **Map** of the jobs of the day, tomorrow, the next 7 days or all open jobs
   (Leaflet with OpenStreetMap tiles), coloured by status, with the route of a
   technician in the order of their jobs and a link to open it in a maps app.
-* The customer is told by email when the technician starts travelling (a hook
-  lets another module send it through a messaging app too).
+* **Optimise Routes**: the planned jobs of a technician for a day put in the
+  shortest order from their work address (or the company address), with
+  nearest neighbour then 2-opt on the straight-line distance, and planned one
+  after the other with the travel time at an average speed. No external
+  service, no API key. Jobs started, done by a crew, over several days or
+  without GPS coordinates keep their time. The route opens in a maps app.
+* The customer is told by email when the technician starts travelling. Hooks
+  let other modules send the job planned, technician on the way and job done
+  messages through a messaging app too (WhatsApp with the Field Service -
+  WhatsApp module).
+
+Live tracking page
+==================
+
+* When the technician taps *Start Travel*, the customer gets a link (in the
+  "on the way" email, and in the WhatsApp message with Field Service -
+  WhatsApp) to a page with the technician (name and photo), the job, the
+  status steps (planned, on the way, arrived, done) and the arrival time.
+* The phone of the technician shares its position (Geolocation of the browser,
+  with the consent of the technician and a switch to stop it) about every 30
+  seconds while they are on the way only. Only the last position is kept on
+  the job, and it is cleared when the technician arrives.
+* The page shows both on an OpenStreetMap map (Leaflet) and computes the
+  arrival time from the straight-line distance and the average travel speed of
+  the settings. It refreshes by itself and expires once the job is done.
+* Setting *Live Tracking Page* to turn it off.
 
 Technician phone screen
 =======================
 
 *Field Service > My Day*, made for a phone:
 
-* The jobs of the day in order, other days with the arrows.
+* The jobs of the day in order, other days with the arrows; **Optimise my
+  day** and the route of the day in a maps app.
 * One-tap navigation (geo link, Google Maps, Apple Maps, OpenStreetMap) and a
   call button.
 * Start Travel, Start Work, Pause, Stop: the timers write timesheets, travel
@@ -57,7 +83,9 @@ Technician phone screen
 Customers
 =========
 
-The portal shows the jobs of the customer and their reports.
+The portal shows the jobs of the customer with their status, planned date,
+technicians and signed reports. The Website Field Service module adds an
+online service request form.
 
 Security
 ========
@@ -69,8 +97,9 @@ Settings
 ========
 
 *Field Service > Configuration > Settings*: email the customer when the
-technician is on the way, email the report when the job is done, record travel
-time.
+technician is on the way, live tracking page, email the report when the job is
+done, record travel time, average travel speed of the route optimisation and of
+the arrival time.
 
 Credits
 =======

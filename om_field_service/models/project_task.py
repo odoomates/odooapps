@@ -1,4 +1,6 @@
 import base64
+import math
+import uuid
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
@@ -6,6 +8,9 @@ from odoo import api, fields, models
 from odoo.exceptions import UserError
 from odoo.fields import Command, Domain
 from odoo.tools import html2plaintext, plaintext2html
+
+from odoo.addons.om_field_service.wizard.om_fs_plan_wizard import _distance_km
+from odoo.addons.om_field_service.wizard.om_fs_route_wizard import maps_route_url
 
 JOB_STATES = [
     ('new', 'New'),
@@ -71,6 +76,17 @@ class ProjectTask(models.Model):
     ], compute='_compute_fs_my_timer', string="My Timer")
     fs_my_timer_start = fields.Datetime(compute='_compute_fs_my_timer', string="My Timer Start")
     fs_signature_required = fields.Boolean(related='job_type_id.signature_required', string="Signature Needed")
+    # live tracking page of the customer: the last position of the technician, only while on the way
+    fs_track_token = fields.Char(string="Tracking Token", copy=False, readonly=True, index='btree_not_null',
+                                 groups='om_field_service.group_fs_user')
+    fs_track_latitude = fields.Float(string="Technician Latitude", digits=(10, 7), copy=False, readonly=True,
+                                     groups='om_field_service.group_fs_user')
+    fs_track_longitude = fields.Float(string="Technician Longitude", digits=(10, 7), copy=False, readonly=True,
+                                      groups='om_field_service.group_fs_user')
+    fs_track_date = fields.Datetime(string="Position Updated On", copy=False, readonly=True,
+                                    groups='om_field_service.group_fs_user')
+    fs_tracking_url = fields.Char(compute='_compute_fs_tracking_url', string="Tracking Link",
+                                  help="Page where the customer follows the technician on the way.")
 
     # ------------------------------------------------------------------
     # Computes
@@ -93,6 +109,13 @@ class ProjectTask(models.Model):
             partner = task.site_partner_id
             task.site_address = partner._fs_address_line() if partner else False
             task.site_map_url = partner._fs_map_urls().get('google') if partner else False
+
+    @api.depends('fs_track_token', 'company_id.fs_live_tracking')
+    def _compute_fs_tracking_url(self):
+        for task in self:
+            token = task.sudo().fs_track_token
+            enabled = task._fs_company().fs_live_tracking if task.is_field_service else False
+            task.fs_tracking_url = f'{task.get_base_url()}/field-service/track/{token}' if token and enabled else False
 
     @api.depends('checklist_line_ids.is_done')
     def _compute_checklist_progress(self):
@@ -180,10 +203,17 @@ class ProjectTask(models.Model):
     def write(self, vals):
         if 'technician_ids' in vals:
             old_users = {task.id: task.sudo().technician_ids.user_id for task in self}
+        planning = self.filtered(lambda t: t.job_state != 'planned') if vals.get('job_state') == 'planned' else None
         res = super().write(vals)
+        if vals.get('job_state') and vals['job_state'] != 'travelling':
+            # the position of the technician is only kept while they are on the way
+            self.sudo().filtered('fs_track_date').write(
+                {'fs_track_latitude': 0.0, 'fs_track_longitude': 0.0, 'fs_track_date': False})
         jobs = self.filtered('is_field_service')
         if not jobs:
             return res
+        if planning:
+            (planning & jobs)._fs_on_planned()
         if vals.get('project_id'):
             jobs.filtered(lambda j: not j.job_number).with_context(om_fs_no_sync=True).write({
                 'job_number': self.env['ir.sequence'].next_by_code('om.fs.job')})
@@ -196,6 +226,14 @@ class ProjectTask(models.Model):
         if SLOT_SYNC_FIELDS & set(vals) and not self.env.context.get('om_fs_no_sync'):
             jobs._fs_sync_slots()
         return res
+
+    def _fs_on_planned(self):
+        """ Hook called when jobs get planned (from New to Planned): tell the customer through the
+        channels of :meth:`_fs_notify_channels`. """
+        if self.env.context.get('install_mode') or self.env.context.get('om_fs_no_notify'):
+            return
+        for job in self.filtered('partner_id'):
+            job._fs_notify_channels('planned')
 
     def _fs_sync_assignees(self, old_users=None):
         """ The users of the technicians are assignees of the job. """
@@ -361,9 +399,52 @@ class ProjectTask(models.Model):
             else:
                 job._fs_my_timers()._fs_stop()
             job.job_state = 'travelling'
+            job._fs_tracking_start()
             if job._fs_company().fs_notify_on_the_way:
                 job._fs_notify_on_the_way()
         return True
+
+    # ------------------------------------------------------------------
+    # Live tracking
+    # ------------------------------------------------------------------
+
+    def _fs_tracking_start(self):
+        """ The link of the tracking page, made when the technician leaves for the site. """
+        for job in self.sudo():
+            if job._fs_company().fs_live_tracking and not job.fs_track_token:
+                job.fs_track_token = uuid.uuid4().hex
+
+    def fs_mobile_set_position(self, latitude, longitude):
+        """ Last position of the technician on the way, from the browser of their phone.
+
+        :return: whether the job still wants the position (False: stop sharing it)
+        """
+        self.ensure_one()
+        job = self.sudo()
+        if job.job_state != 'travelling' or not job._fs_company().fs_live_tracking \
+                or self.env.user not in job.technician_ids.user_id | job.user_ids:
+            return False
+        try:
+            latitude, longitude = float(latitude), float(longitude)
+        except (TypeError, ValueError):
+            return True
+        if not (-90 <= latitude <= 90 and -180 <= longitude <= 180):
+            return True
+        job.write({'fs_track_latitude': latitude, 'fs_track_longitude': longitude,
+                   'fs_track_date': fields.Datetime.now()})
+        return True
+
+    def _fs_tracking_eta(self):
+        """ Minutes to the site from the last position, at the average travel speed, or None. """
+        self.ensure_one()
+        job = self.sudo()
+        site = job.site_partner_id or job.partner_id
+        if job.job_state != 'travelling' or not job.fs_track_date or \
+                not (site.partner_latitude or site.partner_longitude):
+            return None
+        km = _distance_km(job.fs_track_latitude, job.fs_track_longitude, site.partner_latitude, site.partner_longitude)
+        speed = max(job._fs_company().fs_route_speed or 40.0, 1.0)
+        return max(1, math.ceil(km / speed * 60))
 
     def action_fs_start_work(self):
         self._fs_check_open()
@@ -414,8 +495,11 @@ class ProjectTask(models.Model):
             if closed_stage:
                 values['stage_id'] = closed_stage.id
             job.with_context(om_fs_no_sync=True).write(values)
-            if job._fs_company().fs_send_report and job.partner_id.email:
-                job._fs_send_report()
+            if job._fs_company().fs_send_report:
+                if job.partner_id.email:
+                    job._fs_send_report()
+                elif job.partner_id:
+                    job._fs_notify_channels('report')
         return True
 
     def action_fs_cancel(self):
@@ -454,7 +538,8 @@ class ProjectTask(models.Model):
         return True
 
     def _fs_notify_channels(self, event):
-        """ Hook to send a job event (``on_the_way``, ``report``) through another channel. """
+        """ Hook to send a job event (``planned``, ``on_the_way``, ``report``) through another
+        channel. """
         return False
 
     def _fs_send_report(self):
@@ -537,10 +622,34 @@ class ProjectTask(models.Model):
             | Domain('job_state', 'in', ACTIVE_STATES)
         ))
         jobs = jobs.sorted(lambda j: (j.planned_start or datetime.max, j.id))
+        employee = self.env.user.employee_id
         return {
             'day': fields.Date.to_string(local_day),
             'jobs': [job._fs_mobile_summary() for job in jobs],
+            'route_url': jobs._fs_route_url(employee) if employee else False,
+            'can_optimise': bool(employee.sudo().is_technician) and len(jobs.filtered('planned_start')) > 1,
         }
+
+    def _fs_route_url(self, employee):
+        """ Maps link of the route of the technician through these jobs, in their planned order,
+        from their start address. """
+        start = employee._fs_route_start_partner()
+        points = []
+        for partner in [start] + [job.site_partner_id or job.partner_id
+                                  for job in self.filtered('planned_start').sorted('planned_start')]:
+            if partner and (partner.partner_latitude or partner.partner_longitude):
+                points.append((partner.partner_latitude, partner.partner_longitude))
+        return maps_route_url(points)
+
+    @api.model
+    def fs_mobile_optimise_action(self, day=None):
+        """ Open the route optimisation of the current user for the day. """
+        employee = self._fs_my_employee()
+        wizard = self.env['om.fs.route.wizard'].create({
+            'employee_id': employee.id,
+            'date': fields.Date.to_date(day) if day else fields.Date.context_today(self),
+        })
+        return wizard._fs_reopen()
 
     def _fs_dt(self, value):
         return fields.Datetime.to_string(value) if value else False
@@ -590,6 +699,7 @@ class ProjectTask(models.Model):
             'technicians': ', '.join(self.technician_ids.mapped('name')),
             'closed': self.job_state in CLOSED_STATES,
             'can_travel': self._fs_company().fs_travel_timesheet,
+            'tracking': self.job_state == 'travelling' and self._fs_company().fs_live_tracking,
             'extra': {},
         })
         return data
@@ -726,7 +836,9 @@ class ProjectTask(models.Model):
         close a job of last week with its time, checklist and work done. """
         plans = [
             ('om_field_service.job_bayview', 0, 9, 1.5),
+            ('om_field_service.job_sunset_thermostat', 0, 10.5, 1),
             ('om_field_service.job_harbor', 0, 13, 2),
+            ('om_field_service.job_hills_softener', 0, 15.5, 1),
             ('om_field_service.job_sunset', 1, 9, 3),
             ('om_field_service.job_bayview_old', -7, 10, 2),
         ]
@@ -736,7 +848,7 @@ class ProjectTask(models.Model):
             if not job:
                 continue
             tz = ZoneInfo(job.technician_ids[:1].resource_id.tz or self.env.user.tz or 'UTC')
-            start = datetime.combine(today + timedelta(days=days), time(hour), tz)
+            start = datetime.combine(today + timedelta(days=days), time(int(hour), int(hour % 1 * 60)), tz)
             start = start.astimezone(UTC).replace(tzinfo=None)
             job.write({'planned_start': start, 'planned_end': start + timedelta(hours=duration)})
         old = self.env.ref('om_field_service.job_bayview_old', raise_if_not_found=False)

@@ -27,6 +27,16 @@
                 <i class="oi" data-icon="chevron_right"/>
             </button>
         </div>
+        <div t-if="this.state.canOptimise or this.state.routeUrl" class="d-flex gap-2 mb-3 o_fs_tech_route">
+            <button t-if="this.state.canOptimise" type="button" class="btn btn-secondary flex-grow-1 o_fs_tech_optimise"
+                t-on-click="() => this.optimiseDay()">
+                <i class="oi me-1" data-icon="near_me"/>Optimise my day
+            </button>
+            <a t-if="this.state.routeUrl" t-att-href="this.state.routeUrl" target="_blank" rel="noopener"
+                class="btn btn-light flex-grow-1 o_fs_tech_route_map">
+                <i class="oi me-1" data-icon="map"/>Route in Maps
+            </a>
+        </div>
         <div t-if="!this.state.jobs.length" class="text-center text-muted py-5">
             <i class="oi fs-1 d-block mb-2" data-icon="today"/>
             No job for you on this day.
@@ -118,6 +128,14 @@
                         <div>Travel <strong t-out="this.formatHours(job.travel_hours)"/></div>
                         <div>Work <strong t-out="this.formatHours(job.work_hours)"/></div>
                     </div>
+                </div>
+                <div t-if="job.tracking" class="form-check form-switch mb-2 o_fs_tech_share">
+                    <input class="form-check-input" type="checkbox" role="switch" id="o_fs_share_location"
+                        t-att-checked="this.state.shareLocation" t-on-change="(ev) => this.toggleShareLocation(ev)"/>
+                    <label class="form-check-label small" for="o_fs_share_location">
+                        Share my position with the customer until I arrive
+                    </label>
+                    <div t-if="this.state.locationError" class="small text-danger" t-out="this.state.locationError"/>
                 </div>
                 <div t-if="!job.closed" class="d-grid gap-2 o_fs_tech_timer_buttons">
                     <t t-if="!job.timer">

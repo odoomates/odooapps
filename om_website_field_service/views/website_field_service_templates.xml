@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="fs_request_form" name="Field Service: Service Request">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Service Request</t>
+            <div id="wrap" class="o_om_website_fs">
+                <div class="oe_structure" id="oe_structure_fs_request_top">
+                    <section class="pt-5 pb-3">
+                        <div class="container">
+                            <h1>Request a service visit</h1>
+                            <p class="lead text-muted mb-0">Tell us what needs to be done and where: a technician will be planned and you will receive the confirmation.</p>
+                        </div>
+                    </section>
+                </div>
+                <div class="container pb-5">
+                    <div class="row">
+                        <div class="col-12 col-lg-8">
+                            <div t-if="errors" class="alert alert-danger" role="alert">Some information is missing: see the fields below.</div>
+                            <form action="/field-service/request/submit" method="post" enctype="multipart/form-data" class="o_fs_request_form">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+
+                                <h4 class="mt-2 mb-3">Your request</h4>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold" for="fs_name">What do you need? *</label>
+                                    <input id="fs_name" type="text" name="name" required="required" maxlength="200"
+                                        t-attf-class="form-control #{'is-invalid' if errors.get('name') else ''}"
+                                        t-att-value="values.get('name')" placeholder="e.g. Boiler does not start"/>
+                                    <div t-if="errors.get('name')" class="invalid-feedback d-block" t-out="errors.get('name')"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold" for="fs_description">Description</label>
+                                    <textarea id="fs_description" name="description" rows="5" class="form-control"
+                                        placeholder="What happens, since when, how to access the site..." t-out="values.get('description') or ''"/>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-7 mb-3">
+                                        <label class="form-label fw-bold" for="fs_equipment">Equipment</label>
+                                        <input id="fs_equipment" type="text" name="equipment" class="form-control"
+                                            t-att-value="values.get('equipment')" placeholder="Brand and model, where it is"/>
+                                    </div>
+                                    <div class="col-md-5 mb-3">
+                                        <label class="form-label fw-bold" for="fs_serial">Serial number</label>
+                                        <input id="fs_serial" type="text" name="serial" class="form-control"
+                                            t-att-value="values.get('serial')" placeholder="If you know it"/>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold" for="fs_photos">Photos</label>
+                                    <input id="fs_photos" type="file" name="photos" accept="image/*" multiple="multiple" class="form-control"/>
+                                    <div class="form-text">Up to 5 pictures of the problem or of the equipment label.</div>
+                                </div>
+
+                                <h4 class="mt-4 mb-3">When</h4>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold" for="fs_date_from">Preferred from</label>
+                                        <input id="fs_date_from" type="date" name="preferred_date" t-att-min="today"
+                                            t-attf-class="form-control #{'is-invalid' if errors.get('preferred_date') else ''}"
+                                            t-att-value="values.get('preferred_date')"/>
+                                        <div t-if="errors.get('preferred_date')" class="invalid-feedback d-block" t-out="errors.get('preferred_date')"/>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold" for="fs_date_to">Until</label>
+                                        <input id="fs_date_to" type="date" name="preferred_date_to" t-att-min="today"
+                                            t-attf-class="form-control #{'is-invalid' if errors.get('preferred_date_to') else ''}"
+                                            t-att-value="values.get('preferred_date_to')"/>
+                                        <div t-if="errors.get('preferred_date_to')" class="invalid-feedback d-block" t-out="errors.get('preferred_date_to')"/>
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label class="form-label fw-bold" for="fs_time">Time of day</label>
+                                        <select id="fs_time" name="preferred_time" class="form-select">
+                                            <t t-foreach="preferred_times" t-as="option">
+                                                <option t-att-value="option[0]" t-att-selected="values.get('preferred_time') == option[0]" t-out="option[1]"/>
+                                            </t>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <h4 class="mt-4 mb-3">Where</h4>
+                                <div t-if="sites" class="mb-3">
+                                    <label class="form-label fw-bold" for="fs_site">Site</label>
+                                    <select id="fs_site" name="site_id" class="form-select">
+                                        <t t-foreach="sites" t-as="site">
+                                            <option t-att-value="site.id" t-att-selected="str(site.id) == str(values.get('site_id'))"
+                                                t-out="site.display_name + ' - ' + ', '.join(filter(None, [site.street, site.city]))"/>
+                                        </t>
+                                        <option value="" t-att-selected="values.get('site_id') == ''">Another address (below)</option>
+                                    </select>
+                                </div>
+                                <div t-attf-class="o_fs_request_address #{'' if not sites else 'border rounded p-3 mb-3'}">
+                                    <div t-if="sites" class="small text-muted mb-2">Only for another address:</div>
+                                    <div class="mb-3">
+                                        <label class="form-label fw-bold" for="fs_street">Street<t t-if="not sites"> *</t></label>
+                                        <input id="fs_street" type="text" name="street"
+                                            t-attf-class="form-control #{'is-invalid' if errors.get('street') else ''}"
+                                            t-att-value="values.get('street')"/>
+                                        <div t-if="errors.get('street')" class="invalid-feedback d-block" t-out="errors.get('street')"/>
+                                    </div>
+                                    <div class="mb-3">
+                                        <input type="text" name="street2" class="form-control" t-att-value="values.get('street2')"
+                                            placeholder="Building, floor, apartment" aria-label="Street 2"/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-3 mb-3">
+                                            <label class="form-label fw-bold" for="fs_zip">ZIP</label>
+                                            <input id="fs_zip" type="text" name="zip" class="form-control" t-att-value="values.get('zip')"/>
+                                        </div>
+                                        <div class="col-md-5 mb-3">
+                                            <label class="form-label fw-bold" for="fs_city">City<t t-if="not sites"> *</t></label>
+                                            <input id="fs_city" type="text" name="city" class="form-control" t-att-value="values.get('city')"/>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <label class="form-label fw-bold" for="fs_country">Country</label>
+                                            <select id="fs_country" name="country_id" class="form-select">
+                                                <option value="">Country...</option>
+                                                <t t-foreach="countries" t-as="country">
+                                                    <option t-att-value="country.id" t-out="country.name"
+                                                        t-att-selected="str(country.id) == str(values.get('country_id')) if values.get('country_id') else country == default_country"/>
+                                                </t>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <h4 class="mt-4 mb-3">Contact</h4>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold" for="fs_contact">Your name<t t-if="is_public"> *</t></label>
+                                        <input id="fs_contact" type="text" name="contact_name" t-att-readonly="not is_public"
+                                            t-attf-class="form-control #{'is-invalid' if errors.get('contact_name') else ''}"
+                                            t-att-value="values.get('contact_name')"/>
+                                        <div t-if="errors.get('contact_name')" class="invalid-feedback d-block" t-out="errors.get('contact_name')"/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold" for="fs_phone">Phone</label>
+                                        <input id="fs_phone" type="tel" name="phone" class="form-control" t-att-value="values.get('phone')"
+                                            placeholder="The technician calls you on the way"/>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label fw-bold" for="fs_email">Email<t t-if="is_public"> *</t></label>
+                                        <input id="fs_email" type="email" name="email" t-att-readonly="not is_public"
+                                            t-attf-class="form-control #{'is-invalid' if errors.get('email') else ''}"
+                                            t-att-value="values.get('email')"/>
+                                        <div t-if="errors.get('email')" class="invalid-feedback d-block" t-out="errors.get('email')"/>
+                                    </div>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-lg mt-2 o_fs_request_submit">Send the request</button>
+                            </form>
+                        </div>
+                        <div class="col-12 col-lg-4 mt-5 mt-lg-0">
+                            <div class="card bg-light border-0">
+                                <div class="card-body">
+                                    <h5 class="card-title">How it works</h5>
+                                    <ol class="small text-muted ps-3 mb-0">
+                                        <li class="mb-1">Send your request with a few photos.</li>
+                                        <li class="mb-1">We plan a technician, at your preferred dates when we can.</li>
+                                        <li class="mb-1">The technician tells you when they are on the way.</li>
+                                        <li>You sign the job report on site and receive it by email.</li>
+                                    </ol>
+                                    <a t-if="not is_public" href="/my/field_service" class="btn btn-link px-0 mt-2">See my service jobs</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="oe_structure" id="oe_structure_fs_request_bottom"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="fs_request_thanks" name="Field Service: Request Sent">
+        <t t-call="website.layout">
+            <t t-set="additional_title">Request sent</t>
+            <div id="wrap" class="o_om_website_fs">
+                <div class="container py-5">
+                    <div class="row justify-content-center">
+                        <div class="col-12 col-lg-8 text-center">
+                            <i class="oi oi-filled text-success" data-icon="check_circle" style="font-size: 4rem;"/>
+                            <h1 class="mt-3">Thank you!</h1>
+                            <t t-if="job">
+                                <p class="lead">
+                                    Your request <strong class="o_fs_request_number" t-out="job.job_number or job.name"/> is registered.
+                                </p>
+                                <p class="text-muted">We will plan a technician and confirm the date of the visit.</p>
+                                <a t-if="not is_public" t-att-href="'/my/field_service/%s' % job.id" class="btn btn-primary">Follow my request</a>
+                            </t>
+                            <p t-else="" class="lead">Your request has been sent. We will get back to you soon.</p>
+                            <p class="mt-4"><a href="/field-service/request">Send another request</a></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the status the customer understands: a request not planned yet waits for planning -->
+    <template id="portal_fs_state_badge" name="Field Service: status badge (requests)" inherit_id="om_field_service.portal_fs_state_badge">
+        <xpath expr="//span" position="replace">
+            <span t-attf-class="badge rounded-pill #{'text-bg-success' if job.job_state == 'done' else 'text-bg-info' if job.job_state in ('travelling', 'in_progress') else 'text-bg-warning' if job.job_state == 'waiting_parts' else 'text-bg-light border'}"
+                t-out="job.sudo()._fs_portal_status()"/>
+        </xpath>
+    </template>
+
+    <template id="portal_my_field_service" name="My Field Service Jobs: request button" inherit_id="om_field_service.portal_my_field_service">
+        <xpath expr="//t[@t-call='portal.portal_searchbar']" position="after">
+            <div class="d-flex justify-content-end my-3">
+                <a href="/field-service/request" class="btn btn-primary o_fs_portal_request">
+                    <i class="oi me-1" data-icon="add"/>Request a Service
+                </a>
+            </div>
+        </xpath>
+        <xpath expr="//p[hasclass('text-muted')]" position="inside">
+            <a href="/field-service/request" class="ms-1">Request a service visit.</a>
+        </xpath>
+    </template>
+
+    <template id="portal_my_field_service_job" name="My Field Service Job: preferred dates" inherit_id="om_field_service.portal_my_field_service_job">
+        <xpath expr="//div[@t-if='job.planned_start']" position="before">
+            <div t-if="job.fs_preferred_date and not job.planned_start">
+                <strong>Preferred: </strong>
+                <span t-field="job.fs_preferred_date"/>
+                <t t-if="job.fs_preferred_date_to"> - <span t-field="job.fs_preferred_date_to"/></t>
+                <t t-if="job.fs_preferred_time and job.fs_preferred_time != 'any'">, <span t-field="job.fs_preferred_time"/></t>
+            </div>
+        </xpath>
+        <xpath expr="//div[@t-if='job.site_equipment']" position="before">
+            <div t-if="job.description and job.fs_online_request" class="mb-3">
+                <strong>Your request</strong>
+                <div t-field="job.description"/>
+            </div>
+        </xpath>
+    </template>
+
+</odoo>

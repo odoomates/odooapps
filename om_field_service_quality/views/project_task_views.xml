@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="project_task_view_form_fs_inherit_quality" model="ir.ui.view">
+        <field name="name">project.task.form.field.service.quality</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_form_fs"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header/button[@name='action_fs_done']" position="before">
+                <field name="om_quality_todo_count" invisible="1"/>
+                <field name="om_quality_check_count" invisible="1"/>
+                <button name="action_fs_quality_checks" type="object" string="Quality Checks" class="btn-primary"
+                    invisible="not om_quality_todo_count or job_state in ('done', 'cancelled')"/>
+            </xpath>
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_om_quality_dialog" type="object" class="oe_stat_button" icon="checklist"
+                    invisible="not om_quality_check_count">
+                    <div class="o_stat_info">
+                        <span class="o_stat_value">
+                            <field name="om_quality_todo_count" invisible="not om_quality_todo_count"/>
+                            <span invisible="not om_quality_todo_count"> / </span>
+                            <field name="om_quality_check_count"/>
+                        </span>
+                        <span class="o_stat_text">Quality Checks</span>
+                    </div>
+                </button>
+                <button name="action_om_quality_alerts" type="object" class="oe_stat_button" icon="warning"
+                    invisible="not om_quality_alert_count">
+                    <field name="om_quality_alert_count" widget="statinfo" string="Non-conformances"/>
+                </button>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="project_task_view_list_fs_inherit_quality" model="ir.ui.view">
+        <field name="name">project.task.list.field.service.quality</field>
+        <field name="model">project.task</field>
+        <field name="inherit_id" ref="om_field_service.project_task_view_list_fs"/>
+        <field name="arch" type="xml">
+            <field name="job_state" position="before">
+                <field name="om_quality_state" string="Quality" optional="hide" widget="badge"
+                    decoration-success="om_quality_state == 'passed'" decoration-danger="om_quality_state == 'failed'"
+                    decoration-warning="om_quality_state == 'todo'" invisible="om_quality_state == 'none'"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>

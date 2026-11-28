@@ -263,6 +263,22 @@
         <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_al')])]"/>
     </record>
 
+    <!-- a day of Marc in a long order, for the route optimisation -->
+    <record id="job_sunset_thermostat" model="project.task">
+        <field name="name">Thermostat replacement</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_sunset"/>
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_qdp')])]"/>
+    </record>
+    <record id="job_hills_softener" model="project.task">
+        <field name="name">Water softener check</field>
+        <field name="project_id" ref="project_field_service"/>
+        <field name="partner_id" ref="partner_fs_hills"/>
+        <field name="job_type_id" ref="job_type_repair"/>
+        <field name="technician_ids" eval="[(6, 0, [ref('hr.employee_qdp')])]"/>
+    </record>
+
     <function model="project.task" name="_fs_demo_plan"/>
 
 </odoo>

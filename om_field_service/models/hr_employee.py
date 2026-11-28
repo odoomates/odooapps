@@ -29,6 +29,16 @@ class HrEmployee(models.Model):
         for employee in self:
             employee.fs_job_count = counts.get(employee, 0)
 
+    def _fs_route_start_partner(self):
+        """ Where the day of the technician starts: their work address when it has GPS
+        coordinates, else the address of their company. """
+        self.ensure_one()
+        employee = self.sudo()
+        partner = employee.address_id
+        if not (partner.partner_latitude or partner.partner_longitude):
+            partner = (employee.company_id or self.env.company).partner_id
+        return partner.with_env(self.env)
+
     def action_view_fs_jobs(self):
         self.ensure_one()
         action = self.env['ir.actions.act_window']._for_xml_id('om_field_service.action_om_fs_job')

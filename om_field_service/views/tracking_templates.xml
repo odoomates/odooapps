@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="fs_track_layout" name="Field Service: tracking layout">
+        <t t-set="head">
+            <meta name="viewport" content="width=device-width, initial-scale=1"/>
+            <meta name="robots" content="noindex"/>
+            <t t-call-assets="web.material_symbols_outlined" t-binary="True"/>
+            <t t-call-assets="web.assets_frontend" t-js="false"/>
+            <link rel="stylesheet" href="/om_field_service/static/lib/leaflet/leaflet.css"/>
+            <link rel="stylesheet" href="/om_field_service/static/src/tracking/tracking_page.css"/>
+        </t>
+        <t t-set="title">Your visit</t>
+        <t t-set="body_classname" t-value="'bg-100 o_fs_track_body'"/>
+        <t t-call="web.layout">
+            <div class="container py-4 o_fs_track" style="max-width: 640px;">
+                <div class="text-center mb-3">
+                    <img src="/web/binary/company_logo" alt="Logo" style="max-height: 56px; max-width: 70%;"/>
+                </div>
+                <t t-out="0"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="fs_track_page" name="Field Service: technician on the way">
+        <t t-call="om_field_service.fs_track_layout">
+            <div class="card border-0 shadow-sm mb-3 o_fs_track_card" t-att-data-token="token">
+                <div class="card-body">
+                    <div class="small text-muted" t-out="data['job']"/>
+                    <h4 class="mb-3" t-out="data['name']"/>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <img t-if="data['technician']" t-attf-src="/field-service/track/#{token}/photo"
+                            class="rounded-circle border o_fs_track_photo" width="64" height="64" alt="Technician"/>
+                        <div>
+                            <div class="small text-muted">Your technician</div>
+                            <div class="fs-5 fw-bold o_fs_track_technician" t-out="data['technician'] or '-'"/>
+                        </div>
+                    </div>
+                    <ol class="o_fs_track_steps list-unstyled d-flex justify-content-between mb-3">
+                        <t t-set="reached" t-value="True"/>
+                        <t t-foreach="data['steps']" t-as="step">
+                            <li t-att-data-step="step['key']"
+                                t-attf-class="o_fs_track_step text-center flex-fill #{'o_fs_track_step_done' if reached else ''} #{'o_fs_track_step_current' if step['key'] == data['step'] else ''}">
+                                <span class="o_fs_track_dot d-block mx-auto mb-1"/>
+                                <span class="small" t-out="step['label']"/>
+                            </li>
+                            <t t-if="step['key'] == data['step']" t-set="reached" t-value="False"/>
+                        </t>
+                    </ol>
+                    <div t-attf-class="alert alert-info mb-0 o_fs_track_eta #{'' if data['eta'] else 'd-none'}" t-out="data['eta']"/>
+                </div>
+            </div>
+            <div t-attf-class="card border-0 shadow-sm mb-3 #{'' if data['site'] else 'd-none'}">
+                <div id="o_fs_track_map" class="o_fs_track_map rounded"
+                    t-att-data-site-lat="data['site'] and data['site']['lat']"
+                    t-att-data-site-lng="data['site'] and data['site']['lng']"/>
+                <div class="card-body py-2 small text-muted d-flex">
+                    <span t-attf-class="o_fs_track_updated_box #{'' if data['updated'] else 'd-none'}">
+                        Position at <span class="o_fs_track_updated" t-out="data['updated']"/>
+                    </span>
+                    <a t-if="data['site']" class="ms-auto" target="_blank" rel="noopener"
+                        t-attf-href="https://www.openstreetmap.org/?mlat=#{data['site']['lat']}&amp;mlon=#{data['site']['lng']}#map=15/#{data['site']['lat']}/#{data['site']['lng']}">OpenStreetMap</a>
+                </div>
+            </div>
+            <p class="small text-muted text-center">
+                The position of the technician is shared only while they are on the way to you.
+                This page closes once the visit is done.
+            </p>
+            <script type="text/javascript" src="/om_field_service/static/lib/leaflet/leaflet.js"/>
+            <script type="text/javascript" src="/om_field_service/static/src/tracking/tracking_page.js"/>
+        </t>
+    </template>
+
+    <template id="fs_track_expired" name="Field Service: tracking link expired">
+        <t t-call="om_field_service.fs_track_layout">
+            <div class="card border-0 shadow-sm text-center o_fs_track_expired">
+                <div class="card-body py-5">
+                    <i class="oi text-muted" data-icon="event_available" style="font-size: 3rem;"/>
+                    <h4 class="mt-3">This link has expired</h4>
+                    <p class="text-muted mb-0" t-if="job">The visit is over: thank you for your trust.</p>
+                    <p class="text-muted mb-0" t-else="">This tracking link is not valid.</p>
+                </div>
+            </div>
+        </t>
+    </template>
+
+</odoo>

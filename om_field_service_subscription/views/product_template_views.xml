@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="product_template_form_view_fs_subscription" model="ir.ui.view">
+        <field name="name">product.template.form.field.service.subscription</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="om_sale_subscription.product_template_form_view_subscription"/>
+        <field name="arch" type="xml">
+            <page name="subscription_pricing" position="after">
+                <page string="Maintenance Visits" name="fs_maintenance" invisible="not is_subscription_product">
+                    <group>
+                        <group string="Visits">
+                            <field name="fs_maintenance"/>
+                            <label for="fs_job_interval" invisible="not fs_maintenance"/>
+                            <div class="o_row" invisible="not fs_maintenance">
+                                <field name="fs_job_interval" class="oe_inline"/>
+                                <span>periods of the recurring plan</span>
+                            </div>
+                            <field name="fs_lead_days" invisible="not fs_maintenance"/>
+                            <field name="fs_job_type_id" invisible="not fs_maintenance" options="{'no_create': True}"/>
+                            <field name="fs_technician_id" invisible="not fs_maintenance" options="{'no_create': True}"
+                                widget="many2one_avatar_employee"/>
+                        </group>
+                        <group string="Billing" invisible="not fs_maintenance">
+                            <field name="fs_coverage" widget="radio"/>
+                        </group>
+                    </group>
+                    <div class="text-muted" invisible="fs_maintenance">
+                        Tick Maintenance Visits for a maintenance contract: each subscription with this product
+                        creates the field service jobs of its visits.
+                    </div>
+                </page>
+            </page>
+        </field>
+    </record>
+
+</odoo>
