@@ -279,7 +279,7 @@ class OmDynamicReportCashFlow(models.AbstractModel):
                 account_nodes = []
                 for code, account in sorted(line['accounts'].items()):
                     values = self._odr_columns_of(account['amounts'])
-                    if options['hide_zero'] and self._odr_is_zero(values):
+                    if options['hide_zero'] and self._odr_is_zero(values, options):
                         continue
                     record = account_of(code)
                     account_id = '%s|account-%s' % (line_id, record.id or 0)
