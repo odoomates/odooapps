@@ -2,7 +2,7 @@
     'name': 'Print Templates: Documents',
     'version': '1.0.0',
     'category': 'Productivity',
-    'summary': 'File the prints of a template as documents of the record, expiring after a number of days',
+    'summary': 'File the prints of a template in Documents, linked to the record, expiring after a number of days',
     'author': 'Odoo Mates',
     'maintainer': 'Odoo Mates',
     'support': 'odoomates@gmail.com',

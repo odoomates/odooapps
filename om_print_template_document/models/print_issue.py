@@ -6,15 +6,16 @@ from odoo import fields, models
 class PrintIssue(models.Model):
     _inherit = 'print.issue'
 
-    document_id = fields.Many2one('document.document', readonly=True, copy=False, check_company=True)
+    document_id = fields.Many2one('om.documents.document', readonly=True, copy=False, check_company=True)
 
     def _on_issued(self):
         super()._on_issued()
         template = self.template_id
         if not template.document_type_id or not self.attachment_id:
             return
-        # the document belongs to the record: whoever may print files it, whatever their rights on documents
-        Document = self.env['document.document'].sudo()
+        # the document belongs to the record: whoever may print files it, whatever their rights on documents; it
+        # goes to the folder of its type, else of its record, in the company of the print
+        Document = self.env['om.documents.document'].sudo().with_company(self.company_id)
         document = Document.create({
             'res_model': self.res_model,
             'res_id': self.res_id,
@@ -23,10 +24,9 @@ class PrintIssue(models.Model):
             'number': self.name,
             'date_issue': self.date,
             'date_expiry': self.date + timedelta(days=template.validity_days) if template.validity_days else False,
-            'company_id': self.company_id.id,
+            # the document keeps a copy of the PDF of the print
+            'attachment_id': self.attachment_id.id,
         })
-        attachment = self.attachment_id.sudo().copy({'res_model': Document._name, 'res_id': document.id})
-        document.attachment_ids = [fields.Command.link(attachment.id)]
         self.document_id = document
 
     def _on_cancelled(self):
