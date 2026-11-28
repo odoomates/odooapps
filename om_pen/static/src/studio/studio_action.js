@@ -159,7 +159,7 @@ export class StudioAction extends Component {
         if (drag.kind === "new") {
             const kind = NEW_FIELD_KINDS.find((k) => k.kind === drag.fieldKind);
             const model = drag.model || store.info.model;
-            const fields = model === store.info.model ? store.view.all_fields : store.view.related_models[model]?.fields || {};
+            const fields = store.fieldsOf(model);
             this.dialog.add(NewFieldDialog, {
                 kind: drag.fieldKind,
                 label: kind?.label || drag.fieldKind,

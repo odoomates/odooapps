@@ -97,7 +97,11 @@
                 <t t-if="node.relation"> → <span t-out="node.relation"/></t>
             </div>
 
-            <t t-if="['field', 'page', 'group', 'separator', 'button', 'filter'].includes(node.tag)">
+            <button t-if="this.parentColumn" class="btn btn-sm btn-light w-100 text-start mt-2 o_pen_select_column"
+                    t-on-click="() => this.store.select(this.parentColumn.id)">
+                <i class="oi me-1" data-icon="view_column"/> Column: <t t-out="this.store.labelOf(this.parentColumn)"/>
+            </button>
+            <t t-if="['field', 'column', 'page', 'group', 'separator', 'button', 'filter'].includes(node.tag)">
                 <label class="o_pen_label">Label</label>
                 <input class="form-control form-control-sm o_pen_input_string" t-att-value="this.attr('string')"
                        t-att-placeholder="node.field_string or ''"

@@ -4,6 +4,7 @@ import { _t } from "@web/core/l10n/translation";
 export const TAG_LABELS = {
     form: _t("Form"),
     list: _t("List"),
+    column: _t("Column"),
     kanban: _t("Kanban"),
     group: _t("Group"),
     page: _t("Tab"),
@@ -77,8 +78,18 @@ export class StudioStore {
         if (node.tag === "field") {
             return node.attrs.string || node.field_string || node.attrs.name;
         }
+        if (node.tag === "column" && !node.attrs.string) {
+            // a column without a label of its own shows the one of its first field
+            const first = this.firstField(node);
+            return `${TAG_LABELS.column}: ${first ? this.labelOf(first) : node.attrs.name || ""}`;
+        }
         const caption = node.attrs.string || node.attrs.title || node.attrs.name || node.text || "";
         return caption ? `${TAG_LABELS[node.tag] || node.tag}: ${caption}` : TAG_LABELS[node.tag] || node.tag;
+    }
+
+    /** The first field of a column of an embedded list. */
+    firstField(column) {
+        return Object.values(this.nodes).find((n) => n.parent === column.id && n.tag === "field");
     }
 
     get selectedNode() {
@@ -100,6 +111,15 @@ export class StudioStore {
             return node.relation;
         }
         return node.model || this.info?.model;
+    }
+
+    /** Every field of `model`: the one of the view, or of lines shown in it. */
+    fieldsOf(model) {
+        const view = this.view;
+        if (model === this.info?.model) {
+            return view.all_fields;
+        }
+        return view.line_fields?.[model] || view.related_models[model]?.fields || {};
     }
 
     async open(params) {
