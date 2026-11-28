@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="action_report_commission_statement" model="ir.actions.report">
+        <field name="name">Commission Statement</field>
+        <field name="model">om.commission.statement</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">om_sale_commission.report_commission_statement</field>
+        <field name="print_report_name">(object._get_report_base_filename())</field>
+        <field name="binding_model_id" ref="model_om_commission_statement"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_commission_statement_document">
+        <t t-call="web.external_layout">
+            <t t-set="o" t-value="o.with_context(lang=o.partner_id.lang)"/>
+            <t t-set="address">
+                <div t-field="o.partner_id" t-options="{'widget': 'contact', 'fields': ['address', 'name'], 'no_marker': True}"/>
+            </t>
+            <div class="page">
+                <h2>Commission Statement <span t-field="o.name"/></h2>
+                <div class="row mt-3 mb-3">
+                    <div class="col-4">
+                        <strong>Period</strong>
+                        <div><span t-field="o.date_from"/> - <span t-field="o.date_to"/></div>
+                    </div>
+                    <div class="col-4" t-if="o.user_id">
+                        <strong>Salesperson</strong>
+                        <div t-field="o.user_id"/>
+                    </div>
+                    <div class="col-4">
+                        <strong>Status</strong>
+                        <div t-field="o.state"/>
+                    </div>
+                </div>
+                <table class="table table-sm o_main_table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Description</th>
+                            <th>Plan</th>
+                            <th class="text-end">Revenue</th>
+                            <th class="text-end">Rate</th>
+                            <th class="text-end">Commission</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr t-foreach="o.line_ids" t-as="line">
+                            <td><span t-field="line.date"/></td>
+                            <td><span t-field="line.name"/></td>
+                            <td><span t-field="line.plan_id"/></td>
+                            <td class="text-end"><span t-field="line.base_amount"/></td>
+                            <td class="text-end"><t t-if="line.rate"><span t-field="line.rate"/> %</t></td>
+                            <td class="text-end"><span t-field="line.amount"/></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="row justify-content-end">
+                    <div class="col-5">
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Commissions</td>
+                                <td class="text-end"><span t-field="o.amount_commission"/></td>
+                            </tr>
+                            <tr t-if="o.amount_clawback">
+                                <td>Clawbacks</td>
+                                <td class="text-end"><span t-field="o.amount_clawback"/></td>
+                            </tr>
+                            <tr class="fw-bold">
+                                <td>Total</td>
+                                <td class="text-end"><span t-field="o.amount_total"/></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="report_commission_statement">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="om_sale_commission.report_commission_statement_document"/>
+            </t>
+        </t>
+    </template>
+
+</odoo>

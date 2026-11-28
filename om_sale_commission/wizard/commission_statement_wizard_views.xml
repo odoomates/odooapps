@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_statement_wizard_view_form" model="ir.ui.view">
+        <field name="name">om.commission.statement.wizard.form</field>
+        <field name="model">om.commission.statement.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Create Statements">
+                <p class="text-muted">
+                    One draft statement per salesperson or reseller, with every commission not settled yet up to
+                    the end date, including late commissions and clawbacks of earlier periods.
+                </p>
+                <group>
+                    <group>
+                        <label for="date_from" string="Period"/>
+                        <div class="o_row">
+                            <field name="date_from"/>
+                            <span>-</span>
+                            <field name="date_to"/>
+                        </div>
+                        <field name="beneficiary" widget="radio"/>
+                    </group>
+                    <group>
+                        <field name="payout_method" widget="radio"/>
+                        <field name="recompute"/>
+                    </group>
+                </group>
+                <footer>
+                    <button name="action_create" type="object" string="Create Statements" class="btn-primary"/>
+                    <button special="cancel" string="Discard"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_commission_statement_wizard" model="ir.actions.act_window">
+        <field name="name">Create Statements</field>
+        <field name="res_model">om.commission.statement.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+</odoo>

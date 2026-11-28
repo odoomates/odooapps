@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="plan_subscription_new_mrr" model="om.commission.plan">
+            <field name="name">Subscriptions - New MRR</field>
+            <field name="sequence">60</field>
+            <field name="plan_type">user</field>
+            <field name="period">month</field>
+            <field name="base">invoice</field>
+            <field name="commission_type">rules</field>
+            <field name="subscription_base">new_mrr</field>
+            <field name="subscription_only" eval="True"/>
+            <field name="user_ids" eval="[Command.set([ref('base.user_admin'), ref('base.user_demo')])]"/>
+            <field name="rule_ids" eval="[Command.create({'applies_on': 'all', 'compute_type': 'revenue', 'rate': 20})]"/>
+        </record>
+
+    </data>
+</odoo>

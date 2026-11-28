@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_line_view_list" model="ir.ui.view">
+        <field name="name">om.commission.line.list</field>
+        <field name="model">om.commission.line</field>
+        <field name="arch" type="xml">
+            <list string="Commissions" create="0" decoration-danger="is_clawback" decoration-muted="state == 'paid'">
+                <field name="date"/>
+                <field name="name"/>
+                <field name="plan_id"/>
+                <field name="user_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="partner_id" optional="hide"/>
+                <field name="team_id" optional="hide"/>
+                <field name="role" optional="show"/>
+                <field name="customer_id" optional="show"/>
+                <field name="product_id" optional="hide"/>
+                <field name="quantity" optional="hide"/>
+                <field name="base_amount" sum="Total" optional="show"/>
+                <field name="margin_amount" sum="Total" optional="hide" groups="sales_team.group_sale_manager"/>
+                <field name="rate" optional="show"/>
+                <field name="amount" sum="Total"/>
+                <field name="statement_id" optional="show"/>
+                <field name="state" widget="badge" decoration-info="state == 'open'"
+                       decoration-warning="state == 'draft'" decoration-primary="state == 'approved'"
+                       decoration-success="state == 'paid'"/>
+                <field name="is_clawback" column_invisible="True"/>
+                <field name="currency_id" column_invisible="True"/>
+                <field name="company_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_commission_line_view_form" model="ir.ui.view">
+        <field name="name">om.commission.line.form</field>
+        <field name="model">om.commission.line</field>
+        <field name="arch" type="xml">
+            <form string="Commission" create="0" edit="0">
+                <header>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_source" type="object" class="oe_stat_button" icon="description"
+                                string="Source Document" invisible="not move_id and not order_id"/>
+                    </div>
+                    <widget name="web_ribbon" title="Clawback" bg_color="text-bg-danger" invisible="not is_clawback"/>
+                    <div class="oe_title">
+                        <h1><field name="name"/></h1>
+                    </div>
+                    <group>
+                        <group>
+                            <field name="plan_id"/>
+                            <field name="rule_id"/>
+                            <field name="user_id" widget="many2one_avatar_user"/>
+                            <field name="partner_id"/>
+                            <field name="team_id"/>
+                            <field name="role"/>
+                            <field name="statement_id"/>
+                        </group>
+                        <group>
+                            <field name="date"/>
+                            <label for="period_start" string="Period"/>
+                            <div class="o_row">
+                                <field name="period_start"/>
+                                <span>-</span>
+                                <field name="period_end"/>
+                            </div>
+                            <field name="move_id" invisible="not move_id"/>
+                            <field name="order_id" invisible="not order_id"/>
+                            <field name="customer_id"/>
+                            <field name="product_id"/>
+                            <field name="quantity"/>
+                        </group>
+                        <group>
+                            <field name="base_amount"/>
+                            <field name="margin_amount" groups="sales_team.group_sale_manager"/>
+                            <field name="rate"/>
+                            <field name="amount"/>
+                            <field name="capped" invisible="not capped"/>
+                            <field name="is_clawback" invisible="1"/>
+                            <field name="origin_line_id" invisible="not origin_line_id"/>
+                            <field name="currency_id" invisible="1"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_commission_line_view_search" model="ir.ui.view">
+        <field name="name">om.commission.line.search</field>
+        <field name="model">om.commission.line</field>
+        <field name="arch" type="xml">
+            <search string="Commissions">
+                <field name="name"/>
+                <field name="user_id"/>
+                <field name="partner_id"/>
+                <field name="team_id"/>
+                <field name="plan_id"/>
+                <field name="customer_id"/>
+                <field name="product_id"/>
+                <field name="move_id"/>
+                <field name="order_id"/>
+                <filter name="my" string="My Commissions" domain="[('user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="to_settle" string="To Settle" domain="[('state', '=', 'open')]"/>
+                <filter name="pending" string="Pending" domain="[('state', 'in', ('open', 'draft', 'approved'))]"/>
+                <filter name="paid" string="Paid" domain="[('state', '=', 'paid')]"/>
+                <separator/>
+                <filter name="salespersons" string="Salespersons" domain="[('user_id', '!=', False)]"/>
+                <filter name="resellers" string="Resellers" domain="[('user_id', '=', False)]"/>
+                <filter name="clawback" string="Clawbacks" domain="[('is_clawback', '=', True)]"/>
+                <separator/>
+                <filter name="date" string="Date" date="date"/>
+                <filter name="group_user" string="Salesperson" context="{'group_by': 'user_id'}"/>
+                <filter name="group_partner" string="Beneficiary" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_team" string="Sales Team" context="{'group_by': 'team_id'}"/>
+                <filter name="group_plan" string="Plan" context="{'group_by': 'plan_id'}"/>
+                <filter name="group_period" string="Period" context="{'group_by': 'period_start:month'}"/>
+                <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_commission_line_view_pivot" model="ir.ui.view">
+        <field name="name">om.commission.line.pivot</field>
+        <field name="model">om.commission.line</field>
+        <field name="arch" type="xml">
+            <pivot string="Commission Analysis" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="state" type="col"/>
+                <field name="amount" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_commission_line_view_graph" model="ir.ui.view">
+        <field name="name">om.commission.line.graph</field>
+        <field name="model">om.commission.line</field>
+        <field name="arch" type="xml">
+            <graph string="Commission Analysis" type="bar" stacked="1" sample="1">
+                <field name="period_start" interval="month"/>
+                <field name="state"/>
+                <field name="amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_commission_line" model="ir.actions.act_window">
+        <field name="name">Commissions</field>
+        <field name="res_model">om.commission.line</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="context">{'search_default_pending': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No commission yet</p>
+            <p>Commissions are computed every day from the invoices and sales orders of the commission plans.
+                Use Recompute to compute them now.</p>
+        </field>
+    </record>
+
+    <record id="action_commission_line_my" model="ir.actions.act_window">
+        <field name="name">My Commissions</field>
+        <field name="res_model">om.commission.line</field>
+        <field name="view_mode">list,pivot,graph,form</field>
+        <field name="context">{'search_default_my': 1, 'search_default_group_period': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No commission yet</p>
+            <p>Your commissions appear here once your sales are invoiced.</p>
+        </field>
+    </record>
+
+    <record id="action_commission_line_report" model="ir.actions.act_window">
+        <field name="name">Commission Analysis</field>
+        <field name="res_model">om.commission.line</field>
+        <field name="view_mode">pivot,graph,list,form</field>
+        <field name="context">{}</field>
+    </record>
+
+</odoo>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_achievement_view_list" model="ir.ui.view">
+        <field name="name">om.commission.achievement.list</field>
+        <field name="model">om.commission.achievement</field>
+        <field name="arch" type="xml">
+            <list string="Achievements" create="0" edit="0" delete="0">
+                <field name="period_start"/>
+                <field name="period_end" optional="hide"/>
+                <field name="plan_id"/>
+                <field name="holder_name"/>
+                <field name="revenue" sum="Total"/>
+                <field name="margin" sum="Total" optional="hide" groups="sales_team.group_sale_manager"/>
+                <field name="target_amount" sum="Total"/>
+                <field name="achievement" widget="progressbar"/>
+                <field name="rate" optional="show"/>
+                <field name="commission" sum="Total"/>
+                <field name="currency_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_commission_achievement_view_kanban" model="ir.ui.view">
+        <field name="name">om.commission.achievement.kanban</field>
+        <field name="model">om.commission.achievement</field>
+        <field name="arch" type="xml">
+            <kanban create="0" sample="1">
+                <field name="currency_id"/>
+                <templates>
+                    <t t-name="card">
+                        <div class="d-flex justify-content-between">
+                            <field name="holder_name" class="fw-bold fs-5"/>
+                            <field name="period_start" widget="date" class="text-muted"/>
+                        </div>
+                        <field name="plan_id" class="text-muted"/>
+                        <t t-if="record.target_amount.raw_value">
+                            <field name="achievement" widget="progressbar" class="my-2"/>
+                        </t>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span>Revenue <field name="revenue" widget="monetary"/></span>
+                            <span t-if="record.target_amount.raw_value">Target <field name="target_amount" widget="monetary"/></span>
+                        </div>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span><t t-if="record.rate.raw_value">Tier rate <field name="rate"/> %</t></span>
+                            <span class="fw-bold">Commission <field name="commission" widget="monetary"/></span>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="om_commission_achievement_view_search" model="ir.ui.view">
+        <field name="name">om.commission.achievement.search</field>
+        <field name="model">om.commission.achievement</field>
+        <field name="arch" type="xml">
+            <search string="Achievements">
+                <field name="plan_id"/>
+                <field name="user_id"/>
+                <field name="team_id"/>
+                <field name="partner_id"/>
+                <filter name="my" string="Mine" domain="['|', ('user_id', '=', uid), ('team_id.member_ids', 'in', uid)]"/>
+                <filter name="with_target" string="With a Target" domain="[('target_amount', '>', 0)]"/>
+                <separator/>
+                <filter name="period" string="Period" date="period_start"/>
+                <filter name="group_plan" string="Plan" context="{'group_by': 'plan_id'}"/>
+                <filter name="group_user" string="Salesperson" context="{'group_by': 'user_id'}"/>
+                <filter name="group_team" string="Sales Team" context="{'group_by': 'team_id'}"/>
+                <filter name="group_partner" string="Reseller" context="{'group_by': 'partner_id'}"/>
+                <filter name="group_period" string="Period" context="{'group_by': 'period_start:month'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_commission_achievement_view_pivot" model="ir.ui.view">
+        <field name="name">om.commission.achievement.pivot</field>
+        <field name="model">om.commission.achievement</field>
+        <field name="arch" type="xml">
+            <pivot string="Achievements" sample="1">
+                <field name="plan_id" type="row"/>
+                <field name="period_start" interval="month" type="col"/>
+                <field name="revenue" type="measure"/>
+                <field name="target_amount" type="measure"/>
+                <field name="commission" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="om_commission_achievement_view_graph" model="ir.ui.view">
+        <field name="name">om.commission.achievement.graph</field>
+        <field name="model">om.commission.achievement</field>
+        <field name="arch" type="xml">
+            <graph string="Achievements" type="bar" sample="1">
+                <field name="period_start" interval="month"/>
+                <field name="revenue" type="measure"/>
+                <field name="target_amount" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="action_commission_achievement" model="ir.actions.act_window">
+        <field name="name">Achievements</field>
+        <field name="res_model">om.commission.achievement</field>
+        <field name="view_mode">kanban,list,pivot,graph</field>
+        <field name="context">{}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No achievement yet</p>
+            <p>The revenue, the target, the share of the target reached and the commission of every salesperson,
+                team and reseller, per period of their plan.</p>
+        </field>
+    </record>
+
+</odoo>

@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_commission_plan_view_list" model="ir.ui.view">
+        <field name="name">om.commission.plan.list</field>
+        <field name="model">om.commission.plan</field>
+        <field name="arch" type="xml">
+            <list string="Commission Plans">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="plan_type"/>
+                <field name="period"/>
+                <field name="base"/>
+                <field name="commission_type"/>
+                <field name="date_from" optional="hide"/>
+                <field name="date_to" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="show"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_commission_plan_view_form" model="ir.ui.view">
+        <field name="name">om.commission.plan.form</field>
+        <field name="model">om.commission.plan</field>
+        <field name="arch" type="xml">
+            <form string="Commission Plan">
+                <header>
+                    <button name="action_recompute" type="object" string="Recompute" class="btn-primary"
+                            groups="sales_team.group_sale_manager"
+                            help="Recompute the commissions of the current and previous periods."/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_lines" type="object" class="oe_stat_button" icon="receipt_long">
+                            <field name="line_count" widget="statinfo" string="Commissions"/>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Salespersons - Monthly"/></h1>
+                    </div>
+                    <group>
+                        <group name="scope">
+                            <field name="plan_type" widget="radio"/>
+                            <field name="user_ids" widget="many2many_avatar_user" invisible="plan_type != 'user'"/>
+                            <field name="team_ids" widget="many2many_tags" invisible="plan_type != 'team'"/>
+                            <field name="partner_ids" widget="many2many_tags" invisible="plan_type != 'partner'"/>
+                            <field name="grade_ids" widget="many2many_tags" invisible="plan_type != 'partner'"/>
+                            <field name="team_split" invisible="plan_type != 'team'"/>
+                            <field name="manager_override" invisible="plan_type != 'team'"/>
+                        </group>
+                        <group name="computation">
+                            <field name="base" widget="radio"/>
+                            <field name="invoice_state" widget="radio" options="{'horizontal': true}"
+                                   invisible="base != 'invoice'"/>
+                            <field name="period"/>
+                            <label for="date_from" string="Validity"/>
+                            <div class="o_row">
+                                <field name="date_from" placeholder="Start"/>
+                                <span>to</span>
+                                <field name="date_to" placeholder="No end"/>
+                            </div>
+                            <field name="commission_type" widget="radio"/>
+                            <field name="cap_amount"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="currency_id" invisible="1"/>
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Rules" name="rules" invisible="commission_type != 'rules'">
+                            <field name="rule_ids">
+                                <list editable="bottom">
+                                    <field name="sequence" widget="handle"/>
+                                    <field name="applies_on"/>
+                                    <field name="categ_id" invisible="applies_on != 'category'"
+                                           required="applies_on == 'category'"/>
+                                    <field name="product_tmpl_id" invisible="applies_on != 'product'"
+                                           required="applies_on == 'product'"/>
+                                    <field name="compute_type"/>
+                                    <field name="rate" invisible="compute_type == 'fixed'"/>
+                                    <field name="fixed_amount" invisible="compute_type != 'fixed'"/>
+                                    <field name="currency_id" column_invisible="True"/>
+                                </list>
+                            </field>
+                            <div class="text-muted">
+                                A rule on a product comes before a rule on its category, which comes before a rule
+                                on all products. Products without a matching rule earn no commission.
+                            </div>
+                        </page>
+                        <page string="Target and Tiers" name="target">
+                            <group>
+                                <group>
+                                    <field name="target_amount"/>
+                                    <field name="target_base" widget="radio" options="{'horizontal': true}"/>
+                                </group>
+                            </group>
+                            <group string="Achievement Tiers" invisible="commission_type != 'target'">
+                                <field name="tier_ids" nolabel="1" colspan="2">
+                                    <list editable="bottom">
+                                        <field name="achievement_from"/>
+                                        <field name="rate"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group string="Specific Targets">
+                                <field name="target_ids" nolabel="1" colspan="2">
+                                    <list editable="bottom">
+                                        <field name="plan_type" column_invisible="True"/>
+                                        <field name="user_id" column_invisible="parent.plan_type != 'user'"/>
+                                        <field name="team_id" column_invisible="parent.plan_type != 'team'"/>
+                                        <field name="partner_id" column_invisible="parent.plan_type != 'partner'"/>
+                                        <field name="target_amount"/>
+                                        <field name="currency_id" column_invisible="True"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Notes" name="notes">
+                            <field name="note" placeholder="Terms of the plan for the salespersons..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_commission_plan_view_search" model="ir.ui.view">
+        <field name="name">om.commission.plan.search</field>
+        <field name="model">om.commission.plan</field>
+        <field name="arch" type="xml">
+            <search string="Commission Plans">
+                <field name="name"/>
+                <field name="user_ids"/>
+                <field name="team_ids"/>
+                <field name="partner_ids"/>
+                <filter name="salespersons" string="Salespersons" domain="[('plan_type', '=', 'user')]"/>
+                <filter name="teams" string="Sales Teams" domain="[('plan_type', '=', 'team')]"/>
+                <filter name="resellers" string="Resellers" domain="[('plan_type', '=', 'partner')]"/>
+                <separator/>
+                <filter name="archived" string="Archived" domain="[('active', '=', False)]"/>
+                <filter name="group_type" string="Commission For" context="{'group_by': 'plan_type'}"/>
+            </search>
+        </field>
+    </record>
+
+    <record id="action_commission_plan" model="ir.actions.act_window">
+        <field name="name">Commission Plans</field>
+        <field name="res_model">om.commission.plan</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create a commission plan</p>
+            <p>Pay your salespersons, sales teams and resellers a share of what they sell: a percentage of the
+                revenue or the margin, a fixed amount per unit, or a rate that grows with the share of the target
+                they reach.</p>
+        </field>
+    </record>
+
+</odoo>

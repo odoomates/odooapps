@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+
+        <record id="grade_gold" model="om.commission.grade">
+            <field name="name">Gold</field>
+            <field name="sequence">10</field>
+        </record>
+        <record id="grade_silver" model="om.commission.grade">
+            <field name="name">Silver</field>
+            <field name="sequence">20</field>
+        </record>
+
+        <record id="base.res_partner_2" model="res.partner">
+            <field name="om_commission_grade_id" ref="grade_gold"/>
+        </record>
+        <record id="base.partner_demo_portal" model="res.partner">
+            <field name="om_commission_grade_id" ref="grade_silver"/>
+        </record>
+
+        <record id="plan_salesperson_monthly" model="om.commission.plan">
+            <field name="name">Salespersons - Monthly</field>
+            <field name="sequence">10</field>
+            <field name="plan_type">user</field>
+            <field name="period">month</field>
+            <field name="base">invoice</field>
+            <field name="invoice_state">posted</field>
+            <field name="commission_type">rules</field>
+            <field name="user_ids" eval="[Command.set([ref('base.user_admin'), ref('base.user_demo')])]"/>
+        </record>
+        <record id="rule_salesperson_all" model="om.commission.rule">
+            <field name="plan_id" ref="plan_salesperson_monthly"/>
+            <field name="applies_on">all</field>
+            <field name="compute_type">revenue</field>
+            <field name="rate">5</field>
+        </record>
+        <record id="rule_salesperson_services" model="om.commission.rule">
+            <field name="plan_id" ref="plan_salesperson_monthly"/>
+            <field name="applies_on">category</field>
+            <field name="categ_id" ref="product.product_category_services"/>
+            <field name="compute_type">margin</field>
+            <field name="rate">20</field>
+        </record>
+
+        <record id="plan_target_quarterly" model="om.commission.plan">
+            <field name="name">Quarterly Target Bonus</field>
+            <field name="sequence">20</field>
+            <field name="plan_type">user</field>
+            <field name="period">quarter</field>
+            <field name="base">invoice</field>
+            <field name="invoice_state">paid</field>
+            <field name="commission_type">target</field>
+            <field name="target_amount">50000</field>
+            <field name="cap_amount">5000</field>
+            <field name="user_ids" eval="[Command.set([ref('base.user_admin'), ref('base.user_demo')])]"/>
+            <field name="tier_ids" eval="[
+                Command.create({'achievement_from': 0, 'rate': 0}),
+                Command.create({'achievement_from': 80, 'rate': 3}),
+                Command.create({'achievement_from': 100, 'rate': 5}),
+            ]"/>
+            <field name="target_ids" eval="[Command.create({'user_id': ref('base.user_demo'), 'target_amount': 30000})]"/>
+        </record>
+
+        <record id="plan_team_sales" model="om.commission.plan">
+            <field name="name">Sales Team Pool</field>
+            <field name="sequence">30</field>
+            <field name="plan_type">team</field>
+            <field name="period">month</field>
+            <field name="base">order</field>
+            <field name="commission_type">rules</field>
+            <field name="team_split">equal</field>
+            <field name="manager_override">10</field>
+            <field name="team_ids" eval="[Command.set([ref('sales_team.crm_team_1')])]"/>
+            <field name="rule_ids" eval="[Command.create({'applies_on': 'all', 'compute_type': 'revenue', 'rate': 1})]"/>
+        </record>
+
+        <record id="plan_reseller_gold" model="om.commission.plan">
+            <field name="name">Gold Resellers</field>
+            <field name="sequence">40</field>
+            <field name="plan_type">partner</field>
+            <field name="period">month</field>
+            <field name="base">invoice</field>
+            <field name="invoice_state">paid</field>
+            <field name="commission_type">rules</field>
+            <field name="grade_ids" eval="[Command.set([ref('grade_gold')])]"/>
+            <field name="rule_ids" eval="[Command.create({'applies_on': 'all', 'compute_type': 'revenue', 'rate': 10})]"/>
+        </record>
+
+        <record id="plan_reseller_silver" model="om.commission.plan">
+            <field name="name">Silver Resellers</field>
+            <field name="sequence">50</field>
+            <field name="plan_type">partner</field>
+            <field name="period">month</field>
+            <field name="base">invoice</field>
+            <field name="invoice_state">posted</field>
+            <field name="commission_type">rules</field>
+            <field name="grade_ids" eval="[Command.set([ref('grade_silver')])]"/>
+            <field name="rule_ids" eval="[Command.create({'applies_on': 'all', 'compute_type': 'revenue', 'rate': 5})]"/>
+        </record>
+
+    </data>
+</odoo>
