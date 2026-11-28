@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_partner_form" model="ir.ui.view">
+        <field name="name">res.partner.form.om.ai.whatsapp</field>
+        <field name="model">res.partner</field>
+        <field name="inherit_id" ref="base.view_partner_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='phone'][@widget='phone']/.." position="after">
+                <div class="d-flex align-items-baseline w-md-50 gap-2" invisible="not phone" groups="base.group_user">
+                    <i class="oi d-none d-md-inline-flex" data-icon="verified" title="WhatsApp Verified"/>
+                    <field name="om_ai_whatsapp_verified" class="w-auto"/>
+                    <label for="om_ai_whatsapp_verified" class="o_form_label fw-normal"/>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

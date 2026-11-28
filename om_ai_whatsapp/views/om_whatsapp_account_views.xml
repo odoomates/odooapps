@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_whatsapp_account_view_form" model="ir.ui.view">
+        <field name="name">om.social.account.form.ai</field>
+        <field name="model">om.social.account</field>
+        <field name="inherit_id" ref="om_social_base.om_social_account_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='button_box']" position="inside">
+                <button name="action_om_ai_conversations" type="object" class="oe_stat_button" icon="forum"
+                        invisible="not om_ai_active">
+                    <field name="om_ai_conversation_count" widget="statinfo" string="AI Conversations"/>
+                </button>
+            </xpath>
+            <xpath expr="//group[@name='receiving']" position="inside">
+                <field name="om_ai_active" widget="boolean_toggle"/>
+            </xpath>
+            <xpath expr="//notebook" position="inside">
+                <page string="AI Assistant" name="om_ai" invisible="not om_ai_active">
+                    <div class="d-flex justify-content-end mb-2">
+                        <button name="action_om_ai_check" type="object" string="Check Setup" class="btn-secondary"/>
+                    </div>
+                    <group>
+                        <group string="Sales" name="om_ai_sales">
+                            <field name="om_ai_salesperson_id" options="{'no_create': True}"/>
+                            <field name="om_ai_carrier_ids" widget="many2many_tags" options="{'no_create': True}"/>
+                            <field name="om_ai_reminder_hours"/>
+                            <field name="om_ai_user_id" readonly="1"/>
+                        </group>
+                        <group string="When" name="om_ai_when">
+                            <field name="om_ai_hours_mode" widget="radio"/>
+                            <field name="om_ai_calendar_id" invisible="om_ai_hours_mode != 'outside'"
+                                   required="om_ai_hours_mode == 'outside'"/>
+                            <field name="om_ai_handover_keywords"/>
+                            <field name="om_ai_daily_replies"/>
+                            <field name="om_ai_daily_number_replies"/>
+                        </group>
+                        <group string="Private Data" name="om_ai_verify">
+                            <field name="om_ai_email_code"/>
+                            <field name="om_ai_verify_days" invisible="not om_ai_email_code"/>
+                            <field name="om_ai_document_scope" widget="radio"/>
+                        </group>
+                    </group>
+                    <label for="om_ai_persona"/>
+                    <field name="om_ai_persona" placeholder="e.g. You are Mia, the friendly assistant of our furniture shop..."/>
+                    <label for="om_ai_knowledge"/>
+                    <field name="om_ai_knowledge"
+                           placeholder="e.g. Open Monday to Saturday 9:00-18:00. We deliver in the whole country in 2 to 4 days. Returns within 30 days..."/>
+                    <label for="om_ai_tool_ids"/>
+                    <field name="om_ai_tool_ids" options="{'no_create': True}">
+                        <list>
+                            <field name="sequence" widget="handle"/>
+                            <field name="name"/>
+                            <field name="om_ai_whatsapp_level"/>
+                            <field name="read_only" string="Runs Without YES"/>
+                        </list>
+                    </field>
+                </page>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="om_whatsapp_account_view_list" model="ir.ui.view">
+        <field name="name">om.social.account.list.ai</field>
+        <field name="model">om.social.account</field>
+        <field name="inherit_id" ref="om_social_base.om_social_account_view_list"/>
+        <field name="arch" type="xml">
+            <field name="provider" position="after">
+                <field name="om_ai_active" string="AI Assistant" widget="boolean_toggle" readonly="1"/>
+            </field>
+        </field>
+    </record>
+</odoo>

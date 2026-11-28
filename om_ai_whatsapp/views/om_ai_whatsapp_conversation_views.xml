@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="om_ai_whatsapp_conversation_view_list" model="ir.ui.view">
+        <field name="name">om.ai.whatsapp.conversation.list</field>
+        <field name="model">om.ai.whatsapp.conversation</field>
+        <field name="arch" type="xml">
+            <list create="0" decoration-warning="state == 'human'" decoration-muted="state == 'stopped'">
+                <field name="last_message_date"/>
+                <field name="channel_id" string="Conversation"/>
+                <field name="number"/>
+                <field name="partner_id"/>
+                <field name="level" optional="show"/>
+                <field name="state" widget="badge" decoration-success="state == 'ai'" decoration-warning="state == 'human'"/>
+                <field name="handover_user_id" optional="show"/>
+                <field name="reply_count" optional="show" sum="Total"/>
+                <field name="order_count" optional="show"/>
+                <field name="account_id" optional="hide"/>
+                <field name="company_id" groups="base.group_multi_company" optional="hide"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_ai_whatsapp_conversation_view_form" model="ir.ui.view">
+        <field name="name">om.ai.whatsapp.conversation.form</field>
+        <field name="model">om.ai.whatsapp.conversation</field>
+        <field name="arch" type="xml">
+            <form create="0">
+                <header>
+                    <button name="action_take_over" type="object" string="Take Over" class="btn-primary"
+                            invisible="state != 'ai'"/>
+                    <button name="action_give_back" type="object" string="Give Back to the Assistant" class="btn-primary"
+                            invisible="state != 'human'"/>
+                    <button name="action_open_channel" type="object" string="Open Conversation"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_view_orders" type="object" class="oe_stat_button" icon="shopping_cart">
+                            <field name="order_count" widget="statinfo" string="Quotations"/>
+                        </button>
+                    </div>
+                    <div class="oe_title">
+                        <h1><field name="channel_id" readonly="1" options="{'no_open': True}"/></h1>
+                    </div>
+                    <group>
+                        <group string="Customer">
+                            <field name="number"/>
+                            <field name="profile_name"/>
+                            <field name="partner_id"/>
+                            <field name="partner_created"/>
+                            <field name="level"/>
+                        </group>
+                        <group string="Assistant">
+                            <field name="account_id"/>
+                            <field name="handover_user_id" invisible="not handover_user_id"/>
+                            <field name="handover_reason" invisible="not handover_reason"/>
+                            <field name="order_id" invisible="not order_id"/>
+                            <field name="locked_until" invisible="not locked_until"/>
+                            <field name="reply_count"/>
+                            <field name="handover_count"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_ai_whatsapp_conversation_view_search" model="ir.ui.view">
+        <field name="name">om.ai.whatsapp.conversation.search</field>
+        <field name="model">om.ai.whatsapp.conversation</field>
+        <field name="arch" type="xml">
+            <search>
+                <field name="channel_id" string="Conversation"/>
+                <field name="number"/>
+                <field name="partner_id"/>
+                <field name="handover_user_id"/>
+                <filter name="filter_ai" string="Assistant" domain="[('state', '=', 'ai')]"/>
+                <filter name="filter_human" string="With a Person" domain="[('state', '=', 'human')]"/>
+                <filter name="filter_mine" string="Handed Over to Me" domain="[('handover_user_id', '=', uid)]"/>
+                <filter name="filter_stopped" string="Opted Out" domain="[('state', '=', 'stopped')]"/>
+                <separator/>
+                <filter name="filter_orders" string="With Quotations" domain="[('order_ids', '!=', False)]"/>
+                <group>
+                    <filter name="group_state" string="Status" context="{'group_by': 'state'}"/>
+                    <filter name="group_account" string="WhatsApp Account" context="{'group_by': 'account_id'}"/>
+                    <filter name="group_user" string="Handled By" context="{'group_by': 'handover_user_id'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_ai_whatsapp_conversation_action" model="ir.actions.act_window">
+        <field name="name">AI Conversations</field>
+        <field name="res_model">om.ai.whatsapp.conversation</field>
+        <field name="path">whatsapp-ai-conversations</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">No conversation with the assistant yet</p>
+            <p>Switch the AI Assistant on in a WhatsApp account: the conversations it answers show here.</p>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="partner_category_whatsapp" model="res.partner.category">
+            <field name="name">Created from WhatsApp</field>
+        </record>
+
+        <record id="utm_source_whatsapp" model="utm.source">
+            <field name="name">WhatsApp</field>
+        </record>
+    </data>
+
+    <record id="ir_cron_om_ai_whatsapp_jobs" model="ir.cron">
+        <field name="name">WhatsApp Assistant: answer messages</field>
+        <field name="model_id" ref="model_om_ai_whatsapp_job"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_process()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+    </record>
+
+    <record id="ir_cron_om_ai_whatsapp_reminders" model="ir.cron">
+        <field name="name">WhatsApp Assistant: payment reminders</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="state">code</field>
+        <field name="code">model._cron_om_ai_whatsapp_reminders()</field>
+        <field name="interval_number">1</field>
+        <field name="interval_type">hours</field>
+        <field name="active" eval="True"/>
+    </record>
+</odoo>
