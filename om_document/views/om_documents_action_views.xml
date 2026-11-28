@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_documents_action_view_list" model="ir.ui.view">
+        <field name="name">om.documents.action.list</field>
+        <field name="model">om.documents.action</field>
+        <field name="arch" type="xml">
+            <list string="Actions">
+                <field name="sequence" widget="handle"/>
+                <field name="name"/>
+                <field name="folder_id"/>
+                <field name="create_model"/>
+                <field name="move_folder_id"/>
+                <field name="add_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_documents_action_view_form" model="ir.ui.view">
+        <field name="name">om.documents.action.form</field>
+        <field name="model">om.documents.action</field>
+        <field name="arch" type="xml">
+            <form string="Action">
+                <sheet>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <field name="active" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1><field name="name" placeholder="e.g. Create a vendor bill"/></h1>
+                    </div>
+                    <group>
+                        <group string="Offered On">
+                            <field name="folder_id" placeholder="All the folders"/>
+                            <field name="required_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="domain" widget="domain" options="{'model': 'om.documents.document', 'in_dialog': True}"/>
+                        </group>
+                        <group string="Create">
+                            <field name="create_model"/>
+                            <field name="model_id" invisible="create_model != 'record'"
+                                   required="create_model == 'record'" options="{'no_create': True}"/>
+                            <field name="binary_field_id" invisible="create_model != 'record'"
+                                   options="{'no_create': True}"/>
+                        </group>
+                    </group>
+                    <group>
+                        <group string="Then">
+                            <field name="move_folder_id"/>
+                            <field name="add_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="remove_tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <field name="owner_id"/>
+                            <field name="partner_id"/>
+                            <field name="archive"/>
+                        </group>
+                        <group string="Activity">
+                            <field name="activity_type_id"/>
+                            <field name="activity_summary" invisible="not activity_type_id"/>
+                            <field name="activity_user_id" invisible="not activity_type_id"/>
+                            <field name="activity_days" invisible="not activity_type_id"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_workflow_actions" model="ir.actions.act_window">
+        <field name="name">Actions</field>
+        <field name="res_model">om.documents.action</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Create an action</p>
+            <p>An action moves and tags documents, schedules an activity, and makes a record from each document, e.g.
+                a vendor bill.</p>
+        </field>
+    </record>
+
+</odoo>

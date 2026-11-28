@@ -1,40 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
-    <menuitem id="menu_om_document_root"
-              name="Expiring Documents"
-              groups="om_document.group_document_manager"
-              sequence="190"/>
+    <menuitem id="menu_root" name="Documents" sequence="45" web_icon="om_document,static/description/icon.png"
+              groups="group_documents_user"/>
 
-    <menuitem id="menu_om_document"
-              name="Documents"
-              parent="menu_om_document_root"
-              sequence="10"/>
+    <menuitem id="menu_documents" name="Documents" parent="menu_root" sequence="10" action="action_documents"/>
+    <menuitem id="menu_requests" name="Requests" parent="menu_root" sequence="20" action="action_documents_requests"/>
+    <menuitem id="menu_shares" name="Shares" parent="menu_root" sequence="30" action="action_shares"/>
 
-    <menuitem id="menu_om_document_expiring"
-              action="om_document_action_expiring"
-              parent="menu_om_document"
-              sequence="10"/>
+    <menuitem id="menu_configuration" name="Configuration" parent="menu_root" sequence="100"/>
+    <menuitem id="menu_settings" name="Settings" parent="menu_configuration" sequence="1" action="action_settings"
+              groups="group_documents_manager"/>
+    <menuitem id="menu_folders" name="Folders" parent="menu_configuration" sequence="10" action="action_folders"/>
+    <menuitem id="menu_tags" name="Tags" parent="menu_configuration" sequence="20" action="action_tag_categories"
+              groups="group_documents_manager"/>
+    <menuitem id="menu_actions" name="Actions" parent="menu_configuration" sequence="30"
+              action="action_workflow_actions" groups="group_documents_manager"/>
+    <menuitem id="menu_share_logs" name="Access Log" parent="menu_configuration" sequence="40"
+              action="action_share_logs" groups="group_documents_manager"/>
+    <menuitem id="menu_document_types" name="Document Types" parent="menu_configuration" sequence="25"
+              action="action_document_types" groups="group_documents_manager"/>
 
-    <menuitem id="menu_om_document_expired"
-              action="om_document_action_expired"
-              parent="menu_om_document"
-              sequence="20"/>
-
-    <menuitem id="menu_om_document_all"
-              name="All Documents"
-              action="om_document_action"
-              parent="menu_om_document"
-              sequence="30"/>
-
-    <menuitem id="menu_om_document_configuration"
-              name="Configuration"
-              parent="menu_om_document_root"
-              sequence="90"/>
-
-    <menuitem id="menu_om_document_type"
-              action="om_document_type_action"
-              parent="menu_om_document_configuration"
-              sequence="10"/>
+    <menuitem id="menu_expiry" name="Expiry" parent="menu_root" sequence="15"/>
+    <menuitem id="menu_expiry_expiring" parent="menu_expiry" sequence="10" action="action_expiry_expiring"/>
+    <menuitem id="menu_expiry_expired" parent="menu_expiry" sequence="20" action="action_expiry_expired"/>
+    <menuitem id="menu_expiry_all" name="Tracked Documents" parent="menu_expiry" sequence="30"
+              action="action_expiry_documents"/>
 
 </odoo>

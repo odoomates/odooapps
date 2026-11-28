@@ -1,76 +1,119 @@
-import base64
-from datetime import timedelta
-
 from odoo import api, fields, models
-from odoo.exceptions import UserError, ValidationError
-from odoo.fields import Domain
-from odoo.tools.misc import format_date
+from odoo.exceptions import UserError
+from odoo.fields import Command, Domain
+from odoo.tools import html2plaintext
+from odoo.tools.misc import human_size
+from odoo.tools.binary import BinaryBytes
 
 
-class Document(models.Model):
-    """ A document kept on any record, e.g. a passport on an employee, with its expiry date and its reminders.
+class DocumentsDocument(models.Model):
+    """ A document: a file, or a link, in a folder. The file is an attachment of the document; a new version of it
+    keeps the previous one in the history of the document, from which it can be restored.
 
-    The record holding it may inherit ``document.mixin`` to say who is reminded and who holds the document.
+    A document may stand for a record of another model (``res_model``, ``res_id``), e.g. the vendor bill made from
+    it. A request is a document without its file yet, asked to a contact who uploads it from a link.
     """
-    _name = 'document.document'
+    _name = 'om.documents.document'
     _inherit = ['mail.thread', 'mail.activity.mixin']
     _description = 'Document'
-    _check_company_auto = True
-    _order = 'date_expiry, id desc'
+    _order = 'id desc'
     _mail_post_access = 'read'
+    _check_company_auto = True
 
-    name = fields.Char(compute='_compute_name', store=True, readonly=False, required=True, precompute=True)
-    active = fields.Boolean(default=True)
-    res_model = fields.Char(string='Model', required=True, index=True)
-    res_id = fields.Many2oneReference(string='Record ID', model_field='res_model', required=True, index=True)
-    res_name = fields.Char(string='Holder', compute='_compute_res_name')
-    record_ref = fields.Reference(selection='_selection_record_ref', string='Belongs To',
+    name = fields.Char(required=True, tracking=True, index='trigram')
+    active = fields.Boolean(default=True, tracking=True)
+    folder_id = fields.Many2one('om.documents.folder', string='Folder', required=True, index=True, tracking=True,
+                                ondelete='restrict', default=lambda self: self._default_folder(),
+                                check_company=True)
+    company_id = fields.Many2one(related='folder_id.company_id', store=True, index=True)
+    type = fields.Selection([('binary', 'File'), ('url', 'Link')], required=True, default='binary')
+    attachment_id = fields.Many2one('ir.attachment', string='Attachment', index='btree_not_null', copy=False,
+                                    ondelete='set null', readonly=True)
+    datas = fields.Binary(string='File', compute='_compute_datas', inverse='_inverse_datas', attachment=False)
+    file_name = fields.Char(string='File Name', copy=False)
+    mimetype = fields.Char(related='attachment_id.mimetype', store=True, string='File Type')
+    file_size = fields.Integer(related='attachment_id.file_size', store=True, string='Size')
+    file_size_human = fields.Char(string='File Size', compute='_compute_file_size_human')
+    checksum = fields.Char(related='attachment_id.checksum', string='Checksum')
+    file_extension = fields.Char(compute='_compute_file_extension', string='Extension')
+    url = fields.Char(string='Link', tracking=True)
+    description = fields.Text()
+    owner_id = fields.Many2one('res.users', string='Owner', default=lambda self: self.env.user, index=True,
+                               tracking=True, domain=[('share', '=', False)])
+    partner_id = fields.Many2one('res.partner', string='Contact', index='btree_not_null', tracking=True)
+    tag_ids = fields.Many2many('om.documents.tag', 'om_documents_document_tag_rel', 'document_id', 'tag_id',
+                               string='Tags')
+    allowed_tag_ids = fields.Many2many('om.documents.tag', compute='_compute_allowed_tag_ids')
+
+    # the record the document stands for
+    res_model = fields.Char(string='Linked Model', index=True, copy=False)
+    res_id = fields.Many2oneReference(string='Linked Record ID', model_field='res_model', index=True, copy=False)
+    res_name = fields.Char(string='Linked To', compute='_compute_res_name')
+    record_ref = fields.Reference(selection='_selection_record_ref', string='Linked Record',
                                   compute='_compute_record_ref', inverse='_inverse_record_ref')
-    type_id = fields.Many2one(
-        'document.type', required=True, tracking=True, index=True, check_company=True,
-        domain="[('res_model', '=', res_model)]")
-    has_number = fields.Boolean(related='type_id.has_number')
-    has_issue_date = fields.Boolean(related='type_id.has_issue_date')
-    has_expiry_date = fields.Boolean(related='type_id.has_expiry_date')
-    number = fields.Char(tracking=True)
-    date_issue = fields.Date(string='Issued On', tracking=True)
-    date_expiry = fields.Date(string='Expires On', tracking=True, index=True)
-    country_id = fields.Many2one('res.country', string='Issued By')
-    attachment_ids = fields.Many2many('ir.attachment', 'om_document_attachment_rel', 'document_id',
-                                      'attachment_id', string='Files')
-    preview_url = fields.Char(compute='_compute_preview')
-    attachment_count = fields.Integer(string='File Count', compute='_compute_preview')
-    note = fields.Text()
-    company_id = fields.Many2one('res.company', required=True, index=True,
-                                 default=lambda self: self.env.company)
-    state = fields.Selection([
-        ('none', 'No Expiry'),
-        ('valid', 'Valid'),
-        ('expiring', 'Expiring'),
-        ('expired', 'Expired'),
-    ], compute='_compute_state', search='_search_state',
-        help='Expiring: the first reminder of its type is due.')
-    days_left = fields.Integer(compute='_compute_state')
-    last_reminder = fields.Integer(
-        copy=False, default=-1,
-        help='The reminder sent last, in days before the expiry date, -1 for none: each one is sent once.')
-    previous_id = fields.Many2one('document.document', string='Renews', copy=False, readonly=True, index=True,
-                                  check_company=True)
-    renewal_ids = fields.One2many('document.document', 'previous_id', string='Renewals', context={'active_test': False})
-    next_id = fields.Many2one('document.document', string='Renewed By', compute='_compute_next_id')
 
-    @api.depends('type_id', 'number')
-    def _compute_name(self):
-        for document in self:
-            parts = [document.type_id.name, document.number]
-            document.name = ' '.join(part for part in parts if part) or document.name
+    version_ids = fields.One2many('om.documents.version', 'document_id', string='Versions')
+    version_count = fields.Integer(compute='_compute_version_count', string='Previous Versions')
+    lock_uid = fields.Many2one('res.users', string='Locked By', readonly=True, copy=False, tracking=True)
+    is_locked = fields.Boolean(compute='_compute_is_locked')
+    favorited_user_ids = fields.Many2many('res.users', 'om_documents_document_favorite_rel', 'document_id',
+                                          'user_id', string='Starred By', copy=False)
+    is_favorite = fields.Boolean(string='Starred', compute='_compute_is_favorite', inverse='_inverse_is_favorite',
+                                 search='_search_is_favorite')
 
-    @api.depends('attachment_ids')
-    def _compute_preview(self):
+    # requests
+    is_request = fields.Boolean(string='Requested', copy=False, readonly=True,
+                                help='Asked to the contact, who uploads the file from the link sent to them.')
+    request_deadline = fields.Date(string='Requested By', copy=False, tracking=True)
+    request_state = fields.Selection([('missing', 'Missing'), ('received', 'Received')], string='Request Status',
+                                     compute='_compute_request_state', store=True, index='btree_not_null')
+
+    # ------------------------------------------------------------------
+    # Defaults and computes
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _default_folder(self):
+        folder = self.env['om.documents.folder'].browse(self.env.context.get('om_documents_folder_id'))
+        if folder.exists():
+            return folder
+        if self.env.user._is_internal():
+            return self.env['om.documents.folder']._get_my_drive()
+        return self.env['om.documents.folder']
+
+    @api.depends('attachment_id')
+    def _compute_datas(self):
         for document in self:
-            images = document.attachment_ids.filtered(lambda a: (a.mimetype or '').startswith('image/'))
-            document.preview_url = '/web/image/%s/320x200' % images[0].id if images else False
-            document.attachment_count = len(document.attachment_ids)
+            document.datas = document.attachment_id.raw if document.attachment_id else False
+
+    def _inverse_datas(self):
+        for document in self:
+            if not document.datas:
+                continue
+            attachment = self.env['ir.attachment'].create({
+                'name': document.file_name or document.name,
+                'raw': document.datas,
+                'res_model': self._name,
+                'res_id': document.id,
+            })
+            document._set_file(attachment)
+
+    @api.depends('file_size')
+    def _compute_file_size_human(self):
+        for document in self:
+            document.file_size_human = human_size(document.file_size)
+
+    @api.depends('file_name', 'attachment_id.name')
+    def _compute_file_extension(self):
+        for document in self:
+            name = document.file_name or document.attachment_id.name or ''
+            document.file_extension = name.rsplit('.', 1)[1].lower() if '.' in name else False
+
+    @api.depends('folder_id')
+    def _compute_allowed_tag_ids(self):
+        Tag = self.env['om.documents.tag']
+        for document in self:
+            document.allowed_tag_ids = Tag.search(Tag._domain_for_folder(document.folder_id))
 
     @api.depends('res_model', 'res_id')
     def _compute_res_name(self):
@@ -80,281 +123,383 @@ class Document(models.Model):
 
     @api.model
     def _selection_record_ref(self):
-        """ The kinds of record a document type is kept on. """
-        models_ = self.env['document.type'].sudo().with_context(active_test=False).search(
-            [('model_id', '!=', False)]).model_id
-        return [(model.model, model.name) for model in models_]
+        models_ = self.env['ir.model'].sudo().search([('transient', '=', False), ('is_mail_thread', '=', True)])
+        return [(model.model, model.name) for model in models_ if model.model != self._name]
 
     @api.depends('res_model', 'res_id')
     def _compute_record_ref(self):
-        selection = {model for model, _name in self._selection_record_ref()}
         for document in self:
-            document.record_ref = '%s,%s' % (document.res_model, document.res_id) \
-                if document.res_model in selection and document.res_id else False
-
-    @api.onchange('record_ref')
-    def _onchange_record_ref(self):
-        if self.record_ref:
-            self.res_model, self.res_id = self.record_ref._name, self.record_ref.id
+            record = document._get_record()
+            document.record_ref = '%s,%s' % (record._name, record.id) if record else False
 
     def _inverse_record_ref(self):
-        for document in self.filtered('record_ref'):
-            document.write({'res_model': document.record_ref._name, 'res_id': document.record_ref.id})
-
-    @api.depends('date_expiry', 'type_id.has_expiry_date', 'type_id.reminder_days')
-    @api.depends_context('date')
-    def _compute_state(self):
-        today = fields.Date.context_today(self)
         for document in self:
-            if not document.date_expiry or not document.type_id.has_expiry_date:
-                document.state, document.days_left = 'none', 0
-                continue
-            document.days_left = (document.date_expiry - today).days
-            if document.days_left < 0:
-                document.state = 'expired'
-            elif document.days_left <= max(document.type_id._get_reminder_days() or [0]):
-                document.state = 'expiring'
+            if document.record_ref:
+                document.write({'res_model': document.record_ref._name, 'res_id': document.record_ref.id})
             else:
-                document.state = 'valid'
+                document.write({'res_model': False, 'res_id': False})
 
-    def _search_state(self, operator, value):
+    def _compute_version_count(self):
+        counts = dict(self.env['om.documents.version']._read_group(
+            [('document_id', 'in', self.ids)], ['document_id'], ['__count']))
+        for document in self:
+            document.version_count = counts.get(document, 0)
+
+    @api.depends('lock_uid')
+    def _compute_is_locked(self):
+        for document in self:
+            document.is_locked = bool(document.lock_uid) and document.lock_uid != self.env.user
+
+    @api.depends('favorited_user_ids')
+    @api.depends_context('uid')
+    def _compute_is_favorite(self):
+        for document in self:
+            document.is_favorite = self.env.user in document.favorited_user_ids
+
+    def _inverse_is_favorite(self):
+        # starring is personal: who reads a document stars it, even in a folder they only read
+        for document in self:
+            command = Command.link if document.is_favorite else Command.unlink
+            document.sudo().favorited_user_ids = [command(self.env.uid)]
+
+    def _search_is_favorite(self, operator, value):
         if operator != 'in':
             return NotImplemented
-        today = fields.Date.context_today(self)
-        expiring_ids = []
-        for doc_type in self.env['document.type'].with_context(active_test=False).search(
-                [('has_expiry_date', '=', True)]):
-            horizon = today + timedelta(days=max(doc_type._get_reminder_days() or [0]))
-            expiring_ids += self.sudo().with_context(active_test=False).search([
-                ('type_id', '=', doc_type.id), ('date_expiry', '>=', today), ('date_expiry', '<=', horizon)]).ids
-        domains = {
-            'none': Domain('date_expiry', '=', False) | Domain('type_id.has_expiry_date', '=', False),
-            'expired': Domain('date_expiry', '<', today) & Domain('type_id.has_expiry_date', '=', True),
-            'expiring': Domain('id', 'in', expiring_ids),
-            'valid': Domain('date_expiry', '>=', today) & Domain('type_id.has_expiry_date', '=', True)
-                     & Domain('id', 'not in', expiring_ids),
-        }
-        return Domain.OR(domains[state] for state in value if state in domains)
+        if True in value and False not in value:
+            return Domain('favorited_user_ids', 'in', self.env.uid)
+        if False in value and True not in value:
+            return Domain('favorited_user_ids', 'not in', self.env.uid)
+        return Domain.TRUE
 
-    @api.depends('renewal_ids')
-    def _compute_next_id(self):
+    @api.depends('is_request', 'attachment_id', 'type', 'url')
+    def _compute_request_state(self):
         for document in self:
-            document.next_id = document.with_context(active_test=False).renewal_ids[:1]
-
-    @api.constrains('date_issue', 'date_expiry')
-    def _check_dates(self):
-        for document in self:
-            if document.date_issue and document.date_expiry and document.date_expiry < document.date_issue:
-                raise ValidationError(self.env._('%s expires before it is issued.', document.name))
-
-    @api.constrains('res_model', 'type_id')
-    def _check_type(self):
-        for document in self:
-            if document.type_id.res_model != document.res_model:
-                raise ValidationError(self.env._('A %(type)s is not kept on a %(model)s.', type=document.type_id.name,
-                                                 model=self.env['ir.model']._get(document.res_model).name))
-
-    # ------------------------------------------------------------------
-    # Record holding the document
-    # ------------------------------------------------------------------
+            if not document.is_request:
+                document.request_state = False
+            elif document.attachment_id or (document.type == 'url' and document.url):
+                document.request_state = 'received'
+            else:
+                document.request_state = 'missing'
 
     def _get_record(self):
-        """ :return: the record the document belongs to, empty when it no longer exists """
+        """ :return: the record the document stands for, None when it has none or it no longer exists """
         self.ensure_one()
         if not self.res_model or self.res_model not in self.env or not self.res_id:
             return None
-        return self.env[self.res_model].browse(self.res_id).exists()
+        return self.env[self.res_model].browse(self.res_id).exists() or None
 
-    def _get_responsible_users(self):
-        """ :return: who is reminded: the users the record names, else the responsible users of the type """
-        self.ensure_one()
-        record = self._get_record()
-        users = record.sudo()._document_responsible_users() if record and hasattr(
-            record, '_document_responsible_users') else self.env['res.users']
-        return (users or self.type_id.user_ids).filtered(lambda user: user.active and not user.share)
-
-    def _get_holder_partner(self):
-        """ :return: the partner holding the document, emailed when its type notifies the holder """
-        self.ensure_one()
-        record = self._get_record()
-        if record and hasattr(record, '_document_holder_partner'):
-            return record.sudo()._document_holder_partner()
-        return self.env['res.partner']
+    # ------------------------------------------------------------------
+    # CRUD
+    # ------------------------------------------------------------------
 
     @api.model_create_multi
     def create(self, vals_list):
+        attachments = self.env['ir.attachment']
         for vals in vals_list:
             if vals.get('record_ref'):
                 model, res_id = vals.pop('record_ref').split(',')
                 vals.update(res_model=model, res_id=int(res_id))
-            record = self.env[vals['res_model']].browse(vals['res_id']) if vals.get('res_model') else None
-            if record and 'company_id' not in vals and 'company_id' in record._fields and record.company_id:
-                vals['company_id'] = record.sudo().company_id.id
+            attachment = attachments.browse(vals.get('attachment_id'))
+            if attachment:
+                vals.setdefault('file_name', attachment.name)
+                vals.setdefault('name', attachment.name)
+            if not vals.get('name'):
+                vals['name'] = vals.get('file_name') or vals.get('url') or self.env._('New Document')
+            if vals.get('url') and not vals.get('datas') and not attachment:
+                vals.setdefault('type', 'url')
         documents = super().create(vals_list)
-        # the renewal replaces the document it renews
-        documents.previous_id.filtered('active').write({'active': False})
+        for document in documents.filtered('attachment_id'):
+            document.attachment_id._om_documents_claim(document)
         return documents
 
     def write(self, vals):
-        changed = self.browse()
-        if 'date_expiry' in vals:
-            changed = self.filtered(lambda d: d.date_expiry != fields.Date.to_date(vals['date_expiry']))
-        result = super().write(vals)
-        if changed:
-            # a new expiry date is reminded of again
-            super(Document, changed.sudo()).write({'last_reminder': -1})
-        return result
+        if not self.env.su and set(vals) - {'is_favorite', 'favorited_user_ids'}:
+            locked = self.filtered('is_locked')
+            if locked and not self.env.user.has_group('om_document.group_documents_manager'):
+                raise UserError(self.env._('%(document)s is locked by %(user)s.', document=locked[0].name,
+                                           user=locked[0].lock_uid.name))
+        if vals.get('folder_id') and not self.env.su:
+            self.env['om.documents.folder'].browse(vals['folder_id']).check_access('write')
+        return super().write(vals)
+
+    def copy_data(self, default=None):
+        vals_list = super().copy_data(default=default)
+        for document, vals in zip(self, vals_list):
+            vals['name'] = self.env._('%s (copy)', document.name)
+            if document.attachment_id and 'datas' not in (default or {}):
+                vals['datas'] = document.attachment_id.raw
+                vals['file_name'] = document.file_name
+        return vals_list
+
+    # ------------------------------------------------------------------
+    # Files and versions
+    # ------------------------------------------------------------------
+
+    def _set_file(self, attachment, version_note=None):
+        """ Make `attachment` the file of the document, the file it had going to its versions. """
+        self.ensure_one()
+        attachment._om_documents_claim(self)
+        previous = self.attachment_id
+        if previous and previous != attachment:
+            self.env['om.documents.version'].sudo().create({
+                'document_id': self.id,
+                'attachment_id': previous.id,
+                'note': version_note,
+            })
+        was_missing = self.request_state == 'missing'
+        self.write({
+            'attachment_id': attachment.id,
+            'file_name': attachment.name,
+            'type': 'binary',
+        })
+        if previous and previous != attachment:
+            self.message_post(body=self.env._('New version: %(new)s replaces %(old)s.', new=attachment.name,
+                                              old=previous.name), subtype_xmlid='mail.mt_note')
+        if was_missing:
+            self._on_request_received()
+
+    def _restore_version(self, version):
+        self.ensure_one()
+        attachment = version.attachment_id
+        version.sudo().unlink()
+        self._set_file(attachment, version_note=self.env._('Replaced by the restored %s', attachment.name))
+
+    def _get_raw(self):
+        """ :return: the bytes of the file of the document, b'' for a link or a missing file """
+        self.ensure_one()
+        raw = self.attachment_id.sudo().raw
+        return raw.content if raw else b''
+
+    @api.model
+    def upload_files(self, folder_id, files, values=None):
+        """ Documents from files dropped in the browser.
+
+        :param folder_id: the folder to upload in, the My Drive of the user when False
+        :param files: a list of dicts: name, mimetype, data (base64)
+        :param values: more values of the documents, e.g. their tags
+        :return: the ids of the documents
+        """
+        folder = self.env['om.documents.folder'].browse(folder_id) if folder_id \
+            else self.env['om.documents.folder']._get_my_drive()
+        folder.check_access('write')
+        documents = self.create([{
+            **(values or {}),
+            'name': file['name'],
+            'file_name': file['name'],
+            'folder_id': folder.id,
+            'datas': file['data'],
+        } for file in files])
+        return documents.ids
+
+    def upload_version(self, file):
+        """ A new version of the document from a file dropped in the browser: a dict name, mimetype, data. """
+        self.ensure_one()
+        self.check_access('write')
+        self.write({'file_name': file['name'], 'datas': file['data']})
+        return True
+
+    # ------------------------------------------------------------------
+    # Requests
+    # ------------------------------------------------------------------
+
+    def _on_request_received(self):
+        """ The file of a request arrived: the activity of the request is done. """
+        for document in self:
+            activities = document.activity_ids.filtered(
+                lambda a: a.activity_type_id == self.env.ref('om_document.mail_activity_type_request',
+                                                             raise_if_not_found=False))
+            activities.sudo().action_feedback(feedback=self.env._('The document is received.'))
+            document.message_post(body=self.env._('The requested document is received.'),
+                                  subtype_xmlid='mail.mt_note')
+
+    # ------------------------------------------------------------------
+    # Upload by email
+    # ------------------------------------------------------------------
+
+    @api.model
+    def message_new(self, msg_dict, custom_values=None):
+        """ A document from each file of an email sent to the alias of a folder, its sender as their contact. """
+        values = dict(custom_values or {})
+        partner = self.env['res.partner'].browse(msg_dict.get('author_id')).exists()
+        if partner:
+            values.setdefault('partner_id', partner.id)
+        subject = msg_dict.get('subject') or self.env._('Emailed Document')
+        files = msg_dict.get('attachments') or []
+        vals_list = []
+        for attachment in files:
+            name, content = attachment[0], attachment[1]
+            if isinstance(content, str):
+                content = content.encode()
+            vals_list.append({
+                **values,
+                'name': name,
+                'file_name': name,
+                'datas': BinaryBytes(content),
+                'description': subject,
+            })
+        if not vals_list:
+            body = html2plaintext(msg_dict.get('body') or '')
+            vals_list.append({**values, 'name': subject, 'description': body or False})
+        documents = self.create(vals_list)
+        # the files are the documents: the email is posted on the first one, without them
+        msg_dict['attachments'] = []
+        for document in documents[1:]:
+            document.message_post(body=self.env._('Received by email from %(sender)s: %(subject)s',
+                                                  sender=msg_dict.get('email_from') or '', subject=subject),
+                                  subtype_xmlid='mail.mt_note')
+        return documents[:1]
 
     # ------------------------------------------------------------------
     # Actions
     # ------------------------------------------------------------------
 
-    def action_renew(self):
-        """ Open the document renewing this one: saving it archives this one. """
-        self.ensure_one()
-        if self.next_id:
-            raise UserError(self.env._('%(document)s is already renewed by %(renewal)s.', document=self.name,
-                                       renewal=self.next_id.name))
-        return {
-            'type': 'ir.actions.act_window',
-            'name': self.env._('Renew %s', self.name),
-            'res_model': 'document.document',
-            'view_mode': 'form',
-            'views': [(False, 'form')],
-            'target': 'current',
-            'context': {
-                'default_res_model': self.res_model,
-                'default_res_id': self.res_id,
-                'default_type_id': self.type_id.id,
-                'default_country_id': self.country_id.id,
-                'default_company_id': self.company_id.id,
-                'default_previous_id': self.id,
-            },
-        }
+    def action_lock(self):
+        for document in self:
+            if document.lock_uid and document.lock_uid != self.env.user and \
+                    not self.env.user.has_group('om_document.group_documents_manager'):
+                raise UserError(self.env._('%(document)s is locked by %(user)s.', document=document.name,
+                                           user=document.lock_uid.name))
+            document.sudo().lock_uid = False if document.lock_uid else self.env.user
+        return True
+
+    def action_toggle_favorite(self):
+        for document in self:
+            document.is_favorite = not document.is_favorite
+        return True
+
+    def action_download(self):
+        documents = self.filtered('attachment_id')
+        if not documents:
+            raise UserError(self.env._('Nothing to download: the documents have no file.'))
+        if len(documents) == 1:
+            url = '/web/content/%s?download=true' % documents.attachment_id.id
+        else:
+            url = '/om_document/zip?ids=%s' % ','.join(str(i) for i in documents.ids)
+        return {'type': 'ir.actions.act_url', 'url': url, 'target': 'download'}
+
+    def action_share(self):
+        if not self:
+            raise UserError(self.env._('Select the documents to share.'))
+        share = self.env['om.documents.share'].create({
+            'share_type': 'documents',
+            'document_ids': [Command.set(self.ids)],
+            'folder_id': self[:1].folder_id.id,
+        })
+        return share._action_open()
 
     def action_open_record(self):
         self.ensure_one()
         record = self._get_record()
         if not record:
-            raise UserError(self.env._('The record of %s no longer exists.', self.name))
+            raise UserError(self.env._('%s is linked to no record.', self.name))
         return {
             'type': 'ir.actions.act_window',
-            'res_model': self.res_model,
-            'res_id': self.res_id,
+            'res_model': record._name,
+            'res_id': record.id,
             'view_mode': 'form',
             'views': [(False, 'form')],
         }
 
-    # ------------------------------------------------------------------
-    # Documents widget of the record holding them
-    # ------------------------------------------------------------------
-
-    def _board_values(self):
+    def action_open_versions(self):
         self.ensure_one()
         return {
-            'id': self.id,
-            'name': self.name,
-            'type_id': self.type_id.id,
-            'type_name': self.type_id.name,
-            'number': self.number or '',
-            'date_expiry': format_date(self.env, self.date_expiry) if self.date_expiry else '',
-            'days_left': self.days_left,
-            'state': self.state,
-            'attachments': [{'id': attachment.id, 'name': attachment.name, 'mimetype': attachment.mimetype}
-                            for attachment in self.attachment_ids],
+            'type': 'ir.actions.act_window',
+            'name': self.env._('Versions of %s', self.name),
+            'res_model': 'om.documents.version',
+            'view_mode': 'list',
+            'domain': [('document_id', '=', self.id)],
+            'context': {'create': False},
         }
 
-    @api.model
-    def board_data(self, res_model, res_id):
-        """ :return: the documents of a record and the types it has no document of yet, for its widget """
-        record = self.env[res_model].browse(res_id).exists()
-        if not record:
-            return {'documents': [], 'missing': [], 'can_edit': False}
-        record.check_access('read')
-        documents = self.search([('res_model', '=', res_model), ('res_id', '=', res_id)],
-                                order='type_id, date_expiry desc, id desc')
-        company = record.company_id if 'company_id' in record._fields and record.company_id else self.env.company
-        types = self.env['document.type'].search([
-            ('res_model', '=', res_model), '|', ('company_id', '=', False), ('company_id', '=', company.id)])
+    def action_move(self):
         return {
-            'documents': [document._board_values() for document in documents],
-            'missing': [{'id': doc_type.id, 'name': doc_type.name, 'description': doc_type.description or ''}
-                        for doc_type in types - documents.type_id],
-            'can_edit': self.has_access('create'),
+            'type': 'ir.actions.act_window',
+            'name': self.env._('Move or Tag'),
+            'res_model': 'om.documents.move.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_model': self._name, 'active_ids': self.ids},
         }
 
-    @api.model
-    def board_upload(self, res_model, res_id, type_id, document_id, files):
-        """ Attach files dropped on the widget: to the document, or to a new document of the type.
+    def action_run_actions(self):
+        return {
+            'type': 'ir.actions.act_window',
+            'name': self.env._('Run an Action'),
+            'res_model': 'om.documents.action.wizard',
+            'view_mode': 'form',
+            'target': 'new',
+            'context': {'active_model': self._name, 'active_ids': self.ids},
+        }
 
-        :param files: list of dicts with the name, the mimetype and the base64 data of each file
-        :return: the id of the document
-        """
-        if document_id:
-            document = self.browse(document_id)
-            document.check_access('write')
-        else:
-            document = self.create({'res_model': res_model, 'res_id': res_id, 'type_id': type_id})
-        attachments = self.env['ir.attachment'].create([{
-            'name': file['name'],
-            'mimetype': file.get('mimetype'),
-            'raw': base64.b64decode(file['data']),
-            'res_model': self._name,
-            'res_id': document.id,
-        } for file in files])
-        document.attachment_ids = [fields.Command.link(attachment.id) for attachment in attachments]
-        return document.id
+    def _get_viewer_data(self):
+        """ :return: what the file viewer shows of each document """
+        return [{
+            'id': document.attachment_id.id,
+            'name': document.file_name or document.name,
+            'mimetype': document.mimetype,
+            'checksum': document.checksum,
+            'type': 'url' if document.type == 'url' else 'binary',
+            'url': document.url,
+        } for document in self]
+
+    def get_viewer_data(self):
+        return self._get_viewer_data()
 
     # ------------------------------------------------------------------
-    # Reminders
+    # Records from documents
     # ------------------------------------------------------------------
 
-    def _get_due_reminder(self, today):
-        """ :return: the reminder due today in days before the expiry, None when nothing is due """
+    def _attach_to(self, record):
+        """ Attach a copy of the file of the document to `record`, linked to the document. """
         self.ensure_one()
-        if not self.date_expiry or not self.type_id.has_expiry_date:
-            return None
-        days_left = (self.date_expiry - today).days
-        due = [day for day in self.type_id._get_reminder_days() if days_left <= day]
-        if not due:
-            return None
-        reminder = min(due)
-        if self.last_reminder != -1 and reminder >= self.last_reminder:
-            return None
-        return reminder
+        attachment = self.env['ir.attachment']
+        if self.attachment_id:
+            attachment = self.attachment_id.sudo().with_context(om_documents_no_sync=True).copy({
+                'res_model': record._name,
+                'res_id': record.id,
+            })
+        self.write({'res_model': record._name, 'res_id': record.id})
+        return attachment
 
-    def _send_reminder(self, reminder):
-        """ A to-do for each responsible user, and an email to the holder when the type asks for it. """
+    def _create_record(self, model, binary_field=None):
+        """ :return: a record of `model` made from the document: its name, its contact, its file attached and,
+                     when `binary_field` is given, in that field """
         self.ensure_one()
-        days_left = (self.date_expiry - fields.Date.context_today(self)).days
-        if days_left < 0:
-            summary = self.env._('%s has expired', self.name)
-        elif days_left == 0:
-            summary = self.env._('%s expires today', self.name)
-        else:
-            summary = self.env._('%(document)s expires in %(days)s days', document=self.name, days=days_left)
-        if self.res_name:
-            summary = '%s: %s' % (self.res_name, summary)
-        for user in self._get_responsible_users():
-            self.activity_schedule('mail.mail_activity_data_todo', date_deadline=self.date_expiry,
-                                   summary=summary, user_id=user.id)
-        if self.type_id.notify_holder:
-            partner = self._get_holder_partner()
-            if partner.email:
-                self.message_post(
-                    body=self.env._('%(summary)s. Please renew it and send the new one.', summary=summary),
-                    subject=summary, partner_ids=partner.ids, message_type='comment',
-                    subtype_xmlid='mail.mt_comment')
-        self.sudo().last_reminder = reminder
+        Model = self.env[model]
+        values = {}
+        rec_name = Model._rec_name
+        if rec_name and rec_name in Model._fields and Model._fields[rec_name].type in ('char', 'text') \
+                and not Model._fields[rec_name].compute:
+            values[rec_name] = self.name
+        if self.partner_id and 'partner_id' in Model._fields and Model._fields['partner_id'].type == 'many2one' \
+                and Model._fields['partner_id'].comodel_name == 'res.partner':
+            values['partner_id'] = self.partner_id.id
+        if binary_field and self.attachment_id:
+            values[binary_field] = self.attachment_id.sudo().raw
+        record = Model.with_context(om_documents_no_sync=True).create(values)
+        attachment = self._attach_to(record)
+        if attachment and hasattr(record, 'message_post'):
+            record.message_post(body=self.env._('Created from the document %s.', self.name),
+                                attachment_ids=attachment.ids)
+            if 'message_main_attachment_id' in record._fields and not record.message_main_attachment_id:
+                record.sudo().message_main_attachment_id = attachment
+        return record
 
     @api.model
-    def _cron_send_reminders(self):
-        today = fields.Date.context_today(self)
-        types = self.env['document.type'].search([('has_expiry_date', '=', True)])
-        horizon = today + timedelta(days=max([max(t._get_reminder_days() or [0]) for t in types] or [0]))
-        documents = self.search([('type_id', 'in', types.ids), ('date_expiry', '!=', False),
-                                 ('date_expiry', '<=', horizon)])
-        for document in documents:
-            reminder = document._get_due_reminder(today)
-            if reminder is not None:
-                document._send_reminder(reminder)
+    def search_panel_select_range(self, field_name, **kwargs):
+        if field_name == 'folder_id' and self.env.user._is_internal():
+            # the folder panel always offers the My Drive of the user
+            self.env['om.documents.folder']._get_my_drive()
+        return super().search_panel_select_range(field_name, **kwargs)
+
+    # ------------------------------------------------------------------
+    # Hooks for the bridges
+    # ------------------------------------------------------------------
+
+    @api.model
+    def _get_record_folder(self, record):
+        """ :return: the folder of the documents of `record`, empty when its model keeps none (see
+                     om.documents.mixin) """
+        if hasattr(record, '_get_documents_folder'):
+            return record._get_documents_folder()
+        return self.env['om.documents.folder']

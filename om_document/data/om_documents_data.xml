@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <data noupdate="1">
+        <record id="mail_activity_type_request" model="mail.activity.type">
+            <field name="name">Document Request</field>
+            <field name="summary">Document requested</field>
+            <field name="icon">upload</field>
+            <field name="res_model">om.documents.document</field>
+            <field name="delay_count">7</field>
+        </record>
+
+        <record id="folder_internal" model="om.documents.folder">
+            <field name="name">Internal</field>
+            <field name="sequence">1</field>
+            <field name="access_internal">edit</field>
+            <field name="owner_id" ref="base.user_admin"/>
+        </record>
+    </data>
+
+    <record id="portal_entry_documents" model="portal.entry">
+        <field name="name">Documents</field>
+        <field name="description">Documents shared with you</field>
+        <field name="url">/my/documents</field>
+        <field name="image" type="bytes" file="om_document/static/img/documents.svg"/>
+        <field name="placeholder_count">om_documents_count</field>
+        <field name="sequence" eval="45"/>
+    </record>
+
+    <record id="mail_template_share" model="mail.template">
+        <field name="name">Documents: Share</field>
+        <field name="model_id" ref="om_document.model_om_documents_share"/>
+        <field name="subject">{{ object.create_uid.name }} shared {{ object.name }} with you</field>
+        <field name="use_default_to" eval="True"/>
+        <field name="description">Sent to the contacts of a share, with its link</field>
+        <field name="body_html" type="html">
+<div style="margin: 0px; padding: 0px; font-size: 13px;">
+    Hello,<br/><br/>
+    <t t-out="object.create_uid.name or ''">Mitchell Admin</t> shared
+    <b t-out="object.name or ''">Contracts</b> with you.
+    <t t-if="object.date_expiry">The link is valid until <t t-out="format_date(object.date_expiry) or ''">05/05/2027</t>.</t>
+    <br/><br/>
+    <div style="margin: 16px 0px 16px 0px;">
+        <a t-att-href="object.full_url"
+           style="background-color: #714B67; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size: 13px;">
+            Open the documents
+        </a>
+    </div>
+    Best regards,<br/>
+    <t t-out="object.create_uid.signature or ''">--<br/>Mitchell Admin</t>
+</div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <template id="message_document_request">
+        <div>
+            Hello <t t-out="share.partner_ids[:1].name or ''"/>,<br/><br/>
+            <t t-out="share.upload_owner_id.name or share.create_uid.name"/> asks you for
+            <b t-out="document.name"/><t t-if="deadline"> by <t t-out="deadline"/></t>.
+            <p t-if="message" t-out="message" style="white-space: pre-wrap;"/>
+            <div style="margin: 16px 0px 16px 0px;">
+                <a t-att-href="share.full_url"
+                   style="background-color: #714B67; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size: 13px;">
+                    Upload the document
+                </a>
+            </div>
+        </div>
+    </template>
+
+</odoo>

@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_documents_document_view_search" model="ir.ui.view">
+        <field name="name">om.documents.document.search</field>
+        <field name="model">om.documents.document</field>
+        <field name="arch" type="xml">
+            <search string="Documents">
+                <field name="name" string="Document" filter_domain="['|', ('name', 'ilike', self), ('file_name', 'ilike', self)]"/>
+                <field name="tag_ids"/>
+                <field name="partner_id"/>
+                <field name="owner_id"/>
+                <field name="folder_id"/>
+                <field name="res_model"/>
+                <filter name="starred" string="Starred" domain="[('is_favorite', '=', True)]"/>
+                <filter name="my_documents" string="Owned by Me" domain="[('owner_id', '=', uid)]"/>
+                <filter name="locked" string="Locked" domain="[('lock_uid', '!=', False)]"/>
+                <separator/>
+                <filter name="type_pdf" string="PDF" domain="[('mimetype', '=like', 'application/pdf%')]"/>
+                <filter name="type_image" string="Images" domain="[('mimetype', '=like', 'image/%')]"/>
+                <filter name="type_video" string="Videos" domain="[('mimetype', '=like', 'video/%')]"/>
+                <filter name="type_link" string="Links" domain="[('type', '=', 'url')]"/>
+                <separator/>
+                <filter name="request_missing" string="Requested, Missing" domain="[('request_state', '=', 'missing')]"/>
+                <filter name="request_received" string="Requested, Received" domain="[('request_state', '=', 'received')]"/>
+                <separator/>
+                <filter name="linked" string="Linked to a Record" domain="[('res_model', '!=', False)]"/>
+                <separator/>
+                <filter name="create_date" string="Uploaded On" date="create_date"/>
+                <separator/>
+                <filter name="activities_my" string="My Activities" domain="[('activity_user_id', '=', uid)]"/>
+                <separator/>
+                <filter name="inactive" string="Archived" domain="[('active', '=', False)]"/>
+                <group>
+                    <filter name="group_folder" string="Folder" context="{'group_by': 'folder_id'}"/>
+                    <filter name="group_owner" string="Owner" context="{'group_by': 'owner_id'}"/>
+                    <filter name="group_partner" string="Contact" context="{'group_by': 'partner_id'}"/>
+                    <filter name="group_mimetype" string="File Type" context="{'group_by': 'mimetype'}"/>
+                    <filter name="group_create_date" string="Uploaded On" context="{'group_by': 'create_date'}"/>
+                </group>
+                <searchpanel>
+                    <field name="folder_id" hierarchize="1" icon="folder" enable_counters="1" expand="1"/>
+                    <field name="tag_ids" select="multi" groupby="category_id" icon="label" enable_counters="1"/>
+                </searchpanel>
+            </search>
+        </field>
+    </record>
+
+    <record id="om_documents_document_view_kanban" model="ir.ui.view">
+        <field name="name">om.documents.document.kanban</field>
+        <field name="model">om.documents.document</field>
+        <field name="arch" type="xml">
+            <kanban js_class="om_documents_kanban" class="o_om_documents_kanban" sample="1" quick_create="false">
+                <field name="attachment_id"/>
+                <field name="mimetype"/>
+                <field name="checksum"/>
+                <field name="type"/>
+                <field name="url"/>
+                <field name="file_name"/>
+                <field name="lock_uid"/>
+                <field name="request_state"/>
+                <templates>
+                    <t t-name="menu">
+                        <a role="menuitem" type="open" class="dropdown-item">Details</a>
+                        <a t-if="record.attachment_id.raw_value" role="menuitem" class="dropdown-item"
+                           t-attf-href="/web/content/#{record.attachment_id.raw_value}?download=true" download="">Download</a>
+                        <a role="menuitem" type="object" name="action_share" class="dropdown-item">Share</a>
+                        <a role="menuitem" type="object" name="action_lock" class="dropdown-item">
+                            <t t-if="record.lock_uid.raw_value">Unlock</t><t t-else="">Lock</t>
+                        </a>
+                        <a t-if="widget.deletable" role="menuitem" type="archive" class="dropdown-item">Archive</a>
+                    </t>
+                    <t t-name="card" class="p-0">
+                        <div class="o_om_documents_thumbnail d-flex align-items-center justify-content-center position-relative">
+                            <t t-set="webimage" t-value="new RegExp('image.*(gif|jpeg|jpg|png|webp|svg)').test(record.mimetype.value)"/>
+                            <div t-if="record.type.raw_value == 'url'" class="oi oi-3x text-muted" data-icon="link" title="Link"/>
+                            <img t-elif="webimage and record.attachment_id.raw_value" t-attf-src="/web/image/#{record.attachment_id.raw_value}/300x200?unique=#{record.checksum.value}" alt="Thumbnail"/>
+                            <div t-elif="record.attachment_id.raw_value" class="o_image" t-att-data-mimetype="record.mimetype.value"/>
+                            <div t-else="" class="text-center text-muted">
+                                <i class="oi oi-2x d-block" data-icon="hourglass_empty" title="Missing"/>
+                                <small>Missing</small>
+                            </div>
+                            <span t-if="record.request_state.raw_value == 'missing'" class="badge text-bg-warning o_om_documents_badge">Requested</span>
+                            <span t-elif="record.lock_uid.raw_value" class="badge text-bg-secondary o_om_documents_badge">
+                                <i class="oi" data-icon="lock" title="Locked"/>
+                            </span>
+                        </div>
+                        <div class="px-2 pt-2 pb-1">
+                            <div class="d-flex align-items-start">
+                                <field name="is_favorite" widget="boolean_favorite" nolabel="1" class="me-1"/>
+                                <field name="name" class="fw-bold text-truncate flex-grow-1"/>
+                            </div>
+                            <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}"/>
+                            <div class="d-flex align-items-center small text-muted mt-1">
+                                <field name="create_date" widget="date"/>
+                                <field name="partner_id" class="ms-2 text-truncate"/>
+                                <field name="owner_id" widget="many2one_avatar_user" class="ms-auto"/>
+                            </div>
+                        </div>
+                    </t>
+                </templates>
+            </kanban>
+        </field>
+    </record>
+
+    <record id="om_documents_document_view_list" model="ir.ui.view">
+        <field name="name">om.documents.document.list</field>
+        <field name="model">om.documents.document</field>
+        <field name="arch" type="xml">
+            <list js_class="om_documents_list" sample="1" multi_edit="1">
+                <field name="is_favorite" widget="boolean_favorite" nolabel="1"/>
+                <field name="name"/>
+                <field name="folder_id" optional="show"/>
+                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color'}" optional="show"/>
+                <field name="partner_id" optional="show"/>
+                <field name="owner_id" widget="many2one_avatar_user" optional="show"/>
+                <field name="res_name" optional="hide"/>
+                <field name="mimetype" optional="hide"/>
+                <field name="file_size_human" optional="show"/>
+                <field name="request_state" widget="badge" decoration-warning="request_state == 'missing'"
+                       decoration-success="request_state == 'received'" optional="show"/>
+                <field name="lock_uid" optional="hide"/>
+                <field name="create_date" string="Uploaded On" optional="show"/>
+                <field name="attachment_id" column_invisible="True"/>
+                <field name="type" column_invisible="True"/>
+                <field name="url" column_invisible="True"/>
+                <field name="file_name" column_invisible="True"/>
+                <field name="checksum" column_invisible="True"/>
+                <field name="company_id" column_invisible="True"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="om_documents_document_view_form" model="ir.ui.view">
+        <field name="name">om.documents.document.form</field>
+        <field name="model">om.documents.document</field>
+        <field name="arch" type="xml">
+            <form string="Document">
+                <header>
+                    <button name="action_download" type="object" string="Download" class="btn-primary"
+                            invisible="not attachment_id"/>
+                    <button name="action_share" type="object" string="Share" invisible="not id"/>
+                    <button name="action_run_actions" type="object" string="Run an Action" invisible="not id"/>
+                    <button name="action_move" type="object" string="Move or Tag" invisible="not id"/>
+                    <button name="action_lock" type="object" string="Lock" invisible="not id or lock_uid"/>
+                    <button name="action_lock" type="object" string="Unlock" invisible="not lock_uid"/>
+                    <field name="request_state" widget="statusbar" invisible="not is_request"/>
+                </header>
+                <sheet>
+                    <div class="oe_button_box" name="button_box">
+                        <button name="action_open_versions" type="object" class="oe_stat_button" icon="autorenew"
+                                invisible="not version_count">
+                            <field name="version_count" widget="statinfo" string="Versions"/>
+                        </button>
+                        <button name="action_open_record" type="object" class="oe_stat_button" icon="open_in_new"
+                                invisible="not res_name">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Linked To</span>
+                                <span class="o_stat_value text-truncate" style="max-width: 120px;">
+                                    <field name="res_name" readonly="1"/>
+                                </span>
+                            </div>
+                        </button>
+                    </div>
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+                    <widget name="web_ribbon" title="Locked" bg_color="text-bg-secondary" invisible="not lock_uid or not active"/>
+                    <field name="attachment_id" invisible="1"/>
+                    <field name="mimetype" invisible="1"/>
+                    <field name="checksum" invisible="1"/>
+                    <field name="active" invisible="1"/>
+                    <field name="is_request" invisible="1"/>
+                    <field name="is_locked" invisible="1"/>
+                    <field name="allowed_tag_ids" invisible="1"/>
+                    <div class="oe_title">
+                        <label for="name"/>
+                        <h1 class="d-flex">
+                            <field name="is_favorite" widget="boolean_favorite" nolabel="1" class="me-2"/>
+                            <field name="name" placeholder="e.g. Signed contract" readonly="is_locked"/>
+                        </h1>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <group>
+                                <field name="type" widget="radio" options="{'horizontal': true}"
+                                       readonly="attachment_id"/>
+                                <field name="datas" filename="file_name" invisible="type != 'binary'"
+                                       string="File" readonly="is_locked"
+                                       help="Upload another file to make a new version: the current one is kept in the versions."/>
+                                <field name="file_name" invisible="1"/>
+                                <field name="url" widget="url" invisible="type != 'url'" required="type == 'url'"
+                                       placeholder="https://"/>
+                                <field name="folder_id" options="{'no_create': True}"/>
+                                <field name="tag_ids" widget="many2many_tags" options="{'color_field': 'color', 'no_create': True}"
+                                       domain="[('id', 'in', allowed_tag_ids)]" context="{'om_documents_tag_full_name': True}"/>
+                                <field name="partner_id"/>
+                                <field name="owner_id" widget="many2one_avatar_user"/>
+                                <field name="record_ref" string="Linked Record" options="{'no_create': True}"/>
+                                <field name="request_deadline" invisible="not is_request"/>
+                                <field name="company_id" groups="base.group_multi_company" readonly="1"/>
+                            </group>
+                            <group string="Details">
+                                <field name="file_size_human" invisible="not attachment_id"/>
+                                <field name="create_uid" string="Uploaded By" widget="many2one_avatar_user"/>
+                                <field name="create_date" string="Uploaded On"/>
+                                <field name="lock_uid" widget="many2one_avatar_user" invisible="not lock_uid"/>
+                            </group>
+                            <field name="description" placeholder="Description..."/>
+                        </div>
+                        <div class="col-lg-6">
+                            <widget name="om_documents_preview"/>
+                        </div>
+                    </div>
+                    <notebook>
+                        <page string="Versions" name="versions" invisible="not version_count">
+                            <field name="version_ids" readonly="1">
+                                <list create="0" delete="0">
+                                    <field name="name"/>
+                                    <field name="file_size_human"/>
+                                    <field name="uploaded_by_id" widget="many2one_avatar_user"/>
+                                    <field name="date_uploaded"/>
+                                    <field name="note"/>
+                                    <button name="action_download" type="object" string="Download" icon="download"/>
+                                    <button name="action_restore" type="object" string="Restore" icon="undo"
+                                            confirm="Restore this version? The current file is kept in the versions."/>
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+                <chatter/>
+            </form>
+        </field>
+    </record>
+
+    <record id="om_documents_version_view_list" model="ir.ui.view">
+        <field name="name">om.documents.version.list</field>
+        <field name="model">om.documents.version</field>
+        <field name="arch" type="xml">
+            <list create="0" edit="0">
+                <field name="document_id"/>
+                <field name="name"/>
+                <field name="file_size_human"/>
+                <field name="uploaded_by_id" widget="many2one_avatar_user"/>
+                <field name="date_uploaded"/>
+                <field name="note"/>
+                <button name="action_download" type="object" string="Download" icon="download"/>
+                <button name="action_restore" type="object" string="Restore" icon="undo"
+                        confirm="Restore this version? The current file is kept in the versions."/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_documents" model="ir.actions.act_window">
+        <field name="name">Documents</field>
+        <field name="res_model">om.documents.document</field>
+        <field name="view_mode">kanban,list,form,activity</field>
+        <field name="search_view_id" ref="om_documents_document_view_search"/>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">Drop files here, or upload them</p>
+            <p>Keep the files of the company in folders, share them with a link, and request the missing ones.</p>
+        </field>
+    </record>
+
+    <record id="action_documents_requests" model="ir.actions.act_window">
+        <field name="name">Requests</field>
+        <field name="res_model">om.documents.document</field>
+        <field name="view_mode">list,kanban,form</field>
+        <field name="domain">[('is_request', '=', True)]</field>
+        <field name="context">{'search_default_request_missing': 1}</field>
+        <field name="search_view_id" ref="om_documents_document_view_search"/>
+    </record>
+
+    <!-- actions of the selected documents -->
+
+    <record id="server_action_share" model="ir.actions.server">
+        <field name="name">Share</field>
+        <field name="model_id" ref="model_om_documents_document"/>
+        <field name="binding_model_id" ref="model_om_documents_document"/>
+        <field name="binding_view_types">list,kanban,form</field>
+        <field name="group_ids" eval="[(4, ref('group_documents_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_share()</field>
+    </record>
+
+    <record id="server_action_download" model="ir.actions.server">
+        <field name="name">Download</field>
+        <field name="model_id" ref="model_om_documents_document"/>
+        <field name="binding_model_id" ref="model_om_documents_document"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="group_ids" eval="[(4, ref('group_documents_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_download()</field>
+    </record>
+
+    <record id="server_action_move" model="ir.actions.server">
+        <field name="name">Move or Tag</field>
+        <field name="model_id" ref="model_om_documents_document"/>
+        <field name="binding_model_id" ref="model_om_documents_document"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="group_ids" eval="[(4, ref('group_documents_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_move()</field>
+    </record>
+
+    <record id="server_action_run" model="ir.actions.server">
+        <field name="name">Run an Action</field>
+        <field name="model_id" ref="model_om_documents_document"/>
+        <field name="binding_model_id" ref="model_om_documents_document"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="group_ids" eval="[(4, ref('group_documents_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">action = records.action_run_actions()</field>
+    </record>
+
+    <record id="server_action_lock" model="ir.actions.server">
+        <field name="name">Lock / Unlock</field>
+        <field name="model_id" ref="model_om_documents_document"/>
+        <field name="binding_model_id" ref="model_om_documents_document"/>
+        <field name="binding_view_types">list,kanban</field>
+        <field name="group_ids" eval="[(4, ref('group_documents_user'))]"/>
+        <field name="state">code</field>
+        <field name="code">records.action_lock()</field>
+    </record>
+
+</odoo>

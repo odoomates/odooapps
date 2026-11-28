@@ -7,7 +7,8 @@ import { getDataURLFromFile } from "@web/core/utils/urls";
 import { FormViewDialog } from "@web/views/view_dialogs/form_view_dialog";
 import { standardFieldProps } from "@web/views/fields/standard_field_props";
 
-const MODEL = "document.document";
+const MODEL = "om.documents.document";
+const FORM_VIEW = "om_document.om_documents_document_view_form_expiry";
 
 /**
  * The documents of a record as cards: one per document, coloured by how close
@@ -15,7 +16,7 @@ const MODEL = "document.document";
  * of yet. A file dropped on a card is attached to its document, or creates the
  * missing document with it. Clicking a card opens the document in a dialog.
  */
-export class DocumentBoardField extends Component {
+export class DocumentsExpiryBoardField extends Component {
     static template = "om_document.DocumentBoardField";
     props = useProps({ ...standardFieldProps });
 
@@ -49,7 +50,7 @@ export class DocumentBoardField extends Component {
         if (!this.resId) {
             return;
         }
-        const data = await this.orm.call(MODEL, "board_data", [this.resModel, this.resId]);
+        const data = await this.orm.call(MODEL, "expiry_board_data", [this.resModel, this.resId]);
         Object.assign(this.state, { documents: data.documents, missing: data.missing, canEdit: data.can_edit });
     }
 
@@ -99,7 +100,12 @@ export class DocumentBoardField extends Component {
             resModel: MODEL,
             resId: resId || false,
             title: resId ? _t("Document") : _t("New Document"),
-            context: { default_res_model: this.resModel, default_res_id: this.resId, ...context },
+            context: {
+                default_res_model: this.resModel,
+                default_res_id: this.resId,
+                form_view_ref: FORM_VIEW,
+                ...context,
+            },
             onRecordSaved: () => this.refresh(),
         });
     }
@@ -159,7 +165,7 @@ export class DocumentBoardField extends Component {
                 mimetype: file.type,
                 data: (await getDataURLFromFile(file)).split(",")[1],
             })));
-            const documentId = await this.orm.call(MODEL, "board_upload", [
+            const documentId = await this.orm.call(MODEL, "expiry_board_upload", [
                 this.resModel, this.resId, type ? type.id : false, doc ? doc.id : false, files,
             ]);
             await this.refresh();
@@ -177,12 +183,12 @@ export class DocumentBoardField extends Component {
     }
 }
 
-export const documentBoardField = {
-    component: DocumentBoardField,
+export const documentsExpiryBoardField = {
+    component: DocumentsExpiryBoardField,
     displayName: _t("Documents"),
     supportedTypes: ["one2many"],
     relatedFields: () => [{ name: "display_name", type: "char" }],
     isEmpty: () => false,
 };
 
-registry.category("fields").add("om_document_board", documentBoardField);
+registry.category("fields").add("om_documents_expiry_board", documentsExpiryBoardField);
