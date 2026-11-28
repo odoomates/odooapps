@@ -1,0 +1,185 @@
+$o-flow-station-width: 190px;
+$o-flow-dot-size: 3rem;
+
+// ---------------------------------------------------------------------------
+// the journey: stations on a line, popping in from left to right
+// ---------------------------------------------------------------------------
+
+.o_flow_journey {
+    position: relative;
+    display: flex;
+    overflow-x: auto;
+    padding: 0.5rem 0 1rem;
+}
+
+.o_flow_journey_track {
+    position: absolute;
+    top: calc(0.5rem + #{$o-flow-dot-size} / 2 - 2px);
+    left: calc(#{$o-flow-station-width} / 2);
+    width: calc((var(--o-flow-count) - 1) * #{$o-flow-station-width});
+    height: 4px;
+    border-radius: 2px;
+    background: linear-gradient(90deg, $primary, $success);
+    transform-origin: left;
+    animation: o_flow_track 0.6s ease-out both;
+    animation-duration: calc(var(--o-flow-count) * 450ms);
+}
+
+.o_flow_journey_runner {
+    position: absolute;
+    top: -4px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: $white;
+    border: 3px solid $primary;
+    box-shadow: 0 0 10px rgba($primary, 0.8);
+    animation: o_flow_run 3s ease-in-out infinite;
+    animation-delay: calc(var(--o-flow-count) * 450ms);
+    opacity: 0;
+}
+
+.o_flow_station {
+    --o-flow-color: #{$primary};
+    position: relative;
+    flex: 0 0 $o-flow-station-width;
+    width: $o-flow-station-width;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0 0.5rem;
+    animation: o_flow_pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+    animation-delay: calc(var(--o-flow-index, 0) * 450ms);
+
+    @each $name, $color in (primary: $primary, secondary: $secondary, success: $success, info: $info, warning: $warning, danger: $danger) {
+        &.o_flow_station_#{$name} {
+            --o-flow-color: #{$color};
+        }
+    }
+}
+
+.o_flow_station_dot {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: $o-flow-dot-size;
+    height: $o-flow-dot-size;
+    border-radius: 50% !important;
+    color: $white !important;
+    background-color: var(--o-flow-color) !important;
+    border: 3px solid var(--bs-body-bg, #{$white}) !important;
+    box-shadow: 0 0 0 2px var(--o-flow-color);
+    --oi-font-size: 1.4rem;
+    transition: transform 0.15s;
+
+    &:hover {
+        transform: scale(1.12);
+    }
+}
+
+.o_flow_station_root .o_flow_station_dot {
+    animation: o_flow_pulse 1.6s ease-out infinite;
+}
+
+.o_flow_station_body {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.o_flow_station_name {
+    font-size: 0.95rem;
+}
+
+// ---------------------------------------------------------------------------
+// the timeline: one line per event, day by day
+// ---------------------------------------------------------------------------
+
+.o_flow_timeline {
+    border-left: 2px solid $border-color;
+    margin-left: 3.6rem;
+    padding-left: 0.75rem;
+}
+
+.o_flow_day {
+    margin-left: -4.35rem;
+}
+
+.o_flow_event {
+    position: relative;
+    padding: 0.2rem 0;
+    animation: o_flow_in 0.3s ease-out both;
+    animation-delay: calc(var(--o-flow-index, 0) * 60ms);
+}
+
+.o_flow_event_time {
+    position: absolute;
+    left: -4.35rem;
+    width: 2.6rem;
+    text-align: right;
+    top: 0.35rem;
+}
+
+.o_flow_event_dot {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-left: -1.5rem;
+    border-radius: 50%;
+    color: $white;
+    background-color: $secondary;
+    --oi-font-size: 0.9rem;
+
+    .o_flow_event_created & {
+        background-color: $primary;
+    }
+    .o_flow_event_status & {
+        background-color: $success;
+    }
+    .o_flow_event_milestone & {
+        background-color: $info;
+    }
+}
+
+@keyframes o_flow_track {
+    from {
+        transform: scaleX(0);
+    }
+    to {
+        transform: scaleX(1);
+    }
+}
+
+@keyframes o_flow_run {
+    0% {
+        left: 0;
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    90% {
+        opacity: 1;
+    }
+    100% {
+        left: calc(100% - 12px);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_flow_journey_track,
+    .o_flow_journey_runner,
+    .o_flow_station,
+    .o_flow_station_root .o_flow_station_dot,
+    .o_flow_event {
+        animation: none;
+    }
+    .o_flow_journey_runner {
+        display: none;
+    }
+}

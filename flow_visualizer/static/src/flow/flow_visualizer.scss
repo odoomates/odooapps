@@ -1,0 +1,299 @@
+$o-flow-width: 400px;
+
+.o_flow_systray_on {
+    color: $primary !important;
+    background-color: rgba($primary, 0.12);
+}
+
+.o_flow_panel {
+    position: fixed;
+    top: $o-navbar-height;
+    right: 0;
+    bottom: 0;
+    width: $o-flow-width;
+    max-width: 100vw;
+    z-index: 1030;
+}
+
+// the screen makes room for the panel instead of hiding under it
+@include media-breakpoint-up(lg) {
+    body:has(.o_flow_panel) .o_action_manager {
+        margin-right: $o-flow-width;
+    }
+}
+
+.o_flow_row {
+    --o-flow-color: #{$secondary};
+    border-left: 3px solid var(--o-flow-color);
+    margin-left: 0.5rem;
+    animation: o_flow_in 0.3s ease-out both;
+    animation-delay: calc(var(--o-flow-index, 0) * 45ms);
+
+    &.o_flow_call {
+        --o-flow-color: #{$primary};
+    }
+    &.o_flow_create {
+        --o-flow-color: #{$success};
+    }
+    &.o_flow_write {
+        --o-flow-color: #{$warning};
+    }
+    &.o_flow_unlink {
+        --o-flow-color: #{$danger};
+    }
+    &:hover {
+        background-color: rgba($primary, 0.05);
+    }
+    .o_flow_icon {
+        color: var(--o-flow-color);
+    }
+    .o_flow_badge {
+        background-color: var(--o-flow-color);
+    }
+}
+
+.o_flow_chip {
+    --btn-padding-y: 0;
+    --btn-padding-x: 0.5rem;
+    --btn-font-size: 0.8rem;
+    display: inline-block;
+    border: 1px solid var(--o-flow-color);
+    border-radius: 1rem;
+    padding: 0 0.5rem;
+    font-size: 0.8rem;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    &:hover {
+        background-color: var(--o-flow-color);
+        color: $white;
+    }
+}
+
+.o_flow_chip_gone {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+.o_flow_changes {
+    border-left: 2px dotted var(--o-flow-color);
+    padding-left: 0.5rem;
+}
+
+.o_flow_before {
+    text-decoration: line-through;
+    opacity: 0.7;
+}
+
+@keyframes o_flow_in {
+    from {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_flow_row {
+        animation: none;
+    }
+}
+
+// ---------------------------------------------------------------------------
+// the story: document cards popping in one after the other, linked by a line
+// a dot travels along
+// ---------------------------------------------------------------------------
+
+.o_flow_step {
+    --o-flow-color: #{$primary};
+    animation: o_flow_pop 0.5s cubic-bezier(0.2, 0.9, 0.3, 1.25) both;
+    animation-delay: calc(var(--o-flow-index, 0) * 450ms);
+
+    &.o_flow_kind_create {
+        --o-flow-color: #{$success};
+    }
+    &.o_flow_kind_write {
+        --o-flow-color: #{$warning};
+    }
+    &.o_flow_kind_unlink {
+        --o-flow-color: #{$danger};
+    }
+}
+
+.o_flow_card {
+    border-left: 4px solid var(--o-flow-color);
+}
+
+.o_flow_card_icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    color: $white;
+    background-color: var(--o-flow-color);
+    --oi-font-size: 1.25rem;
+}
+
+.o_flow_kind_clicked .o_flow_card_icon {
+    animation: o_flow_pulse 1.6s ease-out 3;
+}
+
+.o_flow_link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 2rem;
+    margin-left: 1.05rem;
+}
+
+.o_flow_link_line {
+    position: relative;
+    width: 2px;
+    height: 100%;
+    background-color: var(--o-flow-color);
+    transform-origin: top;
+    animation: o_flow_grow 0.35s ease-out both;
+    animation-delay: calc(var(--o-flow-index, 0) * 450ms - 200ms);
+
+    &::after {
+        content: "";
+        position: absolute;
+        bottom: -2px;
+        left: -4px;
+        border: 5px solid transparent;
+        border-top-color: var(--o-flow-color);
+        border-bottom: 0;
+    }
+}
+
+.o_flow_dot {
+    position: absolute;
+    left: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--o-flow-color);
+    box-shadow: 0 0 6px var(--o-flow-color);
+    animation: o_flow_travel 1.4s ease-in-out infinite;
+}
+
+.o_flow_link_label {
+    margin-left: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--o-flow-color);
+}
+
+.o_flow_lines {
+    --btn-padding-y: 0.25rem;
+    border: 1px dashed var(--o-flow-color);
+    &.o_flow_lines_create {
+        --o-flow-color: #{$success};
+    }
+    &.o_flow_lines_write {
+        --o-flow-color: #{$warning};
+    }
+    &.o_flow_lines_unlink {
+        --o-flow-color: #{$danger};
+    }
+    &:hover {
+        background-color: rgba($primary, 0.06);
+    }
+}
+
+.o_flow_item::before {
+    content: "• ";
+    color: var(--o-flow-color);
+}
+
+.o_flow_summary_part:not(:last-child)::after {
+    content: " · ";
+}
+
+.o_flow_status_change {
+    animation: o_flow_flash 1s ease-out both;
+    animation-delay: calc(var(--o-flow-index, 0) * 450ms + 300ms);
+}
+
+@keyframes o_flow_pop {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+@keyframes o_flow_grow {
+    from {
+        transform: scaleY(0);
+    }
+    to {
+        transform: scaleY(1);
+    }
+}
+
+@keyframes o_flow_travel {
+    from {
+        top: 0;
+        opacity: 0;
+    }
+    20% {
+        opacity: 1;
+    }
+    to {
+        top: calc(100% - 8px);
+        opacity: 0;
+    }
+}
+
+@keyframes o_flow_pulse {
+    from {
+        box-shadow: 0 0 0 0 var(--o-flow-color);
+    }
+    to {
+        box-shadow: 0 0 0 10px transparent;
+    }
+}
+
+@keyframes o_flow_flash {
+    from {
+        background-color: rgba($warning, 0.35);
+    }
+    to {
+        background-color: transparent;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .o_flow_step,
+    .o_flow_link_line,
+    .o_flow_dot,
+    .o_flow_status_change,
+    .o_flow_kind_clicked .o_flow_card_icon {
+        animation: none;
+    }
+}
+
+.o_flow_code {
+    font-family: $font-family-monospace;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: block;
+}
+.o_flow_row .o_flow_code {
+    display: inline;
+}
