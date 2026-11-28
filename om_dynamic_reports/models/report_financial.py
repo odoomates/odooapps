@@ -257,10 +257,12 @@ class OmDynamicReportFinancial(models.AbstractModel):
         return values
 
     @api.model
-    def _odr_is_zero(self, values):
+    def _odr_is_zero(self, values, options):
+        """Whether the figures shown are all zero: the debit and the credit count only when they are shown."""
         currency = self._om_currency()
+        ignored = {'variation'} if options.get('debit_credit') else {'variation', 'debit', 'credit'}
         return all(currency.is_zero(value) for key, value in values.items()
-                   if key != 'variation' and isinstance(value, float))
+                   if key not in ignored and isinstance(value, float))
 
     @api.model
     def _odr_tree(self, options):
@@ -331,7 +333,7 @@ class OmDynamicReportFinancial(models.AbstractModel):
                 accounts = self.env['account.account'].with_context(active_test=False).browse(account_ids)
                 for account in accounts.sorted(self._odr_account_sort):
                     values = self._odr_values(amounts_of(section), sign, options, account.id)
-                    if options['hide_zero'] and self._odr_is_zero(values):
+                    if options['hide_zero'] and self._odr_is_zero(values, options):
                         continue
                     children.append(self._odr_account_node(account, values, node_id, level + 1, options))
             if with_translation and section == anchor:

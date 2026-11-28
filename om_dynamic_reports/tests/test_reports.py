@@ -299,6 +299,32 @@ class TestDynamicReports(AccountTestInvoicingCommon):
         self.assertTrue(assets)
         self.assertFalse(report['total'])
 
+    def test_statement_hides_accounts_at_zero_as_the_pdf_report(self):
+        """An account whose movements add up to zero is hidden, unless its debit and credit are shown"""
+        zero = self.env['account.account'].create({'code': 'ZERO', 'name': 'Zero', 'account_type': 'asset_current'})
+        bank = self.company_data['default_journal_bank'].default_account_id
+        for date, balance in (('2026-02-01', 100.0), ('2026-02-15', -100.0)):
+            self.env['account.move'].create({
+                'journal_id': self.company_data['default_journal_misc'].id,
+                'date': date,
+                'line_ids': [Command.create({'name': 'zero', 'account_id': zero.id, 'balance': balance}),
+                             Command.create({'name': 'zero', 'account_id': bank.id, 'balance': -balance})],
+            }).action_post()
+        root = self.env.ref('accounting_pdf_reports.account_financial_report_balancesheet0')
+        context = {'date_to': '2026-12-31', 'state': 'posted', 'company_id': self.env.company.id}
+        for debit_credit in (False, True):
+            with self.subTest(debit_credit=debit_credit):
+                report = self.report(BS, date_preset='custom', date_to='2026-12-31', debit_credit=debit_credit)
+                shown = {name for name, line in self.statement_lines(BS, report).items() if '|account-' in line['id']}
+                pdf = {line['name'] for line in self.env['report.accounting_pdf_reports.report_financial']
+                       .get_account_lines({'account_report_id': [root.id], 'used_context': context,
+                                           'enable_filter': False, 'debit_credit': debit_credit})
+                       if line['type'] == 'account'}
+                self.assertEqual(shown, pdf)
+                self.assertEqual('ZERO Zero' in shown, debit_credit)
+        report = self.report(BS, date_preset='custom', date_to='2026-12-31', hide_zero=False)
+        self.assertIn('ZERO Zero', self.statement_lines(BS, report))
+
     def test_profit_and_loss_matches_the_pdf_report(self):
         report = self.report(PNL)
         lines = self.statement_lines(PNL, report)
