@@ -11,7 +11,7 @@
     // on the same left edge whatever the viewport
     .om-launcher-inner {
         width: 100%;
-        max-width: 900px;
+        max-width: 1320px;
         margin: 0 auto;
         padding: 0 2rem 3rem;
     }
@@ -79,6 +79,9 @@
     }
 
     .om-launcher-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
         margin: 1.5rem 0 .85rem;
         font-size: .75rem;
         font-weight: 600;
@@ -89,9 +92,16 @@
 
     .om-launcher-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
-        gap: .5rem 0;
+        grid-template-columns: repeat(auto-fill, minmax(116px, 1fr));
+        gap: .15rem 0;
         align-items: start;
+
+        // the results carry the menus found under each app: the columns widen so their
+        // names read in full
+        &.om-searching {
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1rem .75rem;
+        }
     }
 
     .om-app-wrap {
@@ -109,9 +119,9 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: .55rem;
+        gap: .4rem;
         width: 100%;
-        padding: .85rem .5rem .7rem;
+        padding: .55rem .35rem .5rem;
         border: 0;
         border-radius: var(--om-radius-lg, .5rem);
         background-color: transparent;
@@ -134,9 +144,9 @@
 
     // the icon sits on its own rounded plate; there is no card around the tile
     .om-app-icon {
-        width: 64px;
-        height: 64px;
-        padding: 10px;
+        width: 68px;
+        height: 68px;
+        padding: 9px;
         object-fit: contain;
         border-radius: var(--om-radius-lg, .5rem);
         background-color: var(--om-surface, #fff);
@@ -151,7 +161,7 @@
         border-radius: var(--om-radius, .375rem);
         background-color: var(--om-theme-primary, #4f46e5);
         color: #fff;
-        font-size: 1.7rem;
+        font-size: 1.9rem;
         font-weight: 600;
         text-transform: uppercase;
     }
@@ -173,7 +183,57 @@
         border-left: 2px solid var(--om-border, #dfe3e9);
     }
 
+    // the keys that create a record from a result
+    .om-launcher-hint {
+        font-weight: 400;
+        letter-spacing: 0;
+        text-transform: none;
+        color: #{$o-gray-500};
+
+        kbd {
+            padding: .05rem .35rem;
+            border: 1px solid var(--om-border, #dfe3e9);
+            border-radius: var(--om-radius-sm, .25rem);
+            background-color: var(--om-surface, #fff);
+            color: #{$o-gray-700};
+            font-size: .7rem;
+        }
+    }
+
+    .om-app-item-row {
+        display: flex;
+        align-items: center;
+        gap: .25rem;
+
+        &:hover .om-app-item-new { opacity: 1; }
+    }
+
+    // New on a menu that opens a list: a blank form of it, with the defaults of the menu
+    .om-app-item-new {
+        flex: 0 0 auto;
+        display: flex;
+        align-items: center;
+        gap: .1rem;
+        border: 0;
+        border-radius: 999px;
+        padding: .1rem .55rem .1rem .35rem;
+        font-size: .72rem;
+        font-weight: 600;
+        background-color: rgba(var(--om-theme-primary-rgb), .1);
+        color: var(--om-theme-link, var(--om-theme-primary));
+        opacity: .6;
+        transition: opacity .12s ease-in-out, background-color .12s ease-in-out;
+
+        &:hover,
+        &.om-active {
+            opacity: 1;
+            background-color: rgba(var(--om-theme-primary-rgb), .18);
+        }
+    }
+
     .om-app-item {
+        flex: 1 1 auto;
+        min-width: 0;
         display: flex;
         align-items: center;
         gap: .3rem;
@@ -186,10 +246,17 @@
         color: #{$o-gray-700};
         text-align: left;
 
-        span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
+        .om-app-item-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            line-height: 1.3;
+        }
+
+        // where the menu sits in the app, to tell apart menus of the same name
+        .om-app-item-parent {
+            font-size: .72rem;
+            color: #{$o-gray-500};
         }
 
         &:hover {
@@ -230,7 +297,7 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.9rem;
+        font-size: 2.1rem;
     }
 
     // the tile being dragged, and the gap it leaves
@@ -247,7 +314,7 @@
     }
 
     .om-app-placeholder {
-        min-height: 112px;
+        min-height: 108px;
         margin: 0 .5rem;
         border: 2px dashed var(--om-border, #dfe3e9);
         border-radius: var(--om-radius-lg, .5rem);
@@ -271,4 +338,11 @@
             font-weight: 600;
         }
     }
+}
+
+// Odoo lays every action out as a column that does not scroll, with a selector stronger than
+// .om-launcher: the launcher scrolls itself, so it wins here with the same selector
+.o_web_client > .o_action_manager > .om-launcher.o_action {
+    display: block;
+    overflow-y: auto;
 }

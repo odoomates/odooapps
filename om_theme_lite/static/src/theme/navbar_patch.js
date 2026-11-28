@@ -19,6 +19,17 @@ patch(NavBar.prototype, {
         });
     },
 
+    /**
+     * The name of the current app, next to the apps button, goes back to the launcher too, as the
+     * apps button does: the menus of the app stay one click away in the navbar.
+     */
+    onNavBarDropdownItemSelection(menu) {
+        if (menu && menu.id === this.currentApp?.id) {
+            return this.omOpenLauncher();
+        }
+        return super.onNavBarDropdownItemSelection(...arguments);
+    },
+
     _openAppMenuSidebar() {
         if (this.currentApp && this.currentAppSections.length) {
             return super._openAppMenuSidebar(...arguments);
