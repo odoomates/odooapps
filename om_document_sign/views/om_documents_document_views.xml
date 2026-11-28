@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_documents_document_view_form" model="ir.ui.view">
+        <field name="name">om.documents.document.form.sign</field>
+        <field name="model">om.documents.document</field>
+        <field name="inherit_id" ref="om_document.om_documents_document_view_form"/>
+        <field name="arch" type="xml">
+            <button name="action_share" position="before">
+                <button name="action_request_signature" type="object" string="Request Signature"
+                        groups="om_sign.group_sign_user" invisible="mimetype != 'application/pdf'"/>
+            </button>
+            <div name="button_box" position="inside">
+                <button name="action_open_sign_requests" type="object" class="oe_stat_button" icon="edit"
+                        groups="om_sign.group_sign_user" invisible="not sign_request_count">
+                    <field name="sign_request_count" widget="statinfo" string="Signatures"/>
+                </button>
+            </div>
+        </field>
+    </record>
+
+</odoo>

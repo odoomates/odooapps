@@ -9,7 +9,7 @@ class TestPrintDocument(TransactionCase):
     def test_print_filed_as_document(self):
         partner = self.env['res.partner'].create({'name': 'Holder'})
         partner_model = self.env['ir.model']._get_id('res.partner')
-        doc_type = self.env['document.type'].create({'name': 'No Objection', 'model_id': partner_model})
+        doc_type = self.env['om.documents.type'].create({'name': 'No Objection', 'model_id': partner_model})
         template = self.env['print.template'].create({
             'name': 'NOC', 'model_id': partner_model, 'body_html': '<p>No objection.</p>',
             'document_type_id': doc_type.id, 'validity_days': 30})
@@ -20,8 +20,9 @@ class TestPrintDocument(TransactionCase):
         self.assertEqual((document.res_model, document.res_id, document.type_id), ('res.partner', partner.id, doc_type))
         self.assertEqual((document.number, document.date_issue), (issue.name, date(2026, 6, 1)))
         self.assertEqual(document.date_expiry, date(2026, 6, 1) + timedelta(days=30))
-        self.assertEqual(document.attachment_ids.res_model, 'document.document')
-        self.assertEqual(document.attachment_ids.checksum, issue.attachment_id.checksum)
+        self.assertEqual(document.attachment_id.res_model, 'om.documents.document')
+        self.assertEqual(document.attachment_id.checksum, issue.attachment_id.checksum)
+        self.assertEqual(document.folder_id, self.env['om.documents.document']._get_expiry_folder(doc_type, partner))
 
         issue.action_cancel()
         self.assertFalse(document.active, 'a cancelled print no longer counts as a document')

@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- the page of a shared link -->
+
+    <template id="share_layout" name="Documents Share Layout">
+        <t t-call="web.frontend_layout" title="share.name" no_header="True" no_footer="True">
+            <div class="o_om_documents_share container py-4" style="max-width: 960px;">
+                <div class="d-flex align-items-center mb-4">
+                    <img t-if="share.company_id.logo" t-att-src="'/web/image/res.company/%s/logo/160x60' % share.company_id.id"
+                         alt="Logo" style="max-height: 48px;" class="me-3"/>
+                    <div>
+                        <h2 class="mb-0" t-out="share.name"/>
+                        <small class="text-muted">
+                            Shared by <t t-out="share.create_uid.name"/>, <t t-out="share.company_id.name"/>
+                        </small>
+                    </div>
+                </div>
+                <t t-out="0"/>
+            </div>
+        </t>
+    </template>
+
+    <template id="share_page" name="Shared Documents">
+        <t t-call="om_document.share_layout">
+            <div t-if="uploaded" class="alert alert-success">
+                Thank you: <t t-out="uploaded"/> file(s) received.
+            </div>
+            <t t-set="request_document" t-value="share.request_document_id"/>
+            <div t-if="request_document" class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">Requested: <t t-out="request_document.name"/></h5>
+                    <p t-if="request_document.request_deadline" class="mb-0 text-muted">
+                        Needed by <t t-out="request_document.request_deadline" t-options="{'widget': 'date'}"/>
+                    </p>
+                    <p t-if="request_document.request_state == 'received'" class="mb-0 text-success">
+                        Received, thank you. You may send a newer file below.
+                    </p>
+                </div>
+            </div>
+            <div t-if="share.allow_upload" class="card mb-4 border-primary">
+                <div class="card-body">
+                    <h5 class="card-title">Upload files</h5>
+                    <form t-att-action="'%s/upload' % base_url" method="post" enctype="multipart/form-data"
+                          class="d-flex flex-wrap align-items-center gap-2">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input type="file" name="files" multiple="multiple" required="required" class="form-control"
+                               style="max-width: 480px;"/>
+                        <button type="submit" class="btn btn-primary">Send</button>
+                    </form>
+                </div>
+            </div>
+            <t t-if="share.allow_download and documents">
+                <div class="d-flex align-items-center mb-2">
+                    <h5 class="mb-0"><t t-out="len(documents)"/> document(s)</h5>
+                    <a t-if="len(documents) > 1" t-att-href="'%s/zip' % base_url" class="btn btn-secondary btn-sm ms-auto">
+                        Download all (zip)
+                    </a>
+                </div>
+            </t>
+            <div t-if="documents and (share.allow_download or not request_document)" class="list-group">
+                <t t-foreach="documents" t-as="document">
+                    <t t-set="file_url" t-value="'%s/file/%s' % (base_url, document.id)"/>
+                    <div class="list-group-item d-flex align-items-center">
+                        <div class="me-3" style="width: 48px;">
+                            <span t-if="document.type == 'url'" class="oi oi-2x text-muted" data-icon="link" title="Link"/>
+                            <img t-elif="document.mimetype and document.mimetype.startswith('image/')"
+                                 t-att-src="file_url" alt="" style="max-width: 48px; max-height: 48px;"/>
+                            <div t-else="" class="o_image" style="width: 40px; height: 40px;"
+                                 t-att-data-mimetype="document.mimetype or 'application/octet-stream'"/>
+                        </div>
+                        <div class="flex-grow-1 text-truncate">
+                            <a t-att-href="file_url" target="_blank" t-out="document.name"/>
+                            <div class="small text-muted">
+                                <t t-if="document.type == 'url'">Link</t>
+                                <t t-else="">
+                                    <t t-out="document.file_size_human"/>,
+                                    <t t-out="document.create_date" t-options="{'widget': 'date'}"/>
+                                </t>
+                            </div>
+                        </div>
+                        <a t-if="share.allow_download and document.type == 'binary'" t-att-href="'%s?download=1' % file_url"
+                           class="btn btn-link">Download</a>
+                    </div>
+                </t>
+            </div>
+            <p t-elif="not share.allow_upload" class="text-muted">Nothing is shared here.</p>
+            <p t-if="share.date_expiry" class="small text-muted mt-4">
+                This link is valid until <t t-out="share.date_expiry" t-options="{'widget': 'date'}"/>.
+            </p>
+        </t>
+    </template>
+
+    <template id="share_expired" name="Shared Documents: Expired">
+        <t t-call="om_document.share_layout">
+            <div class="alert alert-warning">
+                <h4 class="alert-heading">This link has expired</h4>
+                Ask <t t-out="share.create_uid.name"/> for a new one.
+            </div>
+        </t>
+    </template>
+
+    <!-- the portal: My Documents -->
+
+    <template id="portal_breadcrumbs" inherit_id="portal.portal_breadcrumbs" name="Documents Breadcrumbs">
+        <xpath expr="//ol/li[1]" position="after">
+            <li t-if="page_name == 'om_document'" class="breadcrumb-item active">Documents</li>
+        </xpath>
+    </template>
+
+    <template id="portal_my_documents" name="My Documents">
+        <t t-call="portal.portal_layout">
+            <h3 class="mb-3">Documents</h3>
+            <p t-if="not shares" class="text-muted">No document is shared with you.</p>
+            <t t-else="" t-call="portal.portal_table">
+                <thead>
+                    <tr>
+                        <th>Shared</th>
+                        <th>From</th>
+                        <th>Documents</th>
+                        <th class="text-end">Valid Until</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr t-foreach="shares" t-as="share">
+                        <td>
+                            <a t-att-href="'/documents/share/%s/%s' % (share.id, share.access_token)" t-out="share.name"/>
+                            <span t-if="share.allow_upload" class="badge text-bg-info ms-1">Upload</span>
+                        </td>
+                        <td t-out="share.create_uid.name"/>
+                        <td t-out="share.document_count"/>
+                        <td class="text-end">
+                            <t t-if="share.date_expiry" t-out="share.date_expiry" t-options="{'widget': 'date'}"/>
+                        </td>
+                    </tr>
+                </tbody>
+            </t>
+        </t>
+    </template>
+
+</odoo>

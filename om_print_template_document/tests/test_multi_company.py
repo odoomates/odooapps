@@ -10,7 +10,7 @@ class TestPrintDocumentMultiCompany(TransactionCase):
         super().setUpClass()
         cls.company_b = cls.env['res.company'].create({'name': 'Print Documents Company B'})
         cls.model_id = cls.env['ir.model']._get_id('res.partner')
-        DocumentType = cls.env['document.type']
+        DocumentType = cls.env['om.documents.type']
         cls.shared_type = DocumentType.create({'name': 'Shared NOC', 'model_id': cls.model_id})
         cls.type_b = DocumentType.create({'name': 'NOC B', 'model_id': cls.model_id, 'company_id': cls.company_b.id})
 

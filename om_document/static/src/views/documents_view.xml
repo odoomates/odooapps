@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="om_document.UploadButtons">
+        <t t-if="!this.env.inDialog">
+            <button type="button" class="btn btn-primary o_om_documents_upload" data-hotkey="u"
+                    t-on-click="this.onClickUpload">
+                <i class="oi me-1" data-icon="upload"/>Upload
+            </button>
+            <input type="file" multiple="multiple" class="d-none o_om_documents_file_input"
+                   t-ref="this.fileInputRef" t-on-change="this.onFileInputChange"/>
+            <button type="button" class="btn btn-secondary o_om_documents_add_link" t-on-click="this.onClickAddLink">
+                <i class="oi me-1" data-icon="link"/>Link
+            </button>
+            <button type="button" class="btn btn-secondary o_om_documents_request" t-on-click="this.onClickRequest">
+                <i class="oi me-1" data-icon="mail"/>Request
+            </button>
+            <button t-if="this.activeFolderId" type="button" class="btn btn-secondary o_om_documents_share_folder"
+                    t-on-click="this.onClickShareFolder">
+                <i class="oi me-1" data-icon="share"/>Share Folder
+            </button>
+        </t>
+    </t>
+
+    <t t-name="om_document.DocumentsKanbanButtons" t-inherit="web.KanbanView.Buttons" t-inherit-mode="primary">
+        <xpath expr="//button[hasclass('o-kanban-button-new')]" position="replace">
+            <t t-call="om_document.UploadButtons"/>
+        </xpath>
+    </t>
+
+    <t t-name="om_document.DocumentsListButtons" t-inherit="web.ListView.Buttons" t-inherit-mode="primary">
+        <xpath expr="//button[hasclass('o_list_button_add')]" position="replace">
+            <t t-if="!this.editedRecord">
+                <t t-call="om_document.UploadButtons"/>
+            </t>
+        </xpath>
+    </t>
+
+    <t t-name="om_document.DropZone">
+        <div t-if="this.dropState.visible"
+             class="o_om_documents_drop_zone d-flex flex-column align-items-center justify-content-center"
+             t-on-dragover.prevent="() => {}"
+             t-on-drop.prevent.stop="this.onDrop">
+            <i class="oi oi-3x text-primary pe-none" data-icon="cloud_upload"/>
+            <h3 class="mt-3 text-primary pe-none">Drop the files to upload them</h3>
+        </div>
+    </t>
+
+    <t t-name="om_document.DocumentsKanbanRenderer" t-inherit="web.KanbanRenderer" t-inherit-mode="primary">
+        <xpath expr="//div[@t-ref='this.rootRef']" position="before">
+            <t t-call="om_document.DropZone"/>
+        </xpath>
+        <xpath expr="//div[@t-ref='this.rootRef']" position="attributes">
+            <attribute name="t-on-dragenter.prevent">this.onDragEnter</attribute>
+            <attribute name="t-on-dragover.prevent">() => {}</attribute>
+            <attribute name="t-on-drop.prevent">this.onDrop</attribute>
+        </xpath>
+    </t>
+
+    <t t-name="om_document.DocumentsListRenderer" t-inherit="web.ListRenderer" t-inherit-mode="primary">
+        <xpath expr="//div[@t-ref='this.rootRef']" position="before">
+            <t t-call="om_document.DropZone"/>
+        </xpath>
+        <xpath expr="//div[@t-ref='this.rootRef']" position="attributes">
+            <attribute name="t-on-dragenter.prevent">this.onDragEnter</attribute>
+            <attribute name="t-on-dragover.prevent">() => {}</attribute>
+            <attribute name="t-on-drop.prevent">this.onDrop</attribute>
+        </xpath>
+    </t>
+
+</templates>
