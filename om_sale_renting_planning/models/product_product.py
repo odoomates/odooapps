@@ -6,6 +6,11 @@ from odoo import models
 class ProductProduct(models.Model):
     _inherit = 'product.product'
 
+    def action_view_rental_unit_schedule(self):
+        """ The button of the product form shows on the variant form too, which Odoo builds from it. """
+        self.ensure_one()
+        return self.product_tmpl_id.action_view_rental_unit_schedule()
+
     def _rental_by_units(self):
         self.ensure_one()
         return self.rental_availability == 'unit'
