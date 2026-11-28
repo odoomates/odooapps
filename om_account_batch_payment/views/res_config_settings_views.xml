@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <!-- The Batch Payments setting of Odoo installs another batch payment module, which this one replaces:
+         it leads to the batch payments of this module instead. -->
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om.account.batch.payment</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="account.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//setting[@id='account_batch_payment']" position="replace">
+                <setting id="om_account_batch_payment" string="Batch Payments"
+                         help="Group payments into a single batch to ease the reconciliation process: print the list or the deposit slip and export the file for the bulk upload of your bank.">
+                    <div class="content-group">
+                        <div class="mt8">
+                            <button name="%(om_account_batch_payment.action_batch_payment_out)d" type="action"
+                                    string="Batch Payments" icon="east" class="btn-link"/>
+                        </div>
+                        <div>
+                            <button name="%(om_account_batch_payment.action_batch_payment_in)d" type="action"
+                                    string="Batch Deposits" icon="east" class="btn-link"/>
+                        </div>
+                        <div groups="account.group_account_manager">
+                            <button name="%(om_account_batch_payment.action_batch_layout)d" type="action"
+                                    string="Bank File Layouts" icon="east" class="btn-link"/>
+                        </div>
+                    </div>
+                </setting>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
