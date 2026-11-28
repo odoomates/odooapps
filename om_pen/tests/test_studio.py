@@ -37,6 +37,17 @@ class TestStudio(TransactionCase):
         self.assertIn("Role On Site", self.live_arch())
         self.assertEqual(len(self.env['om.pen.view'].browse(cid).version_ids), 1, "publishing keeps a version")
 
+    def test_lines_added_to_a_form_are_editable_and_customizable(self):
+        cid, view = self.open_partner()
+        view = self.studio.studio_change(cid, view['revision'], {
+            'op': 'insert', 'node': None, 'target': self.node(view, 'field', name='function'),
+            'position': 'after', 'element': {'kind': 'field', 'name': 'bank_ids'}})
+        lines = self.node(view, 'field', name='bank_ids')
+        self.assertEqual(view['nodes'][lines]['subviews'], ['list'], "the lines come with a list of their own")
+        self.assertIn('editable="bottom"', view['arch'], "they are changed in place")
+        self.assertIn('create_date', view['line_fields']['res.partner.bank'],
+                      "every field of the lines can be added to it, not only those it shows")
+
     def test_undo_and_redo(self):
         cid, view = self.open_partner()
         before = view['arch'].count('name="function"')

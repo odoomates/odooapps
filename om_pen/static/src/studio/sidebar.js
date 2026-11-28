@@ -116,9 +116,7 @@ export class StudioSidebar extends Component {
 
     get existingFields() {
         const model = this.store.focusModel;
-        const fields = model === this.store.info.model
-            ? this.store.view.all_fields
-            : this.store.view.related_models[model]?.fields || {};
+        const fields = this.store.fieldsOf(model);
         const inView = new Set(
             Object.values(this.store.nodes)
                 .filter((n) => n.tag === "field" && n.model === model)
@@ -181,6 +179,11 @@ export class StudioSidebar extends Component {
 
     modifiers() {
         const node = this.node;
+        if (node.tag === "column") {
+            // a column of several fields can only be hidden as a whole
+            const value = this.attr("column_invisible");
+            return [{ attr: "column_invisible", label: _t("Hidden column"), value, mode: modifierMode(value) }];
+        }
         const list = MODIFIERS.filter((m) => !m.tags || m.tags.includes(node.tag));
         if (node.tag === "field" && (this.viewType === "list" || this.store.view.nodes[node.parent]?.tag === "list")) {
             list.push({ attr: "column_invisible", label: _t("Hidden column") });
@@ -291,6 +294,12 @@ export class StudioSidebar extends Component {
 
     get isRelational() {
         return ["many2one", "many2many"].includes(this.node?.field_type);
+    }
+
+    /** The column of several fields the selected field is shown in, if any. */
+    get parentColumn() {
+        const parent = this.store.node(this.node?.parent);
+        return this.node?.tag === "field" && parent?.tag === "column" ? parent : null;
     }
 
     get inList() {

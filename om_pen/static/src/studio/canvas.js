@@ -32,6 +32,13 @@ export function nodeIdOf(el, root, store) {
                 return id;
             }
         }
+        // the cells and headers of the lines of an x2many: the column they show
+        if (el.matches?.("td.o_data_cell, th") && el.closest(".o_field_x2many")) {
+            const id = columnIdOf(el, store);
+            if (id !== null) {
+                return id;
+            }
+        }
         if (el.matches?.("th[data-name]") && !el.closest(".o_field_x2many")) {
             const id = store.findNode(
                 (n) => n.tag === "field" && !n.owners.length && n.attrs.name === el.dataset.name
@@ -45,8 +52,54 @@ export function nodeIdOf(el, root, store) {
     return null;
 }
 
+/**
+ * The node of the column a cell or header of an embedded list shows: the column
+ * grouping several fields, or the field. Cells and headers carry no class of the
+ * arch, so they are matched by the name the list gives them; a header of a column
+ * of several fields has none, and is matched with the cell under it.
+ */
+function columnIdOf(el, store) {
+    const match = (el.closest(".o_field_x2many")?.getAttribute("class") || "").match(NODE_RE);
+    if (!match) {
+        return null;
+    }
+    let name = el.getAttribute("name") || el.dataset.name;
+    if (!name && el.tagName === "TH") {
+        const row = [...el.closest("table").querySelectorAll(":scope > tbody > tr.o_data_row")].find(
+            (tr) => tr.cells.length === el.parentElement.cells.length
+        );
+        name = row?.cells[el.cellIndex].getAttribute("name");
+    }
+    if (!name) {
+        return null;
+    }
+    const owner = Number(match[1]);
+    const within = (node) => {
+        for (let parent = store.node(node.parent); parent; parent = store.node(parent.parent)) {
+            if (parent.id === owner) {
+                return true;
+            }
+        }
+        return false;
+    };
+    for (const node of Object.values(store.nodes)) {
+        if (!["field", "column"].includes(node.tag) || node.attrs.name !== name || !within(node)) {
+            continue;
+        }
+        const parent = store.node(node.parent);
+        if (node.tag === "column" || parent?.tag === "list") {
+            return node.id;
+        }
+        if (parent?.tag === "column" && !parent.attrs.name && store.firstField(parent) === node) {
+            // a column without a name is named after its first field
+            return parent.id;
+        }
+    }
+    return null;
+}
+
 /** Tags that are placed before or after, side by side when they are list columns. */
-const SIBLING_TAGS = ["field", "separator", "button", "label", "div", "widget", "notebook", "group", "span", "a", "img", "h1", "h2", "h3", "p"];
+const SIBLING_TAGS = ["field", "column", "separator", "button", "label", "div", "widget", "notebook", "group", "span", "a", "img", "h1", "h2", "h3", "p"];
 const CONTAINER_TAGS = ["group", "page", "sheet", "div", "main", "aside", "footer", "header", "list", "kanban", "form"];
 
 export class StudioCanvas extends Component {
@@ -175,10 +228,44 @@ export class StudioCanvas extends Component {
         if (node?.tag === "page" && node.attrs.name) {
             elements.push(...root.querySelectorAll(`.nav-link[name="${CSS.escape(node.attrs.name)}"]`));
         }
+        elements.push(...this.cellsOf(node));
         if (node?.tag === "field" && !node.owners.length && this.store.view.view_type === "list") {
             elements.push(...root.querySelectorAll(`th[data-name="${CSS.escape(node.attrs.name)}"]`));
         }
         return elements;
+    }
+
+    /** The cells and header of a column of an embedded list, found by its name. */
+    cellsOf(node) {
+        const parent = this.store.node(node?.parent);
+        let name;
+        if (node?.tag === "column") {
+            name = node.attrs.name || this.store.firstField(node)?.attrs.name;
+        } else if (node?.tag === "field" && parent?.tag === "list" && node.owners.length) {
+            name = node.attrs.name;
+        }
+        let owner = parent;
+        while (owner && owner.tag !== "field") {
+            owner = this.store.node(owner.parent);
+        }
+        if (!name || !owner) {
+            return [];
+        }
+        const cells = [];
+        for (const x2many of this.rootRef().querySelectorAll(`.o_pen_n${owner.id} .o_field_x2many`)) {
+            const table = x2many.querySelector("table");
+            for (const cell of table?.querySelectorAll(":scope > tbody > tr > td.o_data_cell") || []) {
+                if (cell.getAttribute("name") === name) {
+                    cells.push(cell);
+                    const header = table.tHead?.rows[0];
+                    if (header?.cells.length === cell.parentElement.cells.length) {
+                        cells.push(header.cells[cell.cellIndex]);
+                    }
+                }
+            }
+            cells.push(...(table?.querySelectorAll(`:scope > thead th[data-name="${CSS.escape(name)}"]`) || []));
+        }
+        return [...new Set(cells)];
     }
 
     markSelection() {
@@ -211,7 +298,7 @@ export class StudioCanvas extends Component {
         this.stop(ev);
         const id = nodeIdOf(ev.target, this.rootRef(), this.store);
         const node = this.store.node(id);
-        if (node && id !== this.store.rootId && ["field", "group", "page", "button", "separator", "notebook", "widget", "label", "div"].includes(node.tag)) {
+        if (node && id !== this.store.rootId && ["field", "column", "group", "page", "button", "separator", "notebook", "widget", "label", "div"].includes(node.tag)) {
             this.pointer = { id, x: ev.clientX, y: ev.clientY };
         }
     }
@@ -316,6 +403,10 @@ export class StudioCanvas extends Component {
             return { id: node.id, position: "inside", rect, mode: "box" };
         }
         const columns = viewType === "list" || (node.owners?.length && this.inList(node.id));
+        if (columns && this.store.node(node.parent)?.tag === "column") {
+            // a field shown in a column of several: drop beside the whole column
+            return null;
+        }
         if (node.tag === "field" && node.parent !== null && this.store.node(node.parent)?.tag === "header") {
             return null;
         }

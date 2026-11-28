@@ -19,6 +19,7 @@ NODE_RE = re.compile(r'\b%s(\d+)\b' % NODE_CLASS)
 # the attribute that names a node of each tag, when it has one
 ID_ATTRS = {
     'field': 'name',
+    'column': 'name',
     'button': 'name',
     'page': 'name',
     'group': 'name',

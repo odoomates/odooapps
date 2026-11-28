@@ -228,6 +228,13 @@ class OmPenStudio(models.AbstractModel):
             'fields': related.get(customization.model, {}).get('fields', {}),
             'related_models': related,
             'all_fields': self._fields_info(customization.model),
+            # every field of the lines shown in an embedded list or form, so any of
+            # them can be added there, not only those the view already shows
+            'line_fields': {
+                info['relation']: self._fields_info(info['relation'])
+                for info in nodes.values()
+                if info.get('relation') and info.get('subviews') and info['relation'] in self.env
+            },
             'nodes': nodes,
             'failed': [ops[index].get('label') for index in failed],
             'revision': customization._revision(),
@@ -364,7 +371,7 @@ class OmPenStudio(models.AbstractModel):
             model = self._node_model(customization.model, [
                 owner.get('name') for owner in reversed(list(target.iterancestors('field')))
             ] + ([target.get('name')] if target.tag == 'field' and position == 'inside' else []))
-            element = self._build_element(customization, model, target, change.get('element') or {})
+            element = self._build_element(customization, model, target, change.get('element') or {}, position)
             return self._insert_specs(arch, target, position, element), \
                 _("Added %s", self._element_label(customization, model, element))
         raise UserError(_("Unknown change: %s", kind))
@@ -436,7 +443,7 @@ class OmPenStudio(models.AbstractModel):
     # ------------------------------------------------------------------
 
     @api.model
-    def _build_element(self, customization, model, target, element):
+    def _build_element(self, customization, model, target, element, position='inside'):
         """ The node to insert, built here from a description, never taken as raw xml. """
         kind = element.get('kind')
         view_type = customization.view_type
@@ -452,6 +459,9 @@ class OmPenStudio(models.AbstractModel):
                 if attribute in ('widget', 'string', 'optional', 'type', 'interval', 'filter_domain',
                                  'operator', 'sum', 'avg') and value:
                     node.set(attribute, str(value))
+            field = self.env[model]._fields[name]
+            if view_type == 'form' and field.type == 'one2many' and not self._in_list(target, position):
+                node.append(self._lines_list(field))
             return node
         if kind == 'notebook':
             notebook = etree.Element('notebook')
@@ -498,6 +508,38 @@ class OmPenStudio(models.AbstractModel):
         if kind == 'smart_button':
             raise UserError(_("A smart button is added from its own dialog."))
         raise UserError(_("Unknown element: %s", kind))
+
+    @api.model
+    def _in_list(self, target, position):
+        """ Whether a node put at `position` of `target` lands in a list. """
+        node = target if position == 'inside' else target.getparent()
+        while node is not None and node.tag not in ('list', 'form'):
+            node = node.getparent()
+        return node is not None and node.tag == 'list'
+
+    @api.model
+    def _lines_list(self, field):
+        """ An editable list of the lines of a one2many, with the columns of their own list.
+
+        Embedded in the form, it lets the lines be changed in place and its columns be
+        customized like any other part of the view.
+        """
+        Lines = self.env[field.comodel_name]
+        lines = etree.Element('list', editable='bottom')
+        arch = etree.fromstring(Lines.get_view(view_type='list')['arch'])
+        for child in arch:
+            name = child.get('name') if archlib.is_element(child) and child.tag == 'field' else None
+            if not name or name == field.inverse_name or name not in Lines._fields \
+                    or archlib.is_set(child.get('invisible')) or archlib.is_set(child.get('column_invisible')):
+                continue
+            column = etree.SubElement(lines, 'field', name=name)
+            for attribute in ('string', 'widget', 'options', 'optional', 'sum', 'avg'):
+                if child.get(attribute):
+                    column.set(attribute, child.get(attribute))
+        if not len(lines):
+            name = Lines._rec_name if Lines._rec_name in Lines._fields else 'display_name'
+            etree.SubElement(lines, 'field', name=name)
+        return lines
 
     @api.model
     def _two_columns(self, parent, wrap=True):
