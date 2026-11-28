@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_quotation" model="om.whatsapp.template">
+        <field name="name">Sales: Quotation</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="sale.action_report_saleorder"/>
+        <field name="body">Hello {{ object.partner_id.name }}, here is your quotation *{{ object.name }}* of *{{ format_amount(object.amount_total, object.currency_id) }}*. View, accept and pay it online: {{ object.om_whatsapp_portal_link() }}
+Reply here if you have any question.</field>
+    </record>
+
+    <record id="om_whatsapp_template_order_confirmed" model="om.whatsapp.template">
+        <field name="name">Sales: Order Confirmed</field>
+        <field name="model_id" ref="sale.model_sale_order"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="sale.action_report_saleorder"/>
+        <field name="body">Hello {{ object.partner_id.name }}, thank you for your order! Your order *{{ object.name }}* of *{{ format_amount(object.amount_total, object.currency_id) }}* is confirmed. Follow it online: {{ object.om_whatsapp_portal_link() }}
+We will keep you posted.</field>
+    </record>
+
+    <record id="base.main_company" model="res.company">
+        <field name="om_whatsapp_quotation_template_id" ref="om_whatsapp_template_quotation"/>
+        <field name="om_whatsapp_order_template_id" ref="om_whatsapp_template_order_confirmed"/>
+    </record>
+
+</odoo>

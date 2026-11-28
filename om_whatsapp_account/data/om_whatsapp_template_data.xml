@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_invoice" model="om.whatsapp.template">
+        <field name="name">Invoicing: Invoice</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="account.account_invoices"/>
+        <field name="body">Hello {{ object.partner_id.name }}, here is your invoice *{{ object.name }}* of *{{ format_amount(object.amount_total, object.currency_id) }}*, due on {{ format_date(object.invoice_date_due) }}. View and pay it online: {{ object.om_whatsapp_portal_link() }}
+Thank you for your business!</field>
+    </record>
+
+    <record id="om_whatsapp_template_credit_note" model="om.whatsapp.template">
+        <field name="name">Invoicing: Credit Note</field>
+        <field name="model_id" ref="account.model_account_move"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="account.account_invoices"/>
+        <field name="body">Hello {{ object.partner_id.name }}, here is your credit note *{{ object.name }}* of *{{ format_amount(object.amount_total, object.currency_id) }}*. View it online: {{ object.om_whatsapp_portal_link() }}
+Thank you!</field>
+    </record>
+
+    <record id="om_whatsapp_template_payment_receipt" model="om.whatsapp.template">
+        <field name="name">Invoicing: Payment Receipt</field>
+        <field name="model_id" ref="account.model_account_payment"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="account.action_report_payment_receipt"/>
+        <field name="body">Hello {{ object.partner_id.name }}, we received your payment *{{ object.name }}* of *{{ format_amount(object.amount, object.currency_id) }}* on {{ format_date(object.date) }}. Thank you!</field>
+    </record>
+
+    <record id="base.main_company" model="res.company">
+        <field name="om_whatsapp_invoice_template_id" ref="om_whatsapp_template_invoice"/>
+        <field name="om_whatsapp_refund_template_id" ref="om_whatsapp_template_credit_note"/>
+        <field name="om_whatsapp_payment_template_id" ref="om_whatsapp_template_payment_receipt"/>
+    </record>
+
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="om_whatsapp_template_meeting_reminder" model="om.whatsapp.template">
+            <field name="name">Calendar: Meeting Reminder</field>
+            <field name="model_id" ref="calendar.model_calendar_event"/>
+            <field name="body">Hello, a reminder of our meeting *{{ object.name }}* on {{ object.get_display_time_tz(ctx.get('om_whatsapp_tz') or object.user_id.tz) }}. {{ object.om_whatsapp_meeting_place() }}
+See you then!</field>
+        </record>
+
+        <record id="om_whatsapp_alarm_1_hour" model="calendar.alarm">
+            <field name="name">WhatsApp - 1 Hours</field>
+            <field name="alarm_type">om_whatsapp</field>
+            <field name="duration">1</field>
+            <field name="interval">hours</field>
+            <field name="om_whatsapp_template_id" ref="om_whatsapp_template_meeting_reminder"/>
+        </record>
+
+        <record id="om_whatsapp_alarm_1_day" model="calendar.alarm">
+            <field name="name">WhatsApp - 1 Days</field>
+            <field name="alarm_type">om_whatsapp</field>
+            <field name="duration">1</field>
+            <field name="interval">days</field>
+            <field name="om_whatsapp_template_id" ref="om_whatsapp_template_meeting_reminder"/>
+        </record>
+    </data>
+</odoo>

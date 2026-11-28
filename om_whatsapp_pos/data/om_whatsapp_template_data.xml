@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_pos_receipt" model="om.whatsapp.template">
+        <field name="name">Point of Sale: Receipt</field>
+        <field name="model_id" ref="point_of_sale.model_pos_order"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="report_id" ref="action_report_pos_order_receipt"/>
+        <field name="body">Thank you for shopping at {{ object.company_id.name }}! Here is the receipt of your order *{{ object.pos_reference or object.name }}* of *{{ format_amount(object.amount_total, object.currency_id) }}*. See you soon!</field>
+    </record>
+
+    <record model="pos.config" id="point_of_sale.pos_config_main" forcecreate="0">
+        <field name="om_whatsapp_receipt" eval="True"/>
+        <field name="om_whatsapp_receipt_template_id" ref="om_whatsapp_template_pos_receipt"/>
+    </record>
+
+</odoo>

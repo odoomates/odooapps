@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.om_whatsapp_pos</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="point_of_sale.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <setting id="pos_sms" position="after">
+                <setting id="om_whatsapp_pos_receipt" help="Send the receipt by WhatsApp from the receipt screen">
+                    <field name="pos_om_whatsapp_receipt"/>
+                    <div class="content-group mt16" invisible="not pos_om_whatsapp_receipt">
+                        <div class="row">
+                            <label for="pos_om_whatsapp_receipt_template_id" string="Template" class="col-lg-3 o_light_label"/>
+                            <field name="pos_om_whatsapp_receipt_template_id" options="{'no_create': True}"
+                                   placeholder="Point of Sale: Receipt"/>
+                        </div>
+                        <div class="row">
+                            <label for="pos_om_whatsapp_account_id" string="Send From" class="col-lg-3 o_light_label"/>
+                            <field name="pos_om_whatsapp_account_id" options="{'no_create': True}"
+                                   placeholder="The account of the template or of the cashier"/>
+                        </div>
+                    </div>
+                </setting>
+            </setting>
+        </field>
+    </record>
+
+</odoo>

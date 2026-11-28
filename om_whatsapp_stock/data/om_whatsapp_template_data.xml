@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+
+    <record id="om_whatsapp_template_delivery_done" model="om.whatsapp.template">
+        <field name="name">Delivery: Shipped</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body">Hello {{ object.partner_id.name }}, good news: your order *{{ object.origin or object.name }}* has shipped. {{ object.om_whatsapp_tracking() }}
+Thank you for your order!</field>
+    </record>
+
+    <record id="om_whatsapp_template_out_for_delivery" model="om.whatsapp.template">
+        <field name="name">Delivery: Out for Delivery</field>
+        <field name="model_id" ref="stock.model_stock_picking"/>
+        <field name="lang">{{ object.partner_id.lang }}</field>
+        <field name="body">Hello {{ object.partner_id.name }}, your order *{{ object.origin or object.name }}* is out for delivery today. {{ object.om_whatsapp_tracking() }}
+Reply here if nobody will be there to receive it.</field>
+    </record>
+
+</odoo>
