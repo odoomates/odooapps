@@ -1,6 +1,6 @@
 {
     'name': 'Print Templates',
-    'version': '1.0.0',
+    'version': '1.0.1',
     'category': 'Productivity',
     'summary': 'Print certificates, letters and confirmations from any record: numbered, kept as printed, '
                'with a verification QR code',
