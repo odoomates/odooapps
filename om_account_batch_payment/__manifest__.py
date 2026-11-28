@@ -25,6 +25,7 @@ Reconciliation reconciles the single transaction of the bank with all the paymen
         'views/account_payment_views.xml',
         'views/account_journal_views.xml',
         'wizard/account_payment_register_views.xml',
+        'views/res_config_settings_views.xml',
     ],
     'images': ['static/description/banner.png'],
     'installable': True,
