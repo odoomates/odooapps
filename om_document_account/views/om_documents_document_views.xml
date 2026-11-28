@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="om_documents_document_view_form" model="ir.ui.view">
+        <field name="name">om.documents.document.form.account</field>
+        <field name="model">om.documents.document</field>
+        <field name="inherit_id" ref="om_document.om_documents_document_view_form"/>
+        <field name="arch" type="xml">
+            <button name="action_share" position="before">
+                <button name="action_create_vendor_bill" type="object" string="Create Bill"
+                        groups="account.group_account_invoice" invisible="not attachment_id or res_model == 'account.move'"/>
+            </button>
+        </field>
+    </record>
+
+    <record id="om_documents_action_view_form" model="ir.ui.view">
+        <field name="name">om.documents.action.form.account</field>
+        <field name="model">om.documents.action</field>
+        <field name="inherit_id" ref="om_document.om_documents_action_view_form"/>
+        <field name="arch" type="xml">
+            <field name="binary_field_id" position="after">
+                <field name="journal_id" invisible="create_model not in ('in_invoice', 'in_refund', 'out_invoice', 'out_refund')"
+                       options="{'no_create': True}"/>
+            </field>
+        </field>
+    </record>
+
+</odoo>
